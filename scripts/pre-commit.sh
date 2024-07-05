@@ -82,3 +82,34 @@ if [ $SHOULD_FAIL_PRECOMMIT -ne 0 ]; then
 else
   verify_no_included_apikeys
 fi
+
+
+# Function to concatenate CircleCI configuration files
+concatenate_circleci_configs() {
+  # Define the output file
+  local output_file=".circleci/config.yml"
+  local config_folder=".circleci/configuration/"
+
+  # Check if any files in the config folder have changed
+  if git diff --cached --quiet HEAD -- $config_folder; then
+    echo "No changes in configuration files. Skipping concatenation."
+  else
+    # Clear the output file if it exists
+    > $output_file
+
+    # Concatenate all configuration files in the desired order
+    for file in $config_folder/*.yml; do
+      cat "$file" >> $output_file
+      echo -e "\n" >> $output_file # Add a newline for separation
+    done
+
+    echo "CircleCI configuration files concatenated into $output_file"
+
+    # Add the generated config.yml to the commit
+    git add $output_file
+  fi
+}
+
+# Call the function to concatenate CircleCI configuration files
+concatenate_circleci_configs
+
