@@ -31,6 +31,13 @@ struct AppContentView: View {
                     Label("My Apps", systemImage: "network")
                 }
 
+            if Purchases.isConfigured {
+                APIKeyDashboardList()
+                    .tabItem {
+                        Label("Sandbox Paywalls", systemImage: "testtube.2")
+                    }
+            }
+
             #if !DEBUG
             if !Purchases.isConfigured {
                 Text("Purchases is not configured")

@@ -20,23 +20,7 @@ struct PaywallPresenter: View {
         switch self.mode {
         case .fullScreen:
 
-            let handler = PurchaseHandler.default(
-                performPurchase: { package in
-                var userCancelled = false
-                var error: Error?
-
-                // do stuff
-
-                return (userCancelled: userCancelled, error: error)
-
-            }, performRestore: {
-                var success = false
-                var error: Error?
-
-                // do stuff
-
-                return (success: success, error: error)
-            })
+            let handler = PurchaseHandler.default()
 
             let configuration = PaywallViewConfiguration(
                 offering: offering,
@@ -47,8 +31,6 @@ struct PaywallPresenter: View {
             )
 
             PaywallView(configuration: configuration)
-
-
 
 #if !os(watchOS)
         case .footer:
@@ -64,7 +46,7 @@ struct PaywallPresenter: View {
                                customerInfo: nil,
                                condensed: true,
                                introEligibility: .producing(eligibility: introEligility),
-                               purchaseHandler: .default())
+                                                            purchaseHandler: .default())
 #endif
         }
     }
