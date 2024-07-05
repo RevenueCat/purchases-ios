@@ -1188,28 +1188,20 @@ workflows:
       - run-test-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-ios-14:
           xcode_version: '14.2.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-ios-13:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-macos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -1217,15 +1209,11 @@ workflows:
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
 
@@ -1241,128 +1229,76 @@ workflows:
       - docs-build:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-release-build:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-custom-entitlement-computation-build:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-receipt-parser:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-release-build-xcode-15:
           xcode_version: '15.2'
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - spm-revenuecat-ui-watchos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-macos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-ios-17:
           xcode_version: "15.2"
       - run-test-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-watchos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-tvos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
           xcode_version: '14.2.0'
           install_swiftlint: false
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - run-test-ios-13:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - build-tv-watch-and-macos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - build-visionos:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - backend-integration-tests-SK1:
-          filters:
-            branches:
-              <<: *release-branches
-              ignore: *forked-pull-requests
+          <<: *release-branches
       - backend-integration-tests-SK2:
-          filters:
-            branches:
-              <<: *release-branches
-              ignore: *forked-pull-requests
+          <<: *release-branches
       - backend-integration-tests-other:
-          filters:
-            branches:
-              <<: *release-branches
-              ignore: *forked-pull-requests
+          <<: *release-branches
       - backend-integration-tests-offline:
-          filters:
-            branches:
-              <<: *release-branches
+          <<: *release-branches
       - backend-integration-tests-custom-entitlements:
-          filters:
-            branches:
-              <<: *release-branches
-              ignore: *forked-pull-requests
+          <<: *release-branches
 
   deploy:
     when:
