@@ -118,7 +118,8 @@ public struct PaywallView: View {
             // to a @StateObject
             self._doNotAccessPurchaseHandler = .init(wrappedValue: PurchaseHandler.default())
         }
-        self._purchaseHandler = .init(initialValue: configuration.purchaseHandler)
+
+        self.purchaseHandler = configuration.purchaseHandler
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
