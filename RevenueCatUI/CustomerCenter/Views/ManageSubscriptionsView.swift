@@ -25,9 +25,6 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct ManageSubscriptionsView: View {
 
-    @Environment(\.openURL)
-    var openURL
-
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
@@ -184,6 +181,8 @@ struct ManageSubscriptionsButtonsView: View {
     var viewModel: ManageSubscriptionsViewModel
     @Binding
     var loadingPath: CustomerCenterConfigData.HelpPath?
+    @Environment(\.openURL)
+    var openURL
 
     var body: some View {
         VStack(spacing: 16) {
@@ -197,6 +196,12 @@ struct ManageSubscriptionsButtonsView: View {
             ForEach(filteredPaths, id: \.id) { path in
                 ManageSubscriptionButton(path: path, viewModel: self.viewModel)
             }
+            Button("Contact support") {
+                Task {
+                    openURL(URLUtilities.createMailURL()!)
+                }
+            }
+            .padding()
         }
     }
 
