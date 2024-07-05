@@ -7,7 +7,15 @@
 
 import SwiftUI
 import RevenueCat
-import RevenueCatUI
+@testable import RevenueCatUI
+
+enum PaywallPresnterError: Error, CustomStringConvertible {
+    case cancelled
+
+    var description: String {
+        "An error occured yo yo YO"
+    }
+}
 
 struct PaywallPresenter: View {
 
@@ -23,11 +31,11 @@ struct PaywallPresenter: View {
             let handler = PurchaseHandler.default(
                 performPurchase: { package in
                 var userCancelled = false
-                var error: Error?
-
+                    var error: Error? 
+                    
                 // do stuff
 
-                return (userCancelled: userCancelled, error: error)
+                return (userCancelled: false, error: error)
 
             }, performRestore: {
                 var success = false
@@ -42,29 +50,94 @@ struct PaywallPresenter: View {
                 offering: offering,
                 fonts: DefaultPaywallFontProvider(),
                 displayCloseButton: displayCloseButton,
-                introEligibility: .producing(eligibility: introEligility),
+                introEligibility: .producing(eligibility: introEligility).with(delay: 30),
                 purchaseHandler: handler
             )
 
             PaywallView(configuration: configuration)
+                .onPurchaseStarted { package in
+                    print(#function)
+                }
+                .onPurchaseCompleted { customerInfo in
+                    print(#function)
+                }
+                .onPurchaseCancelled {
+                    print(#function)
+                }
+
+//            PaywallView(performPurchase: { packageToPurchase in
+//                var userCancelled = false
+//                var error: Error?
+//                
+//                // use StoreKit to perform purchase
+//
+//                return (userCancelled: userCancelled, error: error)
+//            }, performRestore: {
+//                var success = false
+//                var error: Error?
+//
+//                // use StoreKit to perform restore
+//
+//                return (success: success, error: error)
+//            })
+
+//Text("abc")
+//    .paywallFooter(myAppPurchaseLogic: MyAppPurchaseLogic(performPurchase: { packageToPurchase in
+//        var userCancelled = false
+//        var error: Error?
+//
+//        // use StoreKit to perform purchase
+//
+//        return (userCancelled: userCancelled, error: error)
+//    }, performRestore: {
+//        var success = false
+//        var error: Error?
+//
+//        // use StoreKit to perform restore
+//
+//        return (success: success, error: error)
+//    }))
 
 
 
 #if !os(watchOS)
         case .footer:
             CustomPaywallContent()
-                .paywallFooter(offering: self.offering,
-                               customerInfo: nil,
-                               introEligibility: .producing(eligibility: introEligility),
-                               purchaseHandler: .default())
+
+//                .paywallFooter(offering: self.offering,
+//                               customerInfo: nil,
+//                               introEligibility: .producing(eligibility: introEligility), performPurchase: { package in
+
+
+                .paywallFooter(offering: self.offering, myAppPurchaseLogic: .init(performPurchase: { packageToPurchase in
+                    return (userCancelled: true, error: nil)
+                }, performRestore: {
+                    return (success: true, error: nil)
+                })) { package in
+
+                }
+
+
+
+
+
+                               
+//                .paywallFooter(offering: self.offering,
+//                               customerInfo: nil,
+//                               introEligibility: .producing(eligibility: introEligility)) { package in
+//                    print("purchase")
+//                    // why is return not required here now
+//                } performRestore: {
+//                    print("restore")
+//                    return (success: true, error: nil)
+//                }
 
         case .condensedFooter:
             CustomPaywallContent()
-                .paywallFooter(offering: self.offering,
-                               customerInfo: nil,
-                               condensed: true,
-                               introEligibility: .producing(eligibility: introEligility),
-                               purchaseHandler: .default())
+//                .paywallFooter(offering: self.offering,
+//                               customerInfo: nil,
+//                               condensed: true,
+//                               introEligibility: .producing(eligibility: introEligility))
 #endif
         }
     }
