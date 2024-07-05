@@ -122,7 +122,7 @@ struct APIKeyDashboardList: View {
             }
         }
         .sheet(item: self.$presentedPaywall) { paywall in
-            LocalPaywallPresenter(offering: paywall.offering, mode: paywall.mode)
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
@@ -169,60 +169,6 @@ struct APIKeyDashboardList: View {
     #endif
 
 }
-enum FauxError: Error {
-    case artifical
-}
-private struct LocalPaywallPresenter: View {
-
-    var offering: Offering
-    var mode: PaywallViewMode
-    var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
-
-    var body: some View {
-        switch self.mode {
-        case .fullScreen:
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton, performPurchase: { pacakgeToPurchase in
-
-                return (userCancelled: false, error: FauxError.artifical)
-            }, performRestore: {
-
-                return (success: false, error: FauxError.artifical)
-            })
-            .onPurchaseStarted { package in
-                print(#function)
-            }
-            .onPurchaseCompleted { customerInfo in
-                print(#function)
-            }
-            .onPurchaseCancelled {
-                print(#function)
-            }
-            .onPurchaseFailure { error in
-                print(#function)
-            }
-            .onRestoreStarted {
-                print(#function)
-            }
-            .onRestoreCompleted { info in
-                print(#function)
-            }
-            .onRestoreFailure { error in
-                print(#function)
-            }
-
-        #if !os(watchOS)
-        case .footer:
-            CustomPaywallContent()
-                .paywallFooter(offering: self.offering)
-
-        case .condensedFooter:
-            CustomPaywallContent()
-                .paywallFooter(offering: self.offering, condensed: true)
-        #endif
-        }
-    }
-
-}
 
 extension APIKeyDashboardList.Template: CustomStringConvertible {
 
@@ -251,15 +197,3 @@ extension APIKeyDashboardList.PresentedPaywall: Identifiable {
     }
 
 }
-
-#if DEBUG
-
-//struct APIKeyDashboardList_Previews: PreviewProvider {
-//    static var previews: some View {
-//        NavigationView {
-//            OfferingsList()
-//        }
-//    }
-//}
-
-#endif
