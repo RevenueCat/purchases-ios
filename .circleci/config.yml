@@ -1406,3 +1406,30 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
+
+  manual-test-workflow:
+    when:
+      equal: ["run-manual-tests", << pipeline.parameters.action >>]
+    jobs:
+      - backend-integration-tests-SK1
+      - backend-integration-tests-SK2
+      - backend-integration-tests-custom-entitlements
+      - backend-integration-tests-other
+      - build-tv-watch-and-macos
+      - build-visionos
+      - docs-build
+      - run-test-ios-14
+      - run-test-ios-15
+      - run-test-ios-16
+      - run-test-macos
+      - run-test-tvos
+      - run-test-watchos
+      - spm-custom-entitlement-computation-build
+      - spm-receipt-parser
+      - spm-release-build
+      - spm-release-build-xcode-14
+      - spm-release-build-xcode-15
+      - spm-revenuecat-ui-ios-15
+      - spm-revenuecat-ui-ios-16
+      - spm-revenuecat-ui-ios-17
+      - spm-revenuecat-ui-watchos
