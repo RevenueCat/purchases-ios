@@ -28,23 +28,7 @@ struct PaywallPresenter: View {
         switch self.mode {
         case .fullScreen:
 
-            let handler = PurchaseHandler.default(
-                performPurchase: { package in
-                var userCancelled = false
-                    var error: Error? 
-                    
-                // do stuff
-
-                return (userCancelled: false, error: error)
-
-            }, performRestore: {
-                var success = false
-                var error: Error?
-
-                // do stuff
-
-                return (success: success, error: error)
-            })
+            let handler = PurchaseHandler.default()
 
             let configuration = PaywallViewConfiguration(
                 offering: offering,
@@ -55,89 +39,21 @@ struct PaywallPresenter: View {
             )
 
             PaywallView(configuration: configuration)
-                .onPurchaseStarted { package in
-                    print(#function)
-                }
-                .onPurchaseCompleted { customerInfo in
-                    print(#function)
-                }
-                .onPurchaseCancelled {
-                    print(#function)
-                }
-
-//            PaywallView(performPurchase: { packageToPurchase in
-//                var userCancelled = false
-//                var error: Error?
-//                
-//                // use StoreKit to perform purchase
-//
-//                return (userCancelled: userCancelled, error: error)
-//            }, performRestore: {
-//                var success = false
-//                var error: Error?
-//
-//                // use StoreKit to perform restore
-//
-//                return (success: success, error: error)
-//            })
-
-//Text("abc")
-//    .paywallFooter(myAppPurchaseLogic: MyAppPurchaseLogic(performPurchase: { packageToPurchase in
-//        var userCancelled = false
-//        var error: Error?
-//
-//        // use StoreKit to perform purchase
-//
-//        return (userCancelled: userCancelled, error: error)
-//    }, performRestore: {
-//        var success = false
-//        var error: Error?
-//
-//        // use StoreKit to perform restore
-//
-//        return (success: success, error: error)
-//    }))
 
 
 
 #if !os(watchOS)
         case .footer:
             CustomPaywallContent()
-
-//                .paywallFooter(offering: self.offering,
-//                               customerInfo: nil,
-//                               introEligibility: .producing(eligibility: introEligility), performPurchase: { package in
-
-
-                .paywallFooter(offering: self.offering, myAppPurchaseLogic: .init(performPurchase: { packageToPurchase in
-                    return (userCancelled: true, error: nil)
-                }, performRestore: {
-                    return (success: true, error: nil)
-                })) { package in
-
-                }
-
-
-
-
-
-                               
-//                .paywallFooter(offering: self.offering,
-//                               customerInfo: nil,
-//                               introEligibility: .producing(eligibility: introEligility)) { package in
-//                    print("purchase")
-//                    // why is return not required here now
-//                } performRestore: {
-//                    print("restore")
-//                    return (success: true, error: nil)
-//                }
+                .paywallFooter(offering: self.offering)
 
         case .condensedFooter:
             CustomPaywallContent()
-//                .paywallFooter(offering: self.offering,
-//                               customerInfo: nil,
-//                               condensed: true,
-//                               introEligibility: .producing(eligibility: introEligility))
+                .paywallFooter(offering: self.offering,
+                               customerInfo: nil,
+                               condensed: true,
+                               introEligibility: .producing(eligibility: introEligility), 
+                               purchaseHandler: PurchaseHandler.default())
 #endif
         }
     }
