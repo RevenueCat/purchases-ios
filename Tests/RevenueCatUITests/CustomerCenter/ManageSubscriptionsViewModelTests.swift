@@ -38,20 +38,20 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterConfigTestData.customerCenterData)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen)
 
-        expect(viewModel.state) == .notLoaded
+        expect(viewModel.state) == CustomerCenterViewState.notLoaded
         expect(viewModel.subscriptionInformation).to(beNil())
         expect(viewModel.refundRequestStatusMessage).to(beNil())
-        expect(viewModel.configuration).toNot(beNil())
+        expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
         expect(viewModel.isLoaded) == false
     }
 
     func testStateChangeToError() {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterConfigTestData.customerCenterData)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen)
 
-        viewModel.state = .error(error)
+        viewModel.state = CustomerCenterViewState.error(error)
 
         switch viewModel.state {
         case .error(let stateError):
@@ -62,7 +62,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testIsLoaded() {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterConfigTestData.customerCenterData)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen)
 
         expect(viewModel.isLoaded) == false
 
@@ -72,13 +72,13 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testLoadScreenSuccess() async {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterConfigTestData.customerCenterData,
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      purchasesProvider: MockManageSubscriptionsPurchases())
 
         await viewModel.loadScreen()
 
         expect(viewModel.subscriptionInformation).toNot(beNil())
-        expect(viewModel.configuration).toNot(beNil())
+        expect(viewModel.screen).toNot(beNil())
         expect(viewModel.state) == .success
 
         expect(viewModel.subscriptionInformation?.title) == "title"
@@ -89,9 +89,9 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testLoadScreenNoActiveSubscription() async {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterConfigTestData.customerCenterData,
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
+            customerInfo: ManageSubscriptionsViewModelTests.customerInfoWithoutSubscriptions
         ))
 
         await viewModel.loadScreen()
@@ -101,7 +101,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testLoadScreenFailure() async {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterConfigTestData.customerCenterData,
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
             customerInfoError: error
         ))
@@ -144,14 +144,14 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
         if let customerInfo {
             return customerInfo
         }
-        return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+        return await ManageSubscriptionsViewModelTests.customerInfoWithAppleSubscriptions
     }
 
     func products(_ productIdentifiers: [String]) async -> [RevenueCat.StoreProduct] {
         if productsShouldFail {
             return []
         }
-        let product = await CustomerCenterViewModelTests.createMockProduct()
+        let product = await ManageSubscriptionsViewModelTests.createMockProduct()
         return [product]
     }
 
@@ -171,7 +171,9 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension CustomerCenterViewModelTests {
+private extension ManageSubscriptionsViewModelTests {
+
+    static let screen: CustomerCenterConfigData.Screen = CustomerCenterConfigTestData.customerCenterData[.management]!
 
     static func createMockProduct() -> StoreProduct {
         // Using SK1 products because they can be mocked, but CustomerCenterViewModel
@@ -391,3 +393,4 @@ fileprivate extension SKProductSubscriptionPeriod {
 }
 
 #endif
+

@@ -32,8 +32,7 @@ struct CustomerCenterConfigResponse {
 
     struct Localization {
 
-        let supported: [String]
-        let `default`: String
+        let locale: String
         let localizedStrings: [String: String]
 
     }
@@ -41,7 +40,7 @@ struct CustomerCenterConfigResponse {
     struct HelpPath {
 
         let id: String
-        let titleKey: String
+        let title: String
         let type: PathType
         let promotionalOffer: PromotionalOffer?
         let feedbackSurvey: FeedbackSurvey?
@@ -64,13 +63,13 @@ struct CustomerCenterConfigResponse {
 
         struct FeedbackSurvey {
 
-            let titleKey: String
+            let title: String
             let options: [Option]
 
             struct Option {
 
                 let id: String
-                let titleKey: String
+                let title: String
                 let promotionalOffer: PromotionalOffer?
 
             }
@@ -97,9 +96,9 @@ struct CustomerCenterConfigResponse {
 
     struct Screen {
 
-        let titleKey: String
-        let typeKey: ScreenType
-        let subtitleKey: String?
+        let title: String
+        let type: ScreenType
+        let subtitle: String?
         let paths: [HelpPath]
 
         enum ScreenType: String {
@@ -113,9 +112,9 @@ struct CustomerCenterConfigResponse {
     }
 
     struct Support {
-        
+
         let email: String
-    
+
     }
 
 }
