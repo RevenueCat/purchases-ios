@@ -9,14 +9,6 @@ import SwiftUI
 import RevenueCat
 @testable import RevenueCatUI
 
-enum PaywallPresnterError: Error, CustomStringConvertible {
-    case cancelled
-
-    var description: String {
-        "An error occured yo yo YO"
-    }
-}
-
 struct PaywallPresenter: View {
 
     var offering: Offering
@@ -39,8 +31,6 @@ struct PaywallPresenter: View {
             )
 
             PaywallView(configuration: configuration)
-
-
 
 #if !os(watchOS)
         case .footer:
