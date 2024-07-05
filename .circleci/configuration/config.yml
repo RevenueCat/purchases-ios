@@ -6,11 +6,6 @@ orbs:
 
 version: 2.1
 
-  # - .circleci/jobs.yml
-  # - .circleci/executors.yml
-  # - .circleci/commands.yml
-  # - .circleci/filters.yml
-
 parameters:
   action:
     type: enum
