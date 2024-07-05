@@ -84,7 +84,7 @@ else
 fi
 
 # CircleCI doesn't let us split a config file into multiple, so we have a pre-commit hook that does it for us
-# so that the file doens't become unmanageable. 
+# so that the file doesn't become unmanageable. 
 concatenate_circleci_configs() {
   # Define the output file
   local output_file=".circleci/config.yml"
