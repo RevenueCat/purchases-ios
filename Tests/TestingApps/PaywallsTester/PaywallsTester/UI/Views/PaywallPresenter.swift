@@ -7,7 +7,7 @@
 
 import SwiftUI
 import RevenueCat
-@testable import RevenueCatUI
+import RevenueCatUI
 
 struct PaywallPresenter: View {
 
