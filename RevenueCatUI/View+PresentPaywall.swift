@@ -37,6 +37,27 @@ extension PaywallPresentationMode {
 
 }
 
+/// Contains the `PerformPurchase` and `PerformRestore` blocks that are executed when
+/// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct MyAppPurchaseLogic {
+
+    /// When ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined
+    /// callback method that performs the purchase.
+    public let performPurchase: PerformPurchase
+
+    /// When  ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined
+    /// callback method that performs the restore.
+    public let performRestore: PerformRestore
+
+    /// Initializes the struct with blocks that are executed when
+    /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
+    public init(performPurchase: @escaping PerformPurchase, performRestore: @escaping PerformRestore) {
+        self.performPurchase = performPurchase
+        self.performRestore = performRestore
+    }
+}
+
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
@@ -130,6 +151,7 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -143,6 +165,7 @@ extension View {
             offering: offering,
             fonts: fonts,
             presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             shouldDisplay: { info in
                 !info.entitlements
                     .activeInCurrentEnvironment
@@ -206,6 +229,7 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: @escaping PurchaseStartedHandler,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -219,6 +243,7 @@ extension View {
             offering: offering,
             fonts: fonts,
             presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             shouldDisplay: shouldDisplay,
             purchaseStarted: { _ in
                 purchaseStarted()
@@ -282,6 +307,7 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -296,6 +322,7 @@ extension View {
             offering: offering,
             fonts: fonts,
             presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             shouldDisplay: shouldDisplay,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
@@ -322,6 +349,7 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -336,6 +364,7 @@ extension View {
         return self
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
+                myAppPurchaseLogic: myAppPurchaseLogic,
                 presentationMode: presentationMode,
                 purchaseStarted: purchaseStarted,
                 purchaseCompleted: purchaseCompleted,
@@ -384,6 +413,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     init(
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        myAppPurchaseLogic: MyAppPurchaseLogic?,
         presentationMode: PaywallPresentationMode,
         purchaseStarted: PurchaseOfPackageStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
@@ -413,7 +443,9 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
+                                      PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                              performRestore: myAppPurchaseLogic?.performRestore))
     }
 
     @StateObject
@@ -461,7 +493,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
-            )
+            ),
+            paywallViewOwnsPurchaseHandler: false
         )
         .onPurchaseStarted {
             self.purchaseStarted?($0)

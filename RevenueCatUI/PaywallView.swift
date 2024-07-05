@@ -33,7 +33,14 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
+    // Do NOT reference this object directly, always use `purchaseHandler`.
+    // `doNotAccessPurchaseHandler` is here to own the `PurchaseHandler` when
+    //  it is owned by this view. When it is owned by an external object, this
+    //  references a "dummy" purchase handler.
     @StateObject
+    private var doNotAccessPurchaseHandler: PurchaseHandler
+
+    @ObservedObject
     private var purchaseHandler: PurchaseHandler
 
     @StateObject
@@ -41,10 +48,13 @@ public struct PaywallView: View {
 
     @State
     private var offering: Offering?
+
     @State
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
+
+    private var initializationError: NSError?
 
     /// Create a view to display the paywall in `Offerings.current`.
     ///
@@ -57,12 +67,16 @@ public struct PaywallView: View {
     /// If you want to handle that, you can use ``init(offering:)`` instead.
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(
                 fonts: fonts,
-                displayCloseButton: displayCloseButton
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
             )
         )
     }
@@ -80,31 +94,72 @@ public struct PaywallView: View {
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(
                 offering: offering,
                 fonts: fonts,
-                displayCloseButton: displayCloseButton
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
             )
         )
     }
 
     // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration) {
+    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
+        if paywallViewOwnsPurchaseHandler {
+            self._doNotAccessPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
+        } else {
+            // this is unused and is only present to fulfill the need to have an object assigned
+            // to a @StateObject
+            self._doNotAccessPurchaseHandler = .init(wrappedValue: PurchaseHandler.default())
+        }
+
+        self.purchaseHandler = configuration.purchaseHandler
+
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
-        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default())
+
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
+
         self.contentToDisplay = configuration.content
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
+
+        checkForConfigurationConsistency()
+    }
+
+    private mutating func checkForConfigurationConsistency() {
+        switch self.purchaseHandler.purchasesAreCompletedBy {
+        case .myApp:
+            if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
+                let missingBlocks: String
+                if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
+                    missingBlocks = "performPurchase and performRestore are"
+                } else if self.purchaseHandler.performPurchase == nil {
+                    missingBlocks = "performPurchase is"
+                } else {
+                    missingBlocks = "performRestore is"
+                }
+
+                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: missingBlocks)
+                self.initializationError = error as NSError
+                Logger.error(error)
+            }
+        case .revenueCat:
+            if self.purchaseHandler.performPurchase != nil || self.purchaseHandler.performRestore != nil {
+                Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
+            }
+        }
     }
 
     // swiftlint:disable:next missing_docs
@@ -117,7 +172,9 @@ public struct PaywallView: View {
     @ViewBuilder
     private var content: some View {
         VStack { // Necessary to work around FB12674350 and FB12787354
-            if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
+            if let error = self.initializationError {
+                DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
+            } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,

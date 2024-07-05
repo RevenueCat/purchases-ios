@@ -246,6 +246,11 @@ private final class AsyncPurchaseHandler {
                 return TestData.customerInfo
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
+            } customerInfo: { [weak instance = self] in
+                let instance = try XCTUnwrap(instance)
+                await instance.createAndWaitForContinuation()
+
+                return TestData.customerInfo
             }
         )
     }

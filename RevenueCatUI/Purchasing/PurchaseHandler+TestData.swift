@@ -20,7 +20,9 @@ import RevenueCat
 extension PurchaseHandler {
 
     static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo,
-                     purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat)
+                     purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
+                     performPurchase: PerformPurchase? = nil,
+                     performRestore: PerformRestore? = nil)
     -> Self {
         return self.init(
             purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy) { _ in
@@ -34,7 +36,11 @@ extension PurchaseHandler {
                 return customerInfo
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
-            }
+            } customerInfo: {
+                return customerInfo
+            },
+            performPurchase: performPurchase,
+            performRestore: performRestore
         )
     }
 
@@ -57,6 +63,8 @@ extension PurchaseHandler {
                 throw error
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                throw error
             }
         )
     }
