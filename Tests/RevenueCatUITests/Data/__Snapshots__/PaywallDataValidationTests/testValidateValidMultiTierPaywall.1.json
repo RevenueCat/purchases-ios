@@ -2,7 +2,25 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : false,
-    "color_overrides_by_tier" : {
+    "colors" : {
+      "dark" : {
+        "accent2" : "#CE0755",
+        "background" : "#000000",
+        "call_to_action_foreground" : "#88FF6A",
+        "text1" : "#FFFFFF",
+        "text2" : "#CDCDCD",
+        "text3" : "#000000"
+      },
+      "light" : {
+        "accent2" : "#7676801F",
+        "background" : "#ffffff",
+        "call_to_action_foreground" : "#ffffff",
+        "text1" : "#000000",
+        "text2" : "#adf5c5",
+        "text3" : "#b15d5d"
+      }
+    },
+    "colors_by_tier" : {
       "basic" : {
         "light" : {
           "accent1" : "#2D7FC1",
@@ -25,26 +43,8 @@
         }
       }
     },
-    "colors" : {
-      "dark" : {
-        "accent2" : "#CE0755",
-        "background" : "#000000",
-        "call_to_action_foreground" : "#88FF6A",
-        "text1" : "#FFFFFF",
-        "text2" : "#CDCDCD",
-        "text3" : "#000000"
-      },
-      "light" : {
-        "accent2" : "#7676801F",
-        "background" : "#ffffff",
-        "call_to_action_foreground" : "#ffffff",
-        "text1" : "#000000",
-        "text2" : "#adf5c5",
-        "text3" : "#b15d5d"
-      }
-    },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
+    "images_by_tier" : {
       "basic" : {
         "background" : null,
         "header" : "954459_1703109702.png",

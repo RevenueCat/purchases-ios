@@ -503,22 +503,40 @@ internal enum TestData {
                 colorsByTier: [
                     "basic": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#adf5c5",
+                            text3: "#b15d5d",
                             callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor
                         )
                     ),
                     "standard": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#adf5c5",
+                            text3: "#b15d5d",
                             callToActionBackground: #colorLiteral(red: 0.8549019694, green: 0.250980407, blue: 0.4784313738, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor
                         )
                     ),
                     "premium": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#adf5c5",
+                            text3: "#b15d5d",
                             callToActionBackground: #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor
                         )
                     )
