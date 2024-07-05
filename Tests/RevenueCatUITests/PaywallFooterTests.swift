@@ -151,8 +151,7 @@ class PaywallFooterTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
-    func testExternalRestoreHandler() throws {
-        var completed = false
+    func testExternalRestoreHandler() async throws {
         var restoreCodeExecuted = false
 
         let handler = Self.externalPurchaseHandler(performPurchase: { _ in
@@ -171,17 +170,12 @@ class PaywallFooterTests: TestCase {
             )
             .addToHierarchy()
 
-        Task {
-            _ = try? await handler.restorePurchases()
-            completed = true
-        }
+        _ = try await handler.restorePurchases()
 
-        expect(completed).toEventually(beTrue())
         expect(restoreCodeExecuted).to(beTrue())
     }
 
-    func testExternalPurchaseHandler() throws {
-        var completed = false
+    func testExternalPurchaseHandler() async throws {
         var purchaseCodeExecuted = false
 
         let handler = Self.externalPurchaseHandler(performPurchase: { _ in
@@ -200,12 +194,8 @@ class PaywallFooterTests: TestCase {
             )
             .addToHierarchy()
 
-        Task {
-            _ = try? await handler.purchase(package: TestData.packageWithIntroOffer)
-            completed = true
-        }
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        expect(completed).toEventually(beTrue())
         expect(purchaseCodeExecuted).to(beTrue())
     }
 
