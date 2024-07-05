@@ -726,6 +726,27 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == mockCustomerInfo
     }
 
+    func testSyncPurchasesSK2DoesNotPostReceiptAndRaisesErrorIfNoTransactionsAndNoAppTransactionJWSToken()
+    async throws {
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
+        self.mockTransactionFetcher.stubbedAppTransactionJWS = nil
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalApplicationVersion
+
+        do {
+            _ = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+                                                          isRestore: true,
+                                                          initiationSource: .restore)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.storeProblemError))
+        }
+
+        expect(self.backend.invokedPostReceiptData).to(beFalse())
+
+        expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
+        expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
+    }
+
     func testSyncPurchasesCallsSuccessDelegateMethod() async throws {
         let transaction = try await createTransaction(finished: true)
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
