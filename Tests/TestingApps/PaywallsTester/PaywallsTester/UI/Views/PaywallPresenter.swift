@@ -26,7 +26,7 @@ struct PaywallPresenter: View {
                 offering: offering,
                 fonts: DefaultPaywallFontProvider(),
                 displayCloseButton: displayCloseButton,
-                introEligibility: .producing(eligibility: introEligility).with(delay: 30),
+                introEligibility: .producing(eligibility: introEligility),
                 purchaseHandler: handler
             )
 
