@@ -9,7 +9,7 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump]
+    enum: [default, bump, run-manual-tests]
     default: default
   generate_snapshots:
     default: false
