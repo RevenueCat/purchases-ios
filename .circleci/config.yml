@@ -1226,7 +1226,12 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
+      # mandatory jobs
       - lint
+      - run-test-ios-17:
+          xcode_version: "15.2"
+
+      # jobs that should only run for release branches
       - docs-build:
           xcode_version: '14.3.0'
           install_swiftlint: false
@@ -1263,8 +1268,6 @@ workflows:
           <<: *release-branches
       - run-test-macos:
           <<: *release-branches
-      - run-test-ios-17:
-          xcode_version: "15.2"
       - run-test-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
