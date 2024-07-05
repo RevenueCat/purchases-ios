@@ -158,7 +158,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         .onPurchaseCancelled {
             callbackOrder.append("onPurchaseCancelled")
         }
-        .onPurchaseFailure { error in
+        .onPurchaseFailure { _ in
             callbackOrder.append("onPurchaseFailure")
         }
         .onRestoreStarted({
@@ -260,7 +260,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(completed).toEventually(beTrue())
         expect(callbackOrder).to(equal(["onRestoreStarted", "performRestore", "onRestoreCompleted"]))
     }
-
 
     func testExternalRestoreReturnsCorrectCustomerInfo() throws {
         var customerInfo: CustomerInfo?
