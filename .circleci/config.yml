@@ -1398,6 +1398,8 @@ workflows:
     jobs:
       - release-train
 
+  # to trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
+  # and add a parameter called "run-manual-tests"
   manual-test-workflow:
     when:
       equal: ["run-manual-tests", << pipeline.parameters.action >>]
