@@ -1,4 +1,8 @@
 # Contents from .circleci/configuration/base_config.yml
+# CircleCI doesn't let us split a config file into multiple, so we have a pre-commit hook that does it for us
+# so that the file doens't become unmanageable. 
+# If you haven't done so yet, set up the pre-commit hook by calling bundle exec fastlane setup_dev.
+
 version: 2.1
 
 orbs:
