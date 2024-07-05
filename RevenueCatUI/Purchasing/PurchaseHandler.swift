@@ -18,7 +18,8 @@ import SwiftUI
 // swiftlint:disable file_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class PurchaseHandler: ObservableObject {
+// @PublicForExternalTesting
+final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
