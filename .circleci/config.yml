@@ -1296,6 +1296,7 @@ workflows:
       - run-test-ios-13:
           xcode_version: '14.2.0'
           install_swiftlint: false
+          <<: *release-branches
       - build-tv-watch-and-macos:
           <<: *release-branches
       - build-visionos:
