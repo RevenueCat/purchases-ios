@@ -1,3 +1,4 @@
+# Contents from .circleci/configuration/base_config.yml
 version: 2.1
 
 orbs:
@@ -19,6 +20,7 @@ parameters:
     type: boolean
 
 
+# Contents from .circleci/configuration/aliases.yml
 aliases:
   base-job: &base-job
     resource_class: macos.m1.medium.gen1
@@ -77,6 +79,7 @@ aliases:
         ignore: /pull\/[0-9]+/
 
 
+# Contents from .circleci/configuration/commands.yml
 commands:
   install-runtime:
     parameters:
@@ -405,6 +408,7 @@ commands:
           destination: scan-test-output
 
 
+# Contents from .circleci/configuration/jobs.yml
 jobs:
   spm-release-build-xcode-14:
     <<: *base-job
@@ -1192,6 +1196,7 @@ jobs:
             git push --tags
 
 
+# Contents from .circleci/configuration/workflows.yml
 workflows:
   version: 2
   generate-snapshot:
@@ -1443,5 +1448,4 @@ workflows:
       - spm-revenuecat-ui-ios-16
       - spm-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
-
 
