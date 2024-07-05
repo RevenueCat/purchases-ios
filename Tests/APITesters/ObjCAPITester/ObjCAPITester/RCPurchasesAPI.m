@@ -64,6 +64,7 @@ BOOL isAnonymous;
 
     finishTransactions = [p finishTransactions];
     purchasesAreCompletedBy = [p purchasesAreCompletedBy];
+
     delegate = [p delegate];
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];

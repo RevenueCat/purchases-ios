@@ -34,23 +34,19 @@ struct SamplePaywallsList: View {
         case let .template(template, mode):
             switch mode {
             case .fullScreen:
-                PaywallView(
-                    configuration: .init(
-                        offering: Self.loader.offering(for: template),
-                        customerInfo: Self.loader.customerInfo,
-                        displayCloseButton: Self.displayCloseButton,
-                        introEligibility: Self.introEligibility,
-                        purchaseHandler: .default()
-                    )
-                )
+                PaywallView(configuration: .init(
+                    offering: Self.loader.offering(for: template),
+                    customerInfo: Self.loader.customerInfo,
+                    displayCloseButton: Self.displayCloseButton,
+                    introEligibility: Self.introEligibility
+                ))
 
             #if !os(watchOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
                               customerInfo: Self.loader.customerInfo,
                               condensed: mode == .condensedFooter,
-                              introEligibility: Self.introEligibility,
-                              purchaseHandler: .default())
+                              introEligibility: Self.introEligibility)
             #endif
             }
 
@@ -61,8 +57,7 @@ struct SamplePaywallsList: View {
                     customerInfo: Self.loader.customerInfo,
                     fonts: Self.customFontProvider,
                     displayCloseButton: Self.displayCloseButton,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: .default()
+                    introEligibility: Self.introEligibility
                 )
             )
 
@@ -77,8 +72,7 @@ struct SamplePaywallsList: View {
                 configuration: .init(
                     offering: Self.loader.offeringWithDefaultPaywall(),
                     customerInfo: Self.loader.customerInfo,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: .default()
+                    introEligibility: Self.introEligibility
                 )
             )
 
@@ -87,8 +81,7 @@ struct SamplePaywallsList: View {
                 configuration: .init(
                     offering: Self.loader.offeringWithUnrecognizedPaywall(),
                     customerInfo: Self.loader.customerInfo,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: .default()
+                    introEligibility: Self.introEligibility
                 )
             )
         }
