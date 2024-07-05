@@ -19,12 +19,22 @@ import Foundation
 // swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
-    public let paths: [HelpPath]
     public let screens: [Screen]
+    public let appearance: Appearance
+    public let localization: Localization
 
-    public init(paths: [HelpPath], screens: [Screen]) {
-        self.paths = paths
+    public init(screens: [Screen], appearance: Appearance, localization: Localization) {
         self.screens = screens
+        self.appearance = appearance
+        self.localization = localization
+    }
+    
+    public struct Localization {
+
+        let supported: [String]
+        let `default`: String
+        let localizedStrings: [String: String]
+
     }
 
     public struct HelpPath {
@@ -112,15 +122,52 @@ public struct CustomerCenterConfigData {
 
     }
 
+    public struct Appearance {
+
+        let mode: AppearanceMode
+        let light: AppearanceCustomColors
+        let dark: AppearanceCustomColors
+
+        struct AppearanceCustomColors {
+
+            let accentColor: String
+            let backgroundColor: String
+            let textColor: String
+
+        }
+
+        public enum AppearanceMode: String {
+
+            case custom = "CUSTOM"
+            case system = "SYSTEM"
+
+            init(from rawValue: String) {
+                switch rawValue {
+                case "CUSTOM":
+                    self = .custom
+                case "SYSTEM":
+                    self = .system
+                default:
+                    self = .system
+                }
+            }
+
+        }
+
+    }
+
     public struct Screen {
+
         public let type: ScreenType
         public let title: String
         public let subtitle: String?
+        public let paths: [HelpPath]
 
-        public init(type: ScreenType, title: String, subtitle: String?) {
+        public init(type: ScreenType, title: String, subtitle: String?, paths: [HelpPath]) {
             self.type = type
             self.title = title
             self.subtitle = subtitle
+            self.paths = paths
         }
 
         public enum ScreenType: String {
@@ -139,6 +186,7 @@ public struct CustomerCenterConfigData {
                 }
             }
         }
+
     }
 
     public func screen(ofType type: Screen.ScreenType) -> Screen? {
@@ -154,22 +202,68 @@ public struct CustomerCenterConfigData {
 extension CustomerCenterConfigData {
 
     init(from response: CustomerCenterConfigResponse) {
-        self.paths = response.customerCenter.paths.map { HelpPath(from: $0) }
-        self.screens = response.customerCenter.screens.map { Screen(from: $0) }
+        let localization = Localization(from: response.customerCenter.localization)
+        self.localization = localization
+        self.appearance = Appearance(from: response.customerCenter.appearance)
+        self.screens = response.customerCenter.screens.map { Screen(from: $0.value, type: $0.key, localization: localization) }
+    }
+
+}
+
+extension CustomerCenterConfigData.Screen {
+
+    init(from response: CustomerCenterConfigResponse.Screen, type: String, localization: CustomerCenterConfigData.Localization) {
+        self.type = ScreenType(from: type)
+        self.title = localization.localizedStrings[response.titleKey] ?? ""
+        let subtitleKey = response.subtitleKey ?? ""
+        self.subtitle = localization.localizedStrings[subtitleKey]
+        self.paths = response.paths.map { CustomerCenterConfigData.HelpPath(from: $0, localization: localization) }
+    }
+
+}
+
+extension CustomerCenterConfigData.Appearance {
+
+    init(from response: CustomerCenterConfigResponse.Appearance) {
+        self.mode = CustomerCenterConfigData.Appearance.AppearanceMode(from: response.mode)
+        self.light = CustomerCenterConfigData.Appearance.AppearanceCustomColors(from: response.light)
+        self.dark = CustomerCenterConfigData.Appearance.AppearanceCustomColors(from: response.dark)
+    }
+
+}
+
+extension CustomerCenterConfigData.Appearance.AppearanceCustomColors {
+
+    init(from response: CustomerCenterConfigResponse.Appearance.AppearanceCustomColors) {
+        // swiftlint:disable:next todo
+        // TODO: convert colors to PaywallColor (RCColor)
+        self.accentColor = response.accentColor
+        self.backgroundColor = response.backgroundColor
+        self.textColor = response.textColor
+    }
+
+}
+
+extension CustomerCenterConfigData.Localization {
+
+    init(from response: CustomerCenterConfigResponse.Localization) {
+        self.supported = response.supported
+        self.default = response.default
+        self.localizedStrings = response.localizedStrings
     }
 
 }
 
 extension CustomerCenterConfigData.HelpPath {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath) {
+    init(from response: CustomerCenterConfigResponse.HelpPath, localization: CustomerCenterConfigData.Localization) {
         self.id = response.id
-        self.title = response.title
+        self.title = localization.localizedStrings[response.titleKey] ?? ""
         self.type = CustomerCenterConfigData.HelpPath.PathType(from: response.type.rawValue)
         if let promotionalOfferResponse = response.promotionalOffer {
             self.detail = .promotionalOffer(PromotionalOffer(from: promotionalOfferResponse))
         } else if let feedbackSurveyResponse = response.feedbackSurvey {
-            self.detail = .feedbackSurvey(FeedbackSurvey(from: feedbackSurveyResponse))
+            self.detail = .feedbackSurvey(FeedbackSurvey(from: feedbackSurveyResponse, localization: localization))
         } else {
             self.detail = nil
         }
@@ -187,28 +281,18 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
 
 extension CustomerCenterConfigData.HelpPath.FeedbackSurvey {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey) {
-        self.title = response.title
-        self.options = response.options.map { Option(from: $0) }
+    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey, localization: CustomerCenterConfigData.Localization) {
+        self.title = localization.localizedStrings[response.titleKey] ?? ""
+        self.options = response.options.map { Option(from: $0, localization: localization) }
     }
 
 }
 
 extension CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option) {
+    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option, localization: CustomerCenterConfigData.Localization) {
         self.id = response.id
-        self.title = response.title
-    }
-
-}
-
-extension CustomerCenterConfigData.Screen {
-
-    init(from response: CustomerCenterConfigResponse.Screen) {
-        self.type = ScreenType(from: response.type.rawValue)
-        self.title = response.title
-        self.subtitle = response.subtitle
+        self.title = localization.localizedStrings[response.titleKey] ?? ""
     }
 
 }

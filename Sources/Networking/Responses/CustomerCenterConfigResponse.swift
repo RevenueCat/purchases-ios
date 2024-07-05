@@ -23,12 +23,10 @@ struct CustomerCenterConfigResponse {
 
     struct CustomerCenter {
 
-        let locale: String
-        let paths: [HelpPath]
-        let supportEmail: String
         let appearance: Appearance
-        let screens: [Screen]
+        let screens: [String: Screen]
         let localization: Localization
+        let support: Support
 
     }
 
@@ -43,7 +41,7 @@ struct CustomerCenterConfigResponse {
     struct HelpPath {
 
         let id: String
-        let title: String
+        let titleKey: String
         let type: PathType
         let promotionalOffer: PromotionalOffer?
         let feedbackSurvey: FeedbackSurvey?
@@ -66,13 +64,13 @@ struct CustomerCenterConfigResponse {
 
         struct FeedbackSurvey {
 
-            let title: String
+            let titleKey: String
             let options: [Option]
 
             struct Option {
 
                 let id: String
-                let title: String
+                let titleKey: String
                 let promotionalOffer: PromotionalOffer?
 
             }
@@ -84,10 +82,10 @@ struct CustomerCenterConfigResponse {
     struct Appearance {
 
         let mode: String
-        let light: AppearanceMode
-        let dark: AppearanceMode
+        let light: AppearanceCustomColors
+        let dark: AppearanceCustomColors
 
-        struct AppearanceMode {
+        struct AppearanceCustomColors {
 
             let accentColor: String
             let backgroundColor: String
@@ -98,9 +96,11 @@ struct CustomerCenterConfigResponse {
     }
 
     struct Screen {
-        let title: String
-        let type: ScreenType
-        let subtitle: String?
+
+        let titleKey: String
+        let typeKey: ScreenType
+        let subtitleKey: String?
+        let paths: [HelpPath]
 
         enum ScreenType: String {
 
@@ -109,6 +109,7 @@ struct CustomerCenterConfigResponse {
             case unknown
 
         }
+
     }
 
     struct Support {
@@ -128,8 +129,9 @@ extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equat
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}
-extension CustomerCenterConfigResponse.Appearance.AppearanceMode: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
 
 extension CustomerCenterConfigResponse: HTTPResponseBody {}
