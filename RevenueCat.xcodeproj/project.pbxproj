@@ -16,12 +16,6 @@
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
-		2C8805F92C38589D00CD08EE /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDA2C1D037000E1A461 /* TestData.swift */; };
-		2C8805FB2C38598900CD08EE /* Template7View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8805FA2C38598900CD08EE /* Template7View.swift */; };
-		2C8805FD2C385A4900CD08EE /* TemplatePackageSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8805FC2C385A4900CD08EE /* TemplatePackageSetting.swift */; };
-		2C8805FF2C385A9000CD08EE /* TemplateView+MultiTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8805FE2C385A9000CD08EE /* TemplateView+MultiTier.swift */; };
-		2C8806012C385AE100CD08EE /* ConsistentTierContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8806002C385AE100CD08EE /* ConsistentTierContentView.swift */; };
-		2C8806032C385B0A00CD08EE /* TierSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8806022C385B0A00CD08EE /* TierSelectorView.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
 		2CD2C544278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C541278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */; };
 		2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72941268A823900BFC976 /* Data+Extensions.swift */; };
@@ -650,6 +644,7 @@
 		887A60752C1D037000E1A461 /* TemplateViewConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FD72C1D037000E1A461 /* TemplateViewConfiguration.swift */; };
 		887A60762C1D037000E1A461 /* TemplateViewConfiguration+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FD82C1D037000E1A461 /* TemplateViewConfiguration+Extensions.swift */; };
 		887A60772C1D037000E1A461 /* TemplateViewConfiguration+Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FD92C1D037000E1A461 /* TemplateViewConfiguration+Images.swift */; };
+		887A60782C1D037000E1A461 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDA2C1D037000E1A461 /* TestData.swift */; };
 		887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDB2C1D037000E1A461 /* UserInterfaceIdiom.swift */; };
 		887A607A2C1D037000E1A461 /* Variables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDC2C1D037000E1A461 /* Variables.swift */; };
 		887A607B2C1D037000E1A461 /* Bundle+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDE2C1D037000E1A461 /* Bundle+Extensions.swift */; };
@@ -1033,11 +1028,6 @@
 		2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesSyncAttributesAndOfferingsIfNeededTests.swift; sourceTree = "<group>"; };
 		2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiter.swift; sourceTree = "<group>"; };
 		2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterRests.swift; sourceTree = "<group>"; };
-		2C8805FA2C38598900CD08EE /* Template7View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template7View.swift; sourceTree = "<group>"; };
-		2C8805FC2C385A4900CD08EE /* TemplatePackageSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplatePackageSetting.swift; sourceTree = "<group>"; };
-		2C8805FE2C385A9000CD08EE /* TemplateView+MultiTier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TemplateView+MultiTier.swift"; sourceTree = "<group>"; };
-		2C8806002C385AE100CD08EE /* ConsistentTierContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsistentTierContentView.swift; sourceTree = "<group>"; };
-		2C8806022C385B0A00CD08EE /* TierSelectorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TierSelectorView.swift; sourceTree = "<group>"; };
 		2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformInfo.swift; sourceTree = "<group>"; };
 		2CD2C541278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; path = Tests/TestingApps/PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = SOURCE_ROOT; };
 		2CD72941268A823900BFC976 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
@@ -3364,7 +3354,6 @@
 				887A605F2C1D037000E1A461 /* Views */,
 				887A60602C1D037000E1A461 /* PaywallFontProvider.swift */,
 				887A60612C1D037000E1A461 /* PaywallView.swift */,
-				2C8805FC2C385A4900CD08EE /* TemplatePackageSetting.swift */,
 				887A60622C1D037000E1A461 /* View+PresentPaywall.swift */,
 				887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */,
 				887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */,
@@ -5074,14 +5063,13 @@
 				887A60712C1D037000E1A461 /* PaywallViewConfiguration.swift in Sources */,
 				887A60C82C1D037000E1A461 /* ProgressView.swift in Sources */,
 				887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */,
-				2C8805FD2C385A4900CD08EE /* TemplatePackageSetting.swift in Sources */,
 				887A60CD2C1D037000E1A461 /* PaywallView.swift in Sources */,
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,
+				887A60782C1D037000E1A461 /* TestData.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,
 				88A543E52C37A4AF0039C6A5 /* ConsistentTierContentView.swift in Sources */,
 				887A606E2C1D037000E1A461 /* LocalizedAlertError.swift in Sources */,
-				2C8806012C385AE100CD08EE /* ConsistentTierContentView.swift in Sources */,
 				887A60802C1D037000E1A461 /* Package+VariableDataProvider.swift in Sources */,
 				887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
@@ -5092,13 +5080,11 @@
 				887A60B92C1D037000E1A461 /* Template2View.swift in Sources */,
 				887A606B2C1D037000E1A461 /* TrialOrIntroEligibilityChecker+TestData.swift in Sources */,
 				887A606C2C1D037000E1A461 /* Constants.swift in Sources */,
-				2C8805F92C38589D00CD08EE /* TestData.swift in Sources */,
 				887A60BF2C1D037000E1A461 /* PaywallViewController.swift in Sources */,
 				887A60772C1D037000E1A461 /* TemplateViewConfiguration+Images.swift in Sources */,
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
-				2C8805FB2C38598900CD08EE /* Template7View.swift in Sources */,
 				887A606F2C1D037000E1A461 /* PaywallData+Validation.swift in Sources */,
 				88A543DF2C37A45B0039C6A5 /* TemplatePackageSetting.swift in Sources */,
 				887A60762C1D037000E1A461 /* TemplateViewConfiguration+Extensions.swift in Sources */,
