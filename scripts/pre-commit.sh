@@ -91,11 +91,10 @@ concatenate_circleci_configs() {
   local config_folder=".circleci/configuration"
   local config_files=(
     "$config_folder/base_config.yml"
+    "$config_folder/aliases.yml"
     "$config_folder/commands.yml"
-    "$config_folder/workflows.yml"
     "$config_folder/jobs.yml"
-    "$config_folder/executors.yml"
-    "$config_folder/filters.yml"
+    "$config_folder/workflows.yml"
   )
 
   # Check if any files in the config folder have changed
