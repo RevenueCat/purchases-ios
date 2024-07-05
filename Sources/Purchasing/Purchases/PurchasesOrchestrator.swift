@@ -1129,6 +1129,13 @@ private extension PurchasesOrchestrator {
                         return
                     }
 
+                    // We dont have an AppTransactionJWS, return the cached CustomerInfo
+                    // even if it does not have originalPurchaseDate and originalApplicationVersion
+                    if let cachedCustomerInfo, appTransactionJWS == nil {
+                        completion?(.success(cachedCustomerInfo))
+                        return
+                    }
+
                     self.backend.post(receipt: .empty,
                                       productData: nil,
                                       transactionData: .init(appUserID: currentAppUserID,
