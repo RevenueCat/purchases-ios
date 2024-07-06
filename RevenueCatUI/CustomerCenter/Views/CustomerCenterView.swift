@@ -26,13 +26,17 @@ import SwiftUI
 @available(visionOS, unavailable)
 public struct CustomerCenterView: View {
 
-    @StateObject private var viewModel = CustomerCenterViewModel()
+    @StateObject
+    private var viewModel = CustomerCenterViewModel()
+    @StateObject
+    private var completionHandler: CustomerCenterCompletionHandler = .default()
 
     /// Create a view to handle common customer support tasks
     public init() {}
 
     fileprivate init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
+        self._completionHandler = .init(wrappedValue: .default())
     }
 
     // swiftlint:disable:next missing_docs
@@ -49,6 +53,8 @@ public struct CustomerCenterView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .preference(key: CustomerCenterResultPreferenceKey.self,
+                    value: .init(status: self.completionHandler.customerCenterResult?.status))
     }
 
 }
@@ -72,12 +78,15 @@ private extension CustomerCenterView {
         if viewModel.hasSubscriptions {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
-                ManageSubscriptionsView(screen: screen, appearance: configuration.appearance)
+                ManageSubscriptionsView(screen: screen,
+                                        appearance: configuration.appearance,
+                                        completionHandler: completionHandler)
             } else {
                 WrongPlatformView()
             }
         } else {
-            NoSubscriptionsView(configuration: configuration)
+            NoSubscriptionsView(configuration: configuration,
+                                completionHandler: completionHandler)
         }
     }
 

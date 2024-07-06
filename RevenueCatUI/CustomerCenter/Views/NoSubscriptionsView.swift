@@ -24,19 +24,24 @@ import SwiftUI
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 struct NoSubscriptionsView: View {
-    
-    init(configuration: CustomerCenterConfigData) {
-        self.configuration = configuration
-    }
 
     // swiftlint:disable:next todo
     // TODO: build screen using this configuration
     private let configuration: CustomerCenterConfigData
-
+    
+    @Environment(\.openURL)
+    private var openURL
+    @ObservedObject
+    private var completionHandler: CustomerCenterCompletionHandler
     @Environment(\.dismiss)
     private var dismiss
     @State
     private var showRestoreAlert: Bool = false
+
+    init(configuration: CustomerCenterConfigData, completionHandler: CustomerCenterCompletionHandler) {
+        self.configuration = configuration
+        _completionHandler = .init(initialValue: completionHandler)
+    }
 
     var body: some View {
         VStack {
@@ -54,6 +59,14 @@ struct NoSubscriptionsView: View {
             }
             .restorePurchasesAlert(isPresented: $showRestoreAlert)
             .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.configuration.appearance))
+            
+            Button("Contact support") {
+                Task {
+                    openURL(URLUtilities.createMailURL()!)
+                }
+                completionHandler.supportContacted()
+            }
+            .padding()
 
             Button("Cancel") {
                 dismiss()
@@ -75,7 +88,8 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData)
+        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
+                            completionHandler: .default())
     }
 
 }

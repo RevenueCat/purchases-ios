@@ -85,14 +85,16 @@ enum CustomerCenterConfigTestData {
                     ]
                   )
         ],
+        // swiftlint:disable force_try
         appearance: .init(
-            mode: .custom(accentColor: try! RCColor(light: RCColor(stringRepresentation: "#ffffff"), 
+            mode: .custom(accentColor: try! RCColor(light: RCColor(stringRepresentation: "#ffffff"),
                                                     dark: try! RCColor(stringRepresentation: "#000000")),
-                         backgroundColor: try! RCColor(light: RCColor(stringRepresentation: "#000000"), 
+                         backgroundColor: try! RCColor(light: RCColor(stringRepresentation: "#000000"),
                                                        dark: try! RCColor(stringRepresentation: "#ffffff")),
-                         textColor: try! RCColor(light: RCColor(stringRepresentation: "#000000"), 
+                         textColor: try! RCColor(light: RCColor(stringRepresentation: "#000000"),
                                                  dark: try! RCColor(stringRepresentation: "#ffffff")))
         ),
+        // swiftlint:enable force_try
         localization: .init(
             locale: "en_US",
             localizedStrings: [
