@@ -143,7 +143,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         let appearance = try XCTUnwrap(customerCenter.appearance)
 
         expect(customerCenter.localization.locale) == "en_US"
-        expect(customerCenter.localization.localizedStrings).to(haveCount(12))
+        expect(customerCenter.localization.localizedStrings).to(haveCount(2))
 
         expect(appearance.dark.accentColor) == "#ffffff"
         expect(appearance.dark.backgroundColor) == "#000000"
@@ -297,7 +297,8 @@ private extension BackendGetCustomerCenterConfigTests {
                         [
                             "id": "nwodkdnfaoeb",
                             "promotional_offer": [
-                                "ios_offer_id": "rc-refund-offer"
+                                "ios_offer_id": "rc-refund-offer",
+                                "eligible": true
                             ],
                             "title": "Request a refund",
                             "type": "REFUND_REQUEST"
@@ -313,14 +314,16 @@ private extension BackendGetCustomerCenterConfigTests {
                                     [
                                         "id": "iewrthals",
                                         "promotional_offer": [
-                                            "ios_offer_id": "rc-cancel-offer"
+                                            "ios_offer_id": "rc-cancel-offer",
+                                            "eligible": false
                                         ],
                                         "title": "Too expensive"
                                     ],
                                     [
                                         "id": "qklpadsfj",
                                         "promotional_offer": [
-                                            "ios_offer_id": "rc-cancel-offer"
+                                            "ios_offer_id": "rc-cancel-offer",
+                                            "eligible": false
                                         ],
                                         "title": "Don't use the app"
                                     ],
