@@ -47,7 +47,7 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path2",
                                 title: "Path 2",
                                 type: .cancel,
-                                promotionalOffer: .init(iosOfferId: "offer_id"),
+                                promotionalOffer: .init(iosOfferId: "offer_id", eligible: true),
                                 feedbackSurvey: nil
                             ),
                             .init(
@@ -101,6 +101,7 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(paths?[1].type.rawValue) == "CANCEL"
         if case let .promotionalOffer(promotionalOffer) = paths?[1].detail {
             expect(promotionalOffer.iosOfferId) == "offer_id"
+            expect(promotionalOffer.eligible).to(beTrue())
         } else {
             fail("Expected promotionalOffer detail")
         }

@@ -93,9 +93,11 @@ public struct CustomerCenterConfigData {
         public struct PromotionalOffer {
 
             public let iosOfferId: String
+            public let eligible: Bool
 
-            public init(iosOfferId: String) {
+            public init(iosOfferId: String, eligible: Bool) {
                 self.iosOfferId = iosOfferId
+                self.eligible = eligible
             }
 
         }
@@ -295,6 +297,7 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
 
     init(from response: CustomerCenterConfigResponse.HelpPath.PromotionalOffer) {
         self.iosOfferId = response.iosOfferId
+        self.eligible = response.eligible
     }
 
 }

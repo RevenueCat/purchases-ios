@@ -38,8 +38,9 @@ func checkHelpPathDetail(_ detail: CustomerCenterConfigData.HelpPath.PathDetail)
 
 func checkPromotionalOffer(_ offer: CustomerCenterConfigData.HelpPath.PromotionalOffer) {
     let iosOfferId: String = offer.iosOfferId
+    let eligible: Bool = offer.eligible
 
-    let _: CustomerCenterConfigData.HelpPath.PromotionalOffer = .init(iosOfferId: iosOfferId)
+    let _: CustomerCenterConfigData.HelpPath.PromotionalOffer = .init(iosOfferId: iosOfferId, eligible: eligible)
 }
 
 func checkFeedbackSurvey(_ survey: CustomerCenterConfigData.HelpPath.FeedbackSurvey) {
