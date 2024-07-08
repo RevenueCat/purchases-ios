@@ -274,7 +274,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
 
 private extension BackendGetCustomerCenterConfigTests {
 
-    static let customerCenterResponse: [String: Any?] = [
+    static let customerCenterResponse: [String: Any] = [
         "customer_center": [
             "localization": [
                 "locale": "en_US",
