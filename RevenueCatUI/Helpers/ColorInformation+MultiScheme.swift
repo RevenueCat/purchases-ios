@@ -54,9 +54,9 @@ extension PaywallData.Configuration.Colors {
             tierControlForeground: .init(light: light.tierControlForeground,
                                          dark: dark.tierControlForeground),
             tierControlSelectedBackground: .init(light: light.tierControlSelectedBackground,
-                                         dark: dark.tierControlSelectedBackground),
+                                                 dark: dark.tierControlSelectedBackground),
             tierControlSelectedForeground: .init(light: light.tierControlSelectedForeground,
-                                         dark: dark.tierControlSelectedForeground)
+                                                 dark: dark.tierControlSelectedForeground)
         )
     }
 
