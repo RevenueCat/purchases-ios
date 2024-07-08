@@ -74,6 +74,7 @@ struct Template7View: TemplateViewType {
             }
         }
             .foregroundColor(self.currentColors.text1Color)
+            .background(self.currentColors.backgroundColor)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(Constants.fastAnimation, value: self.selectedPackage)
             .notify(
@@ -195,9 +196,10 @@ struct Template7View: TemplateViewType {
             tierNames: self.tierNames,
             selectedTier: self.$selectedTier,
             fonts: self.configuration.fonts,
-            backgroundColor: self.currentColors.unselectedOutline,
-            textColor: self.currentColors.text1Color,
-            accentColor: self.currentColors.selectedTier
+            backgroundColor: self.currentColors.tierControlBackground,
+            textColor: self.currentColors.tierControlForeground,
+            selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
+            selectedTextColor: self.currentColors.tierControlSelectedForeground
         )
         .onChangeOf(self.selectedTier) { tier in
             withAnimation(Constants.tierChangeAnimation) {
@@ -211,9 +213,10 @@ struct Template7View: TemplateViewType {
             tier: self.selectedTier,
             name: self.tierNames[self.selectedTier]!,
             fonts: self.configuration.fonts,
-            backgroundColor: self.currentColors.unselectedOutline,
-            textColor: self.currentColors.text1Color,
-            accentColor: self.currentColors.selectedTier
+            backgroundColor: self.currentColors.tierControlBackground,
+            textColor: self.currentColors.tierControlForeground,
+            selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
+            selectedTextColor: self.currentColors.tierControlSelectedForeground
         )
     }
 
@@ -462,13 +465,18 @@ struct Template7View: TemplateViewType {
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension PaywallData.Configuration.Colors {
 
-    var featureIcon: Color { self.accent3Color }
-    var selectedOutline: Color { self.accent3Color }
-    var unselectedOutline: Color { self.accent2Color }
+    var featureIcon: Color { self.accent1Color }
+    var selectedOutline: Color { self.accent2Color }
+    var unselectedOutline: Color { self.accent3Color }
     var selectedDiscountText: Color { self.text2Color }
     var unselectedDiscountText: Color { self.text3Color }
     var selectedTier: Color { self.accent1Color }
     var callToAction: Color { self.selectedTier }
+
+    var tierControlBackground: Color { self.tierControlBackgroundColor ?? self.accent1Color }
+    var tierControlForeground: Color { self.tierControlForegroundColor ?? self.text1Color }
+    var tierControlSelectedBackground: Color { self.tierControlSelectedBackgroundColor ?? self.unselectedDiscountText }
+    var tierControlSelectedForeground: Color { self.tierControlSelectedForegroundColor ?? self.text1Color }
 
 }
 

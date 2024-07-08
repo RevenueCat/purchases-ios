@@ -476,6 +476,14 @@ extension PaywallData.Configuration {
         public var accent3: PaywallColor?
         /// Color for the close button of the paywall.
         public var closeButton: PaywallColor?
+        /// Color for the tier selector background color.
+        public var tierControlBackground: PaywallColor?
+        /// Color for the tier selector foreground color.
+        public var tierControlForeground: PaywallColor?
+        /// Color for the tier selector background color for selected tier.
+        public var tierControlSelectedBackground: PaywallColor?
+        /// Color for the tier selector foreground color for selected tier.
+        public var tierControlSelectedForeground: PaywallColor?
 
         // swiftlint:disable:next missing_docs
         public init(
@@ -489,7 +497,11 @@ extension PaywallData.Configuration {
             accent1: PaywallColor? = nil,
             accent2: PaywallColor? = nil,
             accent3: PaywallColor? = nil,
-            closeButton: PaywallColor? = nil
+            closeButton: PaywallColor? = nil,
+            tierControlBackground: PaywallColor? = nil,
+            tierControlForeground: PaywallColor? = nil,
+            tierControlSelectedBackground: PaywallColor? = nil,
+            tierControlSelectedForeground: PaywallColor? = nil
         ) {
             self.background = background
             self.text1 = text1
@@ -502,6 +514,10 @@ extension PaywallData.Configuration {
             self.accent2 = accent2
             self.accent3 = accent3
             self.closeButton = closeButton
+            self.tierControlBackground = tierControlBackground
+            self.tierControlForeground = tierControlForeground
+            self.tierControlSelectedBackground = tierControlSelectedBackground
+            self.tierControlSelectedForeground = tierControlSelectedForeground
         }
     }
 
