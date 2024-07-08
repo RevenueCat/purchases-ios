@@ -28,7 +28,7 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     }
 
     func testConfiguration() throws {
-        expect(self.paywall.templateName) == "7_disabled"
+        expect(self.paywall.templateName) == "7"
         expect(self.paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(self.paywall.revision) == 7
         expect(self.paywall.config.packages).to(beEmpty())
