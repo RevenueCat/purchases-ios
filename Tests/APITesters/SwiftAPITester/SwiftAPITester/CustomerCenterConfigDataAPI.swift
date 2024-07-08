@@ -9,7 +9,7 @@ import Foundation
 import RevenueCat
 
 func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
-    let screens: [CustomerCenterConfigData.Screen] = data.screens
+    let screens: [CustomerCenterConfigData.Screen.ScreenType: CustomerCenterConfigData.Screen] = data.screens
     let appearance: CustomerCenterConfigData.Appearance = data.appearance
     let localization: CustomerCenterConfigData.Localization = data.localization
 

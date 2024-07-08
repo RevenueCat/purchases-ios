@@ -138,14 +138,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .health,
                 .getOfferings,
-                .getProductEntitlementMapping,
-                .getCustomerCenterConfig:
+                .getProductEntitlementMapping:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
-                .postOfferForSigning:
+                .postOfferForSigning,
+                .getCustomerCenterConfig:
             return false
         }
     }

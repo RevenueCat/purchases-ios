@@ -22,7 +22,7 @@ import XCTest
 @available(watchOS, unavailable)
 class CustomerCenterConfigDataTests: TestCase {
 
-    func testCustomerCenterConfigDataConversion() {
+    func testCustomerCenterConfigDataConversion() throws {
         let mockResponse = CustomerCenterConfigResponse(
             customerCenter: .init(
                 appearance: .init(
@@ -59,7 +59,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                       options: [
                                                         .init(id: "id_1",
                                                               title: "option 1",
-                                                              promotionalOffer: .init(iosOfferId: "offer_id_1"))
+                                                              promotionalOffer: .init(iosOfferId: "offer_id_1",
+                                                                                      eligible: true))
                                                       ])
                             )
                         ]
@@ -84,32 +85,33 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.appearance.dark.textColor) == "#00FF00"
 
         expect(configData.screens.count) == 1
-        expect(configData.screens.first?.type.rawValue) == "MANAGEMENT"
-        expect(configData.screens.first?.title) == "Management Screen"
-        expect(configData.screens.first?.subtitle) == "Manage your account"
-        expect(configData.screens.first?.paths.count) == 3
+        let managementScreen = try XCTUnwrap(configData.screens[.management])
+        expect(managementScreen.type.rawValue) == "MANAGEMENT"
+        expect(managementScreen.title) == "Management Screen"
+        expect(managementScreen.subtitle) == "Manage your account"
+        expect(managementScreen.paths.count) == 3
 
-        let paths = configData.screens.first?.paths
+        let paths = try XCTUnwrap(managementScreen.paths)
 
-        expect(paths?[0].id) == "path1"
-        expect(paths?[0].title) == "Path 1"
-        expect(paths?[0].type.rawValue) == "MISSING_PURCHASE"
-        expect(paths?[0].detail).to(beNil())
+        expect(paths[0].id) == "path1"
+        expect(paths[0].title) == "Path 1"
+        expect(paths[0].type.rawValue) == "MISSING_PURCHASE"
+        expect(paths[0].detail).to(beNil())
 
-        expect(paths?[1].id) == "path2"
-        expect(paths?[1].title) == "Path 2"
-        expect(paths?[1].type.rawValue) == "CANCEL"
-        if case let .promotionalOffer(promotionalOffer) = paths?[1].detail {
+        expect(paths[1].id) == "path2"
+        expect(paths[1].title) == "Path 2"
+        expect(paths[1].type.rawValue) == "CANCEL"
+        if case let .promotionalOffer(promotionalOffer) = paths[1].detail {
             expect(promotionalOffer.iosOfferId) == "offer_id"
             expect(promotionalOffer.eligible).to(beTrue())
         } else {
             fail("Expected promotionalOffer detail")
         }
 
-        expect(paths?[2].id) == "path3"
-        expect(paths?[2].title) == "Path 3"
-        expect(paths?[2].type.rawValue) == "CHANGE_PLANS"
-        if case let .feedbackSurvey(feedbackSurvey) = paths?[2].detail {
+        expect(paths[2].id) == "path3"
+        expect(paths[2].title) == "Path 3"
+        expect(paths[2].type.rawValue) == "CHANGE_PLANS"
+        if case let .feedbackSurvey(feedbackSurvey) = paths[2].detail {
             expect(feedbackSurvey.title) == "survey title"
             expect(feedbackSurvey.options.count) == 1
             expect(feedbackSurvey.options.first?.id) == "id_1"
@@ -118,4 +120,5 @@ class CustomerCenterConfigDataTests: TestCase {
             fail("Expected feedbackSurvey detail")
         }
     }
+
 }
