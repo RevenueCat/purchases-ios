@@ -58,6 +58,7 @@ struct CustomerCenterConfigResponse {
         struct PromotionalOffer {
 
             let iosOfferId: String
+            let eligible: Bool
 
         }
 
