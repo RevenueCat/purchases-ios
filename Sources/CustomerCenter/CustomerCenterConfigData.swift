@@ -19,11 +19,11 @@ import Foundation
 // swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
-    public let screens: [Screen]
+    public let screens: [Screen.ScreenType: Screen]
     public let appearance: Appearance
     public let localization: Localization
 
-    public init(screens: [Screen], appearance: Appearance, localization: Localization) {
+    public init(screens: [Screen.ScreenType: Screen], appearance: Appearance, localization: Localization) {
         self.screens = screens
         self.appearance = appearance
         self.localization = localization
@@ -207,14 +207,6 @@ public struct CustomerCenterConfigData {
 
     }
 
-    public func screen(ofType type: Screen.ScreenType) -> Screen? {
-        return screens.first { $0.type == type }
-    }
-
-    public subscript(type: Screen.ScreenType) -> Screen? {
-        return screen(ofType: type)
-    }
-
 }
 
 extension CustomerCenterConfigData {
@@ -223,9 +215,10 @@ extension CustomerCenterConfigData {
         let localization = Localization(from: response.customerCenter.localization)
         self.localization = localization
         self.appearance = Appearance(from: response.customerCenter.appearance)
-        self.screens = response.customerCenter.screens.map {
-            Screen(from: $0.value, type: $0.key, localization: localization)
-        }
+        self.screens = Dictionary(uniqueKeysWithValues: response.customerCenter.screens.map {
+            let type = CustomerCenterConfigData.Screen.ScreenType(from: $0.key)
+            return (type, Screen(from: $0.value, localization: localization))
+        })
     }
 
 }
@@ -233,9 +226,8 @@ extension CustomerCenterConfigData {
 extension CustomerCenterConfigData.Screen {
 
     init(from response: CustomerCenterConfigResponse.Screen,
-         type: String,
          localization: CustomerCenterConfigData.Localization) {
-        self.type = ScreenType(from: type)
+        self.type = ScreenType(from: response.type.rawValue)
         self.title = response.title
         self.subtitle = response.subtitle
         self.paths = response.paths.map { CustomerCenterConfigData.HelpPath(from: $0) }
