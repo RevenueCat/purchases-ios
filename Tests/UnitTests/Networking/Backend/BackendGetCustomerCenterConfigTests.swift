@@ -287,7 +287,7 @@ private extension BackendGetCustomerCenterConfigTests {
                 ]
             ],
             "screens": [
-                "management": [
+                "MANAGEMENT": [
                     "paths": [
                         [
                             "id": "ownmsldfow",
@@ -339,7 +339,7 @@ private extension BackendGetCustomerCenterConfigTests {
                     "title": "How can we help?",
                     "type": "MANAGEMENT"
                 ],
-                "no_active": [
+                "NO_ACTIVE": [
                     "paths": [
                         [
                             "id": "9q9719171o",
