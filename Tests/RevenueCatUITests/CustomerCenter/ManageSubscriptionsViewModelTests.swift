@@ -173,7 +173,8 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ManageSubscriptionsViewModelTests {
 
-    static let screen: CustomerCenterConfigData.Screen = CustomerCenterConfigTestData.customerCenterData[.management]!
+    static let screen: CustomerCenterConfigData.Screen =
+    CustomerCenterConfigTestData.customerCenterData.screens[.management]!
 
     static func createMockProduct() -> StoreProduct {
         // Using SK1 products because they can be mocked, but CustomerCenterViewModel

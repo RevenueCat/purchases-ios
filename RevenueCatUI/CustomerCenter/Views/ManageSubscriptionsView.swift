@@ -181,7 +181,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
         let viewModel = ManageSubscriptionsViewModel(
-            screen: CustomerCenterConfigTestData.customerCenterData[.management]!,
+            screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformation)
         ManageSubscriptionsView(viewModel: viewModel)
     }

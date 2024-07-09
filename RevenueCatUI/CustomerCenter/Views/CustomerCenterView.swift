@@ -71,7 +71,7 @@ private extension CustomerCenterView {
     func destinationView(configuration: CustomerCenterConfigData) -> some View {
         if viewModel.hasSubscriptions {
             if viewModel.subscriptionsAreFromApple,
-                let screen = configuration[.management] {
+               let screen = configuration.screens[.management] {
                 ManageSubscriptionsView(screen: screen)
             } else {
                 WrongPlatformView()

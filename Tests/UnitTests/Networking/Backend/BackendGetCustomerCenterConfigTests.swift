@@ -56,7 +56,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.httpClient.calls[0].headers["X-Supported-Locales"]) == "en_EN,es_ES"
+        expect(self.httpClient.calls[0].headers["X-Preferred-Locales"]) == "en_EN,es_ES"
     }
 
     func testGetCustomerCenterConfigCallsHTTPMethodWithRandomDelay() {
@@ -281,11 +281,11 @@ private extension BackendGetCustomerCenterConfigTests {
                 "localized_strings": [
                     "cancel": "Cancel",
                     "back": "Back"
-                ],
+                ] as [String: Any],
                 "supported": [
                     "en_US"
-                ]
-            ],
+                ] as [Any]
+            ] as [String: Any],
             "screens": [
                 "MANAGEMENT": [
                     "paths": [
@@ -293,21 +293,21 @@ private extension BackendGetCustomerCenterConfigTests {
                             "id": "ownmsldfow",
                             "title": "Didn't receive purchase",
                             "type": "MISSING_PURCHASE"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "nwodkdnfaoeb",
                             "promotional_offer": [
                                 "ios_offer_id": "rc-refund-offer",
                                 "eligible": true
-                            ],
+                            ] as [String: Any],
                             "title": "Request a refund",
                             "type": "REFUND_REQUEST"
-                        ],
+                        ] as [String: Any],
                         [
                             "id": "nfoaiodifj9",
                             "title": "Change plans",
                             "type": "CHANGE_PLANS"
-                        ],
+                        ] as [String: Any],
                         [
                             "feedback_survey": [
                                 "options": [
@@ -316,62 +316,62 @@ private extension BackendGetCustomerCenterConfigTests {
                                         "promotional_offer": [
                                             "ios_offer_id": "rc-cancel-offer",
                                             "eligible": false
-                                        ],
+                                        ] as [String: Any],
                                         "title": "Too expensive"
-                                    ],
+                                    ] as [String: Any],
                                     [
                                         "id": "qklpadsfj",
                                         "promotional_offer": [
                                             "ios_offer_id": "rc-cancel-offer",
                                             "eligible": false
-                                        ],
+                                        ] as [String: Any],
                                         "title": "Don't use the app"
-                                    ],
+                                    ] as [String: Any],
                                     [
                                         "id": "jargnapocps",
                                         "title": "Bought by mistake"
-                                    ]
-                                ],
+                                    ] as [String: Any]
+                                ] as [Any],
                                 "title": "Why are you cancelling?"
-                            ],
+                            ] as [String: Any],
                             "id": "jnkasldfhas",
                             "title": "Cancel subscription",
                             "type": "CANCEL"
-                        ]
-                    ],
+                        ] as [String: Any]
+                    ] as [Any],
                     "title": "How can we help?",
                     "type": "MANAGEMENT"
-                ],
+                ] as [String: Any],
                 "NO_ACTIVE": [
                     "paths": [
                         [
                             "id": "9q9719171o",
                             "title": "Check purchases",
                             "type": "MISSING_PURCHASE"
-                        ]
-                    ],
+                        ] as [String: Any]
+                    ] as [Any],
                     "subtitle": "We can try checking your account for any previous purchases",
                     "title": "No subscriptions found",
                     "type": "NO_ACTIVE"
-                ]
-            ],
+                ] as [String: Any]
+            ] as [String: Any],
             "appearance": [
                 "dark": [
                     "accent_color": "#ffffff",
                     "background_color": "#000000",
                     "text_color": "#000000"
-                ],
+                ] as [String: Any],
                 "light": [
                     "accent_color": "#000000",
                     "background_color": "#ffffff",
                     "text_color": "#ffffff"
-                ],
+                ] as [String: Any],
                 "mode": "CUSTOM"
-            ],
+            ] as [String: Any],
             "support": [
                 "email": "support@revenuecat.com"
-            ]
-        ]
+            ] as [String: Any]
+        ] as [String: Any]
     ]
 
 }
