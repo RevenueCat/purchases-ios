@@ -482,24 +482,7 @@ internal enum TestData {
                         header: "954459_1701267532.jpeg"
                     )
                 ],
-                colors: .init(
-                    light: .init(
-                        background: "#ffffff",
-                        text1: "#000000",
-                        text2: "#adf5c5",
-                        text3: "#b15d5d",
-                        callToActionForeground: "#ffffff",
-                        accent2: "#7676801F"
-                    ),
-                    dark: .init(
-                        background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
-                        text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
-                        text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
-                        text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
-                        callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
-                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
-                    )
-                ),
+                colors: .init(light: .init(), dark: .init()),
                 colorsByTier: [
                     "basic": .init(
                         light: .init(
@@ -510,8 +493,12 @@ internal enum TestData {
                             callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,
                             callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1).asPaywallColor,
-                            accent2: "#7676801F",
-                            accent3: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor
+                            accent2: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor,
+                            accent3: "#7676801F",
+                            tierControlBackground: "#dcdcdc",
+                            tierControlForeground: "#000000",
+                            tierControlSelectedBackground: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor,
+                            tierControlSelectedForeground: "#ffffff"
                         )
                     ),
                     "standard": .init(
@@ -524,7 +511,11 @@ internal enum TestData {
                             callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
                             accent2: "#7676801F",
-                            accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor
+                            accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor,
+                            tierControlBackground: "#dcdcdc",
+                            tierControlForeground: "#000000",
+                            tierControlSelectedBackground: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor,
+                            tierControlSelectedForeground: "#ffffff"
                         )
                     ),
                     "premium": .init(
@@ -537,7 +528,11 @@ internal enum TestData {
                             callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1).asPaywallColor,
                             accent2: "#7676801F",
-                            accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor
+                            accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor,
+                            tierControlBackground: "#dcdcdc",
+                            tierControlForeground: "#000000",
+                            tierControlSelectedBackground: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor,
+                            tierControlSelectedForeground: "#ffffff"
                         )
                     )
                 ],
@@ -545,8 +540,8 @@ internal enum TestData {
                     .init(
                         id: "basic",
                         packages: [
-                            TestData.threeMonthPackage.identifier,
-                            TestData.lifetimePackage.identifier
+                            TestData.annualPackage.identifier,
+                            TestData.monthlyPackage.identifier
                         ],
                         defaultPackage: TestData.threeMonthPackage.identifier
                     ),
@@ -554,7 +549,7 @@ internal enum TestData {
                         id: "standard",
                         packages: [
                             TestData.weeklyPackage.identifier,
-                            TestData.monthlyPackage.identifier
+                            TestData.threeMonthPackage.identifier
                         ],
                         defaultPackage: TestData.weeklyPackage.identifier
                     ),
@@ -562,7 +557,7 @@ internal enum TestData {
                         id: "premium",
                         packages: [
                             TestData.sixMonthPackage.identifier,
-                            TestData.annualPackage.identifier
+                            TestData.lifetimePackage.identifier
                         ],
                         defaultPackage: TestData.annualPackage.identifier
                     )
