@@ -51,6 +51,9 @@
       "offer_details" : "{{ total_price_and_per_month }}",
       "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.",
       "offer_name" : null,
+      "offer_overrides" : {
+
+      },
       "subtitle" : null,
       "tier_name" : null,
       "title" : "{{ app_name }}"
