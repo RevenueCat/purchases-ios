@@ -57,3 +57,4 @@ Tests/InstallationTests/XcodeDirectInstallation/XcodeDirectInstallation.xcodepro
 
 # fastlane
 fastlane/.env
+.vscode/settings.json

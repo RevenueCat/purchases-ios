@@ -41,11 +41,13 @@ public struct CustomerCenterView: View {
             if !viewModel.isLoaded {
                 ProgressView()
             } else {
-                destinationView()
+                if let configuration = viewModel.configuration {
+                    destinationView(configuration: configuration)
+                }
             }
         }
         .task {
-            await checkAndLoadSubscriptions()
+            await loadInformationIfNeeded()
         }
     }
 
@@ -58,22 +60,24 @@ public struct CustomerCenterView: View {
 @available(visionOS, unavailable)
 private extension CustomerCenterView {
 
-    func checkAndLoadSubscriptions() async {
+    func loadInformationIfNeeded() async {
         if !viewModel.isLoaded {
             await viewModel.loadHasSubscriptions()
+            await viewModel.loadCustomerCenterConfig()
         }
     }
 
     @ViewBuilder
-    func destinationView() -> some View {
+    func destinationView(configuration: CustomerCenterConfigData) -> some View {
         if viewModel.hasSubscriptions {
-            if viewModel.subscriptionsAreFromApple {
-                ManageSubscriptionsView()
+            if viewModel.subscriptionsAreFromApple,
+               let screen = configuration.screens[.management] {
+                ManageSubscriptionsView(screen: screen)
             } else {
                 WrongPlatformView()
             }
         } else {
-            NoSubscriptionsView()
+            NoSubscriptionsView(configuration: configuration)
         }
     }
 

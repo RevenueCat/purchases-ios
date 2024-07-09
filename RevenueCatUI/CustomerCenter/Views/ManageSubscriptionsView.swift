@@ -29,9 +29,12 @@ struct ManageSubscriptionsView: View {
     var openURL
 
     @StateObject
-    private var viewModel = ManageSubscriptionsViewModel()
+    private var viewModel: ManageSubscriptionsViewModel
 
-    init() { }
+    init(screen: CustomerCenterConfigData.Screen) {
+        let viewModel = ManageSubscriptionsViewModel(screen: screen)
+        self._viewModel = .init(wrappedValue: viewModel)
+    }
 
     fileprivate init(viewModel: ManageSubscriptionsViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
@@ -39,17 +42,17 @@ struct ManageSubscriptionsView: View {
 
     var body: some View {
         VStack {
-            if viewModel.isLoaded {
-                HeaderView(viewModel: viewModel)
+            if self.viewModel.isLoaded {
+                HeaderView(viewModel: self.viewModel)
 
                 if let subscriptionInformation = self.viewModel.subscriptionInformation {
                     SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                            refundRequestStatusMessage: viewModel.refundRequestStatusMessage)
+                                            refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                 }
 
                 Spacer()
 
-                ManageSubscriptionsButtonsView(viewModel: viewModel)
+                ManageSubscriptionsButtonsView(viewModel: self.viewModel)
             } else {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
@@ -70,7 +73,7 @@ struct ManageSubscriptionsView: View {
 private extension ManageSubscriptionsView {
 
     func loadInformationIfNeeded() async {
-        if !viewModel.isLoaded {
+        if !self.viewModel.isLoaded {
             await viewModel.loadScreen()
         }
     }
@@ -88,11 +91,9 @@ struct HeaderView: View {
     private(set) var viewModel: ManageSubscriptionsViewModel
 
     var body: some View {
-        if let configuration = viewModel.configuration {
-            Text(configuration.title)
-                .font(.title)
-                .padding()
-        }
+        Text(self.viewModel.screen.title)
+            .font(.title)
+            .padding()
     }
 
 }
@@ -148,23 +149,21 @@ struct ManageSubscriptionsButtonsView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            if let configuration = viewModel.configuration {
-                let filteredPaths = configuration.paths.filter { path in
-                    #if targetEnvironment(macCatalyst)
-                        return path.type == .refundRequest
-                    #else
-                        return true
-                    #endif
-                }
-                ForEach(filteredPaths, id: \.id) { path in
-                    AsyncButton(action: {
-                        await self.viewModel.handleAction(for: path)
-                    }, label: {
-                        Text(path.title)
-                    })
-                    .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
-                    .buttonStyle(ManageSubscriptionsButtonStyle())
-                }
+            let filteredPaths = self.viewModel.screen.paths.filter { path in
+                #if targetEnvironment(macCatalyst)
+                    return path.type == .refundRequest
+                #else
+                    return true
+                #endif
+            }
+            ForEach(filteredPaths, id: \.id) { path in
+                AsyncButton(action: {
+                    await self.viewModel.handleAction(for: path)
+                }, label: {
+                    Text(path.title)
+                })
+                .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+                .buttonStyle(ManageSubscriptionsButtonStyle())
             }
         }
     }
@@ -182,7 +181,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
         let viewModel = ManageSubscriptionsViewModel(
-            configuration: CustomerCenterConfigTestData.customerCenterData,
+            screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformation)
         ManageSubscriptionsView(viewModel: viewModel)
     }

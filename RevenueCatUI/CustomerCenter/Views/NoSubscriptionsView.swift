@@ -25,8 +25,19 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct NoSubscriptionsView: View {
 
-    @Environment(\.dismiss) var dismiss
-    @State private var showRestoreAlert: Bool = false
+    // swiftlint:disable:next todo
+    // TODO: build screen using this configuration
+    let configuration: CustomerCenterConfigData
+
+    @Environment(\.dismiss)
+    var dismiss
+
+    @State
+    private var showRestoreAlert: Bool = false
+
+    init(configuration: CustomerCenterConfigData) {
+        self.configuration = configuration
+    }
 
     var body: some View {
         VStack {
@@ -65,7 +76,7 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView()
+        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData)
     }
 
 }

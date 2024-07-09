@@ -64,6 +64,7 @@ class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.isLoaded) == false
 
         viewModel.state = .success
+        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData
 
         expect(viewModel.isLoaded) == true
     }
