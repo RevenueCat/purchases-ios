@@ -13,8 +13,6 @@
 		1E568B512ACC6A8300D3C12F /* StoreMessageTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */; };
 		1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */; };
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
-		2C5F71F72C3D6C2600B0FE4B /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
-		2C5F71F82C3D6C2600B0FE4B /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
@@ -4184,7 +4182,6 @@
 				887A60982C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60B52C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A609E2C1D037000E1A461 /* Localizable.strings in Resources */,
-				2C5F71F82C3D6C2600B0FE4B /* background.heic in Resources */,
 				887A60952C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A608D2C1D037000E1A461 /* icons.xcassets in Resources */,
 				887A60AD2C1D037000E1A461 /* Localizable.strings in Resources */,
@@ -4198,7 +4195,6 @@
 				887A60932C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A609F2C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60AC2C1D037000E1A461 /* Localizable.strings in Resources */,
-				2C5F71F72C3D6C2600B0FE4B /* header.heic in Resources */,
 				887A60942C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60A92C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60B12C1D037000E1A461 /* Localizable.strings in Resources */,
