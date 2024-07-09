@@ -4,34 +4,28 @@
     "blurred_background_image" : false,
     "colors" : {
       "dark" : {
-        "accent2" : "#CE0755",
-        "background" : "#000000",
-        "call_to_action_foreground" : "#88FF6A",
-        "text1" : "#FFFFFF",
-        "text2" : "#CDCDCD",
-        "text3" : "#000000"
+
       },
       "light" : {
-        "accent2" : "#7676801F",
-        "background" : "#ffffff",
-        "call_to_action_foreground" : "#ffffff",
-        "text1" : "#000000",
-        "text2" : "#adf5c5",
-        "text3" : "#b15d5d"
+
       }
     },
     "colors_by_tier" : {
       "basic" : {
         "light" : {
           "accent1" : "#2D7FC1",
-          "accent2" : "#7676801F",
-          "accent3" : "#100031",
+          "accent2" : "#100031",
+          "accent3" : "#7676801F",
           "background" : "#ffffff",
           "call_to_action_background" : "#42C1F7",
           "call_to_action_foreground" : "#ffffff",
           "text1" : "#000000",
           "text2" : "#adf5c5",
-          "text3" : "#b15d5d"
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
         }
       },
       "premium" : {
@@ -44,7 +38,11 @@
           "call_to_action_foreground" : "#ffffff",
           "text1" : "#000000",
           "text2" : "#adf5c5",
-          "text3" : "#b15d5d"
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
         }
       },
       "standard" : {
@@ -57,7 +55,11 @@
           "call_to_action_foreground" : "#ffffff",
           "text1" : "#000000",
           "text2" : "#adf5c5",
-          "text3" : "#b15d5d"
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
         }
       }
     },
@@ -88,8 +90,8 @@
         "default_package" : "$rc_three_month",
         "id" : "basic",
         "packages" : [
-          "$rc_three_month",
-          "$rc_lifetime"
+          "$rc_annual",
+          "$rc_monthly"
         ]
       },
       {
@@ -97,7 +99,7 @@
         "id" : "standard",
         "packages" : [
           "$rc_weekly",
-          "$rc_monthly"
+          "$rc_three_month"
         ]
       },
       {
@@ -105,7 +107,7 @@
         "id" : "premium",
         "packages" : [
           "$rc_six_month",
-          "$rc_annual"
+          "$rc_lifetime"
         ]
       }
     ],
