@@ -222,7 +222,7 @@ extension PaywallData.LocalizedConfiguration {
         public var offerDetailsWithIntroOffer: String?
         /// The name representing each of the packages, most commonly a variable.
         public var offerName: String?
-        /// An optional string to put in a badge on the package..
+        /// An optional string to put in a badge on the package.
         public var offerBadge: String?
 
         // swiftlint:disable:next missing_docs
