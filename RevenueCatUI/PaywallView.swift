@@ -121,17 +121,17 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
 
-        self.initializationError = checkForConfigurationConsistency(purchaseHandler: purchaseHandler)
+        self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: purchaseHandler)
     }
 
-    private func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
+    private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
         switch purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
-            if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
+            if purchaseHandler.performPurchase == nil || purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
+                if purchaseHandler.performPurchase == nil && purchaseHandler.performRestore == nil {
                     missingBlocks = "performPurchase and performRestore are"
-                } else if self.purchaseHandler.performPurchase == nil {
+                } else if purchaseHandler.performPurchase == nil {
                     missingBlocks = "performPurchase is"
                 } else {
                     missingBlocks = "performRestore is"
