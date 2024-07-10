@@ -103,7 +103,7 @@ public struct PaywallView: View {
     }
 
     // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
+    init(configuration: PaywallViewConfiguration) {
         let purchaseHandler = configuration.purchaseHandler ?? .default()
         self._purchaseHandler = .init(wrappedValue: purchaseHandler)
 
