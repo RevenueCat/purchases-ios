@@ -137,7 +137,9 @@ public struct PaywallView: View {
                     missingBlocks = "performRestore is"
                 }
 
-                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: missingBlocks) as NSError
+                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(
+                    missingBlocks: missingBlocks
+                ) as NSError
                 Logger.error(error)
 
                 return error
