@@ -64,9 +64,6 @@ class Template1ViewTests: BaseSnapshotTest {
             .snapshot(size: Self.fullScreenSize)
     }
 
-    // This test is weirdly flaky
-    // The images _look_ the same but have some invisible differences in
-    // the header image that makes this fail
     func testSamplePaywallWithLoadingEligibility() {
         let view = Self.createPaywall(
             offering: Self.offeringWithIntroOffer,
