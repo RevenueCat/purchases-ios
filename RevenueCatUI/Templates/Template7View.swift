@@ -171,8 +171,6 @@ struct Template7View: TemplateViewType {
 
                 self.tierSelectorView
 
-                Spacer()
-
                 self.featuresAndPackages
 
                 Spacer()
@@ -191,16 +189,20 @@ struct Template7View: TemplateViewType {
     }
 
     private var tierSelectorView: some View {
-        TierSelectorView(
-            tiers: self.configuration.configuration.tiers,
-            tierNames: self.tierNames,
-            selectedTier: self.$selectedTier,
-            fonts: self.configuration.fonts,
-            backgroundColor: self.currentColors.tierControlBackground,
-            textColor: self.currentColors.tierControlForeground,
-            selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
-            selectedTextColor: self.currentColors.tierControlSelectedForeground
-        )
+        Group {
+            if self.configuration.configuration.tiers.count > 1 {
+                TierSelectorView(
+                    tiers: self.configuration.configuration.tiers,
+                    tierNames: self.tierNames,
+                    selectedTier: self.$selectedTier,
+                    fonts: self.configuration.fonts,
+                    backgroundColor: self.currentColors.tierControlBackground,
+                    textColor: self.currentColors.tierControlForeground,
+                    selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
+                    selectedTextColor: self.currentColors.tierControlSelectedForeground
+                )
+            }
+        }
         .onChangeOf(self.selectedTier) { tier in
             withAnimation(Constants.tierChangeAnimation) {
                 self.selectedPackage = self.tiers[tier]!.default
@@ -246,6 +248,10 @@ struct Template7View: TemplateViewType {
                 self.features(package: self.selectedPackage)
 
                 self.packages(for: tier, packages: packages.all)
+
+                // Needed if there are tiers that have
+                // different number of packages than other tiers
+                Spacer()
             }
         }
         .defaultHorizontalPadding()
