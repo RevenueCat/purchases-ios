@@ -33,14 +33,7 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
-    // Do NOT reference this object directly, always use `purchaseHandler`.
-    // `doNotAccessPurchaseHandler` is here to own the `PurchaseHandler` when
-    //  it is owned by this view. When it is owned by an external object, this
-    //  references a "dummy" purchase handler.
     @StateObject
-    private var doNotAccessPurchaseHandler: PurchaseHandler
-
-    @ObservedObject
     private var purchaseHandler: PurchaseHandler
 
     @StateObject
@@ -110,16 +103,9 @@ public struct PaywallView: View {
     }
 
     // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
-        if paywallViewOwnsPurchaseHandler {
-            self._doNotAccessPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
-        } else {
-            // this is unused and is only present to fulfill the need to have an object assigned
-            // to a @StateObject
-            self._doNotAccessPurchaseHandler = .init(wrappedValue: PurchaseHandler.default())
-        }
-
-        self.purchaseHandler = configuration.purchaseHandler
+    init(configuration: PaywallViewConfiguration) {
+        let purchaseHandler = configuration.purchaseHandler ?? .default()
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler)
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
@@ -135,31 +121,36 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
 
-        checkForConfigurationConsistency()
+        self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: purchaseHandler)
     }
 
-    private mutating func checkForConfigurationConsistency() {
-        switch self.purchaseHandler.purchasesAreCompletedBy {
+    private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
+        switch purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
-            if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
+            if purchaseHandler.performPurchase == nil || purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
+                if purchaseHandler.performPurchase == nil && purchaseHandler.performRestore == nil {
                     missingBlocks = "performPurchase and performRestore are"
-                } else if self.purchaseHandler.performPurchase == nil {
+                } else if purchaseHandler.performPurchase == nil {
                     missingBlocks = "performPurchase is"
                 } else {
                     missingBlocks = "performRestore is"
                 }
 
-                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: missingBlocks)
-                self.initializationError = error as NSError
+                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(
+                    missingBlocks: missingBlocks
+                ) as NSError
                 Logger.error(error)
+
+                return error
             }
         case .revenueCat:
-            if self.purchaseHandler.performPurchase != nil || self.purchaseHandler.performRestore != nil {
+            if purchaseHandler.performPurchase != nil || purchaseHandler.performRestore != nil {
                 Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }
+
+        return nil
     }
 
     // swiftlint:disable:next missing_docs
