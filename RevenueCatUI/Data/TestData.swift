@@ -12,7 +12,8 @@ import SwiftUI
 // swiftlint:disable type_body_length file_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-internal enum TestData {
+// @PublicForExternalTesting
+enum TestData {
 
     static let customerInfo: CustomerInfo = {
         return .decode(
