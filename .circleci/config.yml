@@ -676,6 +676,14 @@ jobs:
 
   run-test-ios-16:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.3.0'
+      install_swiftlint:
+        type: boolean
+        default: false
+
     steps:
       - checkout
       - install-dependencies:
@@ -705,6 +713,14 @@ jobs:
 
   run-test-ios-15:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.3.0'
+      install_swiftlint:
+        type: boolean
+        default: false
+
     steps:
       - checkout
       - install-dependencies:
@@ -769,8 +785,18 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  run-test-ios-14:
+  run-test-ios-14:      
     <<: *base-job
+    # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+    # See https://circleci.com/docs/using-macos/#supported-xcode-versions
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.2.0'
+      install_swiftlint:
+        type: boolean
+        default: false
+
     steps:
       - checkout
       - install-dependencies:
@@ -1286,48 +1312,9 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      # mandatory jobs
       - lint
       - run-test-ios-17:
           xcode_version: "15.2"
-
-      # jobs that should only run for release branches
-      - run-test-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-watchos:
-          <<: *release-branches
-      - run-test-tvos:
-          <<: *release-branches
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      - run-test-ios-14:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-ios-13:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - build-tv-watch-and-macos:
-          <<: *release-branches
-      - build-visionos:
-          <<: *release-branches
-      - backend-integration-tests-SK1:
-          <<: *release-branches
-      - backend-integration-tests-SK2:
-          <<: *release-branches
-      - backend-integration-tests-other:
-          <<: *release-branches
-      - backend-integration-tests-offline:
-          <<: *release-branches
-      - backend-integration-tests-custom-entitlements:
-          <<: *release-branches
 
   deploy:
     when:
