@@ -186,21 +186,10 @@ platform :ios do
   desc "Runs all the watchOS tests"
   lane :test_watchos do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
-
-    # For platforms that fail to run StoreKit tests.
-    # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
-    skip_sk_tests = options[:skip_sk_tests]
-
     if generate_snapshots
-      if skip_sk_tests
-        test_plan = "CI-RevenueCat-Snapshots"
-      else
-        test_plan = "CI-Snapshots"
-      end
-    elsif skip_sk_tests
-      test_plan = "CI-RevenueCat"
+       test_plan = "CI-RevenueCat-Snapshots"
     else
-      test_plan = "CI-AllTests"
+      test_plan = "CI-RevenueCat"
     end
 
     scan(
@@ -213,7 +202,7 @@ platform :ios do
       number_of_retries: 5,
       result_bundle: true,
       # Host app isn't available on watchOS
-      testplan: "CI-RevenueCat",
+      testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
       number_of_retries: generate_snapshots ? 0 : 5,
