@@ -794,7 +794,7 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  run-test-ios-14:      
+  run-test-ios-14:
     <<: *base-job
     # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
     # See https://circleci.com/docs/using-macos/#supported-xcode-versions
@@ -1452,3 +1452,10 @@ workflows:
       - spm-revenuecat-ui-ios-16
       - spm-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
+      - pod-lib-lint
+      - installation-tests-cocoapods
+      - installation-tests-swift-package-manager
+      - installation-tests-custom-entitlement-computation-swift-package-manager
+      - installation-tests-carthage
+      - installation-tests-xcode-direct-integration
+      - installation-tests-receipt-parser
