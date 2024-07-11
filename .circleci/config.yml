@@ -483,6 +483,14 @@ jobs:
 
   spm-revenuecat-ui-ios-15:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.3.0'
+      install_swiftlint:
+        type: boolean
+        default: false
+
     steps:
       - checkout
       - install-dependencies:
@@ -509,6 +517,14 @@ jobs:
 
   spm-revenuecat-ui-ios-16:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.3.0'
+      install_swiftlint:
+        type: boolean
+        default: false
+
     steps:
       - checkout
       - install-dependencies:
@@ -544,6 +560,14 @@ jobs:
 
   spm-revenuecat-ui-ios-17:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '15.2'
+      install_swiftlint:
+        type: boolean
+        default: true
+
     steps:
       - checkout
       - install-dependencies:
@@ -1268,25 +1292,6 @@ workflows:
           xcode_version: "15.2"
 
       # jobs that should only run for release branches
-      - spm-xcode-14-1:
-          xcode_version: '14.1.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - spm-revenuecat-ui-ios-17:
-          xcode_version: "15.2"
-          <<: *release-branches
-      - spm-revenuecat-ui-watchos:
-          <<: *release-branches
-      - run-test-macos:
-          <<: *release-branches
       - run-test-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
