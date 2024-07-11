@@ -575,15 +575,15 @@ internal enum TestData {
                     offerOverrides: [
                         TestData.threeMonthPackage.identifier: .init(
                             offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
+                            offerDetailsWithIntroOffer: nil,
                             offerName: "OVERRIDE Three Month",
-                            offerBadge: ""
+                            offerBadge: nil
                         ),
                         TestData.lifetimePackage.identifier: .init(
                             offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
+                            offerDetailsWithIntroOffer: nil,
                             offerName: "OVERRIDE Lifetime",
-                            offerBadge: ""
+                            offerBadge: nil
                         )
                     ],
                     features: [
@@ -603,15 +603,15 @@ internal enum TestData {
                     offerOverrides: [
                         TestData.weeklyPackage.identifier: .init(
                             offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
+                            offerDetailsWithIntroOffer: nil,
                             offerName: "OVERRIDE Week",
-                            offerBadge: ""
+                            offerBadge: nil
                         ),
                         TestData.monthlyPackage.identifier: .init(
                             offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
+                            offerDetailsWithIntroOffer: nil,
                             offerName: "OVERRIDE Month",
-                            offerBadge: ""
+                            offerBadge:  nil
                         )
                     ],
                     features: [
@@ -631,15 +631,15 @@ internal enum TestData {
                     offerOverrides: [
                         TestData.sixMonthPackage.identifier: .init(
                             offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
+                            offerDetailsWithIntroOffer: nil,
                             offerName: "OVERRIDE Six Month",
-                            offerBadge: ""
+                            offerBadge: nil
                         ),
                         TestData.annualPackage.identifier: .init(
                             offerDetails: "Details",
                             offerDetailsWithIntroOffer: "",
                             offerName: "OVERRIDE Annual",
-                            offerBadge: ""
+                            offerBadge: nil
                         )
                     ],
                     features: [

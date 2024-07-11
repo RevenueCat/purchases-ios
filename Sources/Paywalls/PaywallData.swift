@@ -71,6 +71,7 @@ public protocol PaywallLocalizedConfiguration {
     var features: [PaywallData.LocalizedConfiguration.Feature] { get }
     /// An optional name representing the ``PaywallData/Tier``.
     var tierName: String? { get }
+    
 }
 
 extension PaywallData {
