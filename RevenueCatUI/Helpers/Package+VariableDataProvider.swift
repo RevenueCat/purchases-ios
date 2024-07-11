@@ -19,6 +19,10 @@ extension Package: VariableDataProvider {
         return Bundle.main.applicationDisplayName
     }
 
+    var packageIdentifier: String {
+        return self.identifier
+    }
+
     var localizedPrice: String {
         return self.storeProduct.localizedPriceString
     }

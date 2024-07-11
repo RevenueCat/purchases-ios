@@ -63,6 +63,9 @@
             "offer_details" : "{{ total_price_and_per_month }}",
             "offer_details_with_intro_offer" : "Try {{ sub_offer_duration }} for free, then {{ total_price_and_per_month }}",
             "offer_name" : null,
+            "offer_overrides" : {
+
+            },
             "subtitle" : "Get access to all content",
             "tier_name" : null,
             "title" : "Ignite your child's curiosity"

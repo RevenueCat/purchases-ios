@@ -138,6 +138,16 @@
         "offer_details" : "{{ total_price_and_per_month }}",
         "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
         "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_lifetime" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Lifetime"
+          },
+          "$rc_three_month" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Three Month"
+          }
+        },
         "subtitle" : null,
         "tier_name" : "Basic",
         "title" : "Get started with our Basic plan"
@@ -162,6 +172,17 @@
         "offer_details" : "{{ total_price_and_per_month }}",
         "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
         "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_annual" : {
+            "offer_details" : "Details",
+            "offer_details_with_intro_offer" : "",
+            "offer_name" : "OVERRIDE Annual"
+          },
+          "$rc_six_month" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Six Month"
+          }
+        },
         "subtitle" : null,
         "tier_name" : "Premium",
         "title" : "Master the art of video editing"
@@ -186,6 +207,16 @@
         "offer_details" : "{{ total_price_and_per_month }}",
         "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
         "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_monthly" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Month"
+          },
+          "$rc_weekly" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Week"
+          }
+        },
         "subtitle" : null,
         "tier_name" : "Standard",
         "title" : "Get started with our Standard plan"

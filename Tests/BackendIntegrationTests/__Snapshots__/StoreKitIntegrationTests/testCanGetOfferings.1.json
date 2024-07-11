@@ -76,6 +76,9 @@
             "offer_details" : "{{ total_price_and_per_month }}",
             "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
             "offer_name" : "{{ sub_period }}",
+            "offer_overrides" : {
+
+            },
             "subtitle" : "Get access to all our educational content trusted by thousands of parents",
             "tier_name" : null,
             "title" : "Ignite your child's curiosity"

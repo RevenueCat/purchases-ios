@@ -84,7 +84,7 @@ final class SamplePaywallLoader {
 private extension SamplePaywallLoader {
 
     static let weeklyPackage = Package(
-        identifier: "weekly",
+        identifier: Package.string(from: .weekly)!,
         packageType: .weekly,
         storeProduct: weeklyProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
@@ -546,6 +546,20 @@ private extension SamplePaywallLoader {
                     callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.sixMonthPackage.identifier: .init(
+                            offerDetails: "OVERRIDE six month details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE six month Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Six Month",
+                            offerBadge: "LEAST FAVORITE"
+                        ),
+                        TestData.lifetimePackage.identifier: .init(
+                            offerDetails: "OVERRIDE life details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE lifetime Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Lifetime ",
+                            offerBadge: "LIFETIME"
+                        )
+                    ],
                     features: [
                         .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
                         .init(title: "Standard fonts", iconID: "tick"),
@@ -559,6 +573,20 @@ private extension SamplePaywallLoader {
                     callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.weeklyPackage.identifier: .init(
+                            offerDetails: "OVERRIDE weekly details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE weekly Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Weekly",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        ),
+                        TestData.monthlyPackage.identifier: .init(
+                            offerDetails: "OVERRIDE monthly details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE monthly Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Monthly",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        )
+                    ],
                     features: [
                         .init(title: "Access to 30 cinematic LUTs", iconID: "tick"),
                         .init(title: "Pro fonts and transition effects", iconID: "tick"),
@@ -572,6 +600,20 @@ private extension SamplePaywallLoader {
                     callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.threeMonthPackage.identifier: .init(
+                            offerDetails: "OVERRIDE three month details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE three month Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Three Month",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        ),
+                        TestData.annualPackage.identifier: .init(
+                            offerDetails: "OVERRIDE annual details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE annual Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Annual",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        )
+                    ],
                     features: [
                         .init(title: "Access to all 150 of our cinematic LUTs", iconID: "tick"),
                         .init(title: "Custom design tools and transition effects", iconID: "tick"),

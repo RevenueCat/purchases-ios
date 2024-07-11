@@ -283,11 +283,11 @@ private struct PackageButton: View {
                     .padding(Self.borderWidth)
                     .frame(maxHeight: .infinity)
             }
-            .background { // Discount overlay
-                if let discount = self.package.discountRelativeToMostExpensivePerMonth {
-                    self.discountOverlay(discount)
+            .background { // Badge overlay
+                if let badge = self.package.localization.offerBadge, !badge.isEmpty {
+                    self.badgeOverlay(badge)
                 } else {
-                    self.discountOverlay(0)
+                    self.badgeOverlay(Localization.localized(discount: 0, locale: self.locale))
                         .hidden()
                 }
             }
@@ -365,7 +365,7 @@ private struct PackageButton: View {
         }
     }
 
-    private func discountOverlay(_ discount: Double) -> some View {
+    private func badgeOverlay(_ badge: String) -> some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: Template4View.cornerRadius)
                 .foregroundStyle(
@@ -374,7 +374,7 @@ private struct PackageButton: View {
                     : self.configuration.colors.accent2Color
                 )
 
-            Text(Localization.localized(discount: discount, locale: self.locale))
+            Text(badge)
                 .textCase(.uppercase)
                 .foregroundColor(
                     self.selected
