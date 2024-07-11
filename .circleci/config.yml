@@ -445,6 +445,14 @@ jobs:
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
 
+  pod-lib-lint:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: Check pods and deployment targets
+          command: bundle exec fastlane check_pods
+
   spm-release-build:
     <<: *base-job
     steps:
@@ -1313,8 +1321,8 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
-      - run-test-ios-17:
-          xcode_version: "15.2"
+      - run-test-ios-17
+      - pod-lib-lint
 
   deploy:
     when:
