@@ -140,15 +140,11 @@
         "offer_name" : null,
         "offer_overrides" : {
           "$rc_lifetime" : {
-            "offer_badge" : "",
             "offer_details" : "Details",
-            "offer_details_with_intro_offer" : "",
             "offer_name" : "OVERRIDE Lifetime"
           },
           "$rc_three_month" : {
-            "offer_badge" : "",
             "offer_details" : "Details",
-            "offer_details_with_intro_offer" : "",
             "offer_name" : "OVERRIDE Three Month"
           }
         },
@@ -178,15 +174,12 @@
         "offer_name" : null,
         "offer_overrides" : {
           "$rc_annual" : {
-            "offer_badge" : "",
             "offer_details" : "Details",
             "offer_details_with_intro_offer" : "",
             "offer_name" : "OVERRIDE Annual"
           },
           "$rc_six_month" : {
-            "offer_badge" : "",
             "offer_details" : "Details",
-            "offer_details_with_intro_offer" : "",
             "offer_name" : "OVERRIDE Six Month"
           }
         },
@@ -216,15 +209,11 @@
         "offer_name" : null,
         "offer_overrides" : {
           "$rc_monthly" : {
-            "offer_badge" : "",
             "offer_details" : "Details",
-            "offer_details_with_intro_offer" : "",
             "offer_name" : "OVERRIDE Month"
           },
           "$rc_weekly" : {
-            "offer_badge" : "",
             "offer_details" : "Details",
-            "offer_details_with_intro_offer" : "",
             "offer_name" : "OVERRIDE Week"
           }
         },
