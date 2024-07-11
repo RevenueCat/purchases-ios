@@ -837,6 +837,13 @@ jobs:
 
   run-test-ios-13:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.2.0'
+      install_swiftlint:
+        type: boolean
+        default: false
     steps:
       - checkout
       - install-dependencies:
@@ -966,6 +973,13 @@ jobs:
 
   docs-deploy:
     <<: *base-job
+    parameters:
+      xcode_version:
+        type: string
+        default: '14.3.0'
+      install_swiftlint:
+        type: boolean
+        default: true
     steps:
       - setup-git-credentials
       - checkout
@@ -1278,40 +1292,19 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      - run-test-ios-17:
-          xcode_version: "15.2"
-      - run-test-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-ios-14:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-ios-13:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - run-test-macos:
-          <<: *release-branches
+      - run-test-ios-17
+      - run-test-ios-16
+      - run-test-ios-15
+      - run-test-ios-14
+      - run-test-ios-13
+      - run-test-macos
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-          <<: *release-branches
-      - spm-revenuecat-ui-ios-17:
-          xcode_version: "15.2"
+      - spm-revenuecat-ui-ios-15
+      - spm-revenuecat-ui-ios-16
+      - spm-revenuecat-ui-ios-17
 
   build-test:
     when:
@@ -1376,7 +1369,6 @@ workflows:
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
-          xcode_version: '14.3.0'
       - deploy-purchase-tester:
           <<: *release-tags
       - notify-on-non-patch-release-branches:
