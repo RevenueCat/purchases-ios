@@ -218,6 +218,8 @@
 		35B745A82711001A00458D46 /* MockManageSubscriptionsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */; };
 		35C05DC02BC84F5800109308 /* DiagnosticsSynchronizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C05DBF2BC84F5800109308 /* DiagnosticsSynchronizerTests.swift */; };
 		35C05DC82BC8510000109308 /* DiagnosticsTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C05DC72BC8510000109308 /* DiagnosticsTrackerTests.swift */; };
+		35C200AF2C39252D00B9778B /* FeedbackSurveyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C200AE2C39252D00B9778B /* FeedbackSurveyData.swift */; };
+		35C200B12C39254100B9778B /* FeedbackSurveyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C200B02C39254100B9778B /* FeedbackSurveyView.swift */; };
 		35C272A12BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C272A02BC4084C005A0CE8 /* MockDiagnosticsTracker.swift */; };
 		35C272A22BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C272A02BC4084C005A0CE8 /* MockDiagnosticsTracker.swift */; };
 		35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */; };
@@ -1194,6 +1196,8 @@
 		35AB6D392BBEE3150076B103 /* DiagnosticsTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsTracker.swift; sourceTree = "<group>"; };
 		35C05DBF2BC84F5800109308 /* DiagnosticsSynchronizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsSynchronizerTests.swift; sourceTree = "<group>"; };
 		35C05DC72BC8510000109308 /* DiagnosticsTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsTrackerTests.swift; sourceTree = "<group>"; };
+		35C200AE2C39252D00B9778B /* FeedbackSurveyData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyData.swift; sourceTree = "<group>"; };
+		35C200B02C39254100B9778B /* FeedbackSurveyView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyView.swift; sourceTree = "<group>"; };
 		35C272A02BC4084C005A0CE8 /* MockDiagnosticsTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDiagnosticsTracker.swift; sourceTree = "<group>"; };
 		35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorUtils.swift; sourceTree = "<group>"; };
 		35D159CA2BC4396F004D8061 /* DiagnosticsPostOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsPostOperation.swift; sourceTree = "<group>"; };
@@ -2549,6 +2553,7 @@
 			children = (
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
 				353756542C382C2800A1B8D6 /* CustomerCenterError.swift */,
+				35C200AE2C39252D00B9778B /* FeedbackSurveyData.swift */,
 				353756552C382C2800A1B8D6 /* SubscriptionInformation.swift */,
 			);
 			path = Data;
@@ -2568,6 +2573,7 @@
 			isa = PBXGroup;
 			children = (
 				3537565B2C382C2800A1B8D6 /* CustomerCenterView.swift */,
+				35C200B02C39254100B9778B /* FeedbackSurveyView.swift */,
 				3537565C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift */,
 				3537565D2C382C2800A1B8D6 /* NoSubscriptionsView.swift */,
 				3537565E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift */,
@@ -5209,6 +5215,7 @@
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,
 				887A60782C1D037000E1A461 /* TestData.swift in Sources */,
+				35C200B12C39254100B9778B /* FeedbackSurveyView.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,
 				88A543E52C37A4AF0039C6A5 /* ConsistentTierContentView.swift in Sources */,
 				887A606E2C1D037000E1A461 /* LocalizedAlertError.swift in Sources */,
@@ -5217,6 +5224,7 @@
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
 				887A60872C1D037000E1A461 /* ViewExtensions.swift in Sources */,
 				353756712C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift in Sources */,
+				35C200AF2C39252D00B9778B /* FeedbackSurveyData.swift in Sources */,
 				887A60BA2C1D037000E1A461 /* Template3View.swift in Sources */,
 				887A607D2C1D037000E1A461 /* ImageLoader.swift in Sources */,
 				887A60822C1D037000E1A461 /* PreviewHelpers.swift in Sources */,

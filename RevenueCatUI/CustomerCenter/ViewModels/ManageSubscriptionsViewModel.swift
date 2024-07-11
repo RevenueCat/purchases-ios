@@ -30,6 +30,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var showRestoreAlert: Bool = false
     @Published
+    var feedbackSurveyData: FeedbackSurveyData?
+
+    @Published
     var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
@@ -105,7 +108,19 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
-    func handleAction(for path: CustomerCenterConfigData.HelpPath) async {
+    func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
+        if case let .feedbackSurvey(feedbackSurvey) = path.detail {
+            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey) { [weak self] in
+                Task {
+                    await self?.performAction(for: path)
+                }
+            }
+        } else {
+            await self.performAction(for: path)
+        }
+    }
+
+    func performAction(for path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
