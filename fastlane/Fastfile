@@ -185,6 +185,24 @@ platform :ios do
 
   desc "Runs all the watchOS tests"
   lane :test_watchos do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
+    # For platforms that fail to run StoreKit tests.
+    # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
+    skip_sk_tests = options[:skip_sk_tests]
+
+    if generate_snapshots
+      if skip_sk_tests
+        test_plan = "CI-RevenueCat-Snapshots"
+      else
+        test_plan = "CI-Snapshots"
+      end
+    elsif skip_sk_tests
+      test_plan = "CI-RevenueCat"
+    else
+      test_plan = "CI-AllTests"
+    end
+
     scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 8 (41mm)",
@@ -197,7 +215,9 @@ platform :ios do
       # Host app isn't available on watchOS
       testplan: "CI-RevenueCat",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/watchos"
+      output_directory: "fastlane/test_output/xctest/watchos",
+      number_of_retries: generate_snapshots ? 0 : 5,
+      fail_build: !generate_snapshots
     )
   end
 
