@@ -611,7 +611,7 @@ internal enum TestData {
                             offerDetails: "Details",
                             offerDetailsWithIntroOffer: nil,
                             offerName: "OVERRIDE Month",
-                            offerBadge:  nil
+                            offerBadge: nil
                         )
                     ],
                     features: [
