@@ -1192,6 +1192,7 @@ workflows:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-macos
+      - run-test-watchos
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
