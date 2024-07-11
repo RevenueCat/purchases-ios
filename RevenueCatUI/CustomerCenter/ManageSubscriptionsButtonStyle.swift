@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomButtonStyle.swift
+//  ManageSubscriptionsButtonStyle.swift
 //
 //
 //  Created by Cesar de la Vega on 28/5/24.
@@ -40,7 +40,7 @@ struct ManageSubscriptionsButtonStyle: ButtonStyle {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct CustomButtonStylePreview_Previews: PreviewProvider {
+struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
 
     static var previews: some View {
         Button("Didn't receive purchase") {}
