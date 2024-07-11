@@ -449,6 +449,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-dependencies
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
