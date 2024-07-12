@@ -612,6 +612,8 @@ extension HTTPClient {
             self.state.modify {
                 $0.queuedRequests.insert(retriedRequest, at: 0)
             }
+
+            self.beginNextRequest()
         }
     }
 
