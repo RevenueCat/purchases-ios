@@ -54,7 +54,6 @@ class BaseBackendTests: TestCase {
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
@@ -150,19 +149,6 @@ extension BaseBackendTests {
             ]
         ] as [String: Any]
     ]
-
-}
-
-final class MockStorefrontProvider: StorefrontProviderType {
-
-    var currentStorefront: StorefrontType? {
-        // Simulate `DefaultStorefrontProvider` availability.
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            return MockStorefront(countryCode: "USA")
-        } else {
-            return nil
-        }
-    }
 
 }
 
