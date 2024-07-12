@@ -1703,6 +1703,107 @@ extension HTTPClientTests {
     }
 }
 
+// MARK: - HttpClient Retry Tests
+extension HTTPClientTests {
+
+    func testOnlyRetriesProvidedHTTPStatusCodes() {
+        expect(self.client.shouldRetryRequest(withStatusCode: .tooManyRequests)).to(beTrue())
+        expect(self.client.shouldRetryRequest(withStatusCode: .invalidRequest)).to(beFalse())
+    }
+
+    // Backoff Time Tests
+    func testUsesNoBackoffIfFirstRetryAndNoETagPresent() {
+        var httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [HTTPClient.ResponseHeader.eTag.rawValue: ""]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+    }
+
+    func testUsesBackoffIfFirstRetryAndETagPresent() {
+        var httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [HTTPClient.ResponseHeader.eTag.rawValue: "some-etag-value"]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+    }
+
+    func testUsesServerProvidedBackoffIfPresent() {
+        let retryAfterMilliseconds = 100
+
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterMilliseconds)"
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0.1)))  // 0.1s == 100ms
+    }
+
+    func testUsesDefaultBackoffIfServerProvidedBackoffMissing() {
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0.5)))  // 0.1s == 100ms
+    }
+
+    func testDefaultRetryBackoffPeriods() {
+        expect(
+            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 0)
+        ).to(equal(0))
+
+        expect(
+            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 1)
+        ).to(equal(0.25))
+
+        expect(
+            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 2)
+        ).to(equal(0.5))
+
+        expect(
+            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 3)
+        ).to(equal(1))
+    }
+
+}
+
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
