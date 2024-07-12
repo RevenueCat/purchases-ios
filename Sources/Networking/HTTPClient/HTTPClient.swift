@@ -207,7 +207,7 @@ extension HTTPClient: @unchecked Sendable {}
 
 // MARK: - Private
 
-private extension HTTPClient {
+internal extension HTTPClient {
 
     struct State {
         var queuedRequests: [Request]
@@ -222,7 +222,14 @@ private extension HTTPClient {
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
-        var retried: Bool = false
+
+        /// Whether the request has been retried.
+        var retried: Bool {
+            return self.retryCount > 0
+        }
+
+        /// The number of times that we have retried the request
+        var retryCount: UInt = 0
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
@@ -253,7 +260,7 @@ private extension HTTPClient {
 
         func retriedRequest() -> Self {
             var copy = self
-            copy.retried = true
+            copy.retryCount += 1
 
             return copy
         }
@@ -443,8 +450,18 @@ private extension HTTPClient {
                     metadata: httpURLResponse?.metadata)
                 )
 
+
                 if httpURLResponse?.isLoadShedder == true {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
+                }
+
+                // Check for a 429
+                // Use OperationQueue, need to DI it in here
+                DispatchQueue.main.asyncAfter(deadline: .now() + .nanoseconds(100)) {
+                    // Queue a retry with a minimum send date
+                    self.state.modify {
+                        $0.queuedRequests.insert(request.retriedRequest(), at: 0)
+                    }
                 }
             }
 
