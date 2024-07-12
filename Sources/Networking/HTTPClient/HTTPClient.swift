@@ -33,6 +33,8 @@ class HTTPClient {
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
+    private let retriableStatusCodes: Set<HTTPStatusCode>
+    private let operationDispatcher: OperationDispatcher
 
     init(apiKey: String,
          systemInfo: SystemInfo,
@@ -40,8 +42,10 @@ class HTTPClient {
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+         retriableStatusCodes: Set<HTTPStatusCode> = Set([HTTPStatusCode.tooManyRequests]),
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         operationDispatcher: OperationDispatcher) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
@@ -55,10 +59,12 @@ class HTTPClient {
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
+        self.retriableStatusCodes = retriableStatusCodes
         self.timeout = requestTimeout
         self.apiKey = apiKey
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
+        self.operationDispatcher = operationDispatcher
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -450,19 +456,11 @@ private extension HTTPClient {
                     metadata: httpURLResponse?.metadata)
                 )
 
-
                 if httpURLResponse?.isLoadShedder == true {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // Check for a 429
-                // Use OperationQueue, need to DI it in here
-                DispatchQueue.main.asyncAfter(deadline: .now() + .nanoseconds(100)) {
-                    // Queue a retry with a minimum send date
-                    self.state.modify {
-                        $0.queuedRequests.insert(request.retriedRequest(), at: 0)
-                    }
-                }
+                self.retryRequestIfNeeded(request: request, httpStatusCode: httpURLResponse?.httpStatusCode)
             }
 
             request.completionHandler?(response)
@@ -597,6 +595,29 @@ private extension HTTPClient {
         }
     }
 
+}
+
+// MARK: - Request Retry Logic
+extension HTTPClient {
+    private func retryRequestIfNeeded(
+        request: HTTPClient.Request,
+        httpStatusCode: HTTPStatusCode?
+    ) {
+        guard let httpStatusCode = httpStatusCode else { return }
+        guard shouldRetryRequest(withStatusCode: httpStatusCode) else { return }
+
+        // TODO: Calculate delay
+        self.operationDispatcher.dispatchOnWorkerThread(delay: .none) {
+            let retriedRequest = request.retriedRequest()
+            self.state.modify {
+                $0.queuedRequests.insert(retriedRequest, at: 0)
+            }
+        }
+    }
+
+    private func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {
+        return self.retriableStatusCodes.contains(statusCode)
+    }
 }
 
 // MARK: - Extensions
