@@ -20,7 +20,7 @@ struct PaywallViewConfiguration {
     var fonts: PaywallFontProvider
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
-    var purchaseHandler: PurchaseHandler
+    var purchaseHandler: PurchaseHandler?
 
     init(
         content: Content,
@@ -29,7 +29,7 @@ struct PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
