@@ -69,12 +69,6 @@ aliases:
       branches:
         only: /^release\/.*\.0$/
 
-  # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-  forked-pull-requests: &forked-pull-requests
-    filters:
-      tags:
-        ignore: /pull\/[0-9]+/
-
 commands:
   install-runtime:
     parameters:
