@@ -51,6 +51,10 @@ struct Template7View: TemplateViewType {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    private var showTierSelector: Bool {
+        return self.configuration.configuration.tiers.count > 1
+    }
+
     init(_ configuration: TemplateViewConfiguration) {
         guard let (firstTier, allTiers, tierNames) = configuration.packages.multiTier else {
             fatalError("Attempted to display a multi-tier template with invalid data: \(configuration.packages)")
@@ -94,6 +98,8 @@ struct Template7View: TemplateViewType {
                         .frame(maxWidth: .infinity, alignment: .center)
 
                     self.features
+
+                    Spacer()
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
                 .scrollableIfNecessaryWhenAvailable()
@@ -101,6 +107,8 @@ struct Template7View: TemplateViewType {
                 VStack {
                     self.tierSelectorView
                     self.packages
+
+                    Spacer()
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
                 .scrollableIfNecessaryWhenAvailable()
@@ -190,7 +198,7 @@ struct Template7View: TemplateViewType {
 
     private var tierSelectorView: some View {
         Group {
-            if self.configuration.configuration.tiers.count > 1 {
+            if self.showTierSelector {
                 TierSelectorView(
                     tiers: self.configuration.configuration.tiers,
                     tierNames: self.tierNames,
@@ -233,7 +241,7 @@ struct Template7View: TemplateViewType {
     }
 
     private func title(package: TemplateViewConfiguration.Package) -> some View {
-        Text(.init(package.localization.title))
+        Text(.init(self.selectedPackage.localization.title))
             .font(self.font(for: .title).weight(.semibold))
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -246,6 +254,8 @@ struct Template7View: TemplateViewType {
         ) { tier, packages in
             VStack {
                 self.features(package: self.selectedPackage)
+                    // Only bottom padding if the tier selector is being hidden
+                    .padding(self.showTierSelector ? .vertical : .bottom, self.defaultVerticalPaddingLength)
 
                 self.packages(for: tier, packages: packages.all)
 
