@@ -1421,8 +1421,8 @@ workflows:
                 pattern: "^release/.*$"
                 value: << pipeline.git.branch >>
             - equal:
-                - "manual_tests"
-                - << pipeline.trigger_source >>
+                - "run-manual-tests"
+                - << pipeline.parameters.action >>
     jobs:
       - backend-integration-tests-SK1
       - backend-integration-tests-SK2
