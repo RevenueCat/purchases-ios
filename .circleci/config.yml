@@ -951,7 +951,7 @@ jobs:
     parameters:
       xcode_version:
         type: string
-        default: '15.3'
+        default: '14.3'
       install_swiftlint:
         type: boolean
         default: true
@@ -1406,7 +1406,6 @@ workflows:
             - equal:
                 - "run-manual-tests"
                 - << pipeline.parameters.action >>
-
     jobs:
       - backend-integration-tests-SK1
       - backend-integration-tests-SK2
