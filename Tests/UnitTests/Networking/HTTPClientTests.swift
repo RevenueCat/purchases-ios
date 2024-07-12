@@ -1711,6 +1711,8 @@ extension HTTPClientTests {
         expect(self.client.shouldRetryRequest(withStatusCode: .invalidRequest)).to(beFalse())
     }
 
+    
+
     // Backoff Time Tests
     func testUsesNoBackoffIfFirstRetryAndNoETagPresent() {
         var httpURLResponse = HTTPURLResponse(
