@@ -1325,7 +1325,7 @@ workflows:
       - hold:
           type: approval
           requires:
-            - all-tests
+            - release-checks
       - tag-release-branch:
           requires:
             - hold
