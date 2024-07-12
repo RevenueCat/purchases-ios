@@ -33,7 +33,7 @@ class HTTPClient {
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    private let retriableStatusCodes: Set<HTTPStatusCode>
+    private let retryOptions: RetryOptions
     private let operationDispatcher: OperationDispatcher
 
     init(apiKey: String,
@@ -42,7 +42,7 @@ class HTTPClient {
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         retriableStatusCodes: Set<HTTPStatusCode> = Set([HTTPStatusCode.tooManyRequests]),
+         retryOptions: RetryOptions = .default,
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher) {
@@ -59,7 +59,7 @@ class HTTPClient {
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
-        self.retriableStatusCodes = retriableStatusCodes
+        self.retryOptions = retryOptions
         self.timeout = requestTimeout
         self.apiKey = apiKey
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
@@ -283,6 +283,25 @@ internal extension HTTPClient {
         }
     }
 
+    struct RetryOptions: CustomStringConvertible {
+
+        let retriableStatusCodes: Set<HTTPStatusCode>
+        let maxNumberOfRetries: UInt
+
+        var description: String {
+            """
+            <\(type(of: self)):
+            """
+        }
+    }
+
+}
+
+internal extension HTTPClient.RetryOptions {
+    static let `default` = HTTPClient.RetryOptions(
+        retriableStatusCodes: Set([.tooManyRequests]),
+        maxNumberOfRetries: 3
+    )
 }
 
 private extension HTTPClient {
@@ -604,6 +623,9 @@ extension HTTPClient {
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
     ) {
+        // retryCount is incremented before the retry is executed, so don't stop retries if
+        // retryCount == self.retryOptions.maxNumberOfRetries
+        guard request.retryCount > self.retryOptions.maxNumberOfRetries else { return }
         guard let httpURLResponse = httpURLResponse else { return }
         guard shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
 
@@ -623,7 +645,7 @@ extension HTTPClient {
     }
 
     internal func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {
-        return self.retriableStatusCodes.contains(statusCode)
+        return self.retryOptions.retriableStatusCodes.contains(statusCode)
     }
 
     internal func calculateRetryBackoffTime(
