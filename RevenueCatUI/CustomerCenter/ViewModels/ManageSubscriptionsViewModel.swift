@@ -82,13 +82,18 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private func loadSubscriptionInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
         
-        // Pick the soonest expiring Entitlement
-        guard let currentEntitlement = customerInfo.entitlements.active.values.sorted(by: { lhs, rhs in
-            let lhsDateSeconds = lhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
-            let rhsDateSeconds = rhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
-            
-            return lhsDateSeconds < rhsDateSeconds
-        }).first,
+        // Pick the soonest expiring iOS App Store entitlement and accompanying product.
+        guard let currentEntitlement = customerInfo.entitlements
+            .active
+            .values
+            .lazy
+            .filter({ entitlement in entitlement.store == .appStore })
+            .sorted(by: { lhs, rhs in
+                let lhsDateSeconds = lhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
+                let rhsDateSeconds = rhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
+                
+                return lhsDateSeconds < rhsDateSeconds
+            }).first,
               let subscribedProduct = await purchasesProvider.products([currentEntitlement.productIdentifier]).first else {
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
