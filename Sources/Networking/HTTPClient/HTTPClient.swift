@@ -202,6 +202,7 @@ extension HTTPClient {
         case isLoadShedder = "X-RevenueCat-Fortress"
         case requestID = "X-Request-ID"
         case amazonTraceID = "X-Amzn-Trace-ID"
+        case retryAfter = "Retry-After"
 
     }
 
@@ -460,7 +461,7 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                self.retryRequestIfNeeded(request: request, httpStatusCode: httpURLResponse?.httpStatusCode)
+                self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
             }
 
             request.completionHandler?(response)
@@ -601,13 +602,17 @@ private extension HTTPClient {
 extension HTTPClient {
     private func retryRequestIfNeeded(
         request: HTTPClient.Request,
-        httpStatusCode: HTTPStatusCode?
+        httpURLResponse: HTTPURLResponse?
     ) {
-        guard let httpStatusCode = httpStatusCode else { return }
-        guard shouldRetryRequest(withStatusCode: httpStatusCode) else { return }
+        guard let httpURLResponse = httpURLResponse else { return }
+        guard shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
 
-        // TODO: Calculate delay
-        self.operationDispatcher.dispatchOnWorkerThread(delay: .none) {
+        let retryBackoffTime: TimeInterval = calculateRetryBackoffTime(
+            forResponse: httpURLResponse,
+            retryCount: request.retryCount
+        )
+
+        self.operationDispatcher.dispatchOnWorkerThread(delay: .timeInterval(retryBackoffTime)) {
             let retriedRequest = request.retriedRequest()
             self.state.modify {
                 $0.queuedRequests.insert(retriedRequest, at: 0)
@@ -619,6 +624,33 @@ extension HTTPClient {
 
     private func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {
         return self.retriableStatusCodes.contains(statusCode)
+    }
+
+    private func calculateRetryBackoffTime(
+        forResponse httpURLResponse: HTTPURLResponse,
+        retryCount: UInt
+    ) -> TimeInterval {
+
+        // TODO:
+//        refactor the current etag usage to the new way of doing things
+//        for first retry with no header, make sure that there’s no delay to preserve the exact behavior we currently have
+
+        // Use the retry after value from the backend if present
+        if let retryAfterHeaderValue = httpURLResponse.allHeaderFields[ResponseHeader.retryAfter.rawValue] as? String {
+            if let retryAfterMS = Double(retryAfterHeaderValue) {
+                return TimeInterval(milliseconds: retryAfterMS)
+            }
+        }
+
+        // Otherwise, use a default value
+        return calculateDefaultExponentialBackoffTimeInterval(withRetryCount: retryCount)
+    }
+
+    func calculateDefaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
+        let base: TimeInterval = 0.25
+        let maxBackoff: TimeInterval = 10.0
+        let backoff = min(pow(base, Double(retryCount)), maxBackoff)
+        return backoff
     }
 }
 
