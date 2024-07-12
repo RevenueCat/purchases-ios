@@ -636,12 +636,19 @@ extension HTTPClient {
         guard let httpURLResponse = httpURLResponse else { return }
         guard shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
 
-        let retryBackoffTime: TimeInterval = calculateRetryBackoffTime(
+        let retryBackoffInterval: TimeInterval = calculateRetryBackoffTime(
             forResponse: httpURLResponse,
             retryCount: request.retryCount
         )
 
-        self.operationDispatcher.dispatchOnWorkerThread(delay: .timeInterval(retryBackoffTime)) {
+        Logger.debug(
+            NetworkStrings.api_request_queued_for_retry(
+                httpMethod: request.method.httpMethod,
+                path: request.path,
+                backoffInterval: retryBackoffInterval
+            )
+        )
+        self.operationDispatcher.dispatchOnWorkerThread(delay: .timeInterval(retryBackoffInterval)) {
             let retriedRequest = request.retriedRequest()
             self.state.modify {
                 $0.queuedRequests.insert(retriedRequest, at: 0)
