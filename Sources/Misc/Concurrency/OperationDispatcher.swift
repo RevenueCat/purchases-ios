@@ -18,7 +18,7 @@ import Foundation
 ///
 /// These delays prevent DDOS if a notification leads to many users opening an app at the same time,
 /// by spreading asynchronous operations over time.
-enum Delay {
+enum Delay: Equatable {
 
     case none
     case `default`
