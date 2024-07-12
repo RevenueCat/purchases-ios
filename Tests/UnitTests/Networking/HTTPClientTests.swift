@@ -1664,6 +1664,44 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
 }
 
+// MARK: - HttpClient.Request Tests
+extension HTTPClientTests {
+    func testNewRequestHasNoRetries() {
+        let request = buildEmptyRequest()
+
+        expect(request.retried).to(beFalse())
+        expect(request.retryCount).to(equal(0))
+    }
+
+    func testRetryingRequestIncrementsRetryCount() {
+        let request = buildEmptyRequest()
+
+        let retriedRequest = request.retriedRequest()
+        let secondRetriedRequest = retriedRequest.retriedRequest()
+
+        expect(retriedRequest.retried).to(beTrue())
+        expect(retriedRequest.retryCount).to(equal(1))
+
+        expect(secondRetriedRequest.retried).to(beTrue())
+        expect(secondRetriedRequest.retryCount).to(equal(2))
+    }
+
+    private func buildEmptyRequest() -> HTTPClient.Request {
+        let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
+
+        let request: HTTPClient.Request = .init(
+            httpRequest: .init(method: .get, path: .getCustomerInfo(appUserID: "abc123")),
+            authHeaders: .init(),
+            defaultHeaders: .init(),
+            verificationMode: .default,
+            internalSettings: DangerousSettings.Internal.default,
+            completionHandler: completionHandler
+        )
+
+        return request
+    }
+}
+
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
