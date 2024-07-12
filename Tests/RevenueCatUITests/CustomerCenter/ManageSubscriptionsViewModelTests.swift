@@ -127,7 +127,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 Fixtures.Subscription(id: productIdTwo, store: "app_store", purchaseDate: purchaseDate, expirationDate: expirationDateSecond),
             ].shuffled(),
             entitlements: [
-                Fixtures.Entitlement(entitlementId: "premium", productId: productIdOne, purchaseDate: purchaseDate, expirationDate: expirationDateFirst)
+                Fixtures.Entitlement(entitlementId: "premium", productId: productIdOne, purchaseDate: purchaseDate, expirationDate: expirationDateFirst),
             ]
         )
         
@@ -155,22 +155,25 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
     }
     
-    func testShouldShowEarliestExpiration_whenUserHasOneActiveSubscriptionTwoEntitlements() async {
+    func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async {
         // Arrange
-        let productId = "com.revenuecat.product1"
+        let productIdOne = "com.revenuecat.product1"
+        let productIdTwo = "com.revenuecat.product2"
         let purchaseDate = "2022-04-12T00:03:28Z"
         let expirationDateFirst = "2062-04-12T00:03:35Z"
         let expirationDateSecond = "2062-05-12T00:03:35Z"
         let products = [
-            Fixtures.product(id: productId, title: "yearly", duration: .year, price: 29.99),
+            Fixtures.product(id: productIdOne, title: "yearly", duration: .year, price: 29.99),
+            Fixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99),
         ]
         let customerInfo = Fixtures.customerInfo(
             subscriptions: [
-                Fixtures.Subscription(id: productId, store: "app_store", purchaseDate: purchaseDate, expirationDate: expirationDateFirst),
-            ],
+                Fixtures.Subscription(id: productIdOne, store: "app_store", purchaseDate: purchaseDate, expirationDate: expirationDateFirst),
+                Fixtures.Subscription(id: productIdTwo, store: "app_store", purchaseDate: purchaseDate, expirationDate: expirationDateSecond),
+            ].shuffled(),
             entitlements: [
-                Fixtures.Entitlement(entitlementId: "premium", productId: productId, purchaseDate: purchaseDate, expirationDate: expirationDateFirst),
-                Fixtures.Entitlement(entitlementId: "plus", productId: productId, purchaseDate: purchaseDate, expirationDate: expirationDateSecond),
+                Fixtures.Entitlement(entitlementId: "premium", productId: productIdOne, purchaseDate: purchaseDate, expirationDate: expirationDateFirst),
+                Fixtures.Entitlement(entitlementId: "plus", productId: productIdTwo, purchaseDate: purchaseDate, expirationDate: expirationDateSecond),
             ].shuffled()
         )
         
@@ -195,7 +198,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         expect(viewModel.subscriptionInformation?.nextRenewalString) == formatter.string(from: ISO8601DateFormatter().date(from: expirationDateFirst)!)
-        expect(viewModel.subscriptionInformation?.productIdentifier) == productId
+        expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
     }
 
     func testLoadScreenNoActiveSubscription() async {
