@@ -51,7 +51,6 @@ class SystemInfo {
     var observerMode: Bool { return !self.finishTransactions }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
-    private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
 
@@ -66,9 +65,7 @@ class SystemInfo {
         return self._isSandbox
     }
 
-    var storefront: StorefrontType? {
-        return self.storefrontProvider.currentStorefront
-    }
+    var storefront: StorefrontType? = nil
 
     var preferredLanguages: [String] {
         return self.preferredLocalesProvider.preferredLanguages
@@ -132,7 +129,6 @@ class SystemInfo {
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
-         storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
@@ -146,11 +142,18 @@ class SystemInfo {
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
-        self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
+
+        self.setStorefront()
+    }
+
+    func setStorefront() {
+        Task { [weak self] in
+            self?.storefront = await Storefront.currentStorefront
+        }
     }
 
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
