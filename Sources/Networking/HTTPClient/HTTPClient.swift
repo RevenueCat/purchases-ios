@@ -600,7 +600,7 @@ private extension HTTPClient {
 
 // MARK: - Request Retry Logic
 extension HTTPClient {
-    private func retryRequestIfNeeded(
+    internal func retryRequestIfNeeded(
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
     ) {
@@ -622,11 +622,11 @@ extension HTTPClient {
         }
     }
 
-    private func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {
+    internal func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {
         return self.retriableStatusCodes.contains(statusCode)
     }
 
-    private func calculateRetryBackoffTime(
+    internal func calculateRetryBackoffTime(
         forResponse httpURLResponse: HTTPURLResponse,
         retryCount: UInt
     ) -> TimeInterval {
@@ -646,10 +646,19 @@ extension HTTPClient {
         return calculateDefaultExponentialBackoffTimeInterval(withRetryCount: retryCount)
     }
 
-    func calculateDefaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
+    internal func calculateDefaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
+        // Never wait for the first retry (count 0)
+        guard retryCount > 0 else { return 0 }
+
+        // Since base is less than 1, we need to calculate the backoff by multiplying the base by
+        // 2^(retryCount-1). This will result in:
+        //
+        // retryCount 1: backoff = base * 2^0 = 0.25
+        // retryCount 2: backoff = base * 2^1 = 0.5
+        // retryCount 3: backoff = base * 2^2 = 1.0
         let base: TimeInterval = 0.25
         let maxBackoff: TimeInterval = 10.0
-        let backoff = min(pow(base, Double(retryCount)), maxBackoff)
+        let backoff = min(base * pow(2.0, Double(retryCount - 1)), maxBackoff)
         return backoff
     }
 }
