@@ -630,10 +630,6 @@ extension HTTPClient {
         forResponse httpURLResponse: HTTPURLResponse,
         retryCount: UInt
     ) -> TimeInterval {
-
-        // TODO:
-//        refactor the current etag usage to the new way of doing things
-
         // If this is our first retry and there's no eTag header, ensure there's no delay
         if httpURLResponse.allHeaderFields[ResponseHeader.eTag] == nil && retryCount == 1 {
             return TimeInterval(0)
