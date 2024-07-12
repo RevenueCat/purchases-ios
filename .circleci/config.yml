@@ -1406,6 +1406,7 @@ workflows:
             - equal:
                 - "run-manual-tests"
                 - << pipeline.parameters.action >>
+
     jobs:
       - backend-integration-tests-SK1
       - backend-integration-tests-SK2
