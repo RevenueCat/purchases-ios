@@ -23,6 +23,7 @@ enum Delay {
     case none
     case `default`
     case long
+    case timeInterval(TimeInterval)
 
     static func `default`(forBackgroundedApp inBackground: Bool) -> Self {
         return inBackground ? .default : .none
@@ -108,6 +109,8 @@ private extension Delay {
         case .none: return 0
         case .`default`: return 0
         case .long: return Self.maxJitter
+        case .timeInterval(let timeInterval):
+            return max(timeInterval - 0.1, 0)
         }
     }
 
@@ -116,6 +119,8 @@ private extension Delay {
         case .none: return 0
         case .`default`: return Self.maxJitter
         case .long: return Self.maxJitter * 2
+        case .timeInterval(let timeInterval):
+            return max(timeInterval + 0.1, 0)
         }
     }
 

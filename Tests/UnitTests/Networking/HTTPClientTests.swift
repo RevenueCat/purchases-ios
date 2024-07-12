@@ -69,7 +69,8 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultTimeout.seconds)
+                          requestTimeout: defaultTimeout.seconds,
+                          operationDispatcher: MockOperationDispatcher())
     }
 
 }
