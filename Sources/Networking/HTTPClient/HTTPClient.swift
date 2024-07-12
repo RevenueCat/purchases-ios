@@ -633,7 +633,11 @@ extension HTTPClient {
 
         // TODO:
 //        refactor the current etag usage to the new way of doing things
-//        for first retry with no header, make sure that there’s no delay to preserve the exact behavior we currently have
+
+        // If this is our first retry and there's no eTag header, ensure there's no delay
+        if httpURLResponse.allHeaderFields[ResponseHeader.eTag] == nil && retryCount == 1 {
+            return TimeInterval(0)
+        }
 
         // Use the retry after value from the backend if present
         if let retryAfterHeaderValue = httpURLResponse.allHeaderFields[ResponseHeader.retryAfter.rawValue] as? String {
