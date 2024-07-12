@@ -33,7 +33,7 @@ class HTTPClient {
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    private let retryOptions: RetryOptions
+    private let retryOptions: ExponentialRetryOptions
     private let operationDispatcher: OperationDispatcher
 
     init(apiKey: String,
@@ -42,7 +42,7 @@ class HTTPClient {
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         retryOptions: RetryOptions = .default,
+         retryOptions: ExponentialRetryOptions = .default,
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher) {
@@ -283,23 +283,30 @@ internal extension HTTPClient {
         }
     }
 
-    struct RetryOptions: CustomStringConvertible {
+    struct ExponentialRetryOptions: CustomStringConvertible {
 
         let retriableStatusCodes: Set<HTTPStatusCode>
+        let baseBackoff: TimeInterval
+        let maxBackoff: TimeInterval
         let maxNumberOfRetries: UInt
 
         var description: String {
             """
-            <\(type(of: self)):
+            <\(type(of: self)): retriableStatusCodes=\(retriableStatusCodes.debugDescription)
+            baseBackoff=\(baseBackoff.debugDescription)
+            maxBackoff=\(maxBackoff.debugDescription)
+            maxNumberOfRetries=\(maxNumberOfRetries)
             """
         }
     }
 
 }
 
-internal extension HTTPClient.RetryOptions {
-    static let `default` = HTTPClient.RetryOptions(
+internal extension HTTPClient.ExponentialRetryOptions {
+    static let `default` = HTTPClient.ExponentialRetryOptions(
         retriableStatusCodes: Set([.tooManyRequests]),
+        baseBackoff: TimeInterval(0.25),
+        maxBackoff: TimeInterval(3.0),
         maxNumberOfRetries: 3
     )
 }
@@ -669,19 +676,25 @@ extension HTTPClient {
     }
 
     internal func calculateDefaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
-        // Never wait for the first retry (count 0)
+        // Never wait for an original request
         guard retryCount > 0 else { return 0 }
 
-        // Since base is less than 1, we need to calculate the backoff by multiplying the base by
-        // 2^(retryCount-1). This will result in:
-        //
-        // retryCount 1: backoff = base * 2^0 = 0.25
-        // retryCount 2: backoff = base * 2^1 = 0.5
-        // retryCount 3: backoff = base * 2^2 = 1.0
-        let base: TimeInterval = 0.25
-        let maxBackoff: TimeInterval = 10.0
-        let backoff = min(base * pow(2.0, Double(retryCount - 1)), maxBackoff)
-        return backoff
+        let baseBackoff = self.retryOptions.baseBackoff
+        if baseBackoff < 1 {
+            // Since base is less than 1, we need to calculate the backoff by multiplying the baseBackoff by
+            // 2^(retryCount-1). This will result in:
+            //
+            // retryCount 1: backoff = baseBackoff * 2^0 = 0.25
+            // retryCount 2: backoff = baseBackoff * 2^1 = 0.5
+            // retryCount 3: backoff = baseBackoff * 2^2 = 1.0
+            return min(baseBackoff * pow(2.0, Double(retryCount - 1)), self.retryOptions.maxBackoff)
+        } else {
+            // If baseBackoff is greater than or equal to 1, just use baseBackoff^retryCount:
+            // retryCount 1: backoff = baseBackoff^1
+            // retryCount 2: backoff = baseBackoff^2
+            // ...
+            return min(pow(baseBackoff, Double(retryCount)), self.retryOptions.maxBackoff)
+        }
     }
 }
 
