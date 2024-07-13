@@ -52,7 +52,15 @@ struct Template7View: TemplateViewType {
     private var purchaseHandler: PurchaseHandler
 
     private var showTierSelector: Bool {
-        return self.configuration.configuration.tiers.count > 1
+        return self.tiers.count > 1
+    }
+
+    private var displayableTiers: [PaywallData.Tier] {
+        // Filter out to display tiers only
+        // Tiers may not exist in self.tiers if there are no products available
+        return self.configuration.configuration.tiers.filter({ tier in
+            return self.tiers[tier] != nil
+        })
     }
 
     init(_ configuration: TemplateViewConfiguration) {
@@ -200,7 +208,7 @@ struct Template7View: TemplateViewType {
         Group {
             if self.showTierSelector {
                 TierSelectorView(
-                    tiers: self.configuration.configuration.tiers,
+                    tiers: self.displayableTiers,
                     tierNames: self.tierNames,
                     selectedTier: self.$selectedTier,
                     fonts: self.configuration.fonts,
