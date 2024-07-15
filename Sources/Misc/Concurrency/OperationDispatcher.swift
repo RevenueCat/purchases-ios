@@ -110,7 +110,7 @@ private extension Delay {
         case .`default`: return 0
         case .long: return Self.maxJitter
         case .timeInterval(let timeInterval):
-            return max(timeInterval - 0.1, 0)
+            return max(timeInterval, 0)
         }
     }
 
@@ -120,7 +120,7 @@ private extension Delay {
         case .`default`: return Self.maxJitter
         case .long: return Self.maxJitter * 2
         case .timeInterval(let timeInterval):
-            return max(timeInterval + 0.1, 0)
+            return max(timeInterval, 0)
         }
     }
 
