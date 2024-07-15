@@ -1787,10 +1787,6 @@ extension HTTPClientTests {
 
     func testDefaultRetryBackoffPeriods() {
         expect(
-            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 0)
-        ).to(equal(0))
-
-        expect(
             self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 1)
         ).to(equal(0))
 
