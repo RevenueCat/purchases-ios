@@ -330,7 +330,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation).to(beNil())
         expect(viewModel.state) == .error(error)
     }
-    
+
     private func reformat(ISO8601Date: String) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
