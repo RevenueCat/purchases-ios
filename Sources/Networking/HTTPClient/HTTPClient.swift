@@ -622,13 +622,14 @@ extension HTTPClient {
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
     ) -> Bool {
-        print("In retry! retryCount: \(request.retryCount), count: \(self.retryBackoffIntervals.count)")
         guard let httpURLResponse = httpURLResponse,
               shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return false }
 
-        // retryCount is incremented before the retry is executed, so don't stop retries if
-        // retryCount == self.retryOptions.maxNumberOfRetries
-        guard request.retryCount < self.retryBackoffIntervals.count else {
+        // At this point, retryCount hasn't been incremented yet, so we'll need to do it early here
+        // to determine if another retry is appropriate.
+        let nextRetryCount = request.retryCount + 1
+
+        guard nextRetryCount <= self.retryBackoffIntervals.count else {
             Logger.error(
                 NetworkStrings.api_request_failed_all_retries(
                     httpMethod: request.method.httpMethod,
@@ -641,7 +642,7 @@ extension HTTPClient {
 
         let retryBackoffInterval: TimeInterval = calculateRetryBackoffTime(
             forResponse: httpURLResponse,
-            retryCount: request.retryCount
+            retryCount: nextRetryCount
         )
 
         Logger.debug(
@@ -679,8 +680,18 @@ extension HTTPClient {
         return defaultExponentialBackoffTimeInterval(withRetryCount: retryCount)
     }
 
+    /// Returns the exponential backoff time interval for a given retry count.
+    ///
+    /// This function calculates the backoff time interval for a given retry count based on a predefined
+    /// list of backoff intervals. The `retryCount` is not 0-indexed and should start with 1.
+    ///
+    /// - Parameter retryCount: The count of the retry attempt, starting from 1.
+    /// - Returns: The backoff time interval for the given retry count. If the retry count exceeds
+    ///   the predefined list of backoff intervals, it returns 0.
     internal func defaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
-        return retryCount < self.retryBackoffIntervals.count ? self.retryBackoffIntervals[Int(retryCount)] : 0
+        return retryCount - 1 < self.retryBackoffIntervals.count
+        ? self.retryBackoffIntervals[Int(max(retryCount - 1, 0))]
+        : 0
     }
 }
 
