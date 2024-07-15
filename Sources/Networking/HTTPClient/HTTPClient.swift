@@ -632,7 +632,7 @@ extension HTTPClient {
     ) {
         // retryCount is incremented before the retry is executed, so don't stop retries if
         // retryCount == self.retryOptions.maxNumberOfRetries
-        guard request.retryCount > self.retryOptions.maxNumberOfRetries else { return }
+        guard request.retryCount <= self.retryOptions.maxNumberOfRetries else { return }
         guard let httpURLResponse = httpURLResponse else { return }
         guard shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
 
