@@ -37,8 +37,7 @@ class HTTPClient {
     private let operationDispatcher: OperationDispatcher
 
     private let retryBackoffIntervals: [TimeInterval] = [
-        TimeInterval(0),    // This represents the initial request and won't actually be used in our retry logic
-        TimeInterval(0),    // The first retry
+        TimeInterval(0),
         TimeInterval(0.25),
         TimeInterval(0.5)
     ]
@@ -438,6 +437,7 @@ private extension HTTPClient {
 
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
+            var requestRetryScheduled = false
 
             switch response {
             case let .success(response):
@@ -467,10 +467,12 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
+                requestRetryScheduled = self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
             }
 
-            request.completionHandler?(response)
+            if !requestRetryScheduled {
+                request.completionHandler?(response)
+            }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
                                                           path: request.path))
@@ -606,24 +608,35 @@ private extension HTTPClient {
 
 // MARK: - Request Retry Logic
 extension HTTPClient {
+
+    /// Evaluates whether a request should be retried and schedules a retry if necessary.
+    ///
+    /// This function checks the HTTP response status code to determine if the request should be retried.
+    /// If the retry conditions are met, it schedules the request to be retried after a backoff interval.
+    ///
+    /// - Parameters:
+    ///   - request: The original `HTTPClient.Request` that may need to be retried.
+    ///   - httpURLResponse: An optional `HTTPURLResponse` that contains the status code of the response.
+    /// - Returns: A Boolean value indicating whether the request was scheduled for a retry.
     internal func retryRequestIfNeeded(
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
-    ) {
+    ) -> Bool {
+        print("In retry! retryCount: \(request.retryCount), count: \(self.retryBackoffIntervals.count)")
         guard let httpURLResponse = httpURLResponse,
-              shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
-        
+              shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return false }
+
         // retryCount is incremented before the retry is executed, so don't stop retries if
         // retryCount == self.retryOptions.maxNumberOfRetries
-        guard request.retryCount <= self.retryBackoffIntervals.count else {
+        guard request.retryCount < self.retryBackoffIntervals.count else {
             Logger.error(
                 NetworkStrings.api_request_failed_all_retries(
                     httpMethod: request.method.httpMethod,
                     path: request.path,
-                    retryCount: request.retryCount - 1
+                    retryCount: request.retryCount
                 )
             )
-            return
+            return false
         }
 
         let retryBackoffInterval: TimeInterval = calculateRetryBackoffTime(
@@ -643,9 +656,8 @@ extension HTTPClient {
             self.state.modify {
                 $0.queuedRequests.insert(retriedRequest, at: 0)
             }
-
-            self.beginNextRequest()
         }
+        return true
     }
 
     internal func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {

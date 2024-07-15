@@ -632,6 +632,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
         expect(result?.value?.body) == responseData
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
     }
 
     func testServerSide200WithETagInRequest() {
@@ -1781,27 +1782,96 @@ extension HTTPClientTests {
         )!
 
         let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
-        expect(backoffPeriod).to(equal(TimeInterval(0.5)))  // 0.1s == 100ms
+        expect(backoffPeriod).to(equal(TimeInterval(0.25)))
     }
 
     func testDefaultRetryBackoffPeriods() {
         expect(
-            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 0)
+            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 0)
         ).to(equal(0))
 
         expect(
-            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 1)
+            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 1)
+        ).to(equal(0))
+
+        expect(
+            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 2)
         ).to(equal(0.25))
 
         expect(
-            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 2)
+            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 3)
         ).to(equal(0.5))
-
-        expect(
-            self.client.calculateDefaultExponentialBackoffTimeInterval(withRetryCount: 3)
-        ).to(equal(1))
     }
 
+    func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
+        var requestCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(requestCount).to(equal(4)) // 1 original request + 3 retries
+
+        expect(result).toNot(beNil())
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(result?.error)
+        expect(error) == .errorResponse(
+            .init(code: .unknownError,
+                  originalCode: 0,
+                  message: nil),
+            .tooManyRequests
+        )
+        expect(error.isServerDown) == false
+        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
+        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.25 seconds.")
+        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.5 seconds.")
+        self.logger.verifyMessageWasLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
+
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testSucceedsIfAlwaysGetsSuccessAfterOneRetry() throws {
+        var requestCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+
+            if requestCount >= 2 {
+                return .emptySuccessResponse()
+            } else {
+                return .emptyTooManyRequestsResponse()
+            }
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(requestCount).to(equal(2)) // 1 original request + 1 retries
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+
+        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
+
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.25 seconds.")
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.5 seconds.")
+        self.logger.verifyMessageWasNotLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
+
+        expect(self.signing.requests).to(beEmpty())
+    }
 }
 
 // swiftlint:disable large_tuple
@@ -1836,6 +1906,14 @@ extension HTTPStubsResponse {
         // This creates a new response each time so modifications in one test don't affect others.
         return .init(data: Data(),
                      statusCode: .success,
+                     headers: nil)
+    }
+
+    static func emptyTooManyRequestsResponse() -> HTTPStubsResponse {
+        // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
+        // This creates a new response each time so modifications in one test don't affect others.
+        return .init(data: Data(),
+                     statusCode: .tooManyRequests,
                      headers: nil)
     }
 
