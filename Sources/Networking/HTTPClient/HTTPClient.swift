@@ -630,11 +630,21 @@ extension HTTPClient {
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
     ) {
+        guard let httpURLResponse = httpURLResponse,
+              shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
+        
         // retryCount is incremented before the retry is executed, so don't stop retries if
         // retryCount == self.retryOptions.maxNumberOfRetries
-        guard request.retryCount <= self.retryOptions.maxNumberOfRetries else { return }
-        guard let httpURLResponse = httpURLResponse else { return }
-        guard shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return }
+        guard request.retryCount <= self.retryOptions.maxNumberOfRetries else {
+            Logger.error(
+                NetworkStrings.api_request_failed_all_retries(
+                    httpMethod: request.method.httpMethod,
+                    path: request.path,
+                    retryCount: request.retryCount - 1
+                )
+            )
+            return
+        }
 
         let retryBackoffInterval: TimeInterval = calculateRetryBackoffTime(
             forResponse: httpURLResponse,
