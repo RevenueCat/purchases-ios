@@ -29,6 +29,7 @@ enum NetworkStrings {
                             metadata: HTTPClient.ResponseMetadata?)
     case api_request_failed_status_code(HTTPStatusCode)
     case api_request_queued_for_retry(httpMethod: String, path: String, backoffInterval: TimeInterval)
+    case api_request_failed_all_retries(httpMethod: String, path: String, retryCount: UInt)
     case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
     case enqueing_operation(CacheableNetworkOperation.Type, cacheKey: String)
     case creating_json_error(error: String)
@@ -133,7 +134,10 @@ extension NetworkStrings: LogMessage {
             return "Request was handled by load shedder: \(path.relativePath)"
 
         case let .api_request_queued_for_retry(httpMethod, path, backoffInterval):
-            return "Queued request \(httpMethod) to \(path) for retry in \(backoffInterval) seconds."
+            return "Queued request \(httpMethod) \(path) for retry in \(backoffInterval) seconds."
+
+        case let .api_request_failed_all_retries(httpMethod, path, retryCount):
+            return "Request \(httpMethod) \(path) failed all \(retryCount) retries."
 
         #if DEBUG
         case let .api_request_forcing_server_error(request):
