@@ -116,10 +116,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.durationTitle) == "month"
         expect(viewModel.subscriptionInformation?.price) == "$2.99"
 
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        expect(viewModel.subscriptionInformation?.nextRenewalString) ==
-            formatter.string(from: ISO8601DateFormatter().date(from: expirationDate)!)
+        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDate)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productId
     }
 
@@ -177,10 +174,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.durationTitle) == "year"
         expect(viewModel.subscriptionInformation?.price) == "$29.99"
 
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        expect(viewModel.subscriptionInformation?.nextRenewalString) ==
-            formatter.string(from: ISO8601DateFormatter().date(from: expirationDateFirst)!)
+        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
     }
 
@@ -244,10 +238,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.durationTitle) == "year"
         expect(viewModel.subscriptionInformation?.price) == "$29.99"
 
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        expect(viewModel.subscriptionInformation?.nextRenewalString) ==
-            formatter.string(from: ISO8601DateFormatter().date(from: expirationDateFirst)!)
+        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
     }
 
@@ -312,10 +303,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.durationTitle) == "month"
         expect(viewModel.subscriptionInformation?.price) == "$2.99"
 
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        expect(viewModel.subscriptionInformation?.nextRenewalString) ==
-            formatter.string(from: ISO8601DateFormatter().date(from: expirationDateSecond)!)
+        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateSecond)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdTwo
     }
 
@@ -341,6 +329,12 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(viewModel.subscriptionInformation).to(beNil())
         expect(viewModel.state) == .error(error)
+    }
+    
+    private func reformat(ISO8601Date: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: ISO8601DateFormatter().date(from: ISO8601Date)!)
     }
 
 }
