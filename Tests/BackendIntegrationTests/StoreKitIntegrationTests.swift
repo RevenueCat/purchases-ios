@@ -932,6 +932,51 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoActiveSubscription(customerInfo)
     }
 
+    func testVerifyPurchaseGrantsEntitlementsThroughOnRetryAfter429() async throws {
+        let tooManyRequestsError: NetworkError = NetworkError.errorResponse(
+            .init(
+                code: .unknownBackendError,
+                originalCode: BackendErrorCode.unknownBackendError.rawValue
+            ),
+            .tooManyRequests
+        )
+
+        // Ensure that the first time POST /receipt is called, we mock a 429 error
+        // and then proceed normally on subsequent requests
+        self.setForcedServerErrors([
+            "receipts": [
+                tooManyRequestsError
+            ]
+        ])
+        let product = try await self.monthlyPackage.storeProduct
+        let customerInfo = try await self.purchases.purchase(product: product).customerInfo
+        try await self.verifyEntitlementWentThrough(customerInfo)
+        expect(customerInfo.allPurchasedProductIdentifiers) == [
+            product.productIdentifier
+        ]
+    }
+
+    func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
+        let tooManyRequestsError: NetworkError = NetworkError.errorResponse(
+            .init(
+                code: .unknownBackendError,
+                originalCode: BackendErrorCode.unknownBackendError.rawValue
+            ),
+            .tooManyRequests
+        )
+
+        // Ensure that the each time POST /receipt is called, we mock a 429 error
+        self.setForcedServerErrors([
+            "receipts": Array(repeating: tooManyRequestsError, count: 4)
+        ])
+        let product = try await self.monthlyPackage.storeProduct
+        do {
+            _ = try await self.purchases.purchase(product: product)
+            fail("Expected purchases.purchase to fail after exhausting retry count with 429 responses")
+        } catch {
+            expect(error).to(matchError(ErrorCode.networkError))
+        }
+    }
 }
 
 private extension BaseStoreKitIntegrationTests {

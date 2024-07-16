@@ -1834,11 +1834,11 @@ extension HTTPClientTests {
             }
         }
 
-        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadCount).to(equal(3))
-        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParams).to(equal([
-            .timeInterval(0),
-            .timeInterval(0.75),
-            .timeInterval(3)
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalCount).to(equal(3))
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalParams).to(equal([
+            TimeInterval(0),
+            TimeInterval(0.75),
+            TimeInterval(3)
         ]))
     }
 

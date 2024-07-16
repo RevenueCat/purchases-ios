@@ -36,6 +36,10 @@ class HTTPClient {
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
 
+    #if DEBUG
+    private var pathRequestCounts: [String: Int] = [:]
+    #endif
+
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
         TimeInterval(0.75),
@@ -519,6 +523,45 @@ private extension HTTPClient {
 
         let requestStartTime = self.dateProvider.now()
 
+        #if DEBUG
+        // If we're running tests, allow for the forcing of certain error responses from the backend
+        if ProcessInfo.isRunningUnitTests
+            || ProcessInfo.isRunningIntegrationTests
+            || ProcessInfo.isRunningRevenueCatTests {
+            let path = request.httpRequest.path.pathComponent
+            let requestCountForPath = (self.pathRequestCounts[path] ?? -1) + 1
+            self.pathRequestCounts[path] = requestCountForPath
+            if let forcedServerErrors = self.systemInfo.dangerousSettings.internalSettings.forcedServerErrors,
+               let forcedErrorsForPath = forcedServerErrors[path],
+               requestCountForPath < forcedErrorsForPath.count {
+                let forcedError = forcedErrorsForPath[requestCountForPath]
+
+                var simulatedHTTPStatusCode: HTTPStatusCode
+                if case .errorResponse(_, let statusCode, _) = forcedError {
+                    simulatedHTTPStatusCode = statusCode
+                } else {
+                    simulatedHTTPStatusCode = .internalServerError
+                }
+
+                self.handle(
+                    urlResponse: HTTPURLResponse(
+                        url: urlRequest.url ?? URL(string: "api.revenuecat.com")!,
+                        statusCode: simulatedHTTPStatusCode.rawValue,
+                        httpVersion: nil,
+                        headerFields: [:]
+                    ),
+                    request: request,
+                    urlRequest: urlRequest,
+                    data: Data(),
+                    error: forcedError,
+                    requestStartTime: requestStartTime
+                )
+
+                return
+            }
+        }
+        #endif
+
         // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
@@ -655,11 +698,12 @@ extension HTTPClient {
                 backoffInterval: retryBackoffInterval
             )
         )
-        self.operationDispatcher.dispatchOnWorkerThread(delay: .timeInterval(retryBackoffInterval)) {
+        self.operationDispatcher.dispatchOnWorkerThread(after: retryBackoffInterval) {
             let retriedRequest = request.retriedRequest()
             self.state.modify {
                 $0.queuedRequests.insert(retriedRequest, at: 0)
             }
+            self.beginNextRequest()
         }
         return true
     }

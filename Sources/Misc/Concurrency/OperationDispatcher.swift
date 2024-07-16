@@ -18,7 +18,7 @@ import Foundation
 ///
 /// These delays prevent DDOS if a notification leads to many users opening an app at the same time,
 /// by spreading asynchronous operations over time.
-enum Delay: Equatable {
+enum JitterableDelay: Equatable {
 
     case none
     case `default`
@@ -57,7 +57,7 @@ class OperationDispatcher {
         Self.dispatchOnMainActor(block)
     }
 
-    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () -> Void) {
+    func dispatchOnWorkerThread(delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
         if delay.hasDelay {
             self.workerQueue.asyncAfter(deadline: .now() + delay.random(), execute: block)
         } else {
@@ -65,7 +65,11 @@ class OperationDispatcher {
         }
     }
 
-    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () async -> Void) {
+    func dispatchOnWorkerThread(after timeInterval: TimeInterval, block: @escaping @Sendable () -> Void) {
+        self.workerQueue.asyncAfter(deadline: .now() + timeInterval, execute: block)
+    }
+
+    func dispatchOnWorkerThread(delay: JitterableDelay = .none, block: @escaping @Sendable () async -> Void) {
         Task.detached(priority: .background) {
             if delay.hasDelay {
                 try? await Task.sleep(nanoseconds: DispatchTimeInterval(delay.random()).nanoseconds)
@@ -90,7 +94,7 @@ extension OperationDispatcher {
 // MARK: -
 
 /// Visible for testing
-extension Delay {
+extension JitterableDelay {
 
     var hasDelay: Bool {
         return self.maximum > 0
@@ -102,7 +106,7 @@ extension Delay {
 
 }
 
-private extension Delay {
+private extension JitterableDelay {
 
     var minimum: TimeInterval {
         switch self {
