@@ -337,6 +337,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
+
     let customerInfo: CustomerInfo
     let customerInfoError: Error?
     // StoreProducts keyed by productIdentifier.
@@ -391,9 +392,11 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class Fixtures {
+
     private init() {}
 
     class Subscription {
+
         let id: String
         let json: String
 
@@ -413,9 +416,11 @@ private class Fixtures {
             }
             """
         }
+
     }
 
     class Entitlement {
+
         let id: String
         let json: String
 
@@ -429,6 +434,7 @@ private class Fixtures {
             }
             """
         }
+
     }
 
     static func product(
