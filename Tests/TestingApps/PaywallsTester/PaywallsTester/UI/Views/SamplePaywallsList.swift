@@ -141,19 +141,19 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
-
-                #if os(iOS)
-                Button {
-                    self.presentingCustomerCenter = true
-                } label: {
-                    TemplateLabel(name: "Customer center (sheet)", icon: "person.fill")
-                }
-                #endif
-                
+            }
+            
+            Section("Customer Center") {
                 Button {
                     self.display = .customerCenter
                 } label: {
-                    TemplateLabel(name: "Customer Center (SwiftUI)", icon: "person.fill.questionmark")
+                    TemplateLabel(name: "SwiftUI", icon: "person.fill.questionmark")
+                }
+                
+                Button {
+                    self.presentingCustomerCenter = true
+                } label: {
+                    TemplateLabel(name: "Sheet", icon: "person.fill")
                 }
             }
         }
