@@ -144,7 +144,7 @@ struct SamplePaywallsList: View {
                 Button {
                     self.presentingCustomerCenter = true
                 } label: {
-                    TemplateLabel(name: "Customer center", icon: "person.fill")
+                    TemplateLabel(name: "Customer center (sheet)", icon: "person.fill")
                 }
                 #endif
             }
