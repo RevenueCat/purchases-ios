@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if os(iOS)
 
 /// Presentation options to use with the [presentCustomerCenter](x-source-tag://presentCustomerCenter) View modifiers.
 public enum CustomerCenterPresentationMode {
@@ -37,6 +37,8 @@ extension CustomerCenterPresentationMode {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
+@available(watchOS, unavailable, message: "CustomerCenterView does not support watchOS yet")
+@available(visionOS, unavailable, message: "CustomerCenterView does not support visionOS yet")
 extension View {
 
     /// Presents the ``CustomerCenter``.
@@ -70,6 +72,8 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 private struct PresentingCustomerCenterModifier: ViewModifier {
 
     var presentationMode: CustomerCenterPresentationMode

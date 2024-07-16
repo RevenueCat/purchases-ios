@@ -140,7 +140,7 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
 
-                #if !os(watchOS)
+                #if os(iOS)
                 Button {
                     self.presentingCustomerCenter = true
                 } label: {
@@ -151,9 +151,11 @@ struct SamplePaywallsList: View {
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
+        #if os(iOS)
         .presentCustomerCenter(isPresented: self.$presentingCustomerCenter) {
             self.presentingCustomerCenter = false
         }
+        #endif
     }
 
     #if os(watchOS)
