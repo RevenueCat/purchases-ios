@@ -951,6 +951,8 @@ jobs:
     parameters:
       xcode_version:
         type: string
+        # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
+        # https://github.com/RevenueCat/purchases-ios/pull/1997
         default: '14.3.0'
       install_swiftlint:
         type: boolean
@@ -970,6 +972,8 @@ jobs:
     parameters:
       xcode_version:
         type: string
+        # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
+        # https://github.com/RevenueCat/purchases-ios/pull/1997
         default: '14.3.0'
       install_swiftlint:
         type: boolean
