@@ -87,6 +87,8 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
+        case .customerCenter:
+            CustomerCenterView()
         }
     }
 
@@ -147,6 +149,12 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Customer center (sheet)", icon: "person.fill")
                 }
                 #endif
+                
+                Button {
+                    self.display = .customerCenter
+                } label: {
+                    TemplateLabel(name: "Customer Center (SwiftUI)", icon: "person.fill.questionmark")
+                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -207,6 +215,7 @@ private extension SamplePaywallsList {
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
+        case customerCenter
 
     }
 
@@ -230,6 +239,9 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .unrecognizedPaywall:
             return "unrecognized"
+            
+        case .customerCenter:
+            return "customer-center"
         }
     }
 
