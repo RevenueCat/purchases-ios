@@ -1398,18 +1398,13 @@ workflows:
   # and add a parameter called "run-manual-tests"
   all-tests:
     when:
-      and:
-        - not:
-            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - not: << pipeline.parameters.generate_snapshots >>
-        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
-        - or:
-            - matches: 
-                pattern: "^release/.*$"
-                value: << pipeline.git.branch >>
-            - equal:
-                - "run-manual-tests"
-                - << pipeline.parameters.action >>
+      or:
+        - matches: 
+            pattern: "^release/.*$"
+            value: << pipeline.git.branch >>
+        - equal:
+            - "run-manual-tests"
+            - << pipeline.parameters.action >>
     jobs:
       - backend-integration-tests-SK1
       - backend-integration-tests-SK2
