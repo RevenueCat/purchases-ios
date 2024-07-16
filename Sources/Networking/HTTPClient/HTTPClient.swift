@@ -130,6 +130,7 @@ class HTTPClient {
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
+            RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]
 
@@ -195,6 +196,7 @@ extension HTTPClient {
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"
+        case retryCount = "X-Retry-Count"
 
     }
 
@@ -274,6 +276,7 @@ internal extension HTTPClient {
         func retriedRequest() -> Self {
             var copy = self
             copy.retryCount += 1
+            copy.headers[RequestHeader.retryCount.rawValue] = "\(copy.retryCount)"
 
             return copy
         }
