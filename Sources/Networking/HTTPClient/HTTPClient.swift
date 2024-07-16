@@ -670,10 +670,9 @@ extension HTTPClient {
         retryCount: UInt
     ) -> TimeInterval {
         // Use the retry after value from the backend if present
-        if let retryAfterHeaderValue = httpURLResponse.allHeaderFields[ResponseHeader.retryAfter.rawValue] as? String {
-            if let retryAfterMS = Double(retryAfterHeaderValue) {
-                return TimeInterval(milliseconds: retryAfterMS)
-            }
+        if let retryAfterHeaderValue = httpURLResponse.allHeaderFields[ResponseHeader.retryAfter.rawValue] as? String,
+            let retryAfterMS = Double(retryAfterHeaderValue) {
+            return TimeInterval(milliseconds: retryAfterMS)
         }
 
         // Otherwise, use a default value
@@ -689,9 +688,9 @@ extension HTTPClient {
     /// - Returns: The backoff time interval for the given retry count. If the retry count exceeds
     ///   the predefined list of backoff intervals, it returns 0.
     internal func defaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
-        return retryCount - 1 < self.retryBackoffIntervals.count
-        ? self.retryBackoffIntervals[Int(max(retryCount - 1, 0))]
-        : 0
+        let backoffIntervalIndex = Int(max(retryCount - 1, 0))
+        let backoffIntervalIndexIsWithinBounds = backoffIntervalIndex < self.retryBackoffIntervals.count
+        return backoffIntervalIndexIsWithinBounds ? self.retryBackoffIntervals[backoffIntervalIndex] : 0
     }
 }
 
