@@ -115,7 +115,6 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.title) == "title"
         expect(viewModel.subscriptionInformation?.durationTitle) == "month"
         expect(viewModel.subscriptionInformation?.price) == "$2.99"
-
         expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDate)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productId
     }
@@ -173,7 +172,6 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.title) == "yearly"
         expect(viewModel.subscriptionInformation?.durationTitle) == "year"
         expect(viewModel.subscriptionInformation?.price) == "$29.99"
-
         expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
     }
@@ -237,7 +235,6 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.title) == "yearly"
         expect(viewModel.subscriptionInformation?.durationTitle) == "year"
         expect(viewModel.subscriptionInformation?.price) == "$29.99"
-
         expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
     }
@@ -302,7 +299,6 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.title) == "monthly"
         expect(viewModel.subscriptionInformation?.durationTitle) == "month"
         expect(viewModel.subscriptionInformation?.price) == "$2.99"
-
         expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateSecond)
         expect(viewModel.subscriptionInformation?.productIdentifier) == productIdTwo
     }
