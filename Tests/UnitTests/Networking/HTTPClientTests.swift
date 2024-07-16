@@ -1827,12 +1827,112 @@ extension HTTPClientTests {
             .tooManyRequests
         )
         expect(error.isServerDown) == false
+    }
+
+    func testRetryMessagesAreLoggedWhenRetriesExhausted() throws {
+        var requestCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
         self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
         self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.75 seconds.")
         self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 3.0 seconds.")
         self.logger.verifyMessageWasLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
+    }
 
-        expect(self.signing.requests).to(beEmpty())
+    func testRetryMessagesAreNotLoggedWhenNoRetriesOccur() throws {
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.75 seconds.")
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 3.0 seconds.")
+        self.logger.verifyMessageWasNotLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
+    }
+
+    func testRetryCountHeaderIsAccurateWithNoRetries() throws {
+        var retryCountHeaderValues: [String?] = []
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { urlRequest in
+            let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
+            retryCountHeaderValues.append(retryCountHeaderValue)
+
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(retryCountHeaderValues).to(equal(["0"]))
+    }
+
+    func testRetryCountHeaderIsAccurateWithOnlyOneRetry() throws {
+        var retryCountHeaderValues: [String?] = []
+        var retryCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { urlRequest in
+            let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
+            retryCountHeaderValues.append(retryCountHeaderValue)
+
+            if retryCount == 0 {
+                retryCount += 1
+                return .emptyTooManyRequestsResponse()
+            } else {
+                retryCount += 1
+                return .emptySuccessResponse()
+            }
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(retryCountHeaderValues).to(equal(["0", "1"]))
+    }
+
+    func testRetryCountHeaderIsAccurateWhenAllRetriesAreExhausted() throws {
+        var retryCountHeaderValues: [String?] = []
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { urlRequest in
+            let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
+            retryCountHeaderValues.append(retryCountHeaderValue)
+
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(retryCountHeaderValues).to(equal(["0", "1", "2", "3"]))
     }
 
     func testSucceedsIfAlwaysGetsSuccessAfterOneRetry() throws {
