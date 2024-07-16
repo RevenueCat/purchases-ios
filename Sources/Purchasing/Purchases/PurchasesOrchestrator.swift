@@ -1131,9 +1131,11 @@ private extension PurchasesOrchestrator {
 
                     // We dont have an AppTransactionJWS, and no transaction, return error
                     if appTransactionJWS == nil {
-                        completion?(.failure(ErrorUtils.storeProblemError(
-                            withMessage: Strings.storeKit.sk2_app_transaction_unavailable.description
-                        )))
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion?(.failure(ErrorUtils.storeProblemError(
+                                withMessage: Strings.storeKit.sk2_app_transaction_unavailable.description
+                            )))
+                        }
                         return
                     }
 
