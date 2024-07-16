@@ -73,7 +73,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.isLoaded) == true
     }
 
-    func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async {
+    func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {
         // Arrange
         let productId = "com.revenuecat.product"
         let purchaseDate = "2022-04-12T00:03:28Z"
@@ -108,18 +108,18 @@ class ManageSubscriptionsViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         // Assert
-        expect(viewModel.subscriptionInformation).toNot(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.state) == .success
 
-        expect(viewModel.subscriptionInformation?.title) == "title"
-        expect(viewModel.subscriptionInformation?.durationTitle) == "month"
-        expect(viewModel.subscriptionInformation?.price) == "$2.99"
-        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDate)
-        expect(viewModel.subscriptionInformation?.productIdentifier) == productId
+        let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
+        expect(subscriptionInformation.title) == "title"
+        expect(subscriptionInformation.durationTitle) == "month"
+        expect(subscriptionInformation.price) == "$2.99"
+        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDate)
+        expect(subscriptionInformation.productIdentifier) == productId
     }
 
-    func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsOneEntitlement() async {
+    func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsOneEntitlement() async throws {
         // Arrange
         let productIdOne = "com.revenuecat.product1"
         let productIdTwo = "com.revenuecat.product2"
@@ -165,18 +165,18 @@ class ManageSubscriptionsViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         // Assert
-        expect(viewModel.subscriptionInformation).toNot(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.state) == .success
 
-        expect(viewModel.subscriptionInformation?.title) == "yearly"
-        expect(viewModel.subscriptionInformation?.durationTitle) == "year"
-        expect(viewModel.subscriptionInformation?.price) == "$29.99"
-        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
-        expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
+        let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
+        expect(subscriptionInformation.title) == "yearly"
+        expect(subscriptionInformation.durationTitle) == "year"
+        expect(subscriptionInformation.price) == "$29.99"
+        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
+        expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
-    func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async {
+    func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async throws {
         // Arrange
         let productIdOne = "com.revenuecat.product1"
         let productIdTwo = "com.revenuecat.product2"
@@ -228,18 +228,18 @@ class ManageSubscriptionsViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         // Assert
-        expect(viewModel.subscriptionInformation).toNot(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.state) == .success
 
-        expect(viewModel.subscriptionInformation?.title) == "yearly"
-        expect(viewModel.subscriptionInformation?.durationTitle) == "year"
-        expect(viewModel.subscriptionInformation?.price) == "$29.99"
-        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
-        expect(viewModel.subscriptionInformation?.productIdentifier) == productIdOne
+        let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
+        expect(subscriptionInformation.title) == "yearly"
+        expect(subscriptionInformation.durationTitle) == "year"
+        expect(subscriptionInformation.price) == "$29.99"
+        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
+        expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
-    func testShouldShowAppleSubscription_whenUserHasBothGoogleAndAppleSubscriptions() async {
+    func testShouldShowAppleSubscription_whenUserHasBothGoogleAndAppleSubscriptions() async throws {
         // Arrange
         let productIdOne = "com.revenuecat.product1"
         let productIdTwo = "com.revenuecat.product2"
@@ -291,16 +291,16 @@ class ManageSubscriptionsViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         // Assert
-        expect(viewModel.subscriptionInformation).toNot(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.state) == .success
 
+        let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         // We expect to see the monthly one, because the yearly one is a Google subscription.
-        expect(viewModel.subscriptionInformation?.title) == "monthly"
-        expect(viewModel.subscriptionInformation?.durationTitle) == "month"
-        expect(viewModel.subscriptionInformation?.price) == "$2.99"
-        expect(viewModel.subscriptionInformation?.nextRenewalString) == reformat(ISO8601Date: expirationDateSecond)
-        expect(viewModel.subscriptionInformation?.productIdentifier) == productIdTwo
+        expect(subscriptionInformation.title) == "monthly"
+        expect(subscriptionInformation.durationTitle) == "month"
+        expect(subscriptionInformation.price) == "$2.99"
+        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDateSecond)
+        expect(subscriptionInformation.productIdentifier) == productIdTwo
     }
 
     func testLoadScreenNoActiveSubscription() async {
