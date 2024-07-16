@@ -1782,7 +1782,7 @@ extension HTTPClientTests {
         )!
 
         let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
-        expect(backoffPeriod).to(equal(TimeInterval(0.25)))
+        expect(backoffPeriod).to(equal(TimeInterval(0.75)))
     }
 
     func testDefaultRetryBackoffPeriods() {
@@ -1792,11 +1792,11 @@ extension HTTPClientTests {
 
         expect(
             self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 2)
-        ).to(equal(0.25))
+        ).to(equal(0.75))
 
         expect(
             self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 3)
-        ).to(equal(0.5))
+        ).to(equal(3))
     }
 
     func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
@@ -1828,8 +1828,8 @@ extension HTTPClientTests {
         )
         expect(error.isServerDown) == false
         self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
-        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.25 seconds.")
-        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.5 seconds.")
+        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.75 seconds.")
+        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 3.0 seconds.")
         self.logger.verifyMessageWasLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
 
         expect(self.signing.requests).to(beEmpty())

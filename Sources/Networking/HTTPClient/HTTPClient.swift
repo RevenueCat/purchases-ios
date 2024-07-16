@@ -38,8 +38,8 @@ class HTTPClient {
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
-        TimeInterval(0.25),
-        TimeInterval(0.5)
+        TimeInterval(0.75),
+        TimeInterval(3)
     ]
 
     init(apiKey: String,
