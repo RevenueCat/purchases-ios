@@ -704,6 +704,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "watchos"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1192,6 +1196,7 @@ workflows:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-macos
+      - run-test-watchos
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
