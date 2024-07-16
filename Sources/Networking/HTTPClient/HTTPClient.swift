@@ -508,7 +508,7 @@ private extension HTTPClient {
         }
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next
     func start(request: Request) {
         let urlRequest = self.convert(request: request)
 
@@ -525,42 +525,11 @@ private extension HTTPClient {
         let requestStartTime = self.dateProvider.now()
 
         #if DEBUG
-        // If we're running tests, allow for the forcing of certain error responses from the backend
-        if ProcessInfo.isRunningUnitTests
-            || ProcessInfo.isRunningIntegrationTests
-            || ProcessInfo.isRunningRevenueCatTests {
-            let path = request.httpRequest.path.pathComponent
-            let requestCountForPath = (self.pathRequestCounts[path] ?? -1) + 1
-            self.pathRequestCounts[path] = requestCountForPath
-            if let forcedServerErrors = self.systemInfo.dangerousSettings.internalSettings.forcedServerErrors,
-               let forcedErrorsForPath = forcedServerErrors[path],
-               requestCountForPath < forcedErrorsForPath.count {
-                let forcedError = forcedErrorsForPath[requestCountForPath]
-
-                var simulatedHTTPStatusCode: HTTPStatusCode
-                if case .errorResponse(_, let statusCode, _) = forcedError {
-                    simulatedHTTPStatusCode = statusCode
-                } else {
-                    simulatedHTTPStatusCode = .internalServerError
-                }
-
-                self.handle(
-                    urlResponse: HTTPURLResponse(
-                        url: urlRequest.url ?? URL(string: "api.revenuecat.com")!,
-                        statusCode: simulatedHTTPStatusCode.rawValue,
-                        httpVersion: nil,
-                        headerFields: [:]
-                    ),
-                    request: request,
-                    urlRequest: urlRequest,
-                    data: Data(),
-                    error: forcedError,
-                    requestStartTime: requestStartTime
-                )
-
-                return
-            }
-        }
+        failIfForcedErrorPresentForPath(
+            request: request,
+            urlRequest: urlRequest,
+            requestStartTime: requestStartTime
+        )
         #endif
 
         // swiftlint:disable:next redundant_void_return
@@ -651,6 +620,50 @@ private extension HTTPClient {
         }
     }
 
+    #if DEBUG
+    private func failIfForcedErrorPresentForPath(
+        request: Request,
+        urlRequest: URLRequest,
+        requestStartTime: Date
+    ) {
+        // If we're running tests, allow for the forcing of certain error responses from the backend
+        if ProcessInfo.isRunningUnitTests
+            || ProcessInfo.isRunningIntegrationTests
+            || ProcessInfo.isRunningRevenueCatTests {
+            let path = request.httpRequest.path.pathComponent
+            let requestCountForPath = (self.pathRequestCounts[path] ?? -1) + 1
+            self.pathRequestCounts[path] = requestCountForPath
+            if let forcedServerErrors = self.systemInfo.dangerousSettings.internalSettings.forcedServerErrors,
+               let forcedErrorsForPath = forcedServerErrors[path],
+               requestCountForPath < forcedErrorsForPath.count {
+                let forcedError = forcedErrorsForPath[requestCountForPath]
+
+                var simulatedHTTPStatusCode: HTTPStatusCode
+                if case .errorResponse(_, let statusCode, _) = forcedError {
+                    simulatedHTTPStatusCode = statusCode
+                } else {
+                    simulatedHTTPStatusCode = .internalServerError
+                }
+
+                self.handle(
+                    urlResponse: HTTPURLResponse(
+                        url: urlRequest.url ?? URL(string: "api.revenuecat.com")!,
+                        statusCode: simulatedHTTPStatusCode.rawValue,
+                        httpVersion: nil,
+                        headerFields: [:]
+                    ),
+                    request: request,
+                    urlRequest: urlRequest,
+                    data: Data(),
+                    error: forcedError,
+                    requestStartTime: requestStartTime
+                )
+
+                return
+            }
+        }
+    }
+    #endif
 }
 
 // MARK: - Request Retry Logic
