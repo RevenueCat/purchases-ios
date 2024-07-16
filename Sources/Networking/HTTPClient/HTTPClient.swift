@@ -508,7 +508,6 @@ private extension HTTPClient {
         }
     }
 
-    // swiftlint:disable:next
     func start(request: Request) {
         let urlRequest = self.convert(request: request)
 
