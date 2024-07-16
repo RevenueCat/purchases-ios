@@ -49,7 +49,6 @@ extension View {
     ///      .presentCustomerCenter()
     /// }
     /// ```
-
     /// - Parameter isPresented: Binding indicating whether the customer center should be displayed
     /// - Parameter onDismiss: Callback executed when the customer center wants to be dismissed.
     /// Make sure you stop presenting the customer center when this is called
