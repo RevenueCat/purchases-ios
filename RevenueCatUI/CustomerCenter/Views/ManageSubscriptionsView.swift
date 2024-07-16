@@ -142,20 +142,46 @@ struct SubscriptionDetailsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(subscriptionInformation.title) - \(subscriptionInformation.durationTitle)")
-                .font(.subheadline)
-                .padding([.horizontal, .top])
+            Text("\(subscriptionInformation.title)")
+                .font(.headline)
+                .padding([.bottom])
 
-            Text("\(subscriptionInformation.price)")
-                .font(.caption)
-                .foregroundColor(Color.gray)
-                .padding(.horizontal)
+            HStack(alignment: .center) {
+                Image(systemName: "coloncurrencysign.arrow.circlepath")
+                    .frame(width: 22)
+                VStack(alignment: .leading) {
+                    Text("Billing cycle")
+                        .font(.caption2)
+                        .foregroundColor(Color.gray)
+                    Text("\(subscriptionInformation.durationTitle)")
+                        .font(.caption)
+                }
+            }
+
+            HStack(alignment: .center) {
+                Image(systemName: "coloncurrencysign")
+                    .frame(width: 22)
+                VStack(alignment: .leading) {
+                    Text("Price")
+                        .font(.caption2)
+                        .foregroundColor(Color.gray)
+                    Text("\(subscriptionInformation.price)")
+                        .font(.caption)
+                }
+            }
 
             if let nextRenewal =  subscriptionInformation.nextRenewalString {
-                Text("\(subscriptionInformation.renewalString): \(String(describing: nextRenewal))")
-                    .font(.caption)
-                    .foregroundColor(Color.gray)
-                    .padding([.horizontal, .bottom])
+                HStack(alignment: .center) {
+                    Image(systemName: "calendar")
+                        .frame(width: 22)
+                    VStack(alignment: .leading) {
+                        Text("Next billing date")
+                            .font(.caption2)
+                            .foregroundColor(Color.gray)
+                        Text("\(subscriptionInformation.renewalString): \(String(describing: nextRenewal))")
+                            .font(.caption)
+                    }
+                }
             }
 
             if let refundRequestStatusMessage = refundRequestStatusMessage {
@@ -165,7 +191,11 @@ struct SubscriptionDetailsView: View {
                     .foregroundColor(Color.gray)
                     .padding([.horizontal, .bottom])
             }
-        }
+        }.padding()
+            .padding(.horizontal)
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(color: Color.black.opacity(0.2), radius: 4)
     }
 
 }
