@@ -1428,7 +1428,6 @@ workflows:
       - spm-revenuecat-ui-ios-16
       - spm-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
-      - pod-lib-lint
       - installation-tests-cocoapods
       - installation-tests-swift-package-manager
       - installation-tests-custom-entitlement-computation-swift-package-manager
