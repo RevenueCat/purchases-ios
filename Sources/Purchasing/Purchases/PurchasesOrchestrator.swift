@@ -269,12 +269,16 @@ final class PurchasesOrchestrator {
                           product: StoreProductType,
                           completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
-            completion(.failure(ErrorUtils.productDiscountMissingIdentifierError()))
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(.failure(ErrorUtils.productDiscountMissingIdentifierError()))
+            }
             return
         }
 
         guard let subscriptionGroupIdentifier = product.subscriptionGroupIdentifier else {
-            completion(.failure(ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError()))
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(.failure(ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError()))
+            }
             return
         }
 
@@ -284,14 +288,18 @@ final class PurchasesOrchestrator {
                                      discountIdentifier: discountIdentifier,
                                      product: product,
                                      subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
-                completion(result)
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(result)
+                }
             }
         } else {
                 self.sk1PromotionalOffer(forProductDiscount: productDiscount,
                                          discountIdentifier: discountIdentifier,
                                          product: product,
                                          subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
-                    completion(result)
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(result)
+                    }
                 }
 
         }
@@ -1125,7 +1133,9 @@ private extension PurchasesOrchestrator {
                     if let cachedCustomerInfo,
                        cachedCustomerInfo.originalPurchaseDate != nil,
                        cachedCustomerInfo.originalApplicationVersion != nil {
-                        completion?(.success(cachedCustomerInfo))
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion?(.success(cachedCustomerInfo))
+                        }
                         return
                     }
 
