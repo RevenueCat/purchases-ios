@@ -143,6 +143,7 @@ struct SamplePaywallsList: View {
                 }
             }
             
+            #if os(iOS)
             Section("Customer Center") {
                 Button {
                     self.display = .customerCenter
@@ -156,6 +157,7 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Sheet", icon: "person.fill")
                 }
             }
+            #endif
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
