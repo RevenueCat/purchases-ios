@@ -53,17 +53,15 @@ extension View {
     /// - Parameter onDismiss: Callback executed when the customer center wants to be dismissed.
     /// Make sure you stop presenting the customer center when this is called
     /// - Parameter presentationMode: The desired presentation mode of the customer center. Defaults to `.sheet`.
-    /// - Parameter myAppPurchaseLogic: Use this if you are handling purchases/restores on your own instead of through RevenueCat.
     public func presentCustomerCenter(
         isPresented: Binding<Bool>,
         onDismiss: @escaping () -> Void,
-        presentationMode: CustomerCenterPresentationMode = .default,
-        myAppPurchaseLogic: MyAppPurchaseLogic? = nil
+        presentationMode: CustomerCenterPresentationMode = .default
     ) -> some View {
         return self.modifier(PresentingCustomerCenterModifier(
             isPresented: isPresented,
             onDismiss: onDismiss,
-            myAppPurchaseLogic: myAppPurchaseLogic,
+            myAppPurchaseLogic: nil,
             presentationMode: presentationMode
         ))
     }
