@@ -84,13 +84,24 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     private func loadSubscriptionInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
-        guard let currentEntitlementDict = customerInfo.entitlements.active.first,
-              let subscribedProductID = customerInfo.activeSubscriptions.first,
-              let subscribedProduct = await purchasesProvider.products([subscribedProductID]).first else {
+
+        // Pick the soonest expiring iOS App Store entitlement and accompanying product.
+        guard let currentEntitlement = customerInfo.entitlements
+            .active
+            .values
+            .lazy
+            .filter({ entitlement in entitlement.store == .appStore })
+            .sorted(by: { lhs, rhs in
+                let lhsDateSeconds = lhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
+                let rhsDateSeconds = rhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
+
+                return lhsDateSeconds < rhsDateSeconds
+            }).first,
+              let subscribedProduct = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
+        else {
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
-        let currentEntitlement = currentEntitlementDict.value
 
         // swiftlint:disable:next todo
         // TODO: support non-consumables
@@ -102,7 +113,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             price: subscribedProduct.localizedPriceString,
             nextRenewalString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
             willRenew: currentEntitlement.willRenew,
-            productIdentifier: subscribedProductID,
+            productIdentifier: currentEntitlement.productIdentifier,
             active: currentEntitlement.isActive
         )
     }
