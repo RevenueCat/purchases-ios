@@ -16,6 +16,9 @@ struct SamplePaywallsList: View {
     @State
     private var display: Display?
 
+    @State
+    private var presentingCustomerCenter: Bool = false
+
     var body: some View {
         NavigationView {
             self.list(with: Self.loader)
@@ -136,10 +139,21 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
+
+                #if !os(watchOS)
+                Button {
+                    self.presentingCustomerCenter = true
+                } label: {
+                    TemplateLabel(name: "Customer center", icon: "person.fill")
+                }
+                #endif
             }
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
+        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter) {
+            self.presentingCustomerCenter = false
+        }
     }
 
     #if os(watchOS)
