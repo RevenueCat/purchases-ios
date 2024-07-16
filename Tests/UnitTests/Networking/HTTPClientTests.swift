@@ -62,7 +62,10 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         return self.createClient(self.systemInfo)
     }
 
-    fileprivate final func createClient(_ systemInfo: SystemInfo) -> HTTPClient {
+    fileprivate final func createClient(
+        _ systemInfo: SystemInfo,
+        operationDispatcher: OperationDispatcher = MockOperationDispatcher()
+    ) -> HTTPClient {
         return HTTPClient(apiKey: self.apiKey,
                           systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
@@ -70,9 +73,8 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
                           requestTimeout: defaultTimeout.seconds,
-                          operationDispatcher: MockOperationDispatcher())
+                          operationDispatcher: operationDispatcher)
     }
-
 }
 
 final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
@@ -1785,20 +1787,6 @@ extension HTTPClientTests {
         expect(backoffPeriod).to(equal(TimeInterval(0.75)))
     }
 
-    func testDefaultRetryBackoffPeriods() {
-        expect(
-            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 1)
-        ).to(equal(0))
-
-        expect(
-            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 2)
-        ).to(equal(0.75))
-
-        expect(
-            self.client.defaultExponentialBackoffTimeInterval(withRetryCount: 3)
-        ).to(equal(3))
-    }
-
     func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
         var requestCount = 0
 
@@ -1827,6 +1815,31 @@ extension HTTPClientTests {
             .tooManyRequests
         )
         expect(error.isServerDown) == false
+    }
+
+    func testCorrectDelaysAreSentToOperationDispatcherForRetries() throws {
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadCount).to(equal(3))
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParams).to(equal([
+            .timeInterval(0),
+            .timeInterval(0.75),
+            .timeInterval(3)
+        ]))
     }
 
     func testRetryMessagesAreLoggedWhenRetriesExhausted() throws {

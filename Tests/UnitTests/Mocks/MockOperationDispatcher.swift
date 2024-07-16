@@ -58,9 +58,11 @@ class MockOperationDispatcher: OperationDispatcher {
     var shouldInvokeDispatchOnWorkerThreadBlock = true
     var forwardToOriginalDispatchOnWorkerThread = false
     var invokedDispatchOnWorkerThreadDelayParam: Delay?
+    var invokedDispatchOnWorkerThreadDelayParams: [Delay?] = []
 
     override func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnWorkerThreadDelayParam = delay
+        self.invokedDispatchOnWorkerThreadDelayParams.append(delay)
         self.invokedDispatchOnWorkerThread = true
         self.invokedDispatchOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {

@@ -679,18 +679,6 @@ extension HTTPClient {
         }
 
         // Otherwise, use a default value
-        return defaultExponentialBackoffTimeInterval(withRetryCount: retryCount)
-    }
-
-    /// Returns the exponential backoff time interval for a given retry count.
-    ///
-    /// This function calculates the backoff time interval for a given retry count based on a predefined
-    /// list of backoff intervals. The `retryCount` is not 0-indexed and should start with 1.
-    ///
-    /// - Parameter retryCount: The count of the retry attempt, starting from 1.
-    /// - Returns: The backoff time interval for the given retry count. If the retry count exceeds
-    ///   the predefined list of backoff intervals, it returns 0.
-    internal func defaultExponentialBackoffTimeInterval(withRetryCount retryCount: UInt) -> TimeInterval {
         let backoffIntervalIndex = Int(max(retryCount - 1, 0))
         let backoffIntervalIndexIsWithinBounds = backoffIntervalIndex < self.retryBackoffIntervals.count
         return backoffIntervalIndexIsWithinBounds ? self.retryBackoffIntervals[backoffIntervalIndex] : 0
