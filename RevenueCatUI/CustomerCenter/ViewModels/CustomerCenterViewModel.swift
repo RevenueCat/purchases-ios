@@ -46,11 +46,13 @@ import RevenueCat
     }
 
     private var customerInfoFetcher: CustomerInfoFetcher
+    private let customerCenterActionHandler: CustomerCenterActionHandler?
 
     private var error: Error?
 
-    convenience init() {
-        self.init(customerInfoFetcher: {
+    convenience init(customerCenterActionHandler: CustomerCenterActionHandler?) {
+        self.init(customerCenterActionHandler: customerCenterActionHandler,
+                  customerInfoFetcher: {
             guard Purchases.isConfigured else {
                 throw PaywallError.purchasesNotConfigured
             }
@@ -59,14 +61,17 @@ import RevenueCat
         })
     }
 
-    // @PublicForExternalTesting
-    init(customerInfoFetcher: @escaping CustomerInfoFetcher) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler?,
+         customerInfoFetcher: @escaping CustomerInfoFetcher) {
         self.state = .notLoaded
         self.customerInfoFetcher = customerInfoFetcher
+        self.customerCenterActionHandler = customerCenterActionHandler
     }
 
-    // @PublicForExternalTesting
-    init(hasSubscriptions: Bool = false, areSubscriptionsFromApple: Bool = false) {
+    #if DEBUG
+
+    init(hasSubscriptions: Bool = false,
+         areSubscriptionsFromApple: Bool = false) {
         self.hasSubscriptions = hasSubscriptions
         self.subscriptionsAreFromApple = areSubscriptionsFromApple
         self.customerInfoFetcher = {
@@ -77,7 +82,10 @@ import RevenueCat
             return try await Purchases.shared.customerInfo()
         }
         self.state = .success
+        self.customerCenterActionHandler = nil
     }
+
+    #endif
 
     func loadHasSubscriptions() async {
         do {
@@ -105,6 +113,16 @@ import RevenueCat
         } catch {
             self.state = .error(error)
         }
+    }
+
+    func performRestore() async -> RestorePurchasesAlert.AlertType {
+        self.customerCenterActionHandler?.restoreStarted?()
+        guard let customerInfo = try? await Purchases.shared.restorePurchases() else {
+            // todo: handle errors
+            return .purchasesNotFound
+        }
+        let hasEntitlements = customerInfo.entitlements.active.count > 0
+        return hasEntitlements ? .purchasesRecovered : .purchasesNotFound
     }
 
 }

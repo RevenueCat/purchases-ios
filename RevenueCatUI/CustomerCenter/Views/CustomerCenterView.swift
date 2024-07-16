@@ -26,10 +26,13 @@ import SwiftUI
 @available(visionOS, unavailable)
 public struct CustomerCenterView: View {
 
-    @StateObject private var viewModel = CustomerCenterViewModel()
+    @StateObject private var viewModel: CustomerCenterViewModel
 
     /// Create a view to handle common customer support tasks
-    public init() {}
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
+        self._viewModel = .init(wrappedValue:
+                                    CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
+    }
 
     fileprivate init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
@@ -38,10 +41,10 @@ public struct CustomerCenterView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         Group {
-            if !viewModel.isLoaded {
+            if !self.viewModel.isLoaded {
                 ProgressView()
             } else {
-                if let configuration = viewModel.configuration {
+                if let configuration = self.viewModel.configuration {
                     destinationView(configuration: configuration)
                 }
             }
@@ -49,6 +52,7 @@ public struct CustomerCenterView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .environmentObject(self.viewModel)
     }
 
 }

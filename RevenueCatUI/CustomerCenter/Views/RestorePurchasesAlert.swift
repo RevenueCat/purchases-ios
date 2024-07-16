@@ -31,6 +31,8 @@ struct RestorePurchasesAlert: ViewModifier {
     @Environment(\.openURL)
     var openURL
 
+    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+
     @State
     private var alertType: AlertType = .restorePurchases
     @Environment(\.dismiss)
@@ -54,17 +56,8 @@ struct RestorePurchasesAlert: ViewModifier {
                                     """),
                         primaryButton: .default(Text("Check past purchases"), action: {
                             Task {
-                                guard let customerInfo = try? await Purchases.shared.restorePurchases() else {
-                                    // todo: handle errors
-                                    self.setAlertType(.purchasesNotFound)
-                                    return
-                                }
-                                let hasEntitlements = customerInfo.entitlements.active.count > 0
-                                if hasEntitlements {
-                                    self.setAlertType(.purchasesRecovered)
-                                } else {
-                                    self.setAlertType(.purchasesNotFound)
-                                }
+                                let alertType = await self.customerCenterViewModel.performRestore() 
+                                self.setAlertType(alertType)
                             }
                         }),
                         secondaryButton: .cancel(Text("Cancel"))
