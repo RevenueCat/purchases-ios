@@ -12,7 +12,7 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchOnMainThread = false
     var invokedDispatchOnMainThreadCount = 0
     var shouldInvokeDispatchOnMainThreadBlock = true
-    var forwardToOriginalDispatchOnMainThread = false
+    var forwardToOriginalDispatchOnMainThread = true
 
     override func dispatchOnMainThread(_ block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnMainThread = true

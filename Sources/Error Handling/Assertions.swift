@@ -44,3 +44,21 @@ func RCTestAssertNotMainThread(
     )
     #endif
 }
+
+@inline(__always)
+func RCTestAssertMainThread(
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    #if DEBUG
+    if ProcessInfo.isRunningIntegrationTests {
+        RCTestAssert(
+            Thread.isMainThread,
+            "\(function) should be called from the main thread",
+            file: file,
+            line: line
+        )
+    }
+    #endif
+}
