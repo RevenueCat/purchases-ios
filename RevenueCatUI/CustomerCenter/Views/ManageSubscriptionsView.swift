@@ -243,10 +243,18 @@ struct ManageSubscriptionsButtonsView: View {
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformation)
-        ManageSubscriptionsView(viewModel: viewModel)
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+        ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+            .previewDisplayName("Monthly renewing")
+
+        let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+            screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
+
+        ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+            .previewDisplayName("Yearly expiring")
     }
 
 }
