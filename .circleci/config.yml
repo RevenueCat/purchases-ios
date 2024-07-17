@@ -1335,7 +1335,7 @@ workflows:
       - run-test-ios-17
       - pod-lib-lint
 
-  deploy:
+  create-tag:
     when:
       and:
         - not:
@@ -1345,16 +1345,29 @@ workflows:
             value: << pipeline.git.branch >>
     jobs:
       - release-checks
-      - hold:
+      - hold-for-tag:
           type: approval
           requires:
             - release-checks
       - tag-release-branch:
           requires:
-            - hold
+            - hold-for-tag
+
+  deploy-tag:
+    when:
+      and:
+        - equal: [push, << pipeline.trigger_source >>]
+        - exists: << pipeline.git.tag >>
+        - not:
+          matches:
+            pattern: ".*-SNAPSHOT$"
+            value: << pipeline.git.tag >>
+    jobs:
+      - hold-for-release:
+          type: approval
       - make-release:
-          requires:
-            - hold
+            requires:
+              - hold-for-release
       - push-revenuecat-pod:
           requires:
             - make-release
