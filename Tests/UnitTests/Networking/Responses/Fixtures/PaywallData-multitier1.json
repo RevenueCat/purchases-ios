@@ -1,5 +1,5 @@
 {
-  "template_name": "7_disabled",
+  "template_name": "7",
   "config": {
     "tiers": [
       {
@@ -40,28 +40,61 @@
         "text3": "#FFFFFF"
       }
     },
-    "color_overrides_by_tier": {
+    "colors_by_tier": {
       "standard": {
         "light": {
-          "callToActionBackground": "#00FF00"
+          "accent1": "#f25a5a",
+          "accent2": "#f25a5a",
+          "accent3": "#DFDFDF",
+          "background": "#FFFFFF",
+          "call_to_action_background": "#00FF00",
+          "call_to_action_foreground": "#FFFFFF",
+          "text1": "#000000",
+          "text2": "#FFFFFF",
+          "text3": "#000000"
         },
         "dark": {
-          "callToActionForeground": "#0000FF"
+          "accent1": "#f25a5a",
+          "accent2": "#f25a5a",
+          "accent3": "#606463",
+          "background": "#000000",
+          "call_to_action_background": "#f25a5a",
+          "call_to_action_foreground": "#0000FF",
+          "text1": "#FFFFFF",
+          "text2": "#000000",
+          "text3": "#FFFFFF"
         }
       },
       "premium": {
         "light": {
-          "accent1": "#FF0000"
+          "accent1": "#FF0000",
+          "accent2": "#f25a5a",
+          "accent3": "#DFDFDF",
+          "background": "#FFFFFF",
+          "call_to_action_background": "#f25a5a",
+          "call_to_action_foreground": "#FFFFFF",
+          "text1": "#000000",
+          "text2": "#FFFFFF",
+          "text3": "#000000"
         },
         "dark": {
-          "accent2": "#00FFFF"
+          "accent1": "#f25a5a",
+          "accent2": "#00FFFF",
+          "accent3": "#606463",
+          "background": "#000000",
+          "call_to_action_background": "#f25a5a",
+          "call_to_action_foreground": "#FFFFFF",
+          "text1": "#FFFFFF",
+          "text2": "#000000",
+          "text3": "#FFFFFF"
         }
       }
     },
-    "images": {
-      "header": "954459_1703109702.png"
-    },
-    "image_overrides_by_tier": {
+    "images": {},
+    "images_by_tier": {
+      "standard": {
+        "header": "954459_1703109702.png"
+      },
       "premium": {
         "header": "header.heic"
       }
