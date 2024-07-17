@@ -137,6 +137,7 @@ struct HeaderView: View {
 @available(watchOS, unavailable)
 struct SubscriptionDetailsView: View {
 
+    let iconWidth = 22.0
     let subscriptionInformation: SubscriptionInformation
     let refundRequestStatusMessage: String?
 
@@ -154,7 +155,7 @@ struct SubscriptionDetailsView: View {
             HStack(alignment: .center) {
                 Image(systemName: "coloncurrencysign.arrow.circlepath")
                     .accessibilityHidden(true)
-                    .frame(width: 22)
+                    .frame(width: iconWidth)
                 VStack(alignment: .leading) {
                     Text("Billing cycle")
                         .font(.caption2)
@@ -167,7 +168,7 @@ struct SubscriptionDetailsView: View {
             HStack(alignment: .center) {
                 Image(systemName: "coloncurrencysign")
                     .accessibilityHidden(true)
-                    .frame(width: 22)
+                    .frame(width: iconWidth)
                 VStack(alignment: .leading) {
                     Text("Current price")
                         .font(.caption2)
@@ -181,7 +182,7 @@ struct SubscriptionDetailsView: View {
                 HStack(alignment: .center) {
                     Image(systemName: "calendar")
                         .accessibilityHidden(true)
-                        .frame(width: 22)
+                        .frame(width: iconWidth)
                     VStack(alignment: .leading) {
                         Text("\(subscriptionInformation.expirationString)")
                             .font(.caption2)
