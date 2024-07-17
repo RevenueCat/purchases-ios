@@ -36,10 +36,6 @@ class HTTPClient {
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
 
-    #if DEBUG
-    private var pathRequestCounts: [String: Int] = [:]
-    #endif
-
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
         TimeInterval(0.75),
