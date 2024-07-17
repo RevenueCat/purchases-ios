@@ -28,7 +28,7 @@ enum NetworkStrings {
                             error: NetworkError,
                             metadata: HTTPClient.ResponseMetadata?)
     case api_request_failed_status_code(HTTPStatusCode)
-    case api_request_queued_for_retry(httpMethod: String, path: String, backoffInterval: TimeInterval)
+    case api_request_queued_for_retry(httpMethod: String, retryNumber: UInt, path: String, backoffInterval: TimeInterval)
     case api_request_failed_all_retries(httpMethod: String, path: String, retryCount: UInt)
     case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
     case enqueing_operation(CacheableNetworkOperation.Type, cacheKey: String)
@@ -48,7 +48,6 @@ enum NetworkStrings {
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
-    case api_request_forcing_network_error(HTTPRequest, NetworkError)
     case api_request_forcing_signature_failure(HTTPRequest)
     case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
     #endif
@@ -134,8 +133,8 @@ extension NetworkStrings: LogMessage {
         case let .request_handled_by_load_shedder(path):
             return "Request was handled by load shedder: \(path.relativePath)"
 
-        case let .api_request_queued_for_retry(httpMethod, path, backoffInterval):
-            return "Queued request \(httpMethod) \(path) for retry in \(backoffInterval) seconds."
+        case let .api_request_queued_for_retry(httpMethod, retryNumber, path, backoffInterval):
+            return "Queued request \(httpMethod) \(path) for retry number \(retryNumber) in \(backoffInterval) seconds."
 
         case let .api_request_failed_all_retries(httpMethod, path, retryCount):
             return "Request \(httpMethod) \(path) failed all \(retryCount) retries."
@@ -143,15 +142,6 @@ extension NetworkStrings: LogMessage {
         #if DEBUG
         case let .api_request_forcing_server_error(request):
             return "Returning fake HTTP 500 error for \(request.description)"
-
-        case let .api_request_forcing_network_error(request, networkError):
-            var simulatedHTTPStatusCode: HTTPStatusCode
-            if case .errorResponse(_, let statusCode, _) = networkError {
-                simulatedHTTPStatusCode = statusCode
-            } else {
-                simulatedHTTPStatusCode = .internalServerError
-            }
-            return "Returning fake HTTP \(simulatedHTTPStatusCode.rawValue) error for \(request.description)"
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"

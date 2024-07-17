@@ -1857,9 +1857,15 @@ extension HTTPClientTests {
                 completion(response)
             }
         }
-        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
-        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.75 seconds.")
-        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 3.0 seconds.")
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 1 in 0.0 seconds."
+        )
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 2 in 0.75 seconds."
+        )
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 3 in 3.0 seconds."
+        )
         self.logger.verifyMessageWasLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
     }
 
@@ -1875,9 +1881,15 @@ extension HTTPClientTests {
                 completion(response)
             }
         }
-        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
-        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.75 seconds.")
-        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 3.0 seconds.")
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 1 in 0.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 2 in 0.75 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 3 in 3.0 seconds."
+        )
         self.logger.verifyMessageWasNotLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
     }
 

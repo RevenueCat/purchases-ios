@@ -650,6 +650,7 @@ extension HTTPClient {
         Logger.debug(
             NetworkStrings.api_request_queued_for_retry(
                 httpMethod: request.method.httpMethod,
+                retryNumber: nextRetryCount,
                 path: request.path,
                 backoffInterval: retryBackoffInterval
             )
