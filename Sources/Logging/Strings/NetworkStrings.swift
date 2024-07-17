@@ -48,6 +48,7 @@ enum NetworkStrings {
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
+    case api_request_forcing_network_error(HTTPRequest, NetworkError)
     case api_request_forcing_signature_failure(HTTPRequest)
     case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
     #endif
@@ -142,6 +143,15 @@ extension NetworkStrings: LogMessage {
         #if DEBUG
         case let .api_request_forcing_server_error(request):
             return "Returning fake HTTP 500 error for \(request.description)"
+
+        case let .api_request_forcing_network_error(request, networkError):
+            var simulatedHTTPStatusCode: HTTPStatusCode
+            if case .errorResponse(_, let statusCode, _) = networkError {
+                simulatedHTTPStatusCode = statusCode
+            } else {
+                simulatedHTTPStatusCode = .internalServerError
+            }
+            return "Returning fake HTTP \(simulatedHTTPStatusCode.rawValue) error for \(request.description)"
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"

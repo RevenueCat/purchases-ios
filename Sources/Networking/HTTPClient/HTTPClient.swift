@@ -646,6 +646,7 @@ private extension HTTPClient {
                     simulatedHTTPStatusCode = .internalServerError
                 }
 
+                Logger.warn(NetworkStrings.api_request_forcing_network_error(request.httpRequest, forcedError))
                 self.handle(
                     urlResponse: HTTPURLResponse(
                         url: urlRequest.url ?? URL(string: "api.revenuecat.com")!,
