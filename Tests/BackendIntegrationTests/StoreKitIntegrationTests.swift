@@ -940,14 +940,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // Ensure that the first two times POST /receipt is called, we mock a 429 error
         // and then proceed normally with the backend on subsequent requests
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
-        var requestCount = 0
+        var stubbedRequestCount = 0
         stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
-            requestCount += 1
+            stubbedRequestCount += 1
 
             // Fail the first two requests, allow subsequent requests to go through to the backend
-            if requestCount < 3 {
+            if stubbedRequestCount < 3 {
 
-                if requestCount == 2 {
+                if stubbedRequestCount == 2 {
                     HTTPStubs.removeAllStubs()
                 }
                 return Self.emptyTooManyRequestsResponse()
@@ -958,7 +958,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let product = try await self.monthlyPackage.storeProduct
         let customerInfo = try await self.purchases.purchase(product: product).customerInfo
+
         try await self.verifyEntitlementWentThrough(customerInfo)
+        expect(stubbedRequestCount).to(equal(2))
         expect(customerInfo.allPurchasedProductIdentifiers) == [
             product.productIdentifier
         ]
@@ -967,8 +969,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
 
         // Ensure that the each time POST /receipt is called, we mock a 429 error
+        var stubbedRequestCount = 0
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            stubbedRequestCount += 1
             return Self.emptyTooManyRequestsResponse()
         }
 
@@ -979,6 +983,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         } catch {
             expect(error).to(matchError(ErrorCode.unknownError))
         }
+
+        expect(stubbedRequestCount).to(equal(4)) // 1 original request + 3 retries
     }
 }
 
