@@ -250,7 +250,6 @@ platform :ios do
 
   desc "build tvOS, watchOS, macOS"
   lane :build_tv_watch_mac do |options|
-    check_pods
     load_spm_dependencies
     build_release(platform: 'watchOS')
     build_release(platform: 'tvOS')
@@ -259,7 +258,6 @@ platform :ios do
 
   desc "macOS build"
   lane :build_mac do |options|
-    check_pods
     load_spm_dependencies
     build_release(platform: 'macOS')
   end
