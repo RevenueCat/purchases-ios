@@ -167,7 +167,7 @@ struct SubscriptionDetailsView: View {
                 Image(systemName: "coloncurrencysign")
                     .frame(width: 22)
                 VStack(alignment: .leading) {
-                    Text("Price")
+                    Text("Current price")
                         .font(.caption2)
                         .foregroundColor(Color.gray)
                     Text("\(subscriptionInformation.price)")
