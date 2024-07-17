@@ -170,15 +170,15 @@ struct SubscriptionDetailsView: View {
                 }
             }
 
-            if let nextRenewal =  subscriptionInformation.nextRenewalString {
+            if let nextRenewal =  subscriptionInformation.expirationDateString {
                 HStack(alignment: .center) {
                     Image(systemName: "calendar")
                         .frame(width: 22)
                     VStack(alignment: .leading) {
-                        Text("Next billing date")
+                        Text("\(subscriptionInformation.expirationString)")
                             .font(.caption2)
                             .foregroundColor(Color.gray)
-                        Text("\(subscriptionInformation.renewalString): \(String(describing: nextRenewal))")
+                        Text("\(String(describing: nextRenewal))")
                             .font(.caption)
                     }
                 }

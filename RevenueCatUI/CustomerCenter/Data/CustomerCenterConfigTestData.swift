@@ -108,7 +108,7 @@ enum CustomerCenterConfigTestData {
         title: "Basic",
         durationTitle: "Monthly",
         price: "$4.99 / month",
-        nextRenewalString: "June 1st, 2024",
+        expirationDateString: "June 1st, 2024",
         willRenew: true,
         productIdentifier: "product_id",
         active: true
@@ -118,7 +118,7 @@ enum CustomerCenterConfigTestData {
         title: "Basic",
         durationTitle: "Yearly",
         price: "$4.99 / year",
-        nextRenewalString: "June 1st, 2024",
+        expirationDateString: "June 1st, 2024",
         willRenew: false,
         productIdentifier: "product_id",
         active: true

@@ -115,7 +115,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(subscriptionInformation.title) == "title"
         expect(subscriptionInformation.durationTitle) == "month"
         expect(subscriptionInformation.price) == "$2.99"
-        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDate)
+        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDate)
         expect(subscriptionInformation.productIdentifier) == productId
     }
 
@@ -172,7 +172,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(subscriptionInformation.title) == "yearly"
         expect(subscriptionInformation.durationTitle) == "year"
         expect(subscriptionInformation.price) == "$29.99"
-        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
+        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateFirst)
         expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
@@ -235,7 +235,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(subscriptionInformation.title) == "yearly"
         expect(subscriptionInformation.durationTitle) == "year"
         expect(subscriptionInformation.price) == "$29.99"
-        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDateFirst)
+        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateFirst)
         expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
@@ -299,7 +299,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(subscriptionInformation.title) == "monthly"
         expect(subscriptionInformation.durationTitle) == "month"
         expect(subscriptionInformation.price) == "$2.99"
-        expect(subscriptionInformation.nextRenewalString) == reformat(ISO8601Date: expirationDateSecond)
+        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateSecond)
         expect(subscriptionInformation.productIdentifier) == productIdTwo
     }
 

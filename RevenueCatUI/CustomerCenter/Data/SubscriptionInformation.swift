@@ -20,11 +20,11 @@ struct SubscriptionInformation {
     let title: String
     let durationTitle: String
     let price: String
-    let nextRenewalString: String?
+    let expirationDateString: String?
     let productIdentifier: String
 
-    var renewalString: String {
-        return active ? (willRenew ? "Renews" : "Expires") : "Expired"
+    var expirationString: String {
+        return active ? (willRenew ? "Next billing date" : "Expires") : "Expired"
     }
 
     private let willRenew: Bool
@@ -33,7 +33,7 @@ struct SubscriptionInformation {
     init(title: String,
          durationTitle: String,
          price: String,
-         nextRenewalString: String?,
+         expirationDateString: String?,
          willRenew: Bool,
          productIdentifier: String,
          active: Bool
@@ -41,7 +41,7 @@ struct SubscriptionInformation {
         self.title = title
         self.durationTitle = durationTitle
         self.price = price
-        self.nextRenewalString = nextRenewalString
+        self.expirationDateString = expirationDateString
         self.productIdentifier = productIdentifier
         self.willRenew = willRenew
         self.active = active
