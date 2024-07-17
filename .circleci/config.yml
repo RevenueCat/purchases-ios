@@ -18,6 +18,20 @@ parameters:
     default: false
     type: boolean
 
+# params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Meta:
+    type: string
+    default: ""
+
 aliases:
   base-job: &base-job
     resource_class: macos.m1.medium.gen1
@@ -1410,6 +1424,7 @@ workflows:
         - equal:
             - "run-manual-tests"
             - << pipeline.parameters.action >>
+         - equal: [ "run-from-github-comments", << pipeline.parameters.GHA_Event >>]
     jobs:
       - backend-integration-tests-SK1
       - backend-integration-tests-SK2
