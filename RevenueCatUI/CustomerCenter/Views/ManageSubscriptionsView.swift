@@ -28,8 +28,6 @@ struct ManageSubscriptionsView: View {
     @Environment(\.openURL)
     var openURL
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
-
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
