@@ -153,6 +153,7 @@ struct SubscriptionDetailsView: View {
 
             HStack(alignment: .center) {
                 Image(systemName: "coloncurrencysign.arrow.circlepath")
+                    .accessibilityHidden(true)
                     .frame(width: 22)
                 VStack(alignment: .leading) {
                     Text("Billing cycle")
@@ -165,6 +166,7 @@ struct SubscriptionDetailsView: View {
 
             HStack(alignment: .center) {
                 Image(systemName: "coloncurrencysign")
+                    .accessibilityHidden(true)
                     .frame(width: 22)
                 VStack(alignment: .leading) {
                     Text("Current price")
@@ -178,6 +180,7 @@ struct SubscriptionDetailsView: View {
             if let nextRenewal =  subscriptionInformation.expirationDateString {
                 HStack(alignment: .center) {
                     Image(systemName: "calendar")
+                        .accessibilityHidden(true)
                         .frame(width: 22)
                     VStack(alignment: .leading) {
                         Text("\(subscriptionInformation.expirationString)")
