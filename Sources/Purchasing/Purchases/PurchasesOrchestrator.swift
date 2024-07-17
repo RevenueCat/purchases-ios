@@ -1514,13 +1514,11 @@ extension PurchasesOrchestrator {
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await Async.call { completion in
             self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
                                isRestore: isRestore,
-                               initiationSource: initiationSource) { result in
-                RCTestAssertMainThread()
-                continuation.resume(with: result)
-            }
+                               initiationSource: initiationSource,
+                               completion: completion)
         }
     }
 

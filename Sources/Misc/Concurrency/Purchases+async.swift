@@ -21,7 +21,6 @@ extension Purchases {
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             logIn(appUserID) { customerInfo, created, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { ($0, created) })
             }
@@ -31,7 +30,6 @@ extension Purchases {
     func logOutAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             logOut { customerInfo, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
@@ -40,7 +38,6 @@ extension Purchases {
     func syncAttributesAndOfferingsIfNeededAsync() async throws -> Offerings? {
         return try await withCheckedThrowingContinuation { continuation in
             syncAttributesAndOfferingsIfNeeded { offerings, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(offerings, error))
             }
         }
@@ -51,7 +48,6 @@ extension Purchases {
     func offeringsAsync(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
             self.getOfferings(fetchPolicy: fetchPolicy) { offerings, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(offerings, error))
             }
         }
@@ -60,7 +56,6 @@ extension Purchases {
     func productsAsync(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await withCheckedContinuation { continuation in
             getProducts(productIdentifiers) { result in
-                RCTestAssertMainThread()
                 continuation.resume(returning: result)
             }
         }
@@ -69,7 +64,6 @@ extension Purchases {
     func purchaseAsync(product: StoreProduct) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product) { transaction, customerInfo, error, userCancelled in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
@@ -79,7 +73,6 @@ extension Purchases {
     func purchaseAsync(package: Package) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package) { transaction, customerInfo, error, userCancelled in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
@@ -89,7 +82,6 @@ extension Purchases {
     func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             self.restorePurchases { customerInfo, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
@@ -100,7 +92,6 @@ extension Purchases {
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             syncPurchases { customerInfo, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
@@ -110,7 +101,6 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
@@ -121,7 +111,6 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(package: package,
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
@@ -131,7 +120,6 @@ extension Purchases {
     func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
@@ -141,7 +129,6 @@ extension Purchases {
     -> IntroEligibilityStatus {
         return await withCheckedContinuation { continuation in
             checkTrialOrIntroDiscountEligibility(product: product) { status in
-                RCTestAssertMainThread()
                 continuation.resume(returning: status)
             }
         }
@@ -151,7 +138,6 @@ extension Purchases {
     -> [String: IntroEligibility] {
         return await withCheckedContinuation { continuation in
             checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
-                RCTestAssertMainThread()
                 continuation.resume(returning: result)
             }
         }
@@ -161,7 +147,6 @@ extension Purchases {
                                product: StoreProduct) async throws -> PromotionalOffer {
         return try await withCheckedThrowingContinuation { continuation in
             getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
-                RCTestAssertMainThread()
                 continuation.resume(with: Result(offer, error))
              }
          }
