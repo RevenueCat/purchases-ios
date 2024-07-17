@@ -64,7 +64,7 @@ extension View {
             isPresented: isPresented,
             onDismiss: onDismiss,
             myAppPurchaseLogic: nil,
-            customerCenterActionhandler: customerCenterActionHandler,
+            customerCenterActionHandler: customerCenterActionHandler,
             presentationMode: presentationMode
         ))
     }
@@ -86,14 +86,14 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         isPresented: Binding<Bool>,
         onDismiss: @escaping () -> Void,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
-        customerCenterActionhandler: CustomerCenterActionHandler?,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         presentationMode: CustomerCenterPresentationMode,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
         self.presentationMode = presentationMode
         self.onDismiss = onDismiss
-        self.customerCenterActionHandler = customerCenterActionhandler
+        self.customerCenterActionHandler = customerCenterActionHandler
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
