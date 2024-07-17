@@ -1353,24 +1353,23 @@ workflows:
           requires:
             - hold
       - make-release:
-          <<: *release-tags
+          requires:
+            - hold
       - push-revenuecat-pod:
           requires:
             - make-release
-          <<: *release-tags
       - push-revenuecatui-pod:
           requires:
-            - make-release
             - push-revenuecat-pod
-          <<: *release-tags
       - deploy-to-spm:
           requires:
             - make-release
-          <<: *release-tags
       - docs-deploy:
-          <<: *release-tags
+          requires:
+            - make-release
       - deploy-purchase-tester:
-          <<: *release-tags
+          requires:
+            - make-release
       - notify-on-non-patch-release-branches:
           requires:
             - make-release
