@@ -23,7 +23,7 @@ import Foundation
 // Then add local keys:
 // extension ConfigItem {
 //     static var apiKey: String {
-//         "appl_FOObar"
+//         "REVENUECAT_API_KEY"
 //     }
 // }
  extension ConfigItem {
