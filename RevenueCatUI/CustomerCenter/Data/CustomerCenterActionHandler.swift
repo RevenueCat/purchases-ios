@@ -25,6 +25,7 @@ public protocol CustomerCenterActionHandler {
 
     /// This will be called right after the refund request flow, indicating the result of said flow
     func onRefundRequestCompleted(_ refundRequestStatus: RefundRequestStatus)
+
 }
 
 // swiftlint:disable missing_docs
