@@ -893,6 +893,8 @@
 		F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */; };
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */; };
+		FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */; };
+		FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */; };
 		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
 		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
@@ -1871,6 +1873,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */,
+				FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */,
 				2D803F6626F144BF0069D717 /* Nimble in Frameworks */,
 				4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */,
 				2DA85A8C26DEA7FB00F1136D /* RevenueCat.framework in Frameworks */,
@@ -3795,6 +3799,8 @@
 			packageProductDependencies = (
 				2D803F6526F144BF0069D717 /* Nimble */,
 				4FCBA8502A153940004134BD /* SnapshotTesting */,
+				FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */,
+				FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */,
 			);
 			productName = BackendIntegrationTests;
 			productReference = 2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */;
@@ -6606,6 +6612,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
+			productName = OHHTTPStubs;
+		};
+		FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
+			productName = OHHTTPStubsSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

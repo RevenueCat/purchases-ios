@@ -19,7 +19,6 @@ import Foundation
 
         #if DEBUG
         let forceServerErrors: Bool
-        let forcedServerErrors: [String: [NetworkError]]?
         let forceSignatureFailures: Bool
         let disableHeaderSignatureVerification: Bool
         let testReceiptIdentifier: String?
@@ -27,14 +26,12 @@ import Foundation
         init(
             enableReceiptFetchRetry: Bool = false,
             forceServerErrors: Bool = false,
-            forcedServerErrors: [String: [NetworkError]]? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.forceServerErrors = forceServerErrors
-            self.forcedServerErrors = forcedServerErrors
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
@@ -126,8 +123,6 @@ internal protocol InternalDangerousSettingsType: Sendable {
     #if DEBUG
     /// Whether `HTTPClient` will fake server errors
     var forceServerErrors: Bool { get }
-
-    var forcedServerErrors: [String: [NetworkError]]? { get }
 
     /// Whether `HTTPClient` will fake invalid signatures.
     var forceSignatureFailures: Bool { get }

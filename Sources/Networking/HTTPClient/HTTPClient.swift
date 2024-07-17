@@ -523,16 +523,6 @@ private extension HTTPClient {
 
         let requestStartTime = self.dateProvider.now()
 
-        #if DEBUG
-        let didForceFailure = failIfForcedErrorPresentForPath(
-            request: request,
-            urlRequest: urlRequest,
-            requestStartTime: requestStartTime
-        )
-        // If we forced a failure, don't run the actual request
-        if didForceFailure { return }
-        #endif
-
         // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
@@ -620,53 +610,6 @@ private extension HTTPClient {
             }
         }
     }
-
-    #if DEBUG
-    private func failIfForcedErrorPresentForPath(
-        request: Request,
-        urlRequest: URLRequest,
-        requestStartTime: Date
-    ) -> Bool {
-        // If we're running tests, allow for the forcing of certain error responses from the backend
-        if ProcessInfo.isRunningUnitTests
-            || ProcessInfo.isRunningIntegrationTests
-            || ProcessInfo.isRunningRevenueCatTests {
-            let path = request.httpRequest.path.pathComponent
-            let requestCountForPath = (self.pathRequestCounts[path] ?? -1) + 1
-            self.pathRequestCounts[path] = requestCountForPath
-            if let forcedServerErrors = self.systemInfo.dangerousSettings.internalSettings.forcedServerErrors,
-               let forcedErrorsForPath = forcedServerErrors[path],
-               requestCountForPath < forcedErrorsForPath.count {
-                let forcedError = forcedErrorsForPath[requestCountForPath]
-
-                var simulatedHTTPStatusCode: HTTPStatusCode
-                if case .errorResponse(_, let statusCode, _) = forcedError {
-                    simulatedHTTPStatusCode = statusCode
-                } else {
-                    simulatedHTTPStatusCode = .internalServerError
-                }
-
-                Logger.warn(NetworkStrings.api_request_forcing_network_error(request.httpRequest, forcedError))
-                self.handle(
-                    urlResponse: HTTPURLResponse(
-                        url: urlRequest.url ?? URL(string: "api.revenuecat.com")!,
-                        statusCode: simulatedHTTPStatusCode.rawValue,
-                        httpVersion: nil,
-                        headerFields: [:]
-                    ),
-                    request: request,
-                    urlRequest: urlRequest,
-                    data: Data(),
-                    error: forcedError,
-                    requestStartTime: requestStartTime
-                )
-
-                return true
-            }
-        }
-        return false
-    }
-    #endif
 }
 
 // MARK: - Request Retry Logic

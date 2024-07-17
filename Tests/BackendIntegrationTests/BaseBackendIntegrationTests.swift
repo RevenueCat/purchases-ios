@@ -48,7 +48,6 @@ class BaseBackendIntegrationTests: TestCase {
     private var mainThreadMonitor: MainThreadMonitor!
 
     fileprivate var serverIsDown: Bool = false
-    fileprivate var serverErrors: [String: [NetworkError]]?
 
     static var isSandbox: Bool = true {
         didSet {
@@ -240,15 +239,11 @@ private extension BaseBackendIntegrationTests {
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
     var forceServerErrors: Bool { return self.serverIsDown }
-    var forcedServerErrors: [String: [NetworkError]]? { return self.serverErrors }
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
 
     final func serverDown() { self.serverIsDown = true }
     final func serverUp() { self.serverIsDown = false }
-    final func setForcedServerErrors(_ errors: [String: [NetworkError]]?) {
-        self.serverErrors = errors
-    }
 
 }

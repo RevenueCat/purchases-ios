@@ -14,6 +14,9 @@ import StoreKitTest
 import UniformTypeIdentifiers
 import XCTest
 
+import OHHTTPStubs
+import OHHTTPStubsSwift
+
 // swiftlint:disable file_length type_body_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
@@ -933,21 +936,26 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseGrantsEntitlementsThroughOnRetryAfter429() async throws {
-        let tooManyRequestsError: NetworkError = NetworkError.errorResponse(
-            .init(
-                code: .unknownBackendError,
-                originalCode: BackendErrorCode.unknownBackendError.rawValue
-            ),
-            .tooManyRequests
-        )
 
-        // Ensure that the first time POST /receipt is called, we mock a 429 error
-        // and then proceed normally on subsequent requests
-        self.setForcedServerErrors([
-            "receipts": [
-                tooManyRequestsError
-            ]
-        ])
+        // Ensure that the first two times POST /receipt is called, we mock a 429 error
+        // and then proceed normally with the backend on subsequent requests
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        var requestCount = 0
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            requestCount += 1
+
+            // Fail the first two requests, allow subsequent requests to go through to the backend
+            if requestCount < 3 {
+
+                if requestCount == 2 {
+                    HTTPStubs.removeAllStubs()
+                }
+                return Self.emptyTooManyRequestsResponse()
+            }
+
+            return .init()
+        }
+
         let product = try await self.monthlyPackage.storeProduct
         let customerInfo = try await self.purchases.purchase(product: product).customerInfo
         try await self.verifyEntitlementWentThrough(customerInfo)
@@ -957,24 +965,19 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
-        let tooManyRequestsError: NetworkError = NetworkError.errorResponse(
-            .init(
-                code: .unknownBackendError,
-                originalCode: BackendErrorCode.unknownBackendError.rawValue
-            ),
-            .tooManyRequests
-        )
 
         // Ensure that the each time POST /receipt is called, we mock a 429 error
-        self.setForcedServerErrors([
-            "receipts": Array(repeating: tooManyRequestsError, count: 4)
-        ])
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            return Self.emptyTooManyRequestsResponse()
+        }
+
         let product = try await self.monthlyPackage.storeProduct
         do {
             _ = try await self.purchases.purchase(product: product)
             fail("Expected purchases.purchase to fail after exhausting retry count with 429 responses")
         } catch {
-            expect(error).to(matchError(ErrorCode.networkError))
+            expect(error).to(matchError(ErrorCode.unknownError))
         }
     }
 }
@@ -989,4 +992,11 @@ private extension BaseStoreKitIntegrationTests {
         }
     }
 
+    static func emptyTooManyRequestsResponse() -> HTTPStubsResponse {
+        // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
+        // This creates a new response each time so modifications in one test don't affect others.
+        return .init(data: Data(),
+                     statusCode: 429,
+                     headers: nil)
+    }
 }
