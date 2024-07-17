@@ -1345,13 +1345,13 @@ workflows:
             value: << pipeline.git.branch >>
     jobs:
       - release-checks
-      - hold-for-tag:
+      - hold:
           type: approval
           requires:
             - release-checks
       - tag-release-branch:
           requires:
-            - hold-for-tag
+            - hold
 
   deploy-tag:
     when:
@@ -1363,11 +1363,7 @@ workflows:
             pattern: ".*-SNAPSHOT$"
             value: << pipeline.git.tag >>
     jobs:
-      - hold-for-release:
-          type: approval
-      - make-release:
-            requires:
-              - hold-for-release
+      - make-release
       - push-revenuecat-pod:
           requires:
             - make-release
