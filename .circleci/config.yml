@@ -1354,9 +1354,12 @@ workflows:
             - hold
 
   deploy-tag:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - make-release:
-        <<: *release-tags
+          <<: *release-tags
       - push-revenuecat-pod:
           requires:
             - make-release
