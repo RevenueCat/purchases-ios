@@ -142,9 +142,14 @@ struct SubscriptionDetailsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(subscriptionInformation.title)")
-                .font(.headline)
-                .padding([.bottom], 10)
+            VStack(alignment: .leading) {
+                Text("\(subscriptionInformation.title)")
+                    .font(.headline)
+                Text("\(subscriptionInformation.explanation)")
+                    .frame(maxWidth: 200, alignment: .leading)
+                    .font(.caption)
+                    .foregroundColor(Color.gray)
+            }.padding([.bottom], 10)
 
             HStack(alignment: .center) {
                 Image(systemName: "coloncurrencysign.arrow.circlepath")

@@ -27,6 +27,14 @@ struct SubscriptionInformation {
         return active ? (willRenew ? "Next billing date" : "Expires") : "Expired"
     }
 
+    var explanation: String {
+        return active ? (
+            willRenew ?
+                "This is your subscription with the soonest billing date." :
+                "This is your subscription with the soonest expiration date."
+        ) : "This subscription has expired."
+    }
+
     private let willRenew: Bool
     private let active: Bool
 
