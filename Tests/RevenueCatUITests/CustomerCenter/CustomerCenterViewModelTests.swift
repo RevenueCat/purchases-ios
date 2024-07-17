@@ -37,7 +37,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = CustomerCenterViewModel()
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         expect(viewModel.state) == .notLoaded
         expect(viewModel.hasSubscriptions) == false
@@ -46,7 +46,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testStateChangeToError() {
-        let viewModel = CustomerCenterViewModel()
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         viewModel.state = .error(error)
 
@@ -59,7 +59,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testIsLoaded() {
-        let viewModel = CustomerCenterViewModel()
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         expect(viewModel.isLoaded) == false
 
