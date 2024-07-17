@@ -16,6 +16,8 @@
 import Foundation
 import RevenueCat
 
+#if os(iOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -46,7 +48,7 @@ import RevenueCat
     }
 
     private var customerInfoFetcher: CustomerInfoFetcher
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
+    internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
     private var error: Error?
 
@@ -61,7 +63,7 @@ import RevenueCat
         })
     }
 
-    public init(customerCenterActionHandler: CustomerCenterActionHandler?,
+    init(customerCenterActionHandler: CustomerCenterActionHandler?,
          customerInfoFetcher: @escaping CustomerInfoFetcher) {
         self.state = .notLoaded
         self.customerInfoFetcher = customerInfoFetcher
@@ -116,13 +118,18 @@ import RevenueCat
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.customerCenterActionHandler?.restoreStarted?()
-        guard let customerInfo = try? await Purchases.shared.restorePurchases() else {
-            // todo: handle errors
+        self.customerCenterActionHandler?.onRestoreStarted()
+        do {
+            let customerInfo = try await Purchases.shared.restorePurchases()
+            self.customerCenterActionHandler?.onRestoreCompleted(customerInfo)
+            let hasEntitlements = customerInfo.entitlements.active.count > 0
+            return hasEntitlements ? .purchasesRecovered : .purchasesNotFound
+        } catch {
+            self.customerCenterActionHandler?.onRestoreFailed(error)
             return .purchasesNotFound
         }
-        let hasEntitlements = customerInfo.entitlements.active.count > 0
-        return hasEntitlements ? .purchasesRecovered : .purchasesNotFound
     }
 
 }
+
+#endif

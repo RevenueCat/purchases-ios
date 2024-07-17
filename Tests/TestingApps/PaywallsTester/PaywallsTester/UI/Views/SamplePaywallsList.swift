@@ -162,7 +162,7 @@ struct SamplePaywallsList: View {
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
         #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter) {
+        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self) {
             self.presentingCustomerCenter = false
         }
         #endif
@@ -206,6 +206,42 @@ private struct TemplateLabel: View {
 }
 
 // MARK: -
+
+#if os(iOS)
+
+extension SamplePaywallsList: CustomerCenterActionHandler {
+
+    func onRestoreCompleted(_ customerInfo: RevenueCat.CustomerInfo) {
+        print("CustomerCenter: onRestoreCompleted")
+    }
+
+    func onPurchaseCompleted(_ customerInfo: RevenueCat.CustomerInfo) {
+        print("CustomerCenter: onPurchaseCompleted")
+    }
+
+    func onRestoreFailed(_ error: any Error) {
+        print("CustomerCenter: onRestoreFailed")
+    }
+
+    func onShowManageSubscriptions() {
+        print("CustomerCenter: onShowManageSubscriptions")
+    }
+
+    func onRefundRequestStarted(_ productId: String) {
+        print("CustomerCenter: onRefundRequestStarted")
+    }
+
+    func onRefundRequestCompleted(_ refundRequestStatus: RevenueCat.RefundRequestStatus) {
+        print("CustomerCenter: onRefundRequestCompleted. Result: \(refundRequestStatus)")
+    }
+
+    func onRestoreStarted() {
+        print("CustomerCenter: onRestoreStarted")
+    }
+
+}
+
+#endif
 
 private extension SamplePaywallsList {
 

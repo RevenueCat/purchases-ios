@@ -56,7 +56,7 @@ struct RestorePurchasesAlert: ViewModifier {
                                     """),
                         primaryButton: .default(Text("Check past purchases"), action: {
                             Task {
-                                let alertType = await self.customerCenterViewModel.performRestore() 
+                                let alertType = await self.customerCenterViewModel.performRestore()
                                 self.setAlertType(alertType)
                             }
                         }),

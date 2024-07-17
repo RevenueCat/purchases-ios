@@ -52,16 +52,19 @@ extension View {
     /// - Parameter isPresented: Binding indicating whether the customer center should be displayed
     /// - Parameter onDismiss: Callback executed when the customer center wants to be dismissed.
     /// Make sure you stop presenting the customer center when this is called
+    /// - Parameter customerCenterActionHandler: Allows to listen to certain events during the customer center flow.
     /// - Parameter presentationMode: The desired presentation mode of the customer center. Defaults to `.sheet`.
     public func presentCustomerCenter(
         isPresented: Binding<Bool>,
-        onDismiss: @escaping () -> Void,
-        presentationMode: CustomerCenterPresentationMode = .default
+        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        presentationMode: CustomerCenterPresentationMode = .default,
+        onDismiss: @escaping () -> Void
     ) -> some View {
         return self.modifier(PresentingCustomerCenterModifier(
             isPresented: isPresented,
             onDismiss: onDismiss,
             myAppPurchaseLogic: nil,
+            customerCenterActionhandler: customerCenterActionHandler,
             presentationMode: presentationMode
         ))
     }
@@ -75,19 +78,22 @@ extension View {
 @available(visionOS, unavailable)
 private struct PresentingCustomerCenterModifier: ViewModifier {
 
-    var presentationMode: CustomerCenterPresentationMode
-    var onDismiss: (() -> Void)
+    let customerCenterActionHandler: CustomerCenterActionHandler?
+    let presentationMode: CustomerCenterPresentationMode
+    let onDismiss: (() -> Void)
 
     init(
         isPresented: Binding<Bool>,
         onDismiss: @escaping () -> Void,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
+        customerCenterActionhandler: CustomerCenterActionHandler?,
         presentationMode: CustomerCenterPresentationMode,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
         self.presentationMode = presentationMode
         self.onDismiss = onDismiss
+        self.customerCenterActionHandler = customerCenterActionhandler
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
@@ -117,7 +123,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
     private func customerCenterView() -> some View {
-        CustomerCenterView()
+        CustomerCenterView(customerCenterActionHandler: self.customerCenterActionHandler)
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
