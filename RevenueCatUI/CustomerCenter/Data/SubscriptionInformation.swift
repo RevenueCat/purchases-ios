@@ -30,8 +30,8 @@ struct SubscriptionInformation {
     var explanation: String {
         return active ? (
             willRenew ?
-                "This is your subscription with the soonest billing date." :
-                "This is your subscription with the soonest expiration date."
+                "This is your subscription with the earliest billing date." :
+                "This is your subscription with the earliest expiration date."
         ) : "This subscription has expired."
     }
 
