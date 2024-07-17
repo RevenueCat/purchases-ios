@@ -1981,6 +1981,82 @@ extension HTTPClientTests {
 
         expect(self.signing.requests).to(beEmpty())
     }
+
+    func testRetryRequestIfNeededDoesntRetryRequestWithNilHTTPURLResponse() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: buildEmptyRequest(),
+            httpURLResponse: nil
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testRetryRequestIfNeededDoesntRetryRequestWithNonRetryableHTTPStatusCode() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: buildEmptyRequest(),
+            httpURLResponse: HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.success.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testRetryRequestIfNeededDoesntRetryRequestWithTooManyExistingRetries() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let requestThatHasBeenRetriedManyTimes = buildEmptyRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: requestThatHasBeenRetriedManyTimes,
+            httpURLResponse: HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testRetryRequestIfNeededRetriesEligibleRequest() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let requestThatHasBeenRetriedManyTimes = buildEmptyRequest()
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: requestThatHasBeenRetriedManyTimes,
+            httpURLResponse: HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeInterval).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalCount).to(equal(1))
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalParam).to(equal(0))
+    }
 }
 
 // swiftlint:disable large_tuple
