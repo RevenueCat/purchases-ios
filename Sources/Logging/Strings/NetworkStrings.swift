@@ -28,7 +28,10 @@ enum NetworkStrings {
                             error: NetworkError,
                             metadata: HTTPClient.ResponseMetadata?)
     case api_request_failed_status_code(HTTPStatusCode)
-    case api_request_queued_for_retry(httpMethod: String, retryNumber: UInt, path: String, backoffInterval: TimeInterval)
+    case api_request_queued_for_retry(httpMethod: String, 
+                                      retryNumber: UInt,
+                                      path: String,
+                                      backoffInterval: TimeInterval)
     case api_request_failed_all_retries(httpMethod: String, path: String, retryCount: UInt)
     case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
     case enqueing_operation(CacheableNetworkOperation.Type, cacheKey: String)
