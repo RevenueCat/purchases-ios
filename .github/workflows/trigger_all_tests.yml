@@ -27,7 +27,7 @@ jobs:
         id: trigger_circleci_workflow
         if: success()
 
-        uses: circleci/trigger_circleci_pipeline@v1.2
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
         with:
           GHA_Action: "run-from-github-comments"
         env:
