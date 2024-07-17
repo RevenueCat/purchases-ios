@@ -524,11 +524,13 @@ private extension HTTPClient {
         let requestStartTime = self.dateProvider.now()
 
         #if DEBUG
-        failIfForcedErrorPresentForPath(
+        let didForceFailure = failIfForcedErrorPresentForPath(
             request: request,
             urlRequest: urlRequest,
             requestStartTime: requestStartTime
         )
+        // If we forced a failure, don't run the actual request
+        if didForceFailure { return }
         #endif
 
         // swiftlint:disable:next redundant_void_return
@@ -624,7 +626,7 @@ private extension HTTPClient {
         request: Request,
         urlRequest: URLRequest,
         requestStartTime: Date
-    ) {
+    ) -> Bool {
         // If we're running tests, allow for the forcing of certain error responses from the backend
         if ProcessInfo.isRunningUnitTests
             || ProcessInfo.isRunningIntegrationTests
@@ -658,9 +660,10 @@ private extension HTTPClient {
                     requestStartTime: requestStartTime
                 )
 
-                return
+                return true
             }
         }
+        return false
     }
     #endif
 }
