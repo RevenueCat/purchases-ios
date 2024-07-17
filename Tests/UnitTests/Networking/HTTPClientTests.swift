@@ -1985,11 +1985,18 @@ extension HTTPClientTests {
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
 
-        self.logger.verifyMessageWasLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
-
-        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.25 seconds.")
-        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.5 seconds.")
-        self.logger.verifyMessageWasNotLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 1 in 0.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 2 in 0.75 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 3 in 3.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Request GET /v1/subscribers/identify failed all 3 retries."
+        )
 
         expect(self.signing.requests).to(beEmpty())
     }
