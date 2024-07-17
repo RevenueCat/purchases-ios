@@ -1355,30 +1355,31 @@ workflows:
 
   deploy-tag:
     when:
-      and:
-        - equal: [push, << pipeline.trigger_source >>]
-        - exists: << pipeline.git.tag >>
-        - not:
-          matches:
-            pattern: ".*-SNAPSHOT$"
-            value: << pipeline.git.tag >>
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - make-release
+      - make-release:
+          <<: *release-tags
       - push-revenuecat-pod:
           requires:
             - make-release
+          <<: *release-tags
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
+          <<: *release-tags
       - deploy-to-spm:
           requires:
             - make-release
+          <<: *release-tags
       - docs-deploy:
           requires:
             - make-release
+          <<: *release-tags
       - deploy-purchase-tester:
           requires:
             - make-release
+          <<: *release-tags
       - notify-on-non-patch-release-branches:
           requires:
             - make-release
