@@ -78,9 +78,9 @@ extension PaywallData {
     var withLocalImages: Self {
         var copy = self
         copy.assetBaseURL = URL(fileURLWithPath: Bundle.module.bundlePath)
-        copy.config.images = .init(header: "header.jpg",
-                                   background: "background.jpg",
-                                   icon: "header.jpg")
+        copy.config.images = .init(header: "header.heic",
+                                   background: "background.heic",
+                                   icon: "header.heic")
         copy.config.imagesByTier = .init(
             uniqueKeysWithValues: copy.config.tiers
                 .lazy

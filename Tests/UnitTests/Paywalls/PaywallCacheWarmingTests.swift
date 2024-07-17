@@ -139,7 +139,7 @@ class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == expectedURLs.count
     }
 
-    func testWarmsUpImagesWithTierOverloads() async throws {
+    func testWarmsUpImagesByTier() async throws {
         let offerings = try Self.createOfferings([
             Self.createOffering(
                 identifier: Self.offeringIdentifier,

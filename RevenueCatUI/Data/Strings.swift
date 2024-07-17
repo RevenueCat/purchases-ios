@@ -28,6 +28,7 @@ enum Strings {
     case displaying_paywall
     case not_displaying_paywall
     case dismissing_paywall
+    case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
 
@@ -75,6 +76,9 @@ extension Strings: CustomStringConvertible {
 
         case .dismissing_paywall:
             return "Dismissing PaywallView"
+
+        case let .tier_has_no_available_products_for_paywall(tierName):
+            return "Tier '\(tierName)' has no available products and will be removed from the paywall."
 
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"

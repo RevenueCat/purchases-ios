@@ -232,10 +232,12 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
         case let .multiTier(tiers, localization):
             let allTiers: [PaywallData.Tier: (package: MultiPackage, tierName: String)] = try Dictionary(
-                tiers.map { tier in
+                tiers.compactMap { tier in
                     guard let localization = localization[tier.id] else {
                         throw TemplateError.missingLocalization(tier)
                     }
+
+                    let tierName = localization.tierName ?? ""
 
                     let filteredPackages = Self.processPackages(
                         from: packages,
@@ -246,7 +248,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     )
 
                     guard let firstPackage = filteredPackages.first else {
-                        throw TemplateError.couldNotFindAnyPackages(expectedTypes: tier.packages)
+                        Logger.error(Strings.tier_has_no_available_products_for_paywall(tierName))
+                        return nil
                     }
                     let defaultPackage = filteredPackages
                         .first { $0.content.identifier == tier.defaultPackage }
@@ -260,7 +263,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
                                 default: defaultPackage,
                                 all: filteredPackages
                             ),
-                            localization.tierName ?? ""
+                            tierName
                         )
                     )
                 },
