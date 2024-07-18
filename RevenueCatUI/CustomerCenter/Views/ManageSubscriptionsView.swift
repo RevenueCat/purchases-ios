@@ -310,6 +310,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
         let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+            localization: CustomerCenterConfigTestData.customerCenterData.localization,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
             customerCenterActionHandler: nil)
 
