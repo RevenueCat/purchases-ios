@@ -9,7 +9,7 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, run-manual-tests]
+    enum: [default, bump, run-manual-tests, run-manual-docs-deploy]
     default: default
   generate_snapshots:
     default: false
@@ -1422,6 +1422,12 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
+
+  manual-trigger-docs-deploy:
+    when:
+      equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
+    jobs:
+      - docs-deploy
 
   # to trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # and add a parameter called "run-manual-tests"
