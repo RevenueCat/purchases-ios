@@ -137,35 +137,74 @@ struct HeaderView: View {
 @available(watchOS, unavailable)
 struct SubscriptionDetailsView: View {
 
+    let iconWidth = 22.0
     let subscriptionInformation: SubscriptionInformation
     let refundRequestStatusMessage: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(subscriptionInformation.title) - \(subscriptionInformation.durationTitle)")
-                .font(.subheadline)
-                .padding([.horizontal, .top])
-
-            Text("\(subscriptionInformation.price)")
-                .font(.caption)
-                .foregroundColor(Color.gray)
-                .padding(.horizontal)
-
-            if let nextRenewal =  subscriptionInformation.nextRenewalString {
-                Text("\(subscriptionInformation.renewalString): \(String(describing: nextRenewal))")
+            VStack(alignment: .leading) {
+                Text("\(subscriptionInformation.title)")
+                    .font(.headline)
+                Text("\(subscriptionInformation.explanation)")
+                    .frame(maxWidth: 200, alignment: .leading)
                     .font(.caption)
-                    .foregroundColor(Color.gray)
-                    .padding([.horizontal, .bottom])
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+            }.padding([.bottom], 10)
+
+            HStack(alignment: .center) {
+                Image(systemName: "coloncurrencysign.arrow.circlepath")
+                    .accessibilityHidden(true)
+                    .frame(width: iconWidth)
+                VStack(alignment: .leading) {
+                    Text("Billing cycle")
+                        .font(.caption2)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Text("\(subscriptionInformation.durationTitle)")
+                        .font(.caption)
+                }
+            }
+
+            HStack(alignment: .center) {
+                Image(systemName: "coloncurrencysign")
+                    .accessibilityHidden(true)
+                    .frame(width: iconWidth)
+                VStack(alignment: .leading) {
+                    Text("Current price")
+                        .font(.caption2)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    Text("\(subscriptionInformation.price)")
+                        .font(.caption)
+                }
+            }
+
+            if let nextRenewal =  subscriptionInformation.expirationDateString {
+                HStack(alignment: .center) {
+                    Image(systemName: "calendar")
+                        .accessibilityHidden(true)
+                        .frame(width: iconWidth)
+                    VStack(alignment: .leading) {
+                        Text("\(subscriptionInformation.expirationString)")
+                            .font(.caption2)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        Text("\(String(describing: nextRenewal))")
+                            .font(.caption)
+                    }
+                }
             }
 
             if let refundRequestStatusMessage = refundRequestStatusMessage {
                 Text("Refund request status: \(refundRequestStatusMessage)")
                     .font(.caption)
                     .bold()
-                    .foregroundColor(Color.gray)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
                     .padding([.horizontal, .bottom])
             }
-        }
+        }.padding()
+            .padding(.horizontal)
+            .background(Color(UIColor.tertiarySystemBackground))
+            .cornerRadius(20)
+            .shadow(color: Color.black.opacity(0.2), radius: 4)
     }
 
 }
@@ -213,10 +252,18 @@ struct ManageSubscriptionsButtonsView: View {
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformation)
-        ManageSubscriptionsView(viewModel: viewModel)
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+        ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+            .previewDisplayName("Monthly renewing")
+
+        let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+            screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
+
+        ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+            .previewDisplayName("Yearly expiring")
     }
 
 }

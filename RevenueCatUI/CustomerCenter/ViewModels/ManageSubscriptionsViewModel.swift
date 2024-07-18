@@ -111,7 +111,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             title: subscribedProduct.localizedTitle,
             durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
             price: subscribedProduct.localizedPriceString,
-            nextRenewalString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
+            expirationDateString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
             willRenew: currentEntitlement.willRenew,
             productIdentifier: currentEntitlement.productIdentifier,
             active: currentEntitlement.isActive
