@@ -254,7 +254,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+            refundRequestStatusMessage: "Refund granted successfully!")
         ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
             .previewDisplayName("Monthly renewing")
 
