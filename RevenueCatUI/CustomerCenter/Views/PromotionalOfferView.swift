@@ -60,7 +60,7 @@ struct PromotionalOfferView: View {
 
                 Spacer()
 
-                PromoOfferButtonView(viewModel: viewModel)
+                PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
 
                 let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
                 Button(dismissButtonTitle) {
@@ -88,7 +88,9 @@ struct PromoOfferButtonView: View {
     private var locale
 
     @ObservedObject
-    var viewModel: PromotionalOfferViewModel
+    private(set) var viewModel: PromotionalOfferViewModel
+
+    private(set) var appearance: CustomerCenterConfigData.Appearance
 
     var body: some View {
         if let product = self.viewModel.promotionalOfferData?.product,
@@ -112,7 +114,7 @@ struct PromoOfferButtonView: View {
                         .font(.subheadline)
                 }
             })
-            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.viewModel.appearance))
+            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.appearance))
         }
     }
 
