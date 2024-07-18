@@ -66,10 +66,12 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     init(screen: CustomerCenterConfigData.Screen,
-         subscriptionInformation: SubscriptionInformation) {
+         subscriptionInformation: SubscriptionInformation,
+         refundRequestStatusMessage: String? = nil) {
         self.screen = screen
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
+        self.refundRequestStatusMessage = refundRequestStatusMessage
         state = .success
     }
 
