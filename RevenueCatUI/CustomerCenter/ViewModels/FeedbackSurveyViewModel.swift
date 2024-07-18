@@ -28,7 +28,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     var feedbackSurveyData: FeedbackSurveyData
 
     @Published
-    var loadingStates: [String: Bool] = [:]
+    var loadingState: String?
     @Published
     var promotionalOfferData: PromotionalOfferData?
 
@@ -57,7 +57,7 @@ class FeedbackSurveyViewModel: ObservableObject {
 
     func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async {
         if let promotionalOffer = option.promotionalOffer {
-            self.loadingStates[option.id] = true
+            self.loadingState = option.id
             let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
             switch result {
             case .success(let promotionalOfferData):
@@ -72,7 +72,7 @@ class FeedbackSurveyViewModel: ObservableObject {
 
     func handleSheetDismiss() {
         self.feedbackSurveyData.action()
-        self.loadingStates.removeAll()
+        self.loadingState = nil
     }
 
 }

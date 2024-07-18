@@ -285,7 +285,7 @@ struct ManageSubscriptionButton: View {
                                  localization: self.viewModel.localization)
         })
         .buttonStyle(ManageSubscriptionsButtonStyle())
-        .disabled(self.viewModel.loadingPath?.id == path.id)
+        .disabled(self.viewModel.loadingPath != nil)
     }
 }
 

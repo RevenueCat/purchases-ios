@@ -43,7 +43,7 @@ struct FeedbackSurveyView: View {
 
             FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                       onOptionSelected: self.viewModel.handleAction(for:),
-                                      loadingStates: self.$viewModel.loadingStates)
+                                      loadingState: self.$viewModel.loadingState)
         }
         .sheet(
             item: self.$viewModel.promotionalOfferData,
@@ -68,7 +68,7 @@ struct FeedbackSurveyButtonsView: View {
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
     let onOptionSelected: (_ optionSelected: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
     @Binding
-    var loadingStates: [String: Bool]
+    var loadingState: String?
 
     var body: some View {
         VStack(spacing: Self.buttonSpacing) {
@@ -76,14 +76,14 @@ struct FeedbackSurveyButtonsView: View {
                 AsyncButton(action: {
                     await self.onOptionSelected(option)
                 }, label: {
-                    if self.loadingStates[option.id] ?? false {
+                    if self.loadingState == option.id {
                         ProgressView()
                     } else {
                         Text(option.title)
                     }
                 })
                 .buttonStyle(ManageSubscriptionsButtonStyle())
-                .disabled(self.loadingStates[option.id] ?? false)
+                .disabled(self.loadingState != nil)
             }
         }
     }
