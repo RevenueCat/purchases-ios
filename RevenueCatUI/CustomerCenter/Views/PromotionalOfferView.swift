@@ -59,7 +59,7 @@ struct PromotionalOfferView: View {
 
                 PromoOfferButtonView(viewModel: viewModel)
 
-                let dismissButtonTitle = localization.commonLocalizedString(for: .noThanks) ?? "No, thanks"
+                let dismissButtonTitle = localization.commonLocalizedString(for: .noThanks)
                 Button(dismissButtonTitle) {
                     dismiss()
                 }

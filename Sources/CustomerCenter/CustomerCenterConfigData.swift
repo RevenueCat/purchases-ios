@@ -43,10 +43,17 @@ public struct CustomerCenterConfigData {
 
             case noThanks = "no_thanks"
 
+            var defaultValue: String {
+                switch self {
+                case .noThanks:
+                    return "No, thanks"
+                }
+            }
+
         }
 
-        public func commonLocalizedString(for key: CommonLocalizedString) -> String? {
-            return self.localizedStrings["common_\(key.rawValue)"]
+        public func commonLocalizedString(for key: CommonLocalizedString) -> String {
+            return self.localizedStrings["common_\(key.rawValue)"] ?? key.defaultValue
         }
 
     }
