@@ -42,7 +42,7 @@ struct FeedbackSurveyView: View {
             Spacer()
 
             FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
-                                      action: self.viewModel.handleAction(for:),
+                                      onOptionSelected: self.viewModel.handleAction(for:),
                                       loadingStates: self.$viewModel.loadingStates)
         }
         .sheet(
@@ -66,7 +66,7 @@ struct FeedbackSurveyView: View {
 struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
-    let action: (CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
+    let onOptionSelected: (_ optionSelected: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
     @Binding
     var loadingStates: [String: Bool]
 
@@ -74,7 +74,7 @@ struct FeedbackSurveyButtonsView: View {
         VStack(spacing: Self.buttonSpacing) {
             ForEach(options, id: \.id) { option in
                 AsyncButton(action: {
-                    await self.action(option)
+                    await self.onOptionSelected(option)
                 }, label: {
                     if self.loadingStates[option.id] ?? false {
                         ProgressView()
