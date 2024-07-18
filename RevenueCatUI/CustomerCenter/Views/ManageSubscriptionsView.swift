@@ -194,11 +194,18 @@ struct SubscriptionDetailsView: View {
             }
 
             if let refundRequestStatusMessage = refundRequestStatusMessage {
-                Text("Refund request status: \(refundRequestStatusMessage)")
-                    .font(.caption)
-                    .bold()
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                    .padding([.horizontal, .bottom])
+                HStack(alignment: .center) {
+                    Image(systemName: "arrowshape.turn.up.backward")
+                        .accessibilityHidden(true)
+                        .frame(width: iconWidth)
+                    VStack(alignment: .leading) {
+                        Text("Refund status")
+                            .font(.caption2)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                        Text("\(refundRequestStatusMessage)")
+                            .font(.caption)
+                    }
+                }
             }
         }.padding()
             .padding(.horizontal)
