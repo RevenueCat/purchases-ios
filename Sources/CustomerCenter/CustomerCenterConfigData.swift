@@ -31,8 +31,8 @@ public struct CustomerCenterConfigData {
 
     public struct Localization {
 
-        public let locale: String
-        public let localizedStrings: [String: String]
+        let locale: String
+        let localizedStrings: [String: String]
 
         public init(locale: String, localizedStrings: [String: String]) {
             self.locale = locale
