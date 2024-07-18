@@ -31,8 +31,6 @@ class PromotionalOfferViewModel: ObservableObject {
     @Published
     private(set) var promotionalOfferData: PromotionalOfferData?
     @Published
-    private(set) var transaction: StoreTransaction?
-    @Published
     private(set) var error: Error?
 
     private var purchasesProvider: CustomerCenterPurchasesType
@@ -58,8 +56,7 @@ class PromotionalOfferViewModel: ObservableObject {
         }
 
         do {
-            let purchase = try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
-            self.transaction = purchase.transaction
+            try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
         } catch {
             self.error = error
         }

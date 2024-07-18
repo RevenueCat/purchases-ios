@@ -46,7 +46,8 @@ struct PromotionalOfferView: View {
     var body: some View {
         VStack {
             if let details = self.viewModel.promotionalOfferData?.promoOfferDetails,
-               let localization = self.viewModel.localization {
+               let localization = self.viewModel.localization,
+               self.viewModel.error == nil {
                 Text(details.title)
                     .font(.title)
                     .padding()
@@ -63,6 +64,11 @@ struct PromotionalOfferView: View {
                 Button(dismissButtonTitle) {
                     dismiss()
                 }
+            } else {
+                EmptyView()
+                    .onAppear {
+                        dismiss()
+                    }
             }
         }
     }
