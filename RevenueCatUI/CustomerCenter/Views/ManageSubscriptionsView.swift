@@ -149,7 +149,7 @@ struct SubscriptionDetailsView: View {
                 Text("\(subscriptionInformation.explanation)")
                     .frame(maxWidth: 200, alignment: .leading)
                     .font(.caption)
-                    .foregroundColor(Color.gray)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
             }.padding([.bottom], 10)
 
             HStack(alignment: .center) {
@@ -159,7 +159,7 @@ struct SubscriptionDetailsView: View {
                 VStack(alignment: .leading) {
                     Text("Billing cycle")
                         .font(.caption2)
-                        .foregroundColor(Color.gray)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
                     Text("\(subscriptionInformation.durationTitle)")
                         .font(.caption)
                 }
@@ -172,7 +172,7 @@ struct SubscriptionDetailsView: View {
                 VStack(alignment: .leading) {
                     Text("Current price")
                         .font(.caption2)
-                        .foregroundColor(Color.gray)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
                     Text("\(subscriptionInformation.price)")
                         .font(.caption)
                 }
@@ -186,7 +186,7 @@ struct SubscriptionDetailsView: View {
                     VStack(alignment: .leading) {
                         Text("\(subscriptionInformation.expirationString)")
                             .font(.caption2)
-                            .foregroundColor(Color.gray)
+                            .foregroundColor(Color(UIColor.secondaryLabel))
                         Text("\(String(describing: nextRenewal))")
                             .font(.caption)
                     }
@@ -197,12 +197,12 @@ struct SubscriptionDetailsView: View {
                 Text("Refund request status: \(refundRequestStatusMessage)")
                     .font(.caption)
                     .bold()
-                    .foregroundColor(Color.gray)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
                     .padding([.horizontal, .bottom])
             }
         }.padding()
             .padding(.horizontal)
-            .background(Color.white)
+            .background(Color(UIColor.tertiarySystemBackground))
             .cornerRadius(20)
             .shadow(color: Color.black.opacity(0.2), radius: 4)
     }
