@@ -5,8 +5,7 @@ public typealias CustomerCenterActionHandler = @MainActor @Sendable (CustomerCen
 
 /// Represents an event the customer may perform during the Customer Center flow
 public enum CustomerCenterAction {
-    /// Purchase of a promotional offer is completed.
-    case purchaseCompleted(_ customerInfo: CustomerInfo)
+
     /// Starting the restoration process
     case restoreStarted
     /// Restore errored out
@@ -19,4 +18,5 @@ public enum CustomerCenterAction {
     case refundRequestStarted(_ productId: String)
     /// Refund request process finished, with result provided.
     case refundRequestCompleted(_ refundRequestStatus: RefundRequestStatus)
+
 }
