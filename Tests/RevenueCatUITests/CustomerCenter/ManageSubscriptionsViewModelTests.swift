@@ -40,7 +40,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil)
 
         expect(viewModel.state) == CustomerCenterViewState.notLoaded
         expect(viewModel.subscriptionInformation).to(beNil())
@@ -51,7 +52,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testStateChangeToError() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil)
 
         viewModel.state = CustomerCenterViewState.error(error)
 
@@ -64,7 +66,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testIsLoaded() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil)
 
         expect(viewModel.isLoaded) == false
 
@@ -102,7 +105,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
-                                                     ))
+                                                     ),
+                                                     customerCenterActionHandler: nil)
 
         // Act
         await viewModel.loadScreen()
@@ -159,7 +163,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
-                                                     ))
+                                                     ),
+                                                     customerCenterActionHandler: nil)
 
         // Act
         await viewModel.loadScreen()
@@ -222,7 +227,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
-                                                     ))
+                                                     ),
+                                                     customerCenterActionHandler: nil)
 
         // Act
         await viewModel.loadScreen()
@@ -285,7 +291,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
-                                                     ))
+                                                     ),
+                                                     customerCenterActionHandler: nil)
 
         // Act
         await viewModel.loadScreen()
@@ -307,7 +314,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
             customerInfo: Fixtures.customerInfoWithoutSubscriptions
-        ))
+        ),
+                                                     customerCenterActionHandler: nil)
 
         await viewModel.loadScreen()
 
@@ -319,7 +327,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
             customerInfoError: error
-        ))
+        ),
+                                                     customerCenterActionHandler: nil)
 
         await viewModel.loadScreen()
 

@@ -31,8 +31,10 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
-    init(screen: CustomerCenterConfigData.Screen) {
-        let viewModel = ManageSubscriptionsViewModel(screen: screen)
+    init(screen: CustomerCenterConfigData.Screen,
+         customerCenterActionHandler: CustomerCenterActionHandler?) {
+        let viewModel = ManageSubscriptionsViewModel(screen: screen,
+                                                     customerCenterActionHandler: customerCenterActionHandler)
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -262,13 +264,15 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
         let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+            customerCenterActionHandler: nil,
             refundRequestStatusMessage: "Refund granted successfully!")
         ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
             .previewDisplayName("Monthly renewing")
 
         let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+            customerCenterActionHandler: nil)
 
         ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
             .previewDisplayName("Yearly expiring")

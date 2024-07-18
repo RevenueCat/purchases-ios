@@ -162,7 +162,7 @@ struct SamplePaywallsList: View {
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
         #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter) {
+        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
             self.presentingCustomerCenter = false
         }
         #endif
@@ -206,6 +206,32 @@ private struct TemplateLabel: View {
 }
 
 // MARK: -
+
+#if os(iOS)
+
+extension SamplePaywallsList {
+
+    func handleCustomerCenterAction(action: CustomerCenterAction) {
+        switch action {
+        case .restoreCompleted(_):
+            print("CustomerCenter: restoreCompleted")
+        case .purchaseCompleted(_):
+            print("CustomerCenter: purchaseCompleted")
+        case .restoreStarted:
+            print("CustomerCenter: restoreStarted")
+        case .restoreFailed(_):
+            print("CustomerCenter: restoreFailed")
+        case .showingManageSubscriptions:
+            print("CustomerCenter: showingManageSubscriptions")
+        case .refundRequestStarted(let productId):
+            print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
+        case .refundRequestCompleted(let status):
+            print("CustomerCenter: refundRequestCompleted. Result: \(status)")
+        }
+    }
+}
+
+#endif
 
 private extension SamplePaywallsList {
 

@@ -37,7 +37,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = CustomerCenterViewModel()
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         expect(viewModel.state) == .notLoaded
         expect(viewModel.hasSubscriptions) == false
@@ -46,7 +46,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testStateChangeToError() {
-        let viewModel = CustomerCenterViewModel()
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         viewModel.state = .error(error)
 
@@ -59,7 +59,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testIsLoaded() {
-        let viewModel = CustomerCenterViewModel()
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         expect(viewModel.isLoaded) == false
 
@@ -70,8 +70,9 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsApple() async {
-        let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
-            return CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+                                                customerInfoFetcher: {
+            return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
         })
 
         await viewModel.loadHasSubscriptions()
@@ -82,8 +83,9 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsGoogle() async {
-        let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
-            return CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+                                                customerInfoFetcher: {
+            return await CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
         })
 
         await viewModel.loadHasSubscriptions()
@@ -94,8 +96,9 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsNonActive() async {
-        let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
-            return CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+                                                customerInfoFetcher: {
+            return await CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
         })
 
         await viewModel.loadHasSubscriptions()
@@ -106,7 +109,8 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsFailure() async {
-        let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+                                                customerInfoFetcher: {
             throw TestError(message: "An error occurred")
         })
 

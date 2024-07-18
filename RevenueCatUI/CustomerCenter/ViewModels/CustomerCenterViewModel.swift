@@ -16,6 +16,8 @@
 import Foundation
 import RevenueCat
 
+#if os(iOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -46,11 +48,13 @@ import RevenueCat
     }
 
     private var customerInfoFetcher: CustomerInfoFetcher
+    internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
     private var error: Error?
 
-    convenience init() {
-        self.init(customerInfoFetcher: {
+    convenience init(customerCenterActionHandler: CustomerCenterActionHandler?) {
+        self.init(customerCenterActionHandler: customerCenterActionHandler,
+                  customerInfoFetcher: {
             guard Purchases.isConfigured else {
                 throw PaywallError.purchasesNotConfigured
             }
@@ -59,14 +63,17 @@ import RevenueCat
         })
     }
 
-    // @PublicForExternalTesting
-    init(customerInfoFetcher: @escaping CustomerInfoFetcher) {
+    init(customerCenterActionHandler: CustomerCenterActionHandler?,
+         customerInfoFetcher: @escaping CustomerInfoFetcher) {
         self.state = .notLoaded
         self.customerInfoFetcher = customerInfoFetcher
+        self.customerCenterActionHandler = customerCenterActionHandler
     }
 
-    // @PublicForExternalTesting
-    init(hasSubscriptions: Bool = false, areSubscriptionsFromApple: Bool = false) {
+    #if DEBUG
+
+    init(hasSubscriptions: Bool = false,
+         areSubscriptionsFromApple: Bool = false) {
         self.hasSubscriptions = hasSubscriptions
         self.subscriptionsAreFromApple = areSubscriptionsFromApple
         self.customerInfoFetcher = {
@@ -77,7 +84,10 @@ import RevenueCat
             return try await Purchases.shared.customerInfo()
         }
         self.state = .success
+        self.customerCenterActionHandler = nil
     }
+
+    #endif
 
     func loadHasSubscriptions() async {
         do {
@@ -107,4 +117,19 @@ import RevenueCat
         }
     }
 
+    func performRestore() async -> RestorePurchasesAlert.AlertType {
+        self.customerCenterActionHandler?(.restoreStarted)
+        do {
+            let customerInfo = try await Purchases.shared.restorePurchases()
+            self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
+            let hasEntitlements = customerInfo.entitlements.active.count > 0
+            return hasEntitlements ? .purchasesRecovered : .purchasesNotFound
+        } catch {
+            self.customerCenterActionHandler?(.restoreFailed(error))
+            return .purchasesNotFound
+        }
+    }
+
 }
+
+#endif
