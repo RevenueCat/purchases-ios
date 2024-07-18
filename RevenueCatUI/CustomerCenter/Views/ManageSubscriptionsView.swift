@@ -32,9 +32,11 @@ struct ManageSubscriptionsView: View {
     private var viewModel: ManageSubscriptionsViewModel
 
     init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         customerCenterActionHandler: CustomerCenterActionHandler?, 
+         localization: CustomerCenterConfigData.Localization) {
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: customerCenterActionHandler)
+                                                     customerCenterActionHandler: customerCenterActionHandler,
+                                                     localization: localization)
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -48,7 +50,8 @@ struct ManageSubscriptionsView: View {
                 content
                     .navigationDestination(isPresented: .constant(self.viewModel.feedbackSurveyData != nil)) {
                         if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
+                            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
+                                               localization: self.viewModel.localization)
                                 .onDisappear {
                                     self.viewModel.feedbackSurveyData = nil
                                 }
@@ -60,7 +63,8 @@ struct ManageSubscriptionsView: View {
                 content
                     .background(NavigationLink(
                         destination: self.viewModel.feedbackSurveyData.map { data in
-                            FeedbackSurveyView(feedbackSurveyData: data)
+                            FeedbackSurveyView(feedbackSurveyData: data,
+                                               localization: self.viewModel.localization)
                                 .onDisappear {
                                     self.viewModel.feedbackSurveyData = nil
                                 }
@@ -261,23 +265,24 @@ struct ManageSubscriptionButton: View {
         AsyncButton(action: {
             await self.viewModel.determineFlow(for: path)
         }, label: {
-            Text(path.title)
+            if self.viewModel.loadingPath?.id == path.id {
+                ProgressView()
+            } else {
+                Text(path.title)
+            }
         })
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(isPresented: self.$viewModel.isShowingPromotionalOffer, onDismiss: {
+        .sheet(item: self.$viewModel.promotionalOfferData,
+               onDismiss: {
             Task {
                 await self.viewModel.handleSheetDismiss()
             }
-        }, content: {
-            if let promotionalOffer = self.viewModel.promotionalOffer,
-               let product = self.viewModel.product,
-               let promoOfferDetails = self.viewModel.promoOfferDetails,
-               let localization = self.viewModel.localization {
-                PromotionalOfferView(promotionalOffer: promotionalOffer,
-                                     product: product,
-                                     promoOfferDetails: promoOfferDetails,
-                                     localization: localization)
-            }
+        },
+               content: { promotionalOfferData in
+            PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
+                                 product: promotionalOfferData.product,
+                                 promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                                 localization: self.viewModel.localization)
         })
         .buttonStyle(ManageSubscriptionsButtonStyle())
         .disabled(self.viewModel.loadingPath?.id == path.id)
@@ -296,6 +301,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+            localization: CustomerCenterConfigTestData.customerCenterData.localization,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
             customerCenterActionHandler: nil,
             refundRequestStatusMessage: "Refund granted successfully!")

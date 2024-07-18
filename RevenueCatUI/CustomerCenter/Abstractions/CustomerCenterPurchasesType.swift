@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PromotionalOfferPurchaseType.swift
+//  CustomerCenterPurchaseType.swift
 //
-//  Created by Cesar de la Vega on 16/7/24.
+//  Created by Cesar de la Vega on 18/7/24.
 
 import Foundation
 import RevenueCat
@@ -18,7 +18,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-protocol PromotionalOfferPurchaseType: Sendable {
+protocol CustomerCenterPurchasesType: Sendable {
 
     @Sendable
     func customerInfo() async throws -> CustomerInfo

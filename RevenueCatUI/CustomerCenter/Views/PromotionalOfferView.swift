@@ -30,30 +30,22 @@ struct PromotionalOfferView: View {
     private var viewModel: PromotionalOfferViewModel
     @Environment(\.dismiss)
     private var dismiss
-    private var promotionalOfferId: String
-
-    init(promotionalOfferId: String) {
-        let viewModel = PromotionalOfferViewModel()
-        self._viewModel = StateObject(wrappedValue: viewModel)
-        self.promotionalOfferId = promotionalOfferId
-    }
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
          localization: CustomerCenterConfigData.Localization) {
-        let viewModel = PromotionalOfferViewModel(product: product,
-                                                  promotionalOffer: promotionalOffer,
-                                                  promoOfferDetails: promoOfferDetails,
+        let promotionalOfferData = PromotionalOfferData(promotionalOffer: promotionalOffer,
+                                                        product: product,
+                                                        promoOfferDetails: promoOfferDetails)
+        let viewModel = PromotionalOfferViewModel(promotionalOfferData: promotionalOfferData,
                                                   localization: localization)
         self._viewModel = StateObject(wrappedValue: viewModel)
-        // force unwrap since it is only `nil` for SK1 products before iOS 12.2.
-        self.promotionalOfferId = promotionalOffer.discount.offerIdentifier!
     }
 
     var body: some View {
         VStack {
-            if let details = self.viewModel.promoOfferDetails,
+            if let details = self.viewModel.promotionalOfferData?.promoOfferDetails,
                let localization = self.viewModel.localization {
                 Text(details.title)
                     .font(.title)
@@ -73,9 +65,6 @@ struct PromotionalOfferView: View {
                 }
             }
         }
-        .task {
-            await checkAndLoadPromotional()
-        }
     }
 
 }
@@ -87,12 +76,15 @@ struct PromotionalOfferView: View {
 @available(visionOS, unavailable)
 struct PromoOfferButtonView: View {
 
+    @Environment(\.locale)
+    private var locale
+
     @ObservedObject
     var viewModel: PromotionalOfferViewModel
 
     var body: some View {
-        if let product = self.viewModel.product,
-           let discount = self.viewModel.promotionalOffer?.discount {
+        if let product = self.viewModel.promotionalOfferData?.product,
+           let discount = self.viewModel.promotionalOfferData?.promotionalOffer.discount {
             let mainTitle = discount.localizedPricePerPeriodByPaymentMode(.current)
             let localizedProductPricePerPeriod = product.localizedPricePerPeriod(.current)
 
@@ -104,29 +96,16 @@ struct PromoOfferButtonView: View {
                 VStack {
                     Text(mainTitle)
                         .font(.headline)
-                    Text(String(format: NSLocalizedString("then_price_per_period", comment: ""),
-                                localizedProductPricePerPeriod))
+
+                    let format = Localization.localizedBundle(self.locale)
+                        .localizedString(forKey: "then_price_per_period", value: "then %@", table: nil)
+
+                    Text(String(format: format, localizedProductPricePerPeriod))
                         .font(.subheadline)
                 }
             })
             .buttonStyle(ManageSubscriptionsButtonStyle())
         }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-@available(visionOS, unavailable)
-private extension PromotionalOfferView {
-
-    func checkAndLoadPromotional() async {
-        guard self.viewModel.promotionalOffer != nil else {
-            return
-        }
-        await self.viewModel.loadPromo(promotionalOfferId: self.promotionalOfferId)
     }
 
 }

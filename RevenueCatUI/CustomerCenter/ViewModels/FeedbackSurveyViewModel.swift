@@ -25,60 +25,46 @@ import RevenueCat
 @MainActor
 class FeedbackSurveyViewModel: ObservableObject {
 
-    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
-
-    @Published
     var feedbackSurveyData: FeedbackSurveyData
-    @Published
-    var isShowingPromotionalOffer: Bool = false
+
     @Published
     var loadingStates: [String: Bool] = [:]
+    @Published
+    var promotionalOfferData: PromotionalOfferData?
 
-    var promotionalOffer: PromotionalOffer? {
-        return promotionalOfferViewModel.promotionalOffer
-    }
+    private(set) var localization: CustomerCenterConfigData.Localization
 
-    var promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer? {
-        return promotionalOfferViewModel.promoOfferDetails
-    }
+    private var purchasesProvider: CustomerCenterPurchasesType
+    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
 
-    var localization: CustomerCenterConfigData.Localization? {
-        return promotionalOfferViewModel.localization
-    }
-
-    var product: StoreProduct? {
-        return promotionalOfferViewModel.product
-    }
-
-    private var customerInfoFetcher: CustomerInfoFetcher
-    private var promotionalOfferViewModel: PromotionalOfferViewModel
-
-    convenience init(feedbackSurveyData: FeedbackSurveyData) {
+    convenience init(feedbackSurveyData: FeedbackSurveyData,
+                     localization: CustomerCenterConfigData.Localization) {
         self.init(feedbackSurveyData: feedbackSurveyData,
-                  promotionalOfferViewModel: PromotionalOfferViewModel(),
-                  customerInfoFetcher: {
-            guard Purchases.isConfigured else {
-                throw PaywallError.purchasesNotConfigured
-            }
-
-            return try await Purchases.shared.customerInfo()
-        })
+                  localization: localization,
+                  purchasesProvider: CustomerCenterPurchases(),
+                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase())
     }
 
-    // @PublicForExternalTesting
     init(feedbackSurveyData: FeedbackSurveyData,
-         promotionalOfferViewModel: PromotionalOfferViewModel,
-         customerInfoFetcher: @escaping CustomerInfoFetcher) {
+         localization: CustomerCenterConfigData.Localization,
+         purchasesProvider: CustomerCenterPurchasesType,
+         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType) {
         self.feedbackSurveyData = feedbackSurveyData
-        self.promotionalOfferViewModel = promotionalOfferViewModel
-        self.customerInfoFetcher = customerInfoFetcher
+        self.localization = localization
+        self.purchasesProvider = purchasesProvider
+        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
     }
 
     func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async {
         if let promotionalOffer = option.promotionalOffer {
             self.loadingStates[option.id] = true
-            await promotionalOfferViewModel.loadPromo(promotionalOfferId: promotionalOffer.iosOfferId)
-            self.isShowingPromotionalOffer = true
+            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+            switch result {
+            case .success(let promotionalOfferData):
+                self.promotionalOfferData = promotionalOfferData
+            case .failure(let error):
+                self.feedbackSurveyData.action()
+            }
         } else {
             self.feedbackSurveyData.action()
         }

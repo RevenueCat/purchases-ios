@@ -28,8 +28,9 @@ struct FeedbackSurveyView: View {
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
 
-    init(feedbackSurveyData: FeedbackSurveyData) {
-        self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData))
+    init(feedbackSurveyData: FeedbackSurveyData, localization: CustomerCenterConfigData.Localization) {
+        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData, localization: localization)
+        self._viewModel = StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
@@ -45,18 +46,13 @@ struct FeedbackSurveyView: View {
                                       loadingStates: self.$viewModel.loadingStates)
         }
         .sheet(
-            isPresented: self.$viewModel.isShowingPromotionalOffer,
+            item: self.$viewModel.promotionalOfferData,
             onDismiss: { self.viewModel.handleSheetDismiss() },
-            content: {
-                if let promotionalOffer = self.viewModel.promotionalOffer,
-                   let product = self.viewModel.product,
-                   let promoOfferDetails = self.viewModel.promoOfferDetails,
-                   let localization = self.viewModel.localization {
-                    PromotionalOfferView(promotionalOffer: promotionalOffer,
-                                         product: product,
-                                         promoOfferDetails: promoOfferDetails,
-                                         localization: localization)
-                }
+            content: { promotionalOfferData in
+                PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
+                                     product: promotionalOfferData.product,
+                                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                                     localization: self.viewModel.localization)
             })
     }
 

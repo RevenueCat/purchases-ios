@@ -31,79 +31,59 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
-    @Published
-    var isShowingPromotionalOffer: Bool = false
-    @Published
-    var loadingPath: CustomerCenterConfigData.HelpPath?
 
     @Published
-    var state: CustomerCenterViewState {
+    var loadingPath: CustomerCenterConfigData.HelpPath?
+    @Published
+    var promotionalOfferData: PromotionalOfferData?
+
+    var isLoaded: Bool {
+        return state != .notLoaded
+    }
+
+    private(set) var localization: CustomerCenterConfigData.Localization
+
+    @Published
+    private(set) var subscriptionInformation: SubscriptionInformation?
+    @Published
+    private(set) var refundRequestStatusMessage: String?
+    @Published
+    private(set) var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
                 self.error = stateError
             }
         }
     }
-    var isLoaded: Bool {
-        return state != .notLoaded
-    }
-
-    @Published
-    private(set) var subscriptionInformation: SubscriptionInformation?
-    @Published
-    private(set) var refundRequestStatusMessage: String?
-
-    var promotionalOffer: PromotionalOffer? {
-        return promotionalOfferViewModel.promotionalOffer
-    }
-
-    var promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer? {
-        return promotionalOfferViewModel.promoOfferDetails
-    }
-
-    var localization: CustomerCenterConfigData.Localization? {
-        return promotionalOfferViewModel.localization
-    }
-
-    var product: StoreProduct? {
-        return promotionalOfferViewModel.product
-    }
 
     private var purchasesProvider: ManageSubscriptionsPurchaseType
-    private var promotionalOfferViewModel: PromotionalOfferViewModel
+    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
-
     private var error: Error?
 
-    convenience init(screen: CustomerCenterConfigData.Screen,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
-        self.init(screen: screen,
-                  purchasesProvider: ManageSubscriptionPurchases(),
-                  customerCenterActionHandler: customerCenterActionHandler,
-                  promotionalOfferViewModel: PromotionalOfferViewModel())
-    }
-
     init(screen: CustomerCenterConfigData.Screen,
-         purchasesProvider: ManageSubscriptionsPurchaseType,
          customerCenterActionHandler: CustomerCenterActionHandler?,
-         promotionalOfferViewModel: PromotionalOfferViewModel) {
-        self.state = .notLoaded
+         localization: CustomerCenterConfigData.Localization) {
         self.screen = screen
-        self.purchasesProvider = purchasesProvider
+        self.localization = localization
+        self.purchasesProvider = ManageSubscriptionPurchases()
         self.customerCenterActionHandler = customerCenterActionHandler
-        self.promotionalOfferViewModel = promotionalOfferViewModel
+        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
+        self.state = .notLoaded
     }
 
     init(screen: CustomerCenterConfigData.Screen,
+         localization: CustomerCenterConfigData.Localization,
          subscriptionInformation: SubscriptionInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatusMessage: String? = nil) {
         self.screen = screen
         self.subscriptionInformation = subscriptionInformation
+        self.localization = localization
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatusMessage = refundRequestStatusMessage
         self.customerCenterActionHandler = customerCenterActionHandler
-        self.promotionalOfferViewModel = PromotionalOfferViewModel()
+        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
         state = .success
     }
 
@@ -153,8 +133,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
             }
         case let .promotionalOffer(promotionalOffer):
             self.loadingPath = path
-            await promotionalOfferViewModel.loadPromo(promotionalOfferId: promotionalOffer.iosOfferId)
-            self.isShowingPromotionalOffer = true
+            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+            switch result {
+            case .success(let promotionalOfferData):
+                self.promotionalOfferData = promotionalOfferData
+            case .failure(let error):
+                await self.performAction(for: path)
+                self.loadingPath = nil
+            }
         default:
             await self.performAction(for: path)
         }

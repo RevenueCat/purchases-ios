@@ -77,7 +77,8 @@ private extension CustomerCenterView {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
                 ManageSubscriptionsView(screen: screen,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler,
+                                        localization: configuration.localization)
             } else {
                 WrongPlatformView()
             }
