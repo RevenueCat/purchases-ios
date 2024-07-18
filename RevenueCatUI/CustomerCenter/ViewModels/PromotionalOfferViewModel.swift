@@ -36,7 +36,6 @@ class PromotionalOfferViewModel: ObservableObject {
     private(set) var error: Error?
 
     private var purchasesProvider: CustomerCenterPurchasesType
-    private var promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
     convenience init() {
