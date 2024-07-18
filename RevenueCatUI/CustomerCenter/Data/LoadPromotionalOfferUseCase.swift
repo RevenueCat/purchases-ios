@@ -42,7 +42,7 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
 
-            guard let productIdentifier = customerInfo.currentEntitlement()?.productIdentifier,
+            guard let productIdentifier = customerInfo.earliestExpiringAppStoreEntitlement()?.productIdentifier,
                   let subscribedProduct = await self.purchasesProvider.products([productIdentifier]).first else {
                 Logger.warning(Strings.could_not_offer_for_active_subscriptions)
                 return .failure(CustomerCenterError.couldNotFindSubscriptionInformation)
