@@ -162,7 +162,7 @@ struct SamplePaywallsList: View {
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
         #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self) {
+        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
             self.presentingCustomerCenter = false
         }
         #endif
@@ -209,36 +209,26 @@ private struct TemplateLabel: View {
 
 #if os(iOS)
 
-extension SamplePaywallsList: CustomerCenterActionHandler {
+extension SamplePaywallsList {
 
-    func onRestoreCompleted(_ customerInfo: RevenueCat.CustomerInfo) {
-        print("CustomerCenter: onRestoreCompleted")
+    func handleCustomerCenterAction(action: CustomerCenterAction) {
+        switch action {
+        case .restoreCompleted(_):
+            print("CustomerCenter: restoreCompleted")
+        case .purchaseCompleted(_):
+            print("CustomerCenter: purchaseCompleted")
+        case .restoreStarted:
+            print("CustomerCenter: restoreStarted")
+        case .restoreFailed(_):
+            print("CustomerCenter: restoreFailed")
+        case .showingManageSubscriptions:
+            print("CustomerCenter: showingManageSubscriptions")
+        case .refundRequestStarted(let productId):
+            print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
+        case .refundRequestCompleted(let status):
+            print("CustomerCenter: refundRequestCompleted. Result: \(status)")
+        }
     }
-
-    func onPurchaseCompleted(_ customerInfo: RevenueCat.CustomerInfo) {
-        print("CustomerCenter: onPurchaseCompleted")
-    }
-
-    func onRestoreFailed(_ error: any Error) {
-        print("CustomerCenter: onRestoreFailed")
-    }
-
-    func onShowManageSubscriptions() {
-        print("CustomerCenter: onShowManageSubscriptions")
-    }
-
-    func onRefundRequestStarted(_ productId: String) {
-        print("CustomerCenter: onRefundRequestStarted")
-    }
-
-    func onRefundRequestCompleted(_ refundRequestStatus: RevenueCat.RefundRequestStatus) {
-        print("CustomerCenter: onRefundRequestCompleted. Result: \(refundRequestStatus)")
-    }
-
-    func onRestoreStarted() {
-        print("CustomerCenter: onRestoreStarted")
-    }
-
 }
 
 #endif

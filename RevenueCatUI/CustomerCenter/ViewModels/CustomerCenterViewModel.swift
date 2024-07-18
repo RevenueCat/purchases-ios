@@ -118,14 +118,14 @@ import RevenueCat
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.customerCenterActionHandler?.onRestoreStarted()
+        self.customerCenterActionHandler?(.restoreStarted)
         do {
             let customerInfo = try await Purchases.shared.restorePurchases()
-            self.customerCenterActionHandler?.onRestoreCompleted(customerInfo)
+            self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
             let hasEntitlements = customerInfo.entitlements.active.count > 0
             return hasEntitlements ? .purchasesRecovered : .purchasesNotFound
         } catch {
-            self.customerCenterActionHandler?.onRestoreFailed(error)
+            self.customerCenterActionHandler?(.restoreFailed(error))
             return .purchasesNotFound
         }
     }

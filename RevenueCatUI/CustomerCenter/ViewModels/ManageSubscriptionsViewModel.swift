@@ -148,9 +148,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
             do {
                 guard let subscriptionInformation = self.subscriptionInformation else { return }
                 let productId = subscriptionInformation.productIdentifier
-                self.customerCenterActionHandler?.onRefundRequestStarted(productId)
+                self.customerCenterActionHandler?(.refundRequestStarted(productId))
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
-                self.customerCenterActionHandler?.onRefundRequestCompleted(status)
+                self.customerCenterActionHandler?(.refundRequestCompleted(status))
                 switch status {
                 case .error:
                     self.refundRequestStatusMessage = String(localized: "Error when requesting refund, try again")
@@ -160,13 +160,13 @@ class ManageSubscriptionsViewModel: ObservableObject {
                     self.refundRequestStatusMessage = String(localized: "Refund canceled")
                 }
             } catch {
-                self.customerCenterActionHandler?.onRefundRequestCompleted(.error)
+                self.customerCenterActionHandler?(.refundRequestCompleted(.error))
                 self.refundRequestStatusMessage =
                 String(localized: "An error occurred while processing the refund request.")
             }
         case .changePlans, .cancel:
             do {
-                self.customerCenterActionHandler?.onShowManageSubscriptions()
+                self.customerCenterActionHandler?(.showingManageSubscriptions)
                 try await purchasesProvider.showManageSubscriptions()
             } catch {
                 self.state = .error(error)
