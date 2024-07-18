@@ -1335,7 +1335,7 @@ workflows:
       - run-test-ios-17
       - pod-lib-lint
 
-  deploy:
+  create-tag:
     when:
       and:
         - not:
@@ -1352,6 +1352,12 @@ workflows:
       - tag-release-branch:
           requires:
             - hold
+
+  deploy-tag:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    jobs:
       - make-release:
           <<: *release-tags
       - push-revenuecat-pod:
@@ -1360,7 +1366,6 @@ workflows:
           <<: *release-tags
       - push-revenuecatui-pod:
           requires:
-            - make-release
             - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
@@ -1368,8 +1373,12 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
+          requires:
+            - make-release
           <<: *release-tags
       - deploy-purchase-tester:
+          requires:
+            - make-release
           <<: *release-tags
       - notify-on-non-patch-release-branches:
           requires:
