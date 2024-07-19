@@ -1710,8 +1710,8 @@ extension HTTPClientTests {
 extension HTTPClientTests {
 
     func testOnlyRetriesProvidedHTTPStatusCodes() {
-        expect(self.client.shouldRetryRequest(withStatusCode: .tooManyRequests)).to(beTrue())
-        expect(self.client.shouldRetryRequest(withStatusCode: .invalidRequest)).to(beFalse())
+        expect(self.client.isStatusCodeRetryable(.tooManyRequests)).to(beTrue())
+        expect(self.client.isStatusCodeRetryable(.invalidRequest)).to(beFalse())
     }
 
     // Backoff Time Tests

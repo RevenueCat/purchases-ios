@@ -625,7 +625,7 @@ extension HTTPClient {
         httpURLResponse: HTTPURLResponse?
     ) -> Bool {
         guard let httpURLResponse = httpURLResponse,
-              shouldRetryRequest(withStatusCode: httpURLResponse.httpStatusCode) else { return false }
+              isStatusCodeRetryable(httpURLResponse.httpStatusCode) else { return false }
 
         // At this point, retryCount hasn't been incremented yet, so we'll need to do it early here
         // to determine if another retry is appropriate.
@@ -665,7 +665,7 @@ extension HTTPClient {
         return true
     }
 
-    internal func shouldRetryRequest(withStatusCode statusCode: HTTPStatusCode) -> Bool {
+    internal func isStatusCodeRetryable(_ statusCode: HTTPStatusCode) -> Bool {
         return self.retriableStatusCodes.contains(statusCode)
     }
 
