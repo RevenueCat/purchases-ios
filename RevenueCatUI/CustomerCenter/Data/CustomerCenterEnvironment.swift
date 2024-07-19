@@ -23,7 +23,7 @@ struct LocalizationKey: EnvironmentKey {
 
 extension CustomerCenterConfigData.Localization {
 
-    static let `default` = CustomerCenterConfigData.Localization(locale: "en_US", localizedStrings: [:])
+    public static let `default` = CustomerCenterConfigData.Localization(locale: "en_US", localizedStrings: [:])
 
 }
 

@@ -15,9 +15,11 @@ import Foundation
 import RevenueCat
 
 protocol LoadPromotionalOfferUseCaseType {
+
     func execute(
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) async -> Result<PromotionalOfferData, Error>
+
 }
 
 #if os(iOS)

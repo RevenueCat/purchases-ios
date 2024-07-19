@@ -16,7 +16,7 @@
 // swiftlint:disable file_length type_body_length function_body_length
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import StoreKit
 import XCTest
@@ -102,12 +102,12 @@ class ManageSubscriptionsViewModelTests: TestCase {
         )
 
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     customerCenterActionHandler: nil,
-                                                     promotionalOfferViewModel: MockPromotionalOfferViewModel())
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
 
         // Act
         await viewModel.loadScreen()
@@ -161,12 +161,12 @@ class ManageSubscriptionsViewModelTests: TestCase {
         )
 
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     customerCenterActionHandler: nil,
-                                                     promotionalOfferViewModel: MockPromotionalOfferViewModel())
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
 
         // Act
         await viewModel.loadScreen()
@@ -226,12 +226,12 @@ class ManageSubscriptionsViewModelTests: TestCase {
         )
 
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     customerCenterActionHandler: nil,
-                                                     promotionalOfferViewModel: MockPromotionalOfferViewModel())
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
 
         // Act
         await viewModel.loadScreen()
@@ -291,12 +291,12 @@ class ManageSubscriptionsViewModelTests: TestCase {
         )
 
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     customerCenterActionHandler: nil,
-                                                     promotionalOfferViewModel: MockPromotionalOfferViewModel())
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
 
         // Act
         await viewModel.loadScreen()
@@ -317,9 +317,9 @@ class ManageSubscriptionsViewModelTests: TestCase {
     func testLoadScreenNoActiveSubscription() async {
         let mockPurchases = MockManageSubscriptionsPurchases(customerInfo: Fixtures.customerInfoWithoutSubscriptions)
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
-                                                     purchasesProvider: mockPurchases,
                                                      customerCenterActionHandler: nil,
-                                                     promotionalOfferViewModel: MockPromotionalOfferViewModel())
+                                                     purchasesProvider: mockPurchases,
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
 
         await viewModel.loadScreen()
 
@@ -330,9 +330,9 @@ class ManageSubscriptionsViewModelTests: TestCase {
     func testLoadScreenFailure() async {
         let mockPurchases = MockManageSubscriptionsPurchases(customerInfoError: error)
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
-                                                     purchasesProvider: mockPurchases,
                                                      customerCenterActionHandler: nil,
-                                                     promotionalOfferViewModel: MockPromotionalOfferViewModel())
+                                                     purchasesProvider: mockPurchases,
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
 
         await viewModel.loadScreen()
 
@@ -380,15 +380,37 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ]
         )
-
-        let promotionalViewModel = MockPromotionalOfferViewModel()
+        let promoOfferDetails = CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifier,
+                                                                                   eligible: true, 
+                                                                                   title: "Wait",
+                                                                                   subtitle: "Here's an offer for you")
+        let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
+        loadPromotionalOfferUseCase.mockedProduct = product
+        loadPromotionalOfferUseCase.mockedPromoOfferDetails = promoOfferDetails
+        let signedData = PromotionalOffer.SignedData(identifier: "id",
+                                                     keyIdentifier: "key_i",
+                                                     nonce: UUID(),
+                                                     signature: "a signature",
+                                                     timestamp: 1234)
+        let discount = MockStoreProductDiscount(offerIdentifier: offerIdentifier,
+                                                currencyCode: "usd",
+                                                price: 1,
+                                                localizedPriceString: "$1.00",
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+                                                numberOfPeriods: 1,
+                                                type: .introductory)
+        
+        loadPromotionalOfferUseCase.mockedPromotionalOffer = PromotionalOffer(discount: discount,
+                                                                              signedData: signedData)
 
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     promotionalOfferViewModel: promotionalViewModel)
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
         await viewModel.loadScreen()
 
@@ -402,14 +424,14 @@ class ManageSubscriptionsViewModelTests: TestCase {
             return false
         })
 
-        expect(promotionalViewModel.offerToLoadPromoFor).to(beNil())
+        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
         await viewModel.determineFlow(for: pathWithPromotionalOffer)
 
         let loadingPath = try XCTUnwrap(viewModel.loadingPath)
         expect(loadingPath.id) == pathWithPromotionalOffer.id
 
-        expect(promotionalViewModel.offerToLoadPromoFor) == offerIdentifier
+        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor?.iosOfferId) == offerIdentifier
     }
 
     private func reformat(ISO8601Date: String) -> String {
@@ -751,7 +773,21 @@ fileprivate extension SKProductDiscount {
     convenience init(identifier: String) {
         self.init()
         self.setValue(identifier, forKey: "identifier")
+        self.setValue(subscriptionPeriod, forKey: "subscriptionPeriod")
     }
+
+}
+
+fileprivate struct MockStoreProductDiscount: StoreProductDiscountType {
+
+    let offerIdentifier: String?
+    let currencyCode: String?
+    let price: Decimal
+    let localizedPriceString: String
+    let paymentMode: StoreProductDiscount.PaymentMode
+    let subscriptionPeriod: SubscriptionPeriod
+    let numberOfPeriods: Int
+    let type: StoreProductDiscount.DiscountType
 
 }
 
@@ -759,14 +795,30 @@ fileprivate extension SKProductDiscount {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor
-class MockPromotionalOfferViewModel: PromotionalOfferViewModel {
+class MockLoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
-    var offerToLoadPromoFor: String?
+    var offerToLoadPromoFor: RevenueCat.CustomerCenterConfigData.HelpPath.PromotionalOffer?
 
-    override func loadPromo(promotionalOfferId: String) async {
-        self.offerToLoadPromoFor = promotionalOfferId
+    var mockedProduct: StoreProduct?
+    var mockedPromotionalOffer: PromotionalOffer?
+    var mockedPromoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer?
+
+    func execute(
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+    ) async -> Result<PromotionalOfferData, Error> {
+        self.offerToLoadPromoFor = promoOfferDetails
+        if let mockedProduct = mockedProduct,
+           let mockedPromotionalOffer = mockedPromotionalOffer,
+           let mockedPromoOfferDetails = mockedPromoOfferDetails {
+            return .success(PromotionalOfferData(promotionalOffer: mockedPromotionalOffer,
+                                                 product: mockedProduct,
+                                                 promoOfferDetails: mockedPromoOfferDetails))
+        } else {
+            return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
+        }
+
     }
+
 }
 
 #endif

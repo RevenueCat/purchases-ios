@@ -36,6 +36,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var loadingPath: CustomerCenterConfigData.HelpPath?
     @Published
     var promotionalOfferData: PromotionalOfferData?
+    @Published
+    var state: CustomerCenterViewState {
+        didSet {
+            if case let .error(stateError) = state {
+                self.error = stateError
+            }
+        }
+    }
 
     var isLoaded: Bool {
         return state != .notLoaded
@@ -45,14 +53,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private(set) var subscriptionInformation: SubscriptionInformation?
     @Published
     private(set) var refundRequestStatusMessage: String?
-    @Published
-    private(set) var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
+
 
     private var purchasesProvider: ManageSubscriptionsPurchaseType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
@@ -60,11 +61,13 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private var error: Error?
 
     init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         customerCenterActionHandler: CustomerCenterActionHandler?,
+         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
+         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
         self.screen = screen
-        self.purchasesProvider = ManageSubscriptionPurchases()
+        self.purchasesProvider = purchasesProvider
         self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
+        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
         self.state = .notLoaded
     }
 
