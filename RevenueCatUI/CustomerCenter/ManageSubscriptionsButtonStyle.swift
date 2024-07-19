@@ -49,9 +49,9 @@ private extension ManageSubscriptionsButtonStyle {
     func color(from appearance: CustomerCenterConfigData.Appearance) -> Color {
         switch appearance.mode {
         case .system:
-            Color.accentColor
+            return Color.accentColor
         case .custom(accentColor: let accentColor, backgroundColor: let backgroundColor, textColor: let textColor):
-            colorScheme == .dark ? accentColor.dark.underlyingColor : accentColor.light.underlyingColor
+            return colorScheme == .dark ? accentColor.dark.underlyingColor : accentColor.light.underlyingColor
         }
     }
 
