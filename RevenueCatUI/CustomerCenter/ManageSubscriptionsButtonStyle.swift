@@ -50,7 +50,7 @@ private extension ManageSubscriptionsButtonStyle {
         switch appearance.mode {
         case .system:
             return Color.accentColor
-        case .custom(accentColor: let accentColor, backgroundColor: let backgroundColor, textColor: let textColor):
+        case .custom(accentColor: let accentColor, backgroundColor: _, textColor: _):
             return colorScheme == .dark ? accentColor.dark.underlyingColor : accentColor.light.underlyingColor
         }
     }
