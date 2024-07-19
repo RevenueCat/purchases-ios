@@ -44,8 +44,6 @@ enum TestData {
         )
     }()
 
-    #if DEBUG
-
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
         price: 1.99,
@@ -116,40 +114,6 @@ enum TestData {
         subscriptionPeriod: nil,
         locale: Self.locale
     )
-    static let productWithIntroOffer = TestStoreProduct(
-        localizedTitle: "PRO monthly",
-        price: 3.99,
-        localizedPriceString: "$3.99",
-        productIdentifier: "com.revenuecat.product_4",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO monthly",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .month),
-        introductoryDiscount: .init(
-            identifier: "intro",
-            price: 0,
-            localizedPriceString: "$0.00",
-            paymentMode: .freeTrial,
-            subscriptionPeriod: .init(value: 1, unit: .week),
-            numberOfPeriods: 1,
-            type: .introductory
-        ),
-        discounts: [],
-        locale: Self.locale
-    )
-    static let productWithNoIntroOffer = TestStoreProduct(
-        localizedTitle: "PRO annual",
-        price: 34.99,
-        localizedPriceString: "$34.99",
-        productIdentifier: "com.revenuecat.product_3",
-        productType: .autoRenewableSubscription,
-        localizedDescription: "PRO annual",
-        subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .year),
-        introductoryDiscount: nil,
-        discounts: [],
-        locale: Self.locale
-    )
     // @PublicForExternalTesting
     static let weeklyPackage = Package(
         identifier: PackageType.weekly.identifier,
@@ -185,6 +149,49 @@ enum TestData {
         storeProduct: Self.annualProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    // @PublicForExternalTesting
+    static let lifetimePackage = Package(
+        identifier: PackageType.lifetime.identifier,
+        packageType: .lifetime,
+        storeProduct: Self.lifetimeProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+
+    #if DEBUG
+    static let productWithIntroOffer = TestStoreProduct(
+        localizedTitle: "PRO monthly",
+        price: 3.99,
+        localizedPriceString: "$3.99",
+        productIdentifier: "com.revenuecat.product_4",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 1, unit: .week),
+            numberOfPeriods: 1,
+            type: .introductory
+        ),
+        discounts: [],
+        locale: Self.locale
+    )
+    static let productWithNoIntroOffer = TestStoreProduct(
+        localizedTitle: "PRO annual",
+        price: 34.99,
+        localizedPriceString: "$34.99",
+        productIdentifier: "com.revenuecat.product_3",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: nil,
+        discounts: [],
+        locale: Self.locale
+    )
     static let customPackage = Package(
         identifier: "Custom",
         packageType: .custom,
@@ -211,14 +218,6 @@ enum TestData {
         storeProduct: productWithNoIntroOffer.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
-    // @PublicForExternalTesting
-    static let lifetimePackage = Package(
-        identifier: PackageType.lifetime.identifier,
-        packageType: .lifetime,
-        storeProduct: Self.lifetimeProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
-    )
-
     static let packages = [
         Self.packageWithIntroOffer,
         Self.packageWithNoIntroOffer
@@ -729,6 +728,8 @@ enum TestData {
     )
     static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
 
+    #endif
+
     #if os(watchOS)
     // `Locale.current` in watchOS produces `en_001` when running tests
     static let locale: Locale = .init(identifier: "en_US")
@@ -753,8 +754,6 @@ enum TestData {
             type: .introductory
         )
     }
-
-    #endif
 
 }
 
