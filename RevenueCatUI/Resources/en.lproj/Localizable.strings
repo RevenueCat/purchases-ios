@@ -29,12 +29,3 @@
 "Dismiss" = "Dismiss";
 "We couldn’t find any additional purchases under this account. \n\nContact support for assistance if you think this is an error." = "We couldn’t find any additional purchases under this account. \n\nContact support for assistance if you think this is an error.";
 "then_price_per_period" = "then %@";
-"Billing cycle" = "Billing cycle";
-"Current price" = "Current price";
-"Expired" = "Expired";
-"Expires" = "Expires";
-"Next billing date" = "Next billing date";
-"Refund status" = "Refund status";
-"This is your subscription with the earliest billing date." = "This is your subscription with the earliest billing date.";
-"This is your subscription with the earliest expiration date." = "This is your subscription with the earliest expiration date.";
-"This subscription has expired." = "This subscription has expired.";
