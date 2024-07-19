@@ -32,6 +32,9 @@ struct NoSubscriptionsView: View {
     @Environment(\.dismiss)
     var dismiss
 
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @State
     private var showRestoreAlert: Bool = false
 
@@ -41,25 +44,24 @@ struct NoSubscriptionsView: View {
 
     var body: some View {
         VStack {
-            Text("No Subscriptions found")
+            Text(localization.commonLocalizedString(for: .noSubscriptionsFound))
                 .font(.title)
                 .padding()
-            Text("We can try checking your Apple account for any previous purchases")
+            Text(localization.commonLocalizedString(for: .tryCheckRestore))
                 .font(.body)
                 .padding()
 
             Spacer()
 
-            Button("Restore purchases") {
+            Button(localization.commonLocalizedString(for: .restorePurchases)) {
                 showRestoreAlert = true
             }
             .restorePurchasesAlert(isPresented: $showRestoreAlert)
             .buttonStyle(ManageSubscriptionsButtonStyle())
 
-            Button("Cancel") {
+            Button(localization.commonLocalizedString(for: .cancel)) {
                 dismiss()
             }
-
         }
 
     }
