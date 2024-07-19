@@ -47,7 +47,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path2",
                                 title: "Path 2",
                                 type: .cancel,
-                                promotionalOffer: .init(iosOfferId: "offer_id", eligible: true),
+                                promotionalOffer: .init(iosOfferId: "offer_id",
+                                                        eligible: true,
+                                                        title: "Wait!",
+                                                        subtitle: "Before you go"),
                                 feedbackSurvey: nil
                             ),
                             .init(
@@ -60,7 +63,9 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         .init(id: "id_1",
                                                               title: "option 1",
                                                               promotionalOffer: .init(iosOfferId: "offer_id_1",
-                                                                                      eligible: true))
+                                                                                      eligible: true,
+                                                                                      title: "Wait!",
+                                                                                      subtitle: "Before you go"))
                                                       ])
                             )
                         ]

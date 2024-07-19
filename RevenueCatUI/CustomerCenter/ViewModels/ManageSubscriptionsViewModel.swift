@@ -33,6 +33,10 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var feedbackSurveyData: FeedbackSurveyData?
 
     @Published
+    var loadingPath: CustomerCenterConfigData.HelpPath?
+    @Published
+    var promotionalOfferData: PromotionalOfferData?
+    @Published
     var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
@@ -40,6 +44,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             }
         }
     }
+
     var isLoaded: Bool {
         return state != .notLoaded
     }
@@ -49,25 +54,20 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     private(set) var refundRequestStatusMessage: String?
 
-    private let purchasesProvider: ManageSubscriptionsPurchaseType
+    private var purchasesProvider: ManageSubscriptionsPurchaseType
+    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
-
     private var error: Error?
 
-    convenience init(screen: CustomerCenterConfigData.Screen,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
-        self.init(screen: screen,
-                  purchasesProvider: ManageSubscriptionPurchases(),
-                  customerCenterActionHandler: customerCenterActionHandler)
-    }
-
     init(screen: CustomerCenterConfigData.Screen,
-         purchasesProvider: ManageSubscriptionsPurchaseType,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
-        self.state = .notLoaded
+         customerCenterActionHandler: CustomerCenterActionHandler?,
+         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
+         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
         self.screen = screen
         self.purchasesProvider = purchasesProvider
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+        self.state = .notLoaded
     }
 
     init(screen: CustomerCenterConfigData.Screen,
@@ -79,6 +79,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatusMessage = refundRequestStatusMessage
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
         state = .success
     }
 
@@ -94,18 +95,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private func loadSubscriptionInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
 
-        // Pick the soonest expiring iOS App Store entitlement and accompanying product.
-        guard let currentEntitlement = customerInfo.entitlements
-            .active
-            .values
-            .lazy
-            .filter({ entitlement in entitlement.store == .appStore })
-            .sorted(by: { lhs, rhs in
-                let lhsDateSeconds = lhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
-                let rhsDateSeconds = rhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
-
-                return lhsDateSeconds < rhsDateSeconds
-            }).first,
+        guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
               let subscribedProduct = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
         else {
             Logger.warning(Strings.could_not_find_subscription_information)
@@ -127,20 +117,48 @@ class ManageSubscriptionsViewModel: ObservableObject {
         )
     }
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
-        if case let .feedbackSurvey(feedbackSurvey) = path.detail {
+        switch path.detail {
+        case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey) { [weak self] in
                 Task {
-                    await self?.performAction(for: path)
+                    await self?.onPathSelected(path: path)
                 }
             }
-        } else {
-            await self.performAction(for: path)
+        case let .promotionalOffer(promotionalOffer):
+            self.loadingPath = path
+            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+            switch result {
+            case .success(let promotionalOfferData):
+                self.promotionalOfferData = promotionalOfferData
+            case .failure:
+                await self.onPathSelected(path: path)
+                self.loadingPath = nil
+            }
+        default:
+            await self.onPathSelected(path: path)
         }
     }
 
-    func performAction(for path: CustomerCenterConfigData.HelpPath) async {
+    func handleSheetDismiss() async {
+        if let loadingPath = loadingPath {
+            await self.onPathSelected(path: loadingPath)
+            self.loadingPath = nil
+        }
+    }
+#endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private extension ManageSubscriptionsViewModel {
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+    private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
@@ -175,7 +193,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             break
         }
     }
-    #endif
+#endif
 
 }
 

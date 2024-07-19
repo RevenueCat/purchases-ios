@@ -28,14 +28,20 @@ public struct CustomerCenterView: View {
 
     @StateObject private var viewModel: CustomerCenterViewModel
 
+    private var localization: CustomerCenterConfigData.Localization
+
     /// Create a view to handle common customer support tasks
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+                localization: CustomerCenterConfigData.Localization = .default) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
+        self.localization = localization
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel) {
+    fileprivate init(viewModel: CustomerCenterViewModel,
+                     localization: CustomerCenterConfigData.Localization = .default) {
         self._viewModel = .init(wrappedValue: viewModel)
+        self.localization = localization
     }
 
     // swiftlint:disable:next missing_docs
@@ -46,6 +52,7 @@ public struct CustomerCenterView: View {
             } else {
                 if let configuration = self.viewModel.configuration {
                     destinationView(configuration: configuration)
+                        .environment(\.localization, configuration.localization)
                 }
             }
         }
@@ -77,7 +84,8 @@ private extension CustomerCenterView {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
                 ManageSubscriptionsView(screen: screen,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler,
+                                        localization: configuration.localization)
             } else {
                 WrongPlatformView()
             }

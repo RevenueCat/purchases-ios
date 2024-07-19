@@ -28,3 +28,4 @@
 "We applied the previously purchased items to your account. Sorry for the inconvenience." = "We applied the previously purchased items to your account. Sorry for the inconvenience.";
 "Dismiss" = "Dismiss";
 "We couldn’t find any additional purchases under this account. \n\nContact support for assistance if you think this is an error." = "We couldn’t find any additional purchases under this account. \n\nContact support for assistance if you think this is an error.";
+"then_price_per_period" = "then %@";

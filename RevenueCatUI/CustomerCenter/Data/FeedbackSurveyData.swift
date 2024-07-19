@@ -25,11 +25,12 @@ import RevenueCat
 class FeedbackSurveyData: ObservableObject {
 
     var configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
-    var action: (() -> Void)
+    var onOptionSelected: (() -> Void)
 
-    init(configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey, action: @escaping (() -> Void)) {
+    init(configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey,
+         onOptionSelected: @escaping (() -> Void)) {
         self.configuration = configuration
-        self.action = action
+        self.onOptionSelected = onOptionSelected
     }
 
 }

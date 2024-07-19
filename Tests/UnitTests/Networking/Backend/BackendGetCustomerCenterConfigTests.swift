@@ -298,7 +298,9 @@ private extension BackendGetCustomerCenterConfigTests {
                             "id": "nwodkdnfaoeb",
                             "promotional_offer": [
                                 "ios_offer_id": "rc-refund-offer",
-                                "eligible": true
+                                "eligible": true,
+                                "title": "Wait!",
+                                "subtitle": "Here's an offer for you"
                             ] as [String: Any],
                             "title": "Request a refund",
                             "type": "REFUND_REQUEST"
@@ -315,7 +317,9 @@ private extension BackendGetCustomerCenterConfigTests {
                                         "id": "iewrthals",
                                         "promotional_offer": [
                                             "ios_offer_id": "rc-cancel-offer",
-                                            "eligible": false
+                                            "eligible": false,
+                                            "title": "Wait!",
+                                            "subtitle": "Here's an offer for you"
                                         ] as [String: Any],
                                         "title": "Too expensive"
                                     ] as [String: Any],
@@ -323,7 +327,9 @@ private extension BackendGetCustomerCenterConfigTests {
                                         "id": "qklpadsfj",
                                         "promotional_offer": [
                                             "ios_offer_id": "rc-cancel-offer",
-                                            "eligible": false
+                                            "eligible": false,
+                                            "title": "Wait!",
+                                            "subtitle": "Here's an offer for you"
                                         ] as [String: Any],
                                         "title": "Don't use the app"
                                     ] as [String: Any],

@@ -39,6 +39,23 @@ public struct CustomerCenterConfigData {
             self.localizedStrings = localizedStrings
         }
 
+        public enum CommonLocalizedString: String {
+
+            case noThanks = "no_thanks"
+
+            var defaultValue: String {
+                switch self {
+                case .noThanks:
+                    return "No, thanks"
+                }
+            }
+
+        }
+
+        public func commonLocalizedString(for key: CommonLocalizedString) -> String {
+            return self.localizedStrings["common_\(key.rawValue)"] ?? key.defaultValue
+        }
+
     }
 
     public struct HelpPath {
@@ -94,10 +111,14 @@ public struct CustomerCenterConfigData {
 
             public let iosOfferId: String
             public let eligible: Bool
+            public let title: String
+            public let subtitle: String
 
-            public init(iosOfferId: String, eligible: Bool) {
+            public init(iosOfferId: String, eligible: Bool, title: String, subtitle: String) {
                 self.iosOfferId = iosOfferId
                 self.eligible = eligible
+                self.title = title
+                self.subtitle = subtitle
             }
 
         }
@@ -116,10 +137,12 @@ public struct CustomerCenterConfigData {
 
                 public let id: String
                 public let title: String
+                public let promotionalOffer: PromotionalOffer?
 
-                public init(id: String, title: String) {
+                public init(id: String, title: String, promotionalOffer: PromotionalOffer?) {
                     self.id = id
                     self.title = title
+                    self.promotionalOffer = promotionalOffer
                 }
 
             }
@@ -290,6 +313,8 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
     init(from response: CustomerCenterConfigResponse.HelpPath.PromotionalOffer) {
         self.iosOfferId = response.iosOfferId
         self.eligible = response.eligible
+        self.title = response.title
+        self.subtitle = response.subtitle
     }
 
 }
@@ -308,6 +333,12 @@ extension CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option {
     init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option) {
         self.id = response.id
         self.title = response.title
+        if let promotionalOffer = response.promotionalOffer {
+            self.promotionalOffer = CustomerCenterConfigData.HelpPath.PromotionalOffer(from: promotionalOffer)
+        } else {
+            self.promotionalOffer = nil
+        }
+
     }
 
 }

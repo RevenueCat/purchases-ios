@@ -44,7 +44,11 @@ enum Strings {
     case executing_restore_logic
     case executing_external_restore_logic
 
+    // Customer Center
     case could_not_find_subscription_information
+    case could_not_offer_for_active_subscriptions
+    case error_fetching_promotional_offer(Error)
+    case promo_offer_not_loaded
 
 }
 
@@ -121,7 +125,16 @@ extension Strings: CustomStringConvertible {
             "You must have initialized your `PaywallView` appropriately."
 
         case .could_not_find_subscription_information:
-            return "Could not find any active subscription's information"
+            return "Could not find information for an active subscription"
+
+        case let .error_fetching_promotional_offer(error):
+            return "Error fetching promotional offer for active product: \(error)"
+
+        case .promo_offer_not_loaded:
+            return "Promotional offer details not loaded"
+
+        case .could_not_offer_for_active_subscriptions:
+            return "Could not find offer for any active subscription"
         }
     }
 
