@@ -28,8 +28,11 @@ struct FeedbackSurveyView: View {
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
 
-    init(feedbackSurveyData: FeedbackSurveyData, localization: CustomerCenterConfigData.Localization) {
-        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData, localization: localization)
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
+    init(feedbackSurveyData: FeedbackSurveyData) {
+        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData)
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
 
@@ -51,8 +54,7 @@ struct FeedbackSurveyView: View {
             content: { promotionalOfferData in
                 PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
                                      product: promotionalOfferData.product,
-                                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                                     localization: self.viewModel.localization)
+                                     promoOfferDetails: promotionalOfferData.promoOfferDetails)
             })
     }
 

@@ -31,12 +31,14 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?, 
+         customerCenterActionHandler: CustomerCenterActionHandler?,
          localization: CustomerCenterConfigData.Localization) {
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: customerCenterActionHandler,
-                                                     localization: localization)
+                                                     customerCenterActionHandler: customerCenterActionHandler)
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -50,8 +52,7 @@ struct ManageSubscriptionsView: View {
                 content
                     .navigationDestination(isPresented: .constant(self.viewModel.feedbackSurveyData != nil)) {
                         if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
-                                               localization: self.viewModel.localization)
+                            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
                                 .onDisappear {
                                     self.viewModel.feedbackSurveyData = nil
                                 }
@@ -63,8 +64,7 @@ struct ManageSubscriptionsView: View {
                 content
                     .background(NavigationLink(
                         destination: self.viewModel.feedbackSurveyData.map { data in
-                            FeedbackSurveyView(feedbackSurveyData: data,
-                                               localization: self.viewModel.localization)
+                            FeedbackSurveyView(feedbackSurveyData: data)
                                 .onDisappear {
                                     self.viewModel.feedbackSurveyData = nil
                                 }
@@ -281,8 +281,7 @@ struct ManageSubscriptionButton: View {
                content: { promotionalOfferData in
             PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
                                  product: promotionalOfferData.product,
-                                 promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                                 localization: self.viewModel.localization)
+                                 promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
         .buttonStyle(ManageSubscriptionsButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
@@ -301,21 +300,21 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            localization: CustomerCenterConfigTestData.customerCenterData.localization,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
             customerCenterActionHandler: nil,
             refundRequestStatusMessage: "Refund granted successfully!")
         ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
             .previewDisplayName("Monthly renewing")
+            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
 
         let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            localization: CustomerCenterConfigTestData.customerCenterData.localization,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
             customerCenterActionHandler: nil)
 
         ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
             .previewDisplayName("Yearly expiring")
+            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
     }
 
 }

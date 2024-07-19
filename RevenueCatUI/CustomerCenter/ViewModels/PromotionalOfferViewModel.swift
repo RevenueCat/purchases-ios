@@ -26,8 +26,6 @@ import RevenueCat
 @MainActor
 class PromotionalOfferViewModel: ObservableObject {
 
-    private(set) var localization: CustomerCenterConfigData.Localization?
-
     @Published
     private(set) var promotionalOfferData: PromotionalOfferData?
     @Published
@@ -37,13 +35,11 @@ class PromotionalOfferViewModel: ObservableObject {
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
     convenience init() {
-        self.init(promotionalOfferData: nil, localization: nil)
+        self.init(promotionalOfferData: nil)
     }
 
-    init(promotionalOfferData: PromotionalOfferData?,
-         localization: CustomerCenterConfigData.Localization?) {
+    init(promotionalOfferData: PromotionalOfferData?) {
         self.promotionalOfferData = promotionalOfferData
-        self.localization = localization
         self.purchasesProvider = CustomerCenterPurchases()
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
     }
@@ -56,7 +52,7 @@ class PromotionalOfferViewModel: ObservableObject {
         }
 
         do {
-            try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
+            let result = try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
         } catch {
             self.error = error
         }

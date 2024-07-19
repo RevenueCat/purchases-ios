@@ -32,25 +32,19 @@ class FeedbackSurveyViewModel: ObservableObject {
     @Published
     var promotionalOfferData: PromotionalOfferData?
 
-    private(set) var localization: CustomerCenterConfigData.Localization
-
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
 
-    convenience init(feedbackSurveyData: FeedbackSurveyData,
-                     localization: CustomerCenterConfigData.Localization) {
+    convenience init(feedbackSurveyData: FeedbackSurveyData) {
         self.init(feedbackSurveyData: feedbackSurveyData,
-                  localization: localization,
                   purchasesProvider: CustomerCenterPurchases(),
                   loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase())
     }
 
     init(feedbackSurveyData: FeedbackSurveyData,
-         localization: CustomerCenterConfigData.Localization,
          purchasesProvider: CustomerCenterPurchasesType,
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType) {
         self.feedbackSurveyData = feedbackSurveyData
-        self.localization = localization
         self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
     }
@@ -62,7 +56,7 @@ class FeedbackSurveyViewModel: ObservableObject {
             switch result {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
-            case .failure(let error):
+            case .failure:
                 self.feedbackSurveyData.action()
             }
         } else {

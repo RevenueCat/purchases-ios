@@ -41,8 +41,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         return state != .notLoaded
     }
 
-    private(set) var localization: CustomerCenterConfigData.Localization
-
     @Published
     private(set) var subscriptionInformation: SubscriptionInformation?
     @Published
@@ -62,10 +60,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private var error: Error?
 
     init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         localization: CustomerCenterConfigData.Localization) {
+         customerCenterActionHandler: CustomerCenterActionHandler?) {
         self.screen = screen
-        self.localization = localization
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.customerCenterActionHandler = customerCenterActionHandler
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
@@ -73,13 +69,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     init(screen: CustomerCenterConfigData.Screen,
-         localization: CustomerCenterConfigData.Localization,
          subscriptionInformation: SubscriptionInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatusMessage: String? = nil) {
         self.screen = screen
         self.subscriptionInformation = subscriptionInformation
-        self.localization = localization
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatusMessage = refundRequestStatusMessage
         self.customerCenterActionHandler = customerCenterActionHandler
@@ -136,7 +130,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             switch result {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
-            case .failure(let error):
+            case .failure:
                 await self.performAction(for: path)
                 self.loadingPath = nil
             }

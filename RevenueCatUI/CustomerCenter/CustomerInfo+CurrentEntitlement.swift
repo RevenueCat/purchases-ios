@@ -16,8 +16,8 @@ import RevenueCat
 
 extension CustomerInfo {
 
-    /// Returns the earliest expiring iOS App Store entitlement. If this CustomerInfo contains multiple lifetime entitlements and no expiring entitlements,
-    /// the returned entitlement is undefined.
+    /// Returns the earliest expiring iOS App Store entitlement. If this CustomerInfo contains multiple lifetime 
+    /// entitlements and no expiring entitlements, the returned entitlement is undefined.
     func earliestExpiringAppStoreEntitlement() -> EntitlementInfo? {
         return self.entitlements
             .active
