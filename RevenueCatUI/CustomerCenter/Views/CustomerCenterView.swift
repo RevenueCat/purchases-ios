@@ -28,20 +28,16 @@ public struct CustomerCenterView: View {
 
     @StateObject private var viewModel: CustomerCenterViewModel
 
-    private var localization: CustomerCenterConfigData.Localization
+    private var localization: CustomerCenterConfigData.Localization?
 
     /// Create a view to handle common customer support tasks
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-                localization: CustomerCenterConfigData.Localization = .default) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
-        self.localization = localization
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel,
-                     localization: CustomerCenterConfigData.Localization = .default) {
+    fileprivate init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
-        self.localization = localization
     }
 
     // swiftlint:disable:next missing_docs

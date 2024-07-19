@@ -32,7 +32,7 @@ struct ManageSubscriptionsView: View {
     private var viewModel: ManageSubscriptionsViewModel
 
     @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
+    private var localization: CustomerCenterConfigData.Localization?
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
