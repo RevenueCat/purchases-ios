@@ -84,7 +84,7 @@ final class SamplePaywallLoader {
 private extension SamplePaywallLoader {
 
     static let weeklyPackage = Package(
-        identifier: "weekly",
+        identifier: Package.string(from: .weekly)!,
         packageType: .weekly,
         storeProduct: weeklyProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
@@ -440,12 +440,13 @@ private extension SamplePaywallLoader {
         return .init(
             templateName: PaywallTemplate.template7.rawValue,
             config: .init(
-                images: .init(
-                    header: "954459_1692992845.png"
-                ),
-                imageOverridesByTier: [
+                images: .init(),
+                imagesByTier: [
                     "basic": .init(
                         header: "954459_1703109702.png"
+                    ),
+                    "standard": .init(
+                        header: "954459_1692992845.png"
                     ),
                     "premium": .init(
                         header: "954459_1701267532.jpeg"
@@ -455,7 +456,7 @@ private extension SamplePaywallLoader {
                     light: .init(
                         background: "#ffffff",
                         text1: "#000000",
-                        text2: "#000000",
+                        text2: "#ffffff",
                         text3: "#30A0F8AA",
                         callToActionForeground: "#ffffff",
                         accent2: "#7676801F"
@@ -469,25 +470,43 @@ private extension SamplePaywallLoader {
                         accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
                     )
                 ),
-                colorOverridesByTier: [
+                colorsByTier: [
                     "basic": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#ffffff",
+                            text3: "#30A0F8AA",
                             callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor
                         )
                     ),
                     "standard": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#ffffff",
+                            text3: "#30A0F8AA",
                             callToActionBackground: #colorLiteral(red: 0.8549019694, green: 0.250980407, blue: 0.4784313738, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor
                         )
                     ),
                     "premium": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#ffffff",
+                            text3: "#30A0F8AA",
                             callToActionBackground: #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor
                         )
                     )
@@ -527,6 +546,20 @@ private extension SamplePaywallLoader {
                     callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.sixMonthPackage.identifier: .init(
+                            offerDetails: "OVERRIDE six month details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE six month Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Six Month",
+                            offerBadge: "LEAST FAVORITE"
+                        ),
+                        TestData.lifetimePackage.identifier: .init(
+                            offerDetails: "OVERRIDE life details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE lifetime Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Lifetime ",
+                            offerBadge: "LIFETIME"
+                        )
+                    ],
                     features: [
                         .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
                         .init(title: "Standard fonts", iconID: "tick"),
@@ -540,6 +573,20 @@ private extension SamplePaywallLoader {
                     callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.weeklyPackage.identifier: .init(
+                            offerDetails: "OVERRIDE weekly details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE weekly Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Weekly",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        ),
+                        TestData.monthlyPackage.identifier: .init(
+                            offerDetails: "OVERRIDE monthly details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE monthly Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Monthly",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        )
+                    ],
                     features: [
                         .init(title: "Access to 30 cinematic LUTs", iconID: "tick"),
                         .init(title: "Pro fonts and transition effects", iconID: "tick"),
@@ -553,6 +600,20 @@ private extension SamplePaywallLoader {
                     callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.threeMonthPackage.identifier: .init(
+                            offerDetails: "OVERRIDE three month details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE three month Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Three Month",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        ),
+                        TestData.annualPackage.identifier: .init(
+                            offerDetails: "OVERRIDE annual details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE annual Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Annual",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        )
+                    ],
                     features: [
                         .init(title: "Access to all 150 of our cinematic LUTs", iconID: "tick"),
                         .init(title: "Custom design tools and transition effects", iconID: "tick"),

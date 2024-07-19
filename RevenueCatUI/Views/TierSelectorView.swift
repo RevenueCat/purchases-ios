@@ -20,7 +20,8 @@ struct TierSelectorView: View {
 
     private let backgroundColor: Color
     private let textColor: Color
-    private let accentColor: Color
+    private let selectedBackgroundColor: Color
+    private let selectedTextColor: Color
 
     private let indexesByTier: [PaywallData.Tier: Int]
 
@@ -34,7 +35,8 @@ struct TierSelectorView: View {
         fonts: PaywallFontProvider,
         backgroundColor: Color,
         textColor: Color,
-        accentColor: Color
+        selectedBackgroundColor: Color,
+        selectedTextColor: Color
     ) {
         self.init(
             tiers: [tier],
@@ -43,7 +45,8 @@ struct TierSelectorView: View {
             fonts: fonts,
             backgroundColor: backgroundColor,
             textColor: textColor,
-            accentColor: accentColor
+            selectedBackgroundColor: selectedBackgroundColor,
+            selectedTextColor: selectedTextColor
         )
     }
 
@@ -54,7 +57,8 @@ struct TierSelectorView: View {
         fonts: PaywallFontProvider,
         backgroundColor: Color,
         textColor: Color,
-        accentColor: Color
+        selectedBackgroundColor: Color,
+        selectedTextColor: Color
     ) {
         precondition(!tiers.isEmpty)
 
@@ -64,7 +68,8 @@ struct TierSelectorView: View {
         self.fonts = fonts
         self.backgroundColor = backgroundColor
         self.textColor = textColor
-        self.accentColor = accentColor
+        self.selectedBackgroundColor = selectedBackgroundColor
+        self.selectedTextColor = selectedTextColor
 
         self.indexesByTier = .init(
             uniqueKeysWithValues: tiers
@@ -150,7 +155,7 @@ struct TierSelectorView: View {
 
     private func tierNameLabel(_ tier: PaywallData.Tier, selected: Bool) -> some View {
         Text(self.namesByTierID[tier.id] ?? "")
-            .foregroundStyle(self.textColor)
+            .foregroundStyle(selected ? self.selectedTextColor : self.textColor)
             .font(self.fonts.font(for: .callout).weight(selected ? .semibold : .regular))
             .multilineTextAlignment(.center)
             .padding(.horizontal)
@@ -160,7 +165,7 @@ struct TierSelectorView: View {
     @ViewBuilder
     private var selectedTierBackground: some View {
         Capsule(style: .continuous)
-            .foregroundColor(self.accentColor)
+            .foregroundColor(self.selectedBackgroundColor)
             .padding(Padding.background)
             .matchedGeometryEffect(
                 id: Self.geometryEffectID,
@@ -203,7 +208,8 @@ extension TierSelectorView {
         fonts: PaywallFontProvider,
         backgroundColor: Color,
         textColor: Color,
-        accentColor: Color
+        selectedBackgroundColor: Color,
+        selectedTextColor: Color
     ) {
         self.init(
             tiers: tiers,
@@ -214,7 +220,8 @@ extension TierSelectorView {
             fonts: fonts,
             backgroundColor: backgroundColor,
             textColor: textColor,
-            accentColor: accentColor
+            selectedBackgroundColor: selectedBackgroundColor,
+            selectedTextColor: selectedTextColor
         )
     }
 
@@ -238,7 +245,8 @@ private struct TierSelectorPreview: View {
             fonts: DefaultPaywallFontProvider(),
             backgroundColor: #colorLiteral(red: 0.46, green: 0.46, blue: 0.5, alpha: 0.12).asPaywallColor.underlyingColor,
             textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor.underlyingColor,
-            accentColor: #colorLiteral(red: 0.65, green: 0.93, blue: 0.46, alpha: 1).asPaywallColor.underlyingColor
+            selectedBackgroundColor: #colorLiteral(red: 0.65, green: 0.93, blue: 0.46, alpha: 1).asPaywallColor.underlyingColor,
+            selectedTextColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor.underlyingColor
         )
     }
 
@@ -280,7 +288,8 @@ struct TierSelectorView_Previews: PreviewProvider {
             fonts: DefaultPaywallFontProvider(),
             backgroundColor: #colorLiteral(red: 0.46, green: 0.46, blue: 0.5, alpha: 0.12).asPaywallColor.underlyingColor,
             textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor.underlyingColor,
-            accentColor: #colorLiteral(red: 0.65, green: 0.93, blue: 0.46, alpha: 1).asPaywallColor.underlyingColor
+            selectedBackgroundColor: #colorLiteral(red: 0.65, green: 0.93, blue: 0.46, alpha: 1).asPaywallColor.underlyingColor,
+            selectedTextColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor.underlyingColor
         )
         .previewDisplayName("Current Tier")
     }

@@ -1,0 +1,37 @@
+name: Trigger All Tests
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger-circleci:
+    runs-on: ubuntu-latest
+    if: |
+      ${{ github.event.issue.pull_request }} &&
+      github.event.comment.body == '@RCGitBot please test' &&
+      github.repository == 'RevenueCat/purchases-ios'
+
+    steps:
+      - name: Check membership in RevenueCat Org
+        env:
+          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
+        id: verify
+        # ensure that only RevenueCat members can trigger this
+        run: |
+          RESPONSE=$(curl -s -o /dev/null --head -w "%{http_code}" -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
+          if [[ "$RESPONSE" != "204" ]]; then
+            echo "User is not a member of the organization"
+            exit 1
+          fi
+          echo "User is a member of the organization"
+
+      - name: Trigger CircleCI workflow
+        id: trigger_circleci_workflow
+        if: success()
+
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
+        with:
+          GHA_Meta: "run-from-github-comments"
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}

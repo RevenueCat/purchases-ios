@@ -184,6 +184,9 @@ private struct RestorePurchasesButton: View {
     @State
     private var restoredCustomerInfo: CustomerInfo?
 
+    @State
+    private var showRestoredCustomerInfoAlert: Bool = false
+
     var body: some View {
         AsyncButton {
             Logger.debug(Strings.restoring_purchases)
@@ -193,6 +196,7 @@ private struct RestorePurchasesButton: View {
             if success {
                 Logger.debug(Strings.restored_purchases)
                 self.restoredCustomerInfo = customerInfo
+                self.showRestoredCustomerInfoAlert = true
             } else {
                 Logger.debug(Strings.restore_purchases_with_empty_result)
             }
@@ -211,16 +215,16 @@ private struct RestorePurchasesButton: View {
         }
         .frame(minHeight: Constants.minimumButtonHeight)
         .buttonStyle(.plain)
-        .alert(item: self.$restoredCustomerInfo) { customerInfo in
-            Alert(
-                title: Text("Purchases restored successfully!", bundle: .module),
-                dismissButton: .default(Text("OK", bundle: .module)) {
+        .alert(Text("Purchases restored successfully!", bundle: .module),
+               isPresented: self.$showRestoredCustomerInfoAlert) {
+            Button(role: .cancel) {
+                if let restoredCustomerInfo = self.restoredCustomerInfo {
                     Logger.debug(Strings.setting_restored_customer_info)
-
+                    self.showRestoredCustomerInfoAlert = false
                     self.restoredCustomerInfo = nil
-                    self.purchaseHandler.setRestored(customerInfo)
+                    self.purchaseHandler.setRestored(restoredCustomerInfo)
                 }
-            )
+            } label: { Text("OK") }
         }
     }
 
