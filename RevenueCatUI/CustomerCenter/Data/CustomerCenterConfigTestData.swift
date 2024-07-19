@@ -91,17 +91,11 @@ enum CustomerCenterConfigTestData {
                   )
         ],
         appearance: .init(
-            mode: .custom,
-            light: .init(
-                accentColor: "#ffffff",
-                backgroundColor: "#000000",
-                textColor: "#000000"
-            ),
-            dark: .init(
-                accentColor: "#000000",
-                backgroundColor: "#ffffff",
-                textColor: "#ffffff"
-            )
+            // swiftlint:disable force_try
+            mode: .custom(accentColor: try! .init(light: "#ffffff", dark: "#000000"),
+                          backgroundColor: try! .init(light: "#000000", dark: "#ffffff"),
+                          textColor: try! .init(light: "#000000", dark: "#ffffff"))
+            // swiftlint:enable force_try
         ),
         localization: .init(
             locale: "en_US",

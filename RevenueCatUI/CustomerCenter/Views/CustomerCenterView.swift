@@ -29,30 +29,36 @@ public struct CustomerCenterView: View {
     @StateObject private var viewModel: CustomerCenterViewModel
 
     private var localization: CustomerCenterConfigData.Localization
+    private var appearance: CustomerCenterConfigData.Appearance
 
     /// Create a view to handle common customer support tasks
     public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-                localization: CustomerCenterConfigData.Localization = .default) {
+                localization: CustomerCenterConfigData.Localization = .default,
+                appearance: CustomerCenterConfigData.Appearance = .default) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.localization = localization
+        self.appearance = appearance
     }
 
     fileprivate init(viewModel: CustomerCenterViewModel,
-                     localization: CustomerCenterConfigData.Localization = .default) {
+                     localization: CustomerCenterConfigData.Localization = .default,
+                     appearance: CustomerCenterConfigData.Appearance = .default) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.localization = localization
+        self.appearance = appearance
     }
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
         Group {
             if !self.viewModel.isLoaded {
-                ProgressView()
+                TintedProgressView()
             } else {
                 if let configuration = self.viewModel.configuration {
                     destinationView(configuration: configuration)
                         .environment(\.localization, configuration.localization)
+                        .environment(\.appearance, configuration.appearance)
                 }
             }
         }
@@ -84,8 +90,7 @@ private extension CustomerCenterView {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
                 ManageSubscriptionsView(screen: screen,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler,
-                                        localization: configuration.localization)
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
             } else {
                 WrongPlatformView()
             }

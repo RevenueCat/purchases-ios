@@ -26,6 +26,8 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct PromotionalOfferView: View {
 
+    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
+
     @StateObject
     private var viewModel: PromotionalOfferViewModel
     @Environment(\.dismiss)
@@ -57,7 +59,7 @@ struct PromotionalOfferView: View {
 
                 Spacer()
 
-                PromoOfferButtonView(viewModel: viewModel)
+                PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
 
                 let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
                 Button(dismissButtonTitle) {
@@ -85,7 +87,9 @@ struct PromoOfferButtonView: View {
     private var locale
 
     @ObservedObject
-    var viewModel: PromotionalOfferViewModel
+    private(set) var viewModel: PromotionalOfferViewModel
+
+    private(set) var appearance: CustomerCenterConfigData.Appearance
 
     var body: some View {
         if let product = self.viewModel.promotionalOfferData?.product,

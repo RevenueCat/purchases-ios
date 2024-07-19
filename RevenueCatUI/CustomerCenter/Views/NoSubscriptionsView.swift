@@ -44,10 +44,11 @@ struct NoSubscriptionsView: View {
 
     var body: some View {
         VStack {
-            Text(localization.commonLocalizedString(for: .noSubscriptionsFound))
+            Text(self.configuration.screens[.noActive]?.title ?? "No Subscriptions found")
                 .font(.title)
                 .padding()
-            Text(localization.commonLocalizedString(for: .tryCheckRestore))
+            Text(self.configuration.screens[.noActive]?.subtitle ??
+                 "We can try checking your Apple account for any previous purchases")
                 .font(.body)
                 .padding()
 

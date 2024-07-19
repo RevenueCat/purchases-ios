@@ -16,6 +16,8 @@
 import Foundation
 
 // swiftlint:disable missing_docs
+public typealias RCColor = PaywallColor
+
 // swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
@@ -165,46 +167,33 @@ public struct CustomerCenterConfigData {
 
     public struct Appearance {
 
-        let mode: AppearanceMode
-        let light: AppearanceCustomColors
-        let dark: AppearanceCustomColors
+        public let mode: AppearanceMode
 
-        public init(mode: AppearanceMode, light: AppearanceCustomColors, dark: AppearanceCustomColors) {
+        public init(mode: AppearanceMode) {
             self.mode = mode
-            self.light = light
-            self.dark = dark
         }
 
-        public struct AppearanceCustomColors {
+        public enum AppearanceMode {
 
-            let accentColor: String
-            let backgroundColor: String
-            let textColor: String
-
-            public init(accentColor: String, backgroundColor: String, textColor: String) {
-                self.accentColor = accentColor
-                self.backgroundColor = backgroundColor
-                self.textColor = textColor
-            }
+            case system
+            case custom(accentColor: ColorInformation,
+                        backgroundColor: ColorInformation,
+                        textColor: ColorInformation)
 
         }
 
-        public enum AppearanceMode: String {
+        public struct ColorInformation {
 
-            case custom = "CUSTOM"
-            case system = "SYSTEM"
+            public var light: RCColor
+            public var dark: RCColor
 
-            init(from rawValue: String) {
-                switch rawValue {
-                case "CUSTOM":
-                    self = .custom
-                case "SYSTEM":
-                    self = .system
-                default:
-                    self = .system
-                }
+            public init(
+                light: String,
+                dark: String
+            ) throws {
+                self.light = try RCColor(stringRepresentation: light)
+                self.dark = try RCColor(stringRepresentation: dark)
             }
-
         }
 
     }
@@ -244,6 +233,7 @@ public struct CustomerCenterConfigData {
 
 }
 
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension CustomerCenterConfigData {
 
     init(from response: CustomerCenterConfigResponse) {
@@ -270,24 +260,40 @@ extension CustomerCenterConfigData.Screen {
 
 }
 
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension CustomerCenterConfigData.Appearance {
 
     init(from response: CustomerCenterConfigResponse.Appearance) {
-        self.mode = CustomerCenterConfigData.Appearance.AppearanceMode(from: response.mode)
-        self.light = CustomerCenterConfigData.Appearance.AppearanceCustomColors(from: response.light)
-        self.dark = CustomerCenterConfigData.Appearance.AppearanceCustomColors(from: response.dark)
+        self.mode = CustomerCenterConfigData.Appearance.AppearanceMode(from: response)
     }
 
 }
 
-extension CustomerCenterConfigData.Appearance.AppearanceCustomColors {
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension CustomerCenterConfigData.Appearance.AppearanceMode {
 
-    init(from response: CustomerCenterConfigResponse.Appearance.AppearanceCustomColors) {
-        // swiftlint:disable:next todo
-        // TODO: convert colors to PaywallColor (RCColor)
-        self.accentColor = response.accentColor
-        self.backgroundColor = response.backgroundColor
-        self.textColor = response.textColor
+    init(from response: CustomerCenterConfigResponse.Appearance) {
+        switch response.mode {
+        case .system:
+            self = .system
+        case .custom:
+            do {
+                let light = response.light
+                let dark = response.dark
+                let accent = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.accentColor,
+                                                                                      dark: dark.accentColor)
+                let background = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.backgroundColor,
+                                                                                          dark: dark.backgroundColor)
+                let text = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.textColor,
+                                                                                    dark: dark.textColor)
+                self = .custom(accentColor: accent,
+                               backgroundColor: background,
+                               textColor: text)
+            } catch {
+                Logger.error("Failed to parse appearance colors")
+                self = .system
+            }
+        }
     }
 
 }
