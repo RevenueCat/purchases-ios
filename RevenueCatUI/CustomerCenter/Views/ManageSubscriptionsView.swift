@@ -28,6 +28,9 @@ struct ManageSubscriptionsView: View {
     @Environment(\.openURL)
     var openURL
 
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
@@ -35,8 +38,7 @@ struct ManageSubscriptionsView: View {
     private var localization: CustomerCenterConfigData.Localization
 
     init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         localization: CustomerCenterConfigData.Localization) {
+         customerCenterActionHandler: CustomerCenterActionHandler?) {
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
                                                      customerCenterActionHandler: customerCenterActionHandler)
         self._viewModel = .init(wrappedValue: viewModel)
@@ -261,12 +263,14 @@ struct ManageSubscriptionButton: View {
     let path: CustomerCenterConfigData.HelpPath
     @ObservedObject var viewModel: ManageSubscriptionsViewModel
 
+    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
+
     var body: some View {
         AsyncButton(action: {
             await self.viewModel.determineFlow(for: path)
         }, label: {
             if self.viewModel.loadingPath?.id == path.id {
-                ProgressView()
+                TintedProgressView()
             } else {
                 Text(path.title)
             }
@@ -283,7 +287,7 @@ struct ManageSubscriptionButton: View {
                                  product: promotionalOfferData.product,
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.viewModel.appearance))
+        .buttonStyle(ManageSubscriptionsButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
     }
 }
@@ -306,6 +310,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
         ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
             .previewDisplayName("Monthly renewing")
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
 
         let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
@@ -315,6 +320,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
         ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
             .previewDisplayName("Yearly expiring")
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
     }
 
 }

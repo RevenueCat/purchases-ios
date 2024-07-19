@@ -26,7 +26,6 @@ import RevenueCat
 class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
-    let appearance: CustomerCenterConfigData.Appearance
 
     @Published
     var showRestoreAlert: Bool = false
@@ -76,7 +75,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatusMessage: String? = nil) {
         self.screen = screen
-        self.appearance = appearance
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatusMessage = refundRequestStatusMessage

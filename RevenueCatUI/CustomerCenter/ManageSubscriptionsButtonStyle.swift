@@ -23,10 +23,8 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ManageSubscriptionsButtonStyle: ButtonStyle {
 
-    var appearance: CustomerCenterConfigData.Appearance
-
-    @Environment(\.colorScheme)
-    private var colorScheme
+    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme) private var colorScheme
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
         configuration.label
@@ -67,7 +65,8 @@ struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
 
     static var previews: some View {
         Button("Didn't receive purchase") {}
-            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: CustomerCenterConfigData.Appearance(mode: .system)))
+            .buttonStyle(ManageSubscriptionsButtonStyle())
+            .environment(\.appearance, CustomerCenterConfigData.Appearance(mode: .system))
     }
 
 }

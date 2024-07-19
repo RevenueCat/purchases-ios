@@ -66,7 +66,7 @@ struct NoSubscriptionsView: View {
                 showRestoreAlert = true
             }
             .restorePurchasesAlert(isPresented: $showRestoreAlert)
-            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.configuration.appearance))
+            .buttonStyle(ManageSubscriptionsButtonStyle())
 
             Button(localization.commonLocalizedString(for: .cancel)) {
                 dismiss()
