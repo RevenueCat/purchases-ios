@@ -123,7 +123,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey) { [weak self] in
                 Task {
-                    await self?.performAction(for: path)
+                    await self?.onPathSelected(path: path)
                 }
             }
         case let .promotionalOffer(promotionalOffer):
@@ -133,17 +133,17 @@ class ManageSubscriptionsViewModel: ObservableObject {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
-                await self.performAction(for: path)
+                await self.onPathSelected(path: path)
                 self.loadingPath = nil
             }
         default:
-            await self.performAction(for: path)
+            await self.onPathSelected(path: path)
         }
     }
 
     func handleSheetDismiss() async {
         if let loadingPath = loadingPath {
-            await self.performAction(for: loadingPath)
+            await self.onPathSelected(path: loadingPath)
             self.loadingPath = nil
         }
     }
@@ -158,7 +158,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
 private extension ManageSubscriptionsViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    private func performAction(for path: CustomerCenterConfigData.HelpPath) async {
+    private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true

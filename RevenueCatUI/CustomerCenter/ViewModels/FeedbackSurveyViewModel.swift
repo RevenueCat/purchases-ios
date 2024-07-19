@@ -57,15 +57,15 @@ class FeedbackSurveyViewModel: ObservableObject {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
-                self.feedbackSurveyData.action()
+                self.feedbackSurveyData.onOptionSelected()
             }
         } else {
-            self.feedbackSurveyData.action()
+            self.feedbackSurveyData.onOptionSelected()
         }
     }
 
     func handleSheetDismiss() {
-        self.feedbackSurveyData.action()
+        self.feedbackSurveyData.onOptionSelected()
         self.loadingState = nil
     }
 
