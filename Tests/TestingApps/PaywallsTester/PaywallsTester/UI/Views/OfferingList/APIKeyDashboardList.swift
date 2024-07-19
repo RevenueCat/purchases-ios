@@ -93,6 +93,7 @@ struct APIKeyDashboardList: View {
                             NavigationLink(
                                 destination: PaywallPresenter(offering: offering,
                                                               mode: .default,
+                                                              introEligility: .eligible,
                                                               displayCloseButton: false),
                                 tag: PresentedPaywall(offering: offering, mode: .default),
                                 selection: self.$presentedPaywall
