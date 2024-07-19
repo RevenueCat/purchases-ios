@@ -42,18 +42,30 @@ public struct CustomerCenterConfigData {
         public enum CommonLocalizedString: String {
 
             case noThanks = "no_thanks"
+            case noSubscriptionsFound = "no_subscriptions_found"
+            case tryCheckRestore = "try_check_restore"
+            case restorePurchases = "restore_purchases"
+            case cancel = "cancel"
 
             var defaultValue: String {
                 switch self {
                 case .noThanks:
                     return "No, thanks"
+                case .noSubscriptionsFound:
+                    return "No Subscriptions found"
+                case .tryCheckRestore:
+                    return "We can try checking your Apple account for any previous purchases"
+                case .restorePurchases:
+                    return "Restore purchases"
+                case .cancel:
+                    return "Cancel"
                 }
             }
 
         }
 
         public func commonLocalizedString(for key: CommonLocalizedString) -> String {
-            return self.localizedStrings["common_\(key.rawValue)"] ?? key.defaultValue
+            return self.localizedStrings[key.rawValue] ?? key.defaultValue
         }
 
     }

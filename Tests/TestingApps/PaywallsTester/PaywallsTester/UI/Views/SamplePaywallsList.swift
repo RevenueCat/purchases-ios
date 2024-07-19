@@ -215,8 +215,6 @@ extension SamplePaywallsList {
         switch action {
         case .restoreCompleted(_):
             print("CustomerCenter: restoreCompleted")
-        case .purchaseCompleted(_):
-            print("CustomerCenter: purchaseCompleted")
         case .restoreStarted:
             print("CustomerCenter: restoreStarted")
         case .restoreFailed(_):
