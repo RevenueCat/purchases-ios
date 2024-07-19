@@ -29,6 +29,6 @@ jobs:
 
         uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
         with:
-          GHA_Action: "run-from-github-comments"
+          GHA_Meta: "run-from-github-comments"
         env:
           CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
