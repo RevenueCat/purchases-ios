@@ -120,16 +120,16 @@ private extension StoreProductDiscount {
     func localizedPricePerPeriodByPaymentMode(_ locale: Locale) -> String {
         let period = self.subscriptionPeriod.periodTitle()
 
-        return switch self.paymentMode {
+        switch self.paymentMode {
         case .freeTrial:
             // 3 months for free
-            "\(period) for free"
+            return "\(period) for free"
         case .payAsYouGo:
             // $0.99/month for 3 months
-            "\(localizedPricePerPeriod(locale)) for \(localizedNumberOfPeriods())"
+            return "\(localizedPricePerPeriod(locale)) for \(localizedNumberOfPeriods())"
         case .payUpFront:
             // 3 months for $0.99
-            "\(period) for \(self.localizedPriceString)"
+            return "\(period) for \(self.localizedPriceString)"
         }
     }
 
