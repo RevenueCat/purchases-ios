@@ -18,7 +18,6 @@ import Foundation
 // swiftlint:disable missing_docs
 public typealias RCColor = PaywallColor
 
-// swiftlint:disable missing_docs
 // swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
@@ -185,12 +184,9 @@ public struct CustomerCenterConfigData {
 
         public struct ColorInformation {
 
-            /// Set of colors for ``RCColor/ColorScheme/light``.
             public var light: RCColor
-            /// Set of colors for ``RCColor/ColorScheme/dark``.
             public var dark: RCColor
 
-            // swiftlint:disable:next missing_docs
             public init(
                 light: RCColor,
                 dark: RCColor
@@ -281,7 +277,8 @@ extension CustomerCenterConfigData.Appearance.AppearanceMode {
         case .system:
             self = .system
         case .custom:
-            func parseColorInformation(from response: CustomerCenterConfigResponse.Appearance) throws -> CustomerCenterConfigData.Appearance.ColorInformation {
+            func parseColorInformation(from response: CustomerCenterConfigResponse.Appearance) throws ->
+            CustomerCenterConfigData.Appearance.ColorInformation {
                 return CustomerCenterConfigData.Appearance.ColorInformation(
                     light: try RCColor(stringRepresentation: response.light.accentColor),
                     dark: try RCColor(stringRepresentation: response.dark.accentColor)

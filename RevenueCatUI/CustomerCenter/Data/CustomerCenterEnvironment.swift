@@ -29,14 +29,15 @@ extension CustomerCenterConfigData.Localization {
 }
 
 struct AppearanceKey: EnvironmentKey {
-    
+
     static let defaultValue: CustomerCenterConfigData.Appearance = .default
 
 }
 
-public extension CustomerCenterConfigData.Appearance {
+extension CustomerCenterConfigData.Appearance {
 
-    static let `default` = CustomerCenterConfigData.Appearance(mode: .system)
+    /// Default ``CustomerCenterConfigData.Appearance`` value for Environment usage
+    public static let `default` = CustomerCenterConfigData.Appearance(mode: .system)
 
 }
 
@@ -46,7 +47,7 @@ extension EnvironmentValues {
         get { self[LocalizationKey.self] }
         set { self[LocalizationKey.self] = newValue }
     }
-    
+
     var appearance: CustomerCenterConfigData.Appearance {
         get { self[AppearanceKey.self] }
         set { self[AppearanceKey.self] = newValue }
