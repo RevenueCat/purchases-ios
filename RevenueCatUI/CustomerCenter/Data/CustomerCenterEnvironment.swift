@@ -17,13 +17,20 @@ import SwiftUI
 
 struct LocalizationKey: EnvironmentKey {
 
-    static let defaultValue: CustomerCenterConfigData.Localization? = nil
+    static let defaultValue: CustomerCenterConfigData.Localization = .default
+
+}
+
+extension CustomerCenterConfigData.Localization {
+
+    /// Default ``CustomerCenterConfigData.Localization`` value for Environment usage
+    public static let `default` = CustomerCenterConfigData.Localization(locale: "en_US", localizedStrings: [:])
 
 }
 
 extension EnvironmentValues {
 
-    var localization: CustomerCenterConfigData.Localization? {
+    var localization: CustomerCenterConfigData.Localization {
         get { self[LocalizationKey.self] }
         set { self[LocalizationKey.self] = newValue }
     }

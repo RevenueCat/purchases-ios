@@ -29,7 +29,7 @@ struct FeedbackSurveyView: View {
     private var viewModel: FeedbackSurveyViewModel
 
     @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization?
+    private var localization: CustomerCenterConfigData.Localization
 
     init(feedbackSurveyData: FeedbackSurveyData) {
         let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData)

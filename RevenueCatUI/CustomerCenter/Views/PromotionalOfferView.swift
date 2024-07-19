@@ -31,7 +31,7 @@ struct PromotionalOfferView: View {
     @Environment(\.dismiss)
     private var dismiss
     @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization?
+    private var localization: CustomerCenterConfigData.Localization
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
@@ -46,7 +46,6 @@ struct PromotionalOfferView: View {
     var body: some View {
         VStack {
             if let details = self.viewModel.promotionalOfferData?.promoOfferDetails,
-               let localization = self.localization,
                self.viewModel.error == nil {
                 Text(details.title)
                     .font(.title)
@@ -60,7 +59,7 @@ struct PromotionalOfferView: View {
 
                 PromoOfferButtonView(viewModel: viewModel)
 
-                let dismissButtonTitle = localization.commonLocalizedString(for: .noThanks)
+                let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
                 Button(dismissButtonTitle) {
                     dismiss()
                 }
