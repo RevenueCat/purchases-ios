@@ -1406,7 +1406,6 @@ workflows:
     jobs:
       - release-train
 
-
   daily-loadshedder-integration-tests:
     when:
       and:
@@ -1440,7 +1439,9 @@ workflows:
         - equal:
             - "run-manual-tests"
             - << pipeline.parameters.action >>
-        - equal: [ "run-from-github-comments", << pipeline.parameters.GHA_Event >>]
+        - equal: 
+            - "run-from-github-comments"
+            - << pipeline.parameters.GHA_Meta >>
     jobs:
       - backend-integration-tests-SK1
       - backend-integration-tests-SK2
