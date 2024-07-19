@@ -42,7 +42,8 @@ public struct CustomerCenterView: View {
     }
 
     fileprivate init(viewModel: CustomerCenterViewModel,
-                     localization: CustomerCenterConfigData.Localization = .default) {
+                     localization: CustomerCenterConfigData.Localization = .default,
+                     appearance: CustomerCenterConfigData.Appearance = .default) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.localization = localization
         self.appearance = appearance
@@ -89,8 +90,7 @@ private extension CustomerCenterView {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
                 ManageSubscriptionsView(screen: screen,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler,
-                                        localization: configuration.localization)
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
             } else {
                 WrongPlatformView()
             }
