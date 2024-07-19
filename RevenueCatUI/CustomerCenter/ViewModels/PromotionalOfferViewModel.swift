@@ -53,6 +53,9 @@ class PromotionalOfferViewModel: ObservableObject {
 
         do {
             let result = try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
+            // swiftlint:disable:next todo
+            // TODO: do something with result
+            Logger.debug("Purchased promotional offer: \(result)")
         } catch {
             self.error = error
         }
