@@ -188,11 +188,11 @@ public struct CustomerCenterConfigData {
             public var dark: RCColor
 
             public init(
-                light: RCColor,
-                dark: RCColor
-            ) {
-                self.light = light
-                self.dark = dark
+                light: String,
+                dark: String
+            ) throws {
+                self.light = try RCColor(stringRepresentation: light)
+                self.dark = try RCColor(stringRepresentation: dark)
             }
         }
 
@@ -277,18 +277,15 @@ extension CustomerCenterConfigData.Appearance.AppearanceMode {
         case .system:
             self = .system
         case .custom:
-            func parseColorInformation(from response: CustomerCenterConfigResponse.Appearance) throws ->
-            CustomerCenterConfigData.Appearance.ColorInformation {
-                return CustomerCenterConfigData.Appearance.ColorInformation(
-                    light: try RCColor(stringRepresentation: response.light.accentColor),
-                    dark: try RCColor(stringRepresentation: response.dark.accentColor)
-                )
-            }
-
             do {
-                let accent = try parseColorInformation(from: response)
-                let background = try parseColorInformation(from: response)
-                let text = try parseColorInformation(from: response)
+                let light = response.light
+                let dark = response.dark
+                let accent = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.accentColor,
+                                                                                      dark: dark.accentColor)
+                let background = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.backgroundColor,
+                                                                                          dark: dark.backgroundColor)
+                let text = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.textColor,
+                                                                                    dark: dark.textColor)
                 self = .custom(accentColor: accent,
                                backgroundColor: background,
                                textColor: text)
