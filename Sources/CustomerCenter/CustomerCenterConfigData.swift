@@ -177,8 +177,27 @@ public struct CustomerCenterConfigData {
         public enum AppearanceMode {
 
             case system
-            case custom(accentColor: RCColor, backgroundColor: RCColor, textColor: RCColor)
+            case custom(accentColor: ColorInformation,
+                        backgroundColor: ColorInformation,
+                        textColor: ColorInformation)
 
+        }
+
+        public struct ColorInformation {
+
+            /// Set of colors for ``RCColor/ColorScheme/light``.
+            public var light: RCColor
+            /// Set of colors for ``RCColor/ColorScheme/dark``.
+            public var dark: RCColor
+
+            // swiftlint:disable:next missing_docs
+            public init(
+                light: RCColor,
+                dark: RCColor
+            ) {
+                self.light = light
+                self.dark = dark
+            }
         }
 
     }
@@ -262,13 +281,17 @@ extension CustomerCenterConfigData.Appearance.AppearanceMode {
         case .system:
             self = .system
         case .custom:
+            func parseColorInformation(from response: CustomerCenterConfigResponse.Appearance) throws -> CustomerCenterConfigData.Appearance.ColorInformation {
+                return CustomerCenterConfigData.Appearance.ColorInformation(
+                    light: try RCColor(stringRepresentation: response.light.accentColor),
+                    dark: try RCColor(stringRepresentation: response.dark.accentColor)
+                )
+            }
+
             do {
-                let accent = RCColor(light: try RCColor(stringRepresentation: response.light.accentColor),
-                                     dark: try RCColor(stringRepresentation: response.dark.accentColor))
-                let background = RCColor(light: try RCColor(stringRepresentation: response.light.backgroundColor),
-                                         dark: try RCColor(stringRepresentation: response.dark.backgroundColor))
-                let text = RCColor(light: try RCColor(stringRepresentation: response.light.textColor),
-                                   dark: try RCColor(stringRepresentation: response.dark.textColor))
+                let accent = try parseColorInformation(from: response)
+                let background = try parseColorInformation(from: response)
+                let text = try parseColorInformation(from: response)
                 self = .custom(accentColor: accent,
                                backgroundColor: background,
                                textColor: text)

@@ -51,7 +51,7 @@ private extension ManageSubscriptionsButtonStyle {
         case .system:
             Color.accentColor
         case .custom(accentColor: let accentColor, backgroundColor: let backgroundColor, textColor: let textColor):
-            accentColor.underlyingColor
+            colorScheme == .dark ? accentColor.dark.underlyingColor : accentColor.light.underlyingColor
         }
     }
 
