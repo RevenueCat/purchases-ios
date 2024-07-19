@@ -42,21 +42,13 @@ struct NoSubscriptionsView: View {
         self.configuration = configuration
     }
 
-    // swiftlint:disable:next todo
-    // TODO: build screen using this configuration
-    private let configuration: CustomerCenterConfigData
-
-    @Environment(\.dismiss)
-    private var dismiss
-    @State
-    private var showRestoreAlert: Bool = false
-
     var body: some View {
         VStack {
-            Text(localization.commonLocalizedString(for: .noSubscriptionsFound))
+            Text(self.configuration.screens[.noActive]?.title ?? "No Subscriptions found")
                 .font(.title)
                 .padding()
-            Text(localization.commonLocalizedString(for: .tryCheckRestore))
+            Text(self.configuration.screens[.noActive]?.subtitle ??
+                 "We can try checking your Apple account for any previous purchases")
                 .font(.body)
                 .padding()
 

@@ -96,8 +96,8 @@ enum CustomerCenterConfigTestData {
                                                   dark: try! RCColor(stringRepresentation: "#000000")),
                           backgroundColor: try! .init(light: RCColor(stringRepresentation: "#000000"),
                                                       dark: try! RCColor(stringRepresentation: "#ffffff")),
-                         textColor: try! .init(light: RCColor(stringRepresentation: "#000000"),
-                                               dark: try! RCColor(stringRepresentation: "#ffffff")))
+                          textColor: try! .init(light: RCColor(stringRepresentation: "#000000"),
+                                                dark: try! RCColor(stringRepresentation: "#ffffff")))
             // swiftlint:enable force_try
         ),
         localization: .init(
