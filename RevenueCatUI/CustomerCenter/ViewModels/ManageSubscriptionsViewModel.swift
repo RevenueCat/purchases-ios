@@ -54,7 +54,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     private(set) var refundRequestStatusMessage: String?
 
-
     private var purchasesProvider: ManageSubscriptionsPurchaseType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?

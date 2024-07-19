@@ -381,7 +381,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             ]
         )
         let promoOfferDetails = CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifier,
-                                                                                   eligible: true, 
+                                                                                   eligible: true,
                                                                                    title: "Wait",
                                                                                    subtitle: "Here's an offer for you")
         let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
@@ -400,7 +400,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                 subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
                                                 numberOfPeriods: 1,
                                                 type: .introductory)
-        
+
         loadPromotionalOfferUseCase.mockedPromotionalOffer = PromotionalOffer(discount: discount,
                                                                               signedData: signedData)
 
@@ -778,7 +778,7 @@ fileprivate extension SKProductDiscount {
 
 }
 
-fileprivate struct MockStoreProductDiscount: StoreProductDiscountType {
+private struct MockStoreProductDiscount: StoreProductDiscountType {
 
     let offerIdentifier: String?
     let currencyCode: String?
