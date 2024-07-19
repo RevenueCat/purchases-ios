@@ -1045,6 +1045,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - setup-git-credentials
       - trust-github-key
       - run:
           name: Prepare next version
