@@ -15,6 +15,7 @@ import SwiftUI
 // @PublicForExternalTesting
 enum TestData {
 
+    // @PublicForExternalTesting
     static let customerInfo: CustomerInfo = {
         return .decode(
         """
@@ -149,30 +150,35 @@ enum TestData {
         discounts: [],
         locale: Self.locale
     )
+    // @PublicForExternalTesting
     static let weeklyPackage = Package(
         identifier: PackageType.weekly.identifier,
         packageType: .weekly,
         storeProduct: Self.weeklyProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    // @PublicForExternalTesting
     static let monthlyPackage = Package(
         identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    // @PublicForExternalTesting
     static let threeMonthPackage = Package(
         identifier: PackageType.threeMonth.identifier,
         packageType: .threeMonth,
         storeProduct: Self.threeMonthProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    // @PublicForExternalTesting
     static let sixMonthPackage = Package(
         identifier: PackageType.sixMonth.identifier,
         packageType: .sixMonth,
         storeProduct: Self.sixMonthProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    // @PublicForExternalTesting
     static let annualPackage = Package(
         identifier: PackageType.annual.identifier,
         packageType: .annual,
@@ -205,6 +211,7 @@ enum TestData {
         storeProduct: productWithNoIntroOffer.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    // @PublicForExternalTesting
     static let lifetimePackage = Package(
         identifier: PackageType.lifetime.identifier,
         packageType: .lifetime,
@@ -770,6 +777,7 @@ extension PaywallColor: ExpressibleByStringLiteral {
 
 extension PackageType {
 
+    // @PublicForExternalTesting
     var identifier: String {
         return Package.string(from: self)!
     }

@@ -9,7 +9,7 @@
 
 import Foundation
 import RevenueCat
-@testable import RevenueCatUI
+import RevenueCatUI
 
 import UIKit
 
