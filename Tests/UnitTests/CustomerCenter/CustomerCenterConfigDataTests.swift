@@ -85,9 +85,12 @@ class CustomerCenterConfigDataTests: TestCase {
         case .system:
             fatalError("appearance mode should be custom")
         case .custom(accentColor: let accentColor, backgroundColor: let backgroundColor, textColor: let textColor):
-            expect(accentColor.stringRepresentation) == "#FFFFFF"
-            expect(backgroundColor.stringRepresentation) == "#000000"
-            expect(textColor.stringRepresentation) == "#FF0000"
+            expect(accentColor.light.stringRepresentation) == "#FFFFFF"
+            expect(accentColor.dark.stringRepresentation) == "#000000"
+            expect(backgroundColor.light.stringRepresentation) == "#000000"
+            expect(backgroundColor.dark.stringRepresentation) == "#FFFFFF"
+            expect(textColor.light.stringRepresentation) == "#FF0000"
+            expect(textColor.dark.stringRepresentation) == "#00FF00"
         }
 
         expect(configData.screens.count) == 1
