@@ -668,7 +668,7 @@ extension HTTPClient {
 
     internal func isRetryable(_ urlResponse: HTTPURLResponse) -> Bool {
         let isStatusCodeRetryable = self.retriableStatusCodes.contains(urlResponse.httpStatusCode)
-        let isRetryableString = urlResponse.allHeaderFields[ResponseHeader.isRetryable.rawValue] as? String
+        let isRetryableString = urlResponse.value(forHTTPHeaderField: ResponseHeader.isRetryable.rawValue)
         let isRetryable: Bool
         if let isRetryableString {
             isRetryable = Bool(isRetryableString.lowercased()) ?? true
