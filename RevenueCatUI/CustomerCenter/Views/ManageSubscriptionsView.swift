@@ -157,7 +157,7 @@ struct SubscriptionDetailsView: View {
                 Text("\(subscriptionInformation.title)")
                     .font(.headline)
 
-                var explanation = subscriptionInformation.active ? (
+                let explanation = subscriptionInformation.active ? (
                      subscriptionInformation.willRenew ?
                             localization.commonLocalizedString(for: .subEarliestRenewal) :
                             localization.commonLocalizedString(for: .subEarliestExpiration)
@@ -197,7 +197,7 @@ struct SubscriptionDetailsView: View {
 
             if let nextRenewal =  subscriptionInformation.expirationDateString {
 
-                var expirationString = subscriptionInformation.active ? (
+                let expirationString = subscriptionInformation.active ? (
                     subscriptionInformation.willRenew ?
                         localization.commonLocalizedString(for: .nextBillingDate) :
                         localization.commonLocalizedString(for: .expires)
