@@ -57,7 +57,7 @@ class OperationDispatcher {
         Self.dispatchOnMainActor(block)
     }
 
-    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
+    func dispatchOnWorkerThread(delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
         if delay.hasDelay {
             self.workerQueue.asyncAfter(deadline: .now() + delay.random(), execute: block)
         } else {
