@@ -17,9 +17,14 @@ jobs:
         env:
           READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
         id: verify
-        # ensure that only RevenueCat members can trigger this
+        # ensure that only RevenueCat members can trigger this. According to Github docs, only 204
+        # response codes correspond to members of the organization.
         run: |
-          RESPONSE=$(curl -s -o /dev/null --head -w "%{http_code}" -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
+          RESPONSE=$(curl -s -o /dev/null \
+            --head \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
+            https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
           if [[ "$RESPONSE" != "204" ]]; then
             echo "User is not a member of the organization"
             exit 1
