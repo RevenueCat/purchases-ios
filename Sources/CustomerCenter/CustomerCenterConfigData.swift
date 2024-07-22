@@ -43,16 +43,16 @@ public struct CustomerCenterConfigData {
 
         public enum CommonLocalizedString: String {
 
-            case billingCycle = "billing_cycle"
-            case currentPrice = "current_price"
-            case expired = "expired"
-            case expires = "expires"
-            case nextBillingDate = "next_billing_date"
             case noThanks = "no_thanks"
             case noSubscriptionsFound = "no_subscriptions_found"
             case tryCheckRestore = "try_check_restore"
             case restorePurchases = "restore_purchases"
             case cancel = "cancel"
+            case billingCycle = "billing_cycle"
+            case currentPrice = "current_price"
+            case expired = "expired"
+            case expires = "expires"
+            case nextBillingDate = "next_billing_date"
             case refundCanceled = "refund_canceled"
             case refundErrorGeneric = "refund_error_generic"
             case refundGranted = "refund_granted"
