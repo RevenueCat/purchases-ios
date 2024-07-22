@@ -985,6 +985,29 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(stubbedRequestCount).to(equal(4)) // 1 original request + 3 retries
     }
+
+    func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
+
+        // Ensure that the each time POST /receipt is called, we mock a 429 error
+        var stubbedRequestCount = 0
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            stubbedRequestCount += 1
+            return Self.emptyTooManyRequestsResponse(
+                headers: [HTTPClient.ResponseHeader.isRetryable.rawValue: "false"]
+            )
+        }
+
+        let product = try await self.monthlyPackage.storeProduct
+        do {
+            _ = try await self.purchases.purchase(product: product)
+            fail("Expected purchases.purchase to fail with no retries when the Is-Retryable response header is false.")
+        } catch {
+            expect(error).to(matchError(ErrorCode.unknownError))
+        }
+
+        expect(stubbedRequestCount).to(equal(1)) // 1 original request + 0 retries
+    }
 }
 
 private extension BaseStoreKitIntegrationTests {
@@ -997,11 +1020,13 @@ private extension BaseStoreKitIntegrationTests {
         }
     }
 
-    static func emptyTooManyRequestsResponse() -> HTTPStubsResponse {
+    static func emptyTooManyRequestsResponse(
+        headers: [String: String]? = nil
+    ) -> HTTPStubsResponse {
         // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
         // This creates a new response each time so modifications in one test don't affect others.
         return .init(data: Data(),
                      statusCode: 429,
-                     headers: nil)
+                     headers: headers)
     }
 }

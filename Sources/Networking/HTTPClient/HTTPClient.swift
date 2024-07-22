@@ -211,6 +211,7 @@ extension HTTPClient {
         case requestID = "X-Request-ID"
         case amazonTraceID = "X-Amzn-Trace-ID"
         case retryAfter = "Retry-After"
+        case isRetryable = "Is-Retryable"
 
     }
 
@@ -625,7 +626,7 @@ extension HTTPClient {
         httpURLResponse: HTTPURLResponse?
     ) -> Bool {
         guard let httpURLResponse = httpURLResponse,
-              isStatusCodeRetryable(httpURLResponse.httpStatusCode) else { return false }
+              isRetryable(httpURLResponse) else { return false }
 
         // At this point, retryCount hasn't been incremented yet, so we'll need to do it early here
         // to determine if another retry is appropriate.
@@ -665,8 +666,17 @@ extension HTTPClient {
         return true
     }
 
-    internal func isStatusCodeRetryable(_ statusCode: HTTPStatusCode) -> Bool {
-        return self.retriableStatusCodes.contains(statusCode)
+    internal func isRetryable(_ urlResponse: HTTPURLResponse) -> Bool {
+        let isStatusCodeRetryable = self.retriableStatusCodes.contains(urlResponse.httpStatusCode)
+        let isRetryableString = urlResponse.allHeaderFields[ResponseHeader.isRetryable.rawValue] as? String
+        let isRetryable: Bool
+        if let isRetryableString {
+            isRetryable = Bool(isRetryableString.lowercased()) ?? true
+        } else {
+            isRetryable = true
+        }
+
+        return isStatusCodeRetryable && isRetryable
     }
 
     internal func calculateRetryBackoffTime(
