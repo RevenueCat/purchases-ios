@@ -56,7 +56,7 @@ extension BackendConfiguration {
         delay: JitterableDelay,
         cacheStatus: CallbackCacheStatus
     ) {
-        self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             self.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         }
     }
@@ -66,7 +66,7 @@ extension BackendConfiguration {
         _ operation: NetworkOperation,
         delay: JitterableDelay = .long
     ) {
-        self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             self.diagnosticsQueue.addOperation(operation)
         }
     }

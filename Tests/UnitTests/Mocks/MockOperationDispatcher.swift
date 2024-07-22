@@ -60,13 +60,13 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchOnWorkerThreadDelayParam: JitterableDelay?
     var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] = []
 
-    override func dispatchOnWorkerThread(delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
+    override func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnWorkerThreadDelayParam = delay
         self.invokedDispatchOnWorkerThreadDelayParams.append(delay)
         self.invokedDispatchOnWorkerThread = true
         self.invokedDispatchOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(delay: delay, block: block)
+            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
             return
         }
         if self.shouldInvokeDispatchOnWorkerThreadBlock {
@@ -79,7 +79,7 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnWorkerThreadDelayParam: JitterableDelay?
 
     override func dispatchOnWorkerThread(
-        delay: JitterableDelay = .none,
+        jitterableDelay delay: JitterableDelay = .none,
         block: @escaping @Sendable () async -> Void
     ) {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
@@ -87,7 +87,7 @@ class MockOperationDispatcher: OperationDispatcher {
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
 
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(delay: delay, block: block)
+            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
         } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
             Task<Void, Never> {
                 await block()
