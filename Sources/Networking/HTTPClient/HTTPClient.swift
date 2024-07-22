@@ -686,7 +686,15 @@ extension HTTPClient {
         // Use the retry after value from the backend if present
         if let retryAfterHeaderValue = httpURLResponse.allHeaderFields[ResponseHeader.retryAfter.rawValue] as? String,
             let retryAfterMS = Double(retryAfterHeaderValue) {
-            return TimeInterval(milliseconds: retryAfterMS)
+
+            // Ensure that the retry interval is not negative or greater than 1 hour
+            let nonNegativeRetryAfterMS = max(0, retryAfterMS)
+            let cappedRetryInterval = min(
+                nonNegativeRetryAfterMS,
+                3_600_000   // 1 hour in milliseconds
+            )
+
+            return TimeInterval(milliseconds: cappedRetryInterval)
         }
 
         // Otherwise, use a default value
