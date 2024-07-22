@@ -87,6 +87,7 @@ struct ManageSubscriptionsView: View {
 
                 if let subscriptionInformation = self.viewModel.subscriptionInformation {
                     SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                                            localization: localization,
                                             refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                 }
 
@@ -147,6 +148,7 @@ struct SubscriptionDetailsView: View {
 
     let iconWidth = 22.0
     let subscriptionInformation: SubscriptionInformation
+    let localization: CustomerCenterConfigData.Localization
     let refundRequestStatusMessage: String?
 
     var body: some View {
@@ -154,7 +156,14 @@ struct SubscriptionDetailsView: View {
             VStack(alignment: .leading) {
                 Text("\(subscriptionInformation.title)")
                     .font(.headline)
-                Text("\(subscriptionInformation.explanation)")
+
+                let explanation = subscriptionInformation.active ? (
+                     subscriptionInformation.willRenew ?
+                            localization.commonLocalizedString(for: .subEarliestRenewal) :
+                            localization.commonLocalizedString(for: .subEarliestExpiration)
+                    ) : localization.commonLocalizedString(for: .subExpired)
+
+                Text("\(explanation)")
                     .frame(maxWidth: 200, alignment: .leading)
                     .font(.caption)
                     .foregroundColor(Color(UIColor.secondaryLabel))
@@ -165,7 +174,7 @@ struct SubscriptionDetailsView: View {
                     .accessibilityHidden(true)
                     .frame(width: iconWidth)
                 VStack(alignment: .leading) {
-                    Text("Billing cycle")
+                    Text(localization.commonLocalizedString(for: .billingCycle))
                         .font(.caption2)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text("\(subscriptionInformation.durationTitle)")
@@ -178,7 +187,7 @@ struct SubscriptionDetailsView: View {
                     .accessibilityHidden(true)
                     .frame(width: iconWidth)
                 VStack(alignment: .leading) {
-                    Text("Current price")
+                    Text(localization.commonLocalizedString(for: .currentPrice))
                         .font(.caption2)
                         .foregroundColor(Color(UIColor.secondaryLabel))
                     Text("\(subscriptionInformation.price)")
@@ -187,12 +196,19 @@ struct SubscriptionDetailsView: View {
             }
 
             if let nextRenewal =  subscriptionInformation.expirationDateString {
+
+                let expirationString = subscriptionInformation.active ? (
+                    subscriptionInformation.willRenew ?
+                        localization.commonLocalizedString(for: .nextBillingDate) :
+                        localization.commonLocalizedString(for: .expires)
+                ) : localization.commonLocalizedString(for: .expired)
+
                 HStack(alignment: .center) {
                     Image(systemName: "calendar")
                         .accessibilityHidden(true)
                         .frame(width: iconWidth)
                     VStack(alignment: .leading) {
-                        Text("\(subscriptionInformation.expirationString)")
+                        Text("\(expirationString)")
                             .font(.caption2)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         Text("\(String(describing: nextRenewal))")
@@ -207,7 +223,7 @@ struct SubscriptionDetailsView: View {
                         .accessibilityHidden(true)
                         .frame(width: iconWidth)
                     VStack(alignment: .leading) {
-                        Text("Refund status")
+                        Text(localization.commonLocalizedString(for: .refundStatus))
                             .font(.caption2)
                             .foregroundColor(Color(UIColor.secondaryLabel))
                         Text("\(refundRequestStatusMessage)")
