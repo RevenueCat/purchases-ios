@@ -65,7 +65,8 @@ class OperationDispatcher {
         }
     }
 
-    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, block: @escaping @Sendable () async -> Void) {
+    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, 
+                                block: @escaping @Sendable () async -> Void) {
         Task.detached(priority: .background) {
             if delay.hasDelay {
                 try? await Task.sleep(nanoseconds: DispatchTimeInterval(delay.random()).nanoseconds)
