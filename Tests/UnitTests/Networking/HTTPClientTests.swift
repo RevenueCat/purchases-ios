@@ -1869,7 +1869,7 @@ extension HTTPClientTests {
         )!
 
         let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
-        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSeconds)))  // 0.1s == 100ms
+        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSeconds)))
     }
 
     func testUses0msBackoffIfServerProvidedBackoffIsNegative() {
