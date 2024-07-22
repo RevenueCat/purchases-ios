@@ -1709,9 +1709,106 @@ extension HTTPClientTests {
 // MARK: - HttpClient Retry Tests
 extension HTTPClientTests {
 
-    func testOnlyRetriesProvidedHTTPStatusCodes() {
-        expect(self.client.isStatusCodeRetryable(.tooManyRequests)).to(beTrue())
-        expect(self.client.isStatusCodeRetryable(.invalidRequest)).to(beFalse())
+    func testOnlyRetriesProvidedHTTPStatusCodesIfIsRetryableHeaderMissing() {
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )).to(beTrue())
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.invalidRequest.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )).to(beFalse())
+    }
+
+    func testWontRetryIfIsRetryableHeaderFalse() {
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "false"
+                ]
+            )!
+        )).to(beFalse())
+
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "False"
+                ]
+            )!
+        )).to(beFalse())
+
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "FALSE"
+                ]
+            )!
+        )).to(beFalse())
+    }
+
+    func testWillRetryIfIsRetryableHeaderTrue() {
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "true"
+                ]
+            )!
+        )).to(beTrue())
+
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "True"
+                ]
+            )!
+        )).to(beTrue())
+
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "TRUE"
+                ]
+            )!
+        )).to(beTrue())
+    }
+
+    func testWillNotRetryIfIsRetryableHeaderTrueButStatusCodeIsNotRetryable() {
+        expect(self.client.isRetryable(
+            HTTPURLResponse(
+                url: URL(string: "api.revenuecat.com")!,
+                statusCode: HTTPStatusCode.success.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "true"
+                ]
+            )!
+        )).to(beFalse())
     }
 
     // Backoff Time Tests
