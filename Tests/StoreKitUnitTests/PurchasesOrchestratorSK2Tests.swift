@@ -54,6 +54,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             package: package,
                                             promotionalOffer: nil)
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
@@ -230,6 +231,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
         expect(result.transaction) == transaction.verifiedStoreTransaction
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
@@ -468,6 +470,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             updatedTransaction: transaction
         )
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .never
         expect(transaction.finishInvoked) == true
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
@@ -543,6 +546,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             updatedTransaction: transaction
         )
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .never
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
