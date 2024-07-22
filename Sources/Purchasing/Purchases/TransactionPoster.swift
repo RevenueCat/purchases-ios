@@ -106,7 +106,8 @@ final class TransactionPoster: TransactionPosterType {
             switch result {
             case .success(let encodedReceipt):
                 self.product(with: productIdentifier) { product in
-                    // Only allow refreshing the AppTransaction if the source was a user action (e.g. purchase)
+                    // Only allow refreshing the AppTransaction if the source was a user action 
+                    // (e.g. purchase) to prevent showing a login prompt unnecessarily
                     let refreshPolicy: AppTransactionRefreshPolicy =
                         data.source.initiationSource == .purchase ? .onlyIfEmpty : .never
                     self.transactionFetcher.appTransactionJWS(refreshPolicy: refreshPolicy) { appTransaction in
