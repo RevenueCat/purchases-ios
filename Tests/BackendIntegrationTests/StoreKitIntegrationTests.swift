@@ -988,7 +988,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
 
-        // Ensure that the each time POST /receipt is called, we mock a 429 error
+        // Ensure that the each time POST /receipt is called, we mock a 429 error with the 
+        // Is-Retryable header as "false"
         var stubbedRequestCount = 0
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
