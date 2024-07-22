@@ -157,13 +157,11 @@ struct SubscriptionDetailsView: View {
                 Text("\(subscriptionInformation.title)")
                     .font(.headline)
 
-                var explanation: String {
-                    return subscriptionInformation.active ? (
-                        subscriptionInformation.willRenew ?
-                        localization.commonLocalizedString(for: .subEarliestRenewal) :
+                var explanation = subscriptionInformation.active ? (
+                     subscriptionInformation.willRenew ?
+                            localization.commonLocalizedString(for: .subEarliestRenewal) :
                             localization.commonLocalizedString(for: .subEarliestExpiration)
                     ) : localization.commonLocalizedString(for: .subExpired)
-                }
 
                 Text("\(explanation)")
                     .frame(maxWidth: 200, alignment: .leading)
@@ -199,13 +197,11 @@ struct SubscriptionDetailsView: View {
 
             if let nextRenewal =  subscriptionInformation.expirationDateString {
 
-                var expirationString: String {
-                    return subscriptionInformation.active ? (
-                        subscriptionInformation.willRenew ?
+                var expirationString = subscriptionInformation.active ? (
+                    subscriptionInformation.willRenew ?
                         localization.commonLocalizedString(for: .nextBillingDate) :
-                            localization.commonLocalizedString(for: .expires)
-                    ) : localization.commonLocalizedString(for: .expired)
-                }
+                        localization.commonLocalizedString(for: .expires)
+                ) : localization.commonLocalizedString(for: .expired)
 
                 HStack(alignment: .center) {
                     Image(systemName: "calendar")
