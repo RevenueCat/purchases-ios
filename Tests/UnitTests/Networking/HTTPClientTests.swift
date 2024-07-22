@@ -1872,6 +1872,49 @@ extension HTTPClientTests {
         expect(backoffPeriod).to(equal(TimeInterval(0.1)))  // 0.1s == 100ms
     }
 
+    func testUses0msBackoffIfServerProvidedBackoffIsNegative() {
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "-1"
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+    }
+
+    func testUses1hourBackoffIfServerProvidedBackoffIsGreaterThan1hour() {
+        let oneHourInMilliseconds = 3_600_000
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(oneHourInMilliseconds * 2)"
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(milliseconds: Double(oneHourInMilliseconds))))
+    }
+
+    func testUsesDefaultBackoffIfServerProvidedBackoffIsEmptyString() {
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: ""
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0.75)))
+    }
+
     func testUsesDefaultBackoffIfServerProvidedBackoffMissing() {
         let httpURLResponse = HTTPURLResponse(
             url: URL(string: "api.revenuecat.com")!,
