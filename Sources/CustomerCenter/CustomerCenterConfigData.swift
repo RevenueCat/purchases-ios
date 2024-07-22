@@ -43,11 +43,23 @@ public struct CustomerCenterConfigData {
 
         public enum CommonLocalizedString: String {
 
+            case billingCycle = "billing_cycle"
+            case currentPrice = "current_price"
+            case expired = "expired"
+            case expires = "expires"
+            case nextBillingDate = "next_billing_date"
             case noThanks = "no_thanks"
             case noSubscriptionsFound = "no_subscriptions_found"
             case tryCheckRestore = "try_check_restore"
             case restorePurchases = "restore_purchases"
             case cancel = "cancel"
+            case refundCanceled = "refund_canceled"
+            case refundErrorGeneric = "refund_error_generic"
+            case refundGranted = "refund_granted"
+            case refundStatus = "refund_status"
+            case subEarliestExpiration = "sub_earliest_expiration"
+            case subEarliestRenewal = "sub_earliest_renewal"
+            case subExpired = "sub_expired"
 
             var defaultValue: String {
                 switch self {
@@ -61,6 +73,30 @@ public struct CustomerCenterConfigData {
                     return "Restore purchases"
                 case .cancel:
                     return "Cancel"
+                case .billingCycle:
+                    return "Billing cycle"
+                case .currentPrice:
+                    return "Current price"
+                case .expired:
+                    return "Expired"
+                case .expires:
+                    return "Expires"
+                case .nextBillingDate:
+                    return "Next billing date"
+                case .refundCanceled:
+                    return "Refund canceled"
+                case .refundErrorGeneric:
+                    return "An error occurred while processing the refund request. Please try again."
+                case .refundGranted:
+                    return "Refund granted successfully!"
+                case .refundStatus:
+                    return "Refund status"
+                case .subEarliestExpiration:
+                    return "This is your subscription with the earliest expiration date."
+                case .subEarliestRenewal:
+                    return "This is your subscription with the earliest billing date."
+                case .subExpired:
+                    return "This subscription has expired."
                 }
             }
 
