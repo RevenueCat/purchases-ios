@@ -106,7 +106,7 @@ final class TransactionPoster: TransactionPosterType {
             switch result {
             case .success(let encodedReceipt):
                 self.product(with: productIdentifier) { product in
-                    self.transactionFetcher.appTransactionJWS { appTransaction in
+                    self.transactionFetcher.appTransactionJWS(refreshPolicy: .onlyIfEmpty) { appTransaction in
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
                                          receipt: encodedReceipt,

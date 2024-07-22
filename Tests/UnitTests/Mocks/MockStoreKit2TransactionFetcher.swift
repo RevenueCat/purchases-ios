@@ -22,6 +22,7 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     private let _stubbedHasPendingConsumablePurchase: Atomic<Bool> = false
     private let _stubbedReceipt: Atomic<StoreKit2Receipt?> = .init(nil)
     private let _stubbedAppTransactionJWS: Atomic<String?> = .init(nil)
+    private let _receivedRefreshPolicy: Atomic<AppTransactionRefreshPolicy?> = .init(nil)
 
     var stubbedUnfinishedTransactions: [StoreTransaction] {
         get { return self._stubbedUnfinishedTransactions.value }
@@ -55,6 +56,11 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         }
     }
 
+    var receivedRefreshPolicy: AppTransactionRefreshPolicy? {
+        get { return self._receivedRefreshPolicy.value }
+        set { self._receivedRefreshPolicy.value = newValue }
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
         return self.stubbedReceipt!
@@ -74,14 +80,17 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         }
     }
 
-    var appTransactionJWS: String? {
-        get async {
-            return self.stubbedAppTransactionJWS
-        }
+    func appTransactionJWS(refreshPolicy: AppTransactionRefreshPolicy) async -> String? {
+        self.receivedRefreshPolicy = refreshPolicy
+        return self.stubbedAppTransactionJWS
     }
 
-    func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
-        completion(self.stubbedAppTransactionJWS)
+    func appTransactionJWS(
+        refreshPolicy: AppTransactionRefreshPolicy,
+        _ completionHandler: @escaping (String?) -> Void
+    ) {
+        self.receivedRefreshPolicy = refreshPolicy
+        completionHandler(self.stubbedAppTransactionJWS)
     }
 
     // MARK: -

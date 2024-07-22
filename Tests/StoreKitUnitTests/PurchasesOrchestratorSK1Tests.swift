@@ -582,7 +582,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         self.receiptParser.stubbedReceiptHasTransactionsResult = false
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: false,
                                                                      initiationSource: .purchase)
         expect(self.backend.invokedPostReceiptData).to(beFalse())
@@ -596,7 +596,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalPurchaseDate
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: true,
                                                                      initiationSource: .restore)
 
@@ -617,7 +617,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testSyncPurchasesPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: false,
                                                                      initiationSource: .purchase)
 
@@ -631,7 +631,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: true,
                                                                      initiationSource: .restore)
 
@@ -652,7 +652,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testSyncPurchasesCallsSuccessDelegateMethod() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let receivedCustomerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let receivedCustomerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                              isRestore: false,
                                                                              initiationSource: .purchase)
 
@@ -665,7 +665,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .failure(expectedError)
 
         do {
-            _ = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+            _ = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                           isRestore: false,
                                                           initiationSource: .purchase)
             fail("Expected error")

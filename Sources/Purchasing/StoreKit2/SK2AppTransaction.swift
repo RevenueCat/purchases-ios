@@ -18,13 +18,15 @@ import StoreKit
 internal struct SK2AppTransaction {
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    init(appTransaction: AppTransaction) {
+    init(appTransaction: AppTransaction, jwsRepresentation: String) {
         self.bundleId = appTransaction.bundleID
         self.originalApplicationVersion = appTransaction.originalAppVersion
         self.originalPurchaseDate = appTransaction.originalPurchaseDate
         self.environment = .init(environment: appTransaction.environment)
+        self.jwsRepresentation = jwsRepresentation
     }
 
+    let jwsRepresentation: String
     let bundleId: String
     let originalApplicationVersion: String?
     let originalPurchaseDate: Date?

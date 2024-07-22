@@ -223,14 +223,14 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        self.syncPurchases(receiptRefreshPolicy: .always,
+        self.syncPurchases(receiptRefreshAllowed: true,
                            isRestore: true,
                            initiationSource: .restore,
                            completion: completion)
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
-        self.syncPurchases(receiptRefreshPolicy: .never,
+        self.syncPurchases(receiptRefreshAllowed: false,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,
                            completion: completion)
@@ -1022,7 +1022,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+    func syncPurchases(receiptRefreshAllowed: Bool,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource,
                        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
@@ -1034,11 +1034,12 @@ private extension PurchasesOrchestrator {
 
         if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.syncPurchasesSK2(isRestore: isRestore,
+            self.syncPurchasesSK2(refreshPolicy: receiptRefreshAllowed ? .onlyIfEmpty : .never,
+                                  isRestore: isRestore,
                                   initiationSource: initiationSource,
                                   completion: completion)
         } else {
-            self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshPolicy,
+            self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshAllowed ? .always : .never,
                                   isRestore: isRestore,
                                   initiationSource: initiationSource,
                                   completion: completion)
@@ -1114,7 +1115,8 @@ private extension PurchasesOrchestrator {
 
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func syncPurchasesSK2(isRestore: Bool,
+    private func syncPurchasesSK2(refreshPolicy: AppTransactionRefreshPolicy,
+                                  isRestore: Bool,
                                   initiationSource: ProductRequestData.InitiationSource,
                                   completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
@@ -1123,7 +1125,6 @@ private extension PurchasesOrchestrator {
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
                 let transaction = await self.transactionFetcher.firstVerifiedTransaction
-                let appTransactionJWS = await self.transactionFetcher.appTransactionJWS
 
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation else {
                     // No transactions are present. If we have the originalPurchaseDate and originalApplicationVersion
@@ -1138,6 +1139,9 @@ private extension PurchasesOrchestrator {
                         }
                         return
                     }
+
+                    let appTransactionJWS = await self.transactionFetcher.appTransactionJWS(
+                        refreshPolicy: refreshPolicy)
 
                     self.backend.post(receipt: .empty,
                                       productData: nil,
@@ -1157,6 +1161,7 @@ private extension PurchasesOrchestrator {
                 }
 
                 let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+                let appTransactionJWS = await self.transactionFetcher.appTransactionJWS(refreshPolicy: refreshPolicy)
 
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
@@ -1511,11 +1516,12 @@ extension PurchasesOrchestrator {
             .get()
     }
 
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+    // Only used internally in tests
+    func syncPurchases(receiptRefreshAllowed: Bool,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
         return try await Async.call { completion in
-            self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
+            self.syncPurchases(receiptRefreshAllowed: receiptRefreshAllowed,
                                isRestore: isRestore,
                                initiationSource: initiationSource,
                                completion: completion)
