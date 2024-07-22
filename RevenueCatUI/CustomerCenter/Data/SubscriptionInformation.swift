@@ -22,8 +22,21 @@ struct SubscriptionInformation {
     let price: String
     let expirationDateString: String?
     let productIdentifier: String
-    let willRenew: Bool
-    let active: Bool
+
+    var expirationString: String {
+        return active ? (willRenew ? "Next billing date" : "Expires") : "Expired"
+    }
+
+    var explanation: String {
+        return active ? (
+            willRenew ?
+                "This is your subscription with the earliest billing date." :
+                "This is your subscription with the earliest expiration date."
+        ) : "This subscription has expired."
+    }
+
+    private let willRenew: Bool
+    private let active: Bool
 
     init(title: String,
          durationTitle: String,
