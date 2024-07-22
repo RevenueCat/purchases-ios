@@ -65,7 +65,7 @@ class OperationDispatcher {
         }
     }
 
-    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, 
+    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
                                 block: @escaping @Sendable () async -> Void) {
         Task.detached(priority: .background) {
             if delay.hasDelay {

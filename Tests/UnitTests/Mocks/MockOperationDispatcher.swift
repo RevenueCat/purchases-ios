@@ -60,7 +60,7 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchOnWorkerThreadDelayParam: JitterableDelay?
     var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] = []
 
-    override func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, 
+    override func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
                                          block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnWorkerThreadDelayParam = delay
         self.invokedDispatchOnWorkerThreadDelayParams.append(delay)
