@@ -1859,7 +1859,7 @@ extension HTTPClientTests {
     func testUsesServerProvidedBackoffIfPresent() {
         let retryAfterSeconds = 100
 
-        let httpURLResponse = HTTPURLResponse(
+        var httpURLResponse = HTTPURLResponse(
             url: URL(string: "api.revenuecat.com")!,
             statusCode: HTTPStatusCode.tooManyRequests.rawValue,
             httpVersion: nil,
@@ -1868,8 +1868,21 @@ extension HTTPClientTests {
             ]
         )!
 
-        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
         expect(backoffPeriod).to(equal(TimeInterval(retryAfterSeconds)))
+
+        let retryAfterSecondsDecimal = 10.5
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterSecondsDecimal)"
+            ]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSecondsDecimal)))
     }
 
     func testUses0msBackoffIfServerProvidedBackoffIsNegative() {
