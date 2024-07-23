@@ -1857,19 +1857,32 @@ extension HTTPClientTests {
     }
 
     func testUsesServerProvidedBackoffIfPresent() {
-        let retryAfterMilliseconds = 100
+        let retryAfterSeconds = 100
 
-        let httpURLResponse = HTTPURLResponse(
+        var httpURLResponse = HTTPURLResponse(
             url: URL(string: "api.revenuecat.com")!,
             statusCode: HTTPStatusCode.tooManyRequests.rawValue,
             httpVersion: nil,
             headerFields: [
-                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterMilliseconds)"
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterSeconds)"
             ]
         )!
 
-        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
-        expect(backoffPeriod).to(equal(TimeInterval(0.1)))  // 0.1s == 100ms
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSeconds)))
+
+        let retryAfterSecondsDecimal = 10.5
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "api.revenuecat.com")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterSecondsDecimal)"
+            ]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSecondsDecimal)))
     }
 
     func testUses0msBackoffIfServerProvidedBackoffIsNegative() {
@@ -1887,18 +1900,18 @@ extension HTTPClientTests {
     }
 
     func testUses1hourBackoffIfServerProvidedBackoffIsGreaterThan1hour() {
-        let oneHourInMilliseconds = 3_600_000
+        let oneHourInSeconds = 3_600
         let httpURLResponse = HTTPURLResponse(
             url: URL(string: "api.revenuecat.com")!,
             statusCode: HTTPStatusCode.tooManyRequests.rawValue,
             httpVersion: nil,
             headerFields: [
-                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(oneHourInMilliseconds * 2)"
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(oneHourInSeconds * 2)"
             ]
         )!
 
         let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
-        expect(backoffPeriod).to(equal(TimeInterval(milliseconds: Double(oneHourInMilliseconds))))
+        expect(backoffPeriod).to(equal(TimeInterval(Double(oneHourInSeconds))))
     }
 
     func testUsesDefaultBackoffIfServerProvidedBackoffIsEmptyString() {
