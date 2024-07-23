@@ -19,26 +19,26 @@ import XCTest
 class OperationDispatcherTests: TestCase {
 
     func testDelayForBackgroundedApp() {
-        expect(JitterableDelay.default(forBackgroundedApp: true)) == .default
+        expect(Delay.default(forBackgroundedApp: true)) == .default
     }
 
     func testDelayForForegroundedApp() {
-        expect(JitterableDelay.default(forBackgroundedApp: false)) == JitterableDelay.none
+        expect(Delay.default(forBackgroundedApp: false)) == Delay.none
     }
 
     func testNoDelay() {
-        expect(JitterableDelay.none.hasDelay) == false
-        expect(JitterableDelay.none.range) == 0..<0
+        expect(Delay.none.hasDelay) == false
+        expect(Delay.none.range) == 0..<0
     }
 
     func testDefaultDelay() {
-        expect(JitterableDelay.default.hasDelay) == true
-        expect(JitterableDelay.default.range) == 0..<5
+        expect(Delay.default.hasDelay) == true
+        expect(Delay.default.range) == 0..<5
     }
 
     func testLongDelay() {
-        expect(JitterableDelay.long.hasDelay) == true
-        expect(JitterableDelay.long.range) == 5..<10
+        expect(Delay.long.hasDelay) == true
+        expect(Delay.long.range) == 5..<10
     }
 
 }

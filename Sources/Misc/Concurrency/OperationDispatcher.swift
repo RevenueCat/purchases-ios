@@ -18,12 +18,11 @@ import Foundation
 ///
 /// These delays prevent DDOS if a notification leads to many users opening an app at the same time,
 /// by spreading asynchronous operations over time.
-enum JitterableDelay: Equatable {
+enum Delay {
 
     case none
     case `default`
     case long
-    case timeInterval(TimeInterval)
 
     static func `default`(forBackgroundedApp inBackground: Bool) -> Self {
         return inBackground ? .default : .none
@@ -57,7 +56,7 @@ class OperationDispatcher {
         Self.dispatchOnMainActor(block)
     }
 
-    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
+    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () -> Void) {
         if delay.hasDelay {
             self.workerQueue.asyncAfter(deadline: .now() + delay.random(), execute: block)
         } else {
@@ -65,8 +64,7 @@ class OperationDispatcher {
         }
     }
 
-    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
-                                block: @escaping @Sendable () async -> Void) {
+    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () async -> Void) {
         Task.detached(priority: .background) {
             if delay.hasDelay {
                 try? await Task.sleep(nanoseconds: DispatchTimeInterval(delay.random()).nanoseconds)
@@ -74,10 +72,6 @@ class OperationDispatcher {
 
             await block()
         }
-    }
-
-    func dispatchOnWorkerThread(after timeInterval: TimeInterval, block: @escaping @Sendable () -> Void) {
-        self.workerQueue.asyncAfter(deadline: .now() + timeInterval, execute: block)
     }
 
 }
@@ -95,7 +89,7 @@ extension OperationDispatcher {
 // MARK: -
 
 /// Visible for testing
-extension JitterableDelay {
+extension Delay {
 
     var hasDelay: Bool {
         return self.maximum > 0
@@ -107,15 +101,13 @@ extension JitterableDelay {
 
 }
 
-private extension JitterableDelay {
+private extension Delay {
 
     var minimum: TimeInterval {
         switch self {
         case .none: return 0
         case .`default`: return 0
         case .long: return Self.maxJitter
-        case .timeInterval(let timeInterval):
-            return max(timeInterval, 0)
         }
     }
 
@@ -124,8 +116,6 @@ private extension JitterableDelay {
         case .none: return 0
         case .`default`: return Self.maxJitter
         case .long: return Self.maxJitter * 2
-        case .timeInterval(let timeInterval):
-            return max(timeInterval, 0)
         }
     }
 

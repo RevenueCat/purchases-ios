@@ -33,14 +33,6 @@ class HTTPClient {
     private let signing: SigningType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    private let retriableStatusCodes: Set<HTTPStatusCode>
-    private let operationDispatcher: OperationDispatcher
-
-    private let retryBackoffIntervals: [TimeInterval] = [
-        TimeInterval(0),
-        TimeInterval(0.75),
-        TimeInterval(3)
-    ]
 
     init(apiKey: String,
          systemInfo: SystemInfo,
@@ -48,10 +40,8 @@ class HTTPClient {
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
-         dateProvider: DateProvider = DateProvider(),
-         operationDispatcher: OperationDispatcher) {
+         dateProvider: DateProvider = DateProvider()) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
@@ -65,12 +55,10 @@ class HTTPClient {
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
-        self.retriableStatusCodes = retriableStatusCodes
         self.timeout = requestTimeout
         self.apiKey = apiKey
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
-        self.operationDispatcher = operationDispatcher
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -130,7 +118,6 @@ class HTTPClient {
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
-            RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]
 
@@ -196,7 +183,6 @@ extension HTTPClient {
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"
-        case retryCount = "X-Retry-Count"
 
     }
 
@@ -210,8 +196,6 @@ extension HTTPClient {
         case isLoadShedder = "X-RevenueCat-Fortress"
         case requestID = "X-Request-ID"
         case amazonTraceID = "X-Amzn-Trace-ID"
-        case retryAfter = "Retry-After"
-        case isRetryable = "Is-Retryable"
 
     }
 
@@ -223,7 +207,7 @@ extension HTTPClient: @unchecked Sendable {}
 
 // MARK: - Private
 
-internal extension HTTPClient {
+private extension HTTPClient {
 
     struct State {
         var queuedRequests: [Request]
@@ -238,14 +222,7 @@ internal extension HTTPClient {
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
-
-        /// Whether the request has been retried.
-        var retried: Bool {
-            return self.retryCount > 0
-        }
-
-        /// The number of times that we have retried the request
-        var retryCount: UInt = 0
+        var retried: Bool = false
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
@@ -276,8 +253,7 @@ internal extension HTTPClient {
 
         func retriedRequest() -> Self {
             var copy = self
-            copy.retryCount += 1
-            copy.headers[RequestHeader.retryCount.rawValue] = "\(copy.retryCount)"
+            copy.retried = true
 
             return copy
         }
@@ -292,6 +268,7 @@ internal extension HTTPClient {
             """
         }
     }
+
 }
 
 private extension HTTPClient {
@@ -441,7 +418,6 @@ private extension HTTPClient {
 
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
-            var requestRetryScheduled = false
 
             switch response {
             case let .success(response):
@@ -470,13 +446,9 @@ private extension HTTPClient {
                 if httpURLResponse?.isLoadShedder == true {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
-
-                requestRetryScheduled = self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
             }
 
-            if !requestRetryScheduled {
-                request.completionHandler?(response)
-            }
+            request.completionHandler?(response)
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
                                                           path: request.path))
@@ -607,101 +579,7 @@ private extension HTTPClient {
             }
         }
     }
-}
 
-// MARK: - Request Retry Logic
-extension HTTPClient {
-
-    /// Evaluates whether a request should be retried and schedules a retry if necessary.
-    ///
-    /// This function checks the HTTP response status code to determine if the request should be retried.
-    /// If the retry conditions are met, it schedules the request to be retried after a backoff interval.
-    ///
-    /// - Parameters:
-    ///   - request: The original `HTTPClient.Request` that may need to be retried.
-    ///   - httpURLResponse: An optional `HTTPURLResponse` that contains the status code of the response.
-    /// - Returns: A Boolean value indicating whether the request was scheduled for a retry.
-    internal func retryRequestIfNeeded(
-        request: HTTPClient.Request,
-        httpURLResponse: HTTPURLResponse?
-    ) -> Bool {
-        guard let httpURLResponse = httpURLResponse,
-              isRetryable(httpURLResponse) else { return false }
-
-        // At this point, retryCount hasn't been incremented yet, so we'll need to do it early here
-        // to determine if another retry is appropriate.
-        let nextRetryCount = request.retryCount + 1
-
-        guard nextRetryCount <= self.retryBackoffIntervals.count else {
-            Logger.error(
-                NetworkStrings.api_request_failed_all_retries(
-                    httpMethod: request.method.httpMethod,
-                    path: request.path,
-                    retryCount: request.retryCount
-                )
-            )
-            return false
-        }
-
-        let retryBackoffInterval: TimeInterval = calculateRetryBackoffTime(
-            forResponse: httpURLResponse,
-            retryCount: nextRetryCount
-        )
-
-        Logger.debug(
-            NetworkStrings.api_request_queued_for_retry(
-                httpMethod: request.method.httpMethod,
-                retryNumber: nextRetryCount,
-                path: request.path,
-                backoffInterval: retryBackoffInterval
-            )
-        )
-        self.operationDispatcher.dispatchOnWorkerThread(after: retryBackoffInterval) {
-            let retriedRequest = request.retriedRequest()
-            self.state.modify {
-                $0.queuedRequests.insert(retriedRequest, at: 0)
-            }
-            self.beginNextRequest()
-        }
-        return true
-    }
-
-    internal func isRetryable(_ urlResponse: HTTPURLResponse) -> Bool {
-        let isStatusCodeRetryable = self.retriableStatusCodes.contains(urlResponse.httpStatusCode)
-        let isRetryableString = urlResponse.value(forHTTPHeaderField: ResponseHeader.isRetryable.rawValue)
-        let isRetryable: Bool
-        if let isRetryableString {
-            isRetryable = Bool(isRetryableString.lowercased()) ?? true
-        } else {
-            isRetryable = true
-        }
-
-        return isStatusCodeRetryable && isRetryable
-    }
-
-    internal func calculateRetryBackoffTime(
-        forResponse httpURLResponse: HTTPURLResponse,
-        retryCount: UInt
-    ) -> TimeInterval {
-        // Use the retry after value from the backend if present
-        if let retryAfterHeaderValue = httpURLResponse.allHeaderFields[ResponseHeader.retryAfter.rawValue] as? String,
-            let retryAfterSeconds = Double(retryAfterHeaderValue) {
-
-            // Ensure that the retry interval is not negative or greater than 1 hour
-            let nonNegativeRetryAfterSeconds = max(0, retryAfterSeconds)
-            let cappedRetryInterval = min(
-                nonNegativeRetryAfterSeconds,
-                3_600   // 1 hour in seconds
-            )
-
-            return TimeInterval(cappedRetryInterval)
-        }
-
-        // Otherwise, use a default value
-        let backoffIntervalIndex = Int(max(retryCount - 1, 0))
-        let backoffIntervalIndexIsWithinBounds = backoffIntervalIndex < self.retryBackoffIntervals.count
-        return backoffIntervalIndexIsWithinBounds ? self.retryBackoffIntervals[backoffIntervalIndex] : 0
-    }
 }
 
 // MARK: - Extensions

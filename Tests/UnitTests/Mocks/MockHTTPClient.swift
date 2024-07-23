@@ -69,8 +69,7 @@ class MockHTTPClient: HTTPClient {
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
-                   requestTimeout: requestTimeout,
-                   operationDispatcher: MockOperationDispatcher())
+                   requestTimeout: requestTimeout)
     }
 
     private let sourceTestFile: StaticString

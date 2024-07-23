@@ -57,17 +57,14 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchOnWorkerThreadCount = 0
     var shouldInvokeDispatchOnWorkerThreadBlock = true
     var forwardToOriginalDispatchOnWorkerThread = false
-    var invokedDispatchOnWorkerThreadDelayParam: JitterableDelay?
-    var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] = []
+    var invokedDispatchOnWorkerThreadDelayParam: Delay?
 
-    override func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
-                                         block: @escaping @Sendable () -> Void) {
+    override func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnWorkerThreadDelayParam = delay
-        self.invokedDispatchOnWorkerThreadDelayParams.append(delay)
         self.invokedDispatchOnWorkerThread = true
         self.invokedDispatchOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
+            super.dispatchOnWorkerThread(delay: delay, block: block)
             return
         }
         if self.shouldInvokeDispatchOnWorkerThreadBlock {
@@ -77,10 +74,10 @@ class MockOperationDispatcher: OperationDispatcher {
 
     var invokedDispatchAsyncOnWorkerThread = false
     var invokedDispatchAsyncOnWorkerThreadCount = 0
-    var invokedDispatchAsyncOnWorkerThreadDelayParam: JitterableDelay?
+    var invokedDispatchAsyncOnWorkerThreadDelayParam: Delay?
 
     override func dispatchOnWorkerThread(
-        jitterableDelay delay: JitterableDelay = .none,
+        delay: Delay = .none,
         block: @escaping @Sendable () async -> Void
     ) {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
@@ -88,32 +85,11 @@ class MockOperationDispatcher: OperationDispatcher {
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
 
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
+            super.dispatchOnWorkerThread(delay: delay, block: block)
         } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
             Task<Void, Never> {
                 await block()
             }
-        }
-    }
-
-    var invokedDispatchOnWorkerThreadWithTimeInterval = false
-    var invokedDispatchOnWorkerThreadWithTimeIntervalCount = 0
-    var shouldInvokeDispatchOnWorkerThreadBlockWithTimeInterval = true
-    var forwardToOriginalDispatchOnWorkerThreadWithTimeInterval = false
-    var invokedDispatchOnWorkerThreadWithTimeIntervalParam: TimeInterval?
-    var invokedDispatchOnWorkerThreadWithTimeIntervalParams: [TimeInterval?] = []
-    override func dispatchOnWorkerThread(after timeInterval: TimeInterval, block: @escaping @Sendable () -> Void) {
-        self.invokedDispatchOnWorkerThreadWithTimeIntervalParam = timeInterval
-        self.invokedDispatchOnWorkerThreadWithTimeIntervalParams.append(timeInterval)
-        self.invokedDispatchOnWorkerThreadWithTimeInterval = true
-        self.invokedDispatchOnWorkerThreadWithTimeIntervalCount += 1
-
-        if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(after: timeInterval, block: block)
-            return
-        }
-        if self.shouldInvokeDispatchOnWorkerThreadBlock {
-            block()
         }
     }
 

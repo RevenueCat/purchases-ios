@@ -24,7 +24,6 @@ enum HTTPStatusCode {
     case invalidRequest
     case unauthorized
     case notFoundError
-    case tooManyRequests
     case internalServerError
     case networkConnectTimeoutError
 
@@ -61,7 +60,6 @@ extension HTTPStatusCode: RawRepresentable {
         case .invalidRequest: return 400
         case .unauthorized: return 401
         case .notFoundError: return 404
-        case .tooManyRequests: return 429
         case .internalServerError: return 500
         case .networkConnectTimeoutError: return 599
 
