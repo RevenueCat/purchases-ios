@@ -35,7 +35,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == Delay.none
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
     func testGetOfferingsCallsHTTPMethodWithRandomDelay() {
