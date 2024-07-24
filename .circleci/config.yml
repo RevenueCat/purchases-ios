@@ -1279,9 +1279,14 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - run-test-ios-17
-      - pod-lib-lint
+      - lint:
+          name: "swiftlint"
+      - run-test-ios-17:
+          name: "Unit tests"
+      - pod-lib-lint:
+          name: "Pod lib lint"
+      - spm-revenuecat-ui-ios-17:
+          name: "RevenueCatUI tests"
 
   create-tag:
     when:
