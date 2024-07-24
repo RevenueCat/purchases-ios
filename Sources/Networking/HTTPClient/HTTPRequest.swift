@@ -22,7 +22,7 @@ struct HTTPRequest {
     var path: HTTPRequestPath
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
     var nonce: Data?
-    /// Whether or not this reqeust should be retried by the HTTPClient for certain status codes.
+    /// Whether or not this request should be retried by the HTTPClient for certain status codes.
     var isRetryable: Bool
 
     init(

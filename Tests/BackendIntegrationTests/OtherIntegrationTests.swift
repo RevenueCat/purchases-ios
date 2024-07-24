@@ -27,6 +27,12 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await super.setUp()
     }
 
+    override func tearDown() async throws {
+        HTTPStubs.removeAllStubs()
+
+        try await super.tearDown()
+    }
+
     func testGetCustomerInfo() async throws {
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.all).to(beEmpty())
@@ -224,8 +230,6 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testDoesntRetryUnsupportedURLPaths() async throws {
-        defer { HTTPStubs.removeAllStubs() }
-
         // Ensure that the each time POST /receipt is called, we mock a 429 error
         var stubbedRequestCount = 0
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
