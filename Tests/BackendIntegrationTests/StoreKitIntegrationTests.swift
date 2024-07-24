@@ -935,6 +935,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseGrantsEntitlementsThroughOnRetryAfter429() async throws {
+        defer { HTTPStubs.removeAllStubs() }
 
         // Ensure that the first two times POST /receipt is called, we mock a 429 error
         // and then proceed normally with the backend on subsequent requests
@@ -966,6 +967,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
+        defer { HTTPStubs.removeAllStubs() }
 
         // Ensure that the each time POST /receipt is called, we mock a 429 error
         var stubbedRequestCount = 0
@@ -987,6 +989,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
+        defer { HTTPStubs.removeAllStubs() }
 
         // Ensure that the each time POST /receipt is called, we mock a 429 error with the 
         // Is-Retryable header as "false"
