@@ -34,6 +34,7 @@ class HTTPClient {
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
+    private let retriablePaths: Set<String>
     private let operationDispatcher: OperationDispatcher
 
     private let retryBackoffIntervals: [TimeInterval] = [
@@ -49,6 +50,7 @@ class HTTPClient {
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
+         retriablePaths: Set<String> = Set(["/v1/receipts"]),
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher) {
@@ -65,6 +67,7 @@ class HTTPClient {
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
+        self.retriablePaths = retriablePaths
         self.retriableStatusCodes = retriableStatusCodes
         self.timeout = requestTimeout
         self.apiKey = apiKey
@@ -668,15 +671,19 @@ extension HTTPClient {
 
     internal func isRetryable(_ urlResponse: HTTPURLResponse) -> Bool {
         let isStatusCodeRetryable = self.retriableStatusCodes.contains(urlResponse.httpStatusCode)
-        let isRetryableString = urlResponse.value(forHTTPHeaderField: ResponseHeader.isRetryable.rawValue)
-        let isRetryable: Bool
-        if let isRetryableString {
-            isRetryable = Bool(isRetryableString.lowercased()) ?? true
-        } else {
-            isRetryable = true
+        let doesServerAllowRetryString = urlResponse.value(forHTTPHeaderField: ResponseHeader.isRetryable.rawValue)
+        var doesServerAllowRetry: Bool = true
+        if let doesServerAllowRetryString = doesServerAllowRetryString {
+            doesServerAllowRetry = Bool(doesServerAllowRetryString.lowercased()) ?? true
         }
 
-        return isStatusCodeRetryable && isRetryable
+        let path = urlResponse.url?.relativePath
+        var isPathRetryable = false
+        if let path = path {
+            isPathRetryable = self.retriablePaths.contains(path)
+        }
+
+        return isStatusCodeRetryable && isPathRetryable && doesServerAllowRetry
     }
 
     internal func calculateRetryBackoffTime(
