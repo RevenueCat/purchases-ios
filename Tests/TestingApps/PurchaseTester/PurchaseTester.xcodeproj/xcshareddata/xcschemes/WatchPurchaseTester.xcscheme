@@ -54,7 +54,7 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
-      notificationPayloadFile = "WatchPurchaseTester Extension/PushNotificationPayload.apns">
+      notificationPayloadFile = "Tests/TestingApps/PurchaseTester/WatchPurchaseTester Extension/PushNotificationPayload.apns">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
