@@ -40,7 +40,8 @@ class Backend {
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
-                                    requestTimeout: httpClientTimeout)
+                                    requestTimeout: httpClientTimeout,
+                                    operationDispatcher: OperationDispatcher.default)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
