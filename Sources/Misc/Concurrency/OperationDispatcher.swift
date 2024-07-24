@@ -18,11 +18,12 @@ import Foundation
 ///
 /// These delays prevent DDOS if a notification leads to many users opening an app at the same time,
 /// by spreading asynchronous operations over time.
-enum Delay {
+enum JitterableDelay: Equatable {
 
     case none
     case `default`
     case long
+    case timeInterval(TimeInterval)
 
     static func `default`(forBackgroundedApp inBackground: Bool) -> Self {
         return inBackground ? .default : .none
@@ -56,7 +57,7 @@ class OperationDispatcher {
         Self.dispatchOnMainActor(block)
     }
 
-    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () -> Void) {
+    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none, block: @escaping @Sendable () -> Void) {
         if delay.hasDelay {
             self.workerQueue.asyncAfter(deadline: .now() + delay.random(), execute: block)
         } else {
@@ -64,8 +65,8 @@ class OperationDispatcher {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () async -> Void) {
+    func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
+                                block: @escaping @Sendable () async -> Void) {
         Task.detached(priority: .background) {
             if delay.hasDelay {
                 try? await Task.sleep(nanoseconds: DispatchTimeInterval(delay.random()).nanoseconds)
@@ -75,19 +76,17 @@ class OperationDispatcher {
         }
     }
 
+    func dispatchOnWorkerThread(after timeInterval: TimeInterval, block: @escaping @Sendable () -> Void) {
+        self.workerQueue.asyncAfter(deadline: .now() + timeInterval, execute: block)
+    }
+
 }
 
 extension OperationDispatcher {
 
     static func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
-        if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
-            Task<Void, Never> { @MainActor in
-                block()
-            }
-        } else {
-            DispatchQueue.main.async { @Sendable in
-                block()
-            }
+        Task<Void, Never> { @MainActor in
+            block()
         }
     }
 
@@ -96,7 +95,7 @@ extension OperationDispatcher {
 // MARK: -
 
 /// Visible for testing
-extension Delay {
+extension JitterableDelay {
 
     var hasDelay: Bool {
         return self.maximum > 0
@@ -108,13 +107,15 @@ extension Delay {
 
 }
 
-private extension Delay {
+private extension JitterableDelay {
 
     var minimum: TimeInterval {
         switch self {
         case .none: return 0
         case .`default`: return 0
         case .long: return Self.maxJitter
+        case .timeInterval(let timeInterval):
+            return max(timeInterval, 0)
         }
     }
 
@@ -123,6 +124,8 @@ private extension Delay {
         case .none: return 0
         case .`default`: return Self.maxJitter
         case .long: return Self.maxJitter * 2
+        case .timeInterval(let timeInterval):
+            return max(timeInterval, 0)
         }
     }
 

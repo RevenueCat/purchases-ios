@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 9/20/22.
 
 import Foundation
+import StoreKit
 
 // swiftlint:disable file_length
 
@@ -31,13 +32,13 @@ public protocol PurchasesType: AnyObject {
      */
     var isAnonymous: Bool { get }
 
-    /** Whether transactions should be finished automatically. `true` by default.
-     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
-     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
-     * will turn up every time the app is opened.
+    /** Controls if purchases should be made and transactions finished automatically by RevenueCat.
+     * ``PurchasesAreCompletedBy/revenueCat`` by default.
+     * - Warning: Setting this value to ``PurchasesAreCompletedBy/myApp``
+     * will prevent the SDK from making purchases and finishing transactions.
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
-    var finishTransactions: Bool { get set }
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }
 
     /**
      * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and
@@ -99,7 +100,6 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/isAnonymous``
      * - ``Purchases/appUserID``
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool)
 
     /**
@@ -128,7 +128,6 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/isAnonymous``
      * - ``Purchases/appUserID``
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo
 
     /**
@@ -154,7 +153,6 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/customerInfo(fetchPolicy:)``
      * - ``Purchases/customerInfoStream``
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo() async throws -> CustomerInfo
 
     /**
@@ -165,7 +163,6 @@ public protocol PurchasesType: AnyObject {
      * #### Related Symbols
      * - ``Purchases/customerInfoStream``
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo
 
     /**
@@ -208,7 +205,6 @@ public protocol PurchasesType: AnyObject {
      * #### Related Articles
      * -  [Displaying Products](https://docs.revenuecat.com/docs/displaying-products)
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings() async throws -> Offerings
 
     /**
@@ -261,7 +257,6 @@ public protocol PurchasesType: AnyObject {
      * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
      * to be able to deploy new IAPs without an app update.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func products(_ productIdentifiers: [String]) async -> [StoreProduct]
 
     /**
@@ -311,7 +306,6 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct) async throws -> PurchaseResultData
 
     /**
@@ -355,7 +349,6 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -409,7 +402,6 @@ public protocol PurchasesType: AnyObject {
      * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
      * to confirm that they are active.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func restorePurchases() async throws -> CustomerInfo
 
     /**
@@ -442,7 +434,6 @@ public protocol PurchasesType: AnyObject {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo
 
     /**
@@ -473,7 +464,6 @@ public protocol PurchasesType: AnyObject {
      * - ``StoreProduct/eligiblePromotionalOffers()``
      * - ``Purchases/promotionalOffer(forProductDiscount:product:)``
      */
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
                   promotionalOffer: PromotionalOffer,
@@ -500,7 +490,6 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
 
     /**
@@ -520,7 +509,6 @@ public protocol PurchasesType: AnyObject {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchasePackage:withPromotionalOffer:completion:)
     func purchase(package: Package,
                   promotionalOffer: PromotionalOffer,
@@ -543,7 +531,6 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
 
     /**
@@ -594,7 +581,6 @@ public protocol PurchasesType: AnyObject {
      * ### Related symbols
      * - ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
      */
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility]
 
     /**
@@ -646,7 +632,6 @@ public protocol PurchasesType: AnyObject {
      * ### Related symbols
      * - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:)``
      */
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus
 
     /**
@@ -662,7 +647,6 @@ public protocol PurchasesType: AnyObject {
      * - Parameter completion: A completion block that is called when the ``PromotionalOffer`` is returned.
      * If it was not successful, there will be an `Error`.
      */
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
@@ -677,7 +661,6 @@ public protocol PurchasesType: AnyObject {
      * - Parameter discount: The ``StoreProductDiscount`` to apply to the product.
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                           product: StoreProduct) async throws -> PromotionalOffer
 
@@ -690,7 +673,6 @@ public protocol PurchasesType: AnyObject {
     /// - ``Purchases/promotionalOffer(forProductDiscount:product:)``
     /// - ``StoreProduct/eligiblePromotionalOffers()``
     /// - ``StoreProduct/discounts``
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer]
 
     #endif
@@ -930,6 +912,15 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
+    /** Whether transactions should be finished automatically. `true` by default.
+     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
+     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
+     * will turn up every time the app is opened.
+     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
+     */
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
+    var finishTransactions: Bool { get set }
+
 }
 
 /// Interface for ``Purchases``'s `Swift`-only methods.
@@ -953,7 +944,6 @@ public protocol PurchasesSwiftType: AnyObject {
     /// - Note: An alternative way of getting ``CustomerInfo`` updates
     /// is using ``PurchasesDelegate/purchases(_:receivedUpdated:)``.
     /// - Important: this method is not thread-safe.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> { get }
 
     #if os(iOS) || VISION_OS
@@ -1036,6 +1026,57 @@ public protocol PurchasesSwiftType: AnyObject {
 
     #endif
 
+    /**
+     * Use this method only if you already have your own IAP implementation using StoreKit 2 and want to use
+     * RevenueCat's backend. If you are using StoreKit 1 for your implementation, you do not need this method.
+     *
+     * You only need to use this method with *new* purchases. Subscription updates are observed automatically.
+     *
+     * #### Example:
+     *
+     * ```swift
+     * // Fetch and purchase the product
+     * let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
+     * guard let product = product else { return }
+     * let result = try await product.purchase()
+     * // Let RevenueCat handle the transaction result
+     * _ = try await Purchases.shared.recordPurchase(result)
+     * // Handle the result and finish the transaction
+     * switch result {
+     * case .success(let verification):
+     *     switch verification {
+     *     case .unverified(_, _):
+     *         break
+     *     case .verified(let transaction):
+     *         // If the purchase was successful and verified, finish the transaction
+     *         await transaction.finish()
+     *     }
+     * case .userCancelled:
+     *     break
+     * case .pending:
+     *     break
+     * @unknown default:
+     *     break
+     * }
+     * ```
+     *
+     * - Warning: You need to finish the transaction yourself after calling this method.
+     *
+     * - Parameter purchaseResult: The `StoreKit.Product.PurchaseResult` of the product that was just purchased.
+     *
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while handling the purchase.
+     *
+     * - Returns: A ``StoreTransaction`` if there was a transacton found and handled for the provided product ID.
+     *
+     * - Important: This should only be used if you are processing transactions directly within your app, configuring
+     * the SDK by passing ``PurchasesAreCompletedBy/myApp`` to `purchasesAreCompletedBy`: in
+     * ``Configuration/Builder/with(purchasesAreCompletedBy:storeKitVersion:)``
+     */
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func recordPurchase(
+        _ purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction?
+
 }
 
 // MARK: -
@@ -1045,10 +1086,8 @@ internal protocol InternalPurchasesType: AnyObject {
 
     /// Performs an unauthenticated request to the API to verify connectivity.
     /// - Throws: `PublicError` if request failed.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func healthRequest(signatureVerification: Bool) async throws
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

@@ -22,6 +22,7 @@ enum PaywallTemplate: String {
     case template3 = "3"
     case template4 = "4"
     case template5 = "5"
+    case template7 = "7"
 
 }
 

@@ -95,34 +95,6 @@ final class AttributionPoster {
         }
     }
 
-    @available(*, deprecated)
-    func postAppleSearchAdsAttributionIfNeeded() {
-        guard attributionFetcher.isAuthorizedToPostSearchAds else {
-            return
-        }
-
-        guard self.latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds) == nil else {
-            return
-        }
-
-        attributionFetcher.afficheClientAttributionDetails { attributionDetails, error in
-            guard let attributionDetails = attributionDetails,
-                  error == nil else {
-                return
-            }
-
-            let attributionDetailsValues = attributionDetails.values
-            let firstAttributionDict = attributionDetailsValues.first as? [String: NSObject]
-
-            guard let hasIad = firstAttributionDict?["iad-attribution"] as? NSNumber,
-                  hasIad.boolValue == true else {
-                return
-            }
-
-            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
-        }
-    }
-
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, tvOS 14.3, watchOS 6.2, macOS 11.1, macCatalyst 14.3, *)
     @available(tvOS, unavailable)
@@ -138,7 +110,6 @@ final class AttributionPoster {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var adServicesTokenToPostIfNeeded: String? {
         get async {
             #if os(tvOS) || os(watchOS)

@@ -36,7 +36,7 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         // Unfinished transactions before beginning the test might lead to false positives / negatives
         await self.verifyNoUnfinishedTransactions()
@@ -51,7 +51,7 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
 class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
 
     func testStopsListeningToTransactions() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         var handle: Task<Void, Never>?
 
@@ -71,7 +71,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
     // MARK: -
 
     func testVerifiedTransactionReturnsOriginalTransaction() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let fakeTransaction = try await self.simulateAnyPurchase()
 
@@ -83,7 +83,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
     }
 
     func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let (isCancelled, transaction) = try await self.listener.handle(purchaseResult: .userCancelled)
         expect(isCancelled) == true
@@ -91,7 +91,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
     }
 
     func testPendingTransactionsReturnPaymentPendingError() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
         // because neither of them accept `async`
@@ -104,7 +104,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
     }
 
     func testUnverifiedTransactionsReturnStoreProblemError() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let transaction = try await self.simulateAnyPurchase()
         let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
@@ -217,11 +217,16 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func testNotifiesDelegateForRenewals() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        setShortestTestSessionTimeRate(self.testSession)
+
         try await self.simulateAnyPurchase(finishTransaction: true)
 
         await self.listener.listenForTransactions()
 
-        try? self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
+        // swiftlint:disable:next force_try
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.waitForTransactionUpdated()
 

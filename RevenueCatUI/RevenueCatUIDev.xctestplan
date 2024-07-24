@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "F153BBC4-4E6D-4941-BBAF-962BE3A88B9C",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "887A63202C1D174200E1A461",
+        "name" : "RevenueCatUITestsDev"
+      }
+    }
+  ],
+  "version" : 1
+}

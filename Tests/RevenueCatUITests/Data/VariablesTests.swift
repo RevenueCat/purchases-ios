@@ -294,6 +294,7 @@ private extension VariablesTests {
 private struct MockVariableProvider: VariableDataProvider {
 
     var applicationName: String = ""
+    var packageIdentifier: String = ""
     var localizedPrice: String = ""
     var localizedPricePerWeek: String = ""
     var localizedPricePerMonth: String = ""

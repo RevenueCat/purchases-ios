@@ -12,12 +12,17 @@
 
 default_platform(:ios)
 
+def current_version_number
+  File.read("#{File.dirname(__FILE__)}/../.version").strip
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
-  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']
+  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
+  './scripts/docs/v5_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v5_api_migration_guide']
 }
 PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
 files_with_version_number_without_prerelease_modifiers = {
@@ -39,7 +44,6 @@ changelog_path = './CHANGELOG.md'
 platform :ios do
   before_all do
     setup_circle_ci
-    update_fastlane
 
     if ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
       app_store_connect_api_key # This will create a shared client that all the tools know how to use and will look for
@@ -90,7 +94,7 @@ platform :ios do
       repo_name: repo_name,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: changelog_latest_path,
-      upload_assets: ['RevenueCat.framework.zip', 'RevenueCat.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip']
     )
   end
 
@@ -181,6 +185,13 @@ platform :ios do
 
   desc "Runs all the watchOS tests"
   lane :test_watchos do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    if generate_snapshots
+       test_plan = "CI-RevenueCat-Snapshots"
+    else
+      test_plan = "CI-RevenueCat"
+    end
+
     scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 8 (41mm)",
@@ -191,9 +202,11 @@ platform :ios do
       number_of_retries: 5,
       result_bundle: true,
       # Host app isn't available on watchOS
-      testplan: "CI-RevenueCat",
+      testplan: test_plan,
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/watchos"
+      output_directory: "fastlane/test_output/xctest/watchos",
+      number_of_retries: generate_snapshots ? 0 : 5,
+      fail_build: !generate_snapshots
     )
   end
 
@@ -231,14 +244,12 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
   end
 
   desc "build tvOS, watchOS, macOS"
   lane :build_tv_watch_mac do |options|
-    check_pods
     load_spm_dependencies
     build_release(platform: 'watchOS')
     build_release(platform: 'tvOS')
@@ -247,27 +258,12 @@ platform :ios do
 
   desc "macOS build"
   lane :build_mac do |options|
-    check_pods
     load_spm_dependencies
     build_release(platform: 'macOS')
   end
 
   desc "visionOS build"
   lane :build_visionos do |options|
-    pod_lib_lint(
-      verbose: true,
-      podspec: 'RevenueCat.podspec',
-      platforms: "visionos",
-      fail_fast: true
-    )
-    pod_lib_lint(
-      verbose: true,
-      podspec: 'RevenueCatUI.podspec',
-      include_podspecs: 'RevenueCat.podspec',
-      platforms: "visionos",
-      fail_fast: true
-    )
-
     build_release(
       platform: 'visionOS',
       scheme: 'RevenueCat'
@@ -276,11 +272,6 @@ platform :ios do
       platform: 'visionOS',
       scheme: 'RevenueCatUI'
     )
-  end
-
-  desc "Run the carthage archive steps to prepare for carthage distribution"
-  lane :carthage_archive do |options|
-    carthage_archive
   end
 
   desc "archive"
@@ -383,10 +374,9 @@ platform :ios do
     )
   end
 
-  desc "Create Carthage archive, export XCFramework, and create GitHub release"
+  desc "Create XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
@@ -582,16 +572,20 @@ platform :ios do
         'maccatalyst',
         'tvOS',
         'watchOS',
-        # Fixme: add xrOS
+        'visionOS'
       ]
 
     create_xcframework(
       destinations: platforms,
       scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
-      include_debug_symbols: true
+      include_debug_symbols: true,
+      # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
+      # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
+      override_xcargs: true
     )
 
     # sh runs from the Fastfile's location, but other commands run from the project root.
@@ -609,20 +603,77 @@ platform :ios do
 
   end
 
+  private_lane :test_artifact_path do
+    File.absolute_path('./test_output/xctest/ios')
+  end
+
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
+    fail_build = options[:fail_build]
+
     fetch_snapshots
     replace_api_key_integration_tests
-    scan(
-      scheme: "BackendIntegrationTests",
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      testplan: options[:test_plan],
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
+
+    begin
+      scan(
+        scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        testplan: options[:test_plan],
+        configuration: 'Debug',
+        output_directory: test_artifact_path,
+
+        fail_build: !!fail_build
+      )
+    rescue => ex
+        UI.error("Tests failed: #{ex}")
+    end
+
+    retry_scan_save_failed_tests(
+      junit_report_path: File.join(test_artifact_path, 'report.junit'),
+      copy_path: File.join(test_artifact_path, 'report.junit.original')
     )
+  end
+
+  private_lane :failed_tests_path do
+    File.join(test_artifact_path, 'failed_tests.txt')
+  end
+
+  lane :retry_failed_tests do |options|
+    fail_build = options[:fail_build]
+    retry_attempt = options[:retry_attempt]
+    
+    failed_tests = File.read(failed_tests_path).split("\n")
+    
+    if failed_tests.empty?
+      UI.message('No failed tests to retry')
+    else
+      report_dir = "./test_output_retry_#{retry_attempt}/xctest/ios"
+      report_path = File.absolute_path(File.join(report_dir, "report.junit"))
+
+      scan(
+        scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        configuration: 'Debug',
+        output_directory: File.join('fastlane', report_dir),
+
+        only_testing: failed_tests,
+        fail_build: !!fail_build
+      )
+
+      retry_scan_save_failed_tests(
+        junit_report_path: report_path,
+        copy_path: File.join(test_artifact_path, "report.junit.retry.#{retry_attempt}"),
+        merge_path: File.join(test_artifact_path, "report.junit")
+      )
+    end
   end
 
   desc "Run LoadShedder tests"
@@ -631,6 +682,7 @@ platform :ios do
     scan(
       project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
       scheme: "v3LoadShedderIntegration",
+      ensure_devices_found: true,
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       output_style: 'raw',
@@ -728,74 +780,89 @@ platform :ios do
     end
   end
 
-  desc "Generate docs"
-  lane :generate_docs do
-    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+  desc "Generate docs without publishing"
+  lane :build_docs do
+    build_docs_shared
+  end
+
+  desc "Generate & publish docs"
+  lane :build_and_publish_docs do
+    docs_generation_folder = build_docs_shared
 
     version_number = current_version_number
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
-    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
 
     UI.user_error!("Missing environment variable: DOCS_REPO_BASE_URL") unless docs_repo_base_url
     UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
 
     docs_repo_url = File.join(docs_repo_base_url, docs_repo_name)
-    hosting_base_path = File.join(docs_repo_name, version_number)
 
-    Dir.mktmpdir do |docs_generation_folder|
-      # swift package must be run from the dir that contains the Package.swift
-      # output is generated in docs_generation_folder
-      Dir.chdir("..") do
-        build_symbols_for_docs
-
-        sh("swift",
-           "package",
-           "--disable-sandbox",
-           "--allow-writing-to-directory",
-           docs_generation_folder,
-           "generate-documentation",
-           "--target",
-           "RevenueCat",
-           "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
-           "--platform",
-           "name=iOS,version=#{ios_version}",
-           "--output-path",
-           docs_generation_folder,
-           "--hosting-base-path",
-           hosting_base_path,
-           "--transform-for-static-hosting",
-           "--enable-inherited-docs",
-           "--additional-symbol-graph-dir", ".build")
-
-        docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
-        docs_migration_guide_path = File.join(Dir.pwd, "scripts/docs/v4_api_migration_guide.html")
-        # clone docs repo
-        Dir.mktmpdir do |docs_repo_clone_dir|
-          Dir.chdir(docs_repo_clone_dir) do
-            sh("git", "clone", docs_repo_url)
-            Dir.chdir(docs_repo_name) do
-              # copy docs generated in the previous step into the docs folder
-              # and push the changes
-              docs_destination_folder = "docs/#{version_number}"
-              index_destination_path = "docs/index.html"
-              migration_guide_destination_path = "docs/v4_api_migration_guide.html"
-              FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
-              FileUtils.cp docs_index_path, index_destination_path
-              FileUtils.cp docs_migration_guide_path, migration_guide_destination_path
-
-              # using sh instead of fastlane commands because fastlane would run
-              # from the repo root
-              sh("git", "add", docs_destination_folder)
-              sh("git", "add", index_destination_path)
-              sh("git", "add", migration_guide_destination_path)
-              sh("git", "commit", "-m", "Update documentation for #{version_number}")
-              sh("git", "push")
-            end
+    docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
+    # clone docs repo
+    Dir.mktmpdir do |docs_repo_clone_dir|
+      Dir.chdir(docs_repo_clone_dir) do
+        sh("git", "clone", docs_repo_url)
+        Dir.chdir(docs_repo_name) do
+          # copy docs generated in the previous step into the docs folder
+          # and push the changes
+          docs_destination_folder = "docs/#{version_number}"
+          FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
+          docs_files.each do |file|
+            FileUtils.cp file, "docs/"
           end
+
+          # using sh instead of fastlane commands because fastlane would run
+          # from the repo root
+          sh("git", "add", docs_destination_folder)
+          sh("git", "add", "docs/*.html")
+          sh("git", "commit", "-m", "Update documentation for #{version_number}")
+          sh("git", "push")
         end
       end
     end
+  end
+
+  desc "Builds the docs"
+  private_lane :build_docs_shared do
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+
+    version_number = current_version_number
+    docs_repo_name = ENV["DOCS_REPO_NAME"]
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
+
+    hosting_base_path = File.join(docs_repo_name, version_number)
+
+    docs_generation_folder = Dir.mktmpdir
+
+    # swift package must be run from the dir that contains the Package.swift
+    # output is generated in docs_generation_folder
+    Dir.chdir("..") do
+      build_symbols_for_docs
+
+      sh("swift",
+          "package",
+          "--disable-sandbox",
+          "--allow-writing-to-directory",
+          docs_generation_folder,
+          "generate-documentation",
+          "--target",
+          "RevenueCat",
+          "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
+          "--platform",
+          "name=iOS,version=#{ios_version}",
+          "--output-path",
+          docs_generation_folder,
+          "--hosting-base-path",
+          hosting_base_path,
+          "--transform-for-static-hosting",
+          "--enable-inherited-docs",
+          "--additional-symbol-graph-dir", ".build")
+    end
+
+    docs_generation_folder # returning path from lane
   end
 
   desc "Build and deploy PurchaseTesterSwiftUI"
@@ -874,6 +941,16 @@ platform :ios do
 
     UI.important("Updating snapshot commit to #{new_hash}")
     update_snapshots_commit(new_hash)
+  end
+
+  lane :deploy_to_spm do
+    source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{repo_name}"
+    destination_repo = source_repo.sub(/\.git\z/, "-spm.git")
+  
+    git_clone_and_push(
+      source_repo: source_repo,
+      destination_repo: destination_repo
+    )
   end
 
   desc "Create or delete sandbox testers"
@@ -997,51 +1074,26 @@ def check_no_github_release_exists(version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
 end
 
-def carthage_archive
-  load_spm_dependencies
-
-  Dir.chdir("..") do
-    # As of Carthage 0.38.0, we still can't archive xcframeworks directly.
-    # there are also some issues which prevent us from archiving frameworks directly, since
-    # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
-    # We use this script as a workaround until this is fixed.
-    # https://github.com/Carthage/Carthage/releases/0.38.0
-    sh("./scripts/carthage.sh", "build", "--no-skip-current")
-    sh("./scripts/carthage.sh", "archive", "RevenueCat")
-  end
-end
-
 lane :check_pods do
-  # Note: see also `build_visionos`
-  # Fix-me: add `visionOS` when we start building with Xcode 15.1
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
 end
 
 lane :load_spm_dependencies do
-  # Carthage has a hardcoded timeout of 60 seconds when listing schemes.
-  # Because of CircleCI's network issues, that can sometimes fail.
-  # This preemptively runs this command to make sure the SPM dependencies are fetched
-  # without a timeout.
-
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
   end
-end
-
-def current_version_number
-  File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
 
 # Snapshots

@@ -70,8 +70,10 @@ extension PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil
+        purchaseHandler: PurchaseHandler = PurchaseHandler.default()
     ) {
+        let handler = purchaseHandler
+
         self.init(
             content: .optionalOffering(offering),
             customerInfo: customerInfo,
@@ -79,7 +81,7 @@ extension PaywallViewConfiguration {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: handler
         )
     }
 

@@ -1,0 +1,191 @@
+{
+  "template_name": "7",
+  "config": {
+    "tiers": [
+      {
+        "id": "standard",
+        "packages": ["standard_annual", "standard_monthly"],
+        "default_package": "standard_annual"
+      },
+      {
+        "id": "premium",
+        "packages": ["premium_annual", "premium_monthly"],
+        "default_package": "premium_monthly"
+      }
+    ],
+    "display_restore_purchases": true,
+    "tos_url": "https://revenuecat.com/tos",
+    "privacy_url": "https://revenuecat.com/privacy",
+    "colors": {
+      "light": {
+        "accent1": "#f25a5a",
+        "accent2": "#f25a5a",
+        "accent3": "#DFDFDF",
+        "background": "#FFFFFF",
+        "call_to_action_background": "#f25a5a",
+        "call_to_action_foreground": "#FFFFFF",
+        "text1": "#000000",
+        "text2": "#FFFFFF",
+        "text3": "#000000"
+      },
+      "dark": {
+        "accent1": "#f25a5a",
+        "accent2": "#f25a5a",
+        "accent3": "#606463",
+        "background": "#000000",
+        "call_to_action_background": "#f25a5a",
+        "call_to_action_foreground": "#FFFFFF",
+        "text1": "#FFFFFF",
+        "text2": "#000000",
+        "text3": "#FFFFFF"
+      }
+    },
+    "colors_by_tier": {
+      "standard": {
+        "light": {
+          "accent1": "#f25a5a",
+          "accent2": "#f25a5a",
+          "accent3": "#DFDFDF",
+          "background": "#FFFFFF",
+          "call_to_action_background": "#00FF00",
+          "call_to_action_foreground": "#FFFFFF",
+          "text1": "#000000",
+          "text2": "#FFFFFF",
+          "text3": "#000000"
+        },
+        "dark": {
+          "accent1": "#f25a5a",
+          "accent2": "#f25a5a",
+          "accent3": "#606463",
+          "background": "#000000",
+          "call_to_action_background": "#f25a5a",
+          "call_to_action_foreground": "#0000FF",
+          "text1": "#FFFFFF",
+          "text2": "#000000",
+          "text3": "#FFFFFF"
+        }
+      },
+      "premium": {
+        "light": {
+          "accent1": "#FF0000",
+          "accent2": "#f25a5a",
+          "accent3": "#DFDFDF",
+          "background": "#FFFFFF",
+          "call_to_action_background": "#f25a5a",
+          "call_to_action_foreground": "#FFFFFF",
+          "text1": "#000000",
+          "text2": "#FFFFFF",
+          "text3": "#000000"
+        },
+        "dark": {
+          "accent1": "#f25a5a",
+          "accent2": "#00FFFF",
+          "accent3": "#606463",
+          "background": "#000000",
+          "call_to_action_background": "#f25a5a",
+          "call_to_action_foreground": "#FFFFFF",
+          "text1": "#FFFFFF",
+          "text2": "#000000",
+          "text3": "#FFFFFF"
+        }
+      }
+    },
+    "images": {},
+    "images_by_tier": {
+      "standard": {
+        "header": "954459_1703109702.png"
+      },
+      "premium": {
+        "header": "header.heic"
+      }
+    }
+  },
+  "localized_strings_by_tier": {
+    "en_US": {
+      "standard": {
+        "tier_name": "Standard",
+        "title": "Get started with our Standard plan",
+        "call_to_action": "{{ price_per_period_full }}",
+        "call_to_action_with_intro_offer": "Start your {{ sub_offer_duration }} free trial",
+        "features": [
+          {
+            "title": "Access to 30 cinematic LUTs",
+            "icon_id": "tick"
+          },
+          {
+            "title": "Pro fonts and transition effects",
+            "icon_id": "tick"
+          },
+          {
+            "title": "10+ templates",
+            "icon_id": "tick"
+          }
+        ]
+      },
+      "premium": {
+        "tier_name": "Premium",
+        "title": "Master the art of video editing",
+        "call_to_action": "{{ price_per_period_full }}",
+        "call_to_action_with_intro_offer": "Start your {{ sub_offer_duration }} free trial",
+        "features": [
+          {
+            "title": "Access to all 150 of our cinematic LUTs",
+            "icon_id": "tick"
+          },
+          {
+            "title": "Custom design tools and transition effects",
+            "icon_id": "tick"
+          },
+          {
+            "title": "100+ exclusive templates",
+            "icon_id": "tick"
+          }
+        ]
+      }
+    },
+    "es_ES": {
+      "standard": {
+        "tier_name": "Estándar",
+        "title": "Comienza con nuestro plan Estándar",
+        "call_to_action": "{{ price_per_period_full }}",
+        "call_to_action_with_intro_offer": "Inicia tu prueba de {{ sub_offer_duration }}",
+        "features": [
+          {
+            "title": "Acceso a 30 LUTs cinematográficos",
+            "icon_id": "tick"
+          },
+          {
+            "title": "Fuentes Pro y efectos de transición",
+            "icon_id": "tick"
+          },
+          {
+            "title": "Más de 10 plantillas",
+            "icon_id": "tick"
+          }
+        ]
+      },
+      "premium": {
+        "tier_name": "Premium",
+        "title": "Domina el arte de la edición de video",
+        "call_to_action": "{{ price_per_period_full }}",
+        "call_to_action_with_intro_offer": "Inicia tu prueba de {{ sub_offer_duration }}",
+        "features": [
+          {
+            "title": "Acceso a todos nuestros 150 LUTs cinematográficos",
+            "icon_id": "tick"
+          },
+          {
+            "title": "Herramientas de diseño personalizado y efectos de transición",
+            "icon_id": "tick"
+          },
+          {
+            "title": "Más de 100 plantillas exclusivas",
+            "icon_id": "tick"
+          }
+        ]
+      }
+    }
+  },
+  "asset_base_url": "https://rc-paywalls.s3.amazonaws.com",
+  "revision": 7
+}

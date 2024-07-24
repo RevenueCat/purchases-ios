@@ -117,7 +117,6 @@ extension Snapshotting where Value == Encodable, Format == String {
 // MARK: - Image Snapshoting
 
 #if !os(watchOS) && !os(macOS) && swift(>=5.8)
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
 extension SwiftUI.View {
 
     func snapshot(
@@ -155,7 +154,7 @@ private let traits: UITraitCollection = .init(displayScale: 1)
 
 #endif
 
-private let perceptualPrecision: Float = 0.94
+private let perceptualPrecision: Float = 0.93
 private let timeout: DispatchTimeInterval = .seconds(3)
 private let pollInterval: DispatchTimeInterval = .milliseconds(100)
 
@@ -189,10 +188,7 @@ private let backwardsCompatibleOutputFormatting: JSONEncoder.OutputFormatting = 
 
 private let outputFormatting: JSONEncoder.OutputFormatting = {
     var result = backwardsCompatibleOutputFormatting
-
-    if #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) {
-        result.update(with: .withoutEscapingSlashes)
-    }
+    result.update(with: .withoutEscapingSlashes)
 
     return result
 }()

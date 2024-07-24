@@ -33,7 +33,6 @@ extension UserInterfaceIdiom {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension EnvironmentValues {
 
     var userInterfaceIdiom: UserInterfaceIdiom {
@@ -52,7 +51,6 @@ extension EnvironmentValues {
 
 // MARK: -
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private struct UserInterfaceIdiomEnvironmentKey: EnvironmentKey {
 
     static var defaultValue: UserInterfaceIdiom = .default
@@ -60,7 +58,6 @@ private struct UserInterfaceIdiomEnvironmentKey: EnvironmentKey {
 }
 
 #if DEBUG
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private struct RunningSnapshotsEnvironmentKey: EnvironmentKey {
 
     static var defaultValue: Bool = false

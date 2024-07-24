@@ -16,6 +16,14 @@ lane :installation_tests do
     # doesn't try to build the other installation tests
     sh "carthage", "update", "--no-build"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/InstallationTests/"
+
+    # Carthage builds all schemes including ones we don't need, so let's nuke them before proceeding
+    schemes_directory = "Carthage/Checkouts/purchases-root/RevenueCat.xcodeproj/xcshareddata/xcschemes"
+    Dir.glob("#{schemes_directory}/*.xcscheme").each do |file_path|
+      next if File.basename(file_path) == "RevenueCat.xcscheme"
+      sh "rm", "-f", file_path
+    end
+
     sh "carthage", "build", "--use-xcframeworks", "--verbose"
   end
 end

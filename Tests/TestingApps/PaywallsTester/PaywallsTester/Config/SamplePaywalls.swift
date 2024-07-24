@@ -11,6 +11,8 @@ import Foundation
 import RevenueCat
 import RevenueCatUI
 
+import UIKit
+
 final class SamplePaywallLoader {
 
     private let packages: [Package]
@@ -19,6 +21,7 @@ final class SamplePaywallLoader {
         self.packages = [
             Self.weeklyPackage,
             Self.monthlyPackage,
+            Self.threeMonthPackage,
             Self.sixMonthPackage,
             Self.annualPackage,
             Self.lifetimePackage
@@ -69,6 +72,8 @@ final class SamplePaywallLoader {
             return Self.template4()
         case .template5:
             return Self.template5()
+        case .template7:
+            return Self.template7()
         }
     }
 
@@ -79,7 +84,7 @@ final class SamplePaywallLoader {
 private extension SamplePaywallLoader {
 
     static let weeklyPackage = Package(
-        identifier: "weekly",
+        identifier: Package.string(from: .weekly)!,
         packageType: .weekly,
         storeProduct: weeklyProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
@@ -94,6 +99,12 @@ private extension SamplePaywallLoader {
         identifier: Package.string(from: .sixMonth)!,
         packageType: .sixMonth,
         storeProduct: sixMonthProduct.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
+    static let threeMonthPackage = Package(
+        identifier: Package.string(from: .threeMonth)!,
+        packageType: .threeMonth,
+        storeProduct: threeMonthProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
     )
     static let annualPackage = Package(
@@ -138,8 +149,27 @@ private extension SamplePaywallLoader {
             type: .introductory
         )
     )
+    static let threeMonthProduct = TestStoreProduct(
+        localizedTitle: "Three Months",
+        price: 16.99,
+        localizedPriceString: "$16.99",
+        productIdentifier: "com.revenuecat.product_9",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO 3 months",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 3, unit: .month),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 7, unit: .day),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+    )
     static let sixMonthProduct = TestStoreProduct(
-        localizedTitle: "Monthly",
+        localizedTitle: "Six Months",
         price: 34.99,
         localizedPriceString: "$34.99",
         productIdentifier: "com.revenuecat.product_4",
@@ -402,6 +432,196 @@ private extension SamplePaywallLoader {
                     .init(title: "Unlimited receipt collections", iconID: "bookmark")
                 ]
             ),
+            assetBaseURL: Self.paywallAssetBaseURL
+        )
+    }
+
+    static func template7() -> PaywallData {
+        return .init(
+            templateName: PaywallTemplate.template7.rawValue,
+            config: .init(
+                images: .init(),
+                imagesByTier: [
+                    "basic": .init(
+                        header: "954459_1703109702.png"
+                    ),
+                    "standard": .init(
+                        header: "954459_1692992845.png"
+                    ),
+                    "premium": .init(
+                        header: "954459_1701267532.jpeg"
+                    )
+                ],
+                colors: .init(
+                    light: .init(
+                        background: "#ffffff",
+                        text1: "#000000",
+                        text2: "#ffffff",
+                        text3: "#30A0F8AA",
+                        callToActionForeground: "#ffffff",
+                        accent2: "#7676801F"
+                    ),
+                    dark: .init(
+                        background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                        text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
+                        text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
+                        text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                        callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
+                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
+                    )
+                ),
+                colorsByTier: [
+                    "basic": .init(
+                        light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#ffffff",
+                            text3: "#30A0F8AA",
+                            callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
+                            accent1: #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
+                            accent3: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor
+                        )
+                    ),
+                    "standard": .init(
+                        light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#ffffff",
+                            text3: "#30A0F8AA",
+                            callToActionBackground: #colorLiteral(red: 0.8549019694, green: 0.250980407, blue: 0.4784313738, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
+                            accent1: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
+                            accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor
+                        )
+                    ),
+                    "premium": .init(
+                        light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#ffffff",
+                            text3: "#30A0F8AA",
+                            callToActionBackground: #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
+                            accent1: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
+                            accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor
+                        )
+                    )
+                ],
+                tiers: [
+                    .init(
+                        id: "basic",
+                        packages: [
+                            Self.sixMonthPackage.identifier,
+                            Self.lifetimePackage.identifier
+                        ],
+                        defaultPackage: Self.sixMonthPackage.identifier
+                    ),
+                    .init(
+                        id: "standard",
+                        packages: [
+                            Self.weeklyPackage.identifier,
+                            Self.monthlyPackage.identifier
+                        ],
+                        defaultPackage: Self.weeklyPackage.identifier
+                    ),
+                    .init(
+                        id: "premium",
+                        packages: [
+                            Self.threeMonthPackage.identifier,
+                            Self.annualPackage.identifier
+                        ],
+                        defaultPackage: Self.annualPackage.identifier
+                    )
+                ],
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localizationByTier: [
+                "basic": .init(
+                    title: "Get started with our Basic plan",
+                    callToAction: "{{ price_per_period }}",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
+                    offerDetails: "{{ total_price_and_per_month }}",
+                    offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.sixMonthPackage.identifier: .init(
+                            offerDetails: "OVERRIDE six month details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE six month Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Six Month",
+                            offerBadge: "LEAST FAVORITE"
+                        ),
+                        TestData.lifetimePackage.identifier: .init(
+                            offerDetails: "OVERRIDE life details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE lifetime Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Lifetime ",
+                            offerBadge: "LIFETIME"
+                        )
+                    ],
+                    features: [
+                        .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
+                        .init(title: "Standard fonts", iconID: "tick"),
+                        .init(title: "2 templates", iconID: "tick")
+                    ],
+                    tierName: "Basic"
+                ),
+                "standard": .init(
+                    title: "Get started with our Standard plan",
+                    callToAction: "{{ price_per_period }}",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
+                    offerDetails: "{{ total_price_and_per_month }}",
+                    offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.weeklyPackage.identifier: .init(
+                            offerDetails: "OVERRIDE weekly details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE weekly Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Weekly",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        ),
+                        TestData.monthlyPackage.identifier: .init(
+                            offerDetails: "OVERRIDE monthly details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE monthly Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Monthly",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        )
+                    ],
+                    features: [
+                        .init(title: "Access to 30 cinematic LUTs", iconID: "tick"),
+                        .init(title: "Pro fonts and transition effects", iconID: "tick"),
+                        .init(title: "10+ templates", iconID: "tick")
+                    ],
+                    tierName: "Standard"
+                ),
+                "premium": .init(
+                    title: "Master the art of video editing",
+                    callToAction: "{{ price_per_period }}",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
+                    offerDetails: "{{ total_price_and_per_month }}",
+                    offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.threeMonthPackage.identifier: .init(
+                            offerDetails: "OVERRIDE three month details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE three month Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Three Month",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        ),
+                        TestData.annualPackage.identifier: .init(
+                            offerDetails: "OVERRIDE annual details {{ total_price_and_per_month }}",
+                            offerDetailsWithIntroOffer: "OVERRIDE annual Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                            offerName: "OVERRIDE Annual",
+                            offerBadge: "{{ sub_relative_discount }}"
+                        )
+                    ],
+                    features: [
+                        .init(title: "Access to all 150 of our cinematic LUTs", iconID: "tick"),
+                        .init(title: "Custom design tools and transition effects", iconID: "tick"),
+                        .init(title: "100+ exclusive templates", iconID: "tick")
+                    ],
+                    tierName: "Premium"
+                )
+            ],
             assetBaseURL: Self.paywallAssetBaseURL
         )
     }

@@ -139,6 +139,26 @@ class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == expectedURLs.count
     }
 
+    func testWarmsUpImagesByTier() async throws {
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: try Self.loadPaywall("PaywallData-multitier1"),
+                products: []
+            )
+        ])
+
+        let expectedURLs: Set<String> = [
+            "https://rc-paywalls.s3.amazonaws.com/954459_1703109702.png",
+            "https://rc-paywalls.s3.amazonaws.com/header.heic"
+        ]
+
+        await self.cache.warmUpPaywallImagesCache(offerings: offerings)
+
+        expect(self.imageFetcher.images) == expectedURLs
+        expect(self.imageFetcher.imageDownloadRequestCount.value) == expectedURLs.count
+    }
+
     func testOnlyWarmsUpImagesOnce() async throws {
         let paywall = try Self.loadPaywall("PaywallData-Sample1")
         let offerings = try Self.createOfferings([

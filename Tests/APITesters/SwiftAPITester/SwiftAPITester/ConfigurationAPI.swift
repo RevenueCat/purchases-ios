@@ -13,13 +13,15 @@ func checkConfigurationAPI() {
         .builder(withAPIKey: "")
         .with(apiKey: "")
         .with(appUserID: nil)
-        .with(observerMode: true)
+        .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
         .with(userDefaults: UserDefaults.standard)
         .with(dangerousSettings: DangerousSettings())
         .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true))
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
+        .with(storeKitVersion: .default)
+        .with(entitlementVerificationMode: .informational)
 
     let _: Configuration = builder.build()
 

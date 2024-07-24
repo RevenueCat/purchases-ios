@@ -31,7 +31,7 @@ class StoreKit2StorefrontListenerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.delegate = .init()
         self.listener = .init(delegate: self.delegate,

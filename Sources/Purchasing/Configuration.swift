@@ -44,7 +44,7 @@ import Foundation
     let appUserID: String?
     let observerMode: Bool
     let userDefaults: UserDefaults?
-    let storeKit2Setting: StoreKit2Setting
+    let storeKitVersion: StoreKitVersion
     let dangerousSettings: DangerousSettings?
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
@@ -55,13 +55,12 @@ import Foundation
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
-        Self.verify(observerMode: builder.observerMode, storeKit2Setting: builder.storeKit2Setting)
 
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
         self.userDefaults = builder.userDefaults
-        self.storeKit2Setting = builder.storeKit2Setting
+        self.storeKitVersion = builder.storeKitVersion
         self.dangerousSettings = builder.dangerousSettings
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
@@ -79,14 +78,19 @@ import Foundation
     /// The Builder for ```Configuration```.
     @objc(RCConfigurationBuilder) public class Builder: NSObject {
 
-        // made internal to access it in Deprecations.swift
-        var storeKit2Setting: StoreKit2Setting = .default
-
         private static let minimumTimeout: TimeInterval = 5
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
-        private(set) var observerMode: Bool = false
+        var observerMode: Bool {
+            switch purchasesAreCompletedBy {
+            case .revenueCat:
+                return false
+            case .myApp:
+                return true
+            }
+        }
+        private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
@@ -95,6 +99,7 @@ import Foundation
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
+        private(set) var storeKitVersion: StoreKitVersion = .default
 
         /**
          * Create a new builder with your API key.
@@ -138,17 +143,21 @@ import Foundation
         }
 
         /**
-         * Set `observerMode`.
-         * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-         * RevenueCat's backend. Default is `false`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * Observer mode is not compatible with StoreKit 2.
+         * Set `purchasesAreCompletedBy`.
+         * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
+         * if you have your own IAP implementation and want to use only RevenueCat's backend. 
+         * Default is ``PurchasesAreCompletedBy/revenueCat``.
+         * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
-        @objc public func with(observerMode: Bool) -> Configuration.Builder {
-            self.observerMode = observerMode
+        @objc public func with(
+            purchasesAreCompletedBy: PurchasesAreCompletedBy,
+            storeKitVersion: StoreKitVersion
+        ) -> Configuration.Builder {
+            self.purchasesAreCompletedBy = purchasesAreCompletedBy
+            self.storeKitVersion = storeKitVersion
             return self
         }
+
         /**
          * Set `userDefaults`.
          * - Parameter userDefaults: Custom `UserDefaults` to use
@@ -207,7 +216,7 @@ import Foundation
         ///
         /// The result of the verification can be obtained from ``EntitlementInfos/verification`` or
         /// ``EntitlementInfo/verification``.
-        /// 
+        ///
         /// - Note: This feature requires iOS 13+.
         /// - Warning:  When changing from ``Configuration/EntitlementVerificationMode/disabled``
         /// to ``Configuration/EntitlementVerificationMode/informational``
@@ -220,7 +229,6 @@ import Foundation
         /// ### Related Symbols
         /// - ``Configuration/EntitlementVerificationMode``
         /// - ``VerificationResult``
-        @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
             self.responseVerificationMode = Signing.verificationMode(with: mode)
             return self
@@ -230,11 +238,26 @@ import Foundation
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
         /// 
-        /// Defaults to ``false``
+        /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
         @objc public func with(diagnosticsEnabled: Bool) -> Builder {
             self.diagnosticsEnabled = diagnosticsEnabled
+            return self
+        }
+
+        /// Set ``StoreKitVersion``.
+        ///
+        /// Defaults to ``StoreKitVersion/default`` which lets the SDK select
+        /// the most appropriate version of StoreKit. Currently defaults to StoreKit 2.
+        ///
+        /// - Note: StoreKit 2 is only available on iOS 15+. StoreKit 1 will be used for previous iOS versions
+        /// regardless of this setting.
+        ///
+        /// ### Related Symbols
+        /// - ``StoreKitVersion``
+        @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
+            self.storeKitVersion = version
             return self
         }
 
@@ -284,7 +307,7 @@ extension Configuration {
         ///
         /// If verification fails, this will be indicated with ``VerificationResult/failed``
         /// but parsing will not fail.
-        /// 
+        ///
         /// This can be useful if you want to handle validation failures but still grant access.
         case informational = 1
 
@@ -328,12 +351,6 @@ extension Configuration {
         case .validApplePlatform: break
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
-        }
-    }
-
-    fileprivate static func verify(observerMode: Bool, storeKit2Setting: StoreKit2Setting) {
-        if observerMode, storeKit2Setting.usesStoreKit2IfAvailable {
-            Logger.warn(Strings.configure.observer_mode_with_storekit2)
         }
     }
 

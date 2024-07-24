@@ -18,14 +18,14 @@ protocol HTTPRequestBody: Encodable {
 
     /// The keys and values that will be included in the signature.
     /// - Note: this is not `[String: String]` because we need to preserve ordering.
-    var contentForSignature: [(key: String, value: String)] { get }
+    var contentForSignature: [(key: String, value: String?)] { get }
 
 }
 
 extension HTTPRequestBody {
 
     // Default implementation for endpoints which don't support signing.
-    var contentForSignature: [(key: String, value: String)] {
+    var contentForSignature: [(key: String, value: String?)] {
         return []
     }
 

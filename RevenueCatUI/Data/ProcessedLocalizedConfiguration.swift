@@ -25,7 +25,9 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     var offerDetails: String?
     var offerDetailsWithIntroOffer: String?
     var offerName: String?
+    var offerBadge: String?
     var features: [Feature]
+    var tierName: String?
 
     init(
         _ configuration: PaywallData.LocalizedConfiguration,
@@ -33,6 +35,23 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         _ context: VariableHandler.Context,
         _ locale: Locale
     ) {
+        let packageIdentifier = dataProvider.packageIdentifier
+        let offerOverrides = configuration.offerOverrides[packageIdentifier]
+
+        let offerDetails = offerOverrides?.offerDetails ?? configuration.offerDetails
+        let offerDetailsWithIntroOffer = offerOverrides?.offerDetailsWithIntroOffer
+            ?? configuration.offerDetailsWithIntroOffer
+        let offerName = offerOverrides?.offerName ?? configuration.offerName
+
+        let offerBadge: String?
+        if let offerOverrides {
+            offerBadge = offerOverrides.offerBadge
+        } else if let discount = context.discountRelativeToMostExpensivePerMonth {
+            offerBadge = dataProvider.localizedRelativeDiscount(discount, locale)
+        } else {
+            offerBadge = nil
+        }
+
         self.init(
             title: configuration.title.processed(with: dataProvider, context: context, locale: locale),
             subtitle: configuration.subtitle?.processed(with: dataProvider, context: context, locale: locale),
@@ -40,16 +59,20 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
             callToActionWithIntroOffer: configuration.callToActionWithIntroOffer?.processed(with: dataProvider,
                                                                                             context: context,
                                                                                             locale: locale),
-            offerDetails: configuration.offerDetails?.processed(with: dataProvider, context: context, locale: locale),
-            offerDetailsWithIntroOffer: configuration.offerDetailsWithIntroOffer?.processed(with: dataProvider,
-                                                                                            context: context,
-                                                                                            locale: locale),
-            offerName: configuration.offerName?.processed(with: dataProvider, context: context, locale: locale),
+            offerDetails: offerDetails?.processed(with: dataProvider, context: context, locale: locale),
+            offerDetailsWithIntroOffer: offerDetailsWithIntroOffer?.processed(with: dataProvider,
+
+                                                                              context: context,
+
+                                                                              locale: locale),
+            offerName: offerName?.processed(with: dataProvider, context: context, locale: locale),
+            offerBadge: offerBadge?.processed(with: dataProvider, context: context, locale: locale),
             features: configuration.features.map {
                 .init(title: $0.title.processed(with: dataProvider, context: context, locale: locale),
                       content: $0.content?.processed(with: dataProvider, context: context, locale: locale),
                       iconID: $0.iconID)
-            }
+            },
+            tierName: configuration.tierName
         )
     }
 
@@ -61,7 +84,9 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         offerDetails: String?,
         offerDetailsWithIntroOffer: String?,
         offerName: String?,
-        features: [Feature]
+        offerBadge: String?,
+        features: [Feature],
+        tierName: String?
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -70,7 +95,9 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         self.offerDetails = offerDetails
         self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
         self.offerName = offerName
+        self.offerBadge = offerBadge
         self.features = features
+        self.tierName = tierName
     }
 
 }

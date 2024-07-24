@@ -48,7 +48,15 @@ extension PaywallData.Configuration.Colors {
             accent1: .init(light: light.accent1, dark: dark.accent1),
             accent2: .init(light: light.accent2, dark: dark.accent2),
             accent3: .init(light: light.accent3, dark: dark.accent3),
-            closeButton: .init(light: light.closeButton, dark: dark.closeButton)
+            closeButton: .init(light: light.closeButton, dark: dark.closeButton),
+            tierControlBackground: .init(light: light.tierControlBackground,
+                                         dark: dark.tierControlBackground),
+            tierControlForeground: .init(light: light.tierControlForeground,
+                                         dark: dark.tierControlForeground),
+            tierControlSelectedBackground: .init(light: light.tierControlSelectedBackground,
+                                                 dark: dark.tierControlSelectedBackground),
+            tierControlSelectedForeground: .init(light: light.tierControlSelectedForeground,
+                                                 dark: dark.tierControlSelectedForeground)
         )
     }
 
@@ -91,6 +99,24 @@ extension PaywallData.Configuration.ColorInformation {
 
 #endif
 
+extension PaywallData.Configuration {
+
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    var multiSchemeColorsByTier: [PaywallData.Tier: PaywallData.Configuration.Colors] {
+        let colors = self.colorsByTier
+
+        return .init(
+            uniqueKeysWithValues: self.tiers
+                .lazy
+                .compactMap { tier in
+                    guard let colors = colors[tier.id] else { return nil }
+                    return (tier, colors.multiScheme)
+                }
+        )
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration {
 
@@ -106,20 +132,37 @@ extension TemplateViewConfiguration {
 import SwiftUI
 
 // Helpful acessors
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension PaywallData.Configuration.Colors {
 
-    var backgroundColor: Color { self.background.underlyingColor }
-    var text1Color: Color { self.text1.underlyingColor }
-    var text2Color: Color { self.text2?.underlyingColor ?? self.text1.underlyingColor }
+    var backgroundColor: Color { self.background?.underlyingColor ?? Self.defaultBackgroundColor }
+    var text1Color: Color { self.text1?.underlyingColor ?? Self.defaultForegroundColor }
+    var text2Color: Color { self.text2?.underlyingColor ?? self.text1Color }
     var text3Color: Color { self.text3?.underlyingColor ?? self.text2Color }
-    var callToActionBackgroundColor: Color { self.callToActionBackground.underlyingColor }
-    var callToActionForegroundColor: Color { self.callToActionForeground.underlyingColor }
+    var callToActionBackgroundColor: Color {
+        self.callToActionBackground?.underlyingColor ?? Self.defaultBackgroundColor
+    }
+    var callToActionForegroundColor: Color {
+        self.callToActionForeground?.underlyingColor ?? Self.defaultForegroundColor
+    }
     var callToActionSecondaryBackgroundColor: Color? { self.callToActionSecondaryBackground?.underlyingColor }
     var accent1Color: Color { self.accent1?.underlyingColor ?? self.callToActionForegroundColor }
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
     var accent3Color: Color { self.accent3?.underlyingColor ?? self.accent2Color }
     var closeButtonColor: Color? { self.closeButton?.underlyingColor }
+    var tierControlBackgroundColor: Color? { self.tierControlBackground?.underlyingColor }
+    var tierControlForegroundColor: Color? { self.tierControlForeground?.underlyingColor }
+    var tierControlSelectedBackgroundColor: Color? { self.tierControlSelectedBackground?.underlyingColor }
+    var tierControlSelectedForegroundColor: Color? { self.tierControlSelectedForeground?.underlyingColor }
+
+    #if os(watchOS)
+    private static let defaultBackgroundColor: Color = .black
+    #elseif canImport(UIKit) && !os(tvOS)
+    private static let defaultBackgroundColor: Color = .init(UIColor.systemBackground)
+    #else
+    private static let defaultBackgroundColor: Color = .white
+    #endif
+
+    private static let defaultForegroundColor: Color = .primary
 
 }
 

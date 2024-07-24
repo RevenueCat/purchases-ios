@@ -87,6 +87,7 @@ enum PurchaseStrings {
     case caching_presented_offering_identifier(offeringID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
+    case sk2_observer_mode_error_processing_transaction(Error)
 
 }
 
@@ -140,7 +141,7 @@ extension PurchaseStrings: LogMessage {
             "it's a non-subscription and it's missing in CustomerInfo list: \(nonSubscriptions)"
 
         case .purchasing_with_observer_mode_and_finish_transactions_false_warning:
-            return "Observer mode is active (finishTransactions is set to false) and " +
+            return "purchasesAreCompletedBy is not set to .myApp and " +
             "purchase has been initiated. RevenueCat will not finish the " +
             "transaction, are you sure you want to do this?"
 
@@ -339,6 +340,8 @@ extension PurchaseStrings: LogMessage {
         case .restorepurchases_called_with_allow_sharing_appstore_account_false:
             return "allowSharingAppStoreAccount is set to false and restorePurchases has been called. " +
             "Are you sure you want to do this?"
+        case let .sk2_observer_mode_error_processing_transaction(error):
+            return "RevenueCat could not process transaction completed by your app: \(error)"
         }
     }
 

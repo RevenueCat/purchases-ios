@@ -28,7 +28,7 @@ struct ConsistentPackageContentView<Content: View>: View {
     init(
         packages: [TemplateViewConfiguration.Package],
         selected: TemplateViewConfiguration.Package,
-        creator: @escaping Creator
+        @ViewBuilder creator: @escaping Creator
     ) {
         self.packages = packages
         self.selected = selected
@@ -39,9 +39,10 @@ struct ConsistentPackageContentView<Content: View>: View {
         // We need to layout all possible packages to accomodate for the longest text
         return ZStack {
             ForEach(self.packages, id: \.self.content) { package in
-                self.creator(package)
-                    .opacity(package.content == self.selected.content ? 1 : 0)
+                self.creator(package).opacity(0)
             }
+
+            self.creator(self.selected)
         }
     }
 

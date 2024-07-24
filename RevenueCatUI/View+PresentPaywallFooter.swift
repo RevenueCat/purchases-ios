@@ -16,6 +16,13 @@ import SwiftUI
 
 #if !os(watchOS) && !os(tvOS) && !os(macOS)
 
+/// A closure used for notifying of changes to the current tier.
+/// Useful when creating custom paywalls using `.paywallFooter`.
+public typealias PaywallTierChangeHandler = @MainActor @Sendable (
+    _ tier: PaywallData.Tier,
+    _ localizedName: String
+) -> Void
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension View {
 
@@ -74,6 +81,7 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -82,12 +90,15 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                      performRestore: myAppPurchaseLogic?.performRestore)
         return self.paywallFooter(
             offering: nil,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -114,6 +125,7 @@ extension View {
     @available(macOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
+    @_disfavoredOverload
     public func paywallFooter(
         offering: Offering,
         condensed: Bool = false,
@@ -125,12 +137,14 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default()
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: { _ in
                 purchaseStarted()
             },
@@ -157,6 +171,7 @@ extension View {
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -165,12 +180,15 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                      performRestore: myAppPurchaseLogic?.performRestore)
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -188,7 +206,7 @@ extension View {
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil,
+        purchaseHandler: PurchaseHandler,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -219,6 +237,17 @@ extension View {
                 )
             )
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension View {
+
+    /// Invokes the given closure when the user selects a `PaywallData.Tier` in a multi-tier paywall.
+    public func onPaywallTierChange(_ handler: @escaping PaywallTierChangeHandler) -> some View {
+        self
+            .modifier(PaywallTierChangeModifier(handler: handler))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -262,6 +291,22 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
                     }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallTierChangeModifier: ViewModifier {
+
+    let handler: PaywallTierChangeHandler
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(PaywallCurrentTierPreferenceKey.self) { data in
+                if let data {
+                    self.handler(data.tier, data.localizedName)
+                }
+            }
+    }
+
 }
 
 #endif

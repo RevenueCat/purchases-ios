@@ -78,7 +78,6 @@ struct DebugErrorView<Content: View>: View {
         Text(self.description)
             .unredacted()
             .padding()
-            .fixedSize(horizontal: true, vertical: false)
             .background(
                 Color.red
                     .edgesIgnoringSafeArea(.all)

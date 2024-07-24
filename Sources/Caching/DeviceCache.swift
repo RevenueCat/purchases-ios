@@ -338,6 +338,36 @@ class DeviceCache {
         return self.userDefaults.read(Self.productEntitlementMapping)
     }
 
+    // MARK: - StoreKit 2
+    private let cachedSyncedSK2ObserverModeTransactionIDsLock = Lock(.nonRecursive)
+
+    func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
+        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
+            var transactionIDs = self.userDefaults.read { userDefaults in
+                userDefaults.array(
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
+            } ?? []
+
+            transactionIDs.append(contentsOf: ids)
+
+            self.userDefaults.write {
+                $0.set(
+                    transactionIDs,
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
+                )
+            }
+        }
+    }
+
+    func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64] {
+        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
+            return self.userDefaults.read { userDefaults in
+                userDefaults.array(
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64] ?? []
+            }
+        }
+    }
+
     // MARK: - Helper functions
 
     internal enum CacheKeys: String, DeviceCacheKeyType {
@@ -360,6 +390,7 @@ class DeviceCache {
         case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
+        case syncedSK2ObserverModeTransactionIDs
 
         var rawValue: String {
             switch self {
@@ -368,6 +399,8 @@ class DeviceCache {
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
+            case .syncedSK2ObserverModeTransactionIDs:
+                return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
             }
         }
 

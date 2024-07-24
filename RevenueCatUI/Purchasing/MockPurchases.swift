@@ -19,22 +19,38 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class MockPurchases: PaywallPurchasesType {
 
+    typealias CustomerInfoBlock = @Sendable () async throws -> CustomerInfo
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
     typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
 
+    private let customerInfoBlock: CustomerInfoBlock
     private let purchaseBlock: PurchaseBlock
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
+    private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
+
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { return _purchasesAreCompletedBy }
+        set { _ = newValue }
+    }
 
     init(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
-        trackEvent: @escaping TrackEventBlock
+        trackEvent: @escaping TrackEventBlock,
+        customerInfo: @escaping CustomerInfoBlock
     ) {
         self.purchaseBlock = purchase
         self.restoreBlock = restorePurchases
         self.trackEventBlock = trackEvent
+        self.customerInfoBlock = customerInfo
+        self._purchasesAreCompletedBy = purchasesAreCompletedBy
+    }
+
+    func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        return try await self.customerInfoBlock()
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
@@ -65,6 +81,8 @@ extension PaywallPurchasesType {
             try await restore(self.restorePurchases)()
         } trackEvent: { event in
             await self.track(paywallEvent: event)
+        } customerInfo: {
+            try await self.customerInfo()
         }
     }
 
@@ -78,6 +96,8 @@ extension PaywallPurchasesType {
             try await self.restorePurchases()
         } trackEvent: { event in
             await trackEvent(self.track(paywallEvent:))(event)
+        } customerInfo: {
+            try await self.customerInfo()
         }
     }
 

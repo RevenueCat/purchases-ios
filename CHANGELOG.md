@@ -1,3 +1,73 @@
+## 5.2.1
+### Bugfixes
+* Retry Requests with HTTP Status 429 (#4048) via Will Taylor (@fire-at-will)
+* Use newer Alert API for showing customer restored alert (#4078) via Mark Villacampa (@MarkVillacampa)
+### Dependency Updates
+* Bump fastlane-plugin-revenuecat_internal from `5f55466` to `d5f0742` (#4101) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* PaywallsTester: fix macOS build (#4093) via Andy Boedo (@aboedo)
+* Cleanup `trigger_all_tests` github workflow (#4088) via Toni Rico (@tonidero)
+* Fix PaywallsTester by changing TestData DEBUG checks (#4092) via Cesar de la Vega (@vegaro)
+* Add missing @PublicForExternalTesting that broke PaywallsTester (#4087) via Cesar de la Vega (@vegaro)
+* Fix workflow permission check logic (#4084) via Toni Rico (@tonidero)
+* Fix prepare next version job (#4085) via Toni Rico (@tonidero)
+* [CI]: fix CI test trigger parameters (#4076) via Andy Boedo (@aboedo)
+* Fix docs deploy and add manual trigger on CI (#4081) via Josh Holtz (@joshdholtz)
+## 5.2.0
+### New Features
+* Added new paywall template to support multiple tiered subscriptions (#4022) via Josh Holtz (@joshdholtz)
+### Bugfixes
+* Fix certain completion blocks not being dispatched on the main thread (#4058) via Mark Villacampa (@MarkVillacampa)
+* Only checks staged files for leftover API keys. (#4073) via JayShortway (@JayShortway)
+### Other Changes
+* [Ci] Fix trigger to run all tests from github actions  (#4075) via Andy Boedo (@aboedo)
+* added new workflow to trigger all tests (#4051) via Andy Boedo (@aboedo)
+* Reduce CI jobs (#4025) via Andy Boedo (@aboedo)
+
+## 5.1.0
+### New Features
+* Paywalls with custom purchase and restore logic handlers (#3973) via James Borthwick (@jamesrb1)
+### Bugfixes
+* Prevent paywall PurchaseHandler from being cleared on rerender (#4035) via Josh Holtz (@joshdholtz)
+* Update Purchase Tester for 5.0.0 (#4015) via Will Taylor (@fire-at-will)
+### Dependency Updates
+* Bump fastlane from 2.221.0 to 2.221.1 (#3977) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* Bring official `xcodes` back to CI (#4029) via Cesar de la Vega (@vegaro)
+* Paywalls tester with sandbox purchases (#4024) via James Borthwick (@jamesrb1)
+* Update v5 migration guide to contain current latest version (#4019) via Toni Rico (@tonidero)
+* CI Build Docs Improvements (#4014) via Will Taylor (@fire-at-will)
+* Use available resource class for backend-integration-tests-offline-job (#4013) via Will Taylor (@fire-at-will)
+* Add `X-Preferred-Locales` header (#4008) via Cesar de la Vega (@vegaro)
+
+## 5.0.0
+
+The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
+
+See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.43.2
+### Bugfixes
+* Remove AdClient framework related code (#3993) via Cesar de la Vega (@vegaro)
+
+## 4.43.1
+### Dependency Updates
+* Bump fastlane from 2.220.0 to 2.221.0 (#3971) via dependabot[bot] (@dependabot[bot])
+* Bump rexml from 3.2.6 to 3.2.8 (#3907) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane-plugin-revenuecat_internal from `8ec0072` to `5f55466` (#3938) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* Fix cocoapods installation tests (#3981) via Toni Rico (@tonidero)
+* Remove carthage from CI and update release jobs to use xcode 15 and M1 (#3927) via Cesar de la Vega (@vegaro)
+* Bring back offline integration tests on M1 (#3976) via Toni Rico (@tonidero)
+* Fix Carthage (#3978) via James Borthwick (@jamesrb1)
+* Revert "Run offline backend integration tests on M1 machines (#3961)" (#3974) via Toni Rico (@tonidero)
+* Run offline backend integration tests on M1 machines (#3961) via Toni Rico (@tonidero)
+* Xcode project with RevenueCatUI + Tests (#3960) via James Borthwick (@jamesrb1)
+* Clone to spm using fastlane (#3926) via James Borthwick (@jamesrb1)
+* finishTransactions/ObserverMode -> PurchasesAreCompletedBy (#3947) via James Borthwick (@jamesrb1)
+* Switch tests for iOS 12 and 13 to M1 (#3958) via Toni Rico (@tonidero)
+* Fix prepare next version job (#3939) via Toni Rico (@tonidero)
+
 ## 4.43.0
 ### New Features
 * Diagnostics (#3931) via Toni Rico (@tonidero)

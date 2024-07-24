@@ -21,10 +21,10 @@ let package = Package(
     name: "RevenueCat",
     defaultLocalization: "en",
     platforms: [
-        .macOS(.v10_13),
+        .macOS(.v10_15),
         .watchOS("6.2"),
-        .tvOS(.v11),
-        .iOS(.v11)
+        .tvOS(.v13),
+        .iOS(.v13)
     ],
     products: [
         .library(name: "RevenueCat",
@@ -72,6 +72,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
+                    resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")])
     ]
 )

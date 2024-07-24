@@ -40,23 +40,23 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.termsOfServiceURL) == URL(string: "https://revenuecat.com/tos")!
         expect(paywall.config.privacyURL) == URL(string: "https://revenuecat.com/privacy")!
 
-        expect(paywall.config.colors.light.background.stringRepresentation) == "#FF00AA"
-        expect(paywall.config.colors.light.text1.stringRepresentation) == "#FF00AA22"
+        expect(paywall.config.colors.light.background?.stringRepresentation) == "#FF00AA"
+        expect(paywall.config.colors.light.text1?.stringRepresentation) == "#FF00AA22"
         expect(paywall.config.colors.light.text2?.stringRepresentation) == "#FF00AA11"
         expect(paywall.config.colors.light.text3?.stringRepresentation) == "#FF00AA33"
-        expect(paywall.config.colors.light.callToActionBackground.stringRepresentation) == "#FF00AACC"
-        expect(paywall.config.colors.light.callToActionForeground.stringRepresentation) == "#FF00AA"
+        expect(paywall.config.colors.light.callToActionBackground?.stringRepresentation) == "#FF00AACC"
+        expect(paywall.config.colors.light.callToActionForeground?.stringRepresentation) == "#FF00AA"
         expect(paywall.config.colors.light.callToActionSecondaryBackground?.stringRepresentation) == "#FF00BB"
         expect(paywall.config.colors.light.accent1?.stringRepresentation) == "#FF0000"
         expect(paywall.config.colors.light.accent2?.stringRepresentation) == "#00FF00"
         expect(paywall.config.colors.light.accent3?.stringRepresentation) == "#0000FF"
 
-        expect(paywall.config.colors.dark?.background.stringRepresentation) == "#FF0000"
-        expect(paywall.config.colors.dark?.text1.stringRepresentation) == "#FF0011"
+        expect(paywall.config.colors.dark?.background?.stringRepresentation) == "#FF0000"
+        expect(paywall.config.colors.dark?.text1?.stringRepresentation) == "#FF0011"
         expect(paywall.config.colors.dark?.text2).to(beNil())
         expect(paywall.config.colors.dark?.text3).to(beNil())
-        expect(paywall.config.colors.dark?.callToActionBackground.stringRepresentation) == "#112233AA"
-        expect(paywall.config.colors.dark?.callToActionForeground.stringRepresentation) == "#AABBCC"
+        expect(paywall.config.colors.dark?.callToActionBackground?.stringRepresentation) == "#112233AA"
+        expect(paywall.config.colors.dark?.callToActionForeground?.stringRepresentation) == "#AABBCC"
         expect(paywall.config.colors.dark?.accent1?.stringRepresentation) == "#00FFFF"
         expect(paywall.config.colors.dark?.accent2?.stringRepresentation) == "#FF00FF"
         expect(paywall.config.colors.dark?.accent3).to(beNil())
@@ -175,7 +175,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testMissingCurrentLocaleLoadsAvailableLocale() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_locale")
 
-        let localization = paywall.localizedConfiguration
+        let localization = try XCTUnwrap(paywall.localizedConfiguration)
         expect(localization.callToAction) == "Comprar"
         expect(localization.title) == "Tienda"
     }
@@ -189,22 +189,17 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(images.icon).to(beNil())
     }
 
-    func testEncodePaywallViewMode() throws {
-        // iOS 12 does not allow decoding fragments (top-level objects)
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+    func testMultiTierLocalizationIsNil() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        expect(paywall.localizedConfigurationByTier(for: [.init(identifier: "en_US")]))
+            .to(beNil())
+    }
 
+    func testEncodePaywallViewMode() throws {
         for mode in PaywallViewMode.allCases {
             expect(try mode.encodeAndDecode()) == mode
         }
     }
-
-    #if !os(watchOS)
-    func testMissingLocalizationFails() throws {
-        expect {
-            let _: PaywallData = try self.decodeFixture("PaywallData-missing_localization")
-        }.to(throwError())
-    }
-    #endif
 
 }
 

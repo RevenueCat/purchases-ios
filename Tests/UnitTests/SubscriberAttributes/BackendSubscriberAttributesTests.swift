@@ -50,7 +50,8 @@ class BackendSubscriberAttributesTests: TestCase {
     private let systemInfo = SystemInfo(
         platformInfo: .init(flavor: "Unity", version: "2.3.3"),
         finishTransactions: true,
-        storefrontProvider: MockStorefrontProvider()
+        storefrontProvider: MockStorefrontProvider(),
+        storeKitVersion: .versionForTests
     )
 
     override func setUpWithError() throws {
@@ -422,5 +423,17 @@ class BackendSubscriberAttributesTests: TestCase {
                               diagnosticsTracker: self.mockDiagnosticsTracker,
                               sourceTestFile: file)
     }
+
+}
+
+private extension StoreKitVersion {
+
+    // Need to force StoreKit 1 because we use iOS 13 snapshots
+    // for watchOS tests which contain StoreKit 1 headers
+    #if os(watchOS)
+    static let versionForTests = StoreKitVersion.storeKit1
+    #else
+    static let versionForTests = StoreKitVersion.default
+    #endif
 
 }

@@ -42,13 +42,23 @@ class BaseBackendTests: TestCase {
         self.createDependencies(dangerousSettings: self.dangerousSettings)
     }
 
-    final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
+    final func createDependencies(dangerousSettings: DangerousSettings? = nil,
+                                  localesProvider: PreferredLocalesProviderType = MockPreferredLocalesProvider()) {
+        // Need to force StoreKit 1 because we use iOS 13 snapshots
+        // for watchOS tests which contain StoreKit 1 headers
+        #if os(watchOS)
+        let storeKitVersion = StoreKitVersion.storeKit1
+        #else
+        let storeKitVersion = StoreKitVersion.default
+        #endif
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
+            storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
-            dangerousSettings: dangerousSettings
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: localesProvider
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
@@ -116,11 +126,7 @@ extension BaseBackendTests {
     }
 
     private var responseVerificationMode: Signing.ResponseVerificationMode {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return Signing.verificationMode(with: self.verificationMode)
-        } else {
-            return .disabled
-        }
+        return Signing.verificationMode(with: self.verificationMode)
     }
 
 }
@@ -156,6 +162,20 @@ final class MockStorefrontProvider: StorefrontProviderType {
         } else {
             return nil
         }
+    }
+
+}
+
+final class MockPreferredLocalesProvider: PreferredLocalesProviderType {
+
+    var preferredLanguages: [String] {
+        stubbedLocales
+    }
+
+    private let stubbedLocales: [String]
+
+    init(stubbedLocales: [String] = ["en_EN"]) {
+        self.stubbedLocales = stubbedLocales
     }
 
 }

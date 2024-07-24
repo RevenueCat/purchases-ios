@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 12/15/22.
 
 import Foundation
-
+import Nimble
 @testable import RevenueCat
 import StoreKit
 import StoreKitTest
@@ -36,58 +36,56 @@ class BaseStoreKitObserverModeIntegrationTests: BaseStoreKitIntegrationTests {
 
 class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseInDevicePostsReceipt() async throws {
+    func testObservingTransactionUnlocksEntitlement() async throws {
+        await self.deleteAllTransactions(session: self.testSession)
+
         let result = try await self.manager.purchaseProductFromStoreKit2()
         let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
-
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        XCTExpectFailure("This test currently does not pass (see FB12231111)")
+        try await simulateAppDidBecomeActive()
 
-        try await asyncWait(
-            description: "Entitlement didn't become active",
-            timeout: .seconds(5),
-            pollInterval: .milliseconds(500)
-        ) {
-            let entitlement = await self.purchasesDelegate
-                .customerInfo?
-                .entitlements[Self.entitlementIdentifier]
-
-            return entitlement?.isActive == true
-        }
+        try await self.verifyReceiptIsEventuallyPosted()
+        let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRenewalsPostReceipt() async throws {
-        self.testSession.timeRate = .realTime
+        // forceRenewalOfSubscription doesn't work well, so we use this instead
+        setShortestTestSessionTimeRate(self.testSession)
 
-        let productID = Self.monthlyNoIntroProductID
+        let productID = Self.group3MonthlyNoTrialProductID
 
         try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+        // swiftlint:disable:next force_try
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.verifyReceiptIsEventuallyPosted()
     }
 
-}
-
-class StoreKit2JWSObserverModeIntegrationTests: StoreKit2ObserverModeIntegrationTests {
-    override var usesStoreKit2JWS: Bool { return true }
+    /// Simulates the app becoming active by broadcasting the SystemInfo.applicationDidBecomeActiveNotification.
+    /// This is necessary because our backend integration test app initiates the purchase 
+    /// flow without any user input and therefore the purchase dialogs never appear.
+    /// Without the dialogs, the SDK's trigger to detect purchases in observer mode is never activated.
+    private func simulateAppDidBecomeActive() async throws {
+        NotificationCenter.default.post(name: SystemInfo.applicationDidBecomeActiveNotification!, object: nil)
+    }
 }
 
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     func testPurchaseOutsideTheAppPostsReceipt() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
@@ -120,19 +118,15 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class StoreKit2ObserverModeWithExistingPurchasesTests: StoreKit1ObserverModeWithExistingPurchasesTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
-}
-
-class StoreKit2JWSObserverModeWithExistingPurchasesTests: StoreKit2ObserverModeWithExistingPurchasesTests {
-    override var usesStoreKit2JWS: Bool { return true }
 }
 
 /// Purchases a product before configuring `Purchases` to verify behavior upon initialization in observer mode.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     // MARK: - Transactions observation
 
@@ -189,6 +183,25 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
         // 4. Sync customer info
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoPurchases(info)
+    }
+
+}
+
+class StoreKit2NotEnabledObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionThrowsIfStoreKit2NotEnabled() async throws {
+        let manager = ObserverModeManager()
+        let result = try await manager.purchaseProductFromStoreKit2()
+
+        do {
+            _ = try await Purchases.shared.recordPurchase(result)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.configurationError))
+        }
     }
 
 }

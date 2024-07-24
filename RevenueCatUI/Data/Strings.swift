@@ -16,7 +16,6 @@ import RevenueCat
 
 // swiftlint:disable identifier_name
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 enum Strings {
 
     case package_not_subscription(Package)
@@ -29,6 +28,7 @@ enum Strings {
     case displaying_paywall
     case not_displaying_paywall
     case dismissing_paywall
+    case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
 
@@ -40,9 +40,13 @@ enum Strings {
     case restore_purchases_with_empty_result
     case setting_restored_customer_info
 
+    case executing_purchase_logic
+    case executing_external_purchase_logic
+    case executing_restore_logic
+    case executing_external_restore_logic
+
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Strings: CustomStringConvertible {
 
     var description: String {
@@ -73,6 +77,9 @@ extension Strings: CustomStringConvertible {
         case .dismissing_paywall:
             return "Dismissing PaywallView"
 
+        case let .tier_has_no_available_products_for_paywall(tierName):
+            return "Tier '\(tierName)' has no available products and will be removed from the paywall."
+
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
 
@@ -98,6 +105,22 @@ extension Strings: CustomStringConvertible {
 
         case .setting_restored_customer_info:
             return "Setting restored customer info"
+
+        case .executing_external_purchase_logic:
+            return "Will execute custom StoreKit purchase logic provided by your app. " +
+            "No StoreKit purchasing logic will be performed by RevenueCat. " +
+            "You must have initialized your `PaywallView` appropriately."
+
+        case .executing_purchase_logic:
+            return "Will execute purchase logic provided by RevenueCat."
+
+        case .executing_restore_logic:
+            return "Will execute restore purchases logic provided by RevenueCat."
+
+        case .executing_external_restore_logic:
+            return "Will execute custom StoreKit restore purchases logic provided by your app. " +
+            "No StoreKit restore purchases logic will be performed by RevenueCat. " +
+            "You must have initialized your `PaywallView` appropriately."
         }
     }
 

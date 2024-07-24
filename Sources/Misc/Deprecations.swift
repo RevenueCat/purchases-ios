@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable line_length missing_docs file_length
+// swiftlint:disable line_length missing_docs
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -57,82 +57,6 @@ public extension Purchases {
     func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffers(forProduct: product)
     }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: StoreKit2Setting.default.usesStoreKit2IfAvailable
-        )
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?,
-                                             useStoreKit2IfAvailable: Bool) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: useStoreKit2IfAvailable,
-            dangerousSettings: nil
-        )
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
-    // swiftlint:disable:next function_parameter_count
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?,
-                                             useStoreKit2IfAvailable: Bool,
-                                             dangerousSettings: DangerousSettings?) -> Purchases {
-        return Self.configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            platformInfo: nil,
-            responseVerificationMode: .default,
-            storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
-            storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-            networkTimeout: Configuration.networkTimeoutDefault,
-            dangerousSettings: dangerousSettings,
-            showStoreMessagesAutomatically: true,
-            diagnosticsEnabled: false
-        )
-    }
-
-    /**
-     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
-     */
-    @available(*, deprecated, message: "Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead")
-    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
-
 }
 
 public extension Purchases {
@@ -404,24 +328,9 @@ extension CustomerInfo {
 
 public extension Configuration.Builder {
 
-    /// Set `storeKit2Setting`. If `true`, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
-    /// - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it.
-    /// Defaults to  `false`.
-    /// - Important: This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
-    /// However, apps using it should work correctly.
-    ///
-    @available(*, deprecated, message: """
-    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has
-    proven to be more performant than StoreKit 2.
-
-    We're collecting more data on the best approach, but StoreKit 1 vs StoreKit 2 is an implementation detail
-    that you shouldn't need to care about.
-
-    Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use.
-    """)
+    @available(*, deprecated, message: "Use .with(storeKitVersion:) to enable StoreKit 2")
     @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
-        self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
-        return self
+        return self.with(storeKitVersion: usesStoreKit2IfAvailable ? .storeKit2 : .default)
     }
 
 }

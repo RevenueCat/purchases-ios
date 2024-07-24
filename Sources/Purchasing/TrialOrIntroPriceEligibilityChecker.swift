@@ -60,9 +60,18 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             return
         }
 
+        // Extracting and wrapping the completion block from the async call
+        // to avoid having to mark ReceiveIntroEligibilityBlock as @Sendable
+        // up to the public API thus making a breaking change.
+        let completionBlock: ReceiveIntroEligibilityBlock = { result in
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(result)
+            }
+        }
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-            self.systemInfo.storeKit2Setting.usesStoreKit2IfAvailable {
-            Async.call(with: completion) {
+           self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
+            Async.call(with: completionBlock) {
                 do {
                     return try await self.sk2CheckEligibility(productIdentifiers)
                 } catch {
@@ -74,7 +83,11 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 }
             }
         } else {
-            self.sk1CheckEligibility(productIdentifiers, completion: completion)
+            self.sk1CheckEligibility(productIdentifiers) { result in
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(result)
+                }
+            }
         }
     }
 
@@ -83,15 +96,20 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         // We don't want to refresh receipts because it will likely prompt the user for their credentials,
         // and intro eligibility is triggered programmatically.
         self.receiptFetcher.receiptData(refreshPolicy: .never) { data, _ in
-            if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
-               let data = data {
+            if let data = data {
                 self.sk1CheckEligibility(with: data,
-                                         productIdentifiers: productIdentifiers,
-                                         completion: completion)
+                                         productIdentifiers: productIdentifiers) { eligibility in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(eligibility)
+                    }
+                }
             } else {
                 self.getIntroEligibility(with: data ?? Data(),
-                                         productIdentifiers: productIdentifiers,
-                                         completion: completion)
+                                         productIdentifiers: productIdentifiers) { eligibility in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(eligibility)
+                    }
+                }
             }
         }
     }
@@ -142,7 +160,6 @@ extension TrialOrIntroPriceEligibilityCheckerType {
 
 private extension TrialOrIntroPriceEligibilityChecker {
 
-    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
     func sk1CheckEligibility(with receiptData: Data,
                              productIdentifiers: Set<String>,
                              completion: @escaping ReceiveIntroEligibilityBlock) {

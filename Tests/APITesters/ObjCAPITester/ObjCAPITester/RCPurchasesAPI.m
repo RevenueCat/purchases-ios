@@ -15,7 +15,6 @@
 bool canI;
 NSString *version;
 
-BOOL automaticAppleSearchAdsAttributionCollection;
 BOOL debugLogsEnabled;
 RCLogLevel logLevel;
 NSURL *proxyURL;
@@ -25,6 +24,7 @@ RCPurchases *sharedPurchases;
 BOOL isConfigured;
 BOOL allowSharingAppStoreAccount;
 BOOL finishTransactions;
+RCPurchasesAreCompletedBy purchasesAreCompletedBy;
 id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
@@ -35,36 +35,8 @@ BOOL isAnonymous;
     [RCPurchases configureWithConfigurationBuilder:[RCConfiguration builderWithAPIKey:@""]];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
-    [RCPurchases configureWithAPIKey:@""
-                           appUserID:nil
-                        observerMode:false
-                        userDefaults:[[NSUserDefaults alloc] init]
-             useStoreKit2IfAvailable:true];
-    [RCPurchases configureWithAPIKey:@""
-                           appUserID:nil
-                        observerMode:false
-                        userDefaults:[[NSUserDefaults alloc] init]
-             useStoreKit2IfAvailable:true
-                   dangerousSettings:nil];
-    [RCPurchases configureWithAPIKey:@""
-                           appUserID:nil
-                        observerMode:false
-                        userDefaults:[[NSUserDefaults alloc] init]
-             useStoreKit2IfAvailable:true
-                   dangerousSettings:[[RCDangerousSettings alloc] init]];
-     [RCPurchases configureWithAPIKey:@""
-                            appUserID:nil
-                         observerMode:false
-                         userDefaults:[[NSUserDefaults alloc] init]
-              useStoreKit2IfAvailable:true
-                    dangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:NO
-                                                                customEntitlementComputation:NO]];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp storeKitVersion:RCStoreKitVersion1];
 
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
@@ -75,11 +47,6 @@ BOOL isAnonymous;
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch];
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch forNetworkUserId:@""];
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch forNetworkUserId:nil];
-
-    // should have deprecation warning:
-    // 'automaticAppleSearchAdsAttributionCollection' is deprecated: Use
-    // Purchases.shared.attribution.enableAdServicesAttributionTokenCollection instead
-    automaticAppleSearchAdsAttributionCollection = [RCPurchases automaticAppleSearchAdsAttributionCollection];
 
     // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
     debugLogsEnabled = [RCPurchases debugLogsEnabled];
@@ -96,6 +63,8 @@ BOOL isAnonymous;
     allowSharingAppStoreAccount = [p allowSharingAppStoreAccount];
 
     finishTransactions = [p finishTransactions];
+    purchasesAreCompletedBy = [p purchasesAreCompletedBy];
+
     delegate = [p delegate];
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
@@ -167,14 +136,12 @@ BOOL isAnonymous;
     
     [p checkTrialOrIntroDiscountEligibilityForProduct:storeProduct completion:^(RCIntroEligibilityStatus status) { }];
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    if (@available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)) {
-        [p getPromotionalOfferForProductDiscount:stpd
-                                     withProduct:storeProduct
-                                  withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
-        [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-        [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    }
-    
+    [p getPromotionalOfferForProductDiscount:stpd
+                                 withProduct:storeProduct
+                              withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
+    [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 
@@ -232,7 +199,7 @@ BOOL isAnonymous;
         case RCLogLevelInfo:
         case RCLogLevelWarn:
         case RCLogLevelError:
-            NSLog(@"%ld", (long)o);
+            NSLog(@"%ld", (long)l);
     }
 
     RCStoreMessageType smt = RCStoreMessageTypeBillingIssue;
@@ -240,7 +207,14 @@ BOOL isAnonymous;
         case RCStoreMessageTypeBillingIssue:
         case RCStoreMessageTypePriceIncreaseConsent:
         case RCStoreMessageTypeGeneric:
-            NSLog(@"%ld", (long)o);
+            NSLog(@"%ld", (long)smt);
+    }
+
+    RCPurchasesAreCompletedBy pacb = RCPurchasesAreCompletedByRevenueCat;
+    switch(pacb) {
+        case RCPurchasesAreCompletedByMyApp:
+        case RCPurchasesAreCompletedByRevenueCat:
+            NSLog(@"%ld", (long)pacb);
     }
 }
 

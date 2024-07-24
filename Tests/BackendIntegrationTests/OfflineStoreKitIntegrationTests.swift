@@ -14,10 +14,10 @@
 import Nimble
 @testable import RevenueCat
 import StoreKit
+import StoreKitTest
 import XCTest
 
-// swiftlint:disable type_name file_length
-
+// swiftlint:disable file_length
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
@@ -31,19 +31,13 @@ class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
 class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
-
-}
-
-class OfflineStoreKit2JWSIntegrationTests: OfflineStoreKit1IntegrationTests {
-
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
 }
 
 class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -363,6 +357,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
 }
 
+// swiftlint:disable type_name
+
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     override var forceServerErrors: Bool { return true }
@@ -386,6 +382,8 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
     }
 
 }
+
+// swiftlint:enable type_name
 
 // MARK: -
 
