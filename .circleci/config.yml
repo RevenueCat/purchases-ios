@@ -58,7 +58,9 @@ aliases:
   release-tags: &release-tags
     filters:
       tags:
-        ignore: /^.*-SNAPSHOT/
+        ignore: 
+          - /^.*-SNAPSHOT/
+          - /^.*-customercenter.alpha.*/
       branches:
         ignore: /.*/
   release-branches-and-main: &release-branches-and-main
