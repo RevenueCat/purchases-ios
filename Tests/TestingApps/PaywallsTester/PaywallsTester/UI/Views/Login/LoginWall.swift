@@ -52,4 +52,5 @@ struct LoginWall<ContentView: View>: View {
             Text("Developer \(developer.name) is now signed in.")
         }
     }
+    .environment(ApplicationData())
 }

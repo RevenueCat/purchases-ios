@@ -49,4 +49,5 @@ struct AppList: View {
 
 #Preview {
     AppList()
+    .environment(ApplicationData())
 }
