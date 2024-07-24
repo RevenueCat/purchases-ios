@@ -1,3 +1,9 @@
+## 5.2.2
+### Dependency Updates
+* Bump nokogiri from 1.16.5 to 1.16.6 (#3980) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* Remove notify-on-non-patch-release-branches (#4106) via Cesar de la Vega (@vegaro)
+
 ## 5.2.1
 ### Bugfixes
 * Retry Requests with HTTP Status 429 (#4048) via Will Taylor (@fire-at-will)
