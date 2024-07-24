@@ -75,6 +75,7 @@ struct PurchaseButton: View {
 
     var body: some View {
         self.button
+            .accessibilityLabel("RCPaywallPurchaseButton")
     }
 
     private var button: some View {
