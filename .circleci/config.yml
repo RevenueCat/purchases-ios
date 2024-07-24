@@ -1371,8 +1371,11 @@ workflows:
     jobs:
       - docs-deploy
 
-  # to trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
-  # and add a parameter called "run-manual-tests"
+  # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline".
+  # In the modal that appears, set the following parameter fields and click "trigger pipeline":
+  #   - Parameter Type: string
+  #   - Name: action
+  #   - Value: run-manual-tests
   all-tests:
     when:
       or:
