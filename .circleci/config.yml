@@ -76,12 +76,6 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  non-patch-release-branches: &non-patch-release-branches
-    filters:
-      tags:
-        ignore: /.*/
-      branches:
-        only: /^release\/.*\.0$/
 
 commands:
   install-runtime:
@@ -1240,53 +1234,6 @@ jobs:
           working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
           command: bundle exec fastlane deploy_purchase_tester
 
-  notify-on-non-patch-release-branches:
-    docker:
-      - image: "cimg/base:stable"
-    steps:
-      - slack/notify:
-          custom: |
-            {
-              "text": "Public facing changes detected",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "REMINDER :raised_hand:",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Do *public docs* need to be updated?"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Does the *SDK parity spreadsheet* need to be updated?"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    }
-                  ]
-                }
-              ]
-            }
-
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1381,11 +1328,6 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - notify-on-non-patch-release-branches:
-          requires:
-            - make-release
-          <<: *non-patch-release-branches
-          context: slack-secrets
 
   snapshot-bump:
     when:
