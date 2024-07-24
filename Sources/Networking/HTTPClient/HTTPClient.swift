@@ -626,8 +626,8 @@ extension HTTPClient {
         httpURLResponse: HTTPURLResponse?
     ) -> Bool {
 
-        guard let httpURLResponse = httpURLResponse,
-              request.httpRequest.isRetryable,
+        guard request.httpRequest.isRetryable,
+              let httpURLResponse = httpURLResponse,
               isResponseRetryable(httpURLResponse) else { return false }
 
         // At this point, retryCount hasn't been incremented yet, so we'll need to do it early here
