@@ -12,11 +12,11 @@
 //  Created by Nacho Soto on 10/10/22.
 
 import Nimble
+import OHHTTPStubs
+import OHHTTPStubsSwift
 @testable import RevenueCat
 import StoreKitTest
 import XCTest
-import OHHTTPStubs
-import OHHTTPStubsSwift
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
