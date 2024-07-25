@@ -29,7 +29,7 @@ A clear and concise description of what the bug is. The more detail you can prov
       - [ ] Simulator
    7. Environment:
       - [ ] Sandbox
-      - [ ] TestFight
+      - [ ] TestFlight
       - [ ] Production
    8. How widespread is the issue. Percentage of devices affected.
 2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. **Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.**
