@@ -8,7 +8,7 @@ jobs:
   trigger-circleci:
     runs-on: ubuntu-latest
     if: |
-      ${{ github.event.issue.pull_request }} &&
+      github.event.issue.pull_request &&
       github.event.comment.body == '@RCGitBot please test' &&
       github.repository == 'RevenueCat/purchases-ios'
 
