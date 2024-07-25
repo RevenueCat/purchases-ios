@@ -569,7 +569,7 @@ jobs:
           name: RevenueCatUI API Tests
           command: bundle exec fastlane build_revenuecatui_api_tester
 
-  spm-revenuecat-ui-ios-17:
+  run-revenuecat-ui-ios-17:
     <<: *base-job
     parameters:
       xcode_version:
@@ -1269,7 +1269,7 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - spm-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-17
 
   build-test:
     when:
@@ -1279,14 +1279,10 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint:
-          name: "swiftlint"
-      - run-test-ios-17:
-          name: "Unit tests"
-      - pod-lib-lint:
-          name: "Pod lib lint"
-      - spm-revenuecat-ui-ios-17:
-          name: "RevenueCatUI tests"
+      - lint
+      - run-test-ios-17
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-17
 
   create-tag:
     when:
@@ -1411,7 +1407,7 @@ workflows:
       - spm-release-build-xcode-15
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - spm-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
       - installation-tests-cocoapods
       - installation-tests-swift-package-manager
