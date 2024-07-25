@@ -120,6 +120,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
+    override func tearDown() async throws {
+        HTTPStubs.removeAllStubs()
+        try await super.tearDown()
+    }
+
     func testIsSandbox() throws {
         try expect(self.purchases.isSandbox) == true
     }
@@ -935,7 +940,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseGrantsEntitlementsThroughOnRetryAfter429() async throws {
-
         // Ensure that the first two times POST /receipt is called, we mock a 429 error
         // and then proceed normally with the backend on subsequent requests
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
@@ -966,7 +970,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
-
         // Ensure that the each time POST /receipt is called, we mock a 429 error
         var stubbedRequestCount = 0
         let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
@@ -987,7 +990,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
-
         // Ensure that the each time POST /receipt is called, we mock a 429 error with the 
         // Is-Retryable header as "false"
         var stubbedRequestCount = 0
