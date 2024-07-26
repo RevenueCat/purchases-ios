@@ -115,6 +115,6 @@ struct RemoteImage: View {
         }
     }
 
-    private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
+    private static let transition: AnyTransition = .opacity.animation(nil)
 
 }
