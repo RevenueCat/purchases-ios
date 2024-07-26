@@ -252,7 +252,6 @@ private struct ContentMaxWidthKey: EnvironmentKey {
     static let defaultValue: CGFloat = .infinity
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 public extension EnvironmentValues {
     var paywallContentMaxWidth: CGFloat {
         get { self[ContentMaxWidthKey.self] }
