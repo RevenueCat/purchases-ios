@@ -32,11 +32,6 @@
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
 		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
 		5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B471296F9B3B002472D5 /* LocalReceiptView.swift */; };
-		5759B47529707153002472D5 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47429707153002472D5 /* ReceiptParser */; };
-		5759B47729707153002472D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47629707153002472D5 /* RevenueCat */; };
-		5759B479297071AE002472D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B478297071AE002472D5 /* RevenueCat */; };
-		5759B47D297077B1002472D5 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47C297077B1002472D5 /* ReceiptParser */; };
-		5759B47F297077B1002472D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47E297077B1002472D5 /* RevenueCat */; };
 		578DAA0C2947DD21001700FD /* PurchaseTesterWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA0B2947DD21001700FD /* PurchaseTesterWatchApp.swift */; };
 		578DAA0E2947DD21001700FD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA0D2947DD21001700FD /* ContentView.swift */; };
 		578DAA102947DD21001700FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 578DAA0F2947DD21001700FD /* Assets.xcassets */; };
@@ -173,9 +168,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5759B47529707153002472D5 /* ReceiptParser in Frameworks */,
 				578DAA262947DD8C001700FD /* Core.framework in Frameworks */,
-				5759B47729707153002472D5 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,9 +176,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5759B47D297077B1002472D5 /* ReceiptParser in Frameworks */,
 				578DAA322947E256001700FD /* Core.framework in Frameworks */,
-				5759B47F297077B1002472D5 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,7 +184,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5759B479297071AE002472D5 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,8 +363,6 @@
 			);
 			name = PurchaseTester;
 			packageProductDependencies = (
-				5759B47429707153002472D5 /* ReceiptParser */,
-				5759B47629707153002472D5 /* RevenueCat */,
 			);
 			productName = "PurchaseTester (iOS)";
 			productReference = 2CD2C4F5278C9B02005D1CC2 /* PurchaseTester.app */;
@@ -396,8 +384,6 @@
 			);
 			name = PurchaseTesterWatchOS;
 			packageProductDependencies = (
-				5759B47C297077B1002472D5 /* ReceiptParser */,
-				5759B47E297077B1002472D5 /* RevenueCat */,
 			);
 			productName = "PurchaseTesterWatchOS Watch App";
 			productReference = 578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */;
@@ -418,7 +404,6 @@
 			);
 			name = Core;
 			packageProductDependencies = (
-				5759B478297071AE002472D5 /* RevenueCat */,
 			);
 			productName = Core;
 			productReference = 578DAA202947DD8C001700FD /* Core.framework */;
@@ -455,7 +440,6 @@
 			);
 			mainGroup = 2CD2C4E8278C9B01005D1CC2;
 			packageReferences = (
-				5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 2CD2C4F6278C9B02005D1CC2 /* Products */;
 			projectDirPath = "";
@@ -978,14 +962,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		577E0E3B29159A8B0071E063 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
@@ -997,31 +973,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5759B47429707153002472D5 /* ReceiptParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = ReceiptParser;
-		};
-		5759B47629707153002472D5 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-		5759B478297071AE002472D5 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-		5759B47C297077B1002472D5 /* ReceiptParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = ReceiptParser;
-		};
-		5759B47E297077B1002472D5 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
 		577E0E3E29159B340071E063 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 577E0E3B29159A8B0071E063 /* XCRemoteSwiftPackageReference "purchases-ios" */;

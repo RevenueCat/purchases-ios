@@ -956,27 +956,6 @@
 			remoteGlobalIDString = 4F6BED9A2A26A64200CD9322;
 			remoteInfo = PaywallsTester;
 		};
-		2DD500FC2C519EB4009C19B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2DD500B02C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3493335D21E6935F007AAAB9;
-			remoteInfo = PurchaseTester;
-		};
-		2DD500FE2C519EB4009C19B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2DD500B02C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2D54BF612437DED800FF4EE4;
-			remoteInfo = WatchPurchaseTester;
-		};
-		2DD501002C519EB4009C19B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2DD500B02C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2D54BF6D2437DED900FF4EE4;
-			remoteInfo = "WatchPurchaseTester Extension";
-		};
 		2DD501052C519EB4009C19B7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
@@ -1182,31 +1161,6 @@
 		2DD500902C519EB4009C19B7 /* PaywallsTester.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = PaywallsTester.xcworkspace; sourceTree = "<group>"; };
 		2DD500912C519EB4009C19B7 /* Postprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Postprocessor.sh; sourceTree = "<group>"; };
 		2DD500922C519EB4009C19B7 /* Preprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Preprocessor.sh; sourceTree = "<group>"; };
-		2DD500942C519EB4009C19B7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		2DD500952C519EB4009C19B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DD500962C519EB4009C19B7 /* CatsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatsViewController.swift; sourceTree = "<group>"; };
-		2DD500972C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		2DD500982C519EB4009C19B7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2DD500992C519EB4009C19B7 /* InitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
-		2DD5009A2C519EB4009C19B7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		2DD5009C2C519EB4009C19B7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		2DD5009E2C519EB4009C19B7 /* PurchaseTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurchaseTester.entitlements; sourceTree = "<group>"; };
-		2DD5009F2C519EB4009C19B7 /* SwiftPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftPaywall.swift; sourceTree = "<group>"; };
-		2DD500A12C519EB4009C19B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DD500A22C519EB4009C19B7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2DD500A32C519EB4009C19B7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
-		2DD500A62C519EB4009C19B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DD500A72C519EB4009C19B7 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
-		2DD500A82C519EB4009C19B7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2DD500A92C519EB4009C19B7 /* InterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceController.swift; sourceTree = "<group>"; };
-		2DD500AA2C519EB4009C19B7 /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
-		2DD500AB2C519EB4009C19B7 /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
-		2DD500AD2C519EB4009C19B7 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		2DD500AE2C519EB4009C19B7 /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; };
-		2DD500AF2C519EB4009C19B7 /* Podfile.lock */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
-		2DD500B02C519EB4009C19B7 /* PurchaseTester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PurchaseTester.xcodeproj; sourceTree = "<group>"; };
-		2DD500B12C519EB4009C19B7 /* PurchaseTester.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = PurchaseTester.xcworkspace; sourceTree = "<group>"; };
-		2DD500B22C519EB4009C19B7 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = "<group>"; };
 		2DD500B42C519EB4009C19B7 /* ConfiguredPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfiguredPurchases.swift; sourceTree = "<group>"; };
 		2DD500B52C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2DD500B62C519EB4009C19B7 /* Core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
@@ -2577,62 +2531,6 @@
 			path = PaywallsTester;
 			sourceTree = "<group>";
 		};
-		2DD500A02C519EB4009C19B7 /* PurchaseTester */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500942C519EB4009C19B7 /* AppDelegate.swift */,
-				2DD500952C519EB4009C19B7 /* Assets.xcassets */,
-				2DD500962C519EB4009C19B7 /* CatsViewController.swift */,
-				2DD500972C519EB4009C19B7 /* Constants.swift */,
-				2DD500982C519EB4009C19B7 /* Info.plist */,
-				2DD500992C519EB4009C19B7 /* InitialViewController.swift */,
-				2DD5009B2C519EB4009C19B7 /* LaunchScreen.storyboard */,
-				2DD5009D2C519EB4009C19B7 /* Main.storyboard */,
-				2DD5009E2C519EB4009C19B7 /* PurchaseTester.entitlements */,
-				2DD5009F2C519EB4009C19B7 /* SwiftPaywall.swift */,
-			);
-			path = PurchaseTester;
-			sourceTree = "<group>";
-		};
-		2DD500A52C519EB4009C19B7 /* WatchPurchaseTester */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500A12C519EB4009C19B7 /* Assets.xcassets */,
-				2DD500A22C519EB4009C19B7 /* Info.plist */,
-				2DD500A42C519EB4009C19B7 /* Interface.storyboard */,
-			);
-			path = WatchPurchaseTester;
-			sourceTree = "<group>";
-		};
-		2DD500AC2C519EB4009C19B7 /* WatchPurchaseTester Extension */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500A62C519EB4009C19B7 /* Assets.xcassets */,
-				2DD500A72C519EB4009C19B7 /* ExtensionDelegate.swift */,
-				2DD500A82C519EB4009C19B7 /* Info.plist */,
-				2DD500A92C519EB4009C19B7 /* InterfaceController.swift */,
-				2DD500AA2C519EB4009C19B7 /* NotificationController.swift */,
-				2DD500AB2C519EB4009C19B7 /* PushNotificationPayload.apns */,
-			);
-			path = "WatchPurchaseTester Extension";
-			sourceTree = "<group>";
-		};
-		2DD500B32C519EB4009C19B7 /* PurchaseTester */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500A02C519EB4009C19B7 /* PurchaseTester */,
-				2DD500A52C519EB4009C19B7 /* WatchPurchaseTester */,
-				2DD500AC2C519EB4009C19B7 /* WatchPurchaseTester Extension */,
-				2DD500AD2C519EB4009C19B7 /* .gitignore */,
-				2DD500AE2C519EB4009C19B7 /* Podfile */,
-				2DD500AF2C519EB4009C19B7 /* Podfile.lock */,
-				2DD500B02C519EB4009C19B7 /* PurchaseTester.xcodeproj */,
-				2DD500B12C519EB4009C19B7 /* PurchaseTester.xcworkspace */,
-				2DD500B22C519EB4009C19B7 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */,
-			);
-			path = PurchaseTester;
-			sourceTree = "<group>";
-		};
 		2DD500B82C519EB4009C19B7 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -2772,20 +2670,9 @@
 			isa = PBXGroup;
 			children = (
 				2DD500932C519EB4009C19B7 /* PaywallsTester */,
-				2DD500B32C519EB4009C19B7 /* PurchaseTester */,
 				2DD500EE2C519EB4009C19B7 /* PurchaseTesterSwiftUI */,
 			);
 			path = TestingApps;
-			sourceTree = "<group>";
-		};
-		2DD500F02C519EB4009C19B7 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500FD2C519EB4009C19B7 /* PurchaseTester.app */,
-				2DD500FF2C519EB4009C19B7 /* WatchPurchaseTester.app */,
-				2DD501012C519EB4009C19B7 /* WatchPurchaseTester Extension.appex */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		2DD500F22C519EB4009C19B7 /* Products */ = {
@@ -4676,10 +4563,6 @@
 					ProjectRef = 2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */;
 				},
 				{
-					ProductGroup = 2DD500F02C519EB4009C19B7 /* Products */;
-					ProjectRef = 2DD500B02C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-				},
-				{
 					ProductGroup = 2DD500F42C519EB4009C19B7 /* Products */;
 					ProjectRef = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
 				},
@@ -4729,27 +4612,6 @@
 			fileType = wrapper.application;
 			path = PaywallsTester.app;
 			remoteRef = 2DD500F72C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2DD500FD2C519EB4009C19B7 /* PurchaseTester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = PurchaseTester.app;
-			remoteRef = 2DD500FC2C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2DD500FF2C519EB4009C19B7 /* WatchPurchaseTester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = WatchPurchaseTester.app;
-			remoteRef = 2DD500FE2C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2DD501012C519EB4009C19B7 /* WatchPurchaseTester Extension.appex */ = {
-			isa = PBXReferenceProxy;
-			fileType = "wrapper.app-extension";
-			path = "WatchPurchaseTester Extension.appex";
-			remoteRef = 2DD501002C519EB4009C19B7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		2DD501062C519EB4009C19B7 /* PurchaseTester.app */ = {
@@ -5920,30 +5782,6 @@
 				2DD500892C519EB4009C19B7 /* fr */,
 			);
 			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		2DD5009B2C519EB4009C19B7 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DD5009A2C519EB4009C19B7 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		2DD5009D2C519EB4009C19B7 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DD5009C2C519EB4009C19B7 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		2DD500A42C519EB4009C19B7 /* Interface.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DD500A32C519EB4009C19B7 /* Base */,
-			);
-			name = Interface.storyboard;
 			sourceTree = "<group>";
 		};
 		887A5FF52C1D037000E1A461 /* Localizable.strings */ = {
