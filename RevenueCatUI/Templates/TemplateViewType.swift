@@ -141,23 +141,6 @@ extension PaywallData {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct BackgroundedTemplateView: ViewModifier {
-    let configuration: TemplateViewConfiguration
-
-    @Environment(\.paywallContentMaxWidth)
-    private var contentMaxWidth
-
-    func body(content: Content) -> some View {
-        ZStack {
-            configuration.backgroundView
-                .frame(minWidth: 0, maxWidth: .infinity)
-            content
-                .frame(maxWidth: contentMaxWidth)
-        }
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
     func adaptTemplateView(with configuration: TemplateViewConfiguration) -> some View {
@@ -244,6 +227,23 @@ private extension TemplateViewConfiguration {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct BackgroundedTemplateView: ViewModifier {
+    let configuration: TemplateViewConfiguration
+
+    @Environment(\.paywallContentMaxWidth)
+    private var contentMaxWidth
+
+    func body(content: Content) -> some View {
+        ZStack {
+            configuration.backgroundView
+                .frame(minWidth: 0, maxWidth: .infinity)
+            content
+                .frame(maxWidth: contentMaxWidth)
+        }
+    }
 }
 
 // MARK: -
