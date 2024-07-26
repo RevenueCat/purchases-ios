@@ -141,7 +141,7 @@ extension PaywallData {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BackgroundedTemplateView: ViewModifier {
+private struct BackgroundedTemplateView: ViewModifier {
     let configuration: TemplateViewConfiguration
 
     @Environment(\.paywallContentMaxWidth)
