@@ -155,7 +155,7 @@ extension View {
 
     func adaptTemplateView(with configuration: TemplateViewConfiguration) -> some View {
         self
-            .background(configuration.backgroundView)
+            .modifier(BackgroundedTemplateView(configuration: configuration))
             .adjustColorScheme(with: configuration)
             .adjustSize(with: configuration.mode)
     }
