@@ -254,7 +254,7 @@ private struct ContentMaxWidthKey: EnvironmentKey {
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-extension EnvironmentValues {
+public extension EnvironmentValues {
     var contentMaxWidth: CGFloat {
         get { self[ContentMaxWidthKey.self] }
         set { self[ContentMaxWidthKey.self] = newValue }
