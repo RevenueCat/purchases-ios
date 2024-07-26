@@ -306,6 +306,9 @@ struct ManageSubscriptionButton: View {
         .applyIf(self.path.type != .cancel) {
             $0.buttonStyle(ManageSubscriptionsButtonStyle())
         }
+        .applyIf(self.path.type == .cancel) {
+            $0.foregroundColor(Color.red)
+        }
         .disabled(self.viewModel.loadingPath != nil)
     }
 }
