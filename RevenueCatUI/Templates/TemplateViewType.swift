@@ -238,3 +238,18 @@ private extension TemplateViewConfiguration {
     }
 
 }
+
+// MARK: -
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+private struct ContentMaxWidthKey: EnvironmentKey {
+    static let defaultValue: CGFloat = .infinity
+}
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+extension EnvironmentValues {
+    var contentMaxWidth: CGFloat {
+        get { self[ContentMaxWidthKey.self] }
+        set { self[ContentMaxWidthKey.self] = newValue }
+    }
+}
