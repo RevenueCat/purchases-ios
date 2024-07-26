@@ -32,7 +32,7 @@ jobs:
           echo "User is a member of the organization"
 
 
-      - name: 'Get github branch'
+      - name: 'Get GitHub branch'
         run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
         env:
           REPO: ${{ github.repository }}
