@@ -145,8 +145,10 @@ struct BackgroundedTemplateView: ViewModifier {
     let configuration: TemplateViewConfiguration
 
     func body(content: Content) -> some View {
-        content
-            .background(configuration.backgroundView)
+        ZStack {
+            configuration.backgroundView
+            content
+        }
     }
 }
 
