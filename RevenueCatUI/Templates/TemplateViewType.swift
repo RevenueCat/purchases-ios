@@ -144,11 +144,15 @@ extension PaywallData {
 struct BackgroundedTemplateView: ViewModifier {
     let configuration: TemplateViewConfiguration
 
+    @Environment(\.contentMaxWidth)
+    private var contentMaxWidth
+
     func body(content: Content) -> some View {
         ZStack {
             configuration.backgroundView
                 .frame(minWidth: 0, maxWidth: .infinity)
             content
+                .frame(maxWidth: contentMaxWidth)
         }
     }
 }
