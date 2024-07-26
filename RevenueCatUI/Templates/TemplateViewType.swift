@@ -144,7 +144,7 @@ extension PaywallData {
 struct BackgroundedTemplateView: ViewModifier {
     let configuration: TemplateViewConfiguration
 
-    @Environment(\.contentMaxWidth)
+    @Environment(\.paywallContentMaxWidth)
     private var contentMaxWidth
 
     func body(content: Content) -> some View {
@@ -255,7 +255,7 @@ private struct ContentMaxWidthKey: EnvironmentKey {
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 public extension EnvironmentValues {
-    var contentMaxWidth: CGFloat {
+    var paywallContentMaxWidth: CGFloat {
         get { self[ContentMaxWidthKey.self] }
         set { self[ContentMaxWidthKey.self] = newValue }
     }
