@@ -303,7 +303,9 @@ struct ManageSubscriptionButton: View {
                                  product: promotionalOfferData.product,
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .applyIf(self.path.type != .cancel) {
+            $0.buttonStyle(ManageSubscriptionsButtonStyle())
+        }
         .disabled(self.viewModel.loadingPath != nil)
     }
 }
