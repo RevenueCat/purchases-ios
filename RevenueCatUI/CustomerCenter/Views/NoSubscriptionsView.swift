@@ -41,6 +41,8 @@ struct NoSubscriptionsView: View {
     private var colorScheme
     @State
     private var showRestoreAlert: Bool = false
+    @State
+    private var isRestoring: Bool = false
 
     init(configuration: CustomerCenterConfigData) {
         self.configuration = configuration
@@ -66,10 +68,16 @@ struct NoSubscriptionsView: View {
 
                 Spacer()
 
-                Button(localization.commonLocalizedString(for: .restorePurchases)) {
+                Button(action: {
                     showRestoreAlert = true
-                }
-                .restorePurchasesAlert(isPresented: $showRestoreAlert)
+                }, label: {
+                    if self.isRestoring {
+                        TintedProgressView()
+                    } else {
+                        Text(localization.commonLocalizedString(for: .restorePurchases))
+                    }
+                })
+                .restorePurchasesAlert(isPresented: $showRestoreAlert, isRestoring: $isRestoring)
                 .buttonStyle(ManageSubscriptionsButtonStyle())
 
                 Button(localization.commonLocalizedString(for: .cancel)) {

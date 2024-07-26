@@ -32,8 +32,20 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var showRestoreAlert: Bool = false
     @Published
-    var feedbackSurveyData: FeedbackSurveyData?
+    var restoringPurchases: Bool = false {
+        didSet {
+            if restoringPurchases {
+                if let restorePath = screen.paths.first(where: { $0.type == .missingPurchase }) {
+                    self.loadingPath = restorePath
+                }
+            } else {
+                self.loadingPath = nil
+            }
+        }
+    }
 
+    @Published
+    var feedbackSurveyData: FeedbackSurveyData?
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
     @Published

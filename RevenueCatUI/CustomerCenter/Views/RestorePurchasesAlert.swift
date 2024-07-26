@@ -29,6 +29,8 @@ struct RestorePurchasesAlert: ViewModifier {
 
     @Binding
     var isPresented: Bool
+    @Binding
+    var isRestoring: Bool
     @Environment(\.openURL)
     var openURL
 
@@ -61,7 +63,11 @@ struct RestorePurchasesAlert: ViewModifier {
                                     """),
                         primaryButton: .default(Text("Check past purchases"), action: {
                             Task {
+                                isRestoring = true
                                 let alertType = await self.customerCenterViewModel.performRestore()
+                                // Simulate a delay to ensure the progress view is shown for at least one second
+                                await Task.sleep(seconds: 1)
+                                isRestoring = false
                                 self.setAlertType(alertType)
                             }
                         }),
@@ -123,8 +129,8 @@ private extension RestorePurchasesAlert {
 @available(watchOS, unavailable)
 extension View {
 
-    func restorePurchasesAlert(isPresented: Binding<Bool>) -> some View {
-        self.modifier(RestorePurchasesAlert(isPresented: isPresented))
+    func restorePurchasesAlert(isPresented: Binding<Bool>, isRestoring: Binding<Bool>) -> some View {
+        self.modifier(RestorePurchasesAlert(isPresented: isPresented, isRestoring: isRestoring))
     }
 
 }

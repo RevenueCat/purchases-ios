@@ -321,7 +321,8 @@ struct ManageSubscriptionButton: View {
         })
         .buttonStyle(ManageSubscriptionsButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert,
+                               isRestoring: self.$viewModel.restoringPurchases)
         .sheet(item: self.$viewModel.promotionalOfferData,
                onDismiss: {
             Task {
