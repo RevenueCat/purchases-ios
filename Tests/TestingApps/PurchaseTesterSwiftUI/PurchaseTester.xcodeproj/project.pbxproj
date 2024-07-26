@@ -22,6 +22,9 @@
 		2CF428692863EEAC007E6A78 /* Package+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF428682863EEAC007E6A78 /* Package+Extensions.swift */; };
 		2DD2CBB129831A09004A3A6A /* ReceiptInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */; };
 		2DD2CBB329831A22004A3A6A /* ReceiptVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */; };
+		2DD6E5812C543AFA0068E695 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2DD6E5802C543AFA0068E695 /* ReceiptParser */; };
+		2DD6E5832C543AFA0068E695 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2DD6E5822C543AFA0068E695 /* RevenueCat */; };
+		2DD6E5852C543AFA0068E695 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2DD6E5842C543AFA0068E695 /* RevenueCatUI */; };
 		4F1F5E992A18124500C4EB88 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E982A18124500C4EB88 /* ProxyManager.swift */; };
 		4F1F5E9B2A18124C00C4EB88 /* ProxyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */; };
 		4F1F5E9D2A1814EF00C4EB88 /* ProxyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */; };
@@ -184,6 +187,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DD6E5832C543AFA0068E695 /* RevenueCat in Frameworks */,
+				2DD6E5812C543AFA0068E695 /* ReceiptParser in Frameworks */,
+				2DD6E5852C543AFA0068E695 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +410,9 @@
 			);
 			name = Core;
 			packageProductDependencies = (
+				2DD6E5802C543AFA0068E695 /* ReceiptParser */,
+				2DD6E5822C543AFA0068E695 /* RevenueCat */,
+				2DD6E5842C543AFA0068E695 /* RevenueCatUI */,
 			);
 			productName = Core;
 			productReference = 578DAA202947DD8C001700FD /* Core.framework */;
@@ -973,6 +982,18 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2DD6E5802C543AFA0068E695 /* ReceiptParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReceiptParser;
+		};
+		2DD6E5822C543AFA0068E695 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
+		};
+		2DD6E5842C543AFA0068E695 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCatUI;
+		};
 		577E0E3E29159B340071E063 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 577E0E3B29159A8B0071E063 /* XCRemoteSwiftPackageReference "purchases-ios" */;
