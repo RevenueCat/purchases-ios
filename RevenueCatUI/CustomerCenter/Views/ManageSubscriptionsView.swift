@@ -25,17 +25,13 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct ManageSubscriptionsView: View {
 
-    @Environment(\.openURL)
-    var openURL
-
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
 
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
-
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
@@ -87,7 +83,7 @@ struct ManageSubscriptionsView: View {
 
                 if let subscriptionInformation = self.viewModel.subscriptionInformation {
                     SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                            localization: localization,
+                                            localization: self.localization,
                                             refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                 }
 
@@ -251,15 +247,20 @@ struct ManageSubscriptionsButtonsView: View {
     var viewModel: ManageSubscriptionsViewModel
     @Binding
     var loadingPath: CustomerCenterConfigData.HelpPath?
+    @Environment(\.openURL)
+    var openURL
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
         VStack(spacing: 16) {
             let filteredPaths = self.viewModel.screen.paths.filter { path in
-                #if targetEnvironment(macCatalyst)
-                    return path.type == .refundRequest
-                #else
-                    return true
-                #endif
+#if targetEnvironment(macCatalyst)
+                return path.type == .refundRequest
+#else
+                return true
+#endif
             }
             ForEach(filteredPaths, id: \.id) { path in
                 ManageSubscriptionButton(path: path, viewModel: self.viewModel)

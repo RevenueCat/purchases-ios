@@ -37,6 +37,10 @@ struct RestorePurchasesAlert: ViewModifier {
     private var alertType: AlertType = .restorePurchases
     @Environment(\.dismiss)
     private var dismiss
+    @Environment(\.localization)
+    private var localization
+    @Environment(\.supportInformation)
+    private var supportInformation: CustomerCenterConfigData.Support?
 
     enum AlertType: Identifiable {
         case purchasesRecovered, purchasesNotFound, restorePurchases
@@ -75,7 +79,21 @@ struct RestorePurchasesAlert: ViewModifier {
                     return Alert(title: Text(""),
                                  message: Text("We couldn’t find any additional purchases under this account. \n\n" +
                                                "Contact support for assistance if you think this is an error."),
-                                 dismissButton: .default(Text("Dismiss")) {
+                                 primaryButton: .default(Text(localization.commonLocalizedString(for: .contactSupport)),
+                                                         action: {
+                        if let supportInformation = self.supportInformation {
+                            let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+                            let body = self.localization.commonLocalizedString(for: .defaultBody)
+                            if let url = URLUtilities.createMailURLIfPossible(email: supportInformation.email,
+                                                                              subject: subject,
+                                                                              body: body) {
+                                Task {
+                                    openURL(url)
+                                }
+                            }
+                        }
+                    }),
+                                 secondaryButton: .default(Text("Dismiss")) {
                         dismiss()
                     })
                 }
