@@ -14,19 +14,31 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum URLUtilities {
 
-    static func createMailURL() -> URL? {
-        let subject = "Support Request"
-        let body = "Please describe your issue or question."
+#if os(iOS)
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    static func createMailURLIfPossible(email: String, subject: String, body: String) -> URL? {
         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
 
-        // swiftlint:disable:next todo
-        // TODO: make configurable
-        let urlString = "mailto:support@revenuecat.com?subject=\(encodedSubject)&body=\(encodedBody)"
-        return URL(string: urlString)
+        let urlString = "mailto:\(email)?subject=\(encodedSubject)&body=\(encodedBody)"
+
+        if let url = URL(string: urlString),
+           UIApplication.shared.canOpenURL(url) {
+            return url
+        }
+
+        return nil
     }
+
+#endif
 
 }

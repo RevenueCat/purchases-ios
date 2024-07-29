@@ -21,16 +21,22 @@ struct LocalizationKey: EnvironmentKey {
 
 }
 
+struct AppearanceKey: EnvironmentKey {
+
+    static let defaultValue: CustomerCenterConfigData.Appearance = .default
+
+}
+
+struct SupportKey: EnvironmentKey {
+
+    static let defaultValue: CustomerCenterConfigData.Support? = nil
+
+}
+
 extension CustomerCenterConfigData.Localization {
 
     /// Default ``CustomerCenterConfigData.Localization`` value for Environment usage
     public static let `default` = CustomerCenterConfigData.Localization(locale: "en_US", localizedStrings: [:])
-
-}
-
-struct AppearanceKey: EnvironmentKey {
-
-    static let defaultValue: CustomerCenterConfigData.Appearance = .default
 
 }
 
@@ -51,6 +57,11 @@ extension EnvironmentValues {
     var appearance: CustomerCenterConfigData.Appearance {
         get { self[AppearanceKey.self] }
         set { self[AppearanceKey.self] = newValue }
+    }
+
+    var supportInformation: CustomerCenterConfigData.Support? {
+        get { self[SupportKey.self] }
+        set { self[SupportKey.self] = newValue }
     }
 
 }

@@ -37,6 +37,10 @@ struct RestorePurchasesAlert: ViewModifier {
     private var alertType: AlertType = .restorePurchases
     @Environment(\.dismiss)
     private var dismiss
+    @Environment(\.localization)
+    private var localization
+    @Environment(\.supportInformation)
+    private var supportInformation: CustomerCenterConfigData.Support?
 
     enum AlertType: Identifiable {
         case purchasesRecovered, purchasesNotFound, restorePurchases
@@ -60,14 +64,14 @@ struct RestorePurchasesAlert: ViewModifier {
                                 self.setAlertType(alertType)
                             }
                         }),
-                        secondaryButton: .cancel(Text("Cancel"))
+                        secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .cancel)))
                     )
 
                 case .purchasesRecovered:
                     return Alert(title: Text("Purchases recovered!"),
                                  message: Text("We applied the previously purchased items to your account. " +
                                                "Sorry for the inconvenience."),
-                                 dismissButton: .default(Text("Dismiss")) {
+                                 dismissButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
 
@@ -75,7 +79,20 @@ struct RestorePurchasesAlert: ViewModifier {
                     return Alert(title: Text(""),
                                  message: Text("We couldn’t find any additional purchases under this account. \n\n" +
                                                "Contact support for assistance if you think this is an error."),
-                                 dismissButton: .default(Text("Dismiss")) {
+                                 primaryButton: .default(Text(localization.commonLocalizedString(for: .contactSupport)),
+                                                         action: {
+                        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+                        let body = self.localization.commonLocalizedString(for: .defaultBody)
+                        if let supportInformation = self.supportInformation,
+                           let url = URLUtilities.createMailURLIfPossible(email: supportInformation.email,
+                                                                          subject: subject,
+                                                                          body: body) {
+                            Task {
+                                openURL(url)
+                            }
+                        }
+                    }),
+                                 secondaryButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
                 }

@@ -15,20 +15,24 @@
 
 import Foundation
 
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting file_length
 public typealias RCColor = PaywallColor
 
-// swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
     public let screens: [Screen.ScreenType: Screen]
     public let appearance: Appearance
     public let localization: Localization
+    public let support: Support
 
-    public init(screens: [Screen.ScreenType: Screen], appearance: Appearance, localization: Localization) {
+    public init(screens: [Screen.ScreenType: Screen],
+                appearance: Appearance,
+                localization: Localization,
+                support: Support) {
         self.screens = screens
         self.appearance = appearance
         self.localization = localization
+        self.support = support
     }
 
     public struct Localization {
@@ -60,6 +64,10 @@ public struct CustomerCenterConfigData {
             case subEarliestExpiration = "sub_earliest_expiration"
             case subEarliestRenewal = "sub_earliest_renewal"
             case subExpired = "sub_expired"
+            case contactSupport = "contact_support"
+            case defaultBody = "default_body"
+            case defaultSubject = "default_subject"
+            case dismiss = "dismiss"
 
             var defaultValue: String {
                 switch self {
@@ -97,6 +105,14 @@ public struct CustomerCenterConfigData {
                     return "This is your subscription with the earliest billing date."
                 case .subExpired:
                     return "This subscription has expired."
+                case .contactSupport:
+                    return "Contact support"
+                case .defaultBody:
+                    return "Please describe your issue or question."
+                case .defaultSubject:
+                    return "Support Request"
+                case .dismiss:
+                    return "Dismiss"
                 }
             }
 
@@ -267,6 +283,16 @@ public struct CustomerCenterConfigData {
 
     }
 
+    public struct Support {
+
+        public let email: String
+
+        public init(email: String) {
+            self.email = email
+        }
+
+    }
+
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -280,6 +306,7 @@ extension CustomerCenterConfigData {
             let type = CustomerCenterConfigData.Screen.ScreenType(from: $0.key)
             return (type, Screen(from: $0.value, localization: localization))
         })
+        self.support = Support(from: response.customerCenter.support)
     }
 
 }
@@ -393,6 +420,14 @@ extension CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option {
             self.promotionalOffer = nil
         }
 
+    }
+
+}
+
+extension CustomerCenterConfigData.Support {
+
+    init(from response: CustomerCenterConfigResponse.Support) {
+        self.email = response.email
     }
 
 }
