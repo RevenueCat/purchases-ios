@@ -127,7 +127,6 @@
 		2C10F19327AC319A0078444D /* EntitlementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementsView.swift; sourceTree = "<group>"; };
 		2C10F19627AC31B80078444D /* CustomerInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoView.swift; sourceTree = "<group>"; };
 		2C10F19927AC32840078444D /* SubscriberAttributesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesView.swift; sourceTree = "<group>"; };
-		2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RevenueCat_SwiftUIConfiguration.storekit; sourceTree = "<group>"; };
 		2C8C610D27CEBEF200F86F21 /* PurchaseTester-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PurchaseTester-Info.plist"; sourceTree = "<group>"; };
 		2CCAF2AB286232EB0004E2CA /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseTesterApp.swift; sourceTree = "<group>"; };
@@ -251,7 +250,6 @@
 			children = (
 				2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */,
 				2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */,
-				2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */,
 				2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */,
 				575642A5290C7D3100719219 /* Windows.swift */,
 				2CF428672863EE9D007E6A78 /* Extensions */,
