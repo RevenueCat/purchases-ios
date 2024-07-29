@@ -18,7 +18,7 @@
                BlueprintIdentifier = "2CD2C4F4278C9B02005D1CC2"
                BuildableName = "PurchaseTester.app"
                BlueprintName = "PurchaseTester"
-               ReferencedContainer = "container:PurchaseTester.xcodeproj">
+               ReferencedContainer = "container:Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "2CD2C4F4278C9B02005D1CC2"
             BuildableName = "PurchaseTester.app"
             BlueprintName = "PurchaseTester"
-            ReferencedContainer = "container:PurchaseTester.xcodeproj">
+            ReferencedContainer = "container:Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
@@ -67,7 +67,7 @@
             BlueprintIdentifier = "2CD2C4F4278C9B02005D1CC2"
             BuildableName = "PurchaseTester.app"
             BlueprintName = "PurchaseTester"
-            ReferencedContainer = "container:PurchaseTester.xcodeproj">
+            ReferencedContainer = "container:Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

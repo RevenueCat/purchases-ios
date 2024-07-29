@@ -187,8 +187,8 @@
             {
               "eligibility" : [
                 "expired",
-                "existing",
-                "new"
+                "new",
+                "existing"
               ],
               "internalID" : "94C72762",
               "isStackable" : true,
@@ -360,8 +360,8 @@
           "codeOffers" : [
             {
               "eligibility" : [
-                "expired",
                 "existing",
+                "expired",
                 "new"
               ],
               "internalID" : "3793E8C8",
