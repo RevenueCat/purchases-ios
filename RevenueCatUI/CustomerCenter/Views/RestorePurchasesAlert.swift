@@ -64,14 +64,14 @@ struct RestorePurchasesAlert: ViewModifier {
                                 self.setAlertType(alertType)
                             }
                         }),
-                        secondaryButton: .cancel(Text("Cancel"))
+                        secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .cancel)))
                     )
 
                 case .purchasesRecovered:
                     return Alert(title: Text("Purchases recovered!"),
                                  message: Text("We applied the previously purchased items to your account. " +
                                                "Sorry for the inconvenience."),
-                                 dismissButton: .default(Text("Dismiss")) {
+                                 dismissButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
 
