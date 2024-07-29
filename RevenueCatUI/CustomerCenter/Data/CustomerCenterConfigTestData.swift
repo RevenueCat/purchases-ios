@@ -104,7 +104,7 @@ enum CustomerCenterConfigTestData {
                 "back": "Back"
             ]
         ),
-        support: .init(email: "support@revenuecat.com")
+        support: .init(email: "test-support@revenuecat.com")
     )
 
     static let subscriptionInformationMonthlyRenewing: SubscriptionInformation = .init(
