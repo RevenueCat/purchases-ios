@@ -147,7 +147,6 @@
 		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		575642A5290C7D3100719219 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		5759B471296F9B3B002472D5 /* LocalReceiptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReceiptView.swift; sourceTree = "<group>"; };
-		576B00A02950FA9700139C53 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; path = ../../PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = "<group>"; };
 		578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurchaseTesterWatchOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		578DAA0B2947DD21001700FD /* PurchaseTesterWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseTesterWatchApp.swift; sourceTree = "<group>"; };
 		578DAA0D2947DD21001700FD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -253,7 +252,6 @@
 				2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */,
 				2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */,
 				2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */,
-				576B00A02950FA9700139C53 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */,
 				2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */,
 				575642A5290C7D3100719219 /* Windows.swift */,
 				2CF428672863EE9D007E6A78 /* Extensions */,
@@ -728,7 +726,6 @@
 				INFOPLIST_FILE = "PurchaseTester-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Purchase Tester";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -770,7 +767,6 @@
 				INFOPLIST_FILE = "PurchaseTester-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Purchase Tester";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
