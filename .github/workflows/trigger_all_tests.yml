@@ -31,14 +31,17 @@ jobs:
           fi
           echo "User is a member of the organization"
 
-
       # Note: actions based on issue comments always trigger from the main branch. So we need to tell CircleCI to use a specific branch. 
       # We can do that by passing in the target-branch. 
       # This solution is based on this comment: https://github.com/CircleCI-Public/trigger-circleci-pipeline-action/issues/61#issuecomment-1662021882
       # But we can also see that the following code reads from this parameter: https://github.com/CircleCI-Public/trigger-circleci-pipeline-action/blob/a81cd720792a6088debd7f182b552845abb86f1b/src/lib/CircleCIPipelineTrigger.ts#L66
       # Even though it seems to be undocumented as of writing. 
+      # 
+      # Note 2: this assumes that the github client is installed
+      # As of writing, this is installed in ubuntu-latest
+      # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cli-tools
       
-      - name: 'Get GitHub branch'
+      - name: 'Get PR branch'
         run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
         env:
           REPO: ${{ github.repository }}
