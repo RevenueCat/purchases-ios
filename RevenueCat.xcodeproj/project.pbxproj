@@ -1207,7 +1207,6 @@
 		2DD500EA2C519EB4009C19B7 /* PurchaseTester-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PurchaseTester-Info.plist"; sourceTree = "<group>"; };
 		2DD500EB2C519EB4009C19B7 /* PurchaseTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurchaseTester.entitlements; sourceTree = "<group>"; };
 		2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PurchaseTester.xcodeproj; sourceTree = "<group>"; };
-		2DD500ED2C519EB4009C19B7 /* PurchaseTester.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = PurchaseTester.xcworkspace; sourceTree = "<group>"; };
 		2DD58DD727F240EB000FDFE3 /* EmptyFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyFile.swift; sourceTree = "<group>"; };
 		2DD6E5882C544C420068E695 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = "<group>"; };
 		2DD6E58B2C544D2D0068E695 /* PurchaseTesterStoreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = PurchaseTesterStoreKitConfiguration.storekit; sourceTree = "<group>"; };
@@ -2662,7 +2661,6 @@
 				2DD500EA2C519EB4009C19B7 /* PurchaseTester-Info.plist */,
 				2DD500EB2C519EB4009C19B7 /* PurchaseTester.entitlements */,
 				2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */,
-				2DD500ED2C519EB4009C19B7 /* PurchaseTester.xcworkspace */,
 				2DD6E58B2C544D2D0068E695 /* PurchaseTesterStoreKitConfiguration.storekit */,
 			);
 			path = PurchaseTesterSwiftUI;
