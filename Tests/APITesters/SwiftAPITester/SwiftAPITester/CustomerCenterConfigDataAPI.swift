@@ -14,7 +14,7 @@ func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
     let localization: CustomerCenterConfigData.Localization = data.localization
     let support: CustomerCenterConfigData.Support = data.support
 
-    let _: CustomerCenterConfigData = .init(screens: screens, 
+    let _: CustomerCenterConfigData = .init(screens: screens,
                                             appearance: appearance,
                                             localization: localization,
                                             support: support)
