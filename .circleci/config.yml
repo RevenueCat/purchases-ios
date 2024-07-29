@@ -1231,8 +1231,19 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Submit Purchase Tester
-          working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
           command: bundle exec fastlane deploy_purchase_tester
+
+  deploy-purchase-tester-dry-run:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - update-spm-installation-commit
+      - run:
+          name: Submit Purchase Tester
+          command: bundle exec fastlane deploy_purchase_tester dry_run:true
 
   deploy-to-spm:
     docker:
@@ -1421,3 +1432,4 @@ workflows:
       - installation-tests-carthage
       - installation-tests-xcode-direct-integration
       - installation-tests-receipt-parser
+      - deploy-purchase-tester-dry-run
