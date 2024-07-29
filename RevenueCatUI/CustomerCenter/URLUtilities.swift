@@ -18,6 +18,8 @@ import SwiftUI
 
 enum URLUtilities {
 
+#if os(iOS)
+
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
@@ -29,13 +31,14 @@ enum URLUtilities {
 
         let urlString = "mailto:\(email)?subject=\(encodedSubject)&body=\(encodedBody)"
 
-#if os(iOS)
         if let url = URL(string: urlString),
            UIApplication.shared.canOpenURL(url) {
             return url
         }
-#endif
+
         return nil
     }
+
+#endif
 
 }

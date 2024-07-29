@@ -81,19 +81,18 @@ struct RestorePurchasesAlert: ViewModifier {
                                                "Contact support for assistance if you think this is an error."),
                                  primaryButton: .default(Text(localization.commonLocalizedString(for: .contactSupport)),
                                                          action: {
-                        if let supportInformation = self.supportInformation {
-                            let subject = self.localization.commonLocalizedString(for: .defaultSubject)
-                            let body = self.localization.commonLocalizedString(for: .defaultBody)
-                            if let url = URLUtilities.createMailURLIfPossible(email: supportInformation.email,
-                                                                              subject: subject,
-                                                                              body: body) {
-                                Task {
-                                    openURL(url)
-                                }
+                        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+                        let body = self.localization.commonLocalizedString(for: .defaultBody)
+                        if let supportInformation = self.supportInformation,
+                           let url = URLUtilities.createMailURLIfPossible(email: supportInformation.email,
+                                                                          subject: subject,
+                                                                          body: body) {
+                            Task {
+                                openURL(url)
                             }
                         }
                     }),
-                                 secondaryButton: .default(Text("Dismiss")) {
+                                 secondaryButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
                 }

@@ -67,6 +67,7 @@ public struct CustomerCenterConfigData {
             case contactSupport = "contact_support"
             case defaultBody = "default_body"
             case defaultSubject = "default_subject"
+            case dismiss = "dismiss"
 
             var defaultValue: String {
                 switch self {
@@ -110,6 +111,8 @@ public struct CustomerCenterConfigData {
                     return "Please describe your issue or question."
                 case .defaultSubject:
                     return "Support Request"
+                case .dismiss:
+                    return "Dismiss"
                 }
             }
 
