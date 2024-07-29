@@ -78,12 +78,6 @@ aliases:
         ignore: /.*/
       branches:
         only: main
-  non-patch-release-branches: &non-patch-release-branches
-    filters:
-      tags:
-        ignore: /.*/
-      branches:
-        only: /^release\/.*\.0$/
 
 commands:
   install-runtime:
@@ -577,7 +571,7 @@ jobs:
           name: RevenueCatUI API Tests
           command: bundle exec fastlane build_revenuecatui_api_tester
 
-  spm-revenuecat-ui-ios-17:
+  run-revenuecat-ui-ios-17:
     <<: *base-job
     parameters:
       xcode_version:
@@ -1242,53 +1236,6 @@ jobs:
           working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
           command: bundle exec fastlane deploy_purchase_tester
 
-  notify-on-non-patch-release-branches:
-    docker:
-      - image: "cimg/base:stable"
-    steps:
-      - slack/notify:
-          custom: |
-            {
-              "text": "Public facing changes detected",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "REMINDER :raised_hand:",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Do *public docs* need to be updated?"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Does the *SDK parity spreadsheet* need to be updated?"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    }
-                  ]
-                }
-              ]
-            }
-
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1324,7 +1271,7 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - spm-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-17
 
   build-test:
     when:
@@ -1337,6 +1284,7 @@ workflows:
       - lint
       - run-test-ios-17
       - pod-lib-lint
+      - run-revenuecat-ui-ios-17
 
   create-tag:
     when:
@@ -1383,11 +1331,6 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - notify-on-non-patch-release-branches:
-          requires:
-            - make-release
-          <<: *non-patch-release-branches
-          context: slack-secrets
 
   snapshot-bump:
     when:
@@ -1431,8 +1374,12 @@ workflows:
     jobs:
       - docs-deploy
 
-  # to trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
-  # and add a parameter called "run-manual-tests"
+  # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
+  # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields 
+  # and click "Trigger Pipeline" to begin the pipeline:
+  #   - Parameter Type: string
+  #   - Name: action
+  #   - Value: run-manual-tests
   all-tests:
     when:
       or:
@@ -1466,7 +1413,7 @@ workflows:
       - spm-release-build-xcode-15
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - spm-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
       - installation-tests-cocoapods
       - installation-tests-swift-package-manager

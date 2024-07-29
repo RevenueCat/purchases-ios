@@ -625,8 +625,10 @@ extension HTTPClient {
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
     ) -> Bool {
-        guard let httpURLResponse = httpURLResponse,
-              isRetryable(httpURLResponse) else { return false }
+
+        guard request.httpRequest.isRetryable,
+              let httpURLResponse = httpURLResponse,
+              isResponseRetryable(httpURLResponse) else { return false }
 
         // At this point, retryCount hasn't been incremented yet, so we'll need to do it early here
         // to determine if another retry is appropriate.
@@ -666,17 +668,17 @@ extension HTTPClient {
         return true
     }
 
-    internal func isRetryable(_ urlResponse: HTTPURLResponse) -> Bool {
+    internal func isResponseRetryable(_ urlResponse: HTTPURLResponse) -> Bool {
         let isStatusCodeRetryable = self.retriableStatusCodes.contains(urlResponse.httpStatusCode)
-        let isRetryableString = urlResponse.value(forHTTPHeaderField: ResponseHeader.isRetryable.rawValue)
-        let isRetryable: Bool
-        if let isRetryableString {
-            isRetryable = Bool(isRetryableString.lowercased()) ?? true
+        let doesServerAllowRetryString = urlResponse.value(forHTTPHeaderField: ResponseHeader.isRetryable.rawValue)
+        let doesServerAllowRetry: Bool
+        if let doesServerAllowRetryString = doesServerAllowRetryString {
+            doesServerAllowRetry = Bool(doesServerAllowRetryString.lowercased()) ?? true
         } else {
-            isRetryable = true
+            doesServerAllowRetry = true
         }
 
-        return isStatusCodeRetryable && isRetryable
+        return isStatusCodeRetryable && doesServerAllowRetry
     }
 
     internal func calculateRetryBackoffTime(
