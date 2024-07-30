@@ -67,6 +67,27 @@ extension Package: VariableDataProvider {
         }
     }
 
+    func roundPriceWithFormatter() -> String {
+        guard let formatter = self.storeProduct.priceFormatter else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        guard let priceToRound = formatter.number(from: self.storeProduct.localizedPriceString) else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        let originalMaximumFractionalDigits = formatter.maximumFractionDigits
+
+        defer { formatter.maximumFractionDigits = originalMaximumFractionalDigits }
+        formatter.maximumFractionDigits = 0
+
+        guard let roundedPriceString = formatter.string(from: priceToRound) else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        return roundedPriceString
+    }
+
     func roundPriceWithSearchAndReplace() -> String {
         let price = self.storeProduct.price
         let roundedPrice = NSDecimalNumber(decimal: price).rounding(accordingToBehavior: nil)
@@ -96,27 +117,6 @@ extension Package: VariableDataProvider {
         }
 
         return self.storeProduct.localizedPriceString.replacingOccurrences(of: unroundedPrice, with: roundedPrice)
-    }
-
-    func roundPriceWithFormatter() -> String {
-        guard let formatter = self.storeProduct.priceFormatter else {
-            return self.storeProduct.localizedPriceString
-        }
-
-        guard let priceToRound = formatter.number(from: self.storeProduct.localizedPriceString) else {
-            return self.storeProduct.localizedPriceString
-        }
-
-        let originalMaximumFractionalDigits = formatter.maximumFractionDigits
-
-        defer { formatter.maximumFractionDigits = originalMaximumFractionalDigits }
-        formatter.maximumFractionDigits = 0
-
-        guard let roundedPriceString = formatter.string(from: priceToRound) else {
-            return self.storeProduct.localizedPriceString
-        }
-
-        return roundedPriceString
     }
 
     var localizedPricePerWeek: String {
