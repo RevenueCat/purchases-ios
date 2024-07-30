@@ -41,7 +41,7 @@ jobs:
       # As of writing, this is installed in ubuntu-latest
       # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cli-tools
       
-      - name: 'Get PR branch'
+      - id: 'get-branch' # the id here is important since it gets reused in the next step
         run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
         env:
           REPO: ${{ github.repository }}
