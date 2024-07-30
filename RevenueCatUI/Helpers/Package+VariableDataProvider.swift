@@ -53,17 +53,9 @@ extension Package: VariableDataProvider {
 
     var localizedPrice: String {
         if shouldRoundPrices {
-            return self.localizedPriceRounded
+            return roundPriceWithFormatter()
         } else {
             return self.storeProduct.localizedPriceString
-        }
-    }
-
-    var localizedPriceRounded: String {
-        if self.storeProduct.priceFormatter != nil {
-            roundPriceWithFormatter()
-        } else {
-            roundPriceWithSearchAndReplace()
         }
     }
 
@@ -83,37 +75,6 @@ extension Package: VariableDataProvider {
         }
 
         return roundedPriceString
-    }
-
-    func roundPriceWithSearchAndReplace() -> String {
-        let price = self.storeProduct.price
-        let roundedPrice = NSDecimalNumber(decimal: price).rounding(accordingToBehavior: nil)
-
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            return self.storeProduct.localizedPriceString
-        }
-
-        guard let locale = localeByStorefrontCountryCode[countryCode] else {
-            return self.storeProduct.localizedPriceString
-        }
-
-        let withCents = NumberFormatter()
-        withCents.numberStyle = .currency
-        withCents.locale = locale
-        withCents.currencySymbol = ""
-
-        let withoutCents = NumberFormatter()
-        withoutCents.numberStyle = .currency
-        withoutCents.locale = locale
-        withoutCents.currencySymbol = ""
-        withoutCents.maximumFractionDigits = 0
-
-        guard let unroundedPrice = withCents.string(from: price as NSDecimalNumber),
-              let roundedPrice = withoutCents.string(from: roundedPrice as NSDecimalNumber) else {
-            return self.storeProduct.localizedPriceString
-        }
-
-        return self.storeProduct.localizedPriceString.replacingOccurrences(of: unroundedPrice, with: roundedPrice)
     }
 
     var localizedPricePerWeek: String {
