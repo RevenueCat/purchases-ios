@@ -1325,10 +1325,12 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - deploy-purchase-tester:
-          requires:
-            - make-release
-          <<: *release-tags
+      # temporarily disabled since this won't work when building directly from its workspace.
+      # there's another PR to re-enable it
+      # - deploy-purchase-tester:
+      #     requires:
+      #       - make-release
+      #     <<: *release-tags
 
   snapshot-bump:
     when:
