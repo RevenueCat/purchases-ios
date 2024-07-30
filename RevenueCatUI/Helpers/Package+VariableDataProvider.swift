@@ -29,20 +29,6 @@ extension Package: VariableDataProvider {
         return trimCentsStoreFrontCountryCodes.contains(countryCode)
     }
 
-    var localeByStorefrontCountryCode: [String: Locale] {
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            return [:]
-        }
-
-        return [
-            "TWN": Locale(identifier: "zh_Hant_TW"), // Taiwan
-            "KAZ": Locale(identifier: "kk_Cyrl_KZ"), // Kazakhstan
-            "MEX": Locale(identifier: "es_MX"), // Mexico
-            "PHL": Locale(identifier: "fil_PH"), // Philippines
-            "THA": Locale(identifier: "th_TH"), // Thailand
-        ]
-    }
-
     var applicationName: String {
         return Bundle.main.applicationDisplayName
     }
