@@ -21,35 +21,22 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsButtonStyle: ButtonStyle {
+struct ManageSubscriptionsButtonStyle: PrimitiveButtonStyle {
 
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
 
-    func makeBody(configuration: ButtonStyleConfiguration) -> some View {
-        let background = color(from: appearance.buttonBackgroundColor)
-        let textColor = color(from: appearance.buttonTextColor)
-        configuration.label
-            .padding()
-            .frame(width: 300)
-            .applyIf(background != nil, apply: { $0.background(background) })
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
-            .cornerRadius(10)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
-    }
+    func makeBody(configuration: PrimitiveButtonStyleConfiguration) -> some View {
+        let background = color(from: appearance.buttonBackgroundColor, for: colorScheme)
+        let textColor = color(from: appearance.buttonTextColor, for: colorScheme)
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension ManageSubscriptionsButtonStyle {
-
-    func color(from colorInformation: CustomerCenterConfigData.Appearance.ColorInformation) -> Color? {
-        return colorScheme == .dark ? colorInformation.dark?.underlyingColor : colorInformation.light?.underlyingColor
+        Button(action: { configuration.trigger() }, label: {
+            configuration.label.frame(width: 300)
+        })
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+        .applyIf(background != nil, apply: { $0.tint(background) })
+        .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
     }
 
 }
