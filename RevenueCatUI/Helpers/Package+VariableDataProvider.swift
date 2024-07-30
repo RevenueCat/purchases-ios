@@ -60,7 +60,7 @@ extension Package: VariableDataProvider {
     }
 
     var localizedPriceRounded: String {
-        if self.storeProduct.priceFormatter {
+        if self.storeProduct.priceFormatter != nil {
             roundPriceWithFormatter()
         } else {
             roundPriceWithSearchAndReplace()
