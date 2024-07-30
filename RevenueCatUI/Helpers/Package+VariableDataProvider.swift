@@ -29,6 +29,20 @@ extension Package: VariableDataProvider {
         return trimCentsStoreFrontCountryCodes.contains(countryCode)
     }
 
+    var localeByStorefrontCountryCode: [String: Locale] {
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            return [:]
+        }
+
+        return [
+            "TWN": Locale(identifier: "zh_Hant_TW"), // Taiwan
+            "KAZ": Locale(identifier: "kk_Cyrl_KZ"), // Kazakhstan
+            "MEX": Locale(identifier: "es_MX"), // Mexico
+            "PHL": Locale(identifier: "fil_PH"), // Philippines
+            "THA": Locale(identifier: "th_TH"), // Thailand
+        ]
+    }
+
     var applicationName: String {
         return Bundle.main.applicationDisplayName
     }
@@ -46,6 +60,41 @@ extension Package: VariableDataProvider {
     }
 
     var localizedPriceRounded: String {
+        roundPriceWithSearchAndReplace()
+    }
+
+    func roundPriceWithSearchAndReplace() -> String {
+        let price = self.storeProduct.price
+        let roundedPrice = NSDecimalNumber(decimal: price).rounding(accordingToBehavior: nil)
+
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        guard let locale = localeByStorefrontCountryCode[countryCode] else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        let withCents = NumberFormatter()
+        withCents.numberStyle = .currency
+        withCents.locale = locale
+        withCents.currencySymbol = ""
+
+        let withoutCents = NumberFormatter()
+        withoutCents.numberStyle = .currency
+        withoutCents.locale = locale
+        withoutCents.currencySymbol = ""
+        withoutCents.maximumFractionDigits = 0
+
+        guard let unroundedPrice = withCents.string(from: price as NSDecimalNumber),
+              let roundedPrice = withoutCents.string(from: roundedPrice as NSDecimalNumber) else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        return self.storeProduct.localizedPriceString.replacingOccurrences(of: unroundedPrice, with: roundedPrice)
+    }
+
+    func roundPriceWithFormatter() -> String {
         guard let formatter = self.storeProduct.priceFormatter else {
             return self.storeProduct.localizedPriceString
         }
