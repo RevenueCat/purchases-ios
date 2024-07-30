@@ -68,7 +68,7 @@ extension Package: VariableDataProvider {
     }
 
     func roundPriceWithFormatter() -> String {
-        guard let formatter = self.storeProduct.priceFormatter else {
+        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             return self.storeProduct.localizedPriceString
         }
 
@@ -76,9 +76,6 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        let originalMaximumFractionalDigits = formatter.maximumFractionDigits
-
-        defer { formatter.maximumFractionDigits = originalMaximumFractionalDigits }
         formatter.maximumFractionDigits = 0
 
         guard let roundedPriceString = formatter.string(from: priceToRound) else {
