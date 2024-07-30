@@ -27,11 +27,13 @@ struct ManageSubscriptionsButtonStyle: ButtonStyle {
     @Environment(\.colorScheme) private var colorScheme
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
+        let background = color(from: appearance.buttonBackgroundColor)
+        let textColor = color(from: appearance.buttonTextColor)
         configuration.label
             .padding()
             .frame(width: 300)
-            .background(color(from: appearance))
-            .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
+            .applyIf(background != nil, apply: { $0.background(background) })
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
             .cornerRadius(10)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
@@ -46,13 +48,8 @@ struct ManageSubscriptionsButtonStyle: ButtonStyle {
 @available(watchOS, unavailable)
 private extension ManageSubscriptionsButtonStyle {
 
-    func color(from appearance: CustomerCenterConfigData.Appearance) -> Color {
-        switch appearance.mode {
-        case .system:
-            return Color.accentColor
-        case .custom(accentColor: let accentColor, backgroundColor: _, textColor: _):
-            return colorScheme == .dark ? accentColor.dark.underlyingColor : accentColor.light.underlyingColor
-        }
+    func color(from colorInformation: CustomerCenterConfigData.Appearance.ColorInformation) -> Color? {
+        return colorScheme == .dark ? colorInformation.dark?.underlyingColor : colorInformation.light?.underlyingColor
     }
 
 }
@@ -66,7 +63,13 @@ struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
     static var previews: some View {
         Button("Didn't receive purchase") {}
             .buttonStyle(ManageSubscriptionsButtonStyle())
-            .environment(\.appearance, CustomerCenterConfigData.Appearance(mode: .system))
+            .environment(\.appearance, CustomerCenterConfigData.Appearance(
+                accentColor: .init(light: "#ffffff", dark: "#000000"),
+                textColor: .init(light: "#000000", dark: "#ffffff"),
+                backgroundColor: .init(light: "#000000", dark: "#ffffff"),
+                buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
+                buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
+            ))
     }
 
 }

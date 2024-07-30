@@ -43,7 +43,13 @@ extension CustomerCenterConfigData.Localization {
 extension CustomerCenterConfigData.Appearance {
 
     /// Default ``CustomerCenterConfigData.Appearance`` value for Environment usage
-    public static let `default` = CustomerCenterConfigData.Appearance(mode: .system)
+    public static let `default` = CustomerCenterConfigData.Appearance(
+        accentColor: .init(light: "#ffffff", dark: "#000000"),
+        textColor: .init(light: "#000000", dark: "#ffffff"),
+        backgroundColor: .init(light: "#000000", dark: "#ffffff"),
+        buttonTextColor: .init(light: "#000000", dark: "#ffffff"),
+        buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
+    )
 
 }
 
