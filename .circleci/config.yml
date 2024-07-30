@@ -1294,6 +1294,9 @@ workflows:
       - run-test-ios-17
       - pod-lib-lint
       - run-revenuecat-ui-ios-17
+      # TODO: remove before merging
+      # temporarily adds the deploy purchase tester with dry run job on all commits for development purposes
+      - deploy-purchase-tester-dry-run
 
   create-tag:
     when:
