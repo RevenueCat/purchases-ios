@@ -15,6 +15,20 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension Package: VariableDataProvider {
 
+    var shouldRoundPrices: Bool {
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            return false
+        }
+        let trimCentsStoreFrontCountryCodes: Set<String> = [
+                "TWN", // Taiwan
+                "KAZ", // Kazakhstan
+                "MEX", // Mexico
+                "PHL", // Philippines
+                "THA" // Thailand
+            ]
+        return trimCentsStoreFrontCountryCodes.contains(countryCode)
+    }
+
     var applicationName: String {
         return Bundle.main.applicationDisplayName
     }
@@ -24,7 +38,32 @@ extension Package: VariableDataProvider {
     }
 
     var localizedPrice: String {
-        return self.storeProduct.localizedPriceString
+        if shouldRoundPrices {
+            return self.localizedPriceRounded
+        } else {
+            return self.storeProduct.localizedPriceString
+        }
+    }
+
+    var localizedPriceRounded: String {
+        guard let formatter = self.storeProduct.priceFormatter else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        guard let priceToRound = formatter.number(from: self.storeProduct.localizedPriceString) else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        let originalMaximumFractionalDigits = formatter.maximumFractionDigits
+
+        defer { formatter.maximumFractionDigits = originalMaximumFractionalDigits }
+        formatter.maximumFractionDigits = 0
+
+        guard let roundedPriceString = formatter.string(from: priceToRound) else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        return roundedPriceString
     }
 
     var localizedPricePerWeek: String {
