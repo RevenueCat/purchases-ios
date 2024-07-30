@@ -877,13 +877,9 @@ platform :ios do
     xcodeproj_path = "#{purchase_tester_root}/PurchaseTester.xcodeproj"
 
     # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
-    # like the Matchfile. So we move to that project's directory to run them.     
+    # like the Matchfile. So we move to that project's directory to run them.
     Dir.chdir("#{purchase_tester_root}/fastlane") do
       match(readonly: true, platform: "ios")
-      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
-    end
-
-    Dir.chdir("#{purchase_tester_root}/fastlane") do
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'ios') + 1,
         xcodeproj: xcodeproj_path,
@@ -914,7 +910,10 @@ platform :ios do
       UI.message("Dry run mode enabled. Skipping upload to TestFlight")
     end
 
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # like the Matchfile. So we move to that project's directory to run them.
     Dir.chdir("#{purchase_tester_root}/fastlane") do
+      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'osx') + 1,
         xcodeproj: xcodeproj_path,
