@@ -50,7 +50,8 @@ class FeedbackSurveyViewModel: ObservableObject {
     }
 
     func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async {
-        if let promotionalOffer = option.promotionalOffer {
+        if let promotionalOffer = option.promotionalOffer,
+           promotionalOffer.eligible {
             self.loadingState = option.id
             let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
             switch result {

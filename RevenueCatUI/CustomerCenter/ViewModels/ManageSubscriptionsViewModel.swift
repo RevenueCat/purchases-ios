@@ -127,15 +127,20 @@ class ManageSubscriptionsViewModel: ObservableObject {
                 }
             }
         case let .promotionalOffer(promotionalOffer):
-            self.loadingPath = path
-            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
-            switch result {
-            case .success(let promotionalOfferData):
-                self.promotionalOfferData = promotionalOfferData
-            case .failure:
+            if promotionalOffer.eligible {
+                self.loadingPath = path
+                let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+                switch result {
+                case .success(let promotionalOfferData):
+                    self.promotionalOfferData = promotionalOfferData
+                case .failure:
+                    await self.onPathSelected(path: path)
+                    self.loadingPath = nil
+                }
+            } else {
                 await self.onPathSelected(path: path)
-                self.loadingPath = nil
             }
+
         default:
             await self.onPathSelected(path: path)
         }
