@@ -949,6 +949,13 @@
 			remoteGlobalIDString = 2D4C61B32C5AD61800A29FD2;
 			remoteInfo = SwiftAPITester;
 		};
+		2D4C621A2C5AD9D000A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C62032C5AD8CE00A29FD2;
+			remoteInfo = ReceiptParserAPITester;
+		};
 		2D803F6A26F150190069D717 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -1032,13 +1039,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 57D92C32293E4D0C00D1912A;
 			remoteInfo = ReceiptParser;
-		};
-		578BB35E2936BA9400E8AA8A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
-			remoteInfo = SwiftAPITester;
 		};
 		88DE93E32C211CBC0086B6D8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1633,7 +1633,6 @@
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
 		5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHTTPResponseTest.swift; sourceTree = "<group>"; };
-		578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReceiptParserAPITester.xcodeproj; path = Tests/APITesters/ReceiptParserAPITester/ReceiptParserAPITester.xcodeproj; sourceTree = "<group>"; };
 		578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnostics.swift; sourceTree = "<group>"; };
 		578D79732936A36B0042E434 /* LoggerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerType.swift; sourceTree = "<group>"; };
 		578D79932936B0810042E434 /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
@@ -2280,6 +2279,7 @@
 				2D4C60F82C5AD1C300A29FD2 /* AllAPITestsTests.xctest */,
 				2D4C61A42C5AD41800A29FD2 /* ObjcAPITester.framework */,
 				2D4C61FD2C5AD80300A29FD2 /* SwiftAPITester.framework */,
+				2D4C621B2C5AD9D000A29FD2 /* ReceiptParserAPITester.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3534,7 +3534,6 @@
 				2D4C61232C5AD24000A29FD2 /* CustomEntitlementComputationSwiftAPITester */,
 				2D4C612E2C5AD24000A29FD2 /* RevenueCatUIAPITester */,
 				2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */,
-				578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */,
 			);
 			name = APITesters;
 			path = ..;
@@ -3647,14 +3646,6 @@
 				57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */,
 			);
 			path = Responses;
-			sourceTree = "<group>";
-		};
-		578BB35B2936BA9400E8AA8A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				578BB35F2936BA9400E8AA8A /* ReceiptParserAPITester.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		579415D329368AA400218FBC /* Helpers */ = {
@@ -4700,10 +4691,6 @@
 					ProjectRef = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
 				},
 				{
-					ProductGroup = 578BB35B2936BA9400E8AA8A /* Products */;
-					ProjectRef = 578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */;
-				},
-				{
 					ProductGroup = 2D4C612F2C5AD24000A29FD2 /* Products */;
 					ProjectRef = 2D4C612D2C5AD24000A29FD2 /* RevenueCatUISwiftAPITester.xcodeproj */;
 				},
@@ -4768,6 +4755,13 @@
 			remoteRef = 2D4C61FC2C5AD80300A29FD2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		2D4C621B2C5AD9D000A29FD2 /* ReceiptParserAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = ReceiptParserAPITester.framework;
+			remoteRef = 2D4C621A2C5AD9D000A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		2DD500F82C519EB4009C19B7 /* PaywallsTester.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
@@ -4794,13 +4788,6 @@
 			fileType = wrapper.framework;
 			path = Core.framework;
 			remoteRef = 2DD501092C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		578BB35F2936BA9400E8AA8A /* ReceiptParserAPITester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = ReceiptParserAPITester.app;
-			remoteRef = 578BB35E2936BA9400E8AA8A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
