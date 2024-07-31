@@ -58,6 +58,7 @@ class FeedbackSurveyViewModel: ObservableObject {
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
                 self.feedbackSurveyData.onOptionSelected()
+                self.loadingState = nil
             }
         } else {
             self.feedbackSurveyData.onOptionSelected()
