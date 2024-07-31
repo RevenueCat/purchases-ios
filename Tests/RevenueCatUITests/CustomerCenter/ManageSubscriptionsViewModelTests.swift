@@ -434,6 +434,97 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(loadPromotionalOfferUseCase.offerToLoadPromoFor?.iosOfferId) == offerIdentifier
     }
 
+    func testDoesNotLoadPromotionalOfferIfNotEligible() async throws {
+        let productIdOne = "com.revenuecat.product1"
+        let productIdTwo = "com.revenuecat.product2"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDateFirst = "2062-04-12T00:03:35Z"
+        let expirationDateSecond = "2062-05-12T00:03:35Z"
+        let offerIdentifier = "offer_id"
+        let product = Fixtures.product(id: productIdOne,
+                                       title: "yearly",
+                                       duration: .year,
+                                       price: 29.99,
+                                       offerIdentifier: offerIdentifier)
+        let products = [
+            product,
+            Fixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
+        ]
+        let customerInfo = Fixtures.customerInfo(
+            subscriptions: [
+                Fixtures.Subscription(
+                    id: productIdOne,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDateFirst
+                ),
+                Fixtures.Subscription(
+                    id: productIdTwo,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDateSecond
+                )
+            ].shuffled(),
+            entitlements: [
+                Fixtures.Entitlement(
+                    entitlementId: "premium",
+                    productId: productIdOne,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDateFirst
+                )
+            ]
+        )
+        let promoOfferDetails = CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifier,
+                                                                                   eligible: false,
+                                                                                   title: "Wait",
+                                                                                   subtitle: "Here's an offer for you")
+        let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
+        loadPromotionalOfferUseCase.mockedProduct = product
+        loadPromotionalOfferUseCase.mockedPromoOfferDetails = promoOfferDetails
+        let signedData = PromotionalOffer.SignedData(identifier: "id",
+                                                     keyIdentifier: "key_i",
+                                                     nonce: UUID(),
+                                                     signature: "a signature",
+                                                     timestamp: 1234)
+        let discount = MockStoreProductDiscount(offerIdentifier: offerIdentifier,
+                                                currencyCode: "usd",
+                                                price: 1,
+                                                localizedPriceString: "$1.00",
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+                                                numberOfPeriods: 1,
+                                                type: .introductory)
+
+        loadPromotionalOfferUseCase.mockedPromotionalOffer = PromotionalOffer(discount: discount,
+                                                                              signedData: signedData)
+
+        let viewModel = ManageSubscriptionsViewModel(screen: Fixtures.screenWithIneligiblePromo,
+                                                     customerCenterActionHandler: nil,
+                                                     purchasesProvider: MockManageSubscriptionsPurchases(
+                                                        customerInfo: customerInfo,
+                                                        products: products
+                                                     ),
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+
+        await viewModel.loadScreen()
+
+        let screen = try XCTUnwrap(viewModel.screen)
+        expect(viewModel.state) == .success
+
+        let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
+            if case .promotionalOffer = path.detail {
+                return true
+            }
+            return false
+        })
+
+        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
+
+        await viewModel.determineFlow(for: pathWithPromotionalOffer)
+
+        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
+    }
+
     private func reformat(ISO8601Date: String) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -677,6 +768,25 @@ private class Fixtures {
             ]
         )
     }()
+
+    static let screenWithIneligiblePromo: CustomerCenterConfigData.Screen = .init(
+        type: .management,
+        title: "Manage Subscription",
+        subtitle: "Manage your subscription details here",
+        paths: [
+            .init(
+                id: "1",
+                title: "Didn't receive purchase",
+                type: .missingPurchase,
+                detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
+                    iosOfferId: "offer_id",
+                    eligible: false,
+                    title: "title",
+                    subtitle: "subtitle"
+                ))
+            )
+        ]
+    )
 
 }
 
