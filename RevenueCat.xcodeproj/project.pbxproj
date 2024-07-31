@@ -928,13 +928,6 @@
 			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
 			remoteInfo = SwiftAPITester;
 		};
-		2D4C61322C5AD24000A29FD2 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D4C612D2C5AD24000A29FD2 /* RevenueCatUISwiftAPITester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
-			remoteInfo = SwiftAPITester;
-		};
 		2D4C61A32C5AD41800A29FD2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
@@ -955,6 +948,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 2D4C62032C5AD8CE00A29FD2;
 			remoteInfo = ReceiptParserAPITester;
+		};
+		2D4C62322C5ADBA000A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C62212C5ADA2400A29FD2;
+			remoteInfo = RevenueCatUISwiftAPITester;
 		};
 		2D803F6A26F150190069D717 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1130,10 +1130,6 @@
 		2D4C611F2C5AD24000A29FD2 /* TransactionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionAPI.swift; sourceTree = "<group>"; };
 		2D4C61202C5AD24000A29FD2 /* VerificationResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationResultAPI.swift; sourceTree = "<group>"; };
 		2D4C61222C5AD24000A29FD2 /* CustomEntitlementComputationSwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = CustomEntitlementComputationSwiftAPITester.xcodeproj; sourceTree = "<group>"; };
-		2D4C61292C5AD24000A29FD2 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		2D4C612A2C5AD24000A29FD2 /* PaywallViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewAPI.swift; sourceTree = "<group>"; };
-		2D4C612B2C5AD24000A29FD2 /* PaywallViewControllerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerAPI.swift; sourceTree = "<group>"; };
-		2D4C612D2C5AD24000A29FD2 /* RevenueCatUISwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = RevenueCatUISwiftAPITester.xcodeproj; sourceTree = "<group>"; };
 		2D4E926426990AB1000E10B0 /* StoreKit1Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit1Wrapper.swift; sourceTree = "<group>"; };
 		2D5BB46A24C8E8ED00E27537 /* PurchasesReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesReceiptParser.swift; sourceTree = "<group>"; };
 		2D69384426DFF93300FCDBC0 /* StoreProductTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductTests.swift; sourceTree = "<group>"; };
@@ -2280,6 +2276,7 @@
 				2D4C61A42C5AD41800A29FD2 /* ObjcAPITester.framework */,
 				2D4C61FD2C5AD80300A29FD2 /* SwiftAPITester.framework */,
 				2D4C621B2C5AD9D000A29FD2 /* ReceiptParserAPITester.framework */,
+				2D4C62332C5ADBA000A29FD2 /* RevenueCatUISwiftAPITester.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2330,34 +2327,6 @@
 			isa = PBXGroup;
 			children = (
 				2D4C61282C5AD24000A29FD2 /* SwiftAPITester.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		2D4C612C2C5AD24000A29FD2 /* SwiftAPITester */ = {
-			isa = PBXGroup;
-			children = (
-				2D4C61292C5AD24000A29FD2 /* main.swift */,
-				2D4C612A2C5AD24000A29FD2 /* PaywallViewAPI.swift */,
-				2D4C612B2C5AD24000A29FD2 /* PaywallViewControllerAPI.swift */,
-			);
-			path = SwiftAPITester;
-			sourceTree = "<group>";
-		};
-		2D4C612E2C5AD24000A29FD2 /* RevenueCatUIAPITester */ = {
-			isa = PBXGroup;
-			children = (
-				2D4C612C2C5AD24000A29FD2 /* SwiftAPITester */,
-				2D4C612D2C5AD24000A29FD2 /* RevenueCatUISwiftAPITester.xcodeproj */,
-			);
-			name = RevenueCatUIAPITester;
-			path = Tests/APITesters/RevenueCatUIAPITester;
-			sourceTree = "<group>";
-		};
-		2D4C612F2C5AD24000A29FD2 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2D4C61332C5AD24000A29FD2 /* SwiftAPITester.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3532,7 +3501,6 @@
 			isa = PBXGroup;
 			children = (
 				2D4C61232C5AD24000A29FD2 /* CustomEntitlementComputationSwiftAPITester */,
-				2D4C612E2C5AD24000A29FD2 /* RevenueCatUIAPITester */,
 				2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */,
 			);
 			name = APITesters;
@@ -4690,10 +4658,6 @@
 					ProductGroup = 2DD500F42C519EB4009C19B7 /* Products */;
 					ProjectRef = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
 				},
-				{
-					ProductGroup = 2D4C612F2C5AD24000A29FD2 /* Products */;
-					ProjectRef = 2D4C612D2C5AD24000A29FD2 /* RevenueCatUISwiftAPITester.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -4734,13 +4698,6 @@
 			remoteRef = 2D4C61272C5AD24000A29FD2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		2D4C61332C5AD24000A29FD2 /* SwiftAPITester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = SwiftAPITester.app;
-			remoteRef = 2D4C61322C5AD24000A29FD2 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		2D4C61A42C5AD41800A29FD2 /* ObjcAPITester.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -4760,6 +4717,13 @@
 			fileType = wrapper.framework;
 			path = ReceiptParserAPITester.framework;
 			remoteRef = 2D4C621A2C5AD9D000A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C62332C5ADBA000A29FD2 /* RevenueCatUISwiftAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = RevenueCatUISwiftAPITester.framework;
+			remoteRef = 2D4C62322C5ADBA000A29FD2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		2DD500F82C519EB4009C19B7 /* PaywallsTester.app */ = {
