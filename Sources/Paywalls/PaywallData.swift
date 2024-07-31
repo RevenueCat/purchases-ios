@@ -15,6 +15,18 @@
 
 import Foundation
 
+public struct CountryIntegerPrices: Codable, Sendable, Hashable, Equatable {
+
+    public var apple: Set<String>
+    public var google: Set<String>
+
+    public init(apple: Set<String>, google: Set<String>) {
+        self.apple = apple
+        self.google = google
+    }
+    
+}
+
 /// The data necessary to display a paywall using the `RevenueCatUI` library.
 /// They can be created and configured in the dashboard, then accessed from ``Offering/paywall``.
 ///
@@ -36,6 +48,17 @@ public struct PaywallData {
         get { return self._revision }
         set { self._revision = newValue }
     }
+
+    public var countryIntegerPrices: CountryIntegerPrices {
+        get { CountryIntegerPrices(apple: _apple, google: _google) }
+        set { _google = newValue.google; _apple = newValue.apple }
+    }
+
+    @DefaultDecodable.EmptyArray
+    internal private(set) var _google: Set<String>
+
+    @DefaultDecodable.EmptyArray
+    internal private(set) var _apple: Set<String>
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -600,13 +623,15 @@ extension PaywallData {
         localization: [String: LocalizedConfiguration],
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
-        revision: Int = 0
+        revision: Int = 0,
+        countryIntegerPrices: CountryIntegerPrices
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
+        self.countryIntegerPrices = countryIntegerPrices
         self.revision = revision
     }
 
@@ -617,7 +642,8 @@ extension PaywallData {
         localization: LocalizedConfiguration,
         assetBaseURL: URL,
         revision: Int = 0,
-        locale: Locale = .current
+        locale: Locale = .current,
+        countryIntegerPrices: CountryIntegerPrices = .init(apple: [], google: [])
     ) {
         self.init(
             templateName: templateName,
@@ -625,7 +651,8 @@ extension PaywallData {
             localization: [locale.identifier: localization],
             localizationByTier: [:],
             assetBaseURL: assetBaseURL,
-            revision: revision
+            revision: revision,
+            countryIntegerPrices: countryIntegerPrices
         )
     }
 
@@ -636,7 +663,8 @@ extension PaywallData {
         localizationByTier: [String: LocalizedConfiguration],
         assetBaseURL: URL,
         revision: Int = 0,
-        locale: Locale = .current
+        locale: Locale = .current,
+        countryIntegerPrices: CountryIntegerPrices = CountryIntegerPrices(apple: [], google: [])
     ) {
         self.init(
             templateName: templateName,
@@ -644,7 +672,8 @@ extension PaywallData {
             localization: [:],
             localizationByTier: [locale.identifier: localizationByTier],
             assetBaseURL: assetBaseURL,
-            revision: revision
+            revision: revision,
+            countryIntegerPrices: countryIntegerPrices
         )
     }
 
@@ -745,6 +774,7 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+//        case countryIntegerPrices = "country_integer_prices"
     }
 
 }

@@ -376,7 +376,8 @@ struct LoadedOfferingPaywallView: View {
             template: self.template,
             mode: self.mode,
             fonts: self.fonts,
-            locale: self.locale
+            locale: self.locale, 
+            countryIntegerPrices: self.paywall.countryIntegerPrices
         )
 
         let view = self.paywall

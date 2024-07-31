@@ -89,7 +89,8 @@ extension PaywallData {
         template: PaywallTemplate,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
-        locale: Locale
+        locale: Locale,
+        countryIntegerPrices: CountryIntegerPrices
     ) -> Result<TemplateViewConfiguration, Error> {
         return Result {
             TemplateViewConfiguration(
@@ -107,7 +108,8 @@ extension PaywallData {
                 colors: self.config.colors.multiScheme,
                 colorsByTier: self.config.multiSchemeColorsByTier,
                 fonts: fonts,
-                assetBaseURL: self.assetBaseURL
+                assetBaseURL: self.assetBaseURL,
+                appleIntegerPrices: self.countryIntegerPrices.apple
             )
         }
     }
