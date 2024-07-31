@@ -26,9 +26,16 @@ class CustomerCenterConfigDataTests: TestCase {
         let mockResponse = CustomerCenterConfigResponse(
             customerCenter: .init(
                 appearance: .init(
-                    mode: .custom,
-                    light: .init(accentColor: "#FFFFFF", backgroundColor: "#000000", textColor: "#FF0000"),
-                    dark: .init(accentColor: "#000000", backgroundColor: "#FFFFFF", textColor: "#00FF00")
+                    light: .init(accentColor: "#A3F9B5",
+                                 textColor: "#7B2D26",
+                                 backgroundColor: "#E1C6FF",
+                                 buttonTextColor: "#0D3F4F",
+                                 buttonBackgroundColor: "#FFA07A"),
+                    dark: .init(accentColor: "#5D3FD3",
+                                textColor: "#98FB98",
+                                backgroundColor: "#2F4F4F",
+                                buttonTextColor: "#FFD700",
+                                buttonBackgroundColor: "#8B4513")
                 ),
                 screens: [
                     "MANAGEMENT": .init(
@@ -81,17 +88,16 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.localization.locale) == "en_US"
         expect(configData.localization.localizedStrings["key"]) == "value"
 
-        switch configData.appearance.mode {
-        case .system:
-            fatalError("appearance mode should be custom")
-        case .custom(accentColor: let accentColor, backgroundColor: let backgroundColor, textColor: let textColor):
-            expect(accentColor.light.stringRepresentation) == "#FFFFFF"
-            expect(accentColor.dark.stringRepresentation) == "#000000"
-            expect(backgroundColor.light.stringRepresentation) == "#000000"
-            expect(backgroundColor.dark.stringRepresentation) == "#FFFFFF"
-            expect(textColor.light.stringRepresentation) == "#FF0000"
-            expect(textColor.dark.stringRepresentation) == "#00FF00"
-        }
+        expect(configData.appearance.accentColor.light!.stringRepresentation) == "#A3F9B5"
+        expect(configData.appearance.accentColor.dark!.stringRepresentation) == "#5D3FD3"
+        expect(configData.appearance.backgroundColor.light!.stringRepresentation) == "#E1C6FF"
+        expect(configData.appearance.backgroundColor.dark!.stringRepresentation) == "#2F4F4F"
+        expect(configData.appearance.textColor.light!.stringRepresentation) == "#7B2D26"
+        expect(configData.appearance.textColor.dark!.stringRepresentation) == "#98FB98"
+        expect(configData.appearance.buttonTextColor.light!.stringRepresentation) == "#0D3F4F"
+        expect(configData.appearance.buttonTextColor.dark!.stringRepresentation) == "#FFD700"
+        expect(configData.appearance.buttonBackgroundColor.light!.stringRepresentation) == "#FFA07A"
+        expect(configData.appearance.buttonBackgroundColor.dark!.stringRepresentation) == "#8B4513"
 
         expect(configData.screens.count) == 1
         let managementScreen = try XCTUnwrap(configData.screens[.management])
