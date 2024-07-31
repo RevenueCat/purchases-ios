@@ -907,13 +907,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
-			remoteInfo = SwiftAPITester;
-		};
 		2D4C60F52C5AD1C300A29FD2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
@@ -948,6 +941,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 2D4C613D2C5AD30400A29FD2;
 			remoteInfo = ObjcAPITester;
+		};
+		2D4C61FC2C5AD80300A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C61B32C5AD61800A29FD2;
+			remoteInfo = SwiftAPITester;
 		};
 		2D803F6A26F150190069D717 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1539,7 +1539,6 @@
 		570896B327595C8100296F1C /* RevenueCat.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat.xctestplan; path = Tests/TestPlans/RevenueCat.xctestplan; sourceTree = "<group>"; };
 		570896B427595C8100296F1C /* Coverage.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = Coverage.xctestplan; path = Tests/TestPlans/Coverage.xctestplan; sourceTree = "<group>"; };
 		570896B527595C8100296F1C /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = Tests/TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
-		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = Tests/APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
 		570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransaction.swift; sourceTree = "<group>"; };
 		5712BE8F29241EB500A83F15 /* TimingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtil.swift; sourceTree = "<group>"; };
 		5712BE9129241F7900A83F15 /* TimingUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtilTests.swift; sourceTree = "<group>"; };
@@ -2274,20 +2273,13 @@
 			path = StoreKit1;
 			sourceTree = "<group>";
 		};
-		2D2CF15927EE0DA700673CE1 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2D2CF15D27EE0DA700673CE1 /* SwiftAPITester.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		2D4C60F12C5AD1C300A29FD2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				2D4C60F62C5AD1C300A29FD2 /* AllAPITests.framework */,
 				2D4C60F82C5AD1C300A29FD2 /* AllAPITestsTests.xctest */,
 				2D4C61A42C5AD41800A29FD2 /* ObjcAPITester.framework */,
+				2D4C61FD2C5AD80300A29FD2 /* SwiftAPITester.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3542,7 +3534,6 @@
 				2D4C61232C5AD24000A29FD2 /* CustomEntitlementComputationSwiftAPITester */,
 				2D4C612E2C5AD24000A29FD2 /* RevenueCatUIAPITester */,
 				2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */,
-				570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */,
 				578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */,
 			);
 			name = APITesters;
@@ -4716,10 +4707,6 @@
 					ProductGroup = 2D4C612F2C5AD24000A29FD2 /* Products */;
 					ProjectRef = 2D4C612D2C5AD24000A29FD2 /* RevenueCatUISwiftAPITester.xcodeproj */;
 				},
-				{
-					ProductGroup = 2D2CF15927EE0DA700673CE1 /* Products */;
-					ProjectRef = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -4739,13 +4726,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		2D2CF15D27EE0DA700673CE1 /* SwiftAPITester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = SwiftAPITester.app;
-			remoteRef = 2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		2D4C60F62C5AD1C300A29FD2 /* AllAPITests.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -4779,6 +4759,13 @@
 			fileType = wrapper.framework;
 			path = ObjcAPITester.framework;
 			remoteRef = 2D4C61A32C5AD41800A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C61FD2C5AD80300A29FD2 /* SwiftAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftAPITester.framework;
+			remoteRef = 2D4C61FC2C5AD80300A29FD2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		2DD500F82C519EB4009C19B7 /* PaywallsTester.app */ = {
