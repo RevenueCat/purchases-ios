@@ -13,6 +13,5 @@ FOUNDATION_EXPORT double AllAPITestsVersionNumber;
 //! Project version string for AllAPITests.
 FOUNDATION_EXPORT const unsigned char AllAPITestsVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <AllAPITests/PublicHeader.h>
-
-
+// Note: this file is empty because we only want the ability to run tests, but API tests really run at
+// the compilation step. I.e.: if the test compiles and can run, then it already passed.
