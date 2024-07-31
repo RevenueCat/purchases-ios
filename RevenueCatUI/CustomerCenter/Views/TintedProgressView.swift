@@ -27,6 +27,7 @@ struct TintedProgressView: View {
 
     var body: some View {
         ProgressView()
+            .controlSize(.regular)
             .tint(colorScheme == .dark ? Color.black : Color.white)
     }
 

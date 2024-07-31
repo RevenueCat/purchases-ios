@@ -29,6 +29,8 @@ struct ManageSubscriptionsView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
@@ -77,23 +79,29 @@ struct ManageSubscriptionsView: View {
 
     @ViewBuilder
     var content: some View {
-        VStack {
-            if self.viewModel.isLoaded {
-                HeaderView(viewModel: self.viewModel)
+        ZStack {
+            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+                background.edgesIgnoringSafeArea(.all)
+            }
 
-                if let subscriptionInformation = self.viewModel.subscriptionInformation {
-                    SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                            localization: self.localization,
-                                            refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+            VStack {
+                if self.viewModel.isLoaded {
+                    HeaderView(viewModel: self.viewModel)
+
+                    if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                        SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                                                localization: self.localization,
+                                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                    }
+
+                    Spacer()
+
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                   loadingPath: self.$viewModel.loadingPath)
+                } else {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
                 }
-
-                Spacer()
-
-                ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                               loadingPath: self.$viewModel.loadingPath)
-            } else {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle())
             }
         }
         .task {
@@ -127,11 +135,18 @@ struct HeaderView: View {
 
     @ObservedObject
     private(set) var viewModel: ManageSubscriptionsViewModel
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     var body: some View {
+        let textColor = color(from: appearance.textColor, for: colorScheme)
+
         Text(self.viewModel.screen.title)
             .font(.title)
             .padding()
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
     }
 
 }
@@ -140,6 +155,7 @@ struct HeaderView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(visionOS, unavailable)
 struct SubscriptionDetailsView: View {
 
     let iconWidth = 22.0

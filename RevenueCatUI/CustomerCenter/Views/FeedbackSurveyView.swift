@@ -31,6 +31,8 @@ struct FeedbackSurveyView: View {
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     init(feedbackSurveyData: FeedbackSurveyData) {
         let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData)
@@ -38,25 +40,33 @@ struct FeedbackSurveyView: View {
     }
 
     var body: some View {
-        VStack {
-            Text(self.viewModel.feedbackSurveyData.configuration.title)
-                .font(.title)
-                .padding()
+        ZStack {
+            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+                background.edgesIgnoringSafeArea(.all)
+            }
+            let textColor = color(from: appearance.textColor, for: colorScheme)
 
-            Spacer()
+            VStack {
+                Text(self.viewModel.feedbackSurveyData.configuration.title)
+                    .font(.title)
+                    .padding()
+                    .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
 
-            FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
-                                      onOptionSelected: self.viewModel.handleAction(for:),
-                                      loadingState: self.$viewModel.loadingState)
+                Spacer()
+
+                FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
+                                          onOptionSelected: self.viewModel.handleAction(for:),
+                                          loadingState: self.$viewModel.loadingState)
+            }
+            .sheet(
+                item: self.$viewModel.promotionalOfferData,
+                onDismiss: { self.viewModel.handleSheetDismiss() },
+                content: { promotionalOfferData in
+                    PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
+                                         product: promotionalOfferData.product,
+                                         promoOfferDetails: promotionalOfferData.promoOfferDetails)
+                })
         }
-        .sheet(
-            item: self.$viewModel.promotionalOfferData,
-            onDismiss: { self.viewModel.handleSheetDismiss() },
-            content: { promotionalOfferData in
-                PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                     product: promotionalOfferData.product,
-                                     promoOfferDetails: promotionalOfferData.promoOfferDetails)
-            })
     }
 
 }

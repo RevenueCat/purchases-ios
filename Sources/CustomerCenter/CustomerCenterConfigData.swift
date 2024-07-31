@@ -221,7 +221,7 @@ public struct CustomerCenterConfigData {
 
         public let accentColor: ColorInformation
         public let textColor: ColorInformation
-        public let backgroundColor: ColorInformation        
+        public let backgroundColor: ColorInformation
         public let buttonTextColor: ColorInformation
         public let buttonBackgroundColor: ColorInformation
 
@@ -342,16 +342,16 @@ extension CustomerCenterConfigData.Screen {
 extension CustomerCenterConfigData.Appearance {
 
     init(from response: CustomerCenterConfigResponse.Appearance) {
-        self.accentColor = CustomerCenterConfigData.Appearance.ColorInformation(light: response.light.accentColor,
-                                                                                dark: response.dark.accentColor)
-        self.textColor = CustomerCenterConfigData.Appearance.ColorInformation(light: response.light.textColor,
-                                                                              dark: response.dark.textColor)
-        self.backgroundColor = CustomerCenterConfigData.Appearance.ColorInformation(light: response.light.backgroundColor,
-                                                                                    dark: response.dark.backgroundColor)
-        self.buttonTextColor = CustomerCenterConfigData.Appearance.ColorInformation(light: response.light.buttonTextColor,
-                                                                                    dark: response.dark.buttonTextColor)
-        self.buttonBackgroundColor = CustomerCenterConfigData.Appearance.ColorInformation(light: response.light.buttonBackgroundColor,
-                                                                                          dark: response.dark.buttonBackgroundColor)
+        self.accentColor = .init(light: response.light.accentColor,
+                                 dark: response.dark.accentColor)
+        self.textColor = .init(light: response.light.textColor,
+                               dark: response.dark.textColor)
+        self.backgroundColor = .init(light: response.light.backgroundColor,
+                                     dark: response.dark.backgroundColor)
+        self.buttonTextColor = .init(light: response.light.buttonTextColor,
+                                     dark: response.dark.buttonTextColor)
+        self.buttonBackgroundColor = .init(light: response.light.buttonBackgroundColor,
+                                           dark: response.dark.buttonBackgroundColor)
     }
 
 }

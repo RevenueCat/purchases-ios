@@ -29,8 +29,10 @@ struct WrongPlatformView: View {
     @State
     private var store: Store?
 
-    @Environment(\.openURL)
-    private var openURL
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     init() {
     }
@@ -40,23 +42,30 @@ struct WrongPlatformView: View {
     }
 
     var body: some View {
-        VStack {
-
-            switch store {
-            case .appStore, .macAppStore, .playStore, .amazon:
-                let platformName = humanReadablePlatformName(store: store!)
-
-                Text("Your subscription is a \(platformName) subscription.")
-                    .font(.title)
-                    .padding()
-                Text("Go the app settings on \(platformName) to manage your subscription and billing.")
-                    .padding()
-            default:
-                Text("Please contact support to manage your subscription")
-                    .font(.title)
-                    .padding()
+        ZStack {
+            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+                background.edgesIgnoringSafeArea(.all)
             }
+            let textColor = color(from: appearance.textColor, for: colorScheme)
 
+            VStack {
+                switch store {
+                case .appStore, .macAppStore, .playStore, .amazon:
+                    let platformName = humanReadablePlatformName(store: store!)
+
+                    Text("Your subscription is a \(platformName) subscription.")
+                        .font(.title)
+                        .padding()
+                    Text("Go the app settings on \(platformName) to manage your subscription and billing.")
+                        .padding()
+                default:
+                    Text("Please contact support to manage your subscription")
+                        .font(.title)
+                        .padding()
+                }
+
+            }
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
         .task {
             if store == nil {
