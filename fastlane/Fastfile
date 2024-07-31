@@ -701,7 +701,6 @@ platform :ios do
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
       './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
-      './Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
@@ -866,49 +865,85 @@ platform :ios do
   end
 
   desc "Build and deploy PurchaseTesterSwiftUI"
-  lane :deploy_purchase_tester do
-    latest_changelog = File.read("#{File.dirname(__FILE__)}/../#{changelog_latest_path}")
+  lane :deploy_purchase_tester do |options|
+    dry_run = options[:dry_run] || false
+
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+
+    latest_changelog = File.read("#{project_root}/#{changelog_latest_path}")
     changelog = "Release #{current_version_number}:\n\n#{latest_changelog}"
 
-    def ios_build(changelog)
+    purchase_tester_root = "#{project_root}/Tests/TestingApps/PurchaseTesterSwiftUI"
+    xcodeproj_path = "#{purchase_tester_root}/PurchaseTester.xcodeproj"
+
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # like the Matchfile. So we move to that project's directory to run them.
+    Dir.chdir("#{purchase_tester_root}/fastlane") do
+      match(readonly: true, platform: "ios")
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'ios') + 1,
-        xcodeproj: 'PurchaseTester.xcodeproj'
-      )
-
-      match(readonly: true)
-      build_ios_app(
-        workspace: "PurchaseTester.xcworkspace",
-        scheme: "PurchaseTester",
-        destination: "generic/platform=ios",
-        xcodebuild_formatter: ''
-      )
-      upload_to_testflight(
-        changelog: changelog
+        xcodeproj: xcodeproj_path,
       )
     end
+    
+    build_ios_app(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: "PurchaseTester",
+      destination: "generic/platform=ios",
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      export_options: {
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp",
+          "com.revenuecat.sampleapp.watchkitapp" => "match AppStore com.revenuecat.sampleapp.watchkitapp"
+        }
+      }
+    )
 
-    def macos_build(changelog)
+    if not dry_run
+      upload_to_testflight(
+      changelog: changelog,
+      app_identifier: "com.revenuecat.sampleapp",
+    )
+    else
+      UI.message("Dry run mode enabled. Skipping upload to TestFlight")
+    end
+
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # like the Matchfile. So we move to that project's directory to run them.
+    Dir.chdir("#{purchase_tester_root}/fastlane") do
+      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'osx') + 1,
-        xcodeproj: 'PurchaseTester.xcodeproj'
-      )
-
-      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
-      build_mac_app(
-        workspace: "PurchaseTester.xcworkspace",
-        scheme: "PurchaseTester",
-        destination: 'generic/platform=macOS',
-        xcodebuild_formatter: ''
-      )
-      upload_to_testflight(
-        changelog: changelog,
-        app_platform: 'osx'
+        xcodeproj: xcodeproj_path,
       )
     end
 
-    ios_build(changelog)
-    macos_build(changelog)
+    build_mac_app(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: "PurchaseTester",
+      destination: 'generic/platform=macOS',
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      export_options: {
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp macos",
+        }
+      }
+    )
+
+    if not dry_run
+      upload_to_testflight(
+        changelog: changelog,
+        app_platform: 'osx',
+        app_identifier: "com.revenuecat.sampleapp",
+      )
+    else
+        UI.message("Dry run mode enabled. Skipping upload to TestFlight")
+    end
+    
   end
 
   desc "Clones or updates snapshots repo"
