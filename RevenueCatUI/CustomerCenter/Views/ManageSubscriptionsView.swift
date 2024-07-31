@@ -47,6 +47,8 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
+        let accentColor = color(from: self.appearance.accentColor, for: self.colorScheme)
+
         if #available(iOS 16.0, *) {
             NavigationStack {
                 content
@@ -58,7 +60,7 @@ struct ManageSubscriptionsView: View {
                                 }
                         }
                     }
-            }
+            }.applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
         } else {
             NavigationView {
                 content
@@ -73,7 +75,7 @@ struct ManageSubscriptionsView: View {
                     ) {
                         EmptyView()
                     })
-            }
+            }.applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
         }
     }
 

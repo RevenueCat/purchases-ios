@@ -71,7 +71,7 @@ struct RestorePurchasesAlert: ViewModifier {
                     return Alert(title: Text("Purchases recovered!"),
                                  message: Text("We applied the previously purchased items to your account. " +
                                                "Sorry for the inconvenience."),
-                                 dismissButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
+                                 dismissButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
 
@@ -92,7 +92,7 @@ struct RestorePurchasesAlert: ViewModifier {
                             }
                         }
                     }),
-                                 secondaryButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
+                                 secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
                 }
