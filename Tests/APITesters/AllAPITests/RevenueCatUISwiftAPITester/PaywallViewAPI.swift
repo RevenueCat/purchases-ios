@@ -132,6 +132,12 @@ struct App: View {
                                     fonts: self.fonts,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted)
+        }
+
+    @ViewBuilder
+    var checkPresentPaywallIfNeededWithRequiredEntitlement2: some View {
+        Text("")
+
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
                                     purchaseStarted: nil,
