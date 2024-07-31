@@ -17,14 +17,16 @@ func checkStoreTransactionAPI() {
     let quantity: Int = transaction.quantity
 
     let sk1: SKPaymentTransaction? = transaction.sk1Transaction
-    let sk2: StoreKit.Transaction? = transaction.sk2Transaction
+    if #available(iOS 15.0, *) {
+        let sk2: StoreKit.Transaction? = transaction.sk2Transaction
+        print(sk2!)
+    }
 
     print(
         productIdentifier,
         purchaseDate,
         transactionIdentifier,
         quantity,
-        sk1!,
-        sk2!
+        sk1!
     )
 }

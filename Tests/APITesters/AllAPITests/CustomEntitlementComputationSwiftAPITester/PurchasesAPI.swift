@@ -121,9 +121,11 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.restorePurchases()
     purchases.restorePurchases { (_: CustomerInfo?, _: PublicError?) in }
 
+    if #available(iOS 14.0, *) {
 #if os(iOS)
-    purchases.presentCodeRedemptionSheet()
+        purchases.presentCodeRedemptionSheet()
 #endif
+    }
 
     // PurchasesDelegate
     let customerInfo: CustomerInfo? = nil
@@ -141,10 +143,12 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     purchases.showManageSubscriptions { _ in }
     #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
-    _ = purchases.showPriceConsentIfNeeded
-    _ = purchases.delegate?.shouldShowPriceConsent
-    #endif
+    if #available(iOS 13.4, *) {
+#if os(iOS) || targetEnvironment(macCatalyst)
+        _ = purchases.showPriceConsentIfNeeded
+        _ = purchases.delegate?.shouldShowPriceConsent
+#endif
+    }
 }
 
 private func checkAsyncMethods(purchases: Purchases) async {
@@ -162,21 +166,25 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: CustomerInfo = try await purchases.restorePurchases()
 
-        #if os(iOS)
-        try await purchases.showManageSubscriptions()
-        let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")
-        let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
-        let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
-        #endif
+        if #available(iOS 15.0, *) {
+#if os(iOS)
+            try await purchases.showManageSubscriptions()
+            let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")
+            let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
+            let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
+#endif
+        }
     } catch {}
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
-    #if os(iOS)
-    purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
-    purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
-    purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
-    #endif
+    if #available(iOS 15.0, *) {
+#if os(iOS)
+        purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
+        purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
+        purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
+#endif
+    }
 }
 
 private func checkConfigure() -> Purchases! {

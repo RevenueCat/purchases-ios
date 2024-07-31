@@ -10,5 +10,7 @@ import RevenueCat_CustomEntitlementComputation
 private var attribution: Attribution!
 
 func checkAttributionAPI() {
-    attribution.enableAdServicesAttributionTokenCollection()
+    if #available(iOS 14.3, *) {
+        attribution.enableAdServicesAttributionTokenCollection()
+    }
 }

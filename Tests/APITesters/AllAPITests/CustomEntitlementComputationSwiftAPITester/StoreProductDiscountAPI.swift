@@ -22,7 +22,10 @@ func checkStoreProductDiscountAPI() {
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 
     let sk1Discount: SK1ProductDiscount = discount.sk1Discount!
-    let sk2Discount: SK2ProductDiscount = discount.sk2Discount!
+    if #available(iOS 15.0, *) {
+        let sk2Discount: SK2ProductDiscount = discount.sk2Discount!
+        print(sk2Discount)
+    }
 
     print(
         offerIdentifier!,
@@ -33,8 +36,7 @@ func checkStoreProductDiscountAPI() {
         paymentMode,
         priceFormatter!,
         subscriptionPeriod,
-        sk1Discount,
-        sk2Discount
+        sk1Discount
     )
 }
 

@@ -13,7 +13,10 @@ var offer: PromotionalOffer!
 func checkPromotionalOfferAPI() {
     let discount: StoreProductDiscount = offer.discount
     let sk1Discount = offer.discount.sk1Discount
-    let sk2Discount = offer.discount.sk2Discount
+    if #available(iOS 15.0, *) {
+        let sk2Discount = offer.discount.sk2Discount
+        print(sk2Discount!)
+    }
 
     let signedData = offer.signedData
 
@@ -23,5 +26,5 @@ func checkPromotionalOfferAPI() {
     let _: String = signedData.signature
     let _: Int = signedData.timestamp
 
-    print(discount, sk1Discount!, sk2Discount!)
+    print(discount, sk1Discount!)
 }
