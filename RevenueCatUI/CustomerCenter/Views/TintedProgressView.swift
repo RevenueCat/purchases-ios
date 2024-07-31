@@ -15,6 +15,8 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
+#if os(iOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -52,3 +54,5 @@ struct TintedProgressView_Previews: PreviewProvider {
     }
 
 }
+
+#endif
