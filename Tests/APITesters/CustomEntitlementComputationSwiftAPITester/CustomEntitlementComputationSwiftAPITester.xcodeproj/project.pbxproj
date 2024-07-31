@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2C396F5C281C64AF00669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5B281C64AF00669657 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); };
 		2CA538462B7D60F20037D96F /* PresentedOfferingContextAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA538452B7D60F20037D96F /* PresentedOfferingContextAPI.swift */; };
+		2D4C61372C5AD28700A29FD2 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C61362C5AD28700A29FD2 /* RevenueCat_CustomEntitlementComputation */; };
 		2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
 		2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
 		2DD778E8270E23460079CBD4 /* PackageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */; };
@@ -20,7 +21,6 @@
 		2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
 		2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
 		4F592A502A1FDC6F00851F36 /* AttributionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F592A4F2A1FDC6F00851F36 /* AttributionAPI.swift */; };
-		570EC3B229F9A0830036A023 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 570EC3B129F9A0830036A023 /* RevenueCat_CustomEntitlementComputation */; };
 		570FAF562864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF552864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift */; };
 		5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */; };
 		5738F42127866F8F0096D623 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
@@ -85,7 +85,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2C396F5C281C64AF00669657 /* AdServices.framework in Frameworks */,
-				570EC3B229F9A0830036A023 /* RevenueCat_CustomEntitlementComputation in Frameworks */,
+				2D4C61372C5AD28700A29FD2 /* RevenueCat_CustomEntitlementComputation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,7 +167,7 @@
 			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
-				570EC3B129F9A0830036A023 /* RevenueCat_CustomEntitlementComputation */,
+				2D4C61362C5AD28700A29FD2 /* RevenueCat_CustomEntitlementComputation */,
 			);
 			productName = SwiftAPITesterIOS;
 			productReference = 2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */;
@@ -198,7 +198,6 @@
 			);
 			mainGroup = A55F62AC26EAFFD200A1B466;
 			packageReferences = (
-				570EC3B029F9A0830036A023 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = A55F62B626EAFFD200A1B466 /* Products */;
 			projectDirPath = "";
@@ -458,21 +457,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		570EC3B029F9A0830036A023 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		570EC3B129F9A0830036A023 /* RevenueCat_CustomEntitlementComputation */ = {
+		2D4C61362C5AD28700A29FD2 /* RevenueCat_CustomEntitlementComputation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 570EC3B029F9A0830036A023 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat_CustomEntitlementComputation;
 		};
 /* End XCSwiftPackageProductDependency section */
