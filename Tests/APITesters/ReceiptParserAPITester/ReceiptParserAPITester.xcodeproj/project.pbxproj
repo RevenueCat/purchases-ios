@@ -34,9 +34,9 @@
 		575885972748271100CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859B2748272A00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		57D92C51293E50EF00D1912A /* ReceiptParser.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ReceiptParser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		57D92C7F293E527500D1912A /* AppleReceiptAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleReceiptAPI.swift; sourceTree = "<group>"; };
-		A5D614C626EBE7EA007DDB75 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		A5D614CE26EBE7EA007DDB75 /* PurchasesReceiptParserAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesReceiptParserAPI.swift; sourceTree = "<group>"; };
+		57D92C7F293E527500D1912A /* AppleReceiptAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppleReceiptAPI.swift; path = ../../AllAPITests/ReceiptParserAPITester/AppleReceiptAPI.swift; sourceTree = "<group>"; };
+		A5D614C626EBE7EA007DDB75 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = ../../AllAPITests/ReceiptParserAPITester/main.swift; sourceTree = "<group>"; };
+		A5D614CE26EBE7EA007DDB75 /* PurchasesReceiptParserAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PurchasesReceiptParserAPI.swift; path = ../../AllAPITests/ReceiptParserAPITester/PurchasesReceiptParserAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
