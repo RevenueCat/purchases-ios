@@ -699,8 +699,6 @@ platform :ios do
       './Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
-      './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
-      './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
