@@ -67,9 +67,9 @@ struct RestorePurchasesAlert: ViewModifier {
                                 isRestoring = true
 
                                 async let restoreOperation = await self.customerCenterViewModel.performRestore()
-                                async let delay: Void = Task.sleep(seconds: 1)
+                                async let delay: Void = Task.sleep(nanoseconds: 1_000_000_000)
                                 let alertType = await restoreOperation
-                                await delay // Ensure at least 1 second has passed so progress view is shown
+                                try? await delay // Ensure at least 1 second has passed so progress view is shown
 
                                 isRestoring = false
                                 self.setAlertType(alertType)
