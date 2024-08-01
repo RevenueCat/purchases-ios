@@ -34,7 +34,10 @@ struct NoSubscriptionsView: View {
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
-
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme)
+    private var colorScheme
     @State
     private var showRestoreAlert: Bool = false
 
@@ -43,26 +46,35 @@ struct NoSubscriptionsView: View {
     }
 
     var body: some View {
-        VStack {
-            Text(self.configuration.screens[.noActive]?.title ?? "No Subscriptions found")
-                .font(.title)
-                .padding()
-            Text(self.configuration.screens[.noActive]?.subtitle ??
-                 "We can try checking your Apple account for any previous purchases")
+        let background = color(from: appearance.backgroundColor, for: colorScheme)
+        let textColor = color(from: appearance.textColor, for: colorScheme)
+
+        ZStack {
+            if background != nil {
+                background.edgesIgnoringSafeArea(.all)
+            }
+            VStack {
+                Text(self.configuration.screens[.noActive]?.title ?? "No Subscriptions found")
+                    .font(.title)
+                    .padding()
+                Text(self.configuration.screens[.noActive]?.subtitle ??
+                     "We can try checking your Apple account for any previous purchases")
                 .font(.body)
                 .padding()
 
-            Spacer()
+                Spacer()
 
-            Button(localization.commonLocalizedString(for: .restorePurchases)) {
-                showRestoreAlert = true
-            }
-            .restorePurchasesAlert(isPresented: $showRestoreAlert)
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+                Button(localization.commonLocalizedString(for: .restorePurchases)) {
+                    showRestoreAlert = true
+                }
+                .restorePurchasesAlert(isPresented: $showRestoreAlert)
+                .buttonStyle(ManageSubscriptionsButtonStyle())
 
-            Button(localization.commonLocalizedString(for: .cancel)) {
-                dismiss()
+                Button(localization.commonLocalizedString(for: .cancel)) {
+                    dismiss()
+                }
             }
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
 
     }

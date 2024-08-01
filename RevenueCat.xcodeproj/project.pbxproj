@@ -214,6 +214,7 @@
 		3551E39D2C4A6A1400D27C25 /* TintedProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
 		357349012C3BEB5C000EEB86 /* CustomerCenterConfigDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357348FF2C3BEB0A000EEB86 /* CustomerCenterConfigDataTests.swift */; };
+		357CEC702C5940CE00A80837 /* ColorFromAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357CEC6F2C5940CE00A80837 /* ColorFromAppearance.swift */; };
 		3592E8862C2ED51700D7F91D /* CustomerCenterConfigCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3592E8852C2ED51700D7F91D /* CustomerCenterConfigCallback.swift */; };
 		3592E88A2C2ED54A00D7F91D /* CustomerCenterConfigData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3592E8882C2ED54A00D7F91D /* CustomerCenterConfigData.swift */; };
 		3592E88C2C2ED58900D7F91D /* GetCustomerCenterConfigOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3592E88B2C2ED58900D7F91D /* GetCustomerCenterConfigOperation.swift */; };
@@ -1345,6 +1346,7 @@
 		35549322269E298B005F9AE9 /* OfferingsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsFactory.swift; sourceTree = "<group>"; };
 		357348FF2C3BEB0A000EEB86 /* CustomerCenterConfigDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataTests.swift; sourceTree = "<group>"; };
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
+		357CEC6F2C5940CE00A80837 /* ColorFromAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorFromAppearance.swift; sourceTree = "<group>"; };
 		3592E8852C2ED51700D7F91D /* CustomerCenterConfigCallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigCallback.swift; sourceTree = "<group>"; };
 		3592E8882C2ED54A00D7F91D /* CustomerCenterConfigData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigData.swift; sourceTree = "<group>"; };
 		3592E88B2C2ED58900D7F91D /* GetCustomerCenterConfigOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GetCustomerCenterConfigOperation.swift; path = Sources/Networking/Operations/GetCustomerCenterConfigOperation.swift; sourceTree = SOURCE_ROOT; };
@@ -3132,6 +3134,7 @@
 				353756632C382C2800A1B8D6 /* URLUtilities.swift */,
 				1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */,
 				3511088E2C47F6DA0048C4D8 /* CustomerInfo+CurrentEntitlement.swift */,
+				357CEC6F2C5940CE00A80837 /* ColorFromAppearance.swift */,
 			);
 			path = CustomerCenter;
 			sourceTree = "<group>";
@@ -5822,6 +5825,7 @@
 				887A606E2C1D037000E1A461 /* LocalizedAlertError.swift in Sources */,
 				887A60802C1D037000E1A461 /* Package+VariableDataProvider.swift in Sources */,
 				887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */,
+				357CEC702C5940CE00A80837 /* ColorFromAppearance.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
 				887A60872C1D037000E1A461 /* ViewExtensions.swift in Sources */,
 				353756712C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift in Sources */,

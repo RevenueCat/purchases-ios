@@ -26,14 +26,16 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct PromotionalOfferView: View {
 
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
-
     @StateObject
     private var viewModel: PromotionalOfferViewModel
     @Environment(\.dismiss)
     private var dismiss
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
@@ -46,9 +48,53 @@ struct PromotionalOfferView: View {
     }
 
     var body: some View {
-        VStack {
-            if let details = self.viewModel.promotionalOfferData?.promoOfferDetails,
-               self.viewModel.error == nil {
+        ZStack {
+            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+                background.edgesIgnoringSafeArea(.all)
+            }
+
+            VStack {
+                if self.viewModel.error == nil {
+                    PromotionalOfferHeaderView(viewModel: self.viewModel)
+
+                    Spacer()
+
+                    PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
+
+                    let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
+                    Button(dismissButtonTitle) {
+                        dismiss()
+                    }
+                } else {
+                    EmptyView()
+                        .onAppear {
+                            dismiss()
+                        }
+                }
+            }
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+struct PromotionalOfferHeaderView: View {
+
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.colorScheme)
+    private var colorScheme
+    @ObservedObject
+    private(set) var viewModel: PromotionalOfferViewModel
+
+    var body: some View {
+        let textColor = color(from: appearance.textColor, for: colorScheme)
+        if let details = self.viewModel.promotionalOfferData?.promoOfferDetails {
+            VStack {
                 Text(details.title)
                     .font(.title)
                     .padding()
@@ -56,21 +102,7 @@ struct PromotionalOfferView: View {
                 Text(details.subtitle)
                     .font(.title3)
                     .padding()
-
-                Spacer()
-
-                PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
-
-                let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
-                Button(dismissButtonTitle) {
-                    dismiss()
-                }
-            } else {
-                EmptyView()
-                    .onAppear {
-                        dismiss()
-                    }
-            }
+            }.applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
     }
 

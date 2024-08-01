@@ -219,32 +219,52 @@ public struct CustomerCenterConfigData {
 
     public struct Appearance {
 
-        public let mode: AppearanceMode
+        public let accentColor: ColorInformation
+        public let textColor: ColorInformation
+        public let backgroundColor: ColorInformation
+        public let buttonTextColor: ColorInformation
+        public let buttonBackgroundColor: ColorInformation
 
-        public init(mode: AppearanceMode) {
-            self.mode = mode
-        }
-
-        public enum AppearanceMode {
-
-            case system
-            case custom(accentColor: ColorInformation,
-                        backgroundColor: ColorInformation,
-                        textColor: ColorInformation)
-
+        public init(accentColor: ColorInformation,
+                    textColor: ColorInformation,
+                    backgroundColor: ColorInformation,
+                    buttonTextColor: ColorInformation,
+                    buttonBackgroundColor: ColorInformation) {
+            self.accentColor = accentColor
+            self.textColor = textColor
+            self.backgroundColor = backgroundColor
+            self.buttonTextColor = buttonTextColor
+            self.buttonBackgroundColor = buttonBackgroundColor
         }
 
         public struct ColorInformation {
 
-            public var light: RCColor
-            public var dark: RCColor
+            public var light: RCColor?
+            public var dark: RCColor?
+
+            public init() {
+                self.light = nil
+                self.dark = nil
+            }
 
             public init(
-                light: String,
-                dark: String
-            ) throws {
-                self.light = try RCColor(stringRepresentation: light)
-                self.dark = try RCColor(stringRepresentation: dark)
+                light: String?,
+                dark: String?
+            ) {
+                if let light = light {
+                    do {
+                        self.light = try RCColor(stringRepresentation: light)
+                    } catch {
+                        Logger.error("Failed to parse light color \(light)")
+                    }
+                }
+                if let dark = dark {
+                    do {
+                        self.dark = try RCColor(stringRepresentation: dark)
+                    } catch {
+                        Logger.error("Failed to parse dark color \(dark)")
+                    }
+                }
             }
         }
 
@@ -327,36 +347,16 @@ extension CustomerCenterConfigData.Screen {
 extension CustomerCenterConfigData.Appearance {
 
     init(from response: CustomerCenterConfigResponse.Appearance) {
-        self.mode = CustomerCenterConfigData.Appearance.AppearanceMode(from: response)
-    }
-
-}
-
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-extension CustomerCenterConfigData.Appearance.AppearanceMode {
-
-    init(from response: CustomerCenterConfigResponse.Appearance) {
-        switch response.mode {
-        case .system:
-            self = .system
-        case .custom:
-            do {
-                let light = response.light
-                let dark = response.dark
-                let accent = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.accentColor,
-                                                                                      dark: dark.accentColor)
-                let background = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.backgroundColor,
-                                                                                          dark: dark.backgroundColor)
-                let text = try CustomerCenterConfigData.Appearance.ColorInformation(light: light.textColor,
-                                                                                    dark: dark.textColor)
-                self = .custom(accentColor: accent,
-                               backgroundColor: background,
-                               textColor: text)
-            } catch {
-                Logger.error("Failed to parse appearance colors")
-                self = .system
-            }
-        }
+        self.accentColor = .init(light: response.light.accentColor,
+                                 dark: response.dark.accentColor)
+        self.textColor = .init(light: response.light.textColor,
+                               dark: response.dark.textColor)
+        self.backgroundColor = .init(light: response.light.backgroundColor,
+                                     dark: response.dark.backgroundColor)
+        self.buttonTextColor = .init(light: response.light.buttonTextColor,
+                                     dark: response.dark.buttonTextColor)
+        self.buttonBackgroundColor = .init(light: response.light.buttonBackgroundColor,
+                                           dark: response.dark.buttonBackgroundColor)
     }
 
 }

@@ -15,6 +15,8 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
+#if os(iOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -27,6 +29,7 @@ struct TintedProgressView: View {
 
     var body: some View {
         ProgressView()
+            .controlSize(.regular)
             .tint(colorScheme == .dark ? Color.black : Color.white)
     }
 
@@ -41,7 +44,15 @@ struct TintedProgressView_Previews: PreviewProvider {
 
     static var previews: some View {
         TintedProgressView()
-            .environment(\.appearance, CustomerCenterConfigData.Appearance(mode: .system))
+            .environment(\.appearance, CustomerCenterConfigData.Appearance(
+                accentColor: .init(light: "#ffffff", dark: "#000000"),
+                textColor: .init(light: "#000000", dark: "#ffffff"),
+                backgroundColor: .init(light: "#000000", dark: "#ffffff"),
+                buttonTextColor: .init(light: "#000000", dark: "#ffffff"),
+                buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
+            ))
     }
 
 }
+
+#endif
