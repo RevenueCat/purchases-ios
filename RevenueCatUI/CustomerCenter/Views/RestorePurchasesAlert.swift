@@ -50,6 +50,7 @@ struct RestorePurchasesAlert: ViewModifier {
         var id: Self { self }
     }
 
+    // swiftlint:disable function_body_length
     func body(content: Content) -> some View {
         content
             .alert(isPresented: $isPresented) {
@@ -108,6 +109,7 @@ struct RestorePurchasesAlert: ViewModifier {
                 }
             }
     }
+    // swiftlint:enable function_body_length
 
 }
 
