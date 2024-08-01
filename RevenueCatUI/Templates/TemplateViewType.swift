@@ -104,13 +104,13 @@ extension PaywallData {
                                       tiers: self.config.tiers,
                                       setting: template.packageSetting,
                                       locale: locale,
-                                      appleIntegerPrices: self.countryIntegerPrices.apple),
+                                      integerPriceCountries: self.countryIntegerPrices.apple),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
                 colorsByTier: self.config.multiSchemeColorsByTier,
                 fonts: fonts,
                 assetBaseURL: self.assetBaseURL,
-                appleIntegerPrices: self.countryIntegerPrices.apple
+                integerPriceCountries: VariableHandler.Context(discountRelativeToMostExpensivePerMonth: nil, integerPriceCountries: self.countryIntegerPrices.apple)
             )
         }
     }

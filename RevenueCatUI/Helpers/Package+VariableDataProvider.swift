@@ -42,7 +42,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if context.appleIntegerPrices.contains(countryCode) {
+        if context.integerPriceCountries.contains(countryCode) {
             return roundPriceWithFormatter()
         } else {
             return self.storeProduct.localizedPriceString
