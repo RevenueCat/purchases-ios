@@ -64,9 +64,12 @@ struct RestorePurchasesAlert: ViewModifier {
                         primaryButton: .default(Text("Check past purchases"), action: {
                             Task {
                                 isRestoring = true
-                                let alertType = await self.customerCenterViewModel.performRestore()
-                                // Simulate a delay to ensure the progress view is shown for at least one second
-                                await Task.sleep(seconds: 1)
+
+                                async let restoreOperation = await self.customerCenterViewModel.performRestore()
+                                async let delay: Void = Task.sleep(seconds: 1)
+                                let alertType = await restoreOperation
+                                await delay // Ensure at least 1 second has passed so progress view is shown
+
                                 isRestoring = false
                                 self.setAlertType(alertType)
                             }

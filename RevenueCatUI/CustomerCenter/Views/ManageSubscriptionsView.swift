@@ -314,7 +314,7 @@ struct ManageSubscriptionButton: View {
             await self.viewModel.determineFlow(for: path)
         }, label: {
             if self.viewModel.loadingPath?.id == path.id {
-                TintedProgressView()
+                TintedProgressView().transition(.opacity)
             } else {
                 Text(path.title)
             }
