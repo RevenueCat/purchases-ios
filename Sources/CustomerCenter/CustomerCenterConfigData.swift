@@ -242,6 +242,11 @@ public struct CustomerCenterConfigData {
             public var light: RCColor?
             public var dark: RCColor?
 
+            public init() {
+                self.light = nil
+                self.dark = nil
+            }
+
             public init(
                 light: String?,
                 dark: String?
