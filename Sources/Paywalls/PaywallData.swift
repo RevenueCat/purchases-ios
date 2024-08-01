@@ -17,14 +17,30 @@ import Foundation
 
 public struct CountryIntegerPrices: Codable, Sendable, Hashable, Equatable {
 
-    public var apple: Set<String>
-    public var google: Set<String>
+    public var apple: Set<String> {
+        _apple
+    }
+
+    public var google: Set<String> {
+        _google
+    }
+
+    @DefaultDecodable.EmptyArray
+    internal private(set) var _google: Set<String>
+
+    @DefaultDecodable.EmptyArray
+    internal private(set) var _apple: Set<String>
 
     public init(apple: Set<String>, google: Set<String>) {
-        self.apple = apple
-        self.google = google
+        self._apple = apple
+        self._google = google
     }
-    
+
+    private enum CodingKeys: String, CodingKey {
+        case _apple = "apple"
+        case _google = "google"
+    }
+
 }
 
 /// The data necessary to display a paywall using the `RevenueCatUI` library.
@@ -49,16 +65,7 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
-    public var countryIntegerPrices: CountryIntegerPrices {
-        get { CountryIntegerPrices(apple: _apple, google: _google) }
-        set { _google = newValue.google; _apple = newValue.apple }
-    }
-
-    @DefaultDecodable.EmptyArray
-    internal private(set) var _google: Set<String>
-
-    @DefaultDecodable.EmptyArray
-    internal private(set) var _apple: Set<String>
+    public var countryIntegerPrices: CountryIntegerPrices 
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -774,7 +781,7 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
-//        case countryIntegerPrices = "country_integer_prices"
+        case countryIntegerPrices = "country_integer_prices"
     }
 
 }
