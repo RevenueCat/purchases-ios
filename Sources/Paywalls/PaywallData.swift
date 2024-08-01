@@ -65,7 +65,11 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
-    public var countryIntegerPrices: CountryIntegerPrices 
+    public var countryIntegerPrices: CountryIntegerPrices {
+        _countryIntegerPrices ?? .init(apple: [], google: [])
+    }
+
+    internal private(set) var _countryIntegerPrices: CountryIntegerPrices?
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -638,7 +642,7 @@ extension PaywallData {
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
-        self.countryIntegerPrices = countryIntegerPrices
+        self._countryIntegerPrices = countryIntegerPrices
         self.revision = revision
     }
 
@@ -781,7 +785,7 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
-        case countryIntegerPrices = "country_integer_prices"
+        case _countryIntegerPrices = "country_integer_prices"
     }
 
 }
