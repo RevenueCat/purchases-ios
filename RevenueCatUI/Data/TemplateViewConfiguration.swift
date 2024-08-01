@@ -163,7 +163,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         localizationByTier: [String: PaywallData.LocalizedConfiguration]?,
         tiers: [PaywallData.Tier],
         setting: TemplatePackageSetting,
-        locale: Locale = .current
+        locale: Locale = .current,
+        appleIntegerPrices: Set<String>
     ) throws -> Self {
         let parameters: Parameters
 
@@ -190,7 +191,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
             with: packages,
             activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
             parameters: parameters,
-            locale: locale
+            locale: locale,
+            appleIntegerPrices: appleIntegerPrices
         )
     }
 
@@ -201,7 +203,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         with packages: [RevenueCat.Package],
         activelySubscribedProductIdentifiers: Set<String>,
         parameters: Parameters,
-        locale: Locale
+        locale: Locale,
+        appleIntegerPrices: Set<String>
     ) throws -> Self {
         switch parameters {
         case let .singleTier(filter, `default`, localization, multiPackage):
@@ -210,7 +213,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 filter: filter,
                 activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 localization: localization,
-                locale: locale
+                locale: locale,
+                appleIntegerPrices: appleIntegerPrices
             )
 
             guard let firstPackage = filteredPackages.first else {
@@ -245,7 +249,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
                         filter: tier.packages,
                         activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                         localization: localization,
-                        locale: locale
+                        locale: locale,
+                        appleIntegerPrices: appleIntegerPrices
                     )
 
                     guard let firstPackage = filteredPackages.first else {
@@ -288,7 +293,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         filter: [String],
         activelySubscribedProductIdentifiers: Set<String>,
         localization: PaywallData.LocalizedConfiguration,
-        locale: Locale
+        locale: Locale,
+        appleIntegerPrices: Set<String>
     ) -> [TemplateViewConfiguration.Package] {
         let filtered = TemplateViewConfiguration.filter(packages: packages, with: filter)
         let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: filtered)
@@ -304,7 +310,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     content: package,
                     localization: localization.processVariables(
                         with: package,
-                        context: .init(discountRelativeToMostExpensivePerMonth: discount),
+                        context: .init(discountRelativeToMostExpensivePerMonth: discount, appleIntegerPrices: appleIntegerPrices),
                         locale: locale
                     ),
                     currentlySubscribed: activelySubscribedProductIdentifiers.contains(

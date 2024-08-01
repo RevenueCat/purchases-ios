@@ -45,6 +45,18 @@ extension Package: VariableDataProvider {
         }
     }
 
+    func localizedPriceFor(context: VariableHandler.Context?) -> String {
+        guard let context, let countryCode = Purchases.shared.storeFrontCountryCode else {
+            return self.storeProduct.localizedPriceString
+        }
+
+        if context.appleIntegerPrices.contains(countryCode) {
+            return roundPriceWithFormatter()
+        } else {
+            return self.storeProduct.localizedPriceString
+        }
+    }
+
     func roundPriceWithFormatter() -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             return self.storeProduct.localizedPriceString
@@ -130,13 +142,13 @@ extension Package: VariableDataProvider {
         return self.introDuration(locale)
     }
 
-    func localizedPricePerPeriod(_ locale: Locale) -> String {
+    func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
             return self.localizedPrice
         }
 
         let unit = Localization.abbreviatedUnitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPrice)/\(unit)"
+        return "\(self.localizedPriceFor(context: context))/\(unit)"
     }
 
     func localizedPricePerPeriodFull(_ locale: Locale) -> String {
@@ -148,9 +160,9 @@ extension Package: VariableDataProvider {
         return "\(self.localizedPrice)/\(unit)"
     }
 
-    func localizedPriceAndPerMonth(_ locale: Locale) -> String {
+    func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPricePerPeriod(locale)
+            return self.localizedPricePerPeriod(locale, context: context)
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)

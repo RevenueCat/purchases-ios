@@ -46,9 +46,11 @@ protocol VariableDataProvider {
     func normalizedSubscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
-    func localizedPricePerPeriod(_ locale: Locale) -> String
+    @available(iOS 15.0, *)
+    func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context?) -> String
     func localizedPricePerPeriodFull(_ locale: Locale) -> String
-    func localizedPriceAndPerMonth(_ locale: Locale) -> String
+    @available(iOS 15.0, *)
+    func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context?) -> String
     func localizedPriceAndPerMonthFull(_ locale: Locale) -> String
     func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
 
@@ -62,6 +64,7 @@ enum VariableHandler {
     struct Context {
 
         var discountRelativeToMostExpensivePerMonth: Double?
+        var appleIntegerPrices: Set<String> = []
 
     }
 
@@ -101,9 +104,9 @@ enum VariableHandler {
         switch variableName {
         case "app_name": return { (provider, _, _) in provider.applicationName }
         case "price": return { (provider, _, _) in provider.localizedPrice }
-        case "price_per_period": return { (provider, _, locale) in provider.localizedPricePerPeriod(locale) }
+        case "price_per_period": return { (provider, context, locale) in provider.localizedPricePerPeriod(locale, context: context) }
         case "price_per_period_full": return { (provider, _, locale) in provider.localizedPricePerPeriodFull(locale) }
-        case "total_price_and_per_month": return { (provider, _, locale) in provider.localizedPriceAndPerMonth(locale) }
+        case "total_price_and_per_month": return { (provider, context, locale) in provider.localizedPriceAndPerMonth(locale, context: context) }
         case "total_price_and_per_month_full": return { (provider, _, locale) in
             provider.localizedPriceAndPerMonthFull(locale)
         }
