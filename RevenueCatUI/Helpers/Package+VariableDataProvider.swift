@@ -37,14 +37,6 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-    var localizedPrice: String {
-        if shouldRoundPrices {
-            return roundPriceWithFormatter()
-        } else {
-            return self.storeProduct.localizedPriceString
-        }
-    }
-
     func localizedPriceFor(context: VariableHandler.Context?) -> String {
         guard let context, let countryCode = Purchases.shared.storeFrontCountryCode else {
             return self.storeProduct.localizedPriceString
@@ -144,20 +136,20 @@ extension Package: VariableDataProvider {
 
     func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPrice
+            return self.localizedPriceFor(context: context)
         }
 
         let unit = Localization.abbreviatedUnitLocalizedString(for: period, locale: locale)
         return "\(self.localizedPriceFor(context: context))/\(unit)"
     }
 
-    func localizedPricePerPeriodFull(_ locale: Locale) -> String {
+    func localizedPricePerPeriodFull(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPrice
+            return self.localizedPriceFor(context: context)
         }
 
         let unit = Localization.unitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPrice)/\(unit)"
+        return "\(self.localizedPriceFor(context: context))/\(unit)"
     }
 
     func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
@@ -166,7 +158,7 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            return "\(self.localizedPricePerPeriod(locale)) (\(self.localizedPricePerMonth)/\(unit))"
+            return "\(self.localizedPricePerPeriod(locale, context: context)) (\(self.localizedPricePerMonth)/\(unit))"
         }
     }
 

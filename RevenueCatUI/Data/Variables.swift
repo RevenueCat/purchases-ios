@@ -27,13 +27,13 @@ extension PaywallData.LocalizedConfiguration {
 }
 
 /// A type that can provide necessary information for `VariableHandler` to replace variable content in strings.
+@available(iOS 15.0, *)
 protocol VariableDataProvider {
 
     var applicationName: String { get }
 
     var packageIdentifier: String { get }
 
-    var localizedPrice: String { get }
     var localizedPricePerWeek: String { get }
     var localizedPricePerMonth: String { get }
     var localizedIntroductoryOfferPrice: String? { get }
@@ -46,10 +46,9 @@ protocol VariableDataProvider {
     func normalizedSubscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
-    @available(iOS 15.0, *)
+    func localizedPriceFor(context: VariableHandler.Context?) -> String
     func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context?) -> String
-    func localizedPricePerPeriodFull(_ locale: Locale) -> String
-    @available(iOS 15.0, *)
+    func localizedPricePerPeriodFull(_ locale: Locale, context: VariableHandler.Context?) -> String
     func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context?) -> String
     func localizedPriceAndPerMonthFull(_ locale: Locale) -> String
     func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
@@ -103,9 +102,9 @@ enum VariableHandler {
     fileprivate static func provider(for variableName: String) -> ValueProvider? {
         switch variableName {
         case "app_name": return { (provider, _, _) in provider.applicationName }
-        case "price": return { (provider, _, _) in provider.localizedPrice }
+        case "price": return { (provider, context, _) in provider.localizedPriceFor(context: context) }
         case "price_per_period": return { (provider, context, locale) in provider.localizedPricePerPeriod(locale, context: context) }
-        case "price_per_period_full": return { (provider, _, locale) in provider.localizedPricePerPeriodFull(locale) }
+        case "price_per_period_full": return { (provider, context, locale) in provider.localizedPricePerPeriodFull(locale, context: context) }
         case "total_price_and_per_month": return { (provider, context, locale) in provider.localizedPriceAndPerMonth(locale, context: context) }
         case "total_price_and_per_month_full": return { (provider, _, locale) in
             provider.localizedPriceAndPerMonthFull(locale)
