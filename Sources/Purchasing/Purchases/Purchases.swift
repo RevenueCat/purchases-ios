@@ -63,18 +63,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// - ``isConfigured``
     @objc(sharedPurchases)
     public static var shared: Purchases {
-        guard let purchases = Self.purchases.value else {
+        guard let purchases = Self.purchases else {
             fatalError(Strings.purchase.purchases_nil.description)
         }
 
         return purchases
     }
 
-    private static let purchases: Atomic<Purchases?> = nil
+    private static var purchases: Purchases?
 
     /// Returns `true` if RevenueCat has already been initialized through ``Purchases/configure(withAPIKey:)``
     /// or one of is overloads.
-    @objc public static var isConfigured: Bool { Self.purchases.value != nil }
+    @objc public static var isConfigured: Bool { Self.purchases != nil }
 
     @objc public var delegate: PurchasesDelegate? {
         get { self.privateDelegate }
@@ -679,33 +679,29 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     static func clearSingleton() {
-        self.purchases.modify { purchases in
-            purchases?.delegate = nil
-            purchases = nil
-        }
+        Self.purchases?.delegate = nil
+        Self.purchases = nil
     }
 
     /// - Parameter purchases: this is an `@autoclosure` to be able to clear the previous instance
     /// from memory before creating the new one.
     @discardableResult
     static func setDefaultInstance(_ purchases: @autoclosure () -> Purchases) -> Purchases {
-        return self.purchases.modify { currentInstance in
-            if currentInstance != nil {
-                #if DEBUG
-                if ProcessInfo.isRunningRevenueCatTests {
-                    preconditionFailure(Strings.configure.purchase_instance_already_set.description)
-                }
-                #endif
-                Logger.info(Strings.configure.purchase_instance_already_set)
-
-                // Clear existing instance to avoid multiple concurrent instances in memory.
-                currentInstance = nil
+        if self.purchases != nil {
+            #if DEBUG
+            if ProcessInfo.isRunningRevenueCatTests {
+                preconditionFailure(Strings.configure.purchase_instance_already_set.description)
             }
+            #endif
+            Logger.info(Strings.configure.purchase_instance_already_set)
 
-            let newInstance = purchases()
-            currentInstance = newInstance
-            return newInstance
+            // Clear existing instance to avoid multiple concurrent instances in memory.
+            self.purchases = nil
         }
+
+        let newInstance = purchases()
+        Self.purchases = newInstance
+        return newInstance
     }
 
 }
