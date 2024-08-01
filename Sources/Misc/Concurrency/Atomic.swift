@@ -56,9 +56,9 @@ internal final class Atomic<T> {
         set { modify { $0 = newValue } }
     }
 
-    init(_ value: T) {
+    init(_ value: T, lockType: Lock.LockType = .recursive) {
         self._value = value
-        self.lock = Lock()
+        self.lock = Lock(lockType)
     }
 
     @discardableResult
