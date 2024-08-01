@@ -90,13 +90,7 @@ enum CustomerCenterConfigTestData {
                     ]
                   )
         ],
-        appearance: .init(
-            accentColor: .init(light: "#ffffff", dark: "#000000"),
-            textColor: .init(light: "#000000", dark: "#ffffff"),
-            backgroundColor: .init(light: "#000000", dark: "#ffffff"),
-            buttonTextColor: .init(light: "#000000", dark: "#ffffff"),
-            buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
-        ),
+        appearance: standardAppearance,
         localization: .init(
             locale: "en_US",
             localizedStrings: [
@@ -105,6 +99,14 @@ enum CustomerCenterConfigTestData {
             ]
         ),
         support: .init(email: "test-support@revenuecat.com")
+    )
+
+    static let standardAppearance = CustomerCenterConfigData.Appearance(
+        accentColor: .init(light: "#ffffff", dark: "#000000"),
+        textColor: .init(light: "#000000", dark: "#ffffff"),
+        backgroundColor: .init(light: "#000000", dark: "#ffffff"),
+        buttonTextColor: .init(light: "#000000", dark: "#ffffff"),
+        buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
     )
 
     static let subscriptionInformationMonthlyRenewing: SubscriptionInformation = .init(

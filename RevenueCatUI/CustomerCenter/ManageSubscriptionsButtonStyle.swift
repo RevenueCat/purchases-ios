@@ -52,13 +52,7 @@ struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
     static var previews: some View {
         Button("Didn't receive purchase") {}
             .buttonStyle(ManageSubscriptionsButtonStyle())
-            .environment(\.appearance, CustomerCenterConfigData.Appearance(
-                accentColor: .init(light: "#ffffff", dark: "#000000"),
-                textColor: .init(light: "#000000", dark: "#ffffff"),
-                backgroundColor: .init(light: "#000000", dark: "#ffffff"),
-                buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
-                buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
-            ))
+            .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
     }
 
 }
