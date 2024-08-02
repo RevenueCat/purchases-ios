@@ -50,49 +50,35 @@ extension Package: VariableDataProvider {
         }
     }
 
-    func roundAndTruncatePrice(_ priceString: String) -> String {
-        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning("Cound not round price because priceFormatter is nil.")
-            return priceString
-        }
-
-        guard let priceToRound = formatter.number(from: priceString) else {
-            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
-            return priceString
-        }
-
-        formatter.maximumFractionDigits = 0
-
-        guard let roundedPriceString = formatter.string(from: priceToRound) else {
-            Logger.warning("Cound not round price because formatter failed to round price.")
-            return priceString
-        }
-
-        return roundedPriceString
-    }
-
-    func roundPriceIfNeeded(priceString: String) -> String {
+    func roundAndTruncatePrice(_ priceString: String, onlyIf99or00: Bool = false) -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning("Cound not round price because priceFormatter is nil.")
             return priceString
         }
 
         guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning("Cound not round price because priceString is incompatible.")
+            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
             return priceString
         }
 
-        let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
-
-        if fractionalPart == 0.99 || fractionalPart == 0.00 {
-
-            formatter.maximumFractionDigits = 0
-            return formatter.string(from: NSNumber(value: priceToRound)) ?? priceString
+        // exit early if conditions not met
+        if onlyIf99or00 {
+            let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
+            guard fractionalPart == 0.99 || fractionalPart == 0.00 else {
+                return priceString
+            }
         }
 
-        return priceString
-    }
+        formatter.maximumFractionDigits = 0
 
+        guard let roundedPriceString = formatter.string(from: NSNumber(value: priceToRound)) else {
+            Logger.warning("Cound not round price because formatter failed to round price.")
+            return priceString
+        }
+
+        return roundedPriceString
+    }
+    
     func localizedPricePerWeek(context: VariableHandler.Context? = nil) -> String {
         guard let price = self.storeProduct.localizedPricePerWeek else {
             Logger.warning(Strings.package_not_subscription(self))
@@ -100,7 +86,7 @@ extension Package: VariableDataProvider {
         }
 
         if shouldRoundAndTruncatePrices(context: context) {
-            return roundPriceIfNeeded(priceString: price)
+            return roundAndTruncatePrice(price, onlyIf99or00: true)
         }
 
         return price
@@ -112,8 +98,9 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
+
         if shouldRoundAndTruncatePrices(context: context) {
-            return roundPriceIfNeeded(priceString: price)
+            return roundAndTruncatePrice(price, onlyIf99or00: true)
         }
 
         return price
