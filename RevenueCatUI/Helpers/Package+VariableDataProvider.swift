@@ -24,11 +24,19 @@ extension Package: VariableDataProvider {
     }
 
     func localizedPriceFor(context: VariableHandler.Context?) -> String {
-        guard let context, let countryCode = Purchases.shared.storeFrontCountryCode else {
+
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
+            return self.storeProduct.localizedPriceString
+        }
+
+        guard let context else {
+            Logger.warning("Cound not consider price rounding because context is nil.")
             return self.storeProduct.localizedPriceString
         }
 
         if context.integerPriceCountries.contains(countryCode) {
+            Logger.verbose("Will attempt to round price because \(countryCode) found in \(context.integerPriceCountries)")
             return roundPriceWithFormatter()
         } else {
             return self.storeProduct.localizedPriceString
@@ -37,36 +45,101 @@ extension Package: VariableDataProvider {
 
     func roundPriceWithFormatter() -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
+            Logger.warning("Cound not round price because priceFormatter is nil.")
             return self.storeProduct.localizedPriceString
         }
 
         guard let priceToRound = formatter.number(from: self.storeProduct.localizedPriceString) else {
+            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
             return self.storeProduct.localizedPriceString
         }
 
         formatter.maximumFractionDigits = 0
 
         guard let roundedPriceString = formatter.string(from: priceToRound) else {
+            Logger.warning("Cound not round price because formatter failed to round price.")
             return self.storeProduct.localizedPriceString
         }
 
         return roundedPriceString
     }
 
-    var localizedPricePerWeek: String {
+    func roundPriceIfNeeded(priceString: String) -> String {
+        // Create a number formatter for parsing the input string
+        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
+            Logger.warning("Cound not round price because priceFormatter is nil.")
+            return priceString
+        }
+
+        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning("Cound not round price because priceString is incompatible.")
+            return priceString
+        }
+
+
+        // Extract the fractional part
+        let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
+
+        // Check if the fractional part is .99 or .00
+        if fractionalPart == 0.99 || fractionalPart == 0.00 {
+            // Round to an integer
+            let roundedPrice = Int(round(priceToRound))
+
+            // Format the output string with the rounded price
+            formatter.maximumFractionDigits = 0 // Ensure no decimal places
+            return formatter.string(from: NSNumber(value: roundedPrice)) ?? priceString
+        }
+
+
+        // Return the original string if no rounding is needed or parsing fails
+        return priceString
+    }
+
+    func localizedPricePerWeek(context: VariableHandler.Context? = nil) -> String {
         guard let price = self.storeProduct.localizedPricePerWeek else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
 
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
+            return price
+        }
+
+        guard let context else {
+            Logger.warning("Cound not consider price rounding because context is nil.")
+            return price
+        }
+
+        if context.integerPriceCountries.contains(countryCode) {
+            return  roundPriceIfNeeded(priceString: price)
+        }
+
         return price
     }
 
-    var localizedPricePerMonth: String {
+    func localizedPricePerMonth(context: VariableHandler.Context? = nil) -> String {
         guard let price = self.storeProduct.localizedPricePerMonth else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
+
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
+            return price
+        }
+
+        guard let context else {
+            Logger.warning("Cound not consider price rounding because context is nil.")
+            return price
+        }
+
+
+        if context.integerPriceCountries.contains(countryCode) {
+            return roundPriceIfNeeded(priceString: price)
+        }
+
+        assert(price != "(Function)")
 
         return price
     }
@@ -144,17 +217,17 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            return "\(self.localizedPricePerPeriod(locale, context: context)) (\(self.localizedPricePerMonth)/\(unit))"
+            return "\(self.localizedPricePerPeriod(locale, context: context)) (\(self.localizedPricePerMonth(context: nil))/\(unit))"
         }
     }
 
-    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String {
+    func localizedPriceAndPerMonthFull(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
         if !self.isSubscription || self.isMonthly {
             return self.localizedPricePerPeriodFull(locale)
         } else {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
-            return "\(self.localizedPricePerPeriodFull(locale)) (\(self.localizedPricePerMonth)/\(unit))"
+            return "\(self.localizedPricePerPeriodFull(locale, context: context)) (\(self.localizedPricePerMonth(context: nil))/\(unit))"
         }
     }
 
