@@ -23,24 +23,6 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-    func shouldRoundAndTruncatePrices(context: VariableHandler.Context?) -> Bool {
-
-        guard let context else {
-            Logger.warning("Cound not consider price rounding because context is nil.")
-            return false
-        }
-
-        guard !context.integerPriceCountries.isEmpty else {
-            return false
-        }
-
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
-            return false
-        }
-
-        return context.integerPriceCountries.contains(countryCode)
-    }
 
     func localizedPriceFor(context: VariableHandler.Context?) -> String {
         if shouldRoundAndTruncatePrices(context: context) {
@@ -50,35 +32,6 @@ extension Package: VariableDataProvider {
         }
     }
 
-    func roundAndTruncatePrice(_ priceString: String, onlyIf99or00: Bool = false) -> String {
-        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning("Cound not round price because priceFormatter is nil.")
-            return priceString
-        }
-
-        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
-            return priceString
-        }
-
-        // exit early if conditions not met
-        if onlyIf99or00 {
-            let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
-            guard fractionalPart == 0.99 || fractionalPart == 0.00 else {
-                return priceString
-            }
-        }
-
-        formatter.maximumFractionDigits = 0
-
-        guard let roundedPriceString = formatter.string(from: NSNumber(value: priceToRound)) else {
-            Logger.warning("Cound not round price because formatter failed to round price.")
-            return priceString
-        }
-
-        return roundedPriceString
-    }
-    
     func localizedPricePerWeek(context: VariableHandler.Context? = nil) -> String {
         guard let price = self.storeProduct.localizedPricePerWeek else {
             Logger.warning(Strings.package_not_subscription(self))
@@ -97,7 +50,6 @@ extension Package: VariableDataProvider {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
-
 
         if shouldRoundAndTruncatePrices(context: context) {
             return roundAndTruncatePrice(price, onlyIf99or00: true)
@@ -179,7 +131,7 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            return "\(self.localizedPricePerPeriod(locale, context: context)) (\(self.localizedPricePerMonth(context: nil))/\(unit))"
+            return "\(self.localizedPricePerPeriod(locale, context: context)) (\(self.localizedPricePerMonth(context: context))/\(unit))"
         }
     }
 
@@ -189,7 +141,7 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
-            return "\(self.localizedPricePerPeriodFull(locale, context: context)) (\(self.localizedPricePerMonth(context: nil))/\(unit))"
+            return "\(self.localizedPricePerPeriodFull(locale, context: context)) (\(self.localizedPricePerMonth(context: context))/\(unit))"
         }
     }
 
@@ -201,7 +153,60 @@ extension Package: VariableDataProvider {
 
 }
 
+
 // MARK: - Private
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension Package {
+    func shouldRoundAndTruncatePrices(context: VariableHandler.Context?) -> Bool {
+
+        guard let context else {
+            Logger.warning("Cound not consider price rounding because context is nil.")
+            return false
+        }
+
+        guard !context.integerPriceCountries.isEmpty else {
+            return false
+        }
+
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
+            return false
+        }
+
+        return context.integerPriceCountries.contains(countryCode)
+    }
+
+    func roundAndTruncatePrice(_ priceString: String, onlyIf99or00: Bool = false) -> String {
+        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
+            Logger.warning("Cound not round price because priceFormatter is nil.")
+            return priceString
+        }
+
+        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
+            return priceString
+        }
+
+        // exit early if conditions not met
+        if onlyIf99or00 {
+            let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
+            guard fractionalPart == 0.99 || fractionalPart == 0.00 else {
+                return priceString
+            }
+        }
+
+        formatter.maximumFractionDigits = 0
+
+        guard let roundedPriceString = formatter.string(from: NSNumber(value: priceToRound)) else {
+            Logger.warning("Cound not round price because formatter failed to round price.")
+            return priceString
+        }
+
+        return roundedPriceString
+    }
+}
+
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
