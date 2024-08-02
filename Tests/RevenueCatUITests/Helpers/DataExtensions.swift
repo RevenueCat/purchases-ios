@@ -121,7 +121,8 @@ extension PaywallData {
                      config: config,
                      localization: self.localization,
                      localizationByTier: self.localizationByTier,
-                     assetBaseURL: self.assetBaseURL)
+                     assetBaseURL: self.assetBaseURL,
+                     zeroDecimalPlaceCountries: .init(apple: [], google: []))
     }
 
     /// Creates a copy of the paywall with a new template name
@@ -130,7 +131,8 @@ extension PaywallData {
                      config: self.config,
                      localization: self.localization,
                      localizationByTier: self.localizationByTier,
-                     assetBaseURL: self.assetBaseURL)
+                     assetBaseURL: self.assetBaseURL,
+                     zeroDecimalPlaceCountries: .init(apple: [], google: []))
     }
 
 }

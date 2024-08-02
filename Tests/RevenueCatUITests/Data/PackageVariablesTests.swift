@@ -16,6 +16,8 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
+
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageVariablesTests: TestCase {
 
@@ -31,21 +33,21 @@ class PackageVariablesTests: TestCase {
     }
 
     func testLocalizedPricePerWeek() {
-        expect(TestData.weeklyPackage.localizedPricePerWeek) == "$1.99"
-        expect(TestData.monthlyPackage.localizedPricePerWeek) == "$1.60"
-        expect(TestData.threeMonthPackage.localizedPricePerWeek) == "$0.38"
-        expect(TestData.sixMonthPackage.localizedPricePerWeek) == "$0.30"
-        expect(TestData.annualPackage.localizedPricePerWeek) == "$1.03"
-        expect(TestData.lifetimePackage.localizedPricePerWeek) == "$119.49"
+        expect(TestData.weeklyPackage.localizedPricePerWeek(context: .init())) == "$1.99"
+        expect(TestData.monthlyPackage.localizedPricePerWeek(context: .init())) == "$1.60"
+        expect(TestData.threeMonthPackage.localizedPricePerWeek(context: .init())) == "$0.38"
+        expect(TestData.sixMonthPackage.localizedPricePerWeek(context: .init())) == "$0.30"
+        expect(TestData.annualPackage.localizedPricePerWeek(context: .init())) == "$1.03"
+        expect(TestData.lifetimePackage.localizedPricePerWeek(context: .init())) == "$119.49"
     }
 
     func testLocalizedPricePerMonth() {
-        expect(TestData.weeklyPackage.localizedPricePerMonth) == "$8.64"
-        expect(TestData.monthlyPackage.localizedPricePerMonth) == "$6.99"
-        expect(TestData.threeMonthPackage.localizedPricePerMonth) == "$1.66"
-        expect(TestData.sixMonthPackage.localizedPricePerMonth) == "$1.33"
-        expect(TestData.annualPackage.localizedPricePerMonth) == "$4.49"
-        expect(TestData.lifetimePackage.localizedPricePerMonth) == "$119.49"
+        expect(TestData.weeklyPackage.localizedPricePerMonth(context: .init())) == "$8.64"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(context: .init())) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth(context: .init())) == "$1.66"
+        expect(TestData.sixMonthPackage.localizedPricePerMonth(context: .init())) == "$1.33"
+        expect(TestData.annualPackage.localizedPricePerMonth(context: .init())) == "$4.49"
+        expect(TestData.lifetimePackage.localizedPricePerMonth(context: .init())) == "$119.49"
     }
 
     func testEnglishLocalizedPricePerPeriod() {
@@ -143,6 +145,10 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.localizedPriceAndPerMonthFull(Self.english)) == "$7.99/6months ($1.33/month)"
         expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.english)) == "$53.99/year ($4.49/month)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonthFull(Self.english)) == "$119.49"
+    }
+
+    func testEnglishLoclizedPriceAndPerMonthFull() {
+        let handler: PurchaseHandler = .mock()
     }
 
     func testSpanishLocalizedPriceAndPerMonthFull() {
@@ -322,6 +328,22 @@ private extension Package {
                 .toStoreProduct(),
             offeringIdentifier: self.offeringIdentifier
         )
+    }
+
+    func localizedPriceAndPerMonth(_ locale: Locale) -> String {
+        localizedPriceAndPerMonth(locale, context: .init())
+    }
+
+    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String {
+        localizedPriceAndPerMonthFull(locale, context: .init())
+    }
+
+    func localizedPricePerPeriod(_ locale: Locale) -> String {
+        localizedPricePerPeriod(locale, context: .init())
+    }
+
+    func localizedPricePerPeriodFull(_ locale: Locale) -> String {
+        localizedPricePerPeriodFull(locale, context: .init())
     }
 
 }
