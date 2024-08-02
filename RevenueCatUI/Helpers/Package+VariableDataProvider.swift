@@ -23,49 +23,55 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-    func localizedPriceFor(context: VariableHandler.Context?) -> String {
-
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
-            return self.storeProduct.localizedPriceString
-        }
+    func shouldRoundAndTruncatePrices(context: VariableHandler.Context?) -> Bool {
 
         guard let context else {
             Logger.warning("Cound not consider price rounding because context is nil.")
-            return self.storeProduct.localizedPriceString
+            return false
         }
 
-        if context.integerPriceCountries.contains(countryCode) {
-            Logger.verbose("Will attempt to round price because \(countryCode) found in \(context.integerPriceCountries)")
-            return roundPriceWithFormatter()
+        guard !context.integerPriceCountries.isEmpty else {
+            return false
+        }
+
+        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
+            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
+            return false
+        }
+
+        return context.integerPriceCountries.contains(countryCode)
+    }
+
+    func localizedPriceFor(context: VariableHandler.Context?) -> String {
+        if shouldRoundAndTruncatePrices(context: context) {
+            return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
         }
     }
 
-    func roundPriceWithFormatter() -> String {
+    func roundAndTruncatePrice(_ priceString: String) -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning("Cound not round price because priceFormatter is nil.")
-            return self.storeProduct.localizedPriceString
+            return priceString
         }
 
-        guard let priceToRound = formatter.number(from: self.storeProduct.localizedPriceString) else {
+        guard let priceToRound = formatter.number(from: priceString) else {
             Logger.warning("Cound not round price because localizedPriceString is incompatible.")
-            return self.storeProduct.localizedPriceString
+            return priceString
         }
 
         formatter.maximumFractionDigits = 0
 
         guard let roundedPriceString = formatter.string(from: priceToRound) else {
             Logger.warning("Cound not round price because formatter failed to round price.")
-            return self.storeProduct.localizedPriceString
+            return priceString
         }
 
         return roundedPriceString
     }
 
     func roundPriceIfNeeded(priceString: String) -> String {
-        // Create a number formatter for parsing the input string
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning("Cound not round price because priceFormatter is nil.")
             return priceString
@@ -76,22 +82,14 @@ extension Package: VariableDataProvider {
             return priceString
         }
 
-
-        // Extract the fractional part
         let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
 
-        // Check if the fractional part is .99 or .00
         if fractionalPart == 0.99 || fractionalPart == 0.00 {
-            // Round to an integer
-            let roundedPrice = Int(round(priceToRound))
 
-            // Format the output string with the rounded price
-            formatter.maximumFractionDigits = 0 // Ensure no decimal places
-            return formatter.string(from: NSNumber(value: roundedPrice)) ?? priceString
+            formatter.maximumFractionDigits = 0
+            return formatter.string(from: NSNumber(value: priceToRound)) ?? priceString
         }
 
-
-        // Return the original string if no rounding is needed or parsing fails
         return priceString
     }
 
@@ -101,18 +99,8 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
-            return price
-        }
-
-        guard let context else {
-            Logger.warning("Cound not consider price rounding because context is nil.")
-            return price
-        }
-
-        if context.integerPriceCountries.contains(countryCode) {
-            return  roundPriceIfNeeded(priceString: price)
+        if shouldRoundAndTruncatePrices(context: context) {
+            return roundPriceIfNeeded(priceString: price)
         }
 
         return price
@@ -124,22 +112,9 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
-            return price
-        }
-
-        guard let context else {
-            Logger.warning("Cound not consider price rounding because context is nil.")
-            return price
-        }
-
-
-        if context.integerPriceCountries.contains(countryCode) {
+        if shouldRoundAndTruncatePrices(context: context) {
             return roundPriceIfNeeded(priceString: price)
         }
-
-        assert(price != "(Function)")
 
         return price
     }
