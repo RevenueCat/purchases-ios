@@ -9,6 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
+#if !os(macOS) && !os(tvOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct App: View {
 
@@ -22,7 +23,7 @@ struct App: View {
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
-    #if !os(watchOS) && !os(tvOS) && !os(macOS)
+    #if !os(watchOS)
     private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
     #endif
     private var paywallDismissed: () -> Void = {}
@@ -303,7 +304,7 @@ struct App: View {
     @available(*, deprecated) // Ignore deprecation warnings
     @ViewBuilder
     var checkDeprecatedPaywallFooter: some View {
-        #if !os(watchOS) && !os(tvOS) && !os(macOS)
+        #if !os(watchOS)
         Text("")
             .paywallFooter(purchaseStarted: self.purchaseStarted)
             .paywallFooter(condensed: true,
@@ -393,7 +394,7 @@ struct App: View {
 
     @ViewBuilder
     var checkPaywallFooter: some View {
-        #if !os(watchOS) && !os(tvOS) && !os(macOS)
+        #if !os(watchOS)
 
         Text("")
             .paywallFooter()
@@ -604,3 +605,5 @@ private struct CustomFontProvider: PaywallFontProvider {
     }
 
 }
+
+#endif
