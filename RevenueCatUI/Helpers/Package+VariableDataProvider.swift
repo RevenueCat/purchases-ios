@@ -15,20 +15,6 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension Package: VariableDataProvider {
 
-    var shouldRoundPrices: Bool {
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            return false
-        }
-        let trimCentsStoreFrontCountryCodes: Set<String> = [
-                "TWN", // Taiwan
-                "KAZ", // Kazakhstan
-                "MEX", // Mexico
-                "PHL", // Philippines
-                "THA" // Thailand
-            ]
-        return trimCentsStoreFrontCountryCodes.contains(countryCode)
-    }
-
     var applicationName: String {
         return Bundle.main.applicationDisplayName
     }
