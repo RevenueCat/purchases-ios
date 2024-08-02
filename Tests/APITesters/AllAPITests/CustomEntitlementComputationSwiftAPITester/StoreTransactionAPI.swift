@@ -17,7 +17,7 @@ func checkStoreTransactionAPI() {
     let quantity: Int = transaction.quantity
 
     let sk1: SKPaymentTransaction? = transaction.sk1Transaction
-    if #available(iOS 15.0, watchOS 8.0, tvOS 15.0, *) {
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let sk2: StoreKit.Transaction? = transaction.sk2Transaction
         print(sk2!)
     }
