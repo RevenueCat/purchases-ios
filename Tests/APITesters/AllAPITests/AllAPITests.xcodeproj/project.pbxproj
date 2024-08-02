@@ -38,7 +38,6 @@
 		2D4C61912C5AD31A00A29FD2 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61442C5AD31400A29FD2 /* RCIntroEligibilityAPI.m */; };
 		2D4C61922C5AD31A00A29FD2 /* RCSubscriptionPeriodAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61482C5AD31500A29FD2 /* RCSubscriptionPeriodAPI.m */; };
 		2D4C61932C5AD31A00A29FD2 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61722C5AD31900A29FD2 /* RCPurchasesAPI.m */; };
-		2D4C61962C5AD34900A29FD2 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C61952C5AD34900A29FD2 /* RevenueCat */; };
 		2D4C61972C5AD35A00A29FD2 /* ObjcAPITester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C613D2C5AD30400A29FD2 /* ObjcAPITester.framework */; platformFilters = (ios, macos, tvos, watchos, xros, ); };
 		2D4C61B62C5AD61800A29FD2 /* SwiftAPITester.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C61B52C5AD61800A29FD2 /* SwiftAPITester.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D4C61D92C5AD62A00A29FD2 /* TestStoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61C22C5AD62800A29FD2 /* TestStoreProductAPI.swift */; };
@@ -73,17 +72,14 @@
 		2D4C61F62C5AD62A00A29FD2 /* TestStoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61C82C5AD62800A29FD2 /* TestStoreProductDiscountAPI.swift */; };
 		2D4C61F72C5AD62A00A29FD2 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C61C52C5AD62800A29FD2 /* OfferingsAPI.swift */; };
 		2D4C61F82C5AD65700A29FD2 /* SwiftAPITester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C61B32C5AD61800A29FD2 /* SwiftAPITester.framework */; platformFilters = (ios, macos, ); };
-		2D4C61FA2C5AD75100A29FD2 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C61F92C5AD75100A29FD2 /* RevenueCat */; };
 		2D4C62062C5AD8CE00A29FD2 /* ReceiptParserAPITester.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C62052C5AD8CE00A29FD2 /* ReceiptParserAPITester.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D4C620D2C5AD8FC00A29FD2 /* PurchasesReceiptParserAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C620C2C5AD8FC00A29FD2 /* PurchasesReceiptParserAPI.swift */; };
 		2D4C620E2C5AD8FC00A29FD2 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C620B2C5AD8FC00A29FD2 /* main.swift */; };
 		2D4C620F2C5AD8FC00A29FD2 /* AppleReceiptAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C620A2C5AD8FC00A29FD2 /* AppleReceiptAPI.swift */; };
 		2D4C62102C5AD90800A29FD2 /* ReceiptParserAPITester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62032C5AD8CE00A29FD2 /* ReceiptParserAPITester.framework */; };
 		2D4C62112C5AD90800A29FD2 /* ReceiptParserAPITester.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62032C5AD8CE00A29FD2 /* ReceiptParserAPITester.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2D4C62182C5AD93000A29FD2 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C62172C5AD93000A29FD2 /* ReceiptParser */; };
 		2D4C62242C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C62232C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D4C62282C5ADA4D00A29FD2 /* RevenueCatUISwiftAPITester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62212C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.framework */; };
-		2D4C622A2C5ADA5900A29FD2 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C62292C5ADA5900A29FD2 /* RevenueCatUI */; };
 		2D4C622E2C5ADA6700A29FD2 /* PaywallViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C622D2C5ADA6700A29FD2 /* PaywallViewAPI.swift */; };
 		2D4C622F2C5ADA6700A29FD2 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C622C2C5ADA6700A29FD2 /* main.swift */; };
 		2D4C62302C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C622B2C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift */; };
@@ -116,6 +112,14 @@
 		2D4C62742C5ADC4800A29FD2 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C62492C5ADC4600A29FD2 /* StoreProductDiscountAPI.swift */; };
 		2D4C62752C5ADC4800A29FD2 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C62522C5ADC4700A29FD2 /* EntitlementInfoAPI.swift */; };
 		2D4C62772C5ADC8F00A29FD2 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C62762C5ADC8F00A29FD2 /* RevenueCat_CustomEntitlementComputation */; };
+		2D4C62CD2C5D41BE00A29FD2 /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62CC2C5D41BE00A29FD2 /* RevenueCatUI.framework */; };
+		2D4C62CE2C5D41BE00A29FD2 /* RevenueCatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62CC2C5D41BE00A29FD2 /* RevenueCatUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2D4C62D12C5D41D400A29FD2 /* ReceiptParser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */; };
+		2D4C62D22C5D41D400A29FD2 /* ReceiptParser.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2D4C62D52C5D41E200A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; };
+		2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; };
+		2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -151,6 +155,50 @@
 			files = (
 				2D4C62112C5AD90800A29FD2 /* ReceiptParserAPITester.framework in Embed Frameworks */,
 				2D4C62412C5ADC3A00A29FD2 /* CustomEntitlementComputationSwiftAPITester.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D4C62CF2C5D41BE00A29FD2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				2D4C62CE2C5D41BE00A29FD2 /* RevenueCatUI.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D4C62D32C5D41D400A29FD2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				2D4C62D22C5D41D400A29FD2 /* ReceiptParser.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D4C62D72C5D41E200A29FD2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D4C62DB2C5D41EC00A29FD2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -288,6 +336,10 @@
 		2D4C625A2C5ADC4800A29FD2 /* PurchasesReceiptParserAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesReceiptParserAPI.swift; sourceTree = "<group>"; };
 		2D4C625B2C5ADC4800A29FD2 /* PurchasesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesAPI.swift; sourceTree = "<group>"; };
 		2D4C625C2C5ADC4800A29FD2 /* SubscriptionPeriodAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodAPI.swift; sourceTree = "<group>"; };
+		2D4C62CC2C5D41BE00A29FD2 /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ReceiptParser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -315,7 +367,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C61962C5AD34900A29FD2 /* RevenueCat in Frameworks */,
+				2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,7 +375,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C61FA2C5AD75100A29FD2 /* RevenueCat in Frameworks */,
+				2D4C62D52C5D41E200A29FD2 /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,7 +383,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C62182C5AD93000A29FD2 /* ReceiptParser in Frameworks */,
+				2D4C62D12C5D41D400A29FD2 /* ReceiptParser.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,7 +391,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C622A2C5ADA5900A29FD2 /* RevenueCatUI in Frameworks */,
+				2D4C62CD2C5D41BE00A29FD2 /* RevenueCatUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -463,6 +515,10 @@
 		2D4C61942C5AD34900A29FD2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */,
+				2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */,
+				2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */,
+				2D4C62CC2C5D41BE00A29FD2 /* RevenueCatUI.framework */,
 				2D4C62152C5AD91E00A29FD2 /* ReceiptParser.framework */,
 			);
 			name = Frameworks;
@@ -663,6 +719,7 @@
 				2D4C61392C5AD30400A29FD2 /* Sources */,
 				2D4C613A2C5AD30400A29FD2 /* Frameworks */,
 				2D4C613B2C5AD30400A29FD2 /* Resources */,
+				2D4C62DB2C5D41EC00A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -670,7 +727,6 @@
 			);
 			name = ObjcAPITester;
 			packageProductDependencies = (
-				2D4C61952C5AD34900A29FD2 /* RevenueCat */,
 			);
 			productName = ObjcAPITester;
 			productReference = 2D4C613D2C5AD30400A29FD2 /* ObjcAPITester.framework */;
@@ -684,6 +740,7 @@
 				2D4C61AF2C5AD61800A29FD2 /* Sources */,
 				2D4C61B02C5AD61800A29FD2 /* Frameworks */,
 				2D4C61B12C5AD61800A29FD2 /* Resources */,
+				2D4C62D72C5D41E200A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -691,7 +748,6 @@
 			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
-				2D4C61F92C5AD75100A29FD2 /* RevenueCat */,
 			);
 			productName = SwiftAPITester;
 			productReference = 2D4C61B32C5AD61800A29FD2 /* SwiftAPITester.framework */;
@@ -705,6 +761,7 @@
 				2D4C61FF2C5AD8CE00A29FD2 /* Sources */,
 				2D4C62002C5AD8CE00A29FD2 /* Frameworks */,
 				2D4C62012C5AD8CE00A29FD2 /* Resources */,
+				2D4C62D32C5D41D400A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -712,7 +769,6 @@
 			);
 			name = ReceiptParserAPITester;
 			packageProductDependencies = (
-				2D4C62172C5AD93000A29FD2 /* ReceiptParser */,
 			);
 			productName = ReceiptParserAPITester;
 			productReference = 2D4C62032C5AD8CE00A29FD2 /* ReceiptParserAPITester.framework */;
@@ -726,6 +782,7 @@
 				2D4C621D2C5ADA2400A29FD2 /* Sources */,
 				2D4C621E2C5ADA2400A29FD2 /* Frameworks */,
 				2D4C621F2C5ADA2400A29FD2 /* Resources */,
+				2D4C62CF2C5D41BE00A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -733,7 +790,6 @@
 			);
 			name = RevenueCatUISwiftAPITester;
 			packageProductDependencies = (
-				2D4C62292C5ADA5900A29FD2 /* RevenueCatUI */,
 			);
 			productName = RevenueCatUISwiftAPITester;
 			productReference = 2D4C62212C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.framework */;
@@ -1798,22 +1854,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2D4C61952C5AD34900A29FD2 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RevenueCat;
-		};
-		2D4C61F92C5AD75100A29FD2 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RevenueCat;
-		};
-		2D4C62172C5AD93000A29FD2 /* ReceiptParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ReceiptParser;
-		};
-		2D4C62292C5ADA5900A29FD2 /* RevenueCatUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RevenueCatUI;
-		};
 		2D4C62762C5ADC8F00A29FD2 /* RevenueCat_CustomEntitlementComputation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCat_CustomEntitlementComputation;
