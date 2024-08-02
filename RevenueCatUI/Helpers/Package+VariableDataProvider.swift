@@ -160,21 +160,17 @@ private extension Package {
 
     func priceEndsIn99or00(_ priceString: String) -> Bool {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning("Cound not determine price format because priceFormatter unavailable.")
+            Logger.warning("Could not determine price format because priceFormatter unavailable.")
             return false
         }
 
-        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
+        guard let price = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning("Could not round price because localizedPriceString is incompatible.")
             return false
         }
 
-        let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
-        if fractionalPart == 0.99 || fractionalPart == 0.00 {
-            return true
-        } else {
-            return false
-        }
+        let roundedCents = Int(price * 100) % 100
+        return roundedCents == 99 || roundedCents == 0
     }
 
     func pricesShouldBeRounded(context: VariableHandler.Context) -> Bool {
