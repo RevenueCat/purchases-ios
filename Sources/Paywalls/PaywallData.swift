@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct CountryIntegerPrices: Codable, Sendable, Hashable, Equatable {
+public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
 
     public var apple: Set<String> {
         _apple
@@ -65,11 +65,11 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
-    public var countryIntegerPrices: CountryIntegerPrices {
-        _countryIntegerPrices ?? .init(apple: [], google: [])
+    public var zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries {
+        _zeroDecimalPlaceCountries ?? .init(apple: [], google: [])
     }
 
-    internal private(set) var _countryIntegerPrices: CountryIntegerPrices?
+    internal private(set) var _zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries?
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -635,14 +635,14 @@ extension PaywallData {
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
         revision: Int = 0,
-        countryIntegerPrices: CountryIntegerPrices
+        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
-        self._countryIntegerPrices = countryIntegerPrices
+        self._zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
         self.revision = revision
     }
 
@@ -654,7 +654,7 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        countryIntegerPrices: CountryIntegerPrices = .init(apple: [], google: [])
+        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries = .init(apple: [], google: [])
     ) {
         self.init(
             templateName: templateName,
@@ -663,7 +663,7 @@ extension PaywallData {
             localizationByTier: [:],
             assetBaseURL: assetBaseURL,
             revision: revision,
-            countryIntegerPrices: countryIntegerPrices
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
     }
 
@@ -675,7 +675,7 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        countryIntegerPrices: CountryIntegerPrices = CountryIntegerPrices(apple: [], google: [])
+        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries = ZeroDecimalPlaceCountries(apple: [], google: [])
     ) {
         self.init(
             templateName: templateName,
@@ -684,7 +684,7 @@ extension PaywallData {
             localizationByTier: [locale.identifier: localizationByTier],
             assetBaseURL: assetBaseURL,
             revision: revision,
-            countryIntegerPrices: countryIntegerPrices
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
     }
 
@@ -785,7 +785,7 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
-        case _countryIntegerPrices = "zeroDecimalPlaceCountries"
+        case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
     }
 
 }

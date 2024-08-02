@@ -102,8 +102,7 @@ public struct PaywallView: View {
         )
     }
 
-    // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration) {
+    public init(configuration: PaywallViewConfiguration) {
         let purchaseHandler = configuration.purchaseHandler ?? .default()
         self._purchaseHandler = .init(wrappedValue: purchaseHandler)
 
@@ -377,7 +376,7 @@ struct LoadedOfferingPaywallView: View {
             mode: self.mode,
             fonts: self.fonts,
             locale: self.locale, 
-            countryIntegerPrices: self.paywall.countryIntegerPrices
+            zeroDecimalPlaceCountries: self.paywall.zeroDecimalPlaceCountries
         )
 
         let view = self.paywall
