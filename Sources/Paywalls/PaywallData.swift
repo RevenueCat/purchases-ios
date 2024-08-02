@@ -785,7 +785,7 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
-        case _countryIntegerPrices = "country_integer_prices"
+        case _countryIntegerPrices = "zeroDecimalPlaceCountries"
     }
 
 }

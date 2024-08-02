@@ -164,7 +164,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         tiers: [PaywallData.Tier],
         setting: TemplatePackageSetting,
         locale: Locale = .current,
-        integerPriceCountries: Set<String>
+        integerPriceCountries: Set<String> = []
     ) throws -> Self {
         let parameters: Parameters
 
