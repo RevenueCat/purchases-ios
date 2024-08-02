@@ -23,9 +23,8 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-
     func localizedPriceFor(context: VariableHandler.Context) -> String {
-        if storefrontPricesShouldBeRounded(context: context) {
+        if pricesShouldBeRounded(context: context) {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
@@ -38,12 +37,11 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if storefrontPricesShouldBeRounded(context: context) && priceEndsIn99or00(price) {
+        if pricesShouldBeRounded(context: context) && priceEndsIn99or00(price) {
             return roundAndTruncatePrice(price)
         } else {
             return price
         }
-
 
     }
 
@@ -53,7 +51,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if storefrontPricesShouldBeRounded(context: context) && priceEndsIn99or00(price)  {
+        if pricesShouldBeRounded(context: context) && priceEndsIn99or00(price)  {
             return roundAndTruncatePrice(price)
         }
 
@@ -155,7 +153,6 @@ extension Package: VariableDataProvider {
 
 }
 
-
 // MARK: - Private
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -178,11 +175,9 @@ private extension Package {
         } else {
             return false
         }
-
     }
 
-    func storefrontPricesShouldBeRounded(context: VariableHandler.Context) -> Bool {
-
+    func pricesShouldBeRounded(context: VariableHandler.Context) -> Bool {
         guard !context.integerPriceCountries.isEmpty else {
             return false
         }
