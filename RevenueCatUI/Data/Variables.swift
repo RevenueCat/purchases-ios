@@ -45,13 +45,13 @@ protocol VariableDataProvider {
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
 
-    func localizedPricePerWeek(context: VariableHandler.Context?) -> String
-    func localizedPricePerMonth(context: VariableHandler.Context?) -> String
-    func localizedPriceFor(context: VariableHandler.Context?) -> String
-    func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context?) -> String
-    func localizedPricePerPeriodFull(_ locale: Locale, context: VariableHandler.Context?) -> String
-    func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context?) -> String
-    func localizedPriceAndPerMonthFull(_ locale: Locale, context: VariableHandler.Context?) -> String
+    func localizedPricePerWeek(context: VariableHandler.Context) -> String
+    func localizedPricePerMonth(context: VariableHandler.Context) -> String
+    func localizedPriceFor(context: VariableHandler.Context) -> String
+    func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context) -> String
+    func localizedPricePerPeriodFull(_ locale: Locale, context: VariableHandler.Context) -> String
+    func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context) -> String
+    func localizedPriceAndPerMonthFull(_ locale: Locale, context: VariableHandler.Context) -> String
     func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
 
 }

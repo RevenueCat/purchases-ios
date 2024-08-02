@@ -24,7 +24,7 @@ extension Package: VariableDataProvider {
     }
 
 
-    func localizedPriceFor(context: VariableHandler.Context?) -> String {
+    func localizedPriceFor(context: VariableHandler.Context) -> String {
         if shouldRoundAndTruncatePrices(context: context) {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
@@ -32,7 +32,7 @@ extension Package: VariableDataProvider {
         }
     }
 
-    func localizedPricePerWeek(context: VariableHandler.Context? = nil) -> String {
+    func localizedPricePerWeek(context: VariableHandler.Context) -> String {
         guard let price = self.storeProduct.localizedPricePerWeek else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
@@ -45,7 +45,7 @@ extension Package: VariableDataProvider {
         return price
     }
 
-    func localizedPricePerMonth(context: VariableHandler.Context? = nil) -> String {
+    func localizedPricePerMonth(context: VariableHandler.Context) -> String {
         guard let price = self.storeProduct.localizedPricePerMonth else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
@@ -107,7 +107,7 @@ extension Package: VariableDataProvider {
         return self.introDuration(locale)
     }
 
-    func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
+    func localizedPricePerPeriod(_ locale: Locale, context: VariableHandler.Context) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
             return self.localizedPriceFor(context: context)
         }
@@ -116,7 +116,7 @@ extension Package: VariableDataProvider {
         return "\(self.localizedPriceFor(context: context))/\(unit)"
     }
 
-    func localizedPricePerPeriodFull(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
+    func localizedPricePerPeriodFull(_ locale: Locale, context: VariableHandler.Context) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
             return self.localizedPriceFor(context: context)
         }
@@ -125,7 +125,7 @@ extension Package: VariableDataProvider {
         return "\(self.localizedPriceFor(context: context))/\(unit)"
     }
 
-    func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
+    func localizedPriceAndPerMonth(_ locale: Locale, context: VariableHandler.Context) -> String {
         if !self.isSubscription || self.isMonthly {
             return self.localizedPricePerPeriod(locale, context: context)
         } else {
@@ -135,9 +135,9 @@ extension Package: VariableDataProvider {
         }
     }
 
-    func localizedPriceAndPerMonthFull(_ locale: Locale, context: VariableHandler.Context? = nil) -> String {
+    func localizedPriceAndPerMonthFull(_ locale: Locale, context: VariableHandler.Context) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPricePerPeriodFull(locale)
+            return self.localizedPricePerPeriodFull(locale, context: context)
         } else {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
@@ -158,12 +158,7 @@ extension Package: VariableDataProvider {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
-    func shouldRoundAndTruncatePrices(context: VariableHandler.Context?) -> Bool {
-
-        guard let context else {
-            Logger.warning("Cound not consider price rounding because context is nil.")
-            return false
-        }
+    func shouldRoundAndTruncatePrices(context: VariableHandler.Context) -> Bool {
 
         guard !context.integerPriceCountries.isEmpty else {
             return false
