@@ -25,7 +25,7 @@ extension Package: VariableDataProvider {
 
 
     func localizedPriceFor(context: VariableHandler.Context) -> String {
-        if shouldRoundAndTruncatePrices(context: context) {
+        if storefrontPricesShouldBeRounded(context: context) {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
@@ -38,11 +38,13 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if shouldRoundAndTruncatePrices(context: context) {
-            return roundAndTruncatePrice(price, onlyIf99or00: true)
+        if storefrontPricesShouldBeRounded(context: context) && priceEndsIn99or00(price) {
+            return roundAndTruncatePrice(price)
+        } else {
+            return price
         }
 
-        return price
+
     }
 
     func localizedPricePerMonth(context: VariableHandler.Context) -> String {
@@ -51,8 +53,8 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if shouldRoundAndTruncatePrices(context: context) {
-            return roundAndTruncatePrice(price, onlyIf99or00: true)
+        if storefrontPricesShouldBeRounded(context: context) && priceEndsIn99or00(price)  {
+            return roundAndTruncatePrice(price)
         }
 
         return price
@@ -158,7 +160,28 @@ extension Package: VariableDataProvider {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
-    func shouldRoundAndTruncatePrices(context: VariableHandler.Context) -> Bool {
+
+    func priceEndsIn99or00(_ priceString: String) -> Bool {
+        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
+            Logger.warning("Cound not determine price format because priceFormatter unavailable.")
+            return false
+        }
+
+        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
+            return false
+        }
+
+        let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
+        if fractionalPart == 0.99 || fractionalPart == 0.00 {
+            return true
+        } else {
+            return false
+        }
+
+    }
+
+    func storefrontPricesShouldBeRounded(context: VariableHandler.Context) -> Bool {
 
         guard !context.integerPriceCountries.isEmpty else {
             return false
@@ -172,7 +195,7 @@ private extension Package {
         return context.integerPriceCountries.contains(countryCode)
     }
 
-    func roundAndTruncatePrice(_ priceString: String, onlyIf99or00: Bool = false) -> String {
+    func roundAndTruncatePrice(_ priceString: String) -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning("Cound not round price because priceFormatter is nil.")
             return priceString
@@ -181,14 +204,6 @@ private extension Package {
         guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
             Logger.warning("Cound not round price because localizedPriceString is incompatible.")
             return priceString
-        }
-
-        // exit early if conditions not met
-        if onlyIf99or00 {
-            let fractionalPart = priceToRound.truncatingRemainder(dividingBy: 1)
-            guard fractionalPart == 0.99 || fractionalPart == 0.00 else {
-                return priceString
-            }
         }
 
         formatter.maximumFractionDigits = 0
