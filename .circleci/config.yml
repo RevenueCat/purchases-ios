@@ -1284,6 +1284,9 @@ workflows:
       - run-test-ios-17
       - pod-lib-lint
       - run-revenuecat-ui-ios-17
+      # todo: remove
+      # temporarily enabling carthage installation tests on all commits for testing
+      - installation-tests-carthage
 
   create-tag:
     when:
