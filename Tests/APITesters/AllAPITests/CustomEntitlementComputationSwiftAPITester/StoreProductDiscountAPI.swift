@@ -22,7 +22,7 @@ func checkStoreProductDiscountAPI() {
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 
     let sk1Discount: SK1ProductDiscount = discount.sk1Discount!
-    if #available(iOS 15.0, *) {
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let sk2Discount: SK2ProductDiscount = discount.sk2Discount!
         print(sk2Discount)
     }

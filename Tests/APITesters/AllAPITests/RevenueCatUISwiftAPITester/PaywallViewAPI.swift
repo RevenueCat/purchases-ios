@@ -22,7 +22,9 @@ struct App: View {
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
+    #if !os(watchOS) && !os(tvOS) && !os(macOS)
     private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
+    #endif
     private var paywallDismissed: () -> Void = {}
     private var requestedDismissal: () -> Void = {}
 
@@ -301,6 +303,7 @@ struct App: View {
     @available(*, deprecated) // Ignore deprecation warnings
     @ViewBuilder
     var checkDeprecatedPaywallFooter: some View {
+        #if !os(watchOS) && !os(tvOS) && !os(macOS)
         Text("")
             .paywallFooter(purchaseStarted: self.purchaseStarted)
             .paywallFooter(condensed: true,
@@ -385,10 +388,13 @@ struct App: View {
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
             .onPaywallTierChange(self.paywallTierChange)
+        #endif
     }
 
     @ViewBuilder
     var checkPaywallFooter: some View {
+        #if !os(watchOS) && !os(tvOS) && !os(macOS)
+
         Text("")
             .paywallFooter()
             .paywallFooter(purchaseStarted: self.purchaseOfPackageStarted)
@@ -547,6 +553,7 @@ struct App: View {
                            restoreCompleted: nil,
                            purchaseFailure: nil,
                            restoreFailure: nil)
+        #endif
     }
 
     @ViewBuilder

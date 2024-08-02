@@ -21,7 +21,7 @@ func checkStoreProductAPI() {
     let decimalPrice: NSDecimalNumber = product.priceDecimalNumber
     let localizedPriceString: String = product.localizedPriceString
     let productIdentifier: String = product.productIdentifier
-    if #available(iOS 14.0, *) {
+    if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
         let isFamilyShareable: Bool = product.isFamilyShareable
         print(isFamilyShareable)
     }
@@ -34,7 +34,7 @@ func checkStoreProductAPI() {
     let pricePerMonth: NSDecimalNumber? = product.pricePerMonth
     let localizedIntroductoryPriceString: String? = product.localizedIntroductoryPriceString
     let sk1Product: SK1Product? = product.sk1Product
-    if #available(iOS 15.0, *) {
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let sk2Product: SK2Product? = product.sk2Product
         print(sk2Product!)
     }
@@ -63,7 +63,7 @@ func checkStoreProductAPI() {
 
 func checkConstructors() {
     let sk1Product: SK1Product! = nil
-    if #available(iOS 15.0, *) {
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let sk2Product: SK2Product! = nil
         _ = StoreProduct(sk2Product: sk2Product!)
     }

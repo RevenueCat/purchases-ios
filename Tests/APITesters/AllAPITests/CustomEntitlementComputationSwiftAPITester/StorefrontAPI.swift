@@ -15,7 +15,7 @@ func checkStorefrontAPI() {
     let countryCode: String = storefront.countryCode
 
     let sk1Storefront: SKStorefront? = storefront.sk1Storefront
-    if #available(iOS 15.0, *) {
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let sk2Storefront: StoreKit.Storefront? = storefront.sk2Storefront
         print(sk2Storefront!)
     }

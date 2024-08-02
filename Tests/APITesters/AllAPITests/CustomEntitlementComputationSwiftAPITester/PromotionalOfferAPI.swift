@@ -13,7 +13,7 @@ var offer: PromotionalOffer!
 func checkPromotionalOfferAPI() {
     let discount: StoreProductDiscount = offer.discount
     let sk1Discount = offer.discount.sk1Discount
-    if #available(iOS 15.0, *) {
+    if #available(iOS 15.0, watchOS 8.0, tvOS 15.0, *) {
         let sk2Discount = offer.discount.sk2Discount
         print(sk2Discount!)
     }

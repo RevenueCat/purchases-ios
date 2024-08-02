@@ -9,6 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 func paywallViewControllerAPI(_ delegate: Delegate,
                               _ offering: Offering?,
@@ -117,3 +118,5 @@ final class Delegate: PaywallViewControllerDelegate {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class DelegateWithNoImplementations: PaywallViewControllerDelegate {}
+
+#endif
