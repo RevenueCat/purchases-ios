@@ -302,6 +302,27 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.normalizedSubscriptionDuration(Self.spanish)) == "Toda la vida"
     }
 
+
+    func testPriceRounding() {
+        expect(TestData
+            .monthlyPackage
+            .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: false))) == "$6.99/month"
+
+        expect(TestData
+            .monthlyPackage
+            .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: true))) == "$7/month"
+
+        expect(TestData
+            .monthlyPackage
+            .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: true))) == "$7/month"
+
+        expect(TestData.threeMonthPackage.localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$1.66"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$7"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(context: .init(showWholeNumberPrices: false))) == "$6.99"
+
+    }
+
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
