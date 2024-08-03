@@ -64,7 +64,7 @@ enum VariableHandler {
     struct Context {
 
         var discountRelativeToMostExpensivePerMonth: Double?
-        var integerPriceCountries: Set<String> = []
+        var showWholeNumberPrices: Bool = false
 
     }
 

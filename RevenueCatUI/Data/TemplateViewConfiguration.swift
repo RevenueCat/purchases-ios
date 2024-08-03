@@ -310,7 +310,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     content: package,
                     localization: localization.processVariables(
                         with: package,
-                        context: .init(discountRelativeToMostExpensivePerMonth: discount, integerPriceCountries: integerPriceCountries),
+                        context: .init(discountRelativeToMostExpensivePerMonth: discount, 
+                                       showWholeNumberPrices: Purchases.shared.storeFrontCountryCode.map { integerPriceCountries.contains($0) } ?? false),
                         locale: locale
                     ),
                     currentlySubscribed: activelySubscribedProductIdentifiers.contains(

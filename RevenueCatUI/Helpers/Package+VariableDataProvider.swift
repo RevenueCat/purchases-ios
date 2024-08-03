@@ -24,7 +24,7 @@ extension Package: VariableDataProvider {
     }
 
     func localizedPriceFor(context: VariableHandler.Context) -> String {
-        if pricesShouldBeRounded(context: context) {
+        if context.showWholeNumberPrices {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
@@ -37,7 +37,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if pricesShouldBeRounded(context: context) && priceEndsIn99or00(price) {
+        if context.showWholeNumberPrices && priceEndsIn99or00(price) {
             return roundAndTruncatePrice(price)
         } else {
             return price
@@ -51,7 +51,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if pricesShouldBeRounded(context: context) && priceEndsIn99or00(price)  {
+        if context.showWholeNumberPrices && priceEndsIn99or00(price)  {
             return roundAndTruncatePrice(price)
         }
 
@@ -171,19 +171,6 @@ private extension Package {
 
         let roundedCents = Int(price * 100) % 100
         return roundedCents == 99 || roundedCents == 0
-    }
-
-    func pricesShouldBeRounded(context: VariableHandler.Context) -> Bool {
-        guard !context.integerPriceCountries.isEmpty else {
-            return false
-        }
-
-        guard let countryCode = Purchases.shared.storeFrontCountryCode else {
-            Logger.warning("Cound not consider price because storeFrontCountryCode is nil.")
-            return false
-        }
-
-        return context.integerPriceCountries.contains(countryCode)
     }
 
     func roundAndTruncatePrice(_ priceString: String) -> String {
