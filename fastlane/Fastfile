@@ -294,44 +294,14 @@ platform :ios do
     end
   end
 
-  desc "build Swift API tester"
-  lane :build_swift_api_tester do
+  desc "run API Tests"
+  lane :run_api_tests do
+    # note: it's called "run" tests but these tests only need to build to run
     xcodebuild(
       workspace: 'RevenueCat.xcworkspace',
-      scheme: 'SwiftAPITester',
+      scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
-    )
-  end
-
-  desc "build ObjC API tester"
-  lane :build_objc_api_tester do
-    xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
-      scheme: 'ObjCAPITester',
-      destination: 'generic/platform=iOS Simulator',
-      configuration: 'release',
-    )
-  end
-
-  desc "build CustomEntitlementComputation API tester"
-  lane :build_custom_entitlement_computation_api_tester do
-    xcodebuild(
-      project: 'Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj',
-      scheme: 'SwiftAPITester',
-      destination: 'generic/platform=iOS',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
-      configuration: 'release',
-    )
-  end
-
-  desc "build RevenueCatUI API tester"
-  lane :build_revenuecatui_api_tester do
-    xcodebuild(
-      project: 'Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj',
-      scheme: 'SwiftAPITester',
-      destination: 'generic/platform=iOS',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     )
   end
 
@@ -699,8 +669,6 @@ platform :ios do
       './Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
-      './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
-      './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
