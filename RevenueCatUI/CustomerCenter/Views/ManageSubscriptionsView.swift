@@ -52,7 +52,10 @@ struct ManageSubscriptionsView: View {
         if #available(iOS 16.0, *) {
             NavigationStack {
                 content
-                    .navigationDestination(isPresented: .constant(self.viewModel.feedbackSurveyData != nil)) {
+                    .navigationDestination(isPresented: Binding(
+                        get: { self.viewModel.feedbackSurveyData != nil },
+                        set: { if !$0 { self.viewModel.feedbackSurveyData = nil } }
+                    )) {
                         if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
                             FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
                                 .onDisappear {
