@@ -304,6 +304,8 @@ struct ManageSubscriptionButton: View {
                 Text(path.title)
             }
         })
+        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .disabled(self.viewModel.loadingPath != nil)
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(item: self.$viewModel.promotionalOfferData,
                onDismiss: {
@@ -316,8 +318,6 @@ struct ManageSubscriptionButton: View {
                                  product: promotionalOfferData.product,
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
-        .disabled(self.viewModel.loadingPath != nil)
     }
 }
 
