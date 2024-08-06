@@ -198,7 +198,6 @@ private extension Package {
     }
 }
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
 
