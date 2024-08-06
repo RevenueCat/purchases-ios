@@ -110,7 +110,7 @@ extension PaywallData {
                 colorsByTier: self.config.multiSchemeColorsByTier,
                 fonts: fonts,
                 assetBaseURL: self.assetBaseURL,
-                showWholeIntegerPrices: showWholeNumberPrices
+                showWholeNumberPrices: showWholeNumberPrices
             )
         }
     }
