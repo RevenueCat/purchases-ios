@@ -1026,7 +1026,8 @@ jobs:
           directory: Tests/InstallationTests/SPMInstallation/
 
   installation-tests-custom-entitlement-computation-swift-package-manager:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1038,7 +1039,8 @@ jobs:
           directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
 
   installation-tests-receipt-parser:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1050,7 +1052,8 @@ jobs:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
 
   installation-tests-carthage:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1071,7 +1074,8 @@ jobs:
           directory: Tests/InstallationTests/CarthageInstallation/
 
   installation-tests-xcode-direct-integration:
-    <<: *base-job
+    executor:
+      name: macos-executor
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1081,7 +1085,8 @@ jobs:
           directory: Tests/InstallationTests/XcodeDirectInstallation/
 
   lint:
-    <<: *base-job
+    executor:
+      name: macos-executor
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1126,7 +1131,8 @@ jobs:
           command: bundle exec fastlane tag_current_branch
 
   release-train:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - setup-git-credentials
@@ -1137,7 +1143,8 @@ jobs:
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
   integration-tests-all:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - setup-git-credentials
@@ -1160,7 +1167,8 @@ jobs:
           destination: scan-test-output
 
   loadshedder-integration-tests-v3:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - setup-git-credentials
@@ -1189,7 +1197,7 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Submit Purchase Tester
-          command: bundle exec fastlane deploy_purchase_tester
+          command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
 
   deploy-to-spm:
     docker:
