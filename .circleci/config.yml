@@ -652,19 +652,14 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-16:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -689,19 +684,14 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-15:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -723,7 +713,8 @@ jobs:
           destination: scan-test-output
 
   run-test-tvos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -741,7 +732,8 @@ jobs:
           destination: scan-test-output
 
   run-test-watchos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -767,23 +759,18 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-14:
-    <<: *base-job
+    executor:
+      name: macos-executor
     # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
     # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.2.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+      xcode_version: '14.2.0'
 
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -808,20 +795,16 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-13:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.2.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.2.0'
+
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - macos/install-rosetta
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
