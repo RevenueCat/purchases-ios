@@ -402,14 +402,10 @@ commands:
 
 jobs:
   spm-release-build-xcode-14:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
+      install_swiftlint: false
 
     steps:
       - checkout
@@ -419,11 +415,9 @@ jobs:
           no_output_timeout: 30m
 
   spm-release-build-xcode-15:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '15.2.0'
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
@@ -433,14 +427,10 @@ jobs:
           no_output_timeout: 30m
 
   spm-xcode-14-1:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.1.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.1.0'
+      install_swiftlint: false
 
     steps:
       - checkout
@@ -454,7 +444,8 @@ jobs:
           no_output_timeout: 30m
 
   pod-lib-lint:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -463,7 +454,8 @@ jobs:
           command: bundle exec fastlane check_pods
 
   spm-release-build:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - run:
@@ -476,7 +468,8 @@ jobs:
           no_output_timeout: 30m
 
   api-tests:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
