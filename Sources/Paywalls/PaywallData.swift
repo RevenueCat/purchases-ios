@@ -68,6 +68,7 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
+    /// The storefront country IDs that should not display cents in prices.
     public var zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries {
         _zeroDecimalPlaceCountries ?? .init(apple: [], google: [])
     }
