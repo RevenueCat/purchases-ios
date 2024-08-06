@@ -58,7 +58,7 @@ struct NoSubscriptionsView: View {
             VStack {
                 CompatibilityContentUnavailableView(
                     title: self.configuration.screens[.noActive]?.title ?? "No subscriptions found",
-                    description: 
+                    description:
                         self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription,
                     systemImage: "exclamationmark.triangle.fill"
                 )
