@@ -37,7 +37,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if context.showWholeNumberPrices && priceEndsIn99or00(price) {
+        if context.showWholeNumberPrices && priceEndsIn99or00Cents(price) {
             return roundAndTruncatePrice(price)
         } else {
             return price
@@ -51,7 +51,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if context.showWholeNumberPrices && priceEndsIn99or00(price)  {
+        if context.showWholeNumberPrices && priceEndsIn99or00Cents(price)  {
             return roundAndTruncatePrice(price)
         }
 
@@ -158,7 +158,7 @@ extension Package: VariableDataProvider {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
 
-    func priceEndsIn99or00(_ priceString: String) -> Bool {
+    func priceEndsIn99or00Cents(_ priceString: String) -> Bool {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning("Could not determine price format because priceFormatter unavailable.")
             return false
