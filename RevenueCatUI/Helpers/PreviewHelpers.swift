@@ -75,7 +75,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
             mode: mode,
             fonts: DefaultPaywallFontProvider(),
             locale: .current,
-            zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries(apple: [], google: [])
+            showWholeNumberPrices: false
         ).map { (template, $0) }
 
         self.presentInSheet = presentInSheet

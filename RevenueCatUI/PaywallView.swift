@@ -308,6 +308,7 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
+    private let showWholeNumberPrices: Bool
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -348,6 +349,12 @@ struct LoadedOfferingPaywallView: View {
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
+
+        if let currentCountry = Purchases.shared.storeFrontCountryCode {
+            self.showWholeNumberPrices = self.paywall.zeroDecimalPlaceCountries.apple.contains(currentCountry)
+        } else {
+            self.showWholeNumberPrices = false
+        }
     }
 
     var body: some View {
@@ -376,7 +383,7 @@ struct LoadedOfferingPaywallView: View {
             mode: self.mode,
             fonts: self.fonts,
             locale: self.locale, 
-            zeroDecimalPlaceCountries: self.paywall.zeroDecimalPlaceCountries
+            showWholeNumberPrices: self.showWholeNumberPrices
         )
 
         let view = self.paywall

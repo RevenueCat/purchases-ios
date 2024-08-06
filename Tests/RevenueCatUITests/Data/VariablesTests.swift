@@ -293,31 +293,31 @@ private extension VariablesTests {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct MockVariableProvider: VariableDataProvider {
-    func localizedPricePerWeek(context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPricePerWeek(showWholeNumberPrices: Bool) -> String {
         ""
     }
     
-    func localizedPricePerMonth(context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPricePerMonth(showWholeNumberPrices: Bool) -> String {
         ""
     }
     
-    func localizedPriceAndPerMonthFull(_ locale: Locale, context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPriceFor(showWholeNumberPrices: Bool) -> String {
         ""
     }
     
-    func localizedPriceFor(context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPricePerPeriod(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
         ""
     }
     
-    func localizedPricePerPeriod(_ locale: Locale, context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPricePerPeriodFull(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
         ""
     }
     
-    func localizedPricePerPeriodFull(_ locale: Locale, context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPriceAndPerMonth(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
         ""
     }
     
-    func localizedPriceAndPerMonth(_ locale: Locale, context: RevenueCatUI.VariableHandler.Context) -> String {
+    func localizedPriceAndPerMonthFull(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
         ""
     }
     

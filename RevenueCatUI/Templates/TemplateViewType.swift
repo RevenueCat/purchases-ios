@@ -90,7 +90,7 @@ extension PaywallData {
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         locale: Locale,
-        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries
+        showWholeNumberPrices: Bool
     ) -> Result<TemplateViewConfiguration, Error> {
         return Result {
             TemplateViewConfiguration(
@@ -104,13 +104,13 @@ extension PaywallData {
                                       tiers: self.config.tiers,
                                       setting: template.packageSetting,
                                       locale: locale,
-                                      integerPriceCountries: self.zeroDecimalPlaceCountries.apple),
+                                      showWholeNumberPrices: showWholeNumberPrices),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
                 colorsByTier: self.config.multiSchemeColorsByTier,
                 fonts: fonts,
                 assetBaseURL: self.assetBaseURL,
-                integerPriceCountries: VariableHandler.Context(discountRelativeToMostExpensivePerMonth: nil, integerPriceCountries: self.zeroDecimalPlaceCountries.apple)
+                showWholeIntegerPrices: showWholeNumberPrices
             )
         }
     }

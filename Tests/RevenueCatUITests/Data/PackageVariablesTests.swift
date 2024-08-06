@@ -33,21 +33,21 @@ class PackageVariablesTests: TestCase {
     }
 
     func testLocalizedPricePerWeek() {
-        expect(TestData.weeklyPackage.localizedPricePerWeek(context: .init())) == "$1.99"
-        expect(TestData.monthlyPackage.localizedPricePerWeek(context: .init())) == "$1.60"
-        expect(TestData.threeMonthPackage.localizedPricePerWeek(context: .init())) == "$0.38"
-        expect(TestData.sixMonthPackage.localizedPricePerWeek(context: .init())) == "$0.30"
-        expect(TestData.annualPackage.localizedPricePerWeek(context: .init())) == "$1.03"
-        expect(TestData.lifetimePackage.localizedPricePerWeek(context: .init())) == "$119.49"
+        expect(TestData.weeklyPackage.localizedPricePerWeek()) == "$1.99"
+        expect(TestData.monthlyPackage.localizedPricePerWeek()) == "$1.60"
+        expect(TestData.threeMonthPackage.localizedPricePerWeek()) == "$0.38"
+        expect(TestData.sixMonthPackage.localizedPricePerWeek()) == "$0.30"
+        expect(TestData.annualPackage.localizedPricePerWeek()) == "$1.03"
+        expect(TestData.lifetimePackage.localizedPricePerWeek()) == "$119.49"
     }
 
     func testLocalizedPricePerMonth() {
-        expect(TestData.weeklyPackage.localizedPricePerMonth(context: .init())) == "$8.64"
-        expect(TestData.monthlyPackage.localizedPricePerMonth(context: .init())) == "$6.99"
-        expect(TestData.threeMonthPackage.localizedPricePerMonth(context: .init())) == "$1.66"
-        expect(TestData.sixMonthPackage.localizedPricePerMonth(context: .init())) == "$1.33"
-        expect(TestData.annualPackage.localizedPricePerMonth(context: .init())) == "$4.49"
-        expect(TestData.lifetimePackage.localizedPricePerMonth(context: .init())) == "$119.49"
+        expect(TestData.weeklyPackage.localizedPricePerMonth()) == "$8.64"
+        expect(TestData.monthlyPackage.localizedPricePerMonth()) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth()) == "$1.66"
+        expect(TestData.sixMonthPackage.localizedPricePerMonth()) == "$1.33"
+        expect(TestData.annualPackage.localizedPricePerMonth()) == "$4.49"
+        expect(TestData.lifetimePackage.localizedPricePerMonth()) == "$119.49"
     }
 
     func testEnglishLocalizedPricePerPeriod() {
@@ -305,42 +305,24 @@ class PackageVariablesTests: TestCase {
 
     func testPriceRounding() {
         expect(TestData
-            .monthlyPackage
-            .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: false))) == "$6.99/month"
-        expect(TestData
-            .monthlyPackage
-            .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: true))) == "$7/month"
-        expect(TestData
-            .monthlyPackage
-            .localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$7"
-        expect(TestData
-            .monthlyPackage
-            .localizedPricePerMonth(context: .init(showWholeNumberPrices: false))) == "$6.99"
-        expect(TestData
-            .threeMonthPackage
-            .localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$1.66"
+            .monthlyPackage.localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: false)) == "$6.99/month"
+        expect(TestData.monthlyPackage
+            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: true)) == "$7/month"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(showWholeNumberPrices: true)) == "$7"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(showWholeNumberPrices: false)) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth(showWholeNumberPrices: true)) == "$1.66"
+        expect(TestData.annualPackage60.localizedPricePerMonth(showWholeNumberPrices: false)) == "$4.99"
+        expect(TestData.annualPackage60.localizedPricePerMonth(showWholeNumberPrices: true)) == "$5"
+        expect(TestData.annualPackage60
+            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: true)) == "$60/year ($5/month)"
+        expect(TestData.annualPackage
+            .localizedPriceAndPerMonthFull(Self.english,  showWholeNumberPrices: true)) == "$54/year ($4.49/month)"
         expect(TestData
             .annualPackage60
-            .localizedPricePerMonth(context: .init(showWholeNumberPrices: false))) == "$4.99"
-        expect(TestData
-            .annualPackage60
-            .localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$5"
-        expect(TestData
-            .annualPackage60
-            .localizedPriceAndPerMonthFull(Self.english, 
-                                           context: .init(showWholeNumberPrices: true))) == "$60/year ($5/month)"
+            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: false)) == "$59.99/year ($4.99/month)"
         expect(TestData
             .annualPackage
-            .localizedPriceAndPerMonthFull(Self.english, 
-                                           context: .init(showWholeNumberPrices: true))) == "$54/year ($4.49/month)"
-        expect(TestData
-            .annualPackage60
-            .localizedPriceAndPerMonthFull(Self.english,
-                                           context: .init(showWholeNumberPrices: false))) == "$59.99/year ($4.99/month)"
-        expect(TestData
-            .annualPackage
-            .localizedPriceAndPerMonthFull(Self.english,
-                                           context: .init(showWholeNumberPrices: false))) == "$53.99/year ($4.49/month)"
+            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: false)) == "$53.99/year ($4.49/month)"
 
     }
 
@@ -371,22 +353,6 @@ private extension Package {
                 .toStoreProduct(),
             offeringIdentifier: self.offeringIdentifier
         )
-    }
-
-    func localizedPriceAndPerMonth(_ locale: Locale) -> String {
-        localizedPriceAndPerMonth(locale, context: .init())
-    }
-
-    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String {
-        localizedPriceAndPerMonthFull(locale, context: .init())
-    }
-
-    func localizedPricePerPeriod(_ locale: Locale) -> String {
-        localizedPricePerPeriod(locale, context: .init())
-    }
-
-    func localizedPricePerPeriodFull(_ locale: Locale) -> String {
-        localizedPricePerPeriodFull(locale, context: .init())
     }
 
 }
