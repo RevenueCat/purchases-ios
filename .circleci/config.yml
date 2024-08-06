@@ -478,7 +478,8 @@ jobs:
           command: bundle exec fastlane run_api_tests
 
   spm-receipt-parser:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - run:
@@ -487,19 +488,15 @@ jobs:
           no_output_timeout: 30m
 
   spm-revenuecat-ui-ios-15:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
+      install_swiftlint: false
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -521,19 +518,15 @@ jobs:
           destination: scan-test-output
 
   spm-revenuecat-ui-ios-16:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
+      install_swiftlint: false
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -559,19 +552,15 @@ jobs:
           destination: scan-test-output
 
   run-revenuecat-ui-ios-17:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '15.2.0'
-      install_swiftlint:
-        type: boolean
-        default: true
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
+      install_swiftlint: false
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -597,7 +586,8 @@ jobs:
           destination: scan-test-output
 
   spm-revenuecat-ui-watchos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -620,7 +610,8 @@ jobs:
           destination: scan-test-output
 
   run-test-macos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -642,19 +633,14 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-17:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '15.2.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
+      install_swiftlint: false
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+      - install-dependencies
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
