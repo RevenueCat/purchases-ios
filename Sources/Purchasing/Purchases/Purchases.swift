@@ -686,8 +686,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher
     ) -> EitherPaymentQueueWrapper {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
-            systemInfo.observerMode && systemInfo.storeKitVersion == .storeKit2 {
+        if systemInfo.observerMode &&
+            systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailableWhenPurchasesAreCompletedByMyApp {
             // On iOS 15, we allow developers to make purchases with SK2 when PurchasesAreCompletedBy==.myApp.
             // We need to specifically check for this case because otherwise we use SK1 on iOS 15, and if
             // We are on iOS 15 with PurchasesAreCompletedBy==.myApp and SK2, we need to only listen to purchases

@@ -59,6 +59,21 @@ extension StoreKitVersion {
         }
     }
 
+    /// - Returns: `true` if SK2 is available and usable when PurchasesAreCompleted==.myApp on this device
+    // swiftlint:disable:next identifier_name
+    var isStoreKit2EnabledAndAvailableWhenPurchasesAreCompletedByMyApp: Bool {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            switch self {
+            case .storeKit1:
+                return false
+            case .storeKit2:
+                return true
+            }
+        } else {
+            return false
+        }
+    }
+
     /// - Returns: `true` if and only if SK2 is enabled and it's available.
     var isStoreKit2EnabledAndAvailable: Bool {
         switch self {

@@ -270,8 +270,8 @@ private extension TransactionPoster {
             }
         }
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
-           systemInfo.observerMode && systemInfo.storeKitVersion == .storeKit2,
+        if systemInfo.observerMode &&
+            systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailableWhenPurchasesAreCompletedByMyApp,
            let jwsRepresentation = transaction.jwsRepresentation {
             // On iOS 15, we allow developers to make purchases with SK2 when PurchasesAreCompletedBy==.myApp.
             // In this case, we should POST the SK2 receipt despite running on iOS 15, where we would normally
