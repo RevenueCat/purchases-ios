@@ -38,9 +38,6 @@ executors:
       xcode_version:
         type: string
         default: '15.3'
-      install_swiftlint:
-        type: boolean
-        default: true
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
@@ -405,7 +402,6 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '14.3.0'
-      install_swiftlint: false
 
     steps:
       - checkout
@@ -430,7 +426,6 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '14.1.0'
-      install_swiftlint: false
 
     steps:
       - checkout
@@ -491,7 +486,6 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '14.3.0'
-      install_swiftlint: false
 
     steps:
       - checkout
@@ -521,7 +515,6 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '14.3.0'
-      install_swiftlint: false
 
     steps:
       - checkout
@@ -555,7 +548,6 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '15.2.0'
-      install_swiftlint: false
 
     steps:
       - checkout
@@ -636,7 +628,6 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '15.2.0'
-      install_swiftlint: false
 
     steps:
       - checkout
