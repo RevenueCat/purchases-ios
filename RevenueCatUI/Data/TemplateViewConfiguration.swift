@@ -288,6 +288,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func processPackages(
         from packages: [RevenueCat.Package],
         filter: [String],
@@ -310,7 +311,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     content: package,
                     localization: localization.processVariables(
                         with: package,
-                        context: .init(discountRelativeToMostExpensivePerMonth: discount, 
+                        context: .init(discountRelativeToMostExpensivePerMonth: discount,
                                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices),
                         locale: locale
                     ),

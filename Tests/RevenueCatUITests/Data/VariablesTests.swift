@@ -296,31 +296,30 @@ private struct MockVariableProvider: VariableDataProvider {
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
+    =
     func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
+    =
     func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
+    =
     func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
+    =
     func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
+    =
     func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
+    =
     func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
-    
 
     var applicationName: String = ""
     var packageIdentifier: String = ""
