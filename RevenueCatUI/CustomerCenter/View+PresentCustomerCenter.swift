@@ -11,6 +11,8 @@
 //
 //  Created by Toni Rico Diez on 2024-07-15.
 
+#if CUSTOMER_CENTER_ENABLED
+
 import RevenueCat
 import SwiftUI
 
@@ -128,5 +130,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
 }
+
+#endif
 
 #endif

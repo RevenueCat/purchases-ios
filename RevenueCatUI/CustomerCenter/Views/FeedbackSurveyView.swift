@@ -13,6 +13,8 @@
 //  Created by Cesar de la Vega on 12/6/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import RevenueCat
 import SwiftUI
 
@@ -116,5 +118,7 @@ extension FeedbackSurveyButtonsView {
     private static let buttonSpacing: CGFloat = 16
 
 }
+
+#endif
 
 #endif

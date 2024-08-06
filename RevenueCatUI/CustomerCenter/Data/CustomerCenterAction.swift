@@ -1,3 +1,5 @@
+#if CUSTOMER_CENTER_ENABLED
+
 import RevenueCat
 
 /// Typealias for handler for Customer center actions
@@ -20,3 +22,5 @@ public enum CustomerCenterAction {
     case refundRequestCompleted(_ refundRequestStatus: RefundRequestStatus)
 
 }
+
+#endif
