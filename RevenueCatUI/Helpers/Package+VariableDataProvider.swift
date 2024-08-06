@@ -51,7 +51,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if showZeroDecimalPlacePrices && priceEndsIn99or00Cents(price)  {
+        if showZeroDecimalPlacePrices && priceEndsIn99or00Cents(price) {
             return roundAndTruncatePrice(price)
         }
 
@@ -131,6 +131,7 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
+            // swiftlint:disable:next line_length
             return "\(self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)) (\(self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit))"
         }
     }
@@ -141,6 +142,8 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
+
+            // swiftlint:disable:next line_length
             return "\(self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)) (\(self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit))"
         }
     }
