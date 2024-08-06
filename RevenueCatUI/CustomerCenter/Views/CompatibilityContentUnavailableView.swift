@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BackwardsCompatibleContentUnavailableView.swift
+//  CompatibilityContentUnavailableView.swift
 //
 //
 //  Created by Cody Kerns on 8/6/24.
@@ -21,7 +21,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-struct BackwardsCompatibleContentUnavailableView: View {
+struct CompatibilityContentUnavailableView: View {
     @State var title: String
     @State var description: String
     @State var systemImage: String

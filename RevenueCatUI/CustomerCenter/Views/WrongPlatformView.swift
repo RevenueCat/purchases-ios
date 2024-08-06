@@ -51,10 +51,10 @@ struct WrongPlatformView: View {
             VStack {
                 let platformInstructions = self.humanReadableInstructions(for: store)
 
-                BackwardsCompatibleContentUnavailableView(
+                CompatibilityContentUnavailableView(
                     title: platformInstructions.0,
                     description: platformInstructions.1,
-                    systemImage: "exclamationmark.triangle.fill" // TODO: customize image
+                    systemImage: "exclamationmark.triangle.fill"
                 )
 
             }
