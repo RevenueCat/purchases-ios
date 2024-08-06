@@ -627,7 +627,8 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: false
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
