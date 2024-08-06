@@ -147,10 +147,6 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.localizedPriceAndPerMonthFull(Self.english)) == "$119.49"
     }
 
-    func testEnglishLoclizedPriceAndPerMonthFull() {
-        let handler: PurchaseHandler = .mock()
-    }
-
     func testSpanishLocalizedPriceAndPerMonthFull() {
         expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$1.99/semana ($8.64/mes)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$6.99/mes"
