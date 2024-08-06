@@ -311,7 +311,7 @@ private struct PackageButton: View {
     ) -> some View {
         VStack(spacing: Self.labelVerticalSeparation) {
             self.offerName
-            
+
             Text(self.package.content.localizedPrice(showZeroDecimalPlacePrices: configuration.showZeroDecimalPlacePrices))
                 .font(self.font(for: .title2).weight(.semibold))
                 .lineLimit(1)
