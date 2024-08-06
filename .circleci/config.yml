@@ -48,10 +48,6 @@ executors:
     shell: /bin/bash --login -o pipefail
 
 aliases:
-  # note: the base-job alias is being phased out in favor of the executor. This is because the executor allows us to have per-job parameters.
-  base-job: &base-job
-    executor:
-      name: macos-executor
   release-branches: &release-branches
     filters:
       tags:
