@@ -45,6 +45,11 @@ enum Strings {
     case executing_restore_logic
     case executing_external_restore_logic
 
+    case no_price_format_priceFormatter_unavailable
+    case no_price_format_priceString_incompatible
+    case no_price_round_priceFormatter_nil
+    case no_price_round_priceString_incompatible
+    case no_price_round_formatter_failed
 }
 
 extension Strings: CustomStringConvertible {
@@ -121,6 +126,21 @@ extension Strings: CustomStringConvertible {
             return "Will execute custom StoreKit restore purchases logic provided by your app. " +
             "No StoreKit restore purchases logic will be performed by RevenueCat. " +
             "You must have initialized your `PaywallView` appropriately."
+
+        case .no_price_format_priceFormatter_unavailable:
+            return "Could not determine price format because priceFormatter is unavailable."
+
+        case .no_price_format_priceString_incompatible:
+            return " Could not determine price format because priceString is incompatible."
+
+        case .no_price_round_priceFormatter_nil:
+            return " Could not round price because priceFormatter is nil."
+
+        case .no_price_round_priceString_incompatible:
+            return "Could not round price because priceString is incompatible."
+
+        case .no_price_round_formatter_failed:
+            return "Could not round price because formatter failed to round price."
         }
     }
 

@@ -160,12 +160,12 @@ private extension Package {
 
     func priceEndsIn99or00Cents(_ priceString: String) -> Bool {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning("Could not determine price format because priceFormatter unavailable.")
+            Logger.warning(Strings.no_price_format_priceFormatter_unavailable)
             return false
         }
 
         guard let price = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning("Could not round price because localizedPriceString is incompatible.")
+            Logger.warning(Strings.no_price_format_priceString_incompatible)
             return false
         }
 
@@ -175,19 +175,19 @@ private extension Package {
 
     func roundAndTruncatePrice(_ priceString: String) -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning("Cound not round price because priceFormatter is nil.")
+            Logger.warning(Strings.no_price_round_priceFormatter_nil)
             return priceString
         }
 
         guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning("Cound not round price because localizedPriceString is incompatible.")
+            Logger.warning(Strings.no_price_round_priceString_incompatible)
             return priceString
         }
 
         formatter.maximumFractionDigits = 0
 
         guard let roundedPriceString = formatter.string(from: NSNumber(value: priceToRound)) else {
-            Logger.warning("Cound not round price because formatter failed to round price.")
+            Logger.warning(Strings.no_price_round_formatter_failed)
             return priceString
         }
 
