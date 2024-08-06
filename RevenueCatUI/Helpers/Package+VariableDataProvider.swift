@@ -23,21 +23,21 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-    func localizedPriceFor(showWholeNumberPrices: Bool = false) -> String {
-        if showWholeNumberPrices {
+    func localizedPriceFor(showZeroDecimalPlacePrices: Bool = false) -> String {
+        if showZeroDecimalPlacePrices {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
         }
     }
 
-    func localizedPricePerWeek(showWholeNumberPrices: Bool = false) -> String {
+    func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let price = self.storeProduct.localizedPricePerWeek else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
 
-        if showWholeNumberPrices && priceEndsIn99or00Cents(price) {
+        if showZeroDecimalPlacePrices && priceEndsIn99or00Cents(price) {
             return roundAndTruncatePrice(price)
         } else {
             return price
@@ -45,13 +45,13 @@ extension Package: VariableDataProvider {
 
     }
 
-    func localizedPricePerMonth(showWholeNumberPrices: Bool = false) -> String {
+    func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let price = self.storeProduct.localizedPricePerMonth else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
 
-        if showWholeNumberPrices && priceEndsIn99or00Cents(price)  {
+        if showZeroDecimalPlacePrices && priceEndsIn99or00Cents(price)  {
             return roundAndTruncatePrice(price)
         }
 
@@ -107,41 +107,41 @@ extension Package: VariableDataProvider {
         return self.introDuration(locale)
     }
 
-    func localizedPricePerPeriod(_ locale: Locale, showWholeNumberPrices: Bool = false) -> String {
+    func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPriceFor(showWholeNumberPrices: showWholeNumberPrices)
+            return self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         let unit = Localization.abbreviatedUnitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPriceFor(showWholeNumberPrices: showWholeNumberPrices))/\(unit)"
+        return "\(self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
     }
 
-    func localizedPricePerPeriodFull(_ locale: Locale, showWholeNumberPrices: Bool = false) -> String {
+    func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPriceFor(showWholeNumberPrices: showWholeNumberPrices)
+            return self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         let unit = Localization.unitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPriceFor(showWholeNumberPrices: showWholeNumberPrices))/\(unit)"
+        return "\(self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
     }
 
-    func localizedPriceAndPerMonth(_ locale: Locale, showWholeNumberPrices: Bool = false) -> String {
+    func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPricePerPeriod(locale, showWholeNumberPrices: showWholeNumberPrices)
+            return self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            return "\(self.localizedPricePerPeriod(locale, showWholeNumberPrices: showWholeNumberPrices)) (\(self.localizedPricePerMonth(showWholeNumberPrices: showWholeNumberPrices))/\(unit))"
+            return "\(self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)) (\(self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit))"
         }
     }
 
-    func localizedPriceAndPerMonthFull(_ locale: Locale, showWholeNumberPrices: Bool = false) -> String {
+    func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPricePerPeriodFull(locale, showWholeNumberPrices: showWholeNumberPrices)
+            return self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         } else {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
-            return "\(self.localizedPricePerPeriodFull(locale, showWholeNumberPrices: showWholeNumberPrices)) (\(self.localizedPricePerMonth(showWholeNumberPrices: showWholeNumberPrices))/\(unit))"
+            return "\(self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)) (\(self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit))"
         }
     }
 

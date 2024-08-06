@@ -293,31 +293,31 @@ private extension VariablesTests {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct MockVariableProvider: VariableDataProvider {
-    func localizedPricePerWeek(showWholeNumberPrices: Bool) -> String {
+    func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     
-    func localizedPricePerMonth(showWholeNumberPrices: Bool) -> String {
+    func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     
-    func localizedPriceFor(showWholeNumberPrices: Bool) -> String {
+    func localizedPriceFor(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     
-    func localizedPricePerPeriod(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
+    func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     
-    func localizedPricePerPeriodFull(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
+    func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     
-    func localizedPriceAndPerMonth(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
+    func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     
-    func localizedPriceAndPerMonthFull(_ locale: Locale, showWholeNumberPrices: Bool) -> String {
+    func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     

@@ -305,24 +305,24 @@ class PackageVariablesTests: TestCase {
 
     func testPriceRounding() {
         expect(TestData
-            .monthlyPackage.localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: false)) == "$6.99/month"
+            .monthlyPackage.localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: false)) == "$6.99/month"
         expect(TestData.monthlyPackage
-            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: true)) == "$7/month"
-        expect(TestData.monthlyPackage.localizedPricePerMonth(showWholeNumberPrices: true)) == "$7"
-        expect(TestData.monthlyPackage.localizedPricePerMonth(showWholeNumberPrices: false)) == "$6.99"
-        expect(TestData.threeMonthPackage.localizedPricePerMonth(showWholeNumberPrices: true)) == "$1.66"
-        expect(TestData.annualPackage60.localizedPricePerMonth(showWholeNumberPrices: false)) == "$4.99"
-        expect(TestData.annualPackage60.localizedPricePerMonth(showWholeNumberPrices: true)) == "$5"
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: true)) == "$7/month"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(showZeroDecimalPlacePrices: true)) == "$7"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(showZeroDecimalPlacePrices: false)) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth(showZeroDecimalPlacePrices: true)) == "$1.66"
+        expect(TestData.annualPackage60.localizedPricePerMonth(showZeroDecimalPlacePrices: false)) == "$4.99"
+        expect(TestData.annualPackage60.localizedPricePerMonth(showZeroDecimalPlacePrices: true)) == "$5"
         expect(TestData.annualPackage60
-            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: true)) == "$60/year ($5/month)"
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: true)) == "$60/year ($5/month)"
         expect(TestData.annualPackage
-            .localizedPriceAndPerMonthFull(Self.english,  showWholeNumberPrices: true)) == "$54/year ($4.49/month)"
+            .localizedPriceAndPerMonthFull(Self.english,  showZeroDecimalPlacePrices: true)) == "$54/year ($4.49/month)"
         expect(TestData
             .annualPackage60
-            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: false)) == "$59.99/year ($4.99/month)"
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: false)) == "$59.99/year ($4.99/month)"
         expect(TestData
             .annualPackage
-            .localizedPriceAndPerMonthFull(Self.english, showWholeNumberPrices: false)) == "$53.99/year ($4.49/month)"
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: false)) == "$53.99/year ($4.49/month)"
 
     }
 

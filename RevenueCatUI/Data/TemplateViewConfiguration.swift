@@ -27,7 +27,7 @@ struct TemplateViewConfiguration {
     let colorsByTier: [PaywallData.Tier: PaywallData.Configuration.Colors]
     let fonts: PaywallFontProvider
     let assetBaseURL: URL
-    let showWholeIntegerPrices: Bool
+    let showZeroDecimalPlacePrices: Bool
 
 }
 
@@ -164,7 +164,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         tiers: [PaywallData.Tier],
         setting: TemplatePackageSetting,
         locale: Locale = .current,
-        showWholeNumberPrices: Bool = false
+        showZeroDecimalPlacePrices: Bool = false
     ) throws -> Self {
         let parameters: Parameters
 
@@ -192,7 +192,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
             activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
             parameters: parameters,
             locale: locale,
-            showWholeNumberPrices: showWholeNumberPrices
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
     }
 
@@ -204,7 +204,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         activelySubscribedProductIdentifiers: Set<String>,
         parameters: Parameters,
         locale: Locale,
-        showWholeNumberPrices: Bool
+        showZeroDecimalPlacePrices: Bool
     ) throws -> Self {
         switch parameters {
         case let .singleTier(filter, `default`, localization, multiPackage):
@@ -214,7 +214,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 localization: localization,
                 locale: locale,
-                showWholeNumberPrices: showWholeNumberPrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
 
             guard let firstPackage = filteredPackages.first else {
@@ -250,7 +250,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
                         activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                         localization: localization,
                         locale: locale,
-                        showWholeNumberPrices: showWholeNumberPrices
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                     )
 
                     guard let firstPackage = filteredPackages.first else {
@@ -294,7 +294,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         activelySubscribedProductIdentifiers: Set<String>,
         localization: PaywallData.LocalizedConfiguration,
         locale: Locale,
-        showWholeNumberPrices: Bool
+        showZeroDecimalPlacePrices: Bool
     ) -> [TemplateViewConfiguration.Package] {
         let filtered = TemplateViewConfiguration.filter(packages: packages, with: filter)
         let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: filtered)
@@ -311,7 +311,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     localization: localization.processVariables(
                         with: package,
                         context: .init(discountRelativeToMostExpensivePerMonth: discount, 
-                                       showWholeNumberPrices: showWholeNumberPrices),
+                                       showZeroDecimalPlacePrices: showZeroDecimalPlacePrices),
                         locale: locale
                     ),
                     currentlySubscribed: activelySubscribedProductIdentifiers.contains(
