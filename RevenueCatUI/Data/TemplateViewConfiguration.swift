@@ -306,12 +306,17 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     relativeTo: mostExpensivePricePerMonth
                 )
 
+                var showWholeNumberPrices = false
+                if let currentCountry = Purchases.shared.storeFrontCountryCode, integerPriceCountries.contains(currentCountry) {
+                    showWholeNumberPrices = true
+                }
+
                 return .init(
                     content: package,
                     localization: localization.processVariables(
                         with: package,
                         context: .init(discountRelativeToMostExpensivePerMonth: discount, 
-                                       showWholeNumberPrices: Purchases.shared.storeFrontCountryCode.map { integerPriceCountries.contains($0) } ?? false),
+                                       showWholeNumberPrices: showWholeNumberPrices),
                         locale: locale
                     ),
                     currentlySubscribed: activelySubscribedProductIdentifiers.contains(
