@@ -54,13 +54,11 @@ struct NoSubscriptionsView: View {
                 background.edgesIgnoringSafeArea(.all)
             }
             VStack {
-                Text(self.configuration.screens[.noActive]?.title ?? "No Subscriptions found")
-                    .font(.title)
-                    .padding()
-                Text(self.configuration.screens[.noActive]?.subtitle ??
-                     "We can try checking your Apple account for any previous purchases")
-                .font(.body)
-                .padding()
+                BackwardsCompatibleContentUnavailableView(
+                    title: self.configuration.screens[.noActive]?.title ?? "No subscriptions found",
+                    description: self.configuration.screens[.noActive]?.subtitle ?? "We can try checking your Apple account for any previous purchases",
+                    systemImage: "exclamationmark.triangle.fill" // TODO: customize image
+                )
 
                 Spacer()
 

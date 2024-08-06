@@ -49,20 +49,13 @@ struct WrongPlatformView: View {
             let textColor = color(from: appearance.textColor, for: colorScheme)
 
             VStack {
-                switch store {
-                case .appStore, .macAppStore, .playStore, .amazon:
-                    let platformName = humanReadablePlatformName(store: store!)
+                let platformInstructions = self.humanReadableInstructions(for: store)
 
-                    Text("Your subscription is a \(platformName) subscription.")
-                        .font(.title)
-                        .padding()
-                    Text("Go the app settings on \(platformName) to manage your subscription and billing.")
-                        .padding()
-                default:
-                    Text("Please contact support to manage your subscription")
-                        .font(.title)
-                        .padding()
-                }
+                BackwardsCompatibleContentUnavailableView(
+                    title: platformInstructions.0,
+                    description: platformInstructions.1,
+                    systemImage: "exclamationmark.triangle.fill" // TODO: customize image
+                )
 
             }
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
@@ -96,6 +89,40 @@ struct WrongPlatformView: View {
         }
     }
 
+    private func humanReadableInstructions(for store: Store?) -> (String, String) {
+        let defaultContactSupport = "Please contact support to manage your subscription."
+
+        if let store {
+            let platformName = humanReadablePlatformName(store: store)
+
+            switch store {
+            case .appStore, .macAppStore:
+                return (
+                    "You have an \(platformName) subscription.",
+                    "You can manage your subscription via the App Store app on an Apple device."
+                )
+            case .playStore:
+                return (
+                    "You have a \(platformName) subscription.",
+                    "You can manage your subscription via the Google Play app on an Android device."
+                )
+            case .stripe, .rcBilling, .external:
+                return ("Active \(platformName) Subscription", defaultContactSupport)
+            case .promotional:
+                return ("Active \(platformName) Subscription", defaultContactSupport)
+            case .amazon:
+                return (
+                    "You have an \(platformName) subscription.",
+                    "You can manage your subscription via the Amazon Appstore app."
+                )
+            case .unknownStore:
+                return ("Unknown Subscription", defaultContactSupport)
+            }
+        } else {
+            return ("Unknown Subscription", defaultContactSupport)
+        }
+    }
+
 }
 
 #if DEBUG
@@ -111,6 +138,9 @@ struct WrongPlatformView_Previews: PreviewProvider {
         Group {
             WrongPlatformView(store: .appStore)
                 .previewDisplayName("App Store")
+
+            WrongPlatformView(store: .amazon)
+                .previewDisplayName("Amazon")
 
             WrongPlatformView(store: .rcBilling)
                 .previewDisplayName("RCBilling")
