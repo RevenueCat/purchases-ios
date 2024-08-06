@@ -301,7 +301,7 @@ private struct MockVariableProvider: VariableDataProvider {
         ""
     }
     
-    func localizedPriceFor(showZeroDecimalPlacePrices: Bool) -> String {
+    func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String {
         ""
     }
     

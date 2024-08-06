@@ -109,20 +109,20 @@ extension Package: VariableDataProvider {
 
     func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            return self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         let unit = Localization.abbreviatedUnitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
+        return "\(self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
     }
 
     func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            return self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         let unit = Localization.unitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPriceFor(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
+        return "\(self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
     }
 
     func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {

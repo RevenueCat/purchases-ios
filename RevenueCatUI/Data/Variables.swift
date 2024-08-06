@@ -47,7 +47,7 @@ protocol VariableDataProvider {
 
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String
     func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String
-    func localizedPriceFor(showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String
     func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
     func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
     func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
@@ -103,7 +103,7 @@ enum VariableHandler {
     fileprivate static func provider(for variableName: String) -> ValueProvider? {
         switch variableName {
         case "app_name": return { (provider, _, _) in provider.applicationName }
-        case "price": return { (provider, context, _) in provider.localizedPriceFor(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices) }
+        case "price": return { (provider, context, _) in provider.localizedPrice(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices) }
         case "price_per_period": return { (provider, context, locale) in
             provider.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
         }
