@@ -52,12 +52,9 @@ struct ManageSubscriptionsView: View {
         if #available(iOS 16.0, *) {
             NavigationStack {
                 content
-                    .navigationDestination(isPresented: .constant(self.viewModel.feedbackSurveyData != nil)) {
+                    .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
                         if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
                             FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
-                                .onDisappear {
-                                    self.viewModel.feedbackSurveyData = nil
-                                }
                         }
                     }
             }.applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
@@ -67,11 +64,8 @@ struct ManageSubscriptionsView: View {
                     .background(NavigationLink(
                         destination: self.viewModel.feedbackSurveyData.map { data in
                             FeedbackSurveyView(feedbackSurveyData: data)
-                                .onDisappear {
-                                    self.viewModel.feedbackSurveyData = nil
-                                }
                         },
-                        isActive: .constant(self.viewModel.feedbackSurveyData != nil)
+                        isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
                     ) {
                         EmptyView()
                     })
