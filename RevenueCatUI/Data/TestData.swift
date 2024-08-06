@@ -103,6 +103,18 @@ enum TestData {
         introductoryDiscount: Self.intro(14, .day, priceString: "$1.99"),
         locale: Self.locale
     )
+    static let annualProduct60 = TestStoreProduct(
+        localizedTitle: "Annual",
+        price: 59.99,
+        localizedPriceString: "$59.99",
+        productIdentifier: "com.revenuecat.product_3",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: Self.intro(14, .day, priceString: "$2.99"),
+        locale: Self.locale
+    )
     static let lifetimeProduct = TestStoreProduct(
         localizedTitle: "Lifetime",
         price: 119.49,
@@ -114,43 +126,43 @@ enum TestData {
         subscriptionPeriod: nil,
         locale: Self.locale
     )
-    // @PublicForExternalTesting
-    static let weeklyPackage = Package(
+    public static let weeklyPackage = Package(
         identifier: PackageType.weekly.identifier,
         packageType: .weekly,
         storeProduct: Self.weeklyProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
-    // @PublicForExternalTesting
-    static let monthlyPackage = Package(
+    public static let monthlyPackage = Package(
         identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
-    // @PublicForExternalTesting
-    static let threeMonthPackage = Package(
+    public static let threeMonthPackage = Package(
         identifier: PackageType.threeMonth.identifier,
         packageType: .threeMonth,
         storeProduct: Self.threeMonthProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
-    // @PublicForExternalTesting
-    static let sixMonthPackage = Package(
+    public static let sixMonthPackage = Package(
         identifier: PackageType.sixMonth.identifier,
         packageType: .sixMonth,
         storeProduct: Self.sixMonthProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
-    // @PublicForExternalTesting
-    static let annualPackage = Package(
+    public static let annualPackage = Package(
         identifier: PackageType.annual.identifier,
         packageType: .annual,
         storeProduct: Self.annualProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
-    // @PublicForExternalTesting
-    static let lifetimePackage = Package(
+    public static let annualPackage60 = Package(
+        identifier: PackageType.annual.identifier,
+        packageType: .annual,
+        storeProduct: Self.annualProduct60.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    public static let lifetimePackage = Package(
         identifier: PackageType.lifetime.identifier,
         packageType: .lifetime,
         storeProduct: Self.lifetimeProduct.toStoreProduct(),

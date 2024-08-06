@@ -307,18 +307,40 @@ class PackageVariablesTests: TestCase {
         expect(TestData
             .monthlyPackage
             .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: false))) == "$6.99/month"
-
         expect(TestData
             .monthlyPackage
             .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: true))) == "$7/month"
-
         expect(TestData
             .monthlyPackage
-            .localizedPriceAndPerMonthFull(Self.english,context: .init(showWholeNumberPrices: true))) == "$7/month"
-
-        expect(TestData.threeMonthPackage.localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$1.66"
-        expect(TestData.monthlyPackage.localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$7"
-        expect(TestData.monthlyPackage.localizedPricePerMonth(context: .init(showWholeNumberPrices: false))) == "$6.99"
+            .localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$7"
+        expect(TestData
+            .monthlyPackage
+            .localizedPricePerMonth(context: .init(showWholeNumberPrices: false))) == "$6.99"
+        expect(TestData
+            .threeMonthPackage
+            .localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$1.66"
+        expect(TestData
+            .annualPackage60
+            .localizedPricePerMonth(context: .init(showWholeNumberPrices: false))) == "$4.99"
+        expect(TestData
+            .annualPackage60
+            .localizedPricePerMonth(context: .init(showWholeNumberPrices: true))) == "$5"
+        expect(TestData
+            .annualPackage60
+            .localizedPriceAndPerMonthFull(Self.english, 
+                                           context: .init(showWholeNumberPrices: true))) == "$60/year ($5/month)"
+        expect(TestData
+            .annualPackage
+            .localizedPriceAndPerMonthFull(Self.english, 
+                                           context: .init(showWholeNumberPrices: true))) == "$54/year ($4.49/month)"
+        expect(TestData
+            .annualPackage60
+            .localizedPriceAndPerMonthFull(Self.english,
+                                           context: .init(showWholeNumberPrices: false))) == "$59.99/year ($4.99/month)"
+        expect(TestData
+            .annualPackage
+            .localizedPriceAndPerMonthFull(Self.english,
+                                           context: .init(showWholeNumberPrices: false))) == "$53.99/year ($4.49/month)"
 
     }
 
