@@ -23,7 +23,7 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-    func localizedPriceFor(showZeroDecimalPlacePrices: Bool = false) -> String {
+    func localizedPrice(showZeroDecimalPlacePrices: Bool = false) -> String {
         if showZeroDecimalPlacePrices {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
