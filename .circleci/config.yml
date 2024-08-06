@@ -830,7 +830,8 @@ jobs:
           destination: scan-test-output
 
   build-tv-watch-and-macos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -840,7 +841,8 @@ jobs:
           no_output_timeout: 30m
 
   build-visionos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -850,37 +852,43 @@ jobs:
           no_output_timeout: 30m
 
   backend-integration-tests-SK1:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
 
   backend-integration-tests-SK2:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
 
   backend-integration-tests-other:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
 
   backend-integration-tests-offline:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
 
   backend-integration-tests-custom-entitlements:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
 
   release-checks:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -908,16 +916,11 @@ jobs:
           destination: test_report.html
 
   docs-build:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
-        # https://github.com/RevenueCat/purchases-ios/pull/1997
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: true
+    executor:
+      name: macos-executor
+      # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
+      # https://github.com/RevenueCat/purchases-ios/pull/1997
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -929,16 +932,11 @@ jobs:
             DOCS_IOS_VERSION: "17.4"
 
   docs-deploy:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
-        # https://github.com/RevenueCat/purchases-ios/pull/1997
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: true
+    executor:
+      name: macos-executor
+      # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
+      # https://github.com/RevenueCat/purchases-ios/pull/1997
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -950,7 +948,8 @@ jobs:
             DOCS_IOS_VERSION: "17.4"
 
   make-release:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -962,7 +961,8 @@ jobs:
           no_output_timeout: 30m
 
   push-revenuecat-pod:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-bundle-dependencies
@@ -973,7 +973,8 @@ jobs:
           no_output_timeout: 30m
 
   push-revenuecatui-pod:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-bundle-dependencies
@@ -984,7 +985,8 @@ jobs:
           no_output_timeout: 30m
 
   prepare-next-version:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -995,7 +997,8 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   installation-tests-cocoapods:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -1010,7 +1013,8 @@ jobs:
           directory: Tests/InstallationTests/CocoapodsInstallation
 
   installation-tests-swift-package-manager:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
