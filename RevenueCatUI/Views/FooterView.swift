@@ -27,6 +27,7 @@ struct FooterView: View {
     private var interfaceIdiom
 
     var configuration: PaywallData.Configuration
+    var locale: Locale
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
     var color: Color
@@ -36,12 +37,14 @@ struct FooterView: View {
 
     init(
         configuration: TemplateViewConfiguration,
+        locale: Locale,
         bold: Bool = false,
         purchaseHandler: PurchaseHandler,
         displayingAllPlans: Binding<Bool>? = nil
     ) {
         self.init(
             configuration: configuration.configuration,
+            locale: locale,
             mode: configuration.mode,
             fonts: configuration.fonts,
             color: configuration.colors.text1Color,
@@ -52,6 +55,7 @@ struct FooterView: View {
 
     fileprivate init(
         configuration: PaywallData.Configuration,
+        locale: Locale,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         color: Color,
@@ -60,6 +64,7 @@ struct FooterView: View {
         displayingAllPlans: Binding<Bool>?
     ) {
         self.configuration = configuration
+        self.locale = locale
         self.mode = mode
         self.fonts = fonts
         self.color = color
@@ -79,7 +84,7 @@ struct FooterView: View {
             }
 
             if self.configuration.displayRestorePurchases {
-                RestorePurchasesButton(purchaseHandler: self.purchaseHandler)
+                RestorePurchasesButton(locale: self.locale, purchaseHandler: self.purchaseHandler)
 
                 if self.tosURL != nil || self.privacyURL != nil {
                     self.separator
@@ -88,6 +93,7 @@ struct FooterView: View {
 
             if let url = self.tosURL {
                 LinkButton(
+                    locale: self.locale,
                     url: url,
                     titles: "Terms and conditions", "Terms"
                 )
@@ -99,6 +105,7 @@ struct FooterView: View {
 
             if let url = self.privacyURL {
                 LinkButton(
+                    locale: self.locale,
                     url: url,
                     titles: "Privacy policy", "Privacy"
                 )
@@ -179,6 +186,7 @@ private struct SeparatorView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct RestorePurchasesButton: View {
 
+    let locale: Locale
     let purchaseHandler: PurchaseHandler
 
     @State
@@ -188,6 +196,8 @@ private struct RestorePurchasesButton: View {
     private var showRestoredCustomerInfoAlert: Bool = false
 
     var body: some View {
+        let bundle = Localization.localizedBundle(self.locale)
+
         AsyncButton {
             Logger.debug(Strings.restoring_purchases)
 
@@ -201,12 +211,12 @@ private struct RestorePurchasesButton: View {
                 Logger.debug(Strings.restore_purchases_with_empty_result)
             }
         } label: {
-            let largestText = Text("Restore purchases", bundle: .module)
+            let largestText = Text("Restore purchases", bundle: bundle)
 
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits {
                     largestText
-                    Text("Restore", bundle: .module)
+                    Text("Restore", bundle: bundle)
                 }
                 .accessibilityLabel(largestText)
             } else {
@@ -233,8 +243,7 @@ private struct RestorePurchasesButton: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LinkButton: View {
 
-    @Environment(\.locale)
-    private var locale
+    private let locale: Locale
 
     @Namespace
     private var namespace
@@ -245,7 +254,8 @@ private struct LinkButton: View {
     let url: URL
     let titles: [String]
 
-    init(url: URL, titles: String...) {
+    init(locale: Locale, url: URL, titles: String...) {
+        self.locale = locale
         self.url = url
         self.titles = titles
     }
@@ -402,6 +412,7 @@ struct Footer_Previews: PreviewProvider {
                 termsOfServiceURL: termsOfServiceURL,
                 privacyURL: privacyURL
             ),
+            locale: Locale.current,
             mode: .fullScreen,
             fonts: DefaultPaywallFontProvider(),
             color: TestData.colors.text1Color,

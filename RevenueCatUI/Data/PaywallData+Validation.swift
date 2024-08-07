@@ -45,7 +45,7 @@ extension Offering {
 extension Offering {
 
     /// - Returns: a validated paywall suitable to be displayed, and any associated error.
-    func validatedPaywall(locale: Locale = .current) -> ValidationResult {
+    func validatedPaywall(locale: Locale) -> ValidationResult {
         if let paywall = self.paywall {
             switch paywall.validate() {
             case let .success(template):

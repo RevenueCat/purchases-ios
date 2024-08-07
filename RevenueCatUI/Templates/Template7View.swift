@@ -35,8 +35,6 @@ struct Template7View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
-    @Environment(\.locale)
-    var locale
 
     #if swift(>=5.9) || (!os(macOS) && !os(watchOS) && !os(tvOS))
     @Environment(\.verticalSizeClass)
@@ -381,6 +379,7 @@ struct Template7View: TemplateViewType {
 
     private var footerView: some View {
         FooterView(configuration: self.configuration,
+                   locale: self.selectedPackage.localization.locale,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
     }

@@ -62,9 +62,11 @@ enum Localization {
         return formatter.string(from: subscriptionPeriod.components) ?? ""
     }
 
+    // TODO: Josh
     static func localized(
         packageType: PackageType,
-        locale: Locale = .current
+        locale: Locale = .current,
+        defaultLocale: Locale = Self.fallbackLocale
     ) -> String? {
         guard let key = packageType.localizationKey else { return nil }
 
@@ -80,7 +82,7 @@ enum Localization {
         return value(
             locale: locale,
             // Or defaults to english
-            default: value(locale: Self.defaultLocale, default: nil)
+            default: value(locale: defaultLocale, default: nil)
         )
     }
 
@@ -194,9 +196,9 @@ private extension Localization {
     static let unitAbbreviationLengthPriorities = [ 2, 3 ]
 
     /// For falling back in case language isn't localized.
-    static let defaultLocale: Locale = .init(identifier: Self.defaultLocaleIdentifier)
+    static let fallbackLocale: Locale = .init(identifier: Self.fallbackLocaleIdentifier)
 
-    private static let defaultLocaleIdentifier: String = Locale.preferredLanguages.first ?? "en_US"
+    private static let fallbackLocaleIdentifier: String = Locale.preferredLanguages.first ?? "en_US"
 
 }
 

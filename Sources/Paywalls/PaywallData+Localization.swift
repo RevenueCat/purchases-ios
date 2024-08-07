@@ -19,6 +19,7 @@ public extension PaywallData {
     /// based on `Locale.current` or `Locale.preferredLocales`.
     /// -  Returns: `nil` for multi-tier paywalls.
     var localizedConfiguration: LocalizedConfiguration? {
+        print("Self.localesOrderedByPriority", Self.localesOrderedByPriority)
         return self.localizedConfiguration(for: Self.localesOrderedByPriority)
     }
 
@@ -29,21 +30,29 @@ public extension PaywallData {
         return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)
     }
 
+    // TODO: JOSH
+
     // Visible for testing
-    internal func localizedConfiguration(for preferredLocales: [Locale]) -> LocalizedConfiguration? {
+    internal func localizedConfiguration(
+        for preferredLocales: [Locale],
+        fallbackLocale: Locale = .init(identifier: "de_DE")
+    ) -> LocalizedConfiguration? {
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.config(for:),
-            fallbackLocalization: self.fallbackLocalizedConfiguration
+            fallbackLocalization: self.fallbackLocalizedConfiguration(locale: fallbackLocale)
         )
     }
 
     // Visible for testing
-    internal func localizedConfigurationByTier(for preferredLocales: [Locale]) -> [String: LocalizedConfiguration]? {
+    internal func localizedConfigurationByTier(
+        for preferredLocales: [Locale],
+        fallbackLocale: Locale = .init(identifier: "de_DE")
+    ) -> [String: LocalizedConfiguration]? {
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.tiersLocalization(for:),
-            fallbackLocalization: self.fallbackTiersLocalized
+            fallbackLocalization: self.fallbackTiersLocalized(locale: fallbackLocale)
         )
     }
 
@@ -51,15 +60,23 @@ public extension PaywallData {
     /// - Returns: The list of locales that paywalls should try to search for.
     /// Includes `Locale.current` and `Locale.preferredLanguages`.
     internal static var localesOrderedByPriority: [Locale] {
-        return [.current] + Locale.preferredLocales
+        // Removing the use of Locale.current (it's not what the user wants)
+        // It returns weird whatever the "default" language is on the xcode project when on sim
+
+        let preferred = Locale.preferredLocales
+        print("preferred", preferred)
+
+        return Locale.preferredLocales
     }
 
-    private var fallbackLocalizedConfiguration: (String, LocalizedConfiguration)? {
-        return self.localization.first
+    private func fallbackLocalizedConfiguration(locale: Locale) -> (String, LocalizedConfiguration)? {
+        let defaultLocale = self.localization.first { $0.0 == locale.identifier }
+        return defaultLocale ?? self.localization.first
     }
 
-    private var fallbackTiersLocalized: (String, [String: LocalizedConfiguration])? {
-        return self.localizationByTier.first
+    private func fallbackTiersLocalized(locale: Locale) -> (String, [String: LocalizedConfiguration])? {
+        let defaultLocale = self.localizationByTier.first { $0.0 == locale.identifier }
+        return defaultLocale ?? self.localizationByTier.first
     }
 
 }

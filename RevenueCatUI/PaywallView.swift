@@ -14,6 +14,31 @@
 import RevenueCat
 import SwiftUI
 
+struct PreferredLocaleKey: EnvironmentKey {
+    static let defaultValue: Locale = .current
+}
+
+extension EnvironmentValues {
+    var preferredLocale: Locale {
+        get { self[PreferredLocaleKey.self] }
+        set { self[PreferredLocaleKey.self] = newValue }
+    }
+}
+
+struct PreferredLocaleModifier: ViewModifier {
+    var locale: Locale
+
+    func body(content: Content) -> some View {
+        content.environment(\.preferredLocale, locale)
+    }
+}
+
+extension View {
+    func preferredLocale(_ locale: Locale) -> some View {
+        self.modifier(PreferredLocaleModifier(locale: locale))
+    }
+}
+
 #if !os(macOS) && !os(tvOS)
 
 /// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
@@ -31,8 +56,8 @@ public struct PaywallView: View {
     private let displayCloseButton: Bool
     private let paywallViewOwnsPurchaseHandler: Bool
 
-    @Environment(\.locale)
-    private var locale
+//    @Environment(\.locale)
+    private var locale: Locale
 
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
@@ -138,6 +163,8 @@ public struct PaywallView: View {
         self.displayCloseButton = configuration.displayCloseButton
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
+
+        self.locale = Locale.preferredLanguages.map(Locale.init(identifier:)).first ?? Locale.current
     }
 
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
@@ -236,7 +263,8 @@ public struct PaywallView: View {
             fonts: fonts,
             displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: purchaseHandler,
+            locale: self.locale
         )
 
         if let error {
@@ -332,8 +360,8 @@ struct LoadedOfferingPaywallView: View {
     @ObservedObject
     private var purchaseHandler: PurchaseHandler
 
-    @Environment(\.locale)
-    private var locale
+//    @Environment(\.locale)
+    private var locale: Locale
 
     @Environment(\.onRequestedDismissal)
     private var onRequestedDismissal: (() -> Void)?
@@ -353,7 +381,8 @@ struct LoadedOfferingPaywallView: View {
         fonts: PaywallFontProvider,
         displayCloseButton: Bool,
         introEligibility: TrialOrIntroEligibilityChecker,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        locale: Locale
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -366,7 +395,7 @@ struct LoadedOfferingPaywallView: View {
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
-
+        self.locale = locale
         if Purchases.isConfigured, let currentCountry = Purchases.shared.storeFrontCountryCode {
             self.showZeroDecimalPlacePrices = self.paywall.zeroDecimalPlaceCountries.contains(currentCountry)
         } else {

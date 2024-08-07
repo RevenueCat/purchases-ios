@@ -255,6 +255,7 @@ struct Template5View: TemplateViewType {
 
     private var footerView: some View {
         FooterView(configuration: self.configuration,
+                   locale: self.selectedLocalization.locale,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
     }
