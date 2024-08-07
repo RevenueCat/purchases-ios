@@ -84,11 +84,20 @@ extension View {
         #endif
     }
 
+    private static var isIOSVersionWithCrash: Bool {
+        // There is a bug in iOS 18 beta 5 (as of writing, future versions uncofirmed) that causes a crash.
+        // This has been reporte to Apple as FB14699941.
+        // Until this is fixed, we're rolling back to pre-iOS 16 behavior for this view.
+        // More information and discussion here: https://github.com/RevenueCat/purchases-ios/issues/4150
+        let iOSVersionWithCrash = OperatingSystemVersion(majorVersion: 18, minorVersion: 0, patchVersion: 0)
+        return ProcessInfo.processInfo.isOperatingSystemAtLeast(iOSVersionWithCrash)
+    }
+
     @ViewBuilder
     // @PublicForExternalTesting
     func scrollableIfNecessary(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
         if enabled {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *), !Self.isIOSVersionWithCrash {
                 ViewThatFits(in: axis.scrollViewAxis) {
                     self
 
@@ -109,16 +118,7 @@ extension View {
     @ViewBuilder
     func scrollableIfNecessaryWhenAvailable(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
         if enabled {
-            // There is a bug in iOS 18 beta 5 (as of writing, future versions uncofirmed)
-            // where ViewThatFit crashes when used.
-            // This has been filed as FB14699941.
-            // Until this is fixed, we're rolling back to pre-iOS 16 behavior for this view.
-            // More information and discussion here: https://github.com/RevenueCat/purchases-ios/issues/4150
-            let iOSVersionWithCrash = OperatingSystemVersion(majorVersion: 18, minorVersion: 0, patchVersion: 0)
-            let isIOSVersionWithCrash = ProcessInfo.processInfo.isOperatingSystemAtLeast(iOSVersionWithCrash)
-
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *),
-               !isIOSVersionWithCrash {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *), !Self.isIOSVersionWithCrash {
                 ViewThatFits(in: axis.scrollViewAxis) {
                     self
 
