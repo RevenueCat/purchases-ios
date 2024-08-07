@@ -351,7 +351,7 @@ struct LoadedOfferingPaywallView: View {
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
 
-        if let currentCountry = Purchases.shared.storeFrontCountryCode {
+        if Purchases.isConfigured, let currentCountry = Purchases.shared.storeFrontCountryCode {
             self.showZeroDecimalPlacePrices = self.paywall.zeroDecimalPlaceCountries.contains(currentCountry)
         } else {
             self.showZeroDecimalPlacePrices = false
