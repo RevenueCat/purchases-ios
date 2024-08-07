@@ -113,6 +113,7 @@ extension View {
             // where ViewThatFit crashes when used.
             // This has been filed as FB14699941.
             // Until this is fixed, we're rolling back to pre-iOS 16 behavior for this view.
+            // More information and discussion here: https://github.com/RevenueCat/purchases-ios/issues/4150
             let iOSVersionWithCrash = OperatingSystemVersion(majorVersion: 18, minorVersion: 0, patchVersion: 0)
             let isIOSVersionWithCrash = ProcessInfo.processInfo.isOperatingSystemAtLeast(iOSVersionWithCrash)
 
