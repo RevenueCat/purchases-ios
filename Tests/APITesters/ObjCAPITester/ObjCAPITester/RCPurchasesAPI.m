@@ -69,7 +69,7 @@ NSString *storeFrontCountryCode;
     delegate = [p delegate];
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
-    storeFrontCountryCode = [p storeFrontCountryCode]
+    storeFrontCountryCode = [p storeFrontCountryCode];
 
     RCCustomerInfo *pi = nil;
     RCStoreProduct *storeProduct = nil;
