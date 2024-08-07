@@ -74,6 +74,7 @@ struct NoSubscriptionsView: View {
                     dismiss()
                 }
             }
+            .padding(.horizontal)
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
 
