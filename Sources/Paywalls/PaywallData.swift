@@ -26,6 +26,7 @@ public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable 
         self.apple = apple
     }
 
+    // swiftlint:disable:next missing_docs
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.apple = try container.decodeIfPresent(Set<String>.self, forKey: .apple) ?? []
