@@ -11,6 +11,8 @@
 //
 //  Created by Cesar de la Vega on 29/6/24.
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 import Nimble
 import XCTest
@@ -380,3 +382,5 @@ private extension BackendGetCustomerCenterConfigTests {
     ]
 
 }
+
+#endif

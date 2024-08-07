@@ -11,6 +11,8 @@
 //
 //  Created by Cesar de la Vega on 8/7/24.
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Nimble
 import XCTest
 
@@ -137,3 +139,5 @@ class CustomerCenterConfigDataTests: TestCase {
     }
 
 }
+
+#endif
