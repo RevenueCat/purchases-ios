@@ -255,7 +255,7 @@ struct SubscriptionDetailsView: View {
         .padding(24.0)
         .background(Color(UIColor.tertiarySystemBackground))
         .cornerRadius(20)
-        .shadow(color: .black.opacity(0.1), radius: /*@START_MENU_TOKEN@*/10/*@END_MENU_TOKEN@*/, x: /*@START_MENU_TOKEN@*/0.0/*@END_MENU_TOKEN@*/, y: 10)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
         .padding(.bottom)
     }
 
