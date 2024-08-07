@@ -146,6 +146,7 @@ struct PromoOfferButtonView: View {
                 }
             })
             .buttonStyle(ManageSubscriptionsButtonStyle())
+            .padding(.horizontal)
         }
     }
 

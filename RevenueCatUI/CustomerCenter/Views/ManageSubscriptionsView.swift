@@ -80,24 +80,26 @@ struct ManageSubscriptionsView: View {
                 background.edgesIgnoringSafeArea(.all)
             }
 
-            VStack {
-                if self.viewModel.isLoaded {
-                    HeaderView(viewModel: self.viewModel)
+            ScrollView {
+                VStack {
+                    if self.viewModel.isLoaded {
+                        HeaderView(viewModel: self.viewModel)
 
-                    if let subscriptionInformation = self.viewModel.subscriptionInformation {
-                        SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                                localization: self.localization,
-                                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                        if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                            SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                                                    localization: self.localization,
+                                                    refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                        }
+
+                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                       loadingPath: self.$viewModel.loadingPath)
+                    } else {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
                     }
-
-                    Spacer()
-
-                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                   loadingPath: self.$viewModel.loadingPath)
-                } else {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
                 }
+                .padding([.horizontal, .bottom])
+                .frame(maxWidth: 400)
             }
         }
         .task {
@@ -172,78 +174,89 @@ struct SubscriptionDetailsView: View {
                     ) : localization.commonLocalizedString(for: .subExpired)
 
                 Text("\(explanation)")
-                    .frame(maxWidth: 200, alignment: .leading)
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
             }.padding([.bottom], 10)
 
-            HStack(alignment: .center) {
-                Image(systemName: "coloncurrencysign.arrow.circlepath")
-                    .accessibilityHidden(true)
-                    .frame(width: iconWidth)
-                VStack(alignment: .leading) {
-                    Text(localization.commonLocalizedString(for: .billingCycle))
-                        .font(.caption2)
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                    Text("\(subscriptionInformation.durationTitle)")
-                        .font(.caption)
-                }
-            }
+            Divider()
+                .padding(.bottom)
 
-            HStack(alignment: .center) {
-                Image(systemName: "coloncurrencysign")
-                    .accessibilityHidden(true)
-                    .frame(width: iconWidth)
-                VStack(alignment: .leading) {
-                    Text(localization.commonLocalizedString(for: .currentPrice))
-                        .font(.caption2)
-                        .foregroundColor(Color(UIColor.secondaryLabel))
-                    Text("\(subscriptionInformation.price)")
-                        .font(.caption)
-                }
-            }
-
-            if let nextRenewal =  subscriptionInformation.expirationDateString {
-
-                let expirationString = subscriptionInformation.active ? (
-                    subscriptionInformation.willRenew ?
-                        localization.commonLocalizedString(for: .nextBillingDate) :
-                        localization.commonLocalizedString(for: .expires)
-                ) : localization.commonLocalizedString(for: .expired)
-
+            VStack(alignment: .leading, spacing: 16.0) {
                 HStack(alignment: .center) {
-                    Image(systemName: "calendar")
+                    Image(systemName: "coloncurrencysign.arrow.circlepath")
                         .accessibilityHidden(true)
                         .frame(width: iconWidth)
                     VStack(alignment: .leading) {
-                        Text("\(expirationString)")
+                        Text(localization.commonLocalizedString(for: .billingCycle))
                             .font(.caption2)
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                        Text("\(String(describing: nextRenewal))")
-                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .textCase(.uppercase)
+                        Text("\(subscriptionInformation.durationTitle)")
+                            .font(.body)
+                    }
+                }
+
+                HStack(alignment: .center) {
+                    Image(systemName: "coloncurrencysign")
+                        .accessibilityHidden(true)
+                        .frame(width: iconWidth)
+                    VStack(alignment: .leading) {
+                        Text(localization.commonLocalizedString(for: .currentPrice))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .textCase(.uppercase)
+                        Text("\(subscriptionInformation.price)")
+                            .font(.body)
+                    }
+                }
+
+                if let nextRenewal =  subscriptionInformation.expirationDateString {
+
+                    let expirationString = subscriptionInformation.active ? (
+                        subscriptionInformation.willRenew ?
+                            localization.commonLocalizedString(for: .nextBillingDate) :
+                            localization.commonLocalizedString(for: .expires)
+                    ) : localization.commonLocalizedString(for: .expired)
+
+                    HStack(alignment: .center) {
+                        Image(systemName: "calendar")
+                            .accessibilityHidden(true)
+                            .frame(width: iconWidth)
+                        VStack(alignment: .leading) {
+                            Text("\(expirationString)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                            Text("\(String(describing: nextRenewal))")
+                                .font(.body)
+                        }
+                    }
+                }
+
+                if let refundRequestStatusMessage = refundRequestStatusMessage {
+                    HStack(alignment: .center) {
+                        Image(systemName: "arrowshape.turn.up.backward")
+                            .accessibilityHidden(true)
+                            .frame(width: iconWidth)
+                        VStack(alignment: .leading) {
+                            Text(localization.commonLocalizedString(for: .refundStatus))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                            Text("\(refundRequestStatusMessage)")
+                                .font(.body)
+                        }
                     }
                 }
             }
 
-            if let refundRequestStatusMessage = refundRequestStatusMessage {
-                HStack(alignment: .center) {
-                    Image(systemName: "arrowshape.turn.up.backward")
-                        .accessibilityHidden(true)
-                        .frame(width: iconWidth)
-                    VStack(alignment: .leading) {
-                        Text(localization.commonLocalizedString(for: .refundStatus))
-                            .font(.caption2)
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                        Text("\(refundRequestStatusMessage)")
-                            .font(.caption)
-                    }
-                }
-            }
-        }.padding()
-            .padding(.horizontal)
-            .background(Color(UIColor.tertiarySystemBackground))
-            .cornerRadius(20)
-            .shadow(color: Color.black.opacity(0.2), radius: 4)
+        }
+        .padding(24.0)
+        .background(Color(UIColor.tertiarySystemBackground))
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.1), radius: /*@START_MENU_TOKEN@*/10/*@END_MENU_TOKEN@*/, x: /*@START_MENU_TOKEN@*/0.0/*@END_MENU_TOKEN@*/, y: 10)
+        .padding(.bottom)
     }
 
 }
@@ -354,6 +367,20 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+struct SubscriptionDetailsView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        SubscriptionDetailsView(subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing, localization: CustomerCenterConfigTestData.customerCenterData.localization, refundRequestStatusMessage: "Success")
+            .previewDisplayName("Subscription Details - Monthly")
+            .padding()
+
+    }
+}
 #endif
 
 #endif

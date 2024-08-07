@@ -102,6 +102,7 @@ struct FeedbackSurveyButtonsView: View {
                 .disabled(self.loadingState != nil)
             }
         }
+        .padding([.horizontal, .bottom])
     }
 
 }
