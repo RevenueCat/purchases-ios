@@ -86,9 +86,10 @@ struct ManageSubscriptionsView: View {
                         HeaderView(viewModel: self.viewModel)
 
                         if let subscriptionInformation = self.viewModel.subscriptionInformation {
-                            SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                                    localization: self.localization,
-                                                    refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                            SubscriptionDetailsView(
+                                subscriptionInformation: subscriptionInformation,
+                                localization: self.localization,
+                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                         }
 
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
@@ -375,9 +376,13 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 struct SubscriptionDetailsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        SubscriptionDetailsView(subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing, localization: CustomerCenterConfigTestData.customerCenterData.localization, refundRequestStatusMessage: "Success")
-            .previewDisplayName("Subscription Details - Monthly")
-            .padding()
+        SubscriptionDetailsView(
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+            localization: CustomerCenterConfigTestData.customerCenterData.localization,
+            refundRequestStatusMessage: "Success"
+        )
+        .previewDisplayName("Subscription Details - Monthly")
+        .padding()
 
     }
 }
