@@ -294,31 +294,31 @@ private extension VariablesTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct MockVariableProvider: VariableDataProvider {
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPricePerWeek
     }
-    =
+
     func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPricePerMonth
     }
-    =
+
     func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPrice
     }
-    =
+
     func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPricePerPeriod
     }
-    =
+
     func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPricePerPeriodFull
     }
-    =
+
     func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPriceAndPerMonth
     }
-    =
+
     func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
-        ""
+        self.localizedPriceAndPerMonthFull
     }
 
     var applicationName: String = ""
