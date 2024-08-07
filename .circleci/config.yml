@@ -32,23 +32,22 @@ parameters:
     type: string
     default: ""
 
-aliases:
-  base-job: &base-job
-    resource_class: macos.m1.medium.gen1
-    macos:
-      xcode: << parameters.xcode_version >>
+executors:
+  macos-executor:
     parameters:
       xcode_version:
         type: string
         default: '15.3'
-      install_swiftlint:
-        type: boolean
-        default: true
+    macos:
+      xcode: << parameters.xcode_version >>
+    resource_class: macos.m1.medium.gen1
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
+
+aliases:
   release-branches: &release-branches
     filters:
       tags:
@@ -396,14 +395,9 @@ commands:
 
 jobs:
   spm-release-build-xcode-14:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
@@ -413,11 +407,9 @@ jobs:
           no_output_timeout: 30m
 
   spm-release-build-xcode-15:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '15.2.0'
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
@@ -427,14 +419,9 @@ jobs:
           no_output_timeout: 30m
 
   spm-xcode-14-1:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.1.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.1.0'
 
     steps:
       - checkout
@@ -448,7 +435,8 @@ jobs:
           no_output_timeout: 30m
 
   pod-lib-lint:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -457,7 +445,8 @@ jobs:
           command: bundle exec fastlane check_pods
 
   spm-release-build:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - run:
@@ -469,22 +458,19 @@ jobs:
           command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
 
-  spm-custom-entitlement-computation-build:
-    <<: *base-job
+  api-tests:
+    executor:
+      name: macos-executor
     steps:
       - checkout
-      - run:
-          name: SPM Custom Entitlement Computation Build
-          command: swift build --target RevenueCat_CustomEntitlementComputation
-          no_output_timeout: 30m
       - install-dependencies
-      - update-spm-installation-commit
       - run:
-          name: Custom Entitlement Computation API Tests
-          command: bundle exec fastlane build_custom_entitlement_computation_api_tester
+          name: API Tests
+          command: bundle exec fastlane run_api_tests
 
   spm-receipt-parser:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - run:
@@ -493,19 +479,14 @@ jobs:
           no_output_timeout: 30m
 
   spm-revenuecat-ui-ios-15:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -527,19 +508,14 @@ jobs:
           destination: scan-test-output
 
   spm-revenuecat-ui-ios-16:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -563,26 +539,16 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - run:
-          condition:
-            - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          name: RevenueCatUI API Tests
-          command: bundle exec fastlane build_revenuecatui_api_tester
 
-  spm-revenuecat-ui-ios-17:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '15.2.0'
-      install_swiftlint:
-        type: boolean
-        default: true
+  run-revenuecat-ui-ios-17:
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -608,7 +574,8 @@ jobs:
           destination: scan-test-output
 
   spm-revenuecat-ui-watchos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -631,7 +598,8 @@ jobs:
           destination: scan-test-output
 
   run-test-macos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -653,19 +621,14 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-17:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '15.2.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -686,19 +649,14 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-16:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -723,19 +681,14 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-15:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
       - install-dependencies:
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -757,7 +710,8 @@ jobs:
           destination: scan-test-output
 
   run-test-tvos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -775,7 +729,8 @@ jobs:
           destination: scan-test-output
 
   run-test-watchos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -801,23 +756,18 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-14:
-    <<: *base-job
+    executor:
+      name: macos-executor
     # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
     # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.2.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+      xcode_version: '14.2.0'
 
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -842,20 +792,16 @@ jobs:
           destination: scan-test-output
 
   run-test-ios-13:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        default: '14.2.0'
-      install_swiftlint:
-        type: boolean
-        default: false
+    executor:
+      name: macos-executor
+      xcode_version: '14.2.0'
+
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: << parameters.install_swiftlint >>
+          install_swiftlint: false
       - macos/install-rosetta
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
@@ -881,7 +827,8 @@ jobs:
           destination: scan-test-output
 
   build-tv-watch-and-macos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -891,7 +838,8 @@ jobs:
           no_output_timeout: 30m
 
   build-visionos:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -901,37 +849,43 @@ jobs:
           no_output_timeout: 30m
 
   backend-integration-tests-SK1:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
 
   backend-integration-tests-SK2:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
 
   backend-integration-tests-other:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
 
   backend-integration-tests-offline:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
 
   backend-integration-tests-custom-entitlements:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
 
   release-checks:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -959,16 +913,11 @@ jobs:
           destination: test_report.html
 
   docs-build:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
-        # https://github.com/RevenueCat/purchases-ios/pull/1997
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: true
+    executor:
+      name: macos-executor
+      # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
+      # https://github.com/RevenueCat/purchases-ios/pull/1997
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -980,16 +929,11 @@ jobs:
             DOCS_IOS_VERSION: "17.4"
 
   docs-deploy:
-    <<: *base-job
-    parameters:
-      xcode_version:
-        type: string
-        # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
-        # https://github.com/RevenueCat/purchases-ios/pull/1997
-        default: '14.3.0'
-      install_swiftlint:
-        type: boolean
-        default: true
+    executor:
+      name: macos-executor
+      # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
+      # https://github.com/RevenueCat/purchases-ios/pull/1997
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -1001,7 +945,8 @@ jobs:
             DOCS_IOS_VERSION: "17.4"
 
   make-release:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1013,7 +958,8 @@ jobs:
           no_output_timeout: 30m
 
   push-revenuecat-pod:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-bundle-dependencies
@@ -1024,7 +970,8 @@ jobs:
           no_output_timeout: 30m
 
   push-revenuecatui-pod:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-bundle-dependencies
@@ -1035,7 +982,8 @@ jobs:
           no_output_timeout: 30m
 
   prepare-next-version:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -1046,7 +994,8 @@ jobs:
           command: bundle exec fastlane prepare_next_version
 
   installation-tests-cocoapods:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - install-dependencies
@@ -1061,7 +1010,8 @@ jobs:
           directory: Tests/InstallationTests/CocoapodsInstallation
 
   installation-tests-swift-package-manager:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1073,7 +1023,8 @@ jobs:
           directory: Tests/InstallationTests/SPMInstallation/
 
   installation-tests-custom-entitlement-computation-swift-package-manager:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1085,7 +1036,8 @@ jobs:
           directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
 
   installation-tests-receipt-parser:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1097,7 +1049,8 @@ jobs:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
 
   installation-tests-carthage:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - trust-github-key
@@ -1118,7 +1071,8 @@ jobs:
           directory: Tests/InstallationTests/CarthageInstallation/
 
   installation-tests-xcode-direct-integration:
-    <<: *base-job
+    executor:
+      name: macos-executor
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1128,7 +1082,8 @@ jobs:
           directory: Tests/InstallationTests/XcodeDirectInstallation/
 
   lint:
-    <<: *base-job
+    executor:
+      name: macos-executor
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1173,7 +1128,8 @@ jobs:
           command: bundle exec fastlane tag_current_branch
 
   release-train:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - setup-git-credentials
@@ -1184,7 +1140,8 @@ jobs:
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
   integration-tests-all:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - setup-git-credentials
@@ -1207,7 +1164,8 @@ jobs:
           destination: scan-test-output
 
   loadshedder-integration-tests-v3:
-    <<: *base-job
+    executor:
+      name: macos-executor
     steps:
       - checkout
       - setup-git-credentials
@@ -1222,7 +1180,12 @@ jobs:
           bundle_name: v3LoadShedderIntegration
 
   deploy-purchase-tester:
-    <<: *base-job
+    executor:
+      name: macos-executor
+    parameters:
+      dry_run:
+        type: boolean
+        default: false
     steps:
       - checkout
       - setup-git-credentials
@@ -1231,8 +1194,7 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Submit Purchase Tester
-          working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
-          command: bundle exec fastlane deploy_purchase_tester
+          command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
 
   deploy-to-spm:
     docker:
@@ -1269,7 +1231,7 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - spm-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-17
 
   build-test:
     when:
@@ -1282,6 +1244,7 @@ workflows:
       - lint
       - run-test-ios-17
       - pod-lib-lint
+      - run-revenuecat-ui-ios-17
 
   create-tag:
     when:
@@ -1325,6 +1288,7 @@ workflows:
             - make-release
           <<: *release-tags
       - deploy-purchase-tester:
+          dry_run: false
           requires:
             - make-release
           <<: *release-tags
@@ -1403,14 +1367,13 @@ workflows:
       - run-test-macos
       - run-test-tvos
       - run-test-watchos
-      - spm-custom-entitlement-computation-build
       - spm-receipt-parser
       - spm-release-build
       - spm-release-build-xcode-14
       - spm-release-build-xcode-15
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
-      - spm-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
       - installation-tests-cocoapods
       - installation-tests-swift-package-manager
@@ -1418,3 +1381,7 @@ workflows:
       - installation-tests-carthage
       - installation-tests-xcode-direct-integration
       - installation-tests-receipt-parser
+      - api-tests
+      - deploy-purchase-tester:
+          dry_run: true
+      
