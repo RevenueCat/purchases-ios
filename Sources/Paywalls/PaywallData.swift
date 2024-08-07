@@ -23,25 +23,16 @@ public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable 
         _apple
     }
 
-    private var google: Set<String> {
-        _google
-    }
-
-    @DefaultDecodable.EmptyArray
-    internal private(set) var _google: Set<String>
-
     @DefaultDecodable.EmptyArray
     internal private(set) var _apple: Set<String>
 
     /// Storefront IDs that should typically display zero decimal places on Apple and Google devices, respectively
-    public init(apple: Set<String>, google: Set<String>) {
+    public init(apple: Set<String>) {
         self._apple = apple
-        self._google = google
     }
 
     private enum CodingKeys: String, CodingKey {
         case _apple = "apple"
-        case _google = "google"
     }
 
 }
@@ -69,8 +60,8 @@ public struct PaywallData {
     }
 
     /// The storefront country IDs that should not display cents in prices.
-    public var zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries {
-        _zeroDecimalPlaceCountries ?? .init(apple: [], google: [])
+    public var zeroDecimalPlaceCountries: Set<String> {
+        _zeroDecimalPlaceCountries?.apple ?? []
     }
 
     internal private(set) var _zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries?
@@ -639,14 +630,14 @@ extension PaywallData {
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
         revision: Int = 0,
-        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries
+        zeroDecimalPlaceCountries: Set<String> = []
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
-        self._zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
+        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
         self.revision = revision
     }
 
@@ -658,7 +649,7 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries = .init(apple: [], google: [])
+        zeroDecimalPlaceCountries: Set<String> = []
     ) {
         self.init(
             templateName: templateName,
@@ -679,7 +670,7 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries = ZeroDecimalPlaceCountries(apple: [], google: [])
+        zeroDecimalPlaceCountries: Set<String> = []
     ) {
         self.init(
             templateName: templateName,
