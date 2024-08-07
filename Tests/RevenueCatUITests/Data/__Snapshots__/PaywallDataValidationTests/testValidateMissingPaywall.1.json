@@ -40,7 +40,7 @@
     "tos_url" : null
   },
   "localized_strings" : {
-    "en_US" : {
+    "en_CA" : {
       "call_to_action" : "Continue",
       "call_to_action_with_intro_offer" : null,
       "features" : [
