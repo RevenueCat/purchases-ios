@@ -40,7 +40,7 @@
     "tos_url" : null
   },
   "localized_strings" : {
-    "en_CA" : {
+    "en_US" : {
       "call_to_action" : "Continue",
       "call_to_action_with_intro_offer" : null,
       "features" : [
@@ -61,5 +61,10 @@
 
   },
   "revision" : -1,
-  "template_name" : "2"
+  "template_name" : "2",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
 }
