@@ -131,10 +131,10 @@ extension Strings: CustomStringConvertible {
             return "Could not determine price format because priceFormatter is unavailable."
 
         case .no_price_format_priceString_incompatible:
-            return " Could not determine price format because priceString is incompatible."
+            return "Could not determine price format because priceString is incompatible."
 
         case .no_price_round_priceFormatter_nil:
-            return " Could not round price because priceFormatter is nil."
+            return "Could not round price because priceFormatter is nil."
 
         case .no_price_round_priceString_incompatible:
             return "Could not round price because priceString is incompatible."
