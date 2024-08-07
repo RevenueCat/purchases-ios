@@ -258,6 +258,7 @@ struct SubscriptionDetailsView: View {
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
         .padding(.bottom)
+        .padding(.bottom)
     }
 
 }
