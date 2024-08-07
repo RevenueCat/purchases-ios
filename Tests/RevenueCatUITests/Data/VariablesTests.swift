@@ -293,6 +293,25 @@ private extension VariablesTests {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct MockVariableProvider: VariableDataProvider {
+    var applicationName: String = ""
+    var packageIdentifier: String = ""
+    var localizedPrice: String = ""
+    var localizedPricePerWeek: String = ""
+    var localizedPricePerMonth: String = ""
+    var localizedPriceAndPerMonth: String = ""
+    var localizedPriceAndPerMonthFull: String = ""
+    var localizedPricePerPeriod: String = ""
+    var localizedPricePerPeriodFull: String = ""
+    var productName: String = ""
+    var periodNameOrIdentifier: String = ""
+    var periodNameAbbreviation: String = ""
+    var periodLength: String = ""
+    var subscriptionDuration: String?
+    var normalizedSubscriptionDuration: String?
+    var introductoryOfferDuration: String?
+    var introductoryOfferPrice: String = ""
+    var relativeDiscount: String?
+
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String {
         self.localizedPricePerWeek
     }
@@ -320,25 +339,6 @@ private struct MockVariableProvider: VariableDataProvider {
     func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
         self.localizedPriceAndPerMonthFull
     }
-
-    var applicationName: String = ""
-    var packageIdentifier: String = ""
-    var localizedPrice: String = ""
-    var localizedPricePerWeek: String = ""
-    var localizedPricePerMonth: String = ""
-    var localizedPriceAndPerMonth: String = ""
-    var localizedPriceAndPerMonthFull: String = ""
-    var localizedPricePerPeriod: String = ""
-    var localizedPricePerPeriodFull: String = ""
-    var productName: String = ""
-    var periodNameOrIdentifier: String = ""
-    var periodNameAbbreviation: String = ""
-    var periodLength: String = ""
-    var subscriptionDuration: String?
-    var normalizedSubscriptionDuration: String?
-    var introductoryOfferDuration: String?
-    var introductoryOfferPrice: String = ""
-    var relativeDiscount: String?
 
     func periodNameOrIdentifier(_ locale: Locale) -> String {
         return self.periodNameOrIdentifier
