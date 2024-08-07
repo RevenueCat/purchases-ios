@@ -3,6 +3,7 @@ excluded:
   - Examples
   - Tests/InstallationTests
   - Tests/TestingApps
+  - Tests/APITesters
   - vendor
   - scan_derived_data
   - .git
