@@ -19,20 +19,15 @@ import Foundation
 public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
 
     /// Storefront country codes that should typically display zero decimal places
-    public var apple: Set<String> {
-        _apple
-    }
-
-    @DefaultDecodable.EmptyArray
-    internal private(set) var _apple: Set<String>
+    public var apple: Set<String>
 
     /// Storefront country codes that should typically display zero decimal places.
     public init(apple: Set<String>) {
-        self._apple = apple
+        self.apple = apple
     }
 
     private enum CodingKeys: String, CodingKey {
-        case _apple = "apple"
+        case apple = "apple"
     }
 
 }
