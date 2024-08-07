@@ -18,7 +18,7 @@ import Foundation
 /// Represents countries where currencies typically have zero decimal places
 public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
 
-    /// Storefront IDs that should typically display zero decimal places
+    /// Storefront country codes that should typically display zero decimal places
     public var apple: Set<String> {
         _apple
     }
@@ -26,7 +26,7 @@ public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable 
     @DefaultDecodable.EmptyArray
     internal private(set) var _apple: Set<String>
 
-    /// Storefront IDs that should typically display zero decimal places on Apple and Google devices, respectively
+    /// Storefront country codes that should typically display zero decimal places.
     public init(apple: Set<String>) {
         self._apple = apple
     }
@@ -59,7 +59,7 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
-    /// The storefront country IDs that should not display cents in prices.
+    /// The storefront country codes that should not display cents in prices.
     public var zeroDecimalPlaceCountries: Set<String> {
         _zeroDecimalPlaceCountries?.apple ?? []
     }
