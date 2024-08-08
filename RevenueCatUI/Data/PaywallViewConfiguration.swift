@@ -30,7 +30,7 @@ struct PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
         locale: Locale = .current
     ) {
         self.content = content
