@@ -944,19 +944,54 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		2D2CF15727EE0DA100673CE1 /* PBXContainerItemProxy */ = {
+		2D4C60F52C5AD1C300A29FD2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 2DD778F5270E235B0079CBD4;
-			remoteInfo = ObjCAPITester;
+			remoteGlobalIDString = 2D4C60D82C5AD1BC00A29FD2;
+			remoteInfo = AllAPITests;
 		};
-		2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */ = {
+		2D4C60F72C5AD1C300A29FD2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
+			remoteGlobalIDString = 2D4C60E02C5AD1BC00A29FD2;
+			remoteInfo = AllAPITestsTests;
+		};
+		2D4C61A32C5AD41800A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C613D2C5AD30400A29FD2;
+			remoteInfo = ObjcAPITester;
+		};
+		2D4C61FC2C5AD80300A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C61B32C5AD61800A29FD2;
 			remoteInfo = SwiftAPITester;
+		};
+		2D4C621A2C5AD9D000A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C62032C5AD8CE00A29FD2;
+			remoteInfo = ReceiptParserAPITester;
+		};
+		2D4C62322C5ADBA000A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C62212C5ADA2400A29FD2;
+			remoteInfo = RevenueCatUISwiftAPITester;
+		};
+		2D4C62792C5ADD1400A29FD2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4C62392C5ADC0F00A29FD2;
+			remoteInfo = CustomEntitlementComputationSwiftAPITester;
 		};
 		2D803F6A26F150190069D717 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1042,13 +1077,6 @@
 			remoteGlobalIDString = 57D92C32293E4D0C00D1912A;
 			remoteInfo = ReceiptParser;
 		};
-		578BB35E2936BA9400E8AA8A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2DD778D0270E233F0079CBD4;
-			remoteInfo = SwiftAPITester;
-		};
 		88DE93E32C211CBC0086B6D8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -1114,6 +1142,7 @@
 		2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionListener.swift; sourceTree = "<group>"; };
 		2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerSK2Tests.swift; sourceTree = "<group>"; };
 		2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = UnitTestsConfiguration.storekit; sourceTree = "<group>"; };
+		2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AllAPITests.xcodeproj; path = Tests/APITesters/AllAPITests/AllAPITests.xcodeproj; sourceTree = "<group>"; };
 		2D4E926426990AB1000E10B0 /* StoreKit1Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit1Wrapper.swift; sourceTree = "<group>"; };
 		2D5BB46A24C8E8ED00E27537 /* PurchasesReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesReceiptParser.swift; sourceTree = "<group>"; };
 		2D69384426DFF93300FCDBC0 /* StoreProductTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductTests.swift; sourceTree = "<group>"; };
@@ -1555,8 +1584,6 @@
 		570896B327595C8100296F1C /* RevenueCat.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat.xctestplan; path = Tests/TestPlans/RevenueCat.xctestplan; sourceTree = "<group>"; };
 		570896B427595C8100296F1C /* Coverage.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = Coverage.xctestplan; path = Tests/TestPlans/Coverage.xctestplan; sourceTree = "<group>"; };
 		570896B527595C8100296F1C /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = Tests/TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
-		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = Tests/APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
-		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = Tests/APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
 		570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransaction.swift; sourceTree = "<group>"; };
 		5712BE8F29241EB500A83F15 /* TimingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtil.swift; sourceTree = "<group>"; };
 		5712BE9129241F7900A83F15 /* TimingUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtilTests.swift; sourceTree = "<group>"; };
@@ -1651,7 +1678,6 @@
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
 		5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHTTPResponseTest.swift; sourceTree = "<group>"; };
-		578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReceiptParserAPITester.xcodeproj; path = Tests/APITesters/ReceiptParserAPITester/ReceiptParserAPITester.xcodeproj; sourceTree = "<group>"; };
 		578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnostics.swift; sourceTree = "<group>"; };
 		578D79732936A36B0042E434 /* LoggerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerType.swift; sourceTree = "<group>"; };
 		578D79932936B0810042E434 /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
@@ -2291,18 +2317,16 @@
 			path = StoreKit1;
 			sourceTree = "<group>";
 		};
-		2D2CF15427EE0DA100673CE1 /* Products */ = {
+		2D4C60F12C5AD1C300A29FD2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2D2CF15827EE0DA100673CE1 /* ObjCAPITester.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		2D2CF15927EE0DA700673CE1 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2D2CF15D27EE0DA700673CE1 /* SwiftAPITester.app */,
+				2D4C60F62C5AD1C300A29FD2 /* AllAPITests.framework */,
+				2D4C60F82C5AD1C300A29FD2 /* AllAPITestsTests.xctest */,
+				2D4C61A42C5AD41800A29FD2 /* ObjcAPITester.framework */,
+				2D4C61FD2C5AD80300A29FD2 /* SwiftAPITester.framework */,
+				2D4C621B2C5AD9D000A29FD2 /* ReceiptParserAPITester.framework */,
+				2D4C62332C5ADBA000A29FD2 /* RevenueCatUISwiftAPITester.framework */,
+				2D4C627A2C5ADD1400A29FD2 /* CustomEntitlementComputationSwiftAPITester.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3572,9 +3596,7 @@
 		570896B627596E6E00296F1C /* APITesters */ = {
 			isa = PBXGroup;
 			children = (
-				570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */,
-				570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */,
-				578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */,
+				2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */,
 			);
 			name = APITesters;
 			path = ..;
@@ -3687,14 +3709,6 @@
 				57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */,
 			);
 			path = Responses;
-			sourceTree = "<group>";
-		};
-		578BB35B2936BA9400E8AA8A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				578BB35F2936BA9400E8AA8A /* ReceiptParserAPITester.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		579415D329368AA400218FBC /* Helpers */ = {
@@ -4730,8 +4744,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 2D2CF15427EE0DA100673CE1 /* Products */;
-					ProjectRef = 570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */;
+					ProductGroup = 2D4C60F12C5AD1C300A29FD2 /* Products */;
+					ProjectRef = 2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */;
 				},
 				{
 					ProductGroup = 2DD500F22C519EB4009C19B7 /* Products */;
@@ -4740,14 +4754,6 @@
 				{
 					ProductGroup = 2DD500F42C519EB4009C19B7 /* Products */;
 					ProjectRef = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-				},
-				{
-					ProductGroup = 578BB35B2936BA9400E8AA8A /* Products */;
-					ProjectRef = 578BB3552936BA8E00E8AA8A /* ReceiptParserAPITester.xcodeproj */;
-				},
-				{
-					ProductGroup = 2D2CF15927EE0DA700673CE1 /* Products */;
-					ProjectRef = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -4768,18 +4774,53 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		2D2CF15827EE0DA100673CE1 /* ObjCAPITester.app */ = {
+		2D4C60F62C5AD1C300A29FD2 /* AllAPITests.framework */ = {
 			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = ObjCAPITester.app;
-			remoteRef = 2D2CF15727EE0DA100673CE1 /* PBXContainerItemProxy */;
+			fileType = wrapper.framework;
+			path = AllAPITests.framework;
+			remoteRef = 2D4C60F52C5AD1C300A29FD2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		2D2CF15D27EE0DA700673CE1 /* SwiftAPITester.app */ = {
+		2D4C60F82C5AD1C300A29FD2 /* AllAPITestsTests.xctest */ = {
 			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = SwiftAPITester.app;
-			remoteRef = 2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */;
+			fileType = wrapper.cfbundle;
+			path = AllAPITestsTests.xctest;
+			remoteRef = 2D4C60F72C5AD1C300A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C61A42C5AD41800A29FD2 /* ObjcAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = ObjcAPITester.framework;
+			remoteRef = 2D4C61A32C5AD41800A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C61FD2C5AD80300A29FD2 /* SwiftAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftAPITester.framework;
+			remoteRef = 2D4C61FC2C5AD80300A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C621B2C5AD9D000A29FD2 /* ReceiptParserAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = ReceiptParserAPITester.framework;
+			remoteRef = 2D4C621A2C5AD9D000A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C62332C5ADBA000A29FD2 /* RevenueCatUISwiftAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = RevenueCatUISwiftAPITester.framework;
+			remoteRef = 2D4C62322C5ADBA000A29FD2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2D4C627A2C5ADD1400A29FD2 /* CustomEntitlementComputationSwiftAPITester.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CustomEntitlementComputationSwiftAPITester.framework;
+			remoteRef = 2D4C62792C5ADD1400A29FD2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		2DD500F82C519EB4009C19B7 /* PaywallsTester.app */ = {
@@ -4808,13 +4849,6 @@
 			fileType = wrapper.framework;
 			path = Core.framework;
 			remoteRef = 2DD501092C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		578BB35F2936BA9400E8AA8A /* ReceiptParserAPITester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = ReceiptParserAPITester.app;
-			remoteRef = 578BB35E2936BA9400E8AA8A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -6484,12 +6518,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
-				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 			};
 			name = Debug;
 		};
@@ -6513,11 +6548,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
-				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 			};
 			name = Release;
 		};
@@ -6596,9 +6632,11 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitTestApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 14.1;
 			};
 			name = Debug;
@@ -6623,8 +6661,10 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitTestApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 14.1;
 			};
 			name = Release;
@@ -6896,11 +6936,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ReceiptParserTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
-				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 			};
 			name = Debug;
 		};
@@ -6924,10 +6965,11 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.ReceiptParserTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
-				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 			};
 			name = Release;
 		};
@@ -6961,10 +7003,12 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = "";
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 			};
 			name = Debug;
 		};
@@ -6999,9 +7043,11 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = "";
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 			};
 			name = Release;
 		};
@@ -7027,7 +7073,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -7044,13 +7090,15 @@
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,7";
 			};
 			name = Debug;
 		};
@@ -7076,7 +7124,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -7092,12 +7140,14 @@
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,7";
 			};
 			name = Release;
 		};
@@ -7113,7 +7163,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -7140,7 +7190,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
