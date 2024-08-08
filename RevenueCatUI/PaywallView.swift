@@ -14,31 +14,6 @@
 import RevenueCat
 import SwiftUI
 
-struct PreferredLocaleKey: EnvironmentKey {
-    static let defaultValue: Locale = .current
-}
-
-extension EnvironmentValues {
-    var preferredLocale: Locale {
-        get { self[PreferredLocaleKey.self] }
-        set { self[PreferredLocaleKey.self] = newValue }
-    }
-}
-
-struct PreferredLocaleModifier: ViewModifier {
-    var locale: Locale
-
-    func body(content: Content) -> some View {
-        content.environment(\.preferredLocale, locale)
-    }
-}
-
-extension View {
-    func preferredLocale(_ locale: Locale) -> some View {
-        self.modifier(PreferredLocaleModifier(locale: locale))
-    }
-}
-
 #if !os(macOS) && !os(tvOS)
 
 /// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
