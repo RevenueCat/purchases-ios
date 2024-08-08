@@ -25,7 +25,6 @@ public extension PaywallData {
     /// based on `Locale.current` or `Locale.preferredLocales`.
     /// -  Returns: `nil` for multi-tier paywalls.
     var localizedConfiguration: LocalizedConfiguration? {
-        print("Self.localesOrderedByPriority", Self.localesOrderedByPriority)
         return self.localizedConfiguration(for: Self.localesOrderedByPriority)?.1
     }
 
@@ -40,9 +39,10 @@ public extension PaywallData {
 
     // Visible for testing
     internal func localizedConfiguration(
-        for preferredLocales: [Locale],
-        defaultLocale: Locale = .init(identifier: "de_DE")
+        for preferredLocales: [Locale]
     ) -> (Locale, LocalizedConfiguration)? {
+        let defaultLocale = self.defaultLocale.map(Locale.init(identifier: ))
+
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.config(for:),
@@ -53,9 +53,10 @@ public extension PaywallData {
 
     // Visible for testing
     internal func localizedConfigurationByTier(
-        for preferredLocales: [Locale],
-        defaultLocale: Locale = .init(identifier: "de_DE")
+        for preferredLocales: [Locale]
     ) -> (Locale, [String: LocalizedConfiguration])? {
+        let defaultLocale = self.defaultLocale.map(Locale.init(identifier: ))
+
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.tiersLocalization(for:),
@@ -73,11 +74,13 @@ public extension PaywallData {
         return Locale.preferredLocales
     }
 
-    private func defaultLocalizedConfiguration(locale: Locale) -> (String, LocalizedConfiguration)? {
+    private func defaultLocalizedConfiguration(locale: Locale?) -> (String, LocalizedConfiguration)? {
+        guard let locale else { return nil }
         return self.localization.first { $0.0 == locale.identifier }
     }
 
-    private func defaultTiersLocalized(locale: Locale) -> (String, [String: LocalizedConfiguration])? {
+    private func defaultTiersLocalized(locale: Locale?) -> (String, [String: LocalizedConfiguration])? {
+        guard let locale else { return nil }
         return self.localizationByTier.first { $0.0 == locale.identifier }
     }
 
