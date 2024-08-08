@@ -130,7 +130,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testLocalizedConfigurationFallsBackToLanguageWithDifferentRegion() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
-        let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
+        let (_, enConfig) = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
             .init(identifier: "en-IN")
         ]))
@@ -140,7 +140,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testLocalizedConfigurationLooksForCurrentLocaleWithoutRegionBeforePreferedLocales() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
-        let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
+        let (_, enConfig) = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
             .init(identifier: "es_ES")
         ]))
