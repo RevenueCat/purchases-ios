@@ -15,7 +15,8 @@ import Foundation
 
 public extension PaywallData {
 
-    internal var locale: Locale? {
+    /// - Returns: the `Locale` being used with ``PaywallData/LocalizedConfiguration-swift.struct``
+    var locale: Locale? {
         let singleTier = self.localizedConfiguration(for: Self.localesOrderedByPriority)?.0
         let multiTier = self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.0
 
@@ -23,14 +24,14 @@ public extension PaywallData {
     }
 
     /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
-    /// based on `Locale.current` or `Locale.preferredLocales`.
+    /// based on `Locale.preferredLocales` or the default locale.
     /// -  Returns: `nil` for multi-tier paywalls.
     var localizedConfiguration: LocalizedConfiguration? {
         return self.localizedConfiguration(for: Self.localesOrderedByPriority)?.1
     }
 
     /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
-    /// based on `Locale.current` or `Locale.preferredLocales`.
+    /// based on `Locale.preferredLocales` or the default locale.
     /// -  Returns: `[:]` for single-tier paywalls.
     var localizedConfigurationByTier: [String: LocalizedConfiguration]? {
         return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.1

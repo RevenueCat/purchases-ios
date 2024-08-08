@@ -152,7 +152,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
 
         if #available(iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
             expected = [
-                "en_US",
+                "en_US"
             ]
         } else {
             expected = [
