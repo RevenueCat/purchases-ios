@@ -252,7 +252,7 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
-        let (paywall, template, error) = offering.validatedPaywall(locale: self.locale)
+        let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
 
         let paywallView = LoadedOfferingPaywallView(
             offering: offering,
@@ -264,7 +264,7 @@ public struct PaywallView: View {
             displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
             purchaseHandler: purchaseHandler,
-            locale: self.locale
+            locale: displayedLocale
         )
 
         if let error {

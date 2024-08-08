@@ -15,19 +15,25 @@ import Foundation
 
 public extension PaywallData {
 
+    var locale: Locale? {
+        let locale = self.localizedConfiguration(for: Self.localesOrderedByPriority)?.0 ?? self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.0
+
+        return locale
+    }
+
     /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
     /// based on `Locale.current` or `Locale.preferredLocales`.
     /// -  Returns: `nil` for multi-tier paywalls.
     var localizedConfiguration: LocalizedConfiguration? {
         print("Self.localesOrderedByPriority", Self.localesOrderedByPriority)
-        return self.localizedConfiguration(for: Self.localesOrderedByPriority)
+        return self.localizedConfiguration(for: Self.localesOrderedByPriority)?.1
     }
 
     /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
     /// based on `Locale.current` or `Locale.preferredLocales`.
     /// -  Returns: `[:]` for single-tier paywalls.
     var localizedConfigurationByTier: [String: LocalizedConfiguration]? {
-        return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)
+        return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.1
     }
 
     // TODO: JOSH
@@ -35,24 +41,26 @@ public extension PaywallData {
     // Visible for testing
     internal func localizedConfiguration(
         for preferredLocales: [Locale],
-        fallbackLocale: Locale = .init(identifier: "de_DE")
-    ) -> LocalizedConfiguration? {
+        defaultLocale: Locale = .init(identifier: "de_DE")
+    ) -> (Locale, LocalizedConfiguration)? {
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.config(for:),
-            fallbackLocalization: self.fallbackLocalizedConfiguration(locale: fallbackLocale)
+            defaultLocalization: self.defaultLocalizedConfiguration(locale: defaultLocale),
+            fallbackLocalization: self.fallbackLocalizedConfiguration
         )
     }
 
     // Visible for testing
     internal func localizedConfigurationByTier(
         for preferredLocales: [Locale],
-        fallbackLocale: Locale = .init(identifier: "de_DE")
-    ) -> [String: LocalizedConfiguration]? {
+        defaultLocale: Locale = .init(identifier: "de_DE")
+    ) -> (Locale, [String: LocalizedConfiguration])? {
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.tiersLocalization(for:),
-            fallbackLocalization: self.fallbackTiersLocalized(locale: fallbackLocale)
+            defaultLocalization: self.defaultTiersLocalized(locale: defaultLocale),
+            fallbackLocalization: self.fallbackTiersLocalized
         )
     }
 
@@ -62,21 +70,23 @@ public extension PaywallData {
     internal static var localesOrderedByPriority: [Locale] {
         // Removing the use of Locale.current (it's not what the user wants)
         // It returns weird whatever the "default" language is on the xcode project when on sim
-
-        let preferred = Locale.preferredLocales
-        print("preferred", preferred)
-
         return Locale.preferredLocales
     }
 
-    private func fallbackLocalizedConfiguration(locale: Locale) -> (String, LocalizedConfiguration)? {
-        let defaultLocale = self.localization.first { $0.0 == locale.identifier }
-        return defaultLocale ?? self.localization.first
+    private func defaultLocalizedConfiguration(locale: Locale) -> (String, LocalizedConfiguration)? {
+        return self.localization.first { $0.0 == locale.identifier }
     }
 
-    private func fallbackTiersLocalized(locale: Locale) -> (String, [String: LocalizedConfiguration])? {
-        let defaultLocale = self.localizationByTier.first { $0.0 == locale.identifier }
-        return defaultLocale ?? self.localizationByTier.first
+    private func defaultTiersLocalized(locale: Locale) -> (String, [String: LocalizedConfiguration])? {
+        return self.localizationByTier.first { $0.0 == locale.identifier }
+    }
+
+    private var fallbackLocalizedConfiguration: (String, LocalizedConfiguration)? {
+        return self.localization.first
+    }
+
+    private var fallbackTiersLocalized: (String, [String: LocalizedConfiguration])? {
+        return self.localizationByTier.first
     }
 
 }
@@ -88,8 +98,9 @@ private extension PaywallData {
     static func localizedConfiguration<Value>(
         for preferredLocales: [Locale],
         configForLocale: @escaping (Locale) -> Value?,
+        defaultLocalization: (locale: String, value: Value)?,
         fallbackLocalization: (locale: String, value: Value)?
-    ) -> Value? {
+    ) -> (Locale, Value)? {
         guard let (fallbackLocale, fallbackLocalization) = fallbackLocalization else {
             Logger.debug(Strings.paywalls.empty_localization)
             return nil
@@ -113,11 +124,15 @@ private extension PaywallData {
         if let result {
             Logger.verbose(Strings.paywalls.found_localization(result.locale))
 
-            return result.value
+            return result
+        } else if let (defaultLocale, defaultLocalization) = defaultLocalization {
+            Logger.warn(Strings.paywalls.default_localization(localeIdentifier: defaultLocale))
+
+            return (Locale(identifier: defaultLocale), defaultLocalization)
         } else {
             Logger.warn(Strings.paywalls.fallback_localization(localeIdentifier: fallbackLocale))
 
-            return fallbackLocalization
+            return (Locale(identifier: fallbackLocale), fallbackLocalization)
         }
     }
 

@@ -21,6 +21,7 @@ import RevenueCat
 extension Offering {
 
     typealias ValidationResult = (displayablePaywall: PaywallData,
+                                  displayedLocale: Locale,
                                   template: PaywallTemplate,
                                   error: Offering.PaywallValidationError?)
 
@@ -49,7 +50,7 @@ extension Offering {
         if let paywall = self.paywall {
             switch paywall.validate() {
             case let .success(template):
-                return (paywall, template, nil)
+                return (paywall, paywall.locale ?? locale, template, nil)
 
             case let .failure(error):
                 let paywall: PaywallData = paywall.config.packages.isEmpty
@@ -57,12 +58,14 @@ extension Offering {
                     : .createDefault(with: paywall.config.packages, locale: locale)
 
                 return (displayablePaywall: paywall,
+                        displayedLocale: locale,
                         template: PaywallData.defaultTemplate,
                         error: error)
             }
         } else {
             // If `Offering` has no paywall, create a default one with all available packages.
             return (displayablePaywall: .createDefault(with: self.availablePackages, locale: locale),
+                    displayedLocale: locale,
                     template: PaywallData.defaultTemplate,
                     error: .missingPaywall(self))
         }
