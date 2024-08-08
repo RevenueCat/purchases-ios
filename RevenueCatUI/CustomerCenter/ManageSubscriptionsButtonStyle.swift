@@ -13,6 +13,8 @@
 //  Created by Cesar de la Vega on 28/5/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -56,5 +58,7 @@ struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
     }
 
 }
+
+#endif
 
 #endif

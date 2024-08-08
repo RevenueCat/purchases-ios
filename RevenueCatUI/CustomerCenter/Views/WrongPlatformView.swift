@@ -13,6 +13,8 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -119,6 +121,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
     }
 
 }
+
+#endif
 
 #endif
 

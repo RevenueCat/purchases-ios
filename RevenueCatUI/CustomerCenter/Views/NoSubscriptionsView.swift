@@ -13,6 +13,8 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import RevenueCat
 import SwiftUI
 
@@ -96,6 +98,8 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
     }
 
 }
+
+#endif
 
 #endif
 

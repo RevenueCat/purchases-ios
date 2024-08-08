@@ -13,6 +13,8 @@
 //  Created by Cesar de la Vega on 29/5/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 
 /// Error produced when displaying the customer center.
@@ -44,3 +46,5 @@ extension CustomerCenterError: CustomNSError {
     }
 
 }
+
+#endif

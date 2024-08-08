@@ -13,6 +13,8 @@
 //  Created by Cesar de la Vega on 17/6/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import RevenueCat
 import StoreKit
 import SwiftUI
@@ -215,5 +217,7 @@ private extension SubscriptionPeriod {
     }
 
 }
+
+#endif
 
 #endif

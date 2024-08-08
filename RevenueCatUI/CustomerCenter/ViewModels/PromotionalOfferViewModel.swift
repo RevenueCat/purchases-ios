@@ -13,6 +13,8 @@
 //  Created by Cesar de la Vega on 17/6/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 import RevenueCat
 
@@ -72,5 +74,7 @@ class PromotionalOfferViewModel: ObservableObject {
     }
 
 }
+
+#endif
 
 #endif

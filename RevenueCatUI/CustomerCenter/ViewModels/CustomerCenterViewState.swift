@@ -13,6 +13,8 @@
 //  Created by Cesar de la Vega on 11/6/24.
 //
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 
 enum CustomerCenterViewState: Equatable {
@@ -35,3 +37,5 @@ enum CustomerCenterViewState: Equatable {
     }
 
 }
+
+#endif
