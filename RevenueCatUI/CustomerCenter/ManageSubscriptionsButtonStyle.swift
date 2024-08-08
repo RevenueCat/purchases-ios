@@ -33,7 +33,7 @@ struct ManageSubscriptionsButtonStyle: PrimitiveButtonStyle {
         let textColor = color(from: appearance.buttonTextColor, for: colorScheme)
 
         Button(action: { configuration.trigger() }, label: {
-            configuration.label.frame(width: 300)
+            configuration.label.frame(maxWidth: .infinity)
         })
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
