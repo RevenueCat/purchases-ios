@@ -64,16 +64,16 @@ enum Localization {
 
     static func localized(
         packageType: PackageType,
-        locale: Locale = .current,
-        defaultLocale: Locale = Self.fallbackLocale
+        locale: Locale,
+        fallbackLocale: Locale = Self.fallbackLocale
     ) -> String? {
         guard let key = packageType.localizationKey else { return nil }
 
-        func value(locale: Locale, default: String?) -> String {
+        func value(locale: Locale, fallback: String?) -> String {
             Self
                 .localizedBundle(locale)
                 .localizedString(forKey: key,
-                                 value: `default`,
+                                 value: fallback,
                                  table: nil)
         }
 
@@ -81,7 +81,7 @@ enum Localization {
         return value(
             locale: locale,
             // Or defaults to english
-            default: value(locale: defaultLocale, default: nil)
+            fallback: value(locale: fallbackLocale, fallback: nil)
         )
     }
 
