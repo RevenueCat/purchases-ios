@@ -62,7 +62,6 @@ enum Localization {
         return formatter.string(from: subscriptionPeriod.components) ?? ""
     }
 
-    // TODO: Josh
     static func localized(
         packageType: PackageType,
         locale: Locale = .current,

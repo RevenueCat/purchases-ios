@@ -15,10 +15,11 @@ import Foundation
 
 public extension PaywallData {
 
-    var locale: Locale? {
-        let locale = self.localizedConfiguration(for: Self.localesOrderedByPriority)?.0 ?? self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.0
+    internal var locale: Locale? {
+        let singleTier = self.localizedConfiguration(for: Self.localesOrderedByPriority)?.0
+        let multiTier = self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.0
 
-        return locale
+        return singleTier ?? multiTier
     }
 
     /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
@@ -34,8 +35,6 @@ public extension PaywallData {
     var localizedConfigurationByTier: [String: LocalizedConfiguration]? {
         return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.1
     }
-
-    // TODO: JOSH
 
     // Visible for testing
     internal func localizedConfiguration(
