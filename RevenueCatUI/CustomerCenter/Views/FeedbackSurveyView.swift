@@ -48,10 +48,6 @@ struct FeedbackSurveyView: View {
             }
 
             VStack {
-                // swiftlint:disable:next todo
-                // TODO: enable the subtitle after data model changes
-                // SubtitleTextView(subtitle: self.viewModel.feedbackSurveyData.configuration.subtitle)
-
                 Spacer()
 
                 FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
