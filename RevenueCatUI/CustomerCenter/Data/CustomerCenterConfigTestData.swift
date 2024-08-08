@@ -104,11 +104,11 @@ enum CustomerCenterConfigTestData {
     )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
-        accentColor: .init(light: "#ffffff", dark: "#000000"),
+        accentColor: .init(light: "#007AFF", dark: "#007AFF"),
         textColor: .init(light: "#000000", dark: "#ffffff"),
-        backgroundColor: .init(light: "#000000", dark: "#ffffff"),
-        buttonTextColor: .init(light: "#000000", dark: "#ffffff"),
-        buttonBackgroundColor: .init(light: "#000000", dark: "#ffffff")
+        backgroundColor: .init(light: "#f5f5f7", dark: "#000000"),
+        buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
+        buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
     static let subscriptionInformationMonthlyRenewing: SubscriptionInformation = .init(
