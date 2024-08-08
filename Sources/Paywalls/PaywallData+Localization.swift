@@ -67,10 +67,9 @@ public extension PaywallData {
 
     // Visible for testing
     /// - Returns: The list of locales that paywalls should try to search for.
-    /// Includes `Locale.current` and `Locale.preferredLanguages`.
+    /// Includes `Locale.preferredLanguages`.
     internal static var localesOrderedByPriority: [Locale] {
-        // Removing the use of Locale.current (it's not what the user wants)
-        // It returns weird whatever the "default" language is on the xcode project when on sim
+        // Removing the use of Locale.current as it should really only be used for dates, currency formatting, etc
         return Locale.preferredLocales
     }
 

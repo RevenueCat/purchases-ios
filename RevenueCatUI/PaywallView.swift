@@ -56,7 +56,6 @@ public struct PaywallView: View {
     private let displayCloseButton: Bool
     private let paywallViewOwnsPurchaseHandler: Bool
 
-//    @Environment(\.locale)
     private var locale: Locale
 
     @StateObject
@@ -360,7 +359,6 @@ struct LoadedOfferingPaywallView: View {
     @ObservedObject
     private var purchaseHandler: PurchaseHandler
 
-//    @Environment(\.locale)
     private var locale: Locale
 
     @Environment(\.onRequestedDismissal)
