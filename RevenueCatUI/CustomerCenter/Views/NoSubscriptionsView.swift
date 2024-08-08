@@ -51,18 +51,19 @@ struct NoSubscriptionsView: View {
         let background = color(from: appearance.backgroundColor, for: colorScheme)
         let textColor = color(from: appearance.textColor, for: colorScheme)
 
+        let fallbackDescription = "We can try checking your Apple account for any previous purchases"
+
         ZStack {
             if background != nil {
                 background.edgesIgnoringSafeArea(.all)
             }
             VStack {
-                Text(self.configuration.screens[.noActive]?.title ?? "No Subscriptions found")
-                    .font(.title)
-                    .padding()
-                Text(self.configuration.screens[.noActive]?.subtitle ??
-                     "We can try checking your Apple account for any previous purchases")
-                .font(.body)
-                .padding()
+                CompatibilityContentUnavailableView(
+                    title: self.configuration.screens[.noActive]?.title ?? "No subscriptions found",
+                    description:
+                        self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription,
+                    systemImage: "exclamationmark.triangle.fill"
+                )
 
                 Spacer()
 
@@ -75,6 +76,7 @@ struct NoSubscriptionsView: View {
                 Button(localization.commonLocalizedString(for: .cancel)) {
                     dismiss()
                 }
+                .padding(.vertical)
             }
             .padding(.horizontal)
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
