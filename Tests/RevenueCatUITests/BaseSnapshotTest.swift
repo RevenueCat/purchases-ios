@@ -58,7 +58,8 @@ class BaseSnapshotTest: TestCase {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker = BaseSnapshotTest.eligibleChecker,
-        purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler
+        purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler,
+        locale: Locale = .current
     ) -> some View {
         return PaywallView(
             configuration: .init(
@@ -67,7 +68,8 @@ class BaseSnapshotTest: TestCase {
                 mode: mode,
                 fonts: fonts,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                locale: locale
             )
         )
             .environment(\.isRunningSnapshots, true)

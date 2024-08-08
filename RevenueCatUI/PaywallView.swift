@@ -164,7 +164,7 @@ public struct PaywallView: View {
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
 
-        self.locale = Locale.preferredLanguages.map(Locale.init(identifier:)).first ?? Locale.current
+        self.locale = configuration.locale
     }
 
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {

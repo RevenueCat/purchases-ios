@@ -13,11 +13,13 @@ import SwiftUI
 
 #if !os(watchOS) && !os(macOS)
 
+private let spanishLocale = Locale(identifier: "es_ES")
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PaywallViewLocalizationTests: BaseSnapshotTest {
 
     func testSpanish() {
-        Self.test(.init(identifier: "es_ES"))
+        Self.test(spanishLocale)
     }
 
  }
@@ -26,12 +28,11 @@ class PaywallViewLocalizationTests: BaseSnapshotTest {
 private extension PaywallViewLocalizationTests {
 
     static func test(_ locale: Locale) {
-        Self.createView()
-            .environment(\.locale, locale)
+        Self.createView(locale: locale)
             .snapshot(size: Self.fullScreenSize)
     }
 
-    private static func createView() -> some View {
+    private static func createView(locale: Locale) -> some View {
         return Self.createPaywall(
             offering: Self.offering.withLocalImages,
             introEligibility: .init(checker: { packages in
@@ -45,7 +46,8 @@ private extension PaywallViewLocalizationTests {
                             return (package, result)
                         }
                 )
-            })
+            }),
+            locale: locale
         )
     }
 
@@ -68,7 +70,8 @@ private extension PaywallViewLocalizationTests {
                 privacyURL: URL(string: "https://revenuecat.com/tos")!
             ),
             localization: localization,
-            assetBaseURL: TestData.paywallAssetBaseURL
+            assetBaseURL: TestData.paywallAssetBaseURL,
+            locale: spanishLocale
         ),
         availablePackages: [TestData.weeklyPackage,
                             TestData.monthlyPackage,
