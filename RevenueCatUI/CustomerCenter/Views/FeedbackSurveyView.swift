@@ -46,14 +46,8 @@ struct FeedbackSurveyView: View {
             if let background = color(from: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
-            let textColor = color(from: appearance.textColor, for: colorScheme)
 
             VStack {
-                Text(self.viewModel.feedbackSurveyData.configuration.title)
-                    .font(.title)
-                    .padding()
-                    .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
-
                 Spacer()
 
                 FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
@@ -69,6 +63,8 @@ struct FeedbackSurveyView: View {
                                          promoOfferDetails: promotionalOfferData.promoOfferDetails)
                 })
         }
+        .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
 }

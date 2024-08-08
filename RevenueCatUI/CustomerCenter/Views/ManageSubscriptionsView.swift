@@ -85,7 +85,7 @@ struct ManageSubscriptionsView: View {
             ScrollView {
                 VStack {
                     if self.viewModel.isLoaded {
-                        HeaderView(viewModel: self.viewModel)
+                        SubtitleTextView(subtitle: self.viewModel.screen.subtitle)
 
                         if let subscriptionInformation = self.viewModel.subscriptionInformation {
                             SubscriptionDetailsView(
@@ -108,6 +108,7 @@ struct ManageSubscriptionsView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -132,10 +133,9 @@ private extension ManageSubscriptionsView {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-struct HeaderView: View {
+struct SubtitleTextView: View {
 
-    @ObservedObject
-    private(set) var viewModel: ManageSubscriptionsViewModel
+    private(set) var subtitle: String?
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
@@ -144,10 +144,13 @@ struct HeaderView: View {
     var body: some View {
         let textColor = color(from: appearance.textColor, for: colorScheme)
 
-        Text(self.viewModel.screen.title)
-            .font(.title)
-            .padding()
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        if let subtitle {
+            Text(subtitle)
+                .font(.subheadline)
+                .padding([.horizontal])
+                .multilineTextAlignment(.center)
+                .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        }
     }
 
 }
@@ -259,6 +262,7 @@ struct SubscriptionDetailsView: View {
         .background(Color(UIColor.tertiarySystemBackground))
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
+        .padding(.top)
         .padding(.bottom)
         .padding(.bottom)
     }
