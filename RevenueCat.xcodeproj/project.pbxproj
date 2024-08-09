@@ -661,6 +661,8 @@
 		57FFD2512922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
+		77632EE32C64E41100634647 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77632EE22C64E40D00634647 /* SemanticVersion.swift */; };
+		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
@@ -1787,6 +1789,8 @@
 		57FDAABD28493A29009A48F1 /* SandboxEnvironmentDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandboxEnvironmentDetectorTests.swift; sourceTree = "<group>"; };
 		57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
+		77632EE22C64E40D00634647 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
+		777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -3103,6 +3107,7 @@
 		353756562C382C2800A1B8D6 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				77632EE22C64E40D00634647 /* SemanticVersion.swift */,
 				3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */,
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
 				353756542C382C2800A1B8D6 /* CustomerCenterError.swift */,
@@ -4089,6 +4094,7 @@
 				887A612A2C1D168B00E1A461 /* PaywallDataValidationTests.swift */,
 				887A612B2C1D168B00E1A461 /* TemplateViewConfigurationTests.swift */,
 				887A612C2C1D168B00E1A461 /* VariablesTests.swift */,
+				777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -5876,6 +5882,7 @@
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
 				887A606F2C1D037000E1A461 /* PaywallData+Validation.swift in Sources */,
+				77632EE32C64E41100634647 /* SemanticVersion.swift in Sources */,
 				88A543DF2C37A45B0039C6A5 /* TemplatePackageSetting.swift in Sources */,
 				3546355D2C391F38001D7E85 /* PromotionalOfferViewModel.swift in Sources */,
 				35F249CA2C493D970058993A /* LoadPromotionalOfferUseCase.swift in Sources */,
@@ -5909,6 +5916,7 @@
 				887A633A2C1D177800E1A461 /* PaywallViewDynamicTypeTests.swift in Sources */,
 				887A633B2C1D177800E1A461 /* PaywallViewLocalizationTests.swift in Sources */,
 				887A633C2C1D177800E1A461 /* Template1ViewTests.swift in Sources */,
+				777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */,
 				88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */,
 				887A633D2C1D177800E1A461 /* Template2ViewTests.swift in Sources */,
 				887A633E2C1D177800E1A461 /* Template3ViewTests.swift in Sources */,
