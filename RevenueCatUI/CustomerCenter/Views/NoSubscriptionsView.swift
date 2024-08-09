@@ -70,12 +70,13 @@ struct NoSubscriptionsView: View {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)
-                .buttonStyle(ManageSubscriptionsButtonStyle())
+                .buttonStyle(ProminentButtonStyle())
 
-                Button(localization.commonLocalizedString(for: .cancel)) {
+                Button(localization.commonLocalizedString(for: .dismiss)) {
                     dismiss()
                 }
-                .padding(.vertical)
+                .buttonStyle(SubtleButtonStyle())
+
             }
             .padding(.horizontal)
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })

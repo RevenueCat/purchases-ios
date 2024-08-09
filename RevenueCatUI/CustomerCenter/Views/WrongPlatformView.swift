@@ -30,6 +30,11 @@ struct WrongPlatformView: View {
     @State
     private var store: Store?
 
+    @Environment(\.dismiss)
+    var dismiss
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
@@ -57,6 +62,15 @@ struct WrongPlatformView: View {
                     description: platformInstructions.1,
                     systemImage: "exclamationmark.triangle.fill"
                 )
+
+                Spacer()
+
+                Button {
+                    dismiss()
+                } label: {
+                    Text(localization.commonLocalizedString(for: .dismiss))
+                }
+                .buttonStyle(SubtleButtonStyle())
 
             }
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })

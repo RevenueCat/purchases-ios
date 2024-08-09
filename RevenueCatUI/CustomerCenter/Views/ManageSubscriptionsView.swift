@@ -26,6 +26,9 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView: View {
 
+    @Environment(\.dismiss)
+    var dismiss
+
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.localization)
@@ -106,6 +109,16 @@ struct ManageSubscriptionsView: View {
         }
         .task {
             await loadInformationIfNeeded()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(role: .cancel) {
+                    dismiss()
+                } label: {
+                    Text(localization.commonLocalizedString(for: .dismiss))
+                }
+
+            }
         }
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
@@ -319,7 +332,7 @@ struct ManageSubscriptionButton: View {
                 Text(path.title)
             }
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .buttonStyle(ProminentButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(item: self.$viewModel.promotionalOfferData,
