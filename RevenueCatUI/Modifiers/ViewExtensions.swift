@@ -30,7 +30,7 @@ extension View {
 }
 
 private var isIOSVersionWithCrash: Bool = {
-    // There is a bug in iOS 18 beta 5 (as of writing, future versions uncofirmed) that causes a crash.
+    // There is a bug in iOS 18 beta 5 (as of writing, future versions unconfirmed) that causes a crash.
     // This has been reporte to Apple as FB14699941.
     // Until this is fixed, we're rolling back to pre-iOS 16 behavior for this view.
     // More information and discussion here: https://github.com/RevenueCat/purchases-ios/issues/4150
