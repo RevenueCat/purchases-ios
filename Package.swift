@@ -75,7 +75,8 @@ let package = Package(
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
-                ]),
+                ],
+                swiftSettings: []),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
