@@ -24,7 +24,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct FeedbackSurveyView: View {
 
     @StateObject
@@ -73,7 +72,6 @@ struct FeedbackSurveyView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
@@ -109,7 +107,6 @@ struct FeedbackSurveyButtonsView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 extension FeedbackSurveyButtonsView {
 
     private static let buttonSpacing: CGFloat = 16

@@ -24,7 +24,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct NoSubscriptionsView: View {
 
     // swiftlint:disable:next todo
@@ -92,7 +91,6 @@ struct NoSubscriptionsView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {

@@ -23,7 +23,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct TintedProgressView: View {
 
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
@@ -41,7 +40,6 @@ struct TintedProgressView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct TintedProgressView_Previews: PreviewProvider {
 
     static var previews: some View {

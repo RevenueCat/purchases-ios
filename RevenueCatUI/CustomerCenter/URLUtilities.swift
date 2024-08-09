@@ -26,7 +26,6 @@ enum URLUtilities {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    @available(visionOS, unavailable)
     static func createMailURLIfPossible(email: String, subject: String, body: String) -> URL? {
         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""

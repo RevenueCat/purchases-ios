@@ -25,7 +25,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct PromotionalOfferView: View {
 
     @StateObject
@@ -83,7 +82,6 @@ struct PromotionalOfferView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct PromotionalOfferHeaderView: View {
 
     @Environment(\.appearance)
@@ -114,7 +112,6 @@ struct PromotionalOfferHeaderView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct PromoOfferButtonView: View {
 
     @Environment(\.locale)

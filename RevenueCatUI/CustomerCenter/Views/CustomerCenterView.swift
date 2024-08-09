@@ -25,7 +25,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 public struct CustomerCenterView: View {
 
     @StateObject private var viewModel: CustomerCenterViewModel
@@ -78,7 +77,6 @@ public struct CustomerCenterView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
@@ -111,7 +109,6 @@ private extension CustomerCenterView {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct CustomerCenterView_Previews: PreviewProvider {
 
    static var previews: some View {

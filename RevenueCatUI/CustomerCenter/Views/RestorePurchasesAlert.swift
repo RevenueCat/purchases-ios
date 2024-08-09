@@ -25,7 +25,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct RestorePurchasesAlert: ViewModifier {
 
     @Binding
@@ -107,7 +106,6 @@ struct RestorePurchasesAlert: ViewModifier {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 private extension RestorePurchasesAlert {
 
     func setAlertType(_ newType: AlertType) {
@@ -123,7 +121,6 @@ private extension RestorePurchasesAlert {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 extension View {
 
     func restorePurchasesAlert(isPresented: Binding<Bool>) -> some View {

@@ -25,7 +25,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct WrongPlatformView: View {
 
     @State
@@ -133,7 +132,6 @@ struct WrongPlatformView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 struct WrongPlatformView_Previews: PreviewProvider {
 
     static var previews: some View {
