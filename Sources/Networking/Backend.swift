@@ -20,6 +20,7 @@ class Backend {
     let offlineEntitlements: OfflineEntitlementsAPI
     let customer: CustomerAPI
     let internalAPI: InternalAPI
+    let customerCenterConfig: CustomerCenterConfigAPI
 
     private let config: BackendConfiguration
 
@@ -57,13 +58,15 @@ class Backend {
         let offerings = OfferingsAPI(backendConfig: backendConfig)
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
+        let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   offeringsAPI: offerings,
                   offlineEntitlements: offlineEntitlements,
-                  internalAPI: internalAPI)
+                  internalAPI: internalAPI,
+                  customerCenterConfig: customerCenterConfig)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -71,7 +74,8 @@ class Backend {
                   identityAPI: IdentityAPI,
                   offeringsAPI: OfferingsAPI,
                   offlineEntitlements: OfflineEntitlementsAPI,
-                  internalAPI: InternalAPI) {
+                  internalAPI: InternalAPI,
+                  customerCenterConfig: CustomerCenterConfigAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -79,6 +83,7 @@ class Backend {
         self.offerings = offeringsAPI
         self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
+        self.customerCenterConfig = customerCenterConfig
     }
 
     func clearHTTPClientCaches() {
