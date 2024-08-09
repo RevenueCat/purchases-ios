@@ -35,7 +35,7 @@ import RevenueCat
 
     // @PublicForExternalTesting
     @Published
-    var state: CustomerCenterViewState {
+    private(set) var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
                 self.error = stateError
@@ -43,7 +43,7 @@ import RevenueCat
         }
     }
     @Published
-    var configuration: CustomerCenterConfigData?
+    private(set) var configuration: CustomerCenterConfigData?
 
     var isLoaded: Bool {
         return state != .notLoaded && configuration != nil
