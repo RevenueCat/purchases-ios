@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
 		2D4C60E62C5AD1BC00A29FD2 /* AllAPITestsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C60E52C5AD1BC00A29FD2 /* AllAPITestsTests.swift */; };
 		2D4C60E72C5AD1BC00A29FD2 /* AllAPITests.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -206,6 +207,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AllAPITests.h; sourceTree = "<group>"; };
 		2D4C60E02C5AD1BC00A29FD2 /* AllAPITestsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AllAPITestsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -530,6 +532,7 @@
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
 				2D4C61D42C5AD62900A29FD2 /* ConfigurationAPI.swift */,
+				1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */,
 				2D4C61C92C5AD62800A29FD2 /* CustomerInfoAPI.swift */,
 				2D4C61CA2C5AD62900A29FD2 /* EntitlementInfoAPI.swift */,
 				2D4C61C12C5AD62800A29FD2 /* EntitlementInfosAPI.swift */,
@@ -990,6 +993,7 @@
 				2D4C61E42C5AD62A00A29FD2 /* main.swift in Sources */,
 				2D4C61E62C5AD62A00A29FD2 /* StoreProductDiscountAPI.swift in Sources */,
 				2D4C61EE2C5AD62A00A29FD2 /* ConfigurationAPI.swift in Sources */,
+				1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */,
 				2D4C61E32C5AD62A00A29FD2 /* PurchasesDiagnosticsAPI.swift in Sources */,
 				2D4C61E22C5AD62A00A29FD2 /* CustomerInfoAPI.swift in Sources */,
 				2D4C61DC2C5AD62A00A29FD2 /* StoreTransactionAPI.swift in Sources */,

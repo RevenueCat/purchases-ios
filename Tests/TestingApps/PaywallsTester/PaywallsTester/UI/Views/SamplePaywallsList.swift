@@ -16,6 +16,9 @@ struct SamplePaywallsList: View {
     @State
     private var display: Display?
 
+    @State
+    private var presentingCustomerCenter: Bool = false
+
     var body: some View {
         NavigationView {
             self.list(with: Self.loader)
@@ -84,6 +87,10 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
+        case .customerCenter:
+            #if CUSTOMER_CENTER_ENABLED
+            CustomerCenterView()
+            #endif
         }
     }
 
@@ -137,9 +144,34 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
             }
+            
+            #if CUSTOMER_CENTER_ENABLED
+            #if os(iOS)
+            Section("Customer Center") {
+                Button {
+                    self.display = .customerCenter
+                } label: {
+                    TemplateLabel(name: "SwiftUI", icon: "person.fill.questionmark")
+                }
+                
+                Button {
+                    self.presentingCustomerCenter = true
+                } label: {
+                    TemplateLabel(name: "Sheet", icon: "person.fill")
+                }
+            }
+            #endif
+            #endif
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
+        #if CUSTOMER_CENTER_ENABLED
+        #if os(iOS)
+        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
+            self.presentingCustomerCenter = false
+        }
+        #endif
+        #endif
     }
 
     #if os(watchOS)
@@ -181,6 +213,32 @@ private struct TemplateLabel: View {
 
 // MARK: -
 
+#if CUSTOMER_CENTER_ENABLED
+#if os(iOS)
+
+extension SamplePaywallsList {
+
+    func handleCustomerCenterAction(action: CustomerCenterAction) {
+        switch action {
+        case .restoreCompleted(_):
+            print("CustomerCenter: restoreCompleted")
+        case .restoreStarted:
+            print("CustomerCenter: restoreStarted")
+        case .restoreFailed(_):
+            print("CustomerCenter: restoreFailed")
+        case .showingManageSubscriptions:
+            print("CustomerCenter: showingManageSubscriptions")
+        case .refundRequestStarted(let productId):
+            print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
+        case .refundRequestCompleted(let status):
+            print("CustomerCenter: refundRequestCompleted. Result: \(status)")
+        }
+    }
+}
+
+#endif
+#endif
+
 private extension SamplePaywallsList {
 
     enum Display {
@@ -191,6 +249,7 @@ private extension SamplePaywallsList {
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
+        case customerCenter
 
     }
 
@@ -214,6 +273,9 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .unrecognizedPaywall:
             return "unrecognized"
+            
+        case .customerCenter:
+            return "customer-center"
         }
     }
 

@@ -29,12 +29,20 @@ public struct PaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
+    private let paywallViewOwnsPurchaseHandler: Bool
 
     @Environment(\.locale)
     private var locale
 
     @StateObject
-    private var purchaseHandler: PurchaseHandler
+    private var internalPurchaseHandler: PurchaseHandler
+
+    @ObservedObject
+    private var externalPurchaseHandler: PurchaseHandler
+
+    private var purchaseHandler: PurchaseHandler {
+        paywallViewOwnsPurchaseHandler ? internalPurchaseHandler : externalPurchaseHandler
+    }
 
     @StateObject
     private var introEligibility: TrialOrIntroEligibilityChecker
@@ -103,9 +111,17 @@ public struct PaywallView: View {
     }
 
     // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration) {
-        let purchaseHandler = configuration.purchaseHandler ?? .default()
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler)
+    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
+        self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
+        if paywallViewOwnsPurchaseHandler {
+            self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
+            self.externalPurchaseHandler = PurchaseHandler.default()
+        } else {
+            // this is unused and is only present to fulfill the need to have an object assigned
+            // to a @StateObject
+            self._internalPurchaseHandler = .init(wrappedValue: PurchaseHandler.default())
+            self.externalPurchaseHandler = configuration.purchaseHandler
+        }
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
@@ -121,7 +137,7 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
 
-        self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: purchaseHandler)
+        self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
 
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
