@@ -512,7 +512,7 @@ jobs:
   spm-revenuecat-ui-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: '15.4.0'
 
     steps:
       - checkout
@@ -653,7 +653,7 @@ jobs:
   run-test-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: '15.4.0'
 
     steps:
       - checkout
