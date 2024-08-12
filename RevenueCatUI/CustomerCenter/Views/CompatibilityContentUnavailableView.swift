@@ -19,7 +19,7 @@ import SwiftUI
 #if os(iOS)
 
 /// A SwiftUI view for displaying a message about unavailable content
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -30,7 +30,7 @@ struct CompatibilityContentUnavailableView: View {
 
     var body: some View {
 
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+        if #available(iOS 17.0, *) {
             ContentUnavailableView(
                 title,
                 systemImage: systemImage,

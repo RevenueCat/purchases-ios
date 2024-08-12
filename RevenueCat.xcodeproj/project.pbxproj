@@ -31,6 +31,7 @@
 		2D22BF6826F3CC6D001AE2F9 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		2D294E5C26DECFD500B8FE4F /* StoreKit2TransactionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */; };
 		2D2AFE8D2C6A834D00D1B0B4 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDA2C1D037000E1A461 /* TestData.swift */; };
+		2D2AFE8F2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D2AFE8E2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift */; };
 		2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */; };
 		2D3BFAD126DEA45C00370B11 /* MockSK1Product.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSK1Product.swift */; };
 		2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
@@ -1141,6 +1142,7 @@
 		2D222BAA27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReceiptParserStoreKitTests.swift; sourceTree = "<group>"; };
 		2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+Extensions.swift"; sourceTree = "<group>"; };
 		2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionListener.swift; sourceTree = "<group>"; };
+		2D2AFE8E2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompatibilityContentUnavailableView.swift; sourceTree = "<group>"; };
 		2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerSK2Tests.swift; sourceTree = "<group>"; };
 		2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = UnitTestsConfiguration.storekit; sourceTree = "<group>"; };
 		2D4C60F02C5AD1C300A29FD2 /* AllAPITests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AllAPITests.xcodeproj; path = Tests/APITesters/AllAPITests/AllAPITests.xcodeproj; sourceTree = "<group>"; };
@@ -3132,6 +3134,7 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2D2AFE8E2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift */,
 				3537565B2C382C2800A1B8D6 /* CustomerCenterView.swift */,
 				35C200B02C39254100B9778B /* FeedbackSurveyView.swift */,
 				3537565C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift */,
@@ -5816,6 +5819,7 @@
 				887A60892C1D037000E1A461 /* PaywallPurchasesType.swift in Sources */,
 				3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */,
 				887A60C22C1D037000E1A461 /* ErrorDisplay.swift in Sources */,
+				2D2AFE8F2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift in Sources */,
 				3537566E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift in Sources */,
 				887A60692C1D037000E1A461 /* IntroEligibilityViewModel.swift in Sources */,
 				88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */,
@@ -6784,6 +6788,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = CUSTOMER_CENTER_ENABLED;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -6847,6 +6852,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = CUSTOMER_CENTER_ENABLED;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = targeted;

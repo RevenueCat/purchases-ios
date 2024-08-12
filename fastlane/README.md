@@ -154,37 +154,13 @@ archive
 
 archive all platforms
 
-### ios build_swift_api_tester
+### ios run_api_tests
 
 ```sh
-[bundle exec] fastlane ios build_swift_api_tester
+[bundle exec] fastlane ios run_api_tests
 ```
 
-build Swift API tester
-
-### ios build_objc_api_tester
-
-```sh
-[bundle exec] fastlane ios build_objc_api_tester
-```
-
-build ObjC API tester
-
-### ios build_custom_entitlement_computation_api_tester
-
-```sh
-[bundle exec] fastlane ios build_custom_entitlement_computation_api_tester
-```
-
-build CustomEntitlementComputation API tester
-
-### ios build_revenuecatui_api_tester
-
-```sh
-[bundle exec] fastlane ios build_revenuecatui_api_tester
-```
-
-build RevenueCatUI API tester
+run API Tests
 
 ### ios replace_api_key_integration_tests
 
