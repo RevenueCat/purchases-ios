@@ -162,7 +162,8 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5,
-      fail_build: !generate_snapshots
+      fail_build: !generate_snapshots,
+      xcargs: "-DCUSTOMER_CENTER_ENABLED=YES"
     )
   end
 
