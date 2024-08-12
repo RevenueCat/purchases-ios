@@ -75,7 +75,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.2.2-customercenter.alpha.3"
+        return "5.3.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
