@@ -30,6 +30,7 @@
 		2D222BAB27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D222BAA27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift */; };
 		2D22BF6826F3CC6D001AE2F9 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		2D294E5C26DECFD500B8FE4F /* StoreKit2TransactionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */; };
+		2D2AFE8D2C6A834D00D1B0B4 /* TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FDA2C1D037000E1A461 /* TestData.swift */; };
 		2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */; };
 		2D3BFAD126DEA45C00370B11 /* MockSK1Product.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSK1Product.swift */; };
 		2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
@@ -5804,6 +5805,7 @@
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
+				2D2AFE8D2C6A834D00D1B0B4 /* TestData.swift in Sources */,
 				887A60C92C1D037000E1A461 /* PurchaseButton.swift in Sources */,
 				887A60812C1D037000E1A461 /* PaywallData+Default.swift in Sources */,
 				887A606A2C1D037000E1A461 /* TrialOrIntroEligibilityChecker.swift in Sources */,
