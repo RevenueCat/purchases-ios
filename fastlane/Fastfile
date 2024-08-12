@@ -488,7 +488,8 @@ platform :ios do
     project_root = File.expand_path("../", __dir__)
 
     Find.find(project_root) do |path|
-      next unless File.file?(path) # Process only files
+      # process only Swift files
+      next unless File.file?(path) && File.extname(path) == ".swift"
 
       content = File.read(path)
 
