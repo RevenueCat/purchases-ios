@@ -76,7 +76,7 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: [.define("CUSTOMER_CENTER_ENABLED")]),
+                swiftSettings: []),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",

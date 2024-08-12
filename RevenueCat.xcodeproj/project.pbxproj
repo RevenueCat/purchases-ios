@@ -3107,7 +3107,6 @@
 		353756562C382C2800A1B8D6 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				77632EE22C64E40D00634647 /* SemanticVersion.swift */,
 				3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */,
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
 				353756542C382C2800A1B8D6 /* CustomerCenterError.swift */,
