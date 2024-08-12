@@ -31,11 +31,19 @@ struct CompatibilityContentUnavailableView: View {
     var body: some View {
 
         if #available(iOS 17.0, *) {
-            ContentUnavailableView(
-                title,
-                systemImage: systemImage,
-                description: Text(description)
-            )
+            #if swift(>=5.9)
+                ContentUnavailableView(
+                    title,
+                    systemImage: systemImage,
+                    description: Text(description)
+                )
+            #else
+                // In Xcode 14, any references to ContentUnavailableView would fail to compile since that entity
+                // was included with Xcode 15 and later.
+                // Although Xcode 15 is required for App Store builds, we have some CI processes that run in Xcode 14
+                // so this retains compatibility while not affecting any real world usage.
+                EmptyView()
+            #endif
         } else {
             VStack {
                 Image(systemName: systemImage)
