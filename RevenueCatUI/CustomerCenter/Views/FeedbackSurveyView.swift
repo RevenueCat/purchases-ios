@@ -41,27 +41,20 @@ struct FeedbackSurveyView: View {
     }
 
     var body: some View {
-        ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-
-            VStack {
-                Spacer()
-
-                FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
-                                          onOptionSelected: self.viewModel.handleAction(for:),
-                                          loadingState: self.$viewModel.loadingState)
-            }
-            .sheet(
-                item: self.$viewModel.promotionalOfferData,
-                onDismiss: { self.viewModel.handleSheetDismiss() },
-                content: { promotionalOfferData in
-                    PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                         product: promotionalOfferData.product,
-                                         promoOfferDetails: promotionalOfferData.promoOfferDetails)
-                })
+        List {
+            FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
+                                      onOptionSelected: self.viewModel.handleAction(for:),
+                                      loadingState: self.$viewModel.loadingState)
         }
+        .sheet(
+            item: self.$viewModel.promotionalOfferData,
+            onDismiss: { self.viewModel.handleSheetDismiss() },
+            content: { promotionalOfferData in
+                PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
+                                     product: promotionalOfferData.product,
+                                     promoOfferDetails: promotionalOfferData.promoOfferDetails)
+            }
+        )
         .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -83,33 +76,19 @@ struct FeedbackSurveyButtonsView: View {
     var loadingState: String?
 
     var body: some View {
-        VStack(spacing: Self.buttonSpacing) {
-            ForEach(options, id: \.id) { option in
-                AsyncButton(action: {
-                    await self.onOptionSelected(option)
-                }, label: {
-                    if self.loadingState == option.id {
-                        TintedProgressView()
-                    } else {
-                        Text(option.title)
-                    }
-                })
-                .buttonStyle(ManageSubscriptionsButtonStyle())
-                .disabled(self.loadingState != nil)
-            }
+        ForEach(options, id: \.id) { option in
+            AsyncButton(action: {
+                await self.onOptionSelected(option)
+            }, label: {
+                if self.loadingState == option.id {
+                    TintedProgressView()
+                } else {
+                    Text(option.title)
+                }
+            })
+            .disabled(self.loadingState != nil)
         }
-        .padding([.horizontal, .bottom])
     }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension FeedbackSurveyButtonsView {
-
-    private static let buttonSpacing: CGFloat = 16
 
 }
 

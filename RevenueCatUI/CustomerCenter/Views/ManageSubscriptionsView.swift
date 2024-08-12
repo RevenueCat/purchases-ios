@@ -81,27 +81,28 @@ struct ManageSubscriptionsView: View {
                 background.edgesIgnoringSafeArea(.all)
             }
 
-            ScrollView {
-                VStack {
-                    if self.viewModel.isLoaded {
-                        SubtitleTextView(subtitle: self.viewModel.screen.subtitle)
+            if self.viewModel.isLoaded {
+                List {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        SubtitleTextView(subtitle: subtitle)
+                    }
 
-                        if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                    if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                        Section {
                             SubscriptionDetailsView(
                                 subscriptionInformation: subscriptionInformation,
                                 localization: self.localization,
                                 refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                         }
+                    }
 
+                    Section {
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
                                                        loadingPath: self.$viewModel.loadingPath)
-                    } else {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
                     }
                 }
-                .padding([.horizontal, .bottom])
-                .frame(maxWidth: 400)
+            } else {
+                TintedProgressView()
             }
         }
         .task {
@@ -156,119 +157,6 @@ struct SubtitleTextView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct SubscriptionDetailsView: View {
-
-    let iconWidth = 22.0
-    let subscriptionInformation: SubscriptionInformation
-    let localization: CustomerCenterConfigData.Localization
-    let refundRequestStatusMessage: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            VStack(alignment: .leading) {
-                Text("\(subscriptionInformation.title)")
-                    .font(.headline)
-
-                let explanation = subscriptionInformation.active ? (
-                     subscriptionInformation.willRenew ?
-                            localization.commonLocalizedString(for: .subEarliestRenewal) :
-                            localization.commonLocalizedString(for: .subEarliestExpiration)
-                    ) : localization.commonLocalizedString(for: .subExpired)
-
-                Text("\(explanation)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-            }.padding([.bottom], 10)
-
-            Divider()
-                .padding(.bottom)
-
-            VStack(alignment: .leading, spacing: 16.0) {
-                HStack(alignment: .center) {
-                    Image(systemName: "coloncurrencysign.arrow.circlepath")
-                        .accessibilityHidden(true)
-                        .frame(width: iconWidth)
-                    VStack(alignment: .leading) {
-                        Text(localization.commonLocalizedString(for: .billingCycle))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                        Text("\(subscriptionInformation.durationTitle)")
-                            .font(.body)
-                    }
-                }
-
-                HStack(alignment: .center) {
-                    Image(systemName: "coloncurrencysign")
-                        .accessibilityHidden(true)
-                        .frame(width: iconWidth)
-                    VStack(alignment: .leading) {
-                        Text(localization.commonLocalizedString(for: .currentPrice))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                        Text("\(subscriptionInformation.price)")
-                            .font(.body)
-                    }
-                }
-
-                if let nextRenewal =  subscriptionInformation.expirationDateString {
-
-                    let expirationString = subscriptionInformation.active ? (
-                        subscriptionInformation.willRenew ?
-                            localization.commonLocalizedString(for: .nextBillingDate) :
-                            localization.commonLocalizedString(for: .expires)
-                    ) : localization.commonLocalizedString(for: .expired)
-
-                    HStack(alignment: .center) {
-                        Image(systemName: "calendar")
-                            .accessibilityHidden(true)
-                            .frame(width: iconWidth)
-                        VStack(alignment: .leading) {
-                            Text("\(expirationString)")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .textCase(.uppercase)
-                            Text("\(String(describing: nextRenewal))")
-                                .font(.body)
-                        }
-                    }
-                }
-
-                if let refundRequestStatusMessage = refundRequestStatusMessage {
-                    HStack(alignment: .center) {
-                        Image(systemName: "arrowshape.turn.up.backward")
-                            .accessibilityHidden(true)
-                            .frame(width: iconWidth)
-                        VStack(alignment: .leading) {
-                            Text(localization.commonLocalizedString(for: .refundStatus))
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .textCase(.uppercase)
-                            Text("\(refundRequestStatusMessage)")
-                                .font(.body)
-                        }
-                    }
-                }
-            }
-
-        }
-        .padding(24.0)
-        .background(Color(UIColor.tertiarySystemBackground))
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
-        .padding(.top)
-        .padding(.bottom)
-        .padding(.bottom)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
 struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
@@ -282,17 +170,15 @@ struct ManageSubscriptionsButtonsView: View {
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
-        VStack(spacing: 16) {
-            let filteredPaths = self.viewModel.screen.paths.filter { path in
+        let filteredPaths = self.viewModel.screen.paths.filter { path in
 #if targetEnvironment(macCatalyst)
-                return path.type == .refundRequest
+            return path.type == .refundRequest
 #else
-                return true
+            return true
 #endif
-            }
-            ForEach(filteredPaths, id: \.id) { path in
-                ManageSubscriptionButton(path: path, viewModel: self.viewModel)
-            }
+        }
+        ForEach(filteredPaths, id: \.id) { path in
+            ManageSubscriptionButton(path: path, viewModel: self.viewModel)
         }
     }
 
@@ -319,7 +205,6 @@ struct ManageSubscriptionButton: View {
                 Text(path.title)
             }
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(item: self.$viewModel.promotionalOfferData,
@@ -359,7 +244,6 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
             customerCenterActionHandler: nil)
-
         ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
             .previewDisplayName("Yearly expiring")
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
@@ -368,23 +252,6 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct SubscriptionDetailsView_Previews: PreviewProvider {
-
-    static var previews: some View {
-        SubscriptionDetailsView(
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-            localization: CustomerCenterConfigTestData.customerCenterData.localization,
-            refundRequestStatusMessage: "Success"
-        )
-        .previewDisplayName("Subscription Details - Monthly")
-        .padding()
-
-    }
-}
 #endif
 
 #endif
