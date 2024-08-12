@@ -304,7 +304,7 @@ platform :ios do
       scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
-      xcargs: "-DCUSTOMER_CENTER_ENABLED=YES"
+      xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'" # todo: remove once Customer Center is released
     )
   end
 
