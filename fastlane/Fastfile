@@ -132,6 +132,10 @@ platform :ios do
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
+
+    # todo: remove once Customer Center is released
+    enable_customer_center
+
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
 
     # For platforms that fail to run StoreKit tests.
@@ -216,6 +220,9 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    # todo: remove once Customer Center is released
+    enable_customer_center
 
     fetch_snapshots
 
@@ -470,6 +477,27 @@ platform :ios do
       files_to_add: "."
      )
     }
+  end
+
+  desc "Enable Customer Center"
+  lane :enable_customer_center do
+    # This enables the customer center by replacing CUSTOMER_CENTER_ENABLED with true in all files. 
+    # This lane should be removed once Customer Center is released.
+    require 'find'
+
+    project_root = File.expand_path("../", __dir__)
+
+    Find.find(project_root) do |path|
+      next unless File.file?(path) # Process only files
+
+      content = File.read(path)
+
+      updated_content = content.gsub('CUSTOMER_CENTER_ENABLED', 'true')
+
+      File.write(path, updated_content) if content != updated_content
+    end
+
+    UI.success("Customer Center enabled.")
   end
 
   private_lane :push_snapshot_pr do |options|
