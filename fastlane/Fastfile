@@ -163,7 +163,7 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5,
       fail_build: !generate_snapshots,
-      xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'"
+      xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'" # todo: remove once Customer Center is released
     )
   end
 
@@ -232,7 +232,8 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+        # todo: remove CUSTOMER_CENTER_ENABLED once Customer Center is released
+        xcargs: "#{generate_snapshots ? '-testPlan CI-Snapshots' : '-testPlan CI-RevenueCatUI'} OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'"
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
