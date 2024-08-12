@@ -71,8 +71,10 @@ struct WrongPlatformView: View {
                     Text(localization.commonLocalizedString(for: .dismiss))
                 }
                 .buttonStyle(SubtleButtonStyle())
+                .padding(.vertical)
 
             }
+            .padding(.horizontal)
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
         .task {

@@ -64,7 +64,6 @@ struct SubtleButtonStyle: PrimitiveButtonStyle {
         })
         .font(.body.weight(.medium))
         .controlSize(.large)
-        .padding(.vertical)
         .applyIf(background != nil, apply: { $0.foregroundColor(background) })
     }
 

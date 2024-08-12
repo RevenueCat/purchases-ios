@@ -76,6 +76,7 @@ struct NoSubscriptionsView: View {
                     dismiss()
                 }
                 .buttonStyle(SubtleButtonStyle())
+                .padding(.vertical)
 
             }
             .padding(.horizontal)
