@@ -24,7 +24,7 @@ extension Package: VariableDataProvider {
     }
 
     func localizedPrice(showZeroDecimalPlacePrices: Bool = false) -> String {
-        if showZeroDecimalPlacePrices {
+        if showZeroDecimalPlacePrices && priceEndsIn00Cents(self.storeProduct.localizedPriceString) {
             return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
@@ -37,7 +37,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if showZeroDecimalPlacePrices && priceEndsIn99or00Cents(price) {
+        if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
             return roundAndTruncatePrice(price)
         } else {
             return price
@@ -51,7 +51,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if showZeroDecimalPlacePrices && priceEndsIn99or00Cents(price) {
+        if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
             return roundAndTruncatePrice(price)
         }
 
@@ -161,7 +161,7 @@ extension Package: VariableDataProvider {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
 
-    func priceEndsIn99or00Cents(_ priceString: String) -> Bool {
+    func priceEndsIn00Cents(_ priceString: String) -> Bool {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning(Strings.no_price_format_priceFormatter_unavailable)
             return false
@@ -172,8 +172,8 @@ private extension Package {
             return false
         }
 
-        let roundedCents = Int(price * 100) % 100
-        return roundedCents == 99 || roundedCents == 0
+        let roundedPrice = round(price * 100) / 100.0
+        return roundedPrice.truncatingRemainder(dividingBy: 1) == 0
     }
 
     func roundAndTruncatePrice(_ priceString: String) -> String {
