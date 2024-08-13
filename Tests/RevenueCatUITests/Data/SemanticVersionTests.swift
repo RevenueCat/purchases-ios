@@ -11,6 +11,8 @@
 //
 //  Created by JayShortway on 09/08/2024.
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Nimble
 @testable import RevenueCatUI
 import XCTest
@@ -59,7 +61,7 @@ class SemanticVersionTests: TestCase {
             "1.text.whoa"
         ]
         for (string) in testCases {
-            XCTContext.runActivity(
+            _ = XCTContext.runActivity(
                 named: "Should fail to parse version: '\(string)'"
             ) { _ in
                 expect { try SemanticVersion(string) }
@@ -69,3 +71,5 @@ class SemanticVersionTests: TestCase {
     }
 
 }
+
+#endif

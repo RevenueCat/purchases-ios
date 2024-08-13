@@ -159,7 +159,7 @@ class CustomerCenterViewModelTests: TestCase {
             (currentVersion: nil, latestVersion: "1.2.3", expectedAppIsLatestVersion: true)
         ]
         for (currentVersion, latestVersion, expectedAppIsLatestVersion) in testCases {
-            XCTContext.runActivity(
+            _ = XCTContext.runActivity(
                 named: "Current version = \(currentVersion), " +
                 "latest version = \(latestVersion), " +
                 "expectedAppIsLatestVersion = \(expectedAppIsLatestVersion)"
