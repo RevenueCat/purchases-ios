@@ -45,7 +45,6 @@ enum Strings {
     case executing_restore_logic
     case executing_external_restore_logic
 
-
     case no_price_format_priceFormatter_unavailable
     case no_price_format_priceString_incompatible
     case no_price_round_priceFormatter_nil
@@ -134,7 +133,6 @@ extension Strings: CustomStringConvertible {
             return "Will execute custom StoreKit restore purchases logic provided by your app. " +
             "No StoreKit restore purchases logic will be performed by RevenueCat. " +
             "You must have initialized your `PaywallView` appropriately."
-
 
         case .no_price_format_priceFormatter_unavailable:
             return "Could not determine price format because priceFormatter is unavailable."

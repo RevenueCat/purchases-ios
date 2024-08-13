@@ -16,7 +16,7 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-// swiftlint:disable type_body_length
+// swiftlint:disable type_body_length file_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageVariablesTests: TestCase {
@@ -311,7 +311,7 @@ class PackageVariablesTests: TestCase {
             .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: true)) == "$60/year ($5/month)"
         expect(TestData
             .annualPackage
-            .localizedPriceAndPerMonthFull(Self.english, 
+            .localizedPriceAndPerMonthFull(Self.english,
                                            showZeroDecimalPlacePrices: true)) == "$53.99/year ($4.49/month)"
 
         expect(TestData
