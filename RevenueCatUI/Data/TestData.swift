@@ -730,12 +730,7 @@ enum TestData {
 
     #endif
 
-    #if os(watchOS)
-    // `Locale.current` in watchOS produces `en_001` when running tests
     static let locale: Locale = .init(identifier: "en_US")
-    #else
-    static let locale: Locale = .current
-    #endif
 
     private static let offeringIdentifier = "offering"
 
