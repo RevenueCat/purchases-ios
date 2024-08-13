@@ -57,7 +57,7 @@ import RevenueCat
                 self.appIsLatestVersion = defaultAppIsLatestVersion
                 return
             }
-            guard let latestVersionString = configuration?.lastPublishedAppVersion.takeVersion() else {
+            guard let latestVersionString = configuration?.lastPublishedAppVersion?.takeVersion() else {
                 self.appIsLatestVersion = defaultAppIsLatestVersion
                 return
             }
