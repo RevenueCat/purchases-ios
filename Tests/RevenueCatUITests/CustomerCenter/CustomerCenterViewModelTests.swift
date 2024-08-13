@@ -159,9 +159,9 @@ class CustomerCenterViewModelTests: TestCase {
             (currentVersion: nil, latestVersion: "1.2.3", expectedAppIsLatestVersion: true)
         ]
         for (currentVersion, latestVersion, expectedAppIsLatestVersion) in testCases {
-            _ = XCTContext.runActivity(
-                named: "Current version = \(currentVersion), " +
-                "latest version = \(latestVersion), " +
+            XCTContext.runActivity(
+                named: "Current version = \(currentVersion as Optional), " +
+                "latest version = \(latestVersion as Optional), " +
                 "expectedAppIsLatestVersion = \(expectedAppIsLatestVersion)"
             ) { _ in
                 let viewModel = CustomerCenterViewModel(
