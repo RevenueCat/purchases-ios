@@ -153,7 +153,10 @@ class CustomerCenterViewModelTests: TestCase {
             // We default to true if we fail to parse any of the two versions.
             (currentVersion: "not-a-number", latestVersion: "not-a-number-either", expectedAppIsLatestVersion: true),
             (currentVersion: "not-a-number", latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
-            (currentVersion: "1.2.3", latestVersion: "not-a-number", expectedAppIsLatestVersion: true)
+            (currentVersion: "1.2.3", latestVersion: "not-a-number", expectedAppIsLatestVersion: true),
+            (currentVersion: nil, latestVersion: nil, expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: nil, expectedAppIsLatestVersion: true),
+            (currentVersion: nil, latestVersion: "1.2.3", expectedAppIsLatestVersion: true)
         ]
         for (currentVersion, latestVersion, expectedAppIsLatestVersion) in testCases {
             XCTContext.runActivity(
