@@ -107,18 +107,15 @@ struct ManageSubscriptionsView: View {
                 .frame(maxWidth: 400)
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                DismissCircleButton {
+                    dismiss()
+                }
+            }
+        }
         .task {
             await loadInformationIfNeeded()
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .cancel) {
-                    dismiss()
-                } label: {
-                    Text(localization.commonLocalizedString(for: .dismiss))
-                }
-
-            }
         }
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)

@@ -47,7 +47,7 @@ struct WrongPlatformView: View {
         self._store = State(initialValue: store)
     }
 
-    var body: some View {
+    @ViewBuilder var content: some View {
         ZStack {
             if let background = color(from: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
@@ -62,20 +62,16 @@ struct WrongPlatformView: View {
                     description: platformInstructions.1,
                     systemImage: "exclamationmark.triangle.fill"
                 )
-
-                Spacer()
-
-                Button {
-                    dismiss()
-                } label: {
-                    Text(localization.commonLocalizedString(for: .dismiss))
-                }
-                .buttonStyle(SubtleButtonStyle())
-                .padding(.vertical)
-
             }
             .padding(.horizontal)
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                DismissCircleButton {
+                    dismiss()
+                }
+            }
         }
         .task {
             if store == nil {
@@ -83,6 +79,18 @@ struct WrongPlatformView: View {
                    let firstEntitlement = customerInfo.entitlements.active.first {
                     self.store = firstEntitlement.value.store
                 }
+            }
+        }
+    }
+
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
+            }
+        } else {
+            NavigationView {
+                content
             }
         }
     }

@@ -51,41 +51,47 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct SubtleButtonStyle: PrimitiveButtonStyle {
+struct DismissCircleButton: View {
+    @Environment(\.localization) private var localization
 
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.colorScheme) private var colorScheme
+    var action: () -> Void
 
-    func makeBody(configuration: PrimitiveButtonStyleConfiguration) -> some View {
-        let background = color(from: appearance.buttonBackgroundColor, for: colorScheme)
-
-        Button(action: { configuration.trigger() }, label: {
-            configuration.label.frame(maxWidth: .infinity)
-        })
-        .font(.body.weight(.medium))
-        .controlSize(.large)
-        .applyIf(background != nil, apply: { $0.foregroundColor(background) })
+    var body: some View {
+        Button {
+            action()
+        } label: {
+            Circle()
+                .fill(Color(uiColor: .secondarySystemFill))
+                .frame(width: 28, height: 28)
+                .overlay(
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .imageScale(.medium)
+                )
+            }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(localization.commonLocalizedString(for: .dismiss)))
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
+struct ButtonStyles_Previews: PreviewProvider {
 
     static var previews: some View {
         VStack(spacing: 16.0) {
             Button("Didn't receive purchase") {}
                 .buttonStyle(ProminentButtonStyle())
-                .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
 
-            Button("Cancel") {}
-                .buttonStyle(SubtleButtonStyle())
-                .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
+            DismissCircleButton {
 
+            }
         }.padding()
+            .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
+            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
     }
 
 }
