@@ -53,11 +53,11 @@ private let defaultAppIsLatestVersion = true
     @Published
     var configuration: CustomerCenterConfigData? {
         didSet {
-            guard let currentVersionString = currentAppVersion?.takeVersion() else {
+            guard let currentVersionString = currentAppVersion?.versionString() else {
                 self.appIsLatestVersion = defaultAppIsLatestVersion
                 return
             }
-            guard let latestVersionString = configuration?.lastPublishedAppVersion?.takeVersion() else {
+            guard let latestVersionString = configuration?.lastPublishedAppVersion?.versionString() else {
                 self.appIsLatestVersion = defaultAppIsLatestVersion
                 return
             }
@@ -157,7 +157,7 @@ private let defaultAppIsLatestVersion = true
 fileprivate extension String {
     /// Takes the first characters of this string, if they conform to Major.Minor.Patch. Returns nil otherwise.
     /// Note that Minor and Patch are optional. So if this string starts with a single number, that number is returned.
-    func takeVersion() -> String? {
+    func versionString() -> String? {
         do {
             let pattern = #"^(\d+)(?:\.\d+)?(?:\.\d+)?"#
             let regex = try NSRegularExpression(pattern: pattern)
