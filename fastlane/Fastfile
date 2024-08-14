@@ -537,12 +537,13 @@ platform :ios do
   end
 
   lane :export_xcframeworks do |options|
-    create_and_sign_xcframework(scheme: 'RevenueCat')
-    create_and_sign_xcframework(scheme: 'RevenueCatUI')
+    create_and_sign_xcframework(scheme: 'RevenueCat', product_name: 'RevenueCat')
+    create_and_sign_xcframework(scheme: 'RevenueCatUIDev', product_name: 'RevenueCatUI')
   end
 
   private_lane :create_and_sign_xcframework do |options|
     scheme = options[:scheme]
+    product_name = options[:product_name]
 
     output_directory = 'build/xcframeworks'
     platforms = [
@@ -557,7 +558,7 @@ platform :ios do
     create_xcframework(
       destinations: platforms,
       scheme: scheme,
-      product_name: scheme,
+      product_name: product_name,
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
