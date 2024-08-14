@@ -139,8 +139,11 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            // swiftlint:disable:next line_length
-            return "\(self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)) (\(self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit))"
+
+            let price = self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            let monthlyPrice = self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+
+            return "\(price) (\(monthlyPrice)/\(unit))"
         }
     }
 
@@ -151,8 +154,10 @@ extension Package: VariableDataProvider {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
 
-            // swiftlint:disable:next line_length
-            return "\(self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)) (\(self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit))"
+            let price = self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            let monthlyPrice = self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            
+            return "\(price) (\(monthlyPrice)/\(unit))"
         }
     }
 
