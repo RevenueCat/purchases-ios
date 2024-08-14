@@ -1243,12 +1243,10 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      # - lint
-      # - run-test-ios-17
-      # - pod-lib-lint
-      # - run-revenuecat-ui-ios-17
-      # TODO: undo before merging, this is for testing only
-      - installation-tests-carthage
+      - lint
+      - run-test-ios-17
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-17
 
   create-tag:
     when:
