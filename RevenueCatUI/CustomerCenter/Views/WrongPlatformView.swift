@@ -21,7 +21,7 @@ import SwiftUI
 
 #if os(iOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -49,10 +49,10 @@ struct WrongPlatformView: View {
 
     @ViewBuilder var content: some View {
         ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
-            let textColor = color(from: appearance.textColor, for: colorScheme)
+            let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
             VStack {
                 let platformInstructions = self.humanReadableInstructions(for: store)

@@ -42,7 +42,7 @@ struct FeedbackSurveyView: View {
 
     var body: some View {
         ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
 
