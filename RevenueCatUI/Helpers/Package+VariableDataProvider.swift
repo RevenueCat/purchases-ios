@@ -176,12 +176,12 @@ private extension Package {
 
     func isPriceEndingIn00Cents(_ priceString: String) -> Bool {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning(Strings.no_price_format_priceFormatter_unavailable)
+            Logger.warning(Strings.no_price_format_price_formatter_unavailable)
             return false
         }
 
         guard let price = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning(Strings.no_price_format_priceString_incompatible)
+            Logger.warning(Strings.no_price_format_price_string_incompatible)
             return false
         }
 
@@ -191,12 +191,12 @@ private extension Package {
 
     func formatAsZeroDecimalPlaces(_ priceString: String) -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
-            Logger.warning(Strings.no_price_round_priceFormatter_nil)
+            Logger.warning(Strings.no_price_round_price_formatter_nil)
             return priceString
         }
 
         guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
-            Logger.warning(Strings.no_price_round_priceString_incompatible)
+            Logger.warning(Strings.no_price_round_price_string_incompatible)
             return priceString
         }
 

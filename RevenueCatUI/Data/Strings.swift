@@ -45,10 +45,10 @@ enum Strings {
     case executing_restore_logic
     case executing_external_restore_logic
 
-    case no_price_format_priceFormatter_unavailable
-    case no_price_format_priceString_incompatible
-    case no_price_round_priceFormatter_nil
-    case no_price_round_priceString_incompatible
+    case no_price_format_price_formatter_unavailable
+    case no_price_format_price_string_incompatible
+    case no_price_round_price_formatter_nil
+    case no_price_round_price_string_incompatible
     case no_price_round_formatter_failed
 
     // Customer Center
@@ -144,7 +144,7 @@ extension Strings: CustomStringConvertible {
             return "Could not round price because price formatter is nil."
 
         case .no_price_round_price_string_incompatible:
-            return "Could not round price because priceString is incompatible."
+            return "Could not round price because price string is incompatible."
 
         case .no_price_round_formatter_failed:
             return "Could not round price because formatter failed to round price."
