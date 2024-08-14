@@ -74,7 +74,7 @@ struct DismissCircleButton: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(localization.commonLocalizedString(for: .dismiss)))
     }
-    
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
