@@ -24,7 +24,7 @@ extension Package: VariableDataProvider {
     }
 
     func localizedPrice(showZeroDecimalPlacePrices: Bool = false) -> String {
-        if showZeroDecimalPlacePrices && priceEndsIn00Cents(self.storeProduct.localizedPriceString) {
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(self.storeProduct.localizedPriceString) {
             return formatAsZeroDecimalPlaces(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
@@ -37,7 +37,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
             return formatAsZeroDecimalPlaces(price)
         } else {
             return price
@@ -51,7 +51,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
 
-        if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
             return formatAsZeroDecimalPlaces(price)
         }
 
@@ -63,7 +63,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.introductoryDiscount?.localizedPriceString
         }
 
-        if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
             return formatAsZeroDecimalPlaces(price)
         }
 
@@ -174,7 +174,7 @@ extension Package: VariableDataProvider {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
 
-    func priceEndsIn00Cents(_ priceString: String) -> Bool {
+    func isPriceEndingIn00Cents(_ priceString: String) -> Bool {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning(Strings.no_price_format_priceFormatter_unavailable)
             return false
