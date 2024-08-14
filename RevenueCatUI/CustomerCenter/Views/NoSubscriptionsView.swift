@@ -46,7 +46,8 @@ struct NoSubscriptionsView: View {
         self.configuration = configuration
     }
 
-    var body: some View {
+    @ViewBuilder
+    var content: some View {
         let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme)
         let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
