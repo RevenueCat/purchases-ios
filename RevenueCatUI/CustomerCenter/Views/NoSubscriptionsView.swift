@@ -47,8 +47,8 @@ struct NoSubscriptionsView: View {
     }
 
     var body: some View {
-        let background = color(from: appearance.backgroundColor, for: colorScheme)
-        let textColor = color(from: appearance.textColor, for: colorScheme)
+        let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme)
+        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
         let fallbackDescription = "We can try checking your Apple account for any previous purchases"
 
