@@ -573,10 +573,10 @@ platform :ios do
 
     # Sign XCFramework for Xcode 15
     sign_xcframework(
-      file: "#{output_directory_for_sh}/#{scheme}.xcframework"
+      file: "#{output_directory_for_sh}/#{product_name}.xcframework"
     )
 
-    xcframeworks_zip_path_for_sh = "../#{scheme}.xcframework.zip"
+    xcframeworks_zip_path_for_sh = "../#{product_name}.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
       output_directory_for_sh,
       xcframeworks_zip_path_for_sh)
