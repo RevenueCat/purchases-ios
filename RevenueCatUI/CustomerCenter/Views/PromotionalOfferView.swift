@@ -144,7 +144,7 @@ struct PromoOfferButtonView: View {
                         .font(.subheadline)
                 }
             })
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+            .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
         }
     }

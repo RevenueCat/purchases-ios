@@ -26,6 +26,9 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView: View {
 
+    @Environment(\.dismiss)
+    var dismiss
+
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.localization)
@@ -104,12 +107,20 @@ struct ManageSubscriptionsView: View {
                 .frame(maxWidth: 400)
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                DismissCircleButton {
+                    dismiss()
+                }
+            }
+        }
         .task {
             await loadInformationIfNeeded()
         }
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -214,7 +225,6 @@ struct SubscriptionDetailsView: View {
                 }
 
                 if let nextRenewal =  subscriptionInformation.expirationDateString {
-
                     let expirationString = subscriptionInformation.active ? (
                         subscriptionInformation.willRenew ?
                             localization.commonLocalizedString(for: .nextBillingDate) :
@@ -252,14 +262,12 @@ struct SubscriptionDetailsView: View {
                     }
                 }
             }
-
         }
         .padding(24.0)
         .background(Color(UIColor.tertiarySystemBackground))
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
-        .padding(.top)
-        .padding(.bottom)
+        .padding([.top, .bottom])
         .padding(.bottom)
     }
 
@@ -319,7 +327,7 @@ struct ManageSubscriptionButton: View {
                 Text(path.title)
             }
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .buttonStyle(ProminentButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(item: self.$viewModel.promotionalOfferData,
@@ -334,10 +342,10 @@ struct ManageSubscriptionButton: View {
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
     }
+
 }
 
 #if DEBUG
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -359,7 +367,6 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
             customerCenterActionHandler: nil)
-
         ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
             .previewDisplayName("Yearly expiring")
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
@@ -382,8 +389,8 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
         )
         .previewDisplayName("Subscription Details - Monthly")
         .padding()
-
     }
+
 }
 #endif
 

@@ -94,7 +94,7 @@ struct FeedbackSurveyButtonsView: View {
                         Text(option.title)
                     }
                 })
-                .buttonStyle(ManageSubscriptionsButtonStyle())
+                .buttonStyle(ProminentButtonStyle())
                 .disabled(self.loadingState != nil)
             }
         }
