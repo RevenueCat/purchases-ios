@@ -156,7 +156,7 @@ extension Package: VariableDataProvider {
 
             let price = self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
             let monthlyPrice = self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
-            
+
             return "\(price) (\(monthlyPrice)/\(unit))"
         }
     }

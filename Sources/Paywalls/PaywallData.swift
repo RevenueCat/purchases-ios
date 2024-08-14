@@ -92,7 +92,7 @@ extension PaywallData {
         public init(apple: Set<String>) {
             self.apple = apple
         }
-        
+
     }
 }
 
