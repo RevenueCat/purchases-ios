@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ManageSubscriptionsButtonStyle.swift
+//  ButtonStyles.swift
 //
 //
 //  Created by Cesar de la Vega on 28/5/24.
@@ -21,11 +21,11 @@ import SwiftUI
 
 #if os(iOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsButtonStyle: PrimitiveButtonStyle {
+struct ProminentButtonStyle: PrimitiveButtonStyle {
 
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
@@ -37,24 +37,63 @@ struct ManageSubscriptionsButtonStyle: PrimitiveButtonStyle {
         Button(action: { configuration.trigger() }, label: {
             configuration.label.frame(maxWidth: .infinity)
         })
+        .font(.body.weight(.medium))
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
+        .buttonBorderShape(.roundedRectangle(radius: 16))
         .applyIf(background != nil, apply: { $0.tint(background) })
         .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
     }
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsButtonStyle_Previews: PreviewProvider {
+struct DismissCircleButton: View {
+
+    @Environment(\.localization) private var localization
+
+    var action: () -> Void
+
+    var body: some View {
+        Button {
+            action()
+        } label: {
+            Circle()
+                .fill(Color(uiColor: .secondarySystemFill))
+                .frame(width: 28, height: 28)
+                .overlay(
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .imageScale(.medium)
+                )
+            }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(localization.commonLocalizedString(for: .dismiss)))
+    }
+
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct ButtonStyles_Previews: PreviewProvider {
 
     static var previews: some View {
-        Button("Didn't receive purchase") {}
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+        VStack(spacing: 16.0) {
+            Button("Didn't receive purchase") {}
+                .buttonStyle(ProminentButtonStyle())
+
+            DismissCircleButton {
+
+            }
+        }.padding()
             .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
+            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
     }
 
 }
