@@ -120,6 +120,7 @@ struct ManageSubscriptionsView: View {
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -224,7 +225,6 @@ struct SubscriptionDetailsView: View {
                 }
 
                 if let nextRenewal =  subscriptionInformation.expirationDateString {
-
                     let expirationString = subscriptionInformation.active ? (
                         subscriptionInformation.willRenew ?
                             localization.commonLocalizedString(for: .nextBillingDate) :
@@ -262,14 +262,12 @@ struct SubscriptionDetailsView: View {
                     }
                 }
             }
-
         }
         .padding(24.0)
         .background(Color(UIColor.tertiarySystemBackground))
         .cornerRadius(20)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
-        .padding(.top)
-        .padding(.bottom)
+        .padding([.top, .bottom])
         .padding(.bottom)
     }
 
@@ -344,6 +342,7 @@ struct ManageSubscriptionButton: View {
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
     }
+
 }
 
 #if DEBUG
@@ -352,6 +351,7 @@ struct ManageSubscriptionButton: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView_Previews: PreviewProvider {
+
     static var previews: some View {
         let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
@@ -362,6 +362,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             .previewDisplayName("Monthly renewing")
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
             .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+
         let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
             screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
@@ -379,6 +380,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct SubscriptionDetailsView_Previews: PreviewProvider {
+
     static var previews: some View {
         SubscriptionDetailsView(
             subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
@@ -388,6 +390,7 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
         .previewDisplayName("Subscription Details - Monthly")
         .padding()
     }
+
 }
 #endif
 

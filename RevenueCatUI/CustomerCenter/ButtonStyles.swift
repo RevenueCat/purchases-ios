@@ -52,6 +52,7 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct DismissCircleButton: View {
+
     @Environment(\.localization) private var localization
 
     var action: () -> Void
@@ -73,6 +74,7 @@ struct DismissCircleButton: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(localization.commonLocalizedString(for: .dismiss)))
     }
+    
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -47,7 +47,8 @@ struct WrongPlatformView: View {
         self._store = State(initialValue: store)
     }
 
-    @ViewBuilder var content: some View {
+    @ViewBuilder 
+    var content: some View {
         ZStack {
             if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
