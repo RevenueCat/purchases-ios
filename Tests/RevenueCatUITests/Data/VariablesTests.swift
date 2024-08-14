@@ -116,7 +116,7 @@ class VariablesTests: TestCase {
 
     func testIntroPrice() {
         self.provider.introductoryOfferPrice = "$4.99"
-        expect(self.process("{{ sub_offer_price }}")) == self.provider.localizedIntroductoryOfferPrice
+        expect(self.process("{{ sub_offer_price }}")) == self.provider.localizedIntroductoryOfferPrice()
     }
 
     func testRelativeDiscount() {
@@ -380,7 +380,7 @@ private struct MockVariableProvider: VariableDataProvider {
         return self.localizedPriceAndPerMonthFull
     }
 
-    var localizedIntroductoryOfferPrice: String? {
+    func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
         return self.introductoryOfferPrice
     }
 

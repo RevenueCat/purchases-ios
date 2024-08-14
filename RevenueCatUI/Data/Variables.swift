@@ -34,7 +34,6 @@ protocol VariableDataProvider {
 
     var packageIdentifier: String { get }
 
-    var localizedIntroductoryOfferPrice: String? { get }
     var productName: String { get }
 
     func periodNameOrIdentifier(_ locale: Locale) -> String
@@ -44,6 +43,7 @@ protocol VariableDataProvider {
     func normalizedSubscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
+    func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool) -> String?
     func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String
     func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String
     func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String
@@ -64,6 +64,11 @@ enum VariableHandler {
 
         var discountRelativeToMostExpensivePerMonth: Double?
         var showZeroDecimalPlacePrices: Bool = false
+
+//        init(discountRelativeToMostExpensivePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = false) {
+//            self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
+//            self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+//        }
 
     }
 
@@ -133,7 +138,9 @@ enum VariableHandler {
             provider.normalizedSubscriptionDuration(locale)
         }
         case "sub_offer_duration": return { (provider, _, locale) in provider.introductoryOfferDuration(locale) }
-        case "sub_offer_price": return { (provider, _, _) in provider.localizedIntroductoryOfferPrice }
+        case "sub_offer_price": return { (provider, context, _) in
+            provider.localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
         case "sub_relative_discount": return { $0.localizedRelativeDiscount($1.discountRelativeToMostExpensivePerMonth,
                                                                             $2) }
 

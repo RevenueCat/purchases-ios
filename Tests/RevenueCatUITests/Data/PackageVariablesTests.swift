@@ -246,10 +246,10 @@ class PackageVariablesTests: TestCase {
     }
 
     func testIntroductoryOfferPrice() {
-        expect(TestData.weeklyPackage.localizedIntroductoryOfferPrice).to(beNil())
-        expect(TestData.monthlyPackage.localizedIntroductoryOfferPrice) == "$0.00"
-        expect(TestData.annualPackage.localizedIntroductoryOfferPrice) == "$1.99"
-        expect(TestData.lifetimePackage.localizedIntroductoryOfferPrice).to(beNil())
+        expect(TestData.weeklyPackage.localizedIntroductoryOfferPrice()).to(beNil())
+        expect(TestData.monthlyPackage.localizedIntroductoryOfferPrice()) == "$0.00"
+        expect(TestData.annualPackage.localizedIntroductoryOfferPrice()) == "$1.99"
+        expect(TestData.lifetimePackage.localizedIntroductoryOfferPrice()).to(beNil())
     }
 
     func testEnglishRelativeDiscount() {

@@ -58,8 +58,16 @@ extension Package: VariableDataProvider {
         return price
     }
 
-    var localizedIntroductoryOfferPrice: String? {
-        return self.storeProduct.introductoryDiscount?.localizedPriceString
+    func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
+        guard let price = self.storeProduct.introductoryDiscount?.localizedPriceString else {
+            return self.storeProduct.introductoryDiscount?.localizedPriceString
+        }
+
+        if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
+            return roundAndTruncatePrice(price)
+        }
+
+        return price
     }
 
     var productName: String {
