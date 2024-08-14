@@ -44,10 +44,10 @@ struct WrongPlatformView: View {
 
     var body: some View {
         ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
-            let textColor = color(from: appearance.textColor, for: colorScheme)
+            let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
             VStack {
                 let platformInstructions = self.humanReadableInstructions(for: store)

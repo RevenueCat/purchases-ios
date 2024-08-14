@@ -48,7 +48,7 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        let accentColor = color(from: self.appearance.accentColor, for: self.colorScheme)
+        let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
 
         if #available(iOS 16.0, *) {
             NavigationStack {
@@ -77,7 +77,7 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
 
@@ -139,7 +139,7 @@ struct SubtitleTextView: View {
     private var colorScheme
 
     var body: some View {
-        let textColor = color(from: appearance.textColor, for: colorScheme)
+        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
         if let subtitle {
             Text(subtitle)

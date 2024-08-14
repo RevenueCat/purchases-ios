@@ -31,8 +31,8 @@ struct ManageSubscriptionsButtonStyle: PrimitiveButtonStyle {
     @Environment(\.colorScheme) private var colorScheme
 
     func makeBody(configuration: PrimitiveButtonStyleConfiguration) -> some View {
-        let background = color(from: appearance.buttonBackgroundColor, for: colorScheme)
-        let textColor = color(from: appearance.buttonTextColor, for: colorScheme)
+        let background = Color.from(colorInformation: appearance.buttonBackgroundColor, for: colorScheme)
+        let textColor = Color.from(colorInformation: appearance.buttonTextColor, for: colorScheme)
 
         Button(action: { configuration.trigger() }, label: {
             configuration.label.frame(maxWidth: .infinity)

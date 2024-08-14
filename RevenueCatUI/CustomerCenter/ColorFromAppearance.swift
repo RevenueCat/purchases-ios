@@ -18,9 +18,11 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-func color(from colorInformation: CustomerCenterConfigData.Appearance.ColorInformation,
-           for colorScheme: ColorScheme) -> Color? {
-    return colorScheme == .dark ? colorInformation.dark?.underlyingColor : colorInformation.light?.underlyingColor
+extension Color {
+    static func from(colorInformation: CustomerCenterConfigData.Appearance.ColorInformation,
+                     for colorScheme: ColorScheme) -> Color? {
+        return colorScheme == .dark ? colorInformation.dark?.underlyingColor : colorInformation.light?.underlyingColor
+    }
 }
 
 #endif
