@@ -20,6 +20,9 @@ import RevenueCat
 
 #if os(iOS)
 
+// We fail open.
+private let defaultAppIsLatestVersion = true
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -36,7 +39,7 @@ import RevenueCat
     @Published
     private(set) var subscriptionsAreFromApple: Bool = false
     @Published
-    private(set) var appIsLatestVersion: Bool = false
+    private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     // @PublicForExternalTesting
     @Published
@@ -50,9 +53,6 @@ import RevenueCat
     @Published
     var configuration: CustomerCenterConfigData? {
         didSet {
-            // We fail open.
-            let defaultAppIsLatestVersion = true
-
             guard let currentVersionString = currentAppVersion?.takeVersion() else {
                 self.appIsLatestVersion = defaultAppIsLatestVersion
                 return
