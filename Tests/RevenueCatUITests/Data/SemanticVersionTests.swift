@@ -20,7 +20,7 @@ import XCTest
 class SemanticVersionTests: TestCase {
 
     func testValidVersionString() {
-        let testCases = [
+        let testCases: [(string: String, major: UInt, minor: UInt, patch: UInt)] = [
             (string: "12.4503.2", major: 12, minor: 4503, patch: 2),
             (string: "12.4503", major: 12, minor: 4503, patch: 0),
             (string: "12", major: 12, minor: 0, patch: 0),
