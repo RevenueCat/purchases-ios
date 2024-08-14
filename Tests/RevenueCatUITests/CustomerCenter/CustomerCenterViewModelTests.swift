@@ -50,7 +50,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testStateChangeToError() {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
-        viewModel.setStateForTesting(.error(error))
+        viewModel.state = .error(error)
 
         switch viewModel.state {
         case .error(let stateError):
@@ -65,8 +65,8 @@ class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.isLoaded) == false
 
-        viewModel.setStateForTesting(.success)
-        viewModel.setConfigurationForTesting(CustomerCenterConfigTestData.customerCenterData)
+        viewModel.state = .success
+        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData
 
         expect(viewModel.isLoaded) == true
     }
