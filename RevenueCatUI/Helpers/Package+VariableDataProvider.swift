@@ -25,7 +25,7 @@ extension Package: VariableDataProvider {
 
     func localizedPrice(showZeroDecimalPlacePrices: Bool = false) -> String {
         if showZeroDecimalPlacePrices && priceEndsIn00Cents(self.storeProduct.localizedPriceString) {
-            return roundAndTruncatePrice(self.storeProduct.localizedPriceString)
+            return formatAsZeroDecimalPlaces(self.storeProduct.localizedPriceString)
         } else {
             return self.storeProduct.localizedPriceString
         }
@@ -38,7 +38,7 @@ extension Package: VariableDataProvider {
         }
 
         if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
-            return roundAndTruncatePrice(price)
+            return formatAsZeroDecimalPlaces(price)
         } else {
             return price
         }
@@ -52,7 +52,7 @@ extension Package: VariableDataProvider {
         }
 
         if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
-            return roundAndTruncatePrice(price)
+            return formatAsZeroDecimalPlaces(price)
         }
 
         return price
@@ -64,7 +64,7 @@ extension Package: VariableDataProvider {
         }
 
         if showZeroDecimalPlacePrices && priceEndsIn00Cents(price) {
-            return roundAndTruncatePrice(price)
+            return formatAsZeroDecimalPlaces(price)
         }
 
         return price
@@ -184,7 +184,7 @@ private extension Package {
         return roundedPrice.truncatingRemainder(dividingBy: 1) == 0
     }
 
-    func roundAndTruncatePrice(_ priceString: String) -> String {
+    func formatAsZeroDecimalPlaces(_ priceString: String) -> String {
         guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
             Logger.warning(Strings.no_price_round_priceFormatter_nil)
             return priceString
