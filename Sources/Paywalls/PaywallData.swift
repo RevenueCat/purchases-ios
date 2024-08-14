@@ -15,25 +15,6 @@
 
 import Foundation
 
-/// Represents countries where currencies typically have zero decimal places
-public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
-
-    /// Storefront country codes that should typically display zero decimal places
-    public var apple: Set<String>
-
-    /// Storefront country codes that should typically display zero decimal places.
-    public init(apple: Set<String>) {
-        self.apple = apple
-    }
-
-    // swiftlint:disable:next missing_docs
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.apple = try container.decodeIfPresent(Set<String>.self, forKey: .apple) ?? []
-    }
-
-}
-
 /// The data necessary to display a paywall using the `RevenueCatUI` library.
 /// They can be created and configured in the dashboard, then accessed from ``Offering/paywall``.
 ///
@@ -98,6 +79,21 @@ public protocol PaywallLocalizedConfiguration {
     /// An optional name representing the ``PaywallData/Tier``.
     var tierName: String? { get }
 
+}
+
+extension PaywallData {
+    /// Represents countries where currencies typically have zero decimal places
+    public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
+
+        /// Storefront country codes that should typically display zero decimal places
+        public var apple: Set<String> = []
+
+        /// Storefront country codes that should typically display zero decimal places.
+        public init(apple: Set<String>) {
+            self.apple = apple
+        }
+        
+    }
 }
 
 extension PaywallData {
