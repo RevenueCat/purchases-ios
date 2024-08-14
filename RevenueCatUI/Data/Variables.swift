@@ -65,11 +65,6 @@ enum VariableHandler {
         var discountRelativeToMostExpensivePerMonth: Double?
         var showZeroDecimalPlacePrices: Bool = false
 
-//        init(discountRelativeToMostExpensivePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = false) {
-//            self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
-//            self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
-//        }
-
     }
 
     static func processVariables(
