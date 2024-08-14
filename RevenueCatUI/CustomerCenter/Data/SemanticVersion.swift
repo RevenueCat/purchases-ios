@@ -16,11 +16,11 @@
 import Foundation
 
 struct SemanticVersion: Comparable {
-    let major: Int
-    let minor: Int
-    let patch: Int
+    let major: UInt
+    let minor: UInt
+    let patch: UInt
 
-    init(major: Int, minor: Int, patch: Int) {
+    init(major: UInt, minor: UInt, patch: UInt) {
         self.major = major
         self.minor = minor
         self.patch = patch
@@ -33,12 +33,12 @@ struct SemanticVersion: Comparable {
             throw SemanticVersionError.invalidVersionString(version)
         }
 
-        let major = Int(version[Range(match.range(at: 1), in: version)!])!
+        let major = UInt(version[Range(match.range(at: 1), in: version)!])!
         let minor = match.range(at: 2).location != NSNotFound ?
-            Int(version[Range(match.range(at: 2), in: version)!])! :
+            UInt(version[Range(match.range(at: 2), in: version)!])! :
             0
         let patch = match.range(at: 3).location != NSNotFound ?
-            Int(version[Range(match.range(at: 3), in: version)!])! :
+            UInt(version[Range(match.range(at: 3), in: version)!])! :
             0
 
         self.init(major: major, minor: minor, patch: patch)
