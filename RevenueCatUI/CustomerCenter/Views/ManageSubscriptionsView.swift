@@ -20,7 +20,7 @@ import SwiftUI
 
 #if os(iOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -51,8 +51,6 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
-
         if #available(iOS 16.0, *) {
             content
                 .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
@@ -80,27 +78,28 @@ struct ManageSubscriptionsView: View {
                 background.edgesIgnoringSafeArea(.all)
             }
 
-            ScrollView {
-                VStack {
-                    if self.viewModel.isLoaded {
-                        SubtitleTextView(subtitle: self.viewModel.screen.subtitle)
+            if self.viewModel.isLoaded {
+                List {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        SubtitleTextView(subtitle: subtitle)
+                    }
 
-                        if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                    if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                        Section {
                             SubscriptionDetailsView(
                                 subscriptionInformation: subscriptionInformation,
                                 localization: self.localization,
                                 refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                         }
+                    }
 
+                    Section {
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
                                                        loadingPath: self.$viewModel.loadingPath)
-                    } else {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
                     }
                 }
-                .padding([.horizontal, .bottom])
-                .frame(maxWidth: 400)
+            } else {
+                TintedProgressView()
             }
         }
         .toolbar {
@@ -119,7 +118,7 @@ struct ManageSubscriptionsView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -133,7 +132,7 @@ private extension ManageSubscriptionsView {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -159,7 +158,7 @@ struct SubtitleTextView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -190,7 +189,7 @@ struct ManageSubscriptionsButtonsView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -229,7 +228,7 @@ struct ManageSubscriptionButton: View {
 }
 
 #if DEBUG
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
