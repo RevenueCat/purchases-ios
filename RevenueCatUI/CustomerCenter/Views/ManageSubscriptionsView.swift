@@ -13,6 +13,8 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
+// swiftlint:disable file_length
+
 #if CUSTOMER_CENTER_ENABLED
 
 import RevenueCat
@@ -108,7 +110,7 @@ struct ManageSubscriptionsView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .safeTopBarTrailing) {
+            ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }
@@ -125,13 +127,17 @@ struct ManageSubscriptionsView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal extension ToolbarItemPlacement {
-    static var safeTopBarTrailing: ToolbarItemPlacement {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return .topBarTrailing
-        } else {
-            return .navigationBarTrailing
-        }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    static var compatibleTopBarTrailing: ToolbarItemPlacement {
+        return .navigationBarTrailing
     }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    static var compatibleTopBarTrailing2: ToolbarItemPlacement {
+        return .topBarTrailing
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
