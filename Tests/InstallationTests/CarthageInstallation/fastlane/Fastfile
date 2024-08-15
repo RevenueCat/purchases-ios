@@ -13,9 +13,11 @@ lane :installation_tests do
   
   Dir.chdir("..") do
     # install without building, then remove the tests and build, so that carthage
-    # doesn't try to build the other installation tests
+    # doesn't try to build the other installation tests and testing apps
     sh "carthage", "update", "--no-build"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/InstallationTests/"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/APITesters/"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/TestingApps/"
 
     # Carthage builds all schemes including ones we don't need, so let's nuke them before proceeding
     schemes_directory = "Carthage/Checkouts/purchases-root/RevenueCat.xcodeproj/xcshareddata/xcschemes"

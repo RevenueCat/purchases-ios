@@ -41,6 +41,15 @@ struct FeedbackSurveyView: View {
     }
 
     var body: some View {
+        ZStack {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
+                background.edgesIgnoringSafeArea(.all)
+            }
+
+            VStack {
+                Spacer()
+
+    var body: some View {
         List {
             FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                       onOptionSelected: self.viewModel.handleAction(for:),
@@ -76,17 +85,20 @@ struct FeedbackSurveyButtonsView: View {
     var loadingState: String?
 
     var body: some View {
-        ForEach(options, id: \.id) { option in
-            AsyncButton(action: {
-                await self.onOptionSelected(option)
-            }, label: {
-                if self.loadingState == option.id {
-                    TintedProgressView()
-                } else {
-                    Text(option.title)
-                }
-            })
-            .disabled(self.loadingState != nil)
+        VStack(spacing: Self.buttonSpacing) {
+            ForEach(options, id: \.id) { option in
+                AsyncButton(action: {
+                    await self.onOptionSelected(option)
+                }, label: {
+                    if self.loadingState == option.id {
+                        TintedProgressView()
+                    } else {
+                        Text(option.title)
+                    }
+                })
+                .buttonStyle(ProminentButtonStyle())
+                .disabled(self.loadingState != nil)
+            }
         }
     }
 

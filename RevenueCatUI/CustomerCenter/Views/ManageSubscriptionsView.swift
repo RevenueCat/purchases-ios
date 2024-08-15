@@ -26,6 +26,9 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView: View {
 
+    @Environment(\.dismiss)
+    var dismiss
+
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.localization)
@@ -48,7 +51,7 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        let accentColor = color(from: self.appearance.accentColor, for: self.colorScheme)
+        let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
 
         if #available(iOS 16.0, *) {
             NavigationStack {
@@ -77,7 +80,7 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
 
@@ -105,12 +108,20 @@ struct ManageSubscriptionsView: View {
                 TintedProgressView()
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                DismissCircleButton {
+                    dismiss()
+                }
+            }
+        }
         .task {
             await loadInformationIfNeeded()
         }
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -140,7 +151,7 @@ struct SubtitleTextView: View {
     private var colorScheme
 
     var body: some View {
-        let textColor = color(from: appearance.textColor, for: colorScheme)
+        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
         if let subtitle {
             Text(subtitle)
@@ -149,6 +160,116 @@ struct SubtitleTextView: View {
                 .multilineTextAlignment(.center)
                 .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailsView: View {
+
+    let iconWidth = 22.0
+    let subscriptionInformation: SubscriptionInformation
+    let localization: CustomerCenterConfigData.Localization
+    let refundRequestStatusMessage: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading) {
+                Text("\(subscriptionInformation.title)")
+                    .font(.headline)
+
+                let explanation = subscriptionInformation.active ? (
+                     subscriptionInformation.willRenew ?
+                            localization.commonLocalizedString(for: .subEarliestRenewal) :
+                            localization.commonLocalizedString(for: .subEarliestExpiration)
+                    ) : localization.commonLocalizedString(for: .subExpired)
+
+                Text("\(explanation)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+            }.padding([.bottom], 10)
+
+            Divider()
+                .padding(.bottom)
+
+            VStack(alignment: .leading, spacing: 16.0) {
+                HStack(alignment: .center) {
+                    Image(systemName: "coloncurrencysign.arrow.circlepath")
+                        .accessibilityHidden(true)
+                        .frame(width: iconWidth)
+                    VStack(alignment: .leading) {
+                        Text(localization.commonLocalizedString(for: .billingCycle))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .textCase(.uppercase)
+                        Text("\(subscriptionInformation.durationTitle)")
+                            .font(.body)
+                    }
+                }
+
+                HStack(alignment: .center) {
+                    Image(systemName: "coloncurrencysign")
+                        .accessibilityHidden(true)
+                        .frame(width: iconWidth)
+                    VStack(alignment: .leading) {
+                        Text(localization.commonLocalizedString(for: .currentPrice))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .textCase(.uppercase)
+                        Text("\(subscriptionInformation.price)")
+                            .font(.body)
+                    }
+                }
+
+                if let nextRenewal =  subscriptionInformation.expirationDateString {
+                    let expirationString = subscriptionInformation.active ? (
+                        subscriptionInformation.willRenew ?
+                            localization.commonLocalizedString(for: .nextBillingDate) :
+                            localization.commonLocalizedString(for: .expires)
+                    ) : localization.commonLocalizedString(for: .expired)
+
+                    HStack(alignment: .center) {
+                        Image(systemName: "calendar")
+                            .accessibilityHidden(true)
+                            .frame(width: iconWidth)
+                        VStack(alignment: .leading) {
+                            Text("\(expirationString)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                            Text("\(String(describing: nextRenewal))")
+                                .font(.body)
+                        }
+                    }
+                }
+
+                if let refundRequestStatusMessage = refundRequestStatusMessage {
+                    HStack(alignment: .center) {
+                        Image(systemName: "arrowshape.turn.up.backward")
+                            .accessibilityHidden(true)
+                            .frame(width: iconWidth)
+                        VStack(alignment: .leading) {
+                            Text(localization.commonLocalizedString(for: .refundStatus))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                            Text("\(refundRequestStatusMessage)")
+                                .font(.body)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(24.0)
+        .background(Color(UIColor.tertiarySystemBackground))
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0.0, y: 10)
+        .padding([.top, .bottom])
+        .padding(.bottom)
     }
 
 }
@@ -205,6 +326,7 @@ struct ManageSubscriptionButton: View {
                 Text(path.title)
             }
         })
+        .buttonStyle(ProminentButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(item: self.$viewModel.promotionalOfferData,
@@ -219,10 +341,10 @@ struct ManageSubscriptionButton: View {
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
     }
+
 }
 
 #if DEBUG
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -252,6 +374,23 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailsView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        SubscriptionDetailsView(
+            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+            localization: CustomerCenterConfigTestData.customerCenterData.localization,
+            refundRequestStatusMessage: "Success"
+        )
+        .previewDisplayName("Subscription Details - Monthly")
+        .padding()
+    }
+
+}
 #endif
 
 #endif

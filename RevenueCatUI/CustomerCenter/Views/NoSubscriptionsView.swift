@@ -46,9 +46,10 @@ struct NoSubscriptionsView: View {
         self.configuration = configuration
     }
 
-    var body: some View {
-        let background = color(from: appearance.backgroundColor, for: colorScheme)
-        let textColor = color(from: appearance.textColor, for: colorScheme)
+    @ViewBuilder
+    var content: some View {
+        let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme)
+        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
         let fallbackDescription = "We can try checking your Apple account for any previous purchases"
 
@@ -70,17 +71,31 @@ struct NoSubscriptionsView: View {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)
-                .buttonStyle(ManageSubscriptionsButtonStyle())
-
-                Button(localization.commonLocalizedString(for: .cancel)) {
-                    dismiss()
-                }
-                .padding(.vertical)
+                .buttonStyle(ProminentButtonStyle())
             }
             .padding(.horizontal)
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                DismissCircleButton {
+                    dismiss()
+                }
+            }
+        }
 
+    }
+
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
+            }
+        } else {
+            NavigationView {
+                content
+            }
+        }
     }
 
 }
