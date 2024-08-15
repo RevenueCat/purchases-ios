@@ -38,7 +38,7 @@ public struct PaywallData {
     }
 
     /// The storefront country codes that should not display cents in prices.
-    public var zeroDecimalPlaceCountries: [String] {
+    public var zeroDecimalPlaceCountries: Set<String> {
         _zeroDecimalPlaceCountries?.apple ?? []
     }
 
@@ -86,10 +86,10 @@ extension PaywallData {
     public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
 
         /// Storefront country codes that should typically display zero decimal places
-        public var apple: [String] = []
+        public var apple: Set<String> = []
 
         /// Storefront country codes that should typically display zero decimal places.
-        public init(apple: [String]) {
+        public init(apple: Set<String>) {
             self.apple = apple
         }
 
@@ -623,7 +623,7 @@ extension PaywallData {
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
         revision: Int = 0,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: Set<String> = []
     ) {
         self.templateName = templateName
         self.config = config
@@ -642,7 +642,7 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: Set<String> = []
     ) {
         self.init(
             templateName: templateName,
@@ -663,7 +663,7 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: Set<String> = []
     ) {
         self.init(
             templateName: templateName,
