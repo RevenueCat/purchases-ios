@@ -20,14 +20,13 @@ import RevenueCat
 
 #if os(iOS)
 
-// We fail open.
-private let defaultAppIsLatestVersion = true
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor class CustomerCenterViewModel: ObservableObject {
+    // We fail open.
+    private static let defaultAppIsLatestVersion = true
 
     typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
     typealias CurrentVersionFetcher = () -> String?
