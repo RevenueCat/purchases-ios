@@ -83,7 +83,7 @@ import RevenueCat
             return try await Purchases.shared.customerInfo()
         },
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
-            SystemInfo.appVersion
+            Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         }
     ) {
         self.state = .notLoaded
