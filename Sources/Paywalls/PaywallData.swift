@@ -38,7 +38,7 @@ public struct PaywallData {
     }
 
     /// The storefront country codes that should not display cents in prices.
-    public var zeroDecimalPlaceCountries: Set<String> {
+    public var zeroDecimalPlaceCountries: [String] {
         _zeroDecimalPlaceCountries?.apple ?? []
     }
 
@@ -86,10 +86,10 @@ extension PaywallData {
     public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
 
         /// Storefront country codes that should typically display zero decimal places
-        public var apple: Set<String> = []
+        public var apple: [String] = []
 
         /// Storefront country codes that should typically display zero decimal places.
-        public init(apple: Set<String>) {
+        public init(apple: [String]) {
             self.apple = apple
         }
 
