@@ -54,26 +54,22 @@ struct ManageSubscriptionsView: View {
         let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
 
         if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-                    .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
-                        if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
-                        }
+            content
+                .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
+                    if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
+                        FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
                     }
-            }.applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+                }
         } else {
-            NavigationView {
-                content
-                    .background(NavigationLink(
-                        destination: self.viewModel.feedbackSurveyData.map { data in
-                            FeedbackSurveyView(feedbackSurveyData: data)
-                        },
-                        isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
-                    ) {
-                        EmptyView()
-                    })
-            }.applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+            content
+                .background(NavigationLink(
+                    destination: self.viewModel.feedbackSurveyData.map { data in
+                        FeedbackSurveyView(feedbackSurveyData: data)
+                    },
+                    isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
+                ) {
+                    EmptyView()
+                })
         }
     }
 
@@ -180,17 +176,15 @@ struct ManageSubscriptionsButtonsView: View {
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
-        VStack(spacing: 16) {
-            let filteredPaths = self.viewModel.screen.paths.filter { path in
+        let filteredPaths = self.viewModel.screen.paths.filter { path in
 #if targetEnvironment(macCatalyst)
-                return path.type == .refundRequest
+            return path.type == .refundRequest
 #else
-                return true
+            return true
 #endif
-            }
-            ForEach(filteredPaths, id: \.id) { path in
-                ManageSubscriptionButton(path: path, viewModel: self.viewModel)
-            }
+        }
+        ForEach(filteredPaths, id: \.id) { path in
+            ManageSubscriptionButton(path: path, viewModel: self.viewModel)
         }
     }
 
@@ -217,7 +211,6 @@ struct ManageSubscriptionButton: View {
                 Text(path.title)
             }
         })
-        .buttonStyle(ProminentButtonStyle())
         .disabled(self.viewModel.loadingPath != nil)
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(item: self.$viewModel.promotionalOfferData,
