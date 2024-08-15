@@ -40,7 +40,6 @@ extension CustomerCenterPresentationMode {
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 @available(watchOS, unavailable, message: "CustomerCenterView does not support watchOS yet")
-@available(visionOS, unavailable, message: "CustomerCenterView does not support visionOS yet")
 extension View {
 
     /// Presents the ``CustomerCenter``.
