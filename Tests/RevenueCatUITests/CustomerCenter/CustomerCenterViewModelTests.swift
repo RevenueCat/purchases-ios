@@ -154,9 +154,14 @@ class CustomerCenterViewModelTests: TestCase {
             (currentVersion: "not-a-number", latestVersion: "not-a-number-either", expectedAppIsLatestVersion: true),
             (currentVersion: "not-a-number", latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
             (currentVersion: "1.2.3", latestVersion: "not-a-number", expectedAppIsLatestVersion: true),
+            (currentVersion: "not.a.number", latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: "not.a.number", expectedAppIsLatestVersion: true),
             (currentVersion: nil, latestVersion: nil, expectedAppIsLatestVersion: true),
             (currentVersion: "1.2.3", latestVersion: nil, expectedAppIsLatestVersion: true),
-            (currentVersion: nil, latestVersion: "1.2.3", expectedAppIsLatestVersion: true)
+            (currentVersion: nil, latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
+            (currentVersion: "", latestVersion: "", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: "", expectedAppIsLatestVersion: true),
+            (currentVersion: "", latestVersion: "1.2.3", expectedAppIsLatestVersion: true)
         ]
         for (currentVersion, latestVersion, expectedAppIsLatestVersion) in testCases {
             XCTContext.runActivity(
