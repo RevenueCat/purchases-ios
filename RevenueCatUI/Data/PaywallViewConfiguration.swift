@@ -31,7 +31,7 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
-        locale: Locale
+        locale: Locale = .current
     ) {
         self.content = content
         self.customerInfo = customerInfo
