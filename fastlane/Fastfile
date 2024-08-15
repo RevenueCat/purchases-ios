@@ -537,23 +537,33 @@ platform :ios do
   end
 
   lane :export_xcframeworks do |options|
-    create_and_sign_xcframework(scheme: 'RevenueCat', product_name: 'RevenueCat')
-    create_and_sign_xcframework(scheme: 'RevenueCatUIDev', product_name: 'RevenueCatUI')
-  end
-
-  private_lane :create_and_sign_xcframework do |options|
-    scheme = options[:scheme]
-    product_name = options[:product_name]
-
-    output_directory = 'build/xcframeworks'
-    platforms = [
+    create_and_sign_xcframework(
+      scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
+      platforms: [
       'iOS',
       'macOS',
       'maccatalyst',
       'tvOS',
       'watchOS',
       'visionOS'
-    ]
+    ])
+    create_and_sign_xcframework(
+      scheme: 'RevenueCatUIDev',
+      product_name: 'RevenueCatUI',
+      platforms: [
+      'iOS',
+      'maccatalyst',
+      'watchOS',
+    ])
+  end
+
+  private_lane :create_and_sign_xcframework do |options|
+    scheme = options[:scheme]
+    product_name = options[:product_name]
+    platforms = options[:platforms]
+
+    output_directory = "build/xcframeworks/#{product_name}"
 
     create_xcframework(
       destinations: platforms,
