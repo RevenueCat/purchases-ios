@@ -77,12 +77,12 @@
         "revision" : 1,
         "template_name" : "1",
         "zero_decimal_place_countries" : {
-          "apple": [
+          "apple" : [
+            "TWN",
+            "KAZ",
             "MEX",
             "PHL",
-            "THA",
-            "TWN",
-            "KAZ"
+            "THA"
           ]
         }
       }
