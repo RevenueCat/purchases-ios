@@ -94,7 +94,7 @@ platform :ios do
       repo_name: repo_name,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: changelog_latest_path,
-      upload_assets: ['RevenueCat.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
     )
   end
 
@@ -246,7 +246,7 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    export_xcframework
+    export_xcframeworks
     check_no_github_release_exists(version_number)
   end
 
@@ -350,7 +350,7 @@ platform :ios do
   desc "Create XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    export_xcframework
+    export_xcframeworks
     github_release(version: version_number)
   end
 
@@ -536,22 +536,39 @@ platform :ios do
     }
   end
 
-  desc "Export XCFramework"
-  lane :export_xcframework do |options|
-    output_directory = 'build/xcframeworks'
-    platforms = [
-        'iOS',
-        'macOS',
-        'maccatalyst',
-        'tvOS',
-        'watchOS',
-        'visionOS'
-      ]
+  lane :export_xcframeworks do |options|
+    create_and_sign_xcframework(
+      scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
+      platforms: [
+      'iOS',
+      'macOS',
+      'maccatalyst',
+      'tvOS',
+      'watchOS',
+      'visionOS'
+    ])
+    create_and_sign_xcframework(
+      scheme: 'RevenueCatUIDev',
+      product_name: 'RevenueCatUI',
+      platforms: [
+      'iOS',
+      'maccatalyst',
+      'watchOS',
+    ])
+  end
+
+  private_lane :create_and_sign_xcframework do |options|
+    scheme = options[:scheme]
+    product_name = options[:product_name]
+    platforms = options[:platforms]
+
+    output_directory = "build/xcframeworks/#{product_name}"
 
     create_xcframework(
       destinations: platforms,
-      scheme: 'RevenueCat',
-      product_name: 'RevenueCat',
+      scheme: scheme,
+      product_name: product_name,
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
@@ -566,10 +583,10 @@ platform :ios do
 
     # Sign XCFramework for Xcode 15
     sign_xcframework(
-      file: "#{output_directory_for_sh}/RevenueCat.xcframework"
+      file: "#{output_directory_for_sh}/#{product_name}.xcframework"
     )
 
-    xcframeworks_zip_path_for_sh = "../RevenueCat.xcframework.zip"
+    xcframeworks_zip_path_for_sh = "../#{product_name}.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
       output_directory_for_sh,
       xcframeworks_zip_path_for_sh)
