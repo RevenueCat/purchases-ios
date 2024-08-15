@@ -22,7 +22,7 @@ struct IconView<S: ShapeStyle>: View {
     let tint: S
 
     var body: some View {
-        Image(self.icon.rawValue, bundle: .module)
+        Image(self.icon.localAssetName, bundle: .module)
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
@@ -35,7 +35,7 @@ struct IconView<S: ShapeStyle>: View {
 /// An icon to be displayed by `IconView`.
 enum PaywallIcon: String, CaseIterable {
 
-    case add
+    case plus = "add"
     case android
     case apple
     case attachMoney = "attach_money"
@@ -82,6 +82,17 @@ enum PaywallIcon: String, CaseIterable {
     case key
     case warning
 
+    // in some cases, the local asset name can't match the backend's names
+    // because it causes issues with UIKit's names when generating intermediate files.
+    // this allows us to decouple the local asset name from the backend's name for the icon.
+    var localAssetName: String {
+        switch self {
+        case .plus:
+            return "plus"
+        default:
+            return self.rawValue
+        }
+    }
 }
 
 extension PaywallData.LocalizedConfiguration.Feature {
