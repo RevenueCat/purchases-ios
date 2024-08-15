@@ -43,7 +43,8 @@ public struct PaywallData {
     }
 
     internal private(set) var _zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries?
-    /// The default localue identifier for this paywall.
+    
+    /// The default locale identifier for this paywall.
     public var defaultLocale: String?
 
     @DefaultDecodable.Zero

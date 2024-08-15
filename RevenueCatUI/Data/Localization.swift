@@ -80,7 +80,7 @@ enum Localization {
         // Returns the localized string
         return value(
             locale: locale,
-            // Or falls back to first localization or english
+            // Or falls back to first localization, and if unavailable, english
             fallback: value(locale: fallbackLocale, fallback: nil)
         )
     }

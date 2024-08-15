@@ -17,8 +17,8 @@ public extension PaywallData {
 
     /// - Returns: the `Locale` being used with ``PaywallData/LocalizedConfiguration-swift.struct``
     var locale: Locale? {
-        let singleTier = self.localizedConfiguration(for: Self.localesOrderedByPriority)?.0
-        let multiTier = self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.0
+        let singleTier = self.localizedConfiguration(for: Self.localesOrderedByPriority)?.locale
+        let multiTier = self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.locale
 
         return singleTier ?? multiTier
     }
@@ -27,20 +27,20 @@ public extension PaywallData {
     /// based on `Locale.preferredLocales` or the default locale.
     /// -  Returns: `nil` for multi-tier paywalls.
     var localizedConfiguration: LocalizedConfiguration? {
-        return self.localizedConfiguration(for: Self.localesOrderedByPriority)?.1
+        return self.localizedConfiguration(for: Self.localesOrderedByPriority)?.localizedConfiguration
     }
 
     /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
     /// based on `Locale.preferredLocales` or the default locale.
     /// -  Returns: `[:]` for single-tier paywalls.
     var localizedConfigurationByTier: [String: LocalizedConfiguration]? {
-        return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.1
+        return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)?.localizedConfiguration
     }
 
     // Visible for testing
     internal func localizedConfiguration(
         for preferredLocales: [Locale]
-    ) -> (Locale, LocalizedConfiguration)? {
+    ) -> (locale: Locale, localizedConfiguration: LocalizedConfiguration)? {
         let defaultLocale = self.defaultLocale.map(Locale.init(identifier: ))
 
         return Self.localizedConfiguration(
@@ -54,7 +54,7 @@ public extension PaywallData {
     // Visible for testing
     internal func localizedConfigurationByTier(
         for preferredLocales: [Locale]
-    ) -> (Locale, [String: LocalizedConfiguration])? {
+    ) -> (locale: Locale, localizedConfiguration: [String: LocalizedConfiguration])? {
         let defaultLocale = self.defaultLocale.map(Locale.init(identifier: ))
 
         return Self.localizedConfiguration(
