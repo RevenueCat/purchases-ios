@@ -18,7 +18,7 @@ struct OfferingsList: View {
         self.content
             .toolbar {
                 #if !os(watchOS)
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Picker("Options", selection: $introEligility) {
                             Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)

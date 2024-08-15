@@ -110,7 +110,7 @@ struct ManageSubscriptionsView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }
@@ -121,21 +121,6 @@ struct ManageSubscriptionsView: View {
         }
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-internal extension ToolbarItemPlacement {
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    static var compatibleTopBarTrailing: ToolbarItemPlacement {
-        return .navigationBarTrailing
-    }
-
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    static var compatibleTopBarTrailing2: ToolbarItemPlacement {
-        return .topBarTrailing
     }
 
 }

@@ -68,7 +68,7 @@ struct WrongPlatformView: View {
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
         .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }
