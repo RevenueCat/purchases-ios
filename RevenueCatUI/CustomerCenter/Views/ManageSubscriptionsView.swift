@@ -235,24 +235,29 @@ struct ManageSubscriptionButton: View {
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-            screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-            customerCenterActionHandler: nil,
-            refundRequestStatusMessage: "Refund granted successfully!")
-        ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-            .previewDisplayName("Monthly renewing")
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-            .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
 
-        let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-            screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-            customerCenterActionHandler: nil)
-        ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-            .previewDisplayName("Yearly expiring")
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-            .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+        CompatibilityNavigationStack {
+            let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
+                screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                customerCenterActionHandler: nil,
+                refundRequestStatusMessage: "Refund granted successfully!")
+            ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+                .previewDisplayName("Monthly renewing")
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+        }
+
+        CompatibilityNavigationStack {
+            let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                customerCenterActionHandler: nil)
+            ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                .previewDisplayName("Yearly expiring")
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+        }
     }
 
 }
