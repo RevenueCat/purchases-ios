@@ -29,6 +29,8 @@ public struct CustomerCenterView: View {
 
     @StateObject private var viewModel: CustomerCenterViewModel
 
+    @Environment(\.colorScheme)
+    private var colorScheme
     private var localization: CustomerCenterConfigData.Localization
     private var appearance: CustomerCenterConfigData.Appearance
     private var supportInformation: CustomerCenterConfigData.Support?
@@ -73,7 +75,7 @@ public struct CustomerCenterView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -87,7 +89,7 @@ private extension CustomerCenterView {
     }
 
     @ViewBuilder
-    func destinationView(configuration: CustomerCenterConfigData) -> some View {
+    func destinationContent(configuration: CustomerCenterConfigData) -> some View {
         if viewModel.hasSubscriptions {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
@@ -101,11 +103,21 @@ private extension CustomerCenterView {
         }
     }
 
+    @ViewBuilder
+    func destinationView(configuration: CustomerCenterConfigData) -> some View {
+        let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
+
+        CompatibilityNavigationStack {
+            destinationContent(configuration: configuration)
+        }
+        .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+    }
+
 }
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)

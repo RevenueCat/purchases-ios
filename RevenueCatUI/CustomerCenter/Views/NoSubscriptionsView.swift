@@ -46,8 +46,7 @@ struct NoSubscriptionsView: View {
         self.configuration = configuration
     }
 
-    @ViewBuilder
-    var content: some View {
+    var body: some View {
         let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme)
         let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
 
@@ -81,19 +80,6 @@ struct NoSubscriptionsView: View {
                 DismissCircleButton {
                     dismiss()
                 }
-            }
-        }
-
-    }
-
-    var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
             }
         }
     }
