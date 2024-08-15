@@ -85,15 +85,7 @@ struct WrongPlatformView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
-            }
-        }
+        content
     }
 
     private func humanReadablePlatformName(store: Store) -> String {

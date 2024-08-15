@@ -87,15 +87,7 @@ struct NoSubscriptionsView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
-            }
-        }
+        content
     }
 
 }
