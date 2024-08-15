@@ -52,22 +52,17 @@ import RevenueCat
     @Published
     var configuration: CustomerCenterConfigData? {
         didSet {
-            guard let currentVersionString = currentAppVersion?.versionString() else {
-                self.appIsLatestVersion = defaultAppIsLatestVersion
-                return
-            }
-            guard let latestVersionString = configuration?.lastPublishedAppVersion?.versionString() else {
-                self.appIsLatestVersion = defaultAppIsLatestVersion
+            guard
+                let currentVersionString = currentAppVersion?.versionString(),
+                let latestVersionString = configuration?.lastPublishedAppVersion?.versionString(),
+                let currentVersion = try? SemanticVersion(currentVersionString),
+                let latestVersion = try? SemanticVersion(latestVersionString)
+            else {
+                self.appIsLatestVersion = Self.defaultAppIsLatestVersion
                 return
             }
 
-            do {
-                let currentVersion = try SemanticVersion(currentVersionString)
-                let latestVersion = try SemanticVersion(latestVersionString)
-                self.appIsLatestVersion = currentVersion >= latestVersion
-            } catch {
-                self.appIsLatestVersion = defaultAppIsLatestVersion
-            }
+            self.appIsLatestVersion = currentVersion >= latestVersion
       }
     }
 
