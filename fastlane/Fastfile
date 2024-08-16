@@ -1002,12 +1002,6 @@ platform :ios do
   lane :enable_customer_center do |options|
     commit_hash = options[:commit_hash] || "517ad0bf5"
 
-    UI.message("Preparing to enable customer center development...")
-    UI.message("Checking git status...")
-    
-    ensure_git_status_clean
-
-    UI.message("Git working directory is clean. Proceeding with customer center enablement.")
     UI.message("Applying changes from commit to enable customer center: #{commit_hash}")
 
     begin
