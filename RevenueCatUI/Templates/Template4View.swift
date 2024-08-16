@@ -312,7 +312,8 @@ private struct PackageButton: View {
         VStack(spacing: Self.labelVerticalSeparation) {
             self.offerName
 
-            Text(self.package.content.localizedPrice)
+            Text(self.package.content
+                .localizedPrice(showZeroDecimalPlacePrices: configuration.showZeroDecimalPlacePrices))
                 .font(self.font(for: .title2).weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
