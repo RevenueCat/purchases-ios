@@ -80,9 +80,6 @@ struct ManageSubscriptionsView: View {
 
             if self.viewModel.isLoaded {
                 List {
-                    if let subtitle = self.viewModel.screen.subtitle {
-                        SubtitleTextView(subtitle: subtitle)
-                    }
 
                     if let subscriptionInformation = self.viewModel.subscriptionInformation {
                         Section {
@@ -96,6 +93,11 @@ struct ManageSubscriptionsView: View {
                     Section {
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
                                                        loadingPath: self.$viewModel.loadingPath)
+                    } header: {
+                        if let subtitle = self.viewModel.screen.subtitle {
+                            Text(subtitle)
+                                .textCase(nil)
+                        }
                     }
                 }
             } else {
@@ -127,32 +129,6 @@ private extension ManageSubscriptionsView {
     func loadInformationIfNeeded() async {
         if !self.viewModel.isLoaded {
             await viewModel.loadScreen()
-        }
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct SubtitleTextView: View {
-
-    private(set) var subtitle: String?
-    @Environment(\.appearance)
-    private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.colorScheme)
-    private var colorScheme
-
-    var body: some View {
-        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
-
-        if let subtitle {
-            Text(subtitle)
-                .font(.subheadline)
-                .padding([.horizontal])
-                .multilineTextAlignment(.center)
-                .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
     }
 
