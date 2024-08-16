@@ -13,7 +13,6 @@
 //  Created by Cody Kerns on 8/15/24.
 //
 
-
 #if CUSTOMER_CENTER_ENABLED
 
 #if os(iOS)
@@ -24,8 +23,8 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct CompatibilityNavigationStack<Content:View>: View {
-    
+struct CompatibilityNavigationStack<Content: View>: View {
+
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -39,7 +38,7 @@ struct CompatibilityNavigationStack<Content:View>: View {
             }
         }
     }
-    
+
 }
 
 #endif
