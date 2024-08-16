@@ -146,7 +146,7 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
         .padding()
 
     }
-    
+
 }
 
 #endif
