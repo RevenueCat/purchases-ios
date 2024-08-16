@@ -243,12 +243,11 @@ platform :ios do
 
   desc "Release checks"
   lane :release_checks do |options|
-    # todo: undo, temporarily commenting out to test xcframework output
-    # version_number = current_version_number
-    # check_no_git_tag_exists(version_number)
-    # check_pods
+    version_number = current_version_number
+    check_no_git_tag_exists(version_number)
+    check_pods
     export_xcframeworks
-    # check_no_github_release_exists(version_number)
+    check_no_github_release_exists(version_number)
   end
 
   desc "build tvOS, watchOS, macOS"
@@ -547,17 +546,17 @@ platform :ios do
       app_identifier: "com.revenuecat.CarthageIntegration"
     )
 
-    # create_and_sign_xcframework(
-    #   scheme: 'RevenueCat',
-    #   product_name: 'RevenueCat',
-    #   platforms: [
-    #   'iOS',
-    #   'macOS',
-    #   'maccatalyst',
-    #   'tvOS',
-    #   'watchOS',
-    #   'visionOS'
-    # ])
+    create_and_sign_xcframework(
+      scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
+      platforms: [
+      'iOS',
+      'macOS',
+      'maccatalyst',
+      'tvOS',
+      'watchOS',
+      'visionOS'
+    ])
     create_and_sign_xcframework(
       scheme: 'RevenueCatUIDev',
       product_name: 'RevenueCatUI',
