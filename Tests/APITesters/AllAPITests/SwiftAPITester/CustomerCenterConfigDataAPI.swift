@@ -15,11 +15,13 @@ func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
     let appearance: CustomerCenterConfigData.Appearance = data.appearance
     let localization: CustomerCenterConfigData.Localization = data.localization
     let support: CustomerCenterConfigData.Support = data.support
+    let lastPublishedAppVersion = data.lastPublishedAppVersion
 
     let _: CustomerCenterConfigData = .init(screens: screens,
                                             appearance: appearance,
                                             localization: localization,
-                                            support: support)
+                                            support: support,
+                                            lastPublishedAppVersion: lastPublishedAppVersion)
 }
 
 func checkHelpPath(_ path: CustomerCenterConfigData.HelpPath) {
