@@ -42,6 +42,15 @@ struct RestorePurchasesAlert: ViewModifier {
     private var localization
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
+    
+    private var supportURL: URL? {
+        guard let supportInformation = self.supportInformation else { return nil }
+        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+        let body = self.localization.commonLocalizedString(for: .defaultBody)
+        return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
+                                                    subject: subject,
+                                                    body: body)
+    }
 
     enum AlertType: Identifiable {
         case purchasesRecovered, purchasesNotFound, restorePurchases
@@ -77,25 +86,26 @@ struct RestorePurchasesAlert: ViewModifier {
                     })
 
                 case .purchasesNotFound:
-                    return Alert(title: Text(""),
-                                 message: Text("We couldn’t find any additional purchases under this account. \n\n" +
-                                               "Contact support for assistance if you think this is an error."),
-                                 primaryButton: .default(Text(localization.commonLocalizedString(for: .contactSupport)),
-                                                         action: {
-                        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
-                        let body = self.localization.commonLocalizedString(for: .defaultBody)
-                        if let supportInformation = self.supportInformation,
-                           let url = URLUtilities.createMailURLIfPossible(email: supportInformation.email,
-                                                                          subject: subject,
-                                                                          body: body) {
-                            Task {
-                                openURL(url)
-                            }
-                        }
-                    }),
-                                 secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
-                        dismiss()
-                    })
+                    let message = Text("We couldn't find any additional purchases under this account. \n\n" +
+                                       "Contact support for assistance if you think this is an error.")
+                    if let url = supportURL {
+                        return Alert(title: Text(""),
+                                     message: message,
+                                     primaryButton: .default(Text(localization.commonLocalizedString(for: .contactSupport))) {
+                                         Task {
+                                             openURL(url)
+                                         }
+                                     },
+                                     secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
+                                         dismiss()
+                                     })
+                    } else {
+                        return Alert(title: Text(""),
+                                     message: message,
+                                     dismissButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
+                                         dismiss()
+                                     })
+                    }
                 }
             }
     }
