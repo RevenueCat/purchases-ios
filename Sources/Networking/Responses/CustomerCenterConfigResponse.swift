@@ -20,6 +20,7 @@ import Foundation
 struct CustomerCenterConfigResponse {
 
     let customerCenter: CustomerCenter
+    let lastPublishedAppVersion: String?
 
     struct CustomerCenter {
 

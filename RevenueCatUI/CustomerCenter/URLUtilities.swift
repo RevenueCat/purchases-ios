@@ -27,17 +27,29 @@ enum URLUtilities {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     static func createMailURLIfPossible(email: String, subject: String, body: String) -> URL? {
-        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        guard !email.isEmpty else { return nil }
 
-        let urlString = "mailto:\(email)?subject=\(encodedSubject)&body=\(encodedBody)"
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = email
 
-        if let url = URL(string: urlString),
-           UIApplication.shared.canOpenURL(url) {
-            return url
+        var queryItems: [URLQueryItem] = []
+
+        if !subject.isEmpty {
+            queryItems.append(URLQueryItem(name: "subject", value: subject))
         }
 
-        return nil
+        if !body.isEmpty {
+            queryItems.append(URLQueryItem(name: "body", value: body))
+        }
+
+        components.queryItems = queryItems
+
+        guard let url = components.url, UIApplication.shared.canOpenURL(url) else {
+            return nil
+        }
+
+        return url
     }
 
 #endif

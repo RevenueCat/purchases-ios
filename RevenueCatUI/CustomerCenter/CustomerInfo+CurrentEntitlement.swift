@@ -26,12 +26,11 @@ extension CustomerInfo {
             .values
             .lazy
             .filter { $0.store == .appStore }
-            .sorted { lhs, rhs in
+            .min { lhs, rhs in
                 let lhsDateSeconds = lhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
                 let rhsDateSeconds = rhs.expirationDate?.timeIntervalSince1970 ?? TimeInterval.greatestFiniteMagnitude
                 return lhsDateSeconds < rhsDateSeconds
             }
-            .first
     }
 
 }

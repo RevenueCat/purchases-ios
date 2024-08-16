@@ -82,7 +82,8 @@ class CustomerCenterConfigDataTests: TestCase {
                 ],
                 localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
                 support: .init(email: "support@example.com")
-            )
+            ),
+            lastPublishedAppVersion: "1.2.3"
         )
 
         let configData = CustomerCenterConfigData(from: mockResponse)
@@ -136,6 +137,8 @@ class CustomerCenterConfigDataTests: TestCase {
         } else {
             fail("Expected feedbackSurvey detail")
         }
+
+        expect(configData.lastPublishedAppVersion) == "1.2.3"
     }
 
 }

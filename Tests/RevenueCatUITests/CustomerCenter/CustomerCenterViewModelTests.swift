@@ -128,6 +128,61 @@ class CustomerCenterViewModelTests: TestCase {
         }
     }
 
+    func testAppIsLatestVersion() {
+        let testCases = [
+            (currentVersion: "1.0.0", latestVersion: "2.0.0", expectedAppIsLatestVersion: false),
+            (currentVersion: "2.0.0", latestVersion: "2.0.0", expectedAppIsLatestVersion: true),
+            (currentVersion: "3.0.0", latestVersion: "2.0.0", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.0.0", latestVersion: "1.1.0", expectedAppIsLatestVersion: false),
+            (currentVersion: "1.1.0", latestVersion: "1.1.0", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.1.0", latestVersion: "1.0.0", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.0.0", latestVersion: "1.0.1", expectedAppIsLatestVersion: false),
+            (currentVersion: "1.0.1", latestVersion: "1.0.1", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.0.1", latestVersion: "1.0.0", expectedAppIsLatestVersion: true),
+            // The CFBundleVersion docs state:
+            // > You can include more integers but the system ignores them.
+            // https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleversion
+            // So we should do the same.
+            (currentVersion: "2.0.0.2.3.4", latestVersion: "2.0.0.3.4.5", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.0.0.2.3.4", latestVersion: "2.0.0.3.4.5", expectedAppIsLatestVersion: false),
+            (currentVersion: "1.2", latestVersion: "2", expectedAppIsLatestVersion: false),
+            (currentVersion: "1.2", latestVersion: "1", expectedAppIsLatestVersion: true),
+            (currentVersion: "2", latestVersion: "1", expectedAppIsLatestVersion: true),
+            (currentVersion: "0", latestVersion: "1", expectedAppIsLatestVersion: false),
+            (currentVersion: "10.2", latestVersion: "2", expectedAppIsLatestVersion: true),
+            // We default to true if we fail to parse any of the two versions.
+            (currentVersion: "not-a-number", latestVersion: "not-a-number-either", expectedAppIsLatestVersion: true),
+            (currentVersion: "not-a-number", latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: "not-a-number", expectedAppIsLatestVersion: true),
+            (currentVersion: "not.a.number", latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: "not.a.number", expectedAppIsLatestVersion: true),
+            (currentVersion: nil, latestVersion: nil, expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: nil, expectedAppIsLatestVersion: true),
+            (currentVersion: nil, latestVersion: "1.2.3", expectedAppIsLatestVersion: true),
+            (currentVersion: "", latestVersion: "", expectedAppIsLatestVersion: true),
+            (currentVersion: "1.2.3", latestVersion: "", expectedAppIsLatestVersion: true),
+            (currentVersion: "", latestVersion: "1.2.3", expectedAppIsLatestVersion: true)
+        ]
+        for (currentVersion, latestVersion, expectedAppIsLatestVersion) in testCases {
+            XCTContext.runActivity(
+                named: "Current version = \(currentVersion as Optional), " +
+                "latest version = \(latestVersion as Optional), " +
+                "expectedAppIsLatestVersion = \(expectedAppIsLatestVersion)"
+            ) { _ in
+                let viewModel = CustomerCenterViewModel(
+                    customerCenterActionHandler: nil,
+                    currentVersionFetcher: { return currentVersion }
+                )
+                viewModel.state = .success
+                viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+                    lastPublishedAppVersion: latestVersion
+                )
+
+                expect(viewModel.appIsLatestVersion) == expectedAppIsLatestVersion
+            }
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

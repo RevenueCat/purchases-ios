@@ -50,7 +50,7 @@ struct PromotionalOfferView: View {
 
     var body: some View {
         ZStack {
-            if let background = color(from: appearance.backgroundColor, for: colorScheme) {
+            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
             }
 
@@ -92,7 +92,7 @@ struct PromotionalOfferHeaderView: View {
     private(set) var viewModel: PromotionalOfferViewModel
 
     var body: some View {
-        let textColor = color(from: appearance.textColor, for: colorScheme)
+        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
         if let details = self.viewModel.promotionalOfferData?.promoOfferDetails {
             VStack {
                 Text(details.title)
@@ -144,7 +144,7 @@ struct PromoOfferButtonView: View {
                         .font(.subheadline)
                 }
             })
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+            .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
         }
     }
