@@ -572,7 +572,6 @@ platform :ios do
     scheme = options[:scheme]
     product_name = options[:product_name]
     platforms = options[:platforms]
-    match()
 
     output_directory = "build/xcframeworks/#{product_name}"
 
