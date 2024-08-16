@@ -65,7 +65,6 @@ final class OfferingsPaywallsViewModel: ObservableObject {
         }
     }
 
-    //@Published
     var singleApp: DeveloperResponse.App? {
         guard apps.count == 1 else { return nil }
         return apps.first
@@ -116,7 +115,7 @@ final class OfferingsPaywallsViewModel: ObservableObject {
 
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")
 
-    private var apps: [DeveloperResponse.App]
+    private let apps: [DeveloperResponse.App]
 
 }
 
