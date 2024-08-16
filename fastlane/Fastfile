@@ -538,17 +538,26 @@ platform :ios do
   end
 
   lane :export_xcframeworks do |options|
-    create_and_sign_xcframework(
-      scheme: 'RevenueCat',
-      product_name: 'RevenueCat',
-      platforms: [
-      'iOS',
-      'macOS',
-      'maccatalyst',
-      'tvOS',
-      'watchOS',
-      'visionOS'
-    ])
+    match(
+      readonly: true,
+      git_url: ENV['CERTS_REPO_URL'],
+      type: 'appstore',
+      skip_provisioning_profiles: true,
+      # This isn't important, we just need to fetch the certificate
+      app_identifier: "com.revenuecat.CarthageIntegration"
+    )
+
+    # create_and_sign_xcframework(
+    #   scheme: 'RevenueCat',
+    #   product_name: 'RevenueCat',
+    #   platforms: [
+    #   'iOS',
+    #   'macOS',
+    #   'maccatalyst',
+    #   'tvOS',
+    #   'watchOS',
+    #   'visionOS'
+    # ])
     create_and_sign_xcframework(
       scheme: 'RevenueCatUIDev',
       product_name: 'RevenueCatUI',
@@ -563,6 +572,7 @@ platform :ios do
     scheme = options[:scheme]
     product_name = options[:product_name]
     platforms = options[:platforms]
+    match()
 
     output_directory = "build/xcframeworks/#{product_name}"
 
@@ -714,15 +724,6 @@ platform :ios do
   end
 
   private_lane :sign_xcframework do |options|
-    match(
-      readonly: true,
-      git_url: ENV['CERTS_REPO_URL'],
-      type: 'appstore',
-      skip_provisioning_profiles: true,
-      # This isn't important, we just need to fetch the certificate
-      app_identifier: "com.revenuecat.CarthageIntegration"
-    )
-
     sh(
       "codesign",
       "--timestamp",
