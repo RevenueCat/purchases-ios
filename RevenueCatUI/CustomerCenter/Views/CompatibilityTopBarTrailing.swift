@@ -23,7 +23,11 @@ internal extension ToolbarItemPlacement {
             if #available(iOS 14.0, tvOS 14.0, watchOS 10.0, *) {
                 return .topBarTrailing
             } else {
-                return .navigationBarTrailing
+                #if !os(watchOS)
+                    return .navigationBarTrailing
+                #else
+                    return .cancellationAction
+                #endif
             }
         #else
             return .navigationBarTrailing
