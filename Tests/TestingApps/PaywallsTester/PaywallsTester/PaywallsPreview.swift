@@ -23,7 +23,7 @@ struct PaywallsPreview: App {
         var id: String { paywallIDToShow }
     }
 
-    @State
+    @StateObject
     private var application = ApplicationData()
 
     @State
@@ -46,8 +46,8 @@ struct PaywallsPreview: App {
                     guard let url = userActivity.webpageURL else { return }
                     processURL(url)
                 }
+                .environmentObject(application)
         }
-        .environment(application)
     }
 
 }

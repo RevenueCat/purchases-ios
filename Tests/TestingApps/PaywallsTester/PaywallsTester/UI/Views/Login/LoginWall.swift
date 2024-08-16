@@ -9,8 +9,8 @@ import SwiftUI
 
 struct LoginWall<ContentView: View>: View {
 
-    @Environment(ApplicationData.self) private var application
-    
+    @EnvironmentObject private var application: ApplicationData
+
     @State
     private var error: Error?
 
@@ -52,5 +52,5 @@ struct LoginWall<ContentView: View>: View {
             Text("Developer \(developer.name) is now signed in.")
         }
     }
-    .environment(ApplicationData())
+    .environmentObject(ApplicationData())
 }

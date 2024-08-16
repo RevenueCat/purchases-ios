@@ -7,12 +7,13 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 struct LoginScreen: View {
 
     private var onAuthentication: @Sendable () -> Void
 
-    @State
+    @StateObject
     private var model = LoginViewModel()
 
     init(
@@ -42,7 +43,7 @@ struct LoginScreen: View {
                     if self.model.codeRequired {
                         TextField("2FA code", text: self.$model.code)
                             .textContentType(.oneTimeCode)
-                            .transition(.push(from: .bottom))
+                            .transition(.move(edge: .bottom))
 #if !os(macOS) && !os(watchOS)
                             .autocapitalization(.none)
                             .keyboardType(.numberPad)
@@ -61,7 +62,7 @@ struct LoginScreen: View {
             }
             .disabled(self.model.operationInProgress)
             .animation(.snappy(), value: self.model.codeRequired)
-            .onChange(of: self.model.authenticated) { _, authenticated in
+            .onChange(of: self.model.authenticated) { authenticated in
                 if authenticated {
                     self.onAuthentication()
                 }
@@ -73,18 +74,58 @@ struct LoginScreen: View {
 
 // MARK: - Private
 
-@Observable
-private final class LoginViewModel {
+private final class LoginViewModel: ObservableObject {
 
-    @ObservationIgnored
-    var username: String = ""
-    var password: String = ""
+    @Published
+    var username: String = "" {
+        didSet {
+            self.formIsComplete = self.username.isNotEmpty && self.password.isNotEmpty
+        }
+    }
+
+    @Published
+    var password: String = "" {
+        didSet {
+            self.formIsComplete = self.username.isNotEmpty && self.password.isNotEmpty
+        }
+    }
+
+    @Published
     var code: String = ""
 
+    @Published
     var codeRequired: Bool = false
 
+    @Published
     private(set) var operationInProgress = false
+
+    @Published
     private(set) var authenticated = false
+
+    @Published
+    var formIsComplete: Bool = false {
+        didSet {
+            let now = formIsComplete
+            print("ha: \(now)")
+            print("")
+        }
+    }
+
+    init(username: String = "",
+         password: String = "",
+         code: String = "",
+         codeRequired: Bool = false,
+         operationInProgress: Bool = false,
+         authenticated: Bool = false,
+         authentication: AuthenticationActor = AuthenticationActor()) {
+        self.username = username
+        self.password = password
+        self.code = code
+        self.codeRequired = codeRequired
+        self.operationInProgress = operationInProgress
+        self.authenticated = authenticated
+        self.authentication = authentication
+    }
 
     @MainActor
     func attemptLogin() async throws {
@@ -102,11 +143,6 @@ private final class LoginViewModel {
         }
     }
 
-    var formIsComplete: Bool {
-        return self.username.isNotEmpty && self.password.isNotEmpty
-    }
-
-    @ObservationIgnored
     private var authentication = AuthenticationActor()
 
 }
