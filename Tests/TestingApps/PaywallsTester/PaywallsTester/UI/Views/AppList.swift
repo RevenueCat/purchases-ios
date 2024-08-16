@@ -10,9 +10,6 @@ import RevenueCat
 
 struct AppList: View {
 
-//    @Environment(ApplicationData.self)
-//    private var application
-
     @EnvironmentObject private var application: ApplicationData
 
     @AppStorage(UserDefaults.introEligibilityStatus) 

@@ -73,7 +73,7 @@ struct LoginScreen: View {
 }
 
 // MARK: - Private
-
+@MainActor
 private final class LoginViewModel: ObservableObject {
 
     @Published
