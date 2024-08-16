@@ -31,7 +31,7 @@ struct TintedProgressView: View {
     var body: some View {
         ProgressView()
             .controlSize(.regular)
-            .tint(color(from: self.appearance.buttonTextColor, for: self.colorScheme))
+            .tint(Color.from(colorInformation: self.appearance.buttonTextColor, for: self.colorScheme))
     }
 
 }
