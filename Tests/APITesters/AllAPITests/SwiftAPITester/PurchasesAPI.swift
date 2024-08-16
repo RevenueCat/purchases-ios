@@ -23,6 +23,7 @@ func checkPurchasesAPI() {
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
+    let storeFrontCountryCode = purch.storeFrontCountryCode
 
     print(purchasesAreCompletedBy, delegate!, appUserID, isAnonymous)
 
