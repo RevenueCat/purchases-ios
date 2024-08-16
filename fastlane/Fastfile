@@ -1008,13 +1008,14 @@ platform :ios do
     ensure_git_status_clean
 
     UI.message("Git working directory is clean. Proceeding with customer center enablement.")
-    UI.message("Cherry-picking commit to enable customer center: #{commit_hash}")
+    UI.message("Applying changes from commit to enable customer center: #{commit_hash}")
 
     begin
-      sh("git", "cherry-pick", commit_hash)
-      UI.success("Successfully enabled customer center development by cherry-picking commit #{commit_hash}")
+      sh("git", "cherry-pick", "--no-commit", commit_hash)
+      UI.success("Successfully applied changes for customer center development from commit #{commit_hash}")
+      UI.important("Changes are now in your working directory. Review and stage/commit as needed.")
     rescue => ex
-      UI.error("Failed to enable customer center. Error while cherry-picking commit #{commit_hash}")
+      UI.error("Failed to enable customer center. Error while applying changes from commit #{commit_hash}")
       UI.error(ex.message)
       
       if UI.confirm("Do you want to abort the customer center enablement?")
