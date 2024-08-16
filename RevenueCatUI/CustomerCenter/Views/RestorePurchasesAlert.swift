@@ -42,7 +42,7 @@ struct RestorePurchasesAlert: ViewModifier {
     private var localization
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
-    
+
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
         let subject = self.localization.commonLocalizedString(for: .defaultSubject)
@@ -91,7 +91,9 @@ struct RestorePurchasesAlert: ViewModifier {
                     if let url = supportURL {
                         return Alert(title: Text(""),
                                      message: message,
-                                     primaryButton: .default(Text(localization.commonLocalizedString(for: .contactSupport))) {
+                                     primaryButton: .default(
+                                        Text(localization.commonLocalizedString(for: .contactSupport))
+                                     ) {
                                          Task {
                                              openURL(url)
                                          }
