@@ -1249,12 +1249,10 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      # todo: undo the change after confirming that things work
-      - installation-tests-xcode-direct-integration
-      # - lint
-      # - run-test-ios-17
-      # - pod-lib-lint
-      # - run-revenuecat-ui-ios-17
+      - lint
+      - run-test-ios-17
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-17
 
   create-tag:
     when:
