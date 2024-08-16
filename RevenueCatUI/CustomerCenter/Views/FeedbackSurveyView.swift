@@ -82,15 +82,15 @@ struct FeedbackSurveyButtonsView: View {
 
     var body: some View {
         ForEach(options, id: \.id) { option in
-            AsyncButton(action: {
+            AsyncButton {
                 await self.onOptionSelected(option)
-            }, label: {
+            } label: {
                 if self.loadingState == option.id {
                     TintedProgressView()
                 } else {
                     Text(option.title)
                 }
-            })
+            }
             .disabled(self.loadingState != nil)
         }
 
