@@ -103,29 +103,7 @@ private final class LoginViewModel: ObservableObject {
     private(set) var authenticated = false
 
     @Published
-    var formIsComplete: Bool = false {
-        didSet {
-            let now = formIsComplete
-            print("ha: \(now)")
-            print("")
-        }
-    }
-
-    init(username: String = "",
-         password: String = "",
-         code: String = "",
-         codeRequired: Bool = false,
-         operationInProgress: Bool = false,
-         authenticated: Bool = false,
-         authentication: AuthenticationActor = AuthenticationActor()) {
-        self.username = username
-        self.password = password
-        self.code = code
-        self.codeRequired = codeRequired
-        self.operationInProgress = operationInProgress
-        self.authenticated = authenticated
-        self.authentication = authentication
-    }
+    var formIsComplete: Bool = false
 
     @MainActor
     func attemptLogin() async throws {
