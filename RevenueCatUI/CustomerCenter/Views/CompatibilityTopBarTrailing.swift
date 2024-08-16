@@ -20,7 +20,11 @@ internal extension ToolbarItemPlacement {
 
     static var compatibleTopBarTrailing: ToolbarItemPlacement {
         #if swift(>=5.9)
-            return .topBarTrailing
+            if #available(iOS 14.0, tvOS 14.0, watchOS 10.0, *) {
+                return .topBarTrailing
+            } else {
+                return .navigationBarTrailing
+            }
         #else
             return .navigationBarTrailing
         #endif
