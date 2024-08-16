@@ -26,7 +26,7 @@ struct PresentedPaywall: Hashable {
     var responseOfferingID: String
 }
 
-
+@MainActor
 final class OfferingsPaywallsViewModel: ObservableObject {
 
     enum State {
