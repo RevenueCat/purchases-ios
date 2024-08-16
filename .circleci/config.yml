@@ -913,6 +913,12 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+      - store_artifacts:
+          path: RevenueCat.xcframework.zip
+          destination: RevenueCat.xcframework.zip
+      - store_artifacts:
+          path: RevenueCatUI.xcframework.zip
+          destination: RevenueCatUI.xcframework.zip
 
   docs-build:
     executor:
