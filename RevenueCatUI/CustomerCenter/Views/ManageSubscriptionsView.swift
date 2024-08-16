@@ -13,8 +13,6 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-// swiftlint:disable file_length
-
 #if CUSTOMER_CENTER_ENABLED
 
 import RevenueCat
