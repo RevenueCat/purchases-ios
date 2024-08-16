@@ -250,13 +250,13 @@ Creates a new PR on purchases-ios-snapshots after new snapshot files were genera
 
 Creates RevenueCat-Swift.h for a new release
 
-### ios export_xcframework
+### ios export_xcframeworks
 
 ```sh
-[bundle exec] fastlane ios export_xcframework
+[bundle exec] fastlane ios export_xcframeworks
 ```
 
-Export XCFramework
+
 
 ### ios backend_integration_tests
 
