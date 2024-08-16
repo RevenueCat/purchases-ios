@@ -69,15 +69,15 @@ struct NoSubscriptionsView: View {
 
                 Spacer()
 
-                Button(action: {
+                Button {
                     showRestoreAlert = true
-                }, label: {
+                } label: {
                     if self.isRestoring {
                         TintedProgressView()
                     } else {
                         Text(localization.commonLocalizedString(for: .restorePurchases))
                     }
-                })
+                }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert, isRestoring: $isRestoring)
                 .buttonStyle(ProminentButtonStyle())
             }
