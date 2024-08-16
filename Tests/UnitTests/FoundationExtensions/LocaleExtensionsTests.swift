@@ -35,11 +35,11 @@ class LocaleExtensionsTests: TestCase {
     func testMissingLanguageCode() {
         // This difference is with running iOS 16 tests with Xcode 15
         // and iOS 15 tests with Xcode 14
-        if #available(iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
-            expect(Locale(identifier: "").rc_languageCode).to("en")
-        } else {
+        #if swift(>=5.9)
+            expect(Locale(identifier: "").rc_languageCode) == "en"
+        #else
             expect(Locale(identifier: "").rc_languageCode).to(beNil())
-        }
+        #endif
     }
 
     func testRemovingRegion() {
@@ -50,11 +50,11 @@ class LocaleExtensionsTests: TestCase {
 
         // This difference is with running iOS 16 tests with Xcode 15
         // and iOS 15 tests with Xcode 14
-        if #available(iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
-            expect(Locale(identifier: "").removingRegion).to("en")
-        } else {
+        #if swift(>=5.9)
+            expect(Locale(identifier: "").removingRegion) == "en"
+        #else
             expect(Locale(identifier: "").removingRegion).to(beNil())
-        }
+        #endif
     }
 
 }

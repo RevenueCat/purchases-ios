@@ -110,7 +110,7 @@ struct ManageSubscriptionsView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }
