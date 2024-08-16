@@ -51,7 +51,7 @@ class LocaleExtensionsTests: TestCase {
         // This difference is with running iOS 16 tests with Xcode 15
         // and iOS 15 tests with Xcode 14
         #if swift(>=5.9)
-            expect(Locale(identifier: "").removingRegion) == "en"
+            expect(Locale(identifier: "").removingRegion?.identifier) == "en"
         #else
             expect(Locale(identifier: "").removingRegion).to(beNil())
         #endif
