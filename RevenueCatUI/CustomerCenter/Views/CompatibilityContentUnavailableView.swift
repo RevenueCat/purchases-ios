@@ -24,19 +24,33 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CompatibilityContentUnavailableView: View {
-    @State var title: String
-    @State var description: String
-    @State var systemImage: String
+    let title: String
+    let systemImage: String
+    let description: Text?
+
+    init(_ title: String, systemImage: String, description: Text? = nil) {
+        self.title = title
+        self.systemImage = systemImage
+        self.description = description
+    }
 
     var body: some View {
 
         if #available(iOS 17.0, *) {
             #if swift(>=5.9)
+            if let description {
                 ContentUnavailableView(
                     title,
                     systemImage: systemImage,
-                    description: Text(description)
+                    description: description
                 )
+            } else {
+                ContentUnavailableView(
+                    title,
+                    systemImage: systemImage
+                )
+            }
+
             #else
                 // In Xcode 14, any references to ContentUnavailableView would fail to compile since that entity
                 // was included with Xcode 15 and later.
@@ -57,9 +71,11 @@ struct CompatibilityContentUnavailableView: View {
                     .font(.title2)
                     .bold()
 
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if let description {
+                    description
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }.frame(maxHeight: .infinity)
         }
 

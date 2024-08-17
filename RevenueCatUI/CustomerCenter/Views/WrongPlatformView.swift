@@ -59,9 +59,9 @@ struct WrongPlatformView: View {
                 let platformInstructions = self.humanReadableInstructions(for: store)
 
                 CompatibilityContentUnavailableView(
-                    title: platformInstructions.0,
-                    description: platformInstructions.1,
-                    systemImage: "exclamationmark.triangle.fill"
+                    platformInstructions.0,
+                    systemImage: "exclamationmark.triangle.fill",
+                    description: Text(platformInstructions.1)
                 )
             }
             .padding(.horizontal)
