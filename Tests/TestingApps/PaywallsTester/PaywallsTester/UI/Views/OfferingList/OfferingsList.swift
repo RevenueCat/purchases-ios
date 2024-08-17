@@ -68,8 +68,7 @@ struct OfferingsList: View {
                 Text("No data available.")
             }
         case .error(let error):
-            Text("Error loading paywalls") // JAMES TO DO
-//            ContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
+            CompatibilityContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
         }
     }
     
@@ -128,8 +127,8 @@ struct OfferingsList: View {
 
     private func noPaywallsListItem() -> some View {
         VStack {
-            Text("No configured paywalls") // JAMES TO DO
-//            ContentUnavailableView("No configured paywalls", systemImage: "exclamationmark.triangle.fill")
+            CompatibilityContentUnavailableView("No configured paywalls",
+                                                         systemImage: "exclamationmark.triangle.fill")
             Text(Self.pullToRefresh)
                 .font(.footnote)
             Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
