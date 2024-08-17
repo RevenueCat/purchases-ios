@@ -21,8 +21,10 @@ struct LoginWall<ContentView: View>: View {
         case .unknown:
             ProgressView()
                 .displayError(self.$error)
-                .task { @MainActor in
-                    await reload()
+                .onAppear {
+                    Task {
+                        await reload()
+                    }
                 }
         case let .signedIn(developer):
             content(developer)
