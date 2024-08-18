@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: c4aef99c70ceab5393037659cba8721d304dc139
+  revision: a3c25bdc382cc60f9e6708f193bb2c5f77123b35
   branch: new-scan_with_flaky_test_retries-action
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
