@@ -161,10 +161,10 @@ platform :ios do
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
-      number_of_retries: generate_snapshots ? 0 : 5,
+      number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
       xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'", # todo: remove once Customer Center is released,
 
-      number_of_flaky_retries: 5
+      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
     )
   end
 
@@ -177,13 +177,13 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
+      number_of_retries: 5, # Number of retries in an xcodebuild run
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/tvos",
 
-      number_of_flaky_retries: 5
+      number_of_flaky_retries: 5 # Number of xcodebuild runs to retry
     )
   end
 
@@ -208,10 +208,10 @@ platform :ios do
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
-      number_of_retries: generate_snapshots ? 0 : 5,
+      number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
       fail_build: !generate_snapshots,
 
-      number_of_flaky_retries: 5
+      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
     )
   end
 
@@ -615,7 +615,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
 
-      number_of_flaky_retries: 5
+      number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
     )
   end
 
