@@ -170,7 +170,7 @@ platform :ios do
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    scan(
+    scan_with_flaky_test_retries(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -181,7 +181,9 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/tvos"
+      output_directory: "fastlane/test_output/xctest/tvos",
+
+      number_of_flaky_retries: 5
     )
   end
 
@@ -194,7 +196,7 @@ platform :ios do
       test_plan = "CI-RevenueCat"
     end
 
-    scan(
+    scan_with_flaky_test_retries(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 8 (41mm)",
       ensure_devices_found: true,
@@ -207,7 +209,9 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
       number_of_retries: generate_snapshots ? 0 : 5,
-      fail_build: !generate_snapshots
+      fail_build: !generate_snapshots,
+
+      number_of_flaky_retries: 5
     )
   end
 
