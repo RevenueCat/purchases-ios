@@ -235,6 +235,23 @@ private struct ComponentsView: View {
                     locale: locale,
                     component: component
                 )
+//            case .vstack(let component):
+//                 VStack(spacing: component.spacing) {
+//                     ComponentsView(components: component.components, locale: locale, configuration: configuration)
+//                 }
+//                 .background(self.backgroundColor(component.backgroundColor))
+//             case .hstack(let component):
+//                 HStack(aspacing: component.spacing) {
+//                     ComponentsView(components: component.components, locale: locale, configuration: configuration)
+//                 }
+//                 .background(self.backgroundColor(component.backgroundColor))
+//             case .zstack(let component):
+//                 ZStack {
+//                     ComponentsView(components: component.components, locale: locale, configuration: configuration)
+//                 }
+//                 .background(self.backgroundColor(component.backgroundColor))
+            default:
+                EmptyView()
             }
         }
     }

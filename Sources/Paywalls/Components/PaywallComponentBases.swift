@@ -37,6 +37,10 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
     case features(FeaturesComponent)
     case purchaseButton(PurchaseButtonComponent)
     case spacer(SpacerComponent)
+    case vstack(VStackComponent)
+    case hstack(HStackComponent)
+    case zstack(ZStackComponent)
+
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -54,6 +58,9 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         case features
         case purchaseButton
         case spacer
+        case vstack
+        case hstack
+        case zstack
     }
 
     public init(from decoder: Decoder) throws {
@@ -83,6 +90,12 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
             self = .purchaseButton(try PurchaseButtonComponent(from: decoder))
         case .spacer:
             self = .spacer(try SpacerComponent(from: decoder))
+        case .vstack:
+            self = .vstack(try VStackComponent(from: decoder))
+        case .hstack:
+            self = .hstack(try HStackComponent(from: decoder))
+        case .zstack:
+            self = .zstack(try ZStackComponent(from: decoder))
         }
     }
 
@@ -110,6 +123,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
             return component.displayPreferences
         case .spacer(let component):
             return component.displayPreferences
+        case .vstack, .hstack, .zstack:
+            return nil
         }
     }
 
@@ -137,6 +152,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
             return component.focusIdentifiers
         case .spacer(let component):
             return component.focusIdentifiers
+        case .vstack, .hstack, .zstack:
+            return nil
         }
     }
 }
