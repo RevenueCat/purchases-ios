@@ -843,7 +843,34 @@ private extension SamplePaywallLoader {
     }
 
     static var multiTierFull: [PaywallComponent] {
+
+        let test1 = PaywallComponent.text(.init(
+            text: .init(value: [
+                "en_US": "TEST 1"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .largeTitle
+        ))
+
+        let test2 = PaywallComponent.text(.init(
+            text: .init(value: [
+                "en_US": "TEST 2"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .largeTitle
+        ))
+
+        let stackComponent = HStackComponent(
+            components: [test1, test2],
+            alignment: .center,
+            spacing: 10,
+            backgroundColor: nil
+        )
+
+        let stackComponentPaywallComponent = PaywallComponent.hstack(stackComponent)
+
             return [
+                stackComponentPaywallComponent,
                 .tiers(.init(tiers: [
                     .init(
                         id: "basic",

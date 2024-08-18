@@ -9,7 +9,7 @@ import SwiftUI
 
 public struct VStackComponent: Decodable, Sendable, Hashable {
     public let components: [PaywallComponent]
-    public let alignment: HorizontalAlignment?
+    public let alignment: StackHorizontalAlignment?
     public let spacing: CGFloat?
     public let backgroundColor: String?
 
@@ -19,11 +19,18 @@ public struct VStackComponent: Decodable, Sendable, Hashable {
         case spacing
         case backgroundColor
     }
+
+    public init(components: [PaywallComponent], alignment: StackHorizontalAlignment?, spacing: CGFloat?, backgroundColor: String?) {
+        self.components = components
+        self.alignment = alignment
+        self.spacing = spacing
+        self.backgroundColor = backgroundColor
+    }
 }
 
 public struct HStackComponent: Decodable, Sendable, Hashable {
     public let components: [PaywallComponent]
-    public let alignment: VerticalAlignment?
+    public let alignment: StackVerticalAlignment?
     public let spacing: CGFloat?
     public let backgroundColor: String?
 
@@ -32,6 +39,13 @@ public struct HStackComponent: Decodable, Sendable, Hashable {
         case alignment
         case spacing
         case backgroundColor
+    }
+
+    public init(components: [PaywallComponent], alignment: StackVerticalAlignment?, spacing: CGFloat?, backgroundColor: String?) {
+        self.components = components
+        self.alignment = alignment
+        self.spacing = spacing
+        self.backgroundColor = backgroundColor
     }
 }
 
@@ -45,10 +59,16 @@ public struct ZStackComponent: Decodable, Sendable, Hashable {
         case alignment
         case backgroundColor
     }
+
+    public init(components: [PaywallComponent], alignment: ZStackAlignment?, backgroundColor: String?) {
+        self.components = components
+        self.alignment = alignment
+        self.backgroundColor = backgroundColor
+    }
 }
 
 
-public enum HorizontalAlignment: String, Decodable, Sendable, Hashable, Equatable {
+public enum StackHorizontalAlignment: String, Decodable, Sendable, Hashable, Equatable {
     case leading
     case center
     case trailing
@@ -65,7 +85,7 @@ public enum HorizontalAlignment: String, Decodable, Sendable, Hashable, Equatabl
     }
 }
 
-public enum VerticalAlignment: String, Decodable, Sendable, Hashable, Equatable {
+public enum StackVerticalAlignment: String, Decodable, Sendable, Hashable, Equatable {
     case top
     case center
     case bottom
