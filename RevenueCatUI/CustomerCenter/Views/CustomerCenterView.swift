@@ -97,8 +97,7 @@ private extension CustomerCenterView {
                                             customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 } else {
                     AppUpdateWarningView(
-                        // TODO: Get productId from config.
-                        productId: 545551605,
+                        productId: configuration.productId,
                         onContinueAnywayClick: { ignoreAppUpdateWarning = true }
                     )
                 }
