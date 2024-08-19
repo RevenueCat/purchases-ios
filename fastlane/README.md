@@ -354,6 +354,14 @@ Updates purchases-ios-snapshots-commit to point to latest commit on main
 
 Create or delete sandbox testers
 
+### ios enable_customer_center
+
+```sh
+[bundle exec] fastlane ios enable_customer_center
+```
+
+Enable customer center development by cherry-picking a specific commit
+
 ----
 
 

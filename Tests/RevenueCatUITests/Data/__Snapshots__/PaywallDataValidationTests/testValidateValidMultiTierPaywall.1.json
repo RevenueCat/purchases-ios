@@ -224,5 +224,10 @@
     }
   },
   "revision" : 0,
-  "template_name" : "7"
+  "template_name" : "7",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
 }

@@ -37,6 +37,13 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
+    /// The storefront country codes that should not display cents in prices.
+    public var zeroDecimalPlaceCountries: [String] {
+        _zeroDecimalPlaceCountries?.apple ?? []
+    }
+
+    internal private(set) var _zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries?
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -72,6 +79,21 @@ public protocol PaywallLocalizedConfiguration {
     /// An optional name representing the ``PaywallData/Tier``.
     var tierName: String? { get }
 
+}
+
+extension PaywallData {
+    /// Represents countries where currencies typically have zero decimal places
+    public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
+
+        /// Storefront country codes that should typically display zero decimal places
+        public var apple: [String] = []
+
+        /// Storefront country codes that should typically display zero decimal places.
+        public init(apple: [String]) {
+            self.apple = apple
+        }
+
+    }
 }
 
 extension PaywallData {
@@ -600,13 +622,15 @@ extension PaywallData {
         localization: [String: LocalizedConfiguration],
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
-        revision: Int = 0
+        revision: Int = 0,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
+        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
         self.revision = revision
     }
 
@@ -617,7 +641,8 @@ extension PaywallData {
         localization: LocalizedConfiguration,
         assetBaseURL: URL,
         revision: Int = 0,
-        locale: Locale = .current
+        locale: Locale = .current,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.init(
             templateName: templateName,
@@ -625,7 +650,8 @@ extension PaywallData {
             localization: [locale.identifier: localization],
             localizationByTier: [:],
             assetBaseURL: assetBaseURL,
-            revision: revision
+            revision: revision,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
     }
 
@@ -636,7 +662,8 @@ extension PaywallData {
         localizationByTier: [String: LocalizedConfiguration],
         assetBaseURL: URL,
         revision: Int = 0,
-        locale: Locale = .current
+        locale: Locale = .current,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.init(
             templateName: templateName,
@@ -644,7 +671,8 @@ extension PaywallData {
             localization: [:],
             localizationByTier: [locale.identifier: localizationByTier],
             assetBaseURL: assetBaseURL,
-            revision: revision
+            revision: revision,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
     }
 
@@ -745,6 +773,7 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+        case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
     }
 
 }

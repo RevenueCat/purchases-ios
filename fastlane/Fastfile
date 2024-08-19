@@ -998,6 +998,27 @@ platform :ios do
     end
   end
 
+  desc "Enable customer center development by cherry-picking a specific commit"
+  lane :enable_customer_center do |options|
+    commit_hash = options[:commit_hash] || "517ad0bf5"
+
+    UI.message("Applying changes from commit to enable customer center: #{commit_hash}")
+
+    begin
+      sh("git", "cherry-pick", "--no-commit", commit_hash)
+      UI.success("Successfully applied changes for customer center development from commit #{commit_hash}")
+      UI.important("Changes are now in your working directory. Review and stage/commit as needed.")
+    rescue => ex
+      UI.error("Failed to enable customer center. Error while applying changes from commit #{commit_hash}")
+      UI.error(ex.message)
+      
+      if UI.confirm("Do you want to abort the customer center enablement?")
+        sh("git", "cherry-pick", "--abort")
+        UI.message("Customer center enablement aborted")
+      end
+    end
+  end
+
   private_lane :sandbox_testers_delete do |options|
     email_pattern = options[:email_pattern]
 
