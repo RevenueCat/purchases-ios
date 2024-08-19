@@ -22,6 +22,8 @@ struct LoginWall<ContentView: View>: View {
             ProgressView()
                 .displayError(self.$error)
                 .onAppear {
+                    // note we are using .onAppear and not .task because .task causes an error dialog to
+                    // briefly show when run on iOS 15.
                     Task {
                         await reload()
                     }
