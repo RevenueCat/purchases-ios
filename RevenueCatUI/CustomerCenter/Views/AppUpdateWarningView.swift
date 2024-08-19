@@ -26,6 +26,18 @@ struct AppUpdateWarningView: View {
     let onUpdateAppClick: () -> Void
     let onContinueAnywayClick: () -> Void
 
+    init(onUpdateAppClick: @escaping () -> Void, onContinueAnywayClick: @escaping () -> Void) {
+        self.onUpdateAppClick = onUpdateAppClick
+        self.onContinueAnywayClick = onContinueAnywayClick
+    }
+
+    init(productId: UInt, onContinueAnywayClick: @escaping () -> Void) {
+        self.init(
+            onUpdateAppClick: { OpenAppStoreViewController().openAppStore(productId: productId) },
+            onContinueAnywayClick: onContinueAnywayClick
+        )
+    }
+
     @Environment(\.dismiss)
     var dismiss
 
