@@ -11,6 +11,8 @@
 //
 //  Created by JayShortway on 19/08/2024.
 
+#if CUSTOMER_CENTER_ENABLED
+
 import Foundation
 import StoreKit
 import UIKit
@@ -60,3 +62,5 @@ class OpenAppStoreViewController: UIViewController, SKStoreProductViewController
         onDismiss(viewController)
     }
 }
+
+#endif
