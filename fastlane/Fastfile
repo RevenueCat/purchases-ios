@@ -162,6 +162,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots,
       xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'", # todo: remove once Customer Center is released,
 
       number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
