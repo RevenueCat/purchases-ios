@@ -7,30 +7,7 @@
 
 import RevenueCat
 import SwiftUI
-import GameController
-
-enum GameControllerEvent {
-    case buttonA(isPressed: Bool)
-    case thumbstickPosition(x: Float, y: Float)
-    case directionChanged(direction: Direction)
-
-    case rightShoulder(isPressed: Bool)
-    case rightTrigger(isPressed: Bool)
-    case leftShoulder(isPressed: Bool)
-    case leftTrigger(isPressed: Bool)
-
-    enum Direction {
-        case none
-        case up
-        case down
-        case left
-        case right
-    }
-}
-
-extension Notification.Name {
-    public static let gameControllerEvent = Notification.Name("gameControllerEvent")
-}
+// swiftlint:disable all
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class ComponentPaywallData: ObservableObject {
@@ -91,25 +68,6 @@ struct TemplateComponentsView: TemplateViewType {
         .background(
             try! PaywallColor(stringRepresentation: self.configuration.components!.backgroundColor.light).underlyingColor
         )
-        .onReceive(NotificationCenter.default.publisher(for: .gameControllerEvent)) { notification in
-            if let event = notification.userInfo?["event"] as? GameControllerEvent {
-                switch event {
-                case .buttonA, .rightTrigger, .rightShoulder, .leftTrigger, .leftShoulder:
-                    ()
-                case .thumbstickPosition(x: let x, y: let y):
-                    ()
-                case .directionChanged(direction: let direction):
-                    switch direction {
-                    case .up:
-                        self.focusManager.previous()
-                    case .down:
-                        self.focusManager.next()
-                    default:
-                        break;
-                    }
-                }
-            }
-        }
     }
 
 }
@@ -543,35 +501,6 @@ private struct CarouselComponentView: View {
             }
         }
         .tabViewStyle(PageTabViewStyle())
-        .onReceive(NotificationCenter.default.publisher(for: .gameControllerEvent)) { notification in
-            if let event = notification.userInfo?["event"] as? GameControllerEvent {
-                switch event {
-                case .buttonA, .rightTrigger, .leftTrigger:
-                    ()
-                case .rightShoulder:
-                    if currentIndex >= (component.urls.count - 1) {
-                        currentIndex = 0
-                    } else {
-                        currentIndex += 1
-                    }
-                case .leftShoulder:
-                    if currentIndex <= 0 {
-                        currentIndex = component.urls.count - 1
-                    } else {
-                        currentIndex -= 1
-                    }
-                case .thumbstickPosition:
-                    ()
-                case .directionChanged(direction: let direction):
-                    switch direction {
-                    case .left, .right:
-                        ()
-                    default:
-                        break;
-                    }
-                }
-            }
-        }
     }
 
 }
@@ -707,32 +636,6 @@ private struct BackbonePackagesComponentView: View {
             .background(Color.black)
             .onChangeOf(self.focusManager.focusedField) { newValue in
                 // TODO: Toggle things
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .gameControllerEvent)) { notification in
-                let focusIds = self.component.focusIdentifiers ?? []
-                guard focusIds.contains(self.focusManager.focusedField ?? "") else {
-                    return
-                }
-
-                if let event = notification.userInfo?["event"] as? GameControllerEvent {
-                    switch event {
-                    case .buttonA, .rightTrigger, .rightShoulder, .leftTrigger, .leftShoulder:
-                        ()
-                    case .thumbstickPosition:
-                        ()
-                    case .directionChanged(direction: let direction):
-                        switch direction {
-                        case .left, .right:
-                            if self.selectedOption == "Yearly" {
-                                self.selectedOption = "Monthly"
-                            } else {
-                                self.selectedOption = "Yearly"
-                            }
-                        default:
-                            break;
-                        }
-                    }
-                }
             }
         }
     }
@@ -1066,25 +969,7 @@ private struct BackbonePurchaseButtonComponentView: View {
             .padding(.horizontal, 20)
         }
         .buttonStyle(PlainButtonStyle())
-        .onReceive(NotificationCenter.default.publisher(for: .gameControllerEvent)) { notification in
-            let focusIds = self.component.focusIdentifiers ?? []
-            guard focusIds.contains(self.focusManager.focusedField ?? "") else {
-                return
-            }
 
-            if let event = notification.userInfo?["event"] as? GameControllerEvent {
-                switch event {
-                case .buttonA:
-                    purchase()
-                case .rightTrigger, .rightShoulder, .leftTrigger, .leftShoulder:
-                    ()
-                case .thumbstickPosition:
-                    ()
-                case .directionChanged:
-                    ()
-                }
-            }
-        }
         .alert("Demo of purchase button", isPresented: $showingAlert) {
             Button("OK", role: .cancel) { }
         }

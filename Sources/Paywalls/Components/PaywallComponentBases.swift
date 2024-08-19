@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI // TODO: This feels wrong
+// swiftlint:disable all
 
 public typealias TierId = String
 public typealias LocaleId = String
@@ -27,15 +28,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
     }
 
     case tiers(TiersComponent)
-    case tierSelector(TierSelectorComponent)
-    case tierToggle(TierToggleComponent)
     case text(TextComponent)
     case image(ImageComponent)
-    case video(VideoComponent)
-    case carousel(CarouselComponent)
-    case packages(PackagesComponent)
-    case features(FeaturesComponent)
-    case purchaseButton(PurchaseButtonComponent)
     case spacer(SpacerComponent)
 
     enum CodingKeys: String, CodingKey {
@@ -44,15 +38,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
 
     enum ComponentType: String, Codable {
         case tiers
-        case tierSelector
-        case tierToggle
         case text
         case image
-        case video
-        case carousel
-        case packages
-        case features
-        case purchaseButton
         case spacer
     }
 
@@ -63,24 +50,10 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         switch type {
         case .tiers:
             self = .tiers(try TiersComponent(from: decoder))
-        case .tierSelector:
-            self = .tierSelector(try TierSelectorComponent(from: decoder))
-        case .tierToggle:
-            self = .tierToggle(try TierToggleComponent(from: decoder))
         case .text:
             self = .text(try TextComponent(from: decoder))
         case .image:
             self = .image(try ImageComponent(from: decoder))
-        case .video:
-            self = .video(try VideoComponent(from: decoder))
-        case .carousel:
-            self = .carousel(try CarouselComponent(from: decoder))
-        case .packages:
-            self = .packages(try PackagesComponent(from: decoder))
-        case .features:
-            self = .features(try FeaturesComponent(from: decoder))
-        case .purchaseButton:
-            self = .purchaseButton(try PurchaseButtonComponent(from: decoder))
         case .spacer:
             self = .spacer(try SpacerComponent(from: decoder))
         }
@@ -90,23 +63,9 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         switch self {
         case .tiers(let component):
             return component.displayPreferences
-        case .tierSelector(let component):
-            return component.displayPreferences
-        case .tierToggle(let component):
-            return component.displayPreferences
         case .text(let component):
             return component.displayPreferences
         case .image(let component):
-            return component.displayPreferences
-        case .video(let component):
-            return component.displayPreferences
-        case .carousel(let component):
-            return component.displayPreferences
-        case .packages(let component):
-            return component.displayPreferences
-        case .features(let component):
-            return component.displayPreferences
-        case .purchaseButton(let component):
             return component.displayPreferences
         case .spacer(let component):
             return component.displayPreferences
@@ -117,23 +76,9 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         switch self {
         case .tiers(let component):
             return component.focusIdentifiers
-        case .tierSelector(let component):
-            return component.focusIdentifiers
-        case .tierToggle(let component):
-            return component.focusIdentifiers
         case .text(let component):
             return component.focusIdentifiers
         case .image(let component):
-            return component.focusIdentifiers
-        case .video(let component):
-            return component.focusIdentifiers
-        case .carousel(let component):
-            return component.focusIdentifiers
-        case .packages(let component):
-            return component.focusIdentifiers
-        case .features(let component):
-            return component.focusIdentifiers
-        case .purchaseButton(let component):
             return component.focusIdentifiers
         case .spacer(let component):
             return component.focusIdentifiers

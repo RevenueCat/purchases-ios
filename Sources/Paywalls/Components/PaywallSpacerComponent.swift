@@ -6,6 +6,7 @@
 //
 
 import Foundation
+// swiftlint:disable all
 
 public extension PaywallComponent {
     struct SpacerComponent: PaywallComponentBase {
