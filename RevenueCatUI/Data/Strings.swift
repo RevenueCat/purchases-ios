@@ -45,6 +45,12 @@ enum Strings {
     case executing_restore_logic
     case executing_external_restore_logic
 
+    case no_price_format_price_formatter_unavailable
+    case no_price_format_price_string_incompatible
+    case no_price_round_price_formatter_nil
+    case no_price_round_price_string_incompatible
+    case no_price_round_formatter_failed
+
     // Customer Center
     case could_not_find_subscription_information
     case could_not_offer_for_active_subscriptions
@@ -128,6 +134,21 @@ extension Strings: CustomStringConvertible {
             "No StoreKit restore purchases logic will be performed by RevenueCat. " +
             "You must have initialized your `PaywallView` appropriately."
 
+        case .no_price_format_price_formatter_unavailable:
+            return "Could not determine price format because price formatter is unavailable."
+
+        case .no_price_format_price_string_incompatible:
+            return "Could not determine price format because price string is incompatible."
+
+        case .no_price_round_price_formatter_nil:
+            return "Could not round price because price formatter is nil."
+
+        case .no_price_round_price_string_incompatible:
+            return "Could not round price because price string is incompatible."
+
+        case .no_price_round_formatter_failed:
+            return "Could not round price because formatter failed to round price."
+
         case .could_not_find_subscription_information:
             return "Could not find information for an active subscription"
 
@@ -139,6 +160,7 @@ extension Strings: CustomStringConvertible {
 
         case .could_not_offer_for_active_subscriptions:
             return "Could not find offer for any active subscription"
+
         }
     }
 

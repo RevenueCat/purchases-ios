@@ -79,6 +79,18 @@ enum TestData {
         introductoryDiscount: Self.intro(7, .day),
         locale: Self.locale
     )
+    static let threeMonthProductThailand = TestStoreProduct(
+        localizedTitle: "3 months",
+        price: 5.00,
+        localizedPriceString: "฿5.00",
+        productIdentifier: "com.revenuecat.product_5",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 3, unit: .month),
+        introductoryDiscount: Self.intro(7, .day),
+        locale: Locale.thailand
+    )
     static let sixMonthProduct = TestStoreProduct(
         localizedTitle: "6 months",
         price: 7.99,
@@ -102,6 +114,30 @@ enum TestData {
         subscriptionPeriod: .init(value: 1, unit: .year),
         introductoryDiscount: Self.intro(14, .day, priceString: "$1.99"),
         locale: Self.locale
+    )
+    static let annualProduct60 = TestStoreProduct(
+        localizedTitle: "Annual",
+        price: 60.00,
+        localizedPriceString: "$60.00",
+        productIdentifier: "com.revenuecat.product_3",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: Self.intro(14, .day, priceString: "$2.99"),
+        locale: Self.locale
+    )
+    static let annualProduct60Taiwan = TestStoreProduct(
+        localizedTitle: "Annual",
+        price: 60.00,
+        localizedPriceString: "$60.00",
+        productIdentifier: "com.revenuecat.product_3",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: Self.intro(14, .day, priceString: "$2.99"),
+        locale: Locale.taiwan
     )
     static let lifetimeProduct = TestStoreProduct(
         localizedTitle: "Lifetime",
@@ -136,6 +172,13 @@ enum TestData {
         offeringIdentifier: Self.offeringIdentifier
     )
     // @PublicForExternalTesting
+    static let threeMonthPackageThailand = Package(
+        identifier: PackageType.threeMonth.identifier,
+        packageType: .threeMonth,
+        storeProduct: Self.threeMonthProductThailand.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    // @PublicForExternalTesting
     static let sixMonthPackage = Package(
         identifier: PackageType.sixMonth.identifier,
         packageType: .sixMonth,
@@ -147,6 +190,20 @@ enum TestData {
         identifier: PackageType.annual.identifier,
         packageType: .annual,
         storeProduct: Self.annualProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    // @PublicForExternalTesting
+    static let annualPackage60 = Package(
+        identifier: PackageType.annual.identifier,
+        packageType: .annual,
+        storeProduct: Self.annualProduct60.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    // @PublicForExternalTesting
+    static let annualPackage60Taiwan = Package(
+        identifier: PackageType.annual.identifier,
+        packageType: .annual,
+        storeProduct: Self.annualProduct60Taiwan.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     // @PublicForExternalTesting
@@ -794,4 +851,9 @@ extension CustomerInfo {
         return try! decoder.decode(Self.self, from: Data(json.utf8))
     }
 
+}
+
+extension Locale {
+    static let taiwan = Locale(identifier: "zh_TW")
+    static let thailand = Locale(identifier: "th_TH")
 }

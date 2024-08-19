@@ -23,30 +23,51 @@ extension Package: VariableDataProvider {
         return self.identifier
     }
 
-    var localizedPrice: String {
-        return self.storeProduct.localizedPriceString
+    func localizedPrice(showZeroDecimalPlacePrices: Bool = false) -> String {
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(self.storeProduct.localizedPriceString) {
+            return formatAsZeroDecimalPlaces(self.storeProduct.localizedPriceString)
+        } else {
+            return self.storeProduct.localizedPriceString
+        }
     }
 
-    var localizedPricePerWeek: String {
+    func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let price = self.storeProduct.localizedPricePerWeek else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
 
-        return price
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
+            return formatAsZeroDecimalPlaces(price)
+        } else {
+            return price
+        }
+
     }
 
-    var localizedPricePerMonth: String {
+    func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let price = self.storeProduct.localizedPricePerMonth else {
             Logger.warning(Strings.package_not_subscription(self))
             return self.storeProduct.localizedPriceString
         }
 
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
+            return formatAsZeroDecimalPlaces(price)
+        }
+
         return price
     }
 
-    var localizedIntroductoryOfferPrice: String? {
-        return self.storeProduct.introductoryDiscount?.localizedPriceString
+    func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
+        guard let price = self.storeProduct.introductoryDiscount?.localizedPriceString else {
+            return self.storeProduct.introductoryDiscount?.localizedPriceString
+        }
+
+        if showZeroDecimalPlacePrices && isPriceEndingIn00Cents(price) {
+            return formatAsZeroDecimalPlaces(price)
+        }
+
+        return price
     }
 
     var productName: String {
@@ -94,41 +115,49 @@ extension Package: VariableDataProvider {
         return self.introDuration(locale)
     }
 
-    func localizedPricePerPeriod(_ locale: Locale) -> String {
+    func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPrice
+            return self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         let unit = Localization.abbreviatedUnitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPrice)/\(unit)"
+        return "\(self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
     }
 
-    func localizedPricePerPeriodFull(_ locale: Locale) -> String {
+    func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.localizedPrice
+            return self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
 
         let unit = Localization.unitLocalizedString(for: period, locale: locale)
-        return "\(self.localizedPrice)/\(unit)"
+        return "\(self.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices))/\(unit)"
     }
 
-    func localizedPriceAndPerMonth(_ locale: Locale) -> String {
+    func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPricePerPeriod(locale)
+            return self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            return "\(self.localizedPricePerPeriod(locale)) (\(self.localizedPricePerMonth)/\(unit))"
+
+            let price = self.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            let monthlyPrice = self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+
+            return "\(price) (\(monthlyPrice)/\(unit))"
         }
     }
 
-    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String {
+    func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool = false) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPricePerPeriodFull(locale)
+            return self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         } else {
             let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
                                                         locale: locale)
-            return "\(self.localizedPricePerPeriodFull(locale)) (\(self.localizedPricePerMonth)/\(unit))"
+
+            let price = self.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+            let monthlyPrice = self.localizedPricePerMonth(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+
+            return "\(price) (\(monthlyPrice)/\(unit))"
         }
     }
 
@@ -141,6 +170,46 @@ extension Package: VariableDataProvider {
 }
 
 // MARK: - Private
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension Package {
+
+    func isPriceEndingIn00Cents(_ priceString: String) -> Bool {
+        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
+            Logger.warning(Strings.no_price_format_price_formatter_unavailable)
+            return false
+        }
+
+        guard let price = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning(Strings.no_price_format_price_string_incompatible)
+            return false
+        }
+
+        let roundedPrice = round(price * 100) / 100.0
+        return roundedPrice.truncatingRemainder(dividingBy: 1) == 0
+    }
+
+    func formatAsZeroDecimalPlaces(_ priceString: String) -> String {
+        guard let formatter = self.storeProduct.priceFormatter?.copy() as? NumberFormatter else {
+            Logger.warning(Strings.no_price_round_price_formatter_nil)
+            return priceString
+        }
+
+        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning(Strings.no_price_round_price_string_incompatible)
+            return priceString
+        }
+
+        formatter.maximumFractionDigits = 0
+
+        guard let roundedPriceString = formatter.string(from: NSNumber(value: priceToRound)) else {
+            Logger.warning(Strings.no_price_round_formatter_failed)
+            return priceString
+        }
+
+        return roundedPriceString
+    }
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
