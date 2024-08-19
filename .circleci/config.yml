@@ -1035,6 +1035,7 @@ jobs:
   installation-tests-carthage:
     executor:
       name: macos-executor
+      resource_class: macos.m1.large.gen1
     steps:
       - checkout
       - trust-github-key
