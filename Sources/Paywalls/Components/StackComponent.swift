@@ -33,6 +33,15 @@ public extension PaywallComponent {
                 // TODO
                 fatalError()
             }
+
+
+            public static func horizontal() -> Dimension {
+                return .horizontal(.center)
+            }
+
+            public static func vertical() -> Dimension {
+                return .vertical(.center)
+            }
         }
 
         let type: String

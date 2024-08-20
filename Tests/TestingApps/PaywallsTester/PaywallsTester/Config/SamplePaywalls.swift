@@ -663,7 +663,7 @@ private extension SamplePaywallLoader {
 
     static var mainVStack: [PaywallComponent] = {
         [.stack(.init(components: [headerImage] + twoHorizontal,
-                      dimension: .vertical(.center),
+                      dimension: .vertical(),
                       spacing: 0,
                       backgroundColor: nil))]
 
@@ -671,7 +671,7 @@ private extension SamplePaywallLoader {
 
     static var twoHorizontal: [PaywallComponent] = {
         [.stack(.init(components: [verticalTextStack, middleText, verticalTextStack],
-                      dimension: .horizontal(.center),
+                      dimension: .horizontal(),
                       spacing: nil,
                       backgroundColor: .init(light: "#1122AA")))]
 
@@ -679,7 +679,7 @@ private extension SamplePaywallLoader {
 
     static var verticalTextStack: PaywallComponent = {
         .stack(.init(components: [getStartedText, spacer, upgradeText],
-                     dimension: .vertical(.center),
+                     dimension: .vertical(.leading),
                       spacing: 200,
                       backgroundColor: .init(light: "#11AA22")))
 
