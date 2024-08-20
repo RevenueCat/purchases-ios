@@ -49,7 +49,7 @@ private extension OfferingButton {
 
 private extension OfferingButton {
     
-    @ViewBuilder
+    @MainActor @ViewBuilder
     private func label() -> some View {
         let paywallTitle = rcOffering.paywall?.localizedConfiguration?.title ?? ""
         let decorator = viewModel.hasMultipleOfferingsWithPaywalls && self.selectedItemID == responseOffering.id ? "▶ " : ""
@@ -93,6 +93,7 @@ private extension OfferingButton {
             .lineLimit(1)
     }
 
+    @MainActor
     private func moreActionsMenu() -> some View {
         #if !os(watchOS)
         Menu {
@@ -106,7 +107,7 @@ private extension OfferingButton {
         #endif
     }
 
-    @ViewBuilder
+    @MainActor @ViewBuilder
     private func contextMenuItems() -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             self.showPaywallMenuButton(for: mode)

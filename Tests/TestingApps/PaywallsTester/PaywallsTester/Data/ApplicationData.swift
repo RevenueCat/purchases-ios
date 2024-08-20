@@ -9,16 +9,16 @@ import Foundation
 
 import OSLog
 
-@Observable
-final class ApplicationData {
+@MainActor
+final class ApplicationData: ObservableObject {
 
+    @Published
     private(set) var authenticationStatus: AuthenticationStatus = .unknown {
         didSet {
             Self.logger.info("Changed authentication: \(String(describing: self.authenticationStatus))")
         }
     }
 
-    @MainActor
     func loadApplicationData() async throws {
         do {
             self.authenticationStatus = .signedIn(try await self.manager.loadApplicationData())
@@ -32,7 +32,7 @@ final class ApplicationData {
         self.manager.signOut()
         self.authenticationStatus = .signedOut
     }
-    
+
     var isSignedIn: Bool {
         if case .signedIn = self.authenticationStatus {
             return true
@@ -40,7 +40,6 @@ final class ApplicationData {
         return false
     }
 
-    @ObservationIgnored
     private var manager: ApplicationManagerType = ApplicationManager()
     private static let logger = Logging.shared.logger(category: "ApplicationData")
 

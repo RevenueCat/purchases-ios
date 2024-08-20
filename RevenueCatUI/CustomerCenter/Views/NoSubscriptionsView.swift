@@ -78,7 +78,7 @@ struct NoSubscriptionsView: View {
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }

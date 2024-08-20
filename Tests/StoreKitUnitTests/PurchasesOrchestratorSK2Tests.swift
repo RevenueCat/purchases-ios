@@ -144,6 +144,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseSK2CancelledWithSimulatedError() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
