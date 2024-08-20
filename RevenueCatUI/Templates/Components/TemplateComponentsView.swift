@@ -160,7 +160,7 @@ struct ComponentsView: View {
                         locale: locale,
                         component: component
                     )
-                case.stack(let component):
+                case .stack(let component):
                     StackComponentView(component: component, locale: locale, configuration: configuration)
                 }
             }
