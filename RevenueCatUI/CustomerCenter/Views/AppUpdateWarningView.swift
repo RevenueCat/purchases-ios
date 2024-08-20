@@ -58,9 +58,9 @@ struct AppUpdateWarningView: View {
 
             VStack {
                 CompatibilityContentUnavailableView(
-                    title: localization.commonLocalizedString(for: .updateWarningTitle),
-                    description: localization.commonLocalizedString(for: .updateWarningDescription),
-                    systemImage: "arrowshape.up.circle.fill"
+                    localization.commonLocalizedString(for: .updateWarningTitle),
+                    systemImage: "arrowshape.up.circle.fill",
+                    description: Text(localization.commonLocalizedString(for: .updateWarningDescription))
                 )
 
                 Button(localization.commonLocalizedString(for: .updateWarningUpdate)) {
