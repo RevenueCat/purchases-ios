@@ -31,25 +31,30 @@ struct StackComponentView: View {
         component.spacing
     }
 
+    var backgroundColor: Color {
+        component.backgroundPaywallColor?.underlyingColor ?? Color.clear
+    }
+
     let locale: Locale
     let configuration: TemplateViewConfiguration
 
     var body: some View {
-        VStack {
-            switch self.dimension {
-            case .vertical:
-                VStack(spacing: spacing) {
-                    ComponentsView(locale: locale, components: components, configuration: configuration)
-                }
-            case .horizontal:
-                HStack(spacing: spacing) {
-                    ComponentsView(locale: locale, components: components, configuration: configuration)
-                }
-            case .zlayer:
-                ZStack {
-                    ComponentsView(locale: locale, components: components, configuration: configuration)
-                }
+        switch self.dimension {
+        case .vertical:
+            VStack(spacing: spacing) {
+                ComponentsView(locale: locale, components: components, configuration: configuration)
             }
+            .background(backgroundColor)
+        case .horizontal:
+            HStack(spacing: spacing) {
+                ComponentsView(locale: locale, components: components, configuration: configuration)
+            }
+            .background(backgroundColor)
+        case .zlayer:
+            ZStack {
+                ComponentsView(locale: locale, components: components, configuration: configuration)
+            }
+            .background(backgroundColor)
         }
     }
 

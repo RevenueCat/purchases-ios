@@ -652,47 +652,72 @@ private extension SamplePaywallLoader {
 
             componentData: PaywallComponent.Data(
                 backgroundColor: .init(light: "#FFFFFF"),
-                components: twoHorizontal
+                components: mainVStack
             )
         )
     }
 
+
+    static var mainVStack: [PaywallComponent] = {
+        [.stack(.init(components: [headerImage] + twoHorizontal,
+                      dimension: .vertical,
+                      spacing: nil,
+                      backgroundColor: nil))]
+
+    }()
+
     static var twoHorizontal: [PaywallComponent] = {
-        [.stack(.init(components: [verticalText, verticalText],
+        [.stack(.init(components: [verticalTextStack, middleText, verticalTextStack],
                       dimension: .horizontal,
                       spacing: nil,
                       backgroundColor: nil))]
 
     }()
 
-    static var verticalText: PaywallComponent = {
-        .stack(.init(components: [GetStartedText, UpgradeText],
+    static var verticalTextStack: PaywallComponent = {
+        .stack(.init(components: [getStartedText, upgradeText],
                       dimension: .vertical,
-                      spacing: nil,
+                      spacing: 200,
                       backgroundColor: nil))
 
     }()
 
-    static var GetStartedText: PaywallComponent = {
+    static var middleText: PaywallComponent = {
         .text(.init(
             text: .init(value: [
-                "en_US": "Get started with our plan"
+                "en_US": "Popular Plan"
             ]),
             color: .init(light: "#000000"),
-            textStyle: .largeTitle,
+            textStyle: .body,
             displayPreferences: [.portrait, .landscapeLeft]
         ))
     }()
 
-    static var UpgradeText: PaywallComponent = {
+    static var getStartedText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Get started with our plan"
+            ]),
+            color: .init(light: "#FF0000"),
+            textStyle: .body,
+            displayPreferences: [.portrait, .landscapeLeft]
+        ))
+    }()
+
+    static var upgradeText: PaywallComponent = {
         .text(.init(
             text: .init(value: [
                 "en_US": "Upgrade to our premium plan"
             ]),
             color: .init(light: "#000000"),
-            textStyle: .largeTitle,
+            textStyle: .body,
             displayPreferences: [.portrait, .landscapeLeft]
         ))
+    }()
+
+
+    static var headerImage: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!))
     }()
 
     #endif
