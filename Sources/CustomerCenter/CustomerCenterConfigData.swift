@@ -123,10 +123,10 @@ public struct CustomerCenterConfigData {
                 case .dismiss:
                     return "Dismiss"
                 case .updateWarningTitle:
-                    return "Update the app to fix your problem"
+                    return "Update the app to fix the problem."
                 case .updateWarningDescription:
                     return """
-                    A new update is available. Downloading the latest version of the app can help you solve your \
+                    A new update is available. Downloading the latest version of the app may help solve the \
                     problem.
                     """
                 case .updateWarningUpdate:
