@@ -33,7 +33,7 @@ struct OfferingsList: View {
             .task {
                 await viewModel.updateOfferingsAndPaywalls()
             }
-            .onChange(of: scenePhase) { oldPhase, newPhase in
+            .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active {
                     Task {
                         await viewModel.updateOfferingsAndPaywalls()
@@ -44,13 +44,13 @@ struct OfferingsList: View {
     }
 
     init(app: DeveloperResponse.App, introEligility: Binding<IntroEligibilityStatus>) {
-        self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
+        self._viewModel = StateObject(wrappedValue: OfferingsPaywallsViewModel(apps: [app]))
         self._introEligility = introEligility
     }
 
     @Environment(\.scenePhase) private var scenePhase
 
-    @State
+    @StateObject
     private var viewModel: OfferingsPaywallsViewModel
 
     @State
@@ -68,7 +68,7 @@ struct OfferingsList: View {
                 Text("No data available.")
             }
         case .error(let error):
-            ContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
+            CompatibilityContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
         }
     }
     
@@ -127,7 +127,8 @@ struct OfferingsList: View {
 
     private func noPaywallsListItem() -> some View {
         VStack {
-            ContentUnavailableView("No configured paywalls", systemImage: "exclamationmark.triangle.fill")
+            CompatibilityContentUnavailableView("No configured paywalls",
+                                                         systemImage: "exclamationmark.triangle.fill")
             Text(Self.pullToRefresh)
                 .font(.footnote)
             Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
