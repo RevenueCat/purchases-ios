@@ -18,11 +18,19 @@ import Foundation
 public extension PaywallComponent {
 
     struct StackComponent: PaywallComponentBase {
+
+        public enum Dimension: String, Codable, Sendable, Hashable {
+            case vertical
+            case horizontal
+            case zlayer
+        }
+
         let type: String
         public let components: [PaywallComponent]
 //        let alignment: HorizontalAlignment?
         public let spacing: CGFloat?
         public let backgroundColor: String?
+        public let dimension: Dimension
         let displayPreferences: [DisplayPreference]?
         var focusIdentifiers: [FocusIdentifier]?
 
@@ -34,15 +42,17 @@ public extension PaywallComponent {
             case focusIdentifiers
             case displayPreferences
             case type
+            case dimension
         }
 
-        public init(components: [PaywallComponent], spacing: CGFloat?, backgroundColor: String?) {
+        public init(components: [PaywallComponent], dimension: Dimension = .vertical, spacing: CGFloat?, backgroundColor: String?) {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.displayPreferences = nil
             self.focusIdentifiers = nil
             self.type = "stack"
+            self.dimension = dimension
         }
     }
 }

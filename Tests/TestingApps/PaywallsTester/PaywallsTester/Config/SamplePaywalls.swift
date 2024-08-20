@@ -652,20 +652,42 @@ private extension SamplePaywallLoader {
 
             componentData: PaywallComponent.Data(
                 backgroundColor: .init(light: "#FFFFFF"),
-                components: layout
+                components: twoHorizontal
             )
         )
     }
 
-    static var layout: [PaywallComponent] = {
-        [.stack(.init(components: [textOnly, textOnly], spacing: nil, backgroundColor: nil))]
+    static var twoHorizontal: [PaywallComponent] = {
+        [.stack(.init(components: [verticalText, verticalText],
+                      dimension: .horizontal,
+                      spacing: nil,
+                      backgroundColor: nil))]
 
     }()
 
-    static var textOnly: PaywallComponent = {
+    static var verticalText: PaywallComponent = {
+        .stack(.init(components: [GetStartedText, UpgradeText],
+                      dimension: .vertical,
+                      spacing: nil,
+                      backgroundColor: nil))
+
+    }()
+
+    static var GetStartedText: PaywallComponent = {
         .text(.init(
             text: .init(value: [
                 "en_US": "Get started with our plan"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .largeTitle,
+            displayPreferences: [.portrait, .landscapeLeft]
+        ))
+    }()
+
+    static var UpgradeText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Upgrade to our premium plan"
             ]),
             color: .init(light: "#000000"),
             textStyle: .largeTitle,
