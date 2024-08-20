@@ -32,7 +32,10 @@ struct StackComponentView: View {
     }
 
     var backgroundColor: Color {
-        component.backgroundPaywallColor?.underlyingColor ?? Color.clear
+        if let lightColor = component.backgroundColor?.light {
+            return (try? PaywallColor(stringRepresentation: lightColor).underlyingColor) ?? Color.clear
+        }
+        return Color.clear
     }
 
     let locale: Locale

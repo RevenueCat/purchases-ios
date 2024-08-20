@@ -29,10 +29,7 @@ public extension PaywallComponent {
         public let components: [PaywallComponent]
 //        let alignment: HorizontalAlignment?
         public let spacing: CGFloat?
-        public let backgroundColor: String?
-        public var backgroundPaywallColor: PaywallColor? {
-            backgroundColor.flatMap { try? PaywallColor(stringRepresentation: $0) }
-        }
+        public let backgroundColor: ColorInfo?
         public let dimension: Dimension
         let displayPreferences: [DisplayPreference]?
         var focusIdentifiers: [FocusIdentifier]?
@@ -48,7 +45,7 @@ public extension PaywallComponent {
             case dimension
         }
 
-        public init(components: [PaywallComponent], dimension: Dimension = .vertical, spacing: CGFloat?, backgroundColor: String?) {
+        public init(components: [PaywallComponent], dimension: Dimension = .vertical, spacing: CGFloat?, backgroundColor: ColorInfo?) {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
