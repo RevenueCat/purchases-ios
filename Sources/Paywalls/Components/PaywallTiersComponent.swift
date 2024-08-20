@@ -8,6 +8,8 @@
 import Foundation
 // swiftlint:disable all
 
+#if PAYWALL_COMPONENTS
+
 public extension PaywallComponent {
     struct TiersComponent: PaywallComponentBase {
 
@@ -98,3 +100,5 @@ public extension PaywallComponent {
 
     }
 }
+
+#endif

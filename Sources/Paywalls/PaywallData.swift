@@ -53,7 +53,10 @@ public struct PaywallData {
     @DefaultDecodable.EmptyDictionary
     internal private(set) var localizationByTier: [String: [String: LocalizedConfiguration]]
 
+    #if PAYWALL_COMPONENTS
     public var componentData: PaywallComponent.Data? = nil
+    #endif
+
 }
 
 /// Defines the necessary localized information for a paywall.
@@ -616,7 +619,7 @@ extension PaywallData {
 // MARK: - Constructors
 
 extension PaywallData {
-
+    #if PAYWALL_COMPONENTS
     init(
         templateName: String,
         config: Configuration,
@@ -659,6 +662,46 @@ extension PaywallData {
             componentData: componentData
         )
     }
+    #else
+    init(
+        templateName: String,
+        config: Configuration,
+        localization: [String: LocalizedConfiguration],
+        localizationByTier: [String: [String: LocalizedConfiguration]],
+        assetBaseURL: URL,
+        revision: Int = 0,
+        zeroDecimalPlaceCountries: [String] = []
+    ) {
+        self.templateName = templateName
+        self.config = config
+        self.localization = localization
+        self.localizationByTier = localizationByTier
+        self.assetBaseURL = assetBaseURL
+        self.revision = revision
+        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
+    }
+
+    /// Creates a test ``PaywallData`` with one localization.
+    public init(
+        templateName: String,
+        config: Configuration,
+        localization: LocalizedConfiguration,
+        assetBaseURL: URL,
+        revision: Int = 0,
+        locale: Locale = .current,
+        zeroDecimalPlaceCountries: [String] = []
+    ) {
+        self.init(
+            templateName: templateName,
+            config: config,
+            localization: [locale.identifier: localization],
+            localizationByTier: [:],
+            assetBaseURL: assetBaseURL,
+            revision: revision,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
+        )
+    }
+    #endif
 
     /// Creates a test multi-tier ``PaywallData`` with a single localization.
     public init(

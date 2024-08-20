@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI // TODO: This feels wrong
 // swiftlint:disable all
 
+#if PAYWALL_COMPONENTS
+
 public typealias TierId = String
 public typealias LocaleId = String
 public typealias ColorHex = String
@@ -268,3 +270,5 @@ public extension PaywallComponent {
         }
     }
 }
+
+#endif
