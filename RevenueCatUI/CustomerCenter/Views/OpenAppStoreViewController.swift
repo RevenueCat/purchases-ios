@@ -48,7 +48,7 @@ class OpenAppStoreViewController: UIViewController, SKStoreProductViewController
             guard error == nil,
                   let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                   let rootViewController = windowScene.windows.first?.rootViewController else {
-
+                // productId is a positive integer, so it is safe to construct a URL from it.
                 let appStoreUrl = URL(string: "https://itunes.apple.com/app/id\(productId)")!
                 UIApplication.shared.open(appStoreUrl)
                 return
