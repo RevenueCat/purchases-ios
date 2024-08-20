@@ -54,7 +54,8 @@ public struct PaywallData {
     internal private(set) var localizationByTier: [String: [String: LocalizedConfiguration]]
 
     #if PAYWALL_COMPONENTS
-    public var componentData: PaywallComponent.Data? = nil
+    /// Components used to disaply this paywall
+    public var componentData: PaywallComponent.Data?
     #endif
 
 }
