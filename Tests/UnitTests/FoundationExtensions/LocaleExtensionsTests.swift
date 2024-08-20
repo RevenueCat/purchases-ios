@@ -33,7 +33,19 @@ class LocaleExtensionsTests: TestCase {
     }
 
     func testMissingLanguageCode() {
-        expect(Locale(identifier: "").rc_languageCode).to(beNil())
+        // This difference is with running iOS 16 tests with Xcode 15
+        // and iOS 15 tests with Xcode 14
+        #if swift(>=5.9)
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+                // Fixed in iOS 17 on Xcode 15
+                expect(Locale(identifier: "").rc_languageCode).to(beNil())
+            } else {
+                // Broken in iOS 16 on Xcode 15
+                expect(Locale(identifier: "").rc_languageCode) == "en"
+            }
+        #else
+            expect(Locale(identifier: "").rc_languageCode).to(beNil())
+        #endif
     }
 
     func testRemovingRegion() {
@@ -41,7 +53,20 @@ class LocaleExtensionsTests: TestCase {
         expect(Locale(identifier: "en-IN").removingRegion?.identifier) == "en"
         expect(Locale(identifier: "en_ES").removingRegion?.identifier) == "en"
         expect(Locale(identifier: "en").removingRegion?.identifier) == "en"
-        expect(Locale(identifier: "").removingRegion).to(beNil())
+
+        // This difference is with running iOS 16 tests with Xcode 15
+        // and iOS 15 tests with Xcode 14
+        #if swift(>=5.9)
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+                // Fixed in iOS 17 on Xcode 15
+                expect(Locale(identifier: "").removingRegion).to(beNil())
+            } else {
+                // Broken in iOS 16 on Xcode 15
+                expect(Locale(identifier: "").removingRegion?.identifier) == "en"
+            }
+        #else
+            expect(Locale(identifier: "").removingRegion).to(beNil())
+        #endif
     }
 
 }
