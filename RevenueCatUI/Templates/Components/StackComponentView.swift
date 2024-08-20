@@ -27,6 +27,10 @@ struct StackComponentView: View {
         component.components
     }
 
+    var spacing: CGFloat? {
+        component.spacing
+    }
+
     let locale: Locale
     let configuration: TemplateViewConfiguration
 
@@ -34,11 +38,11 @@ struct StackComponentView: View {
         VStack {
             switch self.dimension {
             case .vertical:
-                VStack {
+                VStack(spacing: spacing) {
                     ComponentsView(locale: locale, components: components, configuration: configuration)
                 }
             case .horizontal:
-                HStack {
+                HStack(spacing: spacing) {
                     ComponentsView(locale: locale, components: components, configuration: configuration)
                 }
             case .zlayer:
