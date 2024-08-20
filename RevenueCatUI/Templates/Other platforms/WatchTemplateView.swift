@@ -75,6 +75,7 @@ struct WatchTemplateView: TemplateViewType {
                     self.button
 
                     FooterView(configuration: self.configuration,
+                               locale: self.selectedLocalization.locale,
                                purchaseHandler: self.purchaseHandler)
                 }
                 .defaultHorizontalPadding()

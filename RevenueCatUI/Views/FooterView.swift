@@ -34,14 +34,18 @@ struct FooterView: View {
     var purchaseHandler: PurchaseHandler
     var displayingAllPlans: Binding<Bool>?
 
+    let localizedBundle: Bundle
+
     init(
         configuration: TemplateViewConfiguration,
+        locale: Locale,
         bold: Bool = false,
         purchaseHandler: PurchaseHandler,
         displayingAllPlans: Binding<Bool>? = nil
     ) {
         self.init(
             configuration: configuration.configuration,
+            locale: locale,
             mode: configuration.mode,
             fonts: configuration.fonts,
             color: configuration.colors.text1Color,
@@ -52,6 +56,7 @@ struct FooterView: View {
 
     fileprivate init(
         configuration: PaywallData.Configuration,
+        locale: Locale,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         color: Color,
@@ -66,12 +71,13 @@ struct FooterView: View {
         self.boldPreferred = bold
         self.purchaseHandler = purchaseHandler
         self.displayingAllPlans = displayingAllPlans
+        self.localizedBundle = Localization.localizedBundle(locale)
     }
 
     var body: some View {
         HStack {
             if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
-                Self.allPlansButton(binding)
+                Self.allPlansButton(binding, bundle: self.localizedBundle)
 
                 if self.configuration.displayRestorePurchases || self.tosURL != nil || self.privacyURL != nil {
                     self.separator
@@ -79,7 +85,10 @@ struct FooterView: View {
             }
 
             if self.configuration.displayRestorePurchases {
-                RestorePurchasesButton(purchaseHandler: self.purchaseHandler)
+                RestorePurchasesButton(
+                    localizedBundle: self.localizedBundle,
+                    purchaseHandler: self.purchaseHandler
+                )
 
                 if self.tosURL != nil || self.privacyURL != nil {
                     self.separator
@@ -88,6 +97,7 @@ struct FooterView: View {
 
             if let url = self.tosURL {
                 LinkButton(
+                    localizedBundle: self.localizedBundle,
                     url: url,
                     titles: "Terms and conditions", "Terms"
                 )
@@ -99,6 +109,7 @@ struct FooterView: View {
 
             if let url = self.privacyURL {
                 LinkButton(
+                    localizedBundle: self.localizedBundle,
                     url: url,
                     titles: "Privacy policy", "Privacy"
                 )
@@ -114,13 +125,13 @@ struct FooterView: View {
         #endif
     }
 
-    private static func allPlansButton(_ binding: Binding<Bool>) -> some View {
+    private static func allPlansButton(_ binding: Binding<Bool>, bundle: Bundle) -> some View {
         Button {
             withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
         } label: {
-            Text("All subscriptions", bundle: .module)
+            Text("All subscriptions", bundle: bundle)
         }
         .frame(minHeight: Constants.minimumButtonHeight)
     }
@@ -179,6 +190,7 @@ private struct SeparatorView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct RestorePurchasesButton: View {
 
+    let localizedBundle: Bundle
     let purchaseHandler: PurchaseHandler
 
     @State
@@ -201,12 +213,12 @@ private struct RestorePurchasesButton: View {
                 Logger.debug(Strings.restore_purchases_with_empty_result)
             }
         } label: {
-            let largestText = Text("Restore purchases", bundle: .module)
+            let largestText = Text("Restore purchases", bundle: self.localizedBundle)
 
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits {
                     largestText
-                    Text("Restore", bundle: .module)
+                    Text("Restore", bundle: self.localizedBundle)
                 }
                 .accessibilityLabel(largestText)
             } else {
@@ -215,7 +227,7 @@ private struct RestorePurchasesButton: View {
         }
         .frame(minHeight: Constants.minimumButtonHeight)
         .buttonStyle(.plain)
-        .alert(Text("Purchases restored successfully!", bundle: .module),
+        .alert(Text("Purchases restored successfully!", bundle: self.localizedBundle),
                isPresented: self.$showRestoredCustomerInfoAlert) {
             Button(role: .cancel) {
                 if let restoredCustomerInfo = self.restoredCustomerInfo {
@@ -233,8 +245,7 @@ private struct RestorePurchasesButton: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LinkButton: View {
 
-    @Environment(\.locale)
-    private var locale
+    private let localizedBundle: Bundle
 
     @Namespace
     private var namespace
@@ -245,7 +256,8 @@ private struct LinkButton: View {
     let url: URL
     let titles: [String]
 
-    init(url: URL, titles: String...) {
+    init(localizedBundle: Bundle, url: URL, titles: String...) {
+        self.localizedBundle = localizedBundle
         self.url = url
         self.titles = titles
     }
@@ -285,21 +297,19 @@ private struct LinkButton: View {
 
     @ViewBuilder
     private var content: some View {
-        let bundle = Localization.localizedBundle(self.locale)
-
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             ViewThatFits {
                 ForEach(self.titles, id: \.self) { title in
-                    self.linkContent(for: title, bundle: bundle)
+                    self.linkContent(for: title, bundle: self.localizedBundle)
                 }
             }
             // Only use the largest label for accessibility
             .accessibilityLabel(
-                self.titles.first.map { Self.localizedString($0, bundle) }
+                self.titles.first.map { Self.localizedString($0, self.localizedBundle) }
                 ?? ""
             )
         } else if let first = self.titles.first {
-            self.linkContent(for: first, bundle: bundle)
+            self.linkContent(for: first, bundle: self.localizedBundle)
         }
     }
 
@@ -402,6 +412,7 @@ struct Footer_Previews: PreviewProvider {
                 termsOfServiceURL: termsOfServiceURL,
                 privacyURL: privacyURL
             ),
+            locale: Locale.current,
             mode: .fullScreen,
             fonts: DefaultPaywallFontProvider(),
             color: TestData.colors.text1Color,
