@@ -35,6 +35,7 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
     case text(TextComponent)
     case image(ImageComponent)
     case spacer(SpacerComponent)
+    case stack(StackComponent)
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -47,6 +48,7 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         case text
         case image
         case spacer
+        case stack
     }
 
     public init(from decoder: Decoder) throws {
@@ -66,6 +68,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
             self = .image(try ImageComponent(from: decoder))
         case .spacer:
             self = .spacer(try SpacerComponent(from: decoder))
+        case .stack:
+            self = .stack(try StackComponent(from: decoder))
         }
     }
 
@@ -83,6 +87,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
             return component.displayPreferences
         case .spacer(let component):
             return component.displayPreferences
+        case .stack(let component):
+            return component.displayPreferences
         }
     }
 
@@ -99,6 +105,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         case .image(let component):
             return component.focusIdentifiers
         case .spacer(let component):
+            return component.focusIdentifiers
+        case .stack(let component):
             return component.focusIdentifiers
         }
     }

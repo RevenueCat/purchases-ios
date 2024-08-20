@@ -652,20 +652,25 @@ private extension SamplePaywallLoader {
 
             componentData: PaywallComponent.Data(
                 backgroundColor: .init(light: "#FFFFFF"),
-                components: textOnly
+                components: layout
             )
         )
     }
 
-    static var textOnly: [PaywallComponent] = {
-        [.text(.init(
+    static var layout: [PaywallComponent] = {
+        [.stack(.init(components: [textOnly, textOnly], spacing: nil, backgroundColor: nil))]
+
+    }()
+
+    static var textOnly: PaywallComponent = {
+        .text(.init(
             text: .init(value: [
                 "en_US": "Get started with our plan"
             ]),
             color: .init(light: "#000000"),
             textStyle: .largeTitle,
             displayPreferences: [.portrait, .landscapeLeft]
-        ))]
+        ))
     }()
 
     #endif
