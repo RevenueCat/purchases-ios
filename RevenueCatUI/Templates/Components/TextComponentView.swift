@@ -38,7 +38,7 @@ struct TextComponentView: View {
 
     var backgroundColor: Color? {
         if let thing = component.backgroundColor?.light {
-            return try! PaywallColor(stringRepresentation: thing).underlyingColor
+            return (try? PaywallColor(stringRepresentation: thing).underlyingColor) ?? Color.clear
         }
         return nil
     }

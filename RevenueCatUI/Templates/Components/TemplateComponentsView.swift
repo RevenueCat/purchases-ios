@@ -197,31 +197,6 @@ struct ComponentsView: View {
     
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct ImageComponentView: View {
-
-    let locale: Locale
-    let component: PaywallComponent.ImageComponent
-
-    @Environment(\.userInterfaceIdiom)
-    var userInterfaceIdiom
-
-    private var headerAspectRatio: CGFloat {
-        switch self.userInterfaceIdiom {
-        case .pad: return 3
-        default: return 2
-        }
-    }
-
-    var body: some View {
-        RemoteImage(url: component.url,
-                    aspectRatio: self.headerAspectRatio,
-                    maxWidth: .infinity)
-        .clipped()
-    }
-
-}
-
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct SpacerComponentView: View {
