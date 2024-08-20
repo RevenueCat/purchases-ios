@@ -47,8 +47,7 @@ struct WrongPlatformView: View {
         self._store = State(initialValue: store)
     }
 
-    @ViewBuilder
-    var content: some View {
+    var body: some View {
         ZStack {
             if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
                 background.edgesIgnoringSafeArea(.all)
@@ -80,18 +79,6 @@ struct WrongPlatformView: View {
                    let firstEntitlement = customerInfo.entitlements.active.first {
                     self.store = firstEntitlement.value.store
                 }
-            }
-        }
-    }
-
-    var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
             }
         }
     }
