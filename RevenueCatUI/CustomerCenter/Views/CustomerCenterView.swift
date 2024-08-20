@@ -98,7 +98,11 @@ private extension CustomerCenterView {
                 } else {
                     AppUpdateWarningView(
                         onUpdateAppClick: { viewModel.onAppUpdateClick() },
-                        onContinueAnywayClick: { ignoreAppUpdateWarning = true }
+                        onContinueAnywayClick: {
+                            withAnimation {
+                                ignoreAppUpdateWarning = true
+                            }
+                        }
                     )
                 }
             } else {
