@@ -197,38 +197,6 @@ struct ComponentsView: View {
     
 }
 
-
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct TextComponentView: View {
-
-    let locale: Locale
-    let component: PaywallComponent.TextComponent
-
-    var body: some View {
-        Text(getLocalization(locale, component.text))
-            .multilineTextAlignment(component.horizontalAlignment.alignment)
-            .frame(maxWidth: .infinity)
-            .font(component.textStyle.font)
-            .foregroundStyle(
-                try! PaywallColor(stringRepresentation: component.color.light).underlyingColor
-            )
-            .padding(.top, component.padding.top)
-            .padding(.bottom, component.padding.bottom)
-            .padding(.leading, component.padding.leading)
-            .padding(.trailing, component.padding.trailing)
-            .background(self.backgroundColor)
-    }
-
-    var backgroundColor: Color? {
-        if let thing = component.backgroundColor?.light {
-            return try! PaywallColor(stringRepresentation: thing).underlyingColor
-        }
-        return nil
-    }
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct ImageComponentView: View {
 
