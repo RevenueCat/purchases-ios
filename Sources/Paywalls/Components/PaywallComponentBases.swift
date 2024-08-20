@@ -212,7 +212,7 @@ public extension PaywallComponent {
         case center
         case trailing
 
-        public var alignment: TextAlignment {
+        public var textAlignment: TextAlignment {
             switch self {
             case .leading:
                 return .leading
@@ -220,6 +220,34 @@ public extension PaywallComponent {
                 return .center
             case .trailing:
                 return .trailing
+            }
+        }
+
+        public var stackAlignment: SwiftUI.HorizontalAlignment {
+            switch self {
+            case .leading:
+                return .leading
+            case .center:
+                return .center
+            case .trailing:
+                return .trailing
+            }
+        }
+    }
+
+    enum VerticalAlignment: String, Decodable, Sendable, Hashable, Equatable {
+        case top
+        case center
+        case bottom
+
+        public var stackAlignment: SwiftUI.VerticalAlignment {
+            switch self {
+            case .top:
+                return .top
+            case .center:
+                return .center
+            case .bottom:
+                return .bottom
             }
         }
     }

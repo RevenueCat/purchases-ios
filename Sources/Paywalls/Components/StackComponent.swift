@@ -19,10 +19,20 @@ public extension PaywallComponent {
 
     struct StackComponent: PaywallComponentBase {
 
-        public enum Dimension: String, Codable, Sendable, Hashable {
-            case vertical
-            case horizontal
+        public enum Dimension: Codable, Sendable, Hashable {
+            case vertical(HorizontalAlignment)
+            case horizontal(VerticalAlignment)
             case zlayer
+
+            public func encode(to encoder: Encoder) throws {
+                //TODO
+                fatalError()
+            }
+
+            public init(from decoder: Decoder) throws {
+                // TODO
+                fatalError()
+            }
         }
 
         let type: String
@@ -45,7 +55,7 @@ public extension PaywallComponent {
             case dimension
         }
 
-        public init(components: [PaywallComponent], dimension: Dimension = .vertical, spacing: CGFloat?, backgroundColor: ColorInfo?) {
+        public init(components: [PaywallComponent], dimension: Dimension = .vertical(.center), spacing: CGFloat?, backgroundColor: ColorInfo?) {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor

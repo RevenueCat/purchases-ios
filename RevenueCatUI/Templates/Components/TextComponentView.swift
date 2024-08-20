@@ -25,7 +25,7 @@ struct TextComponentView: View {
 
     var body: some View {
         Text(getLocalization(locale, component.text))
-            .multilineTextAlignment(component.horizontalAlignment.alignment)
+            .multilineTextAlignment(component.horizontalAlignment.textAlignment)
             .frame(maxWidth: .infinity)
             .font(component.textStyle.font)
             .foregroundStyle(

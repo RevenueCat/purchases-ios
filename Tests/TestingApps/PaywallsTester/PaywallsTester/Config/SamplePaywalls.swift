@@ -657,28 +657,31 @@ private extension SamplePaywallLoader {
         )
     }
 
+    static var spacer: PaywallComponent = {
+        .spacer(PaywallComponent.SpacerComponent())
+    }()
 
     static var mainVStack: [PaywallComponent] = {
         [.stack(.init(components: [headerImage] + twoHorizontal,
-                      dimension: .vertical,
-                      spacing: nil,
+                      dimension: .vertical(.center),
+                      spacing: 0,
                       backgroundColor: nil))]
 
     }()
 
     static var twoHorizontal: [PaywallComponent] = {
         [.stack(.init(components: [verticalTextStack, middleText, verticalTextStack],
-                      dimension: .horizontal,
+                      dimension: .horizontal(.center),
                       spacing: nil,
-                      backgroundColor: nil))]
+                      backgroundColor: .init(light: "#1122AA")))]
 
     }()
 
     static var verticalTextStack: PaywallComponent = {
-        .stack(.init(components: [getStartedText, upgradeText],
-                      dimension: .vertical,
+        .stack(.init(components: [getStartedText, spacer, upgradeText],
+                     dimension: .vertical(.center),
                       spacing: 200,
-                      backgroundColor: nil))
+                      backgroundColor: .init(light: "#11AA22")))
 
     }()
 

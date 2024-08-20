@@ -42,14 +42,14 @@ struct StackComponentView: View {
     let configuration: TemplateViewConfiguration
 
     var body: some View {
-        switch self.dimension {
-        case .vertical:
-            VStack(spacing: spacing) {
+        switch dimension {
+        case .vertical(let horizontalAlignment):
+            VStack(alignment: horizontalAlignment.stackAlignment, spacing: spacing) {
                 ComponentsView(locale: locale, components: components, configuration: configuration)
             }
             .background(backgroundColor)
-        case .horizontal:
-            HStack(spacing: spacing) {
+        case .horizontal(let verticalAlignment):
+            HStack(alignment: verticalAlignment.stackAlignment,spacing: spacing) {
                 ComponentsView(locale: locale, components: components, configuration: configuration)
             }
             .background(backgroundColor)
