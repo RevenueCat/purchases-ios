@@ -19,7 +19,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
-
     let component: PaywallComponent.StackComponent
     var dimension: PaywallComponent.StackComponent.Dimension {
         component.dimension
@@ -27,29 +26,33 @@ struct StackComponentView: View {
     var components: [PaywallComponent] {
         component.components
     }
-    let layoutComponents: ([PaywallComponent]) -> AnyView
+
+    let locale: Locale
+    let configuration: TemplateViewConfiguration
 
     var body: some View {
-        switch self.dimension {
-        case .vertical:
-            VStack {
-                layoutComponents(components)
-            }
-        case .horizontal:
-            HStack {
-                layoutComponents(components)
-            }
-        case .zlayer:
-            ZStack {
-                layoutComponents(components)
+        VStack {
+            switch self.dimension {
+            case .vertical:
+                VStack {
+                    ComponentsView(locale: locale, components: components, configuration: configuration)
+                }
+            case .horizontal:
+                HStack {
+                    ComponentsView(locale: locale, components: components, configuration: configuration)
+                }
+            case .zlayer:
+                ZStack {
+                    ComponentsView(locale: locale, components: components, configuration: configuration)
+                }
             }
         }
     }
 
-    init(component: PaywallComponent.StackComponent,
-         layoutComponents: @escaping ([PaywallComponent]) -> AnyView) {
+    init(component: PaywallComponent.StackComponent, locale: Locale, configuration: TemplateViewConfiguration) {
         self.component = component
-        self.layoutComponents = layoutComponents
+        self.locale = locale
+        self.configuration = configuration
     }
 }
 

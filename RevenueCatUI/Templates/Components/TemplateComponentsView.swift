@@ -136,8 +136,7 @@ struct ComponentsView: View {
     }
 
     @ViewBuilder
-    func layoutComponents(_ layoutComponentsArray: [PaywallComponent]) -> AnyView {
-        AnyView(
+    func layoutComponents(_ layoutComponentsArray: [PaywallComponent]) -> some View {
             ForEach(Array(layoutComponentsArray.enumerated()), id: \.offset) { index, item in
                 switch (item) {
                 case .tiers(let component):
@@ -162,15 +161,9 @@ struct ComponentsView: View {
                         component: component
                     )
                 case.stack(let component):
-                    StackComponentView(
-                        component: component,
-                        layoutComponents: self.layoutComponents
-                    )
-                default:
-                    EmptyView()
+                    StackComponentView(component: component, locale: locale, configuration: configuration)
                 }
             }
-        )
     }
 
     @Environment(\.userInterfaceIdiom)
