@@ -649,15 +649,21 @@ private extension SamplePaywallLoader {
 
             componentData: PaywallComponent.Data(
                 backgroundColor: .init(light: "#FFFFFF"),
-                components: multiTierFull
+                components: textOnly
             )
         )
     }
 
-
-    static var multiTier: [PaywallComponent] = []
-
-    static var multiTierFull: [PaywallComponent] = []
+    static var textOnly: [PaywallComponent] = {
+        [.text(.init(
+                        text: .init(value: [
+                            "en_US": "Get started with our plan"
+                        ]),
+                        color: .init(light: "#000000"),
+                        textStyle: .largeTitle,
+                        displayPreferences: [.portrait, .landscapeLeft]
+                    ))]
+    }()
 
         static func unrecognizedTemplate() -> PaywallData {
             return .init(
