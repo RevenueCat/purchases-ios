@@ -110,6 +110,7 @@ struct Template4View: TemplateViewType {
                 .padding(.bottom, Self.verticalPadding / -2)
 
             FooterView(configuration: self.configuration,
+                       locale: self.selectedPackage.localization.locale,
                        bold: false,
                        purchaseHandler: self.purchaseHandler,
                        displayingAllPlans: self.$displayingAllPlans)
