@@ -224,7 +224,7 @@ private extension SamplePaywallLoader {
 // MARK: - Paywalls
 
 private extension SamplePaywallLoader {
-    
+
     static func template1() -> PaywallData {
         return .init(
             templateName: PaywallTemplate.template1.rawValue,
@@ -656,43 +656,43 @@ private extension SamplePaywallLoader {
 
     static var textOnly: [PaywallComponent] = {
         [.text(.init(
-                        text: .init(value: [
-                            "en_US": "Get started with our plan"
-                        ]),
-                        color: .init(light: "#000000"),
-                        textStyle: .largeTitle,
-                        displayPreferences: [.portrait, .landscapeLeft]
-                    ))]
+            text: .init(value: [
+                "en_US": "Get started with our plan"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .largeTitle,
+            displayPreferences: [.portrait, .landscapeLeft]
+        ))]
     }()
 
-        static func unrecognizedTemplate() -> PaywallData {
-            return .init(
-                templateName: "unrecognized_template_name",
-                config: .init(
-                    packages: [Package.string(from: PackageType.monthly)!],
-                    images: Self.images,
-                    colors:  .init(
-                        light: .init(
-                            background: "#FFFFFF",
-                            text1: "#000000",
-                            callToActionBackground: "#5CD27A",
-                            callToActionForeground: "#FFFFFF",
-                            accent1: "#BC66FF"
-                        )
-                    ),
-                    termsOfServiceURL: Self.tosURL
+    static func unrecognizedTemplate() -> PaywallData {
+        return .init(
+            templateName: "unrecognized_template_name",
+            config: .init(
+                packages: [Package.string(from: PackageType.monthly)!],
+                images: Self.images,
+                colors:  .init(
+                    light: .init(
+                        background: "#FFFFFF",
+                        text1: "#000000",
+                        callToActionBackground: "#5CD27A",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#BC66FF"
+                    )
                 ),
-                localization: .init(
-                    title: "Ignite your child's curiosity",
-                    subtitle: "Get access to all our educational content trusted by thousands of parents.",
-                    callToAction: "Purchase for {{ price }}",
-                    callToActionWithIntroOffer: "Purchase for {{ sub_price_per_month }} per month",
-                    offerDetails: "{{ sub_price_per_month }} per month",
-                    offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
-                ),
-                assetBaseURL: Self.paywallAssetBaseURL
-            )
-        }
+                termsOfServiceURL: Self.tosURL
+            ),
+            localization: .init(
+                title: "Ignite your child's curiosity",
+                subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                callToAction: "Purchase for {{ price }}",
+                callToActionWithIntroOffer: "Purchase for {{ sub_price_per_month }} per month",
+                offerDetails: "{{ sub_price_per_month }} per month",
+                offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
+            ),
+            assetBaseURL: Self.paywallAssetBaseURL
+        )
+    }
 
 }
 
