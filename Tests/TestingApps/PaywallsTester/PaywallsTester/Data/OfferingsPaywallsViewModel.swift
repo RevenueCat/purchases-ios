@@ -7,6 +7,7 @@
 
 import Foundation
 import RevenueCat
+import Combine
 
 struct PaywallsData: Hashable {
     let offeringsAndPaywalls: [OfferingPaywall]
@@ -25,8 +26,8 @@ struct PresentedPaywall: Hashable {
     var responseOfferingID: String
 }
 
-@Observable
-final class OfferingsPaywallsViewModel {
+@MainActor
+final class OfferingsPaywallsViewModel: ObservableObject {
 
     enum State {
         case notloaded
@@ -34,8 +35,10 @@ final class OfferingsPaywallsViewModel {
         case error(Error)
     }
 
+    @Published
     var error: Error?
 
+    @Published
     private(set) var state: State {
         didSet {
             if case let .error(stateError) = state {
@@ -43,10 +46,17 @@ final class OfferingsPaywallsViewModel {
             }
         }
     }
+
+    @Published
     private(set) var hasMultipleTemplates = false
+
+    @Published
     private(set) var hasMultipleOfferingsWithPaywalls = false
+
+    @Published
     var presentedPaywall: PresentedPaywall?
 
+    @Published
     var listData: PaywallsData? {
         didSet {
             Task { @MainActor in
@@ -88,26 +98,24 @@ final class OfferingsPaywallsViewModel {
             self.state = .error(error)
         }
     }
-    
-    @MainActor
+
     func getAndShowPaywallForID(id: String, mode: PaywallViewMode = .default) async {
 
-        showPaywallForID(id, mode: mode)
+        await showPaywallForID(id, mode: mode)
 
         // in case data has changed since last fetch
         await updateOfferingsAndPaywalls()
 
-        showPaywallForID(id, mode: mode)
+        await showPaywallForID(id, mode: mode)
     }
 
-    @MainActor
     func dismissPaywall() {
         self.presentedPaywall = nil
     }
 
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")
 
-    private var apps: [DeveloperResponse.App]
+    private let apps: [DeveloperResponse.App]
 
 }
 
