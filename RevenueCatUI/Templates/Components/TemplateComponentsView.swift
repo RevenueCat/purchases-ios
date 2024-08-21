@@ -137,33 +137,33 @@ struct ComponentsView: View {
 
     @ViewBuilder
     func layoutComponents(_ layoutComponentsArray: [PaywallComponent]) -> some View {
-            ForEach(Array(layoutComponentsArray.enumerated()), id: \.offset) { index, item in
-                switch (item) {
-                case .tiers(let component):
-                    TiersComponentView(
-                        locale: locale,
-                        component: component,
-                        configuration: configuration
-                    )
-                case .tierSelector:
-                    // This gets displayed in TiersComponentView right now
-                    EmptyView()
-                case .tierToggle:
-                    // This gets displayed in TiersComponentView right now
-                    EmptyView()
-                case .text(let component):
-                    TextComponentView(locale: locale, component: component)
-                case .image(let component):
-                    ImageComponentView(locale: locale, component: component)
-                case .spacer(let component):
-                    SpacerComponentView(
-                        locale: locale,
-                        component: component
-                    )
-                case .stack(let component):
-                    StackComponentView(component: component, locale: locale, configuration: configuration)
-                }
+        ForEach(Array(layoutComponentsArray.enumerated()), id: \.offset) { index, item in
+            switch (item) {
+            case .tiers(let component):
+                TiersComponentView(
+                    locale: locale,
+                    component: component,
+                    configuration: configuration
+                )
+            case .tierSelector:
+                // This gets displayed in TiersComponentView right now
+                EmptyView()
+            case .tierToggle:
+                // This gets displayed in TiersComponentView right now
+                EmptyView()
+            case .text(let component):
+                TextComponentView(locale: locale, component: component)
+            case .image(let component):
+                ImageComponentView(locale: locale, component: component)
+            case .spacer(let component):
+                SpacerComponentView(
+                    locale: locale,
+                    component: component
+                )
+            case .stack(let component):
+                StackComponentView(component: component, locale: locale, configuration: configuration)
             }
+        }
     }
 
     @Environment(\.userInterfaceIdiom)
