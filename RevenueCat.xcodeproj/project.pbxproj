@@ -666,7 +666,6 @@
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
 		77372D992C6F8C7B008E59D3 /* AppUpdateWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */; };
-		77372DC52C739313008E59D3 /* OpenAppStoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77372DC42C739313008E59D3 /* OpenAppStoreViewController.swift */; };
 		77791ECF2C6B852000BCEF03 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */; };
 		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
@@ -1801,7 +1800,6 @@
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateWarningView.swift; sourceTree = "<group>"; };
-		77372DC42C739313008E59D3 /* OpenAppStoreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAppStoreViewController.swift; sourceTree = "<group>"; };
 		77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
@@ -3163,7 +3161,6 @@
 				C3AD12B92C6EA61F00A4F86F /* CompatibilityNavigationStack.swift */,
 				C3AD12BB2C6EA69D00A4F86F /* SubscriptionDetailsView.swift */,
 				77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */,
-				77372DC42C739313008E59D3 /* OpenAppStoreViewController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5869,7 +5866,6 @@
 				887A608B2C1D037000E1A461 /* PurchaseHandler+TestData.swift in Sources */,
 				35F249CE2C493E3D0058993A /* CustomerCenterPurchases.swift in Sources */,
 				353756672C382C2800A1B8D6 /* SubscriptionInformation.swift in Sources */,
-				77372DC52C739313008E59D3 /* OpenAppStoreViewController.swift in Sources */,
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
 				887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */,
 				C3AD12BC2C6EA69D00A4F86F /* SubscriptionDetailsView.swift in Sources */,
