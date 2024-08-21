@@ -92,6 +92,7 @@ extension PaywallData {
         locale: Locale,
         showZeroDecimalPlacePrices: Bool
     ) -> Result<TemplateViewConfiguration, Error> {
+        #if PAYWALL_COMPONENTS
         return Result {
             TemplateViewConfiguration(
                 mode: mode,
@@ -114,6 +115,29 @@ extension PaywallData {
                 components: self.componentData
             )
         }
+        #else
+        return Result {
+            TemplateViewConfiguration(
+                mode: mode,
+                packages: try .create(with: offering.availablePackages,
+                                      activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                                      filter: self.config.packages,
+                                      default: self.config.defaultPackage,
+                                      localization: self.localizedConfiguration,
+                                      localizationByTier: self.localizedConfigurationByTier,
+                                      tiers: self.config.tiers,
+                                      setting: template.packageSetting,
+                                      locale: locale,
+                                      showZeroDecimalPlacePrices: showZeroDecimalPlacePrices),
+                configuration: self.config,
+                colors: self.config.colors.multiScheme,
+                colorsByTier: self.config.multiSchemeColorsByTier,
+                fonts: fonts,
+                assetBaseURL: self.assetBaseURL,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+        }
+        #endif
     }
 
     @ViewBuilder
@@ -135,8 +159,10 @@ extension PaywallData {
             Template5View(configuration)
         case .template7:
             Template7View(configuration)
+        #if PAYWALL_COMPONENTS
         case .templateComponents:
             TemplateComponentsView(configuration)
+        #endif
         }
         #endif
     }

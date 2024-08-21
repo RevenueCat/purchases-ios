@@ -23,8 +23,9 @@ enum PaywallTemplate: String {
     case template4 = "4"
     case template5 = "5"
     case template7 = "7"
-
+    #if PAYWALL_COMPONENTS
     case templateComponents = "components"
+    #endif
 
 }
 

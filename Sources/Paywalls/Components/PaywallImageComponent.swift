@@ -6,6 +6,9 @@
 //
 
 import Foundation
+// swiftlint:disable all
+
+#if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
     struct ImageComponent: PaywallComponentBase {
@@ -27,3 +30,5 @@ public extension PaywallComponent {
 
     }
 }
+
+#endif

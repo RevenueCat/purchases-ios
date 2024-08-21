@@ -297,8 +297,10 @@ extension PaywallTemplate {
             return "5: Minimalist with Small Banner"
         case .template7:
             return "7: Multi-tier with Small Banner"
+        #if PAYWALL_COMPONENTS
         case .templateComponents:
             return "Components: Components"
+        #endif
         }
     }
 
