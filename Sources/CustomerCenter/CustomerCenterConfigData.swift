@@ -34,7 +34,7 @@ public struct CustomerCenterConfigData {
                 localization: Localization,
                 support: Support,
                 lastPublishedAppVersion: String?,
-                productId: UInt) {
+                productId: UInt?) {
         self.screens = screens
         self.appearance = appearance
         self.localization = localization
