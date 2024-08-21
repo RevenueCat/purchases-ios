@@ -68,6 +68,7 @@ struct Template1View: TemplateViewType {
                 .defaultHorizontalPadding()
 
             FooterView(configuration: self.configuration,
+                       locale: self.localization.locale,
                        purchaseHandler: self.purchaseHandler)
         }
     }

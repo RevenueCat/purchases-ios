@@ -77,7 +77,7 @@ struct AppUpdateWarningView: View {
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }

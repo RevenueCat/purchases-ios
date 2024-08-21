@@ -28,6 +28,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     var offerBadge: String?
     var features: [Feature]
     var tierName: String?
+    var locale: Locale
 
     init(
         _ configuration: PaywallData.LocalizedConfiguration,
@@ -72,7 +73,8 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
                       content: $0.content?.processed(with: dataProvider, context: context, locale: locale),
                       iconID: $0.iconID)
             },
-            tierName: configuration.tierName
+            tierName: configuration.tierName,
+            locale: locale
         )
     }
 
@@ -86,7 +88,8 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         offerName: String?,
         offerBadge: String?,
         features: [Feature],
-        tierName: String?
+        tierName: String?,
+        locale: Locale
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -98,6 +101,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         self.offerBadge = offerBadge
         self.features = features
         self.tierName = tierName
+        self.locale = locale
     }
 
 }

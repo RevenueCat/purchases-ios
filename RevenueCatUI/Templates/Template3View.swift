@@ -159,6 +159,7 @@ struct Template3View: TemplateViewType {
 
     private var footer: some View {
         FooterView(configuration: self.configuration,
+                   locale: self.localization.locale,
                    purchaseHandler: self.purchaseHandler)
     }
 
