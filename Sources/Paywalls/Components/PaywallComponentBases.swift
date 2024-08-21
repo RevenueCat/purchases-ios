@@ -185,7 +185,7 @@ public extension PaywallComponent {
             self.leading = leading
             self.trailing = trailing
         }
-        
+
         public let top: Double
         public let bottom: Double
         public let leading: Double
@@ -269,30 +269,30 @@ public extension PaywallComponent {
         case extraLargeTitle
         case extraLargeTitle2
 
-        public var font: Font {
+        public var font: UIFont.TextStyle {
             switch self {
             case .largeTitle: return .largeTitle
-            case .title: return .title
+            case .title: return .title1
             case .title2: if #available(iOS 14.0, *) {
                 return .title2
             } else {
-                return .title
+                return .title1
             }
             case .title3: if #available(iOS 14.0, *) {
                 return .title3
             } else {
-                return .title
+                return .title1
             }
             case .headline: return .headline
             case .subheadline: return .subheadline
             case .body: return .body
             case .callout: return .callout
             case .footnote: return .footnote
-            case .caption: return .caption
+            case .caption: return .caption1
             case .caption2: if #available(iOS 14.0, *) {
                 return .caption2
             } else {
-                return .caption
+                return .caption1
             }
 
             #if swift(>=5.9) && os(visionOS)
