@@ -652,10 +652,73 @@ private extension SamplePaywallLoader {
 
             componentData: PaywallComponent.Data(
                 backgroundColor: .init(light: "#FFFFFF"),
-                components: mainVStack
+                components: vstack
             )
         )
     }
+
+    static var vstack: [PaywallComponent] = {
+        [.stack(.init(components: [headerImage, spacer, headingText, subHeadingText, spacer, costText, purchaseButton],
+                      dimension: .vertical(),
+                      spacing: 0,
+                      backgroundColor: nil))]
+
+    }()
+
+    static var headerImage: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!))
+    }()
+
+    static var headingText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Ignite your child's curiosity"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .extraLargeTitle,
+            displayPreferences: [.portrait, .landscapeLeft]
+        ))
+    }()
+
+    static var subHeadingText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Get access to all ouir educational content trusted by thousands of parents."
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .headline,
+            displayPreferences: [.portrait, .landscapeLeft]
+        ))
+    }()
+
+    static var costText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "$6.99 per month"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .subheadline,
+            displayPreferences: [.portrait, .landscapeLeft]
+        ))
+    }()
+
+    static var purchaseButton: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseNowText))
+    }()
+
+    static var purchaseNowText: PaywallComponent.TextComponent = {
+        .init(
+            text: .init(value: [
+                "en_US": "Purchase for $6.99"
+            ]),
+            color: .init(light: "#FFFFFF"),
+            backgroundColor: .init(light: "#00AA00"),
+            textStyle: .body,
+            displayPreferences: [.portrait, .landscapeLeft]
+        )
+    }()
+
 
     static var spacer: PaywallComponent = {
         .spacer(PaywallComponent.SpacerComponent())
@@ -720,17 +783,7 @@ private extension SamplePaywallLoader {
         ))
     }()
 
-    static var purchaseNowText: PaywallComponent.TextComponent = {
-        .init(
-            text: .init(value: [
-                "en_US": "Purchase Now!"
-            ]),
-            color: .init(light: "#FFFFFF"),
-            backgroundColor: .init(light: "#00AA00"),
-            textStyle: .body,
-            displayPreferences: [.portrait, .landscapeLeft]
-        )
-    }()
+
 
     static var button: PaywallComponent = {
         .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
@@ -738,9 +791,7 @@ private extension SamplePaywallLoader {
     }()
 
 
-    static var headerImage: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!))
-    }()
+
 
     static var imageZStack: [PaywallComponent] = {
         [.stack(.init(components: [headerImage, .text(purchaseNowText)],
