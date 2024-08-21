@@ -21,7 +21,7 @@ struct CustomerCenterConfigResponse {
 
     let customerCenter: CustomerCenter
     let lastPublishedAppVersion: String?
-    let productId: UInt
+    let itunesTrackId: UInt?
 
     struct CustomerCenter {
 

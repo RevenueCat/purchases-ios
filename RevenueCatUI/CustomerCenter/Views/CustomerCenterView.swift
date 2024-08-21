@@ -94,12 +94,12 @@ private extension CustomerCenterView {
         if viewModel.hasSubscriptions {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
-                if ignoreAppUpdateWarning || viewModel.appIsLatestVersion {
+                if ignoreAppUpdateWarning || viewModel.appIsLatestVersion || configuration.productId == nil {
                     ManageSubscriptionsView(screen: screen,
                                             customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 } else {
                     AppUpdateWarningView(
-                        productId: configuration.productId,
+                        productId: configuration.productId!,
                         onContinueAnywayClick: {
                             withAnimation {
                                 ignoreAppUpdateWarning = true
