@@ -46,55 +46,36 @@ struct NoSubscriptionsView: View {
         self.configuration = configuration
     }
 
-    @ViewBuilder
-    var content: some View {
-        let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme)
-        let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
-
+    var body: some View {
         let fallbackDescription = "We can try checking your Apple account for any previous purchases"
 
-        ZStack {
-            if background != nil {
-                background.edgesIgnoringSafeArea(.all)
-            }
-            VStack {
+        List {
+            Section {
                 CompatibilityContentUnavailableView(
                     self.configuration.screens[.noActive]?.title ?? "No subscriptions found",
                     systemImage: "exclamationmark.triangle.fill",
                     description:
                         Text(self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription)
-
                 )
+            }
 
-                Spacer()
-
+            Section {
                 Button(localization.commonLocalizedString(for: .restorePurchases)) {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)
-                .buttonStyle(ProminentButtonStyle())
+            } header: {
+                let subtitle = localization.commonLocalizedString(for: .tryCheckRestore)
+                Text(subtitle)
+                    .textCase(nil)
             }
-            .padding(.horizontal)
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton {
                     dismiss()
                 }
-            }
-        }
-
-    }
-
-    var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
             }
         }
     }

@@ -218,7 +218,7 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     }
 
     func testEnglishLocalizedConfiguration() throws {
-        let localization = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
+        let (_, localization) = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
             .init(identifier: "en_UK"),
             .init(identifier: "es_ES")
         ]))
@@ -229,7 +229,7 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     }
 
     func testSpanishLocalizedConfiguration() throws {
-        let localization = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
+        let (_, localization) = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
             .init(identifier: "es_ES"),
             .init(identifier: "en_UK")
         ]))
