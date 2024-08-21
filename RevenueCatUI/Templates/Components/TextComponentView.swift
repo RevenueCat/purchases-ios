@@ -25,8 +25,14 @@ struct TextComponentView: View {
 
     var body: some View {
         Text(getLocalization(locale, component.text))
-            .font(.custom(component.fontFamily,
-                          size: UIFont.preferredFont(forTextStyle: component.textStyle.font).pointSize))
+//            .font(.custom(component.fontFamily,
+//                          size: UIFont.preferredFont(forTextStyle: component.textStyle.font).pointSize))
+//            .font(.custom(component.fontFamily,
+//                          size: UIFont.preferredFont(forTextStyle: component.textStyle.font).pointSize,
+//                          relativeTo: component.textStyle.font)
+            .font(component.textStyle.font)
+            .fontWeight(component.fontWeight.fontWeight)
+//            .fontWeight(component.fontWeight.fontWeight)
             .multilineTextAlignment(component.horizontalAlignment.textAlignment)
             .foregroundStyle(
                 (try? PaywallColor(stringRepresentation: component.color.light).underlyingColor) ?? Color.clear

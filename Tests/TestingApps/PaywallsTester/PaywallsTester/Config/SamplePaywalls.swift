@@ -674,6 +674,8 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Ignite your child's curiosity"
             ]),
+            fontFamily: "",
+            fontWeight: .heavy,
             color: .init(light: "#000000"),
             textStyle: .extraLargeTitle,
             displayPreferences: [.portrait, .landscapeLeft]

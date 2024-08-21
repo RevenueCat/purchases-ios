@@ -16,6 +16,7 @@ public extension PaywallComponent {
         let type: String
         public let text: DisplayString
         public let fontFamily: String
+        public let fontWeight: FontWeight
         public let color: ColorInfo
         public let textStyle: TextStyle
         public let horizontalAlignment: HorizontalAlignment
@@ -25,7 +26,8 @@ public extension PaywallComponent {
 
         public init(
             text: DisplayString,
-            fontFamily: String = "Chalkboard SE",
+            fontFamily: String = "SF Pro",
+            fontWeight: FontWeight = .regular,
             color: ColorInfo,
             backgroundColor: ColorInfo? = nil,
             padding: Padding = .default,
@@ -36,6 +38,7 @@ public extension PaywallComponent {
             self.type = "text"
             self.text = text
             self.fontFamily = fontFamily
+            self.fontWeight = fontWeight
             self.color = color
             self.backgroundColor = backgroundColor
             self.padding = padding
