@@ -74,10 +74,6 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-
             if self.viewModel.isLoaded {
                 List {
 
