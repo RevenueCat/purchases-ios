@@ -42,7 +42,7 @@ class OpenAppStoreViewController: UIViewController, SKStoreProductViewController
     func openAppStore(productId: UInt) {
         let storeProductViewController = SKStoreProductViewController()
         storeProductViewController.delegate = self
-        let parameters = [SKStoreProductParameterITunesItemIdentifier: productId]
+        let parameters = [SKStoreProductParameterITunesItemIdentifier: NSNumber(value: productId)]
 
         storeProductViewController.loadProduct(withParameters: parameters) { _, error in
             guard error == nil,
