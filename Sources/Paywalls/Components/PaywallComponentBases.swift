@@ -4,10 +4,12 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
+// swiftlint:disable all
 
 import Foundation
 import SwiftUI // TODO: This feels wrong
-// swiftlint:disable all
+
+#if PAYWALL_COMPONENTS
 
 public typealias TierId = String
 public typealias LocaleId = String
@@ -268,3 +270,5 @@ public extension PaywallComponent {
         }
     }
 }
+
+#endif

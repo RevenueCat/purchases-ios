@@ -28,7 +28,9 @@ struct TemplateViewConfiguration {
     let fonts: PaywallFontProvider
     let assetBaseURL: URL
     let showZeroDecimalPlacePrices: Bool
+    #if PAYWALL_COMPONENTS
     let components: PaywallComponent.Data?
+    #endif
 
 }
 

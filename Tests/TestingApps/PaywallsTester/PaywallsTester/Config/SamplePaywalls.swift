@@ -74,8 +74,10 @@ final class SamplePaywallLoader {
             return Self.template5()
         case .template7:
             return Self.template7()
+        #if PAYWALL_COMPONENTS
         case .templateComponents:
             return Self.templateComponents()
+        #endif
         }
     }
 
@@ -628,6 +630,7 @@ private extension SamplePaywallLoader {
         )
     }
 
+    #if PAYWALL_COMPONENTS
     static func templateComponents() -> PaywallData {
         return .init(
             templateName: PaywallTemplate.templateComponents.rawValue,
@@ -665,6 +668,8 @@ private extension SamplePaywallLoader {
         ))]
     }()
 
+    #endif
+
     static func unrecognizedTemplate() -> PaywallData {
         return .init(
             templateName: "unrecognized_template_name",
@@ -693,6 +698,7 @@ private extension SamplePaywallLoader {
             assetBaseURL: Self.paywallAssetBaseURL
         )
     }
+
 
 }
 

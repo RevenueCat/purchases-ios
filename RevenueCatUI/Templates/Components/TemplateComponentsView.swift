@@ -9,6 +9,8 @@ import RevenueCat
 import SwiftUI
 // swiftlint:disable all
 
+#if PAYWALL_COMPONENTS
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class ComponentPaywallData: ObservableObject {
     @Published var selectedPackage: TemplateViewConfiguration.Package
@@ -196,3 +198,5 @@ struct ComponentsView: View {
     }
     
 }
+
+#endif
