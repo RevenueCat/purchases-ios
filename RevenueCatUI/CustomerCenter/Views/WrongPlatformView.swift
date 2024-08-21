@@ -39,6 +39,19 @@ struct WrongPlatformView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.supportInformation)
+    private var supportInformation: CustomerCenterConfigData.Support?
+    @Environment(\.openURL)
+    private var openURL
+
+    private var supportURL: URL? {
+        guard let supportInformation = self.supportInformation else { return nil }
+        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+        let body = self.localization.commonLocalizedString(for: .defaultBody)
+        return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
+                                                    subject: subject,
+                                                    body: body)
+    }
 
     init() {
     }
@@ -48,13 +61,8 @@ struct WrongPlatformView: View {
     }
 
     var body: some View {
-        ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-            let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
-
-            VStack {
+        List {
+            Section {
                 let platformInstructions = self.humanReadableInstructions(for: store)
 
                 CompatibilityContentUnavailableView(
@@ -63,8 +71,16 @@ struct WrongPlatformView: View {
                     description: Text(platformInstructions.1)
                 )
             }
-            .padding(.horizontal)
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+            if let url = supportURL {
+                Section {
+                    AsyncButton {
+                        openURL(url)
+                    } label: {
+                        Text(localization.commonLocalizedString(for: .contactSupport))
+                    }
+                }
+            }
+
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
