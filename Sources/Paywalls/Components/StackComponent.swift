@@ -22,7 +22,7 @@ public extension PaywallComponent {
         public enum Dimension: Codable, Sendable, Hashable {
             case vertical(HorizontalAlignment)
             case horizontal(VerticalAlignment)
-            case zlayer
+            case zlayer(TwoDimensionAlignment)
 
             public func encode(to encoder: Encoder) throws {
                 //TODO

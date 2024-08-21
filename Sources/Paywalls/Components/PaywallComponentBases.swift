@@ -200,6 +200,7 @@ public extension PaywallComponent {
         public let trailing: Double
 
         public static let `default` = Padding(top: 10, bottom: 10, leading: 20, trailing: 20)
+        public static let zero = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
     }
 
     struct Data: Sendable, Hashable, Equatable {
@@ -256,6 +257,42 @@ public extension PaywallComponent {
                 return .center
             case .bottom:
                 return .bottom
+            }
+        }
+    }
+
+    enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
+        case center
+        case leading
+        case trailing
+        case top
+        case bottom
+        case topLeading
+        case topTrailing
+        case bottomLeading
+        case bottomTrailing
+
+
+        public var stackAlignment: SwiftUI.Alignment {
+            switch self {
+            case .center:
+                return .center
+            case .leading:
+                return .leading
+            case .trailing:
+                return .trailing
+            case .top:
+                return .top
+            case .bottom:
+                return .bottom
+            case .topLeading:
+                return .topLeading
+            case .topTrailing:
+                return .topTrailing
+            case .bottomLeading:
+                return .bottomLeading
+            case .bottomTrailing:
+                return .bottomTrailing
             }
         }
     }

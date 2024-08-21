@@ -54,8 +54,8 @@ struct StackComponentView: View {
                 ComponentsView(locale: locale, components: components, configuration: configuration)
             }
             .background(backgroundColor)
-        case .zlayer:
-            ZStack {
+        case .zlayer(let alignment):
+            ZStack(alignment: alignment.stackAlignment) {
                 ComponentsView(locale: locale, components: components, configuration: configuration)
             }
             .background(backgroundColor)
