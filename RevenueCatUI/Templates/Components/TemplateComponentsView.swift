@@ -162,6 +162,8 @@ struct ComponentsView: View {
                 )
             case .stack(let component):
                 StackComponentView(component: component, locale: locale, configuration: configuration)
+            case .linkButton(let component):
+                LinkButtonComponentView(locale: locale, component: component)
             }
         }
     }

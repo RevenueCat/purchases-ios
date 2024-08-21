@@ -662,7 +662,7 @@ private extension SamplePaywallLoader {
     }()
 
     static var mainVStack: [PaywallComponent] = {
-        [.stack(.init(components: [headerImage] + twoHorizontal,
+        [.stack(.init(components: imageZStack + twoHorizontal + [button],
                       dimension: .vertical(),
                       spacing: 0,
                       backgroundColor: nil))]
@@ -680,7 +680,7 @@ private extension SamplePaywallLoader {
     static var verticalTextStack: PaywallComponent = {
         .stack(.init(components: [getStartedText, spacer, upgradeText],
                      dimension: .vertical(.leading),
-                      spacing: 200,
+                      spacing: nil,
                       backgroundColor: .init(light: "#11AA22")))
 
     }()
@@ -702,6 +702,7 @@ private extension SamplePaywallLoader {
                 "en_US": "Get started with our plan"
             ]),
             color: .init(light: "#FF0000"),
+            backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body,
             displayPreferences: [.portrait, .landscapeLeft]
         ))
@@ -713,14 +714,40 @@ private extension SamplePaywallLoader {
                 "en_US": "Upgrade to our premium plan"
             ]),
             color: .init(light: "#000000"),
+            backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body,
             displayPreferences: [.portrait, .landscapeLeft]
         ))
     }()
 
+    static var purchaseNowText: PaywallComponent.TextComponent = {
+        .init(
+            text: .init(value: [
+                "en_US": "Purchase Now!"
+            ]),
+            color: .init(light: "#FFFFFF"),
+            backgroundColor: .init(light: "#00AA00"),
+            textStyle: .body,
+            displayPreferences: [.portrait, .landscapeLeft]
+        )
+    }()
+
+    static var button: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseNowText))
+    }()
+
 
     static var headerImage: PaywallComponent = {
         .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!))
+    }()
+
+    static var imageZStack: [PaywallComponent] = {
+        [.stack(.init(components: [headerImage, .text(purchaseNowText)],
+                      dimension: .zlayer,
+                      spacing: 0,
+                      backgroundColor: nil))]
+
     }()
 
     #endif

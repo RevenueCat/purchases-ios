@@ -28,7 +28,6 @@ struct TextComponentView: View {
             .font(.custom(component.fontFamily,
                           size: UIFont.preferredFont(forTextStyle: component.textStyle.font).pointSize))
             .multilineTextAlignment(component.horizontalAlignment.textAlignment)
-            .frame(maxWidth: .infinity)
             .foregroundStyle(
                 (try? PaywallColor(stringRepresentation: component.color.light).underlyingColor) ?? Color.clear
             )

@@ -20,6 +20,7 @@ import SwiftUI
 struct StackComponentView: View {
 
     let component: PaywallComponent.StackComponent
+
     var dimension: PaywallComponent.StackComponent.Dimension {
         component.dimension
     }
