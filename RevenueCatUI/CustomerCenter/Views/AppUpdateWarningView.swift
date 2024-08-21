@@ -34,7 +34,7 @@ struct AppUpdateWarningView: View {
     init(productId: UInt, onContinueAnywayClick: @escaping () -> Void) {
         self.init(
             onUpdateAppClick: {
-                // productId is a positive integer, so it is safe to construct a URL from it.
+                // productId is a positive integer, so it should be safe to construct a URL from it.
                 UIApplication.shared.open(URL(string: "https://itunes.apple.com/app/id\(productId)")!)
             },
             onContinueAnywayClick: onContinueAnywayClick
