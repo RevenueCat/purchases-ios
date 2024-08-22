@@ -30,7 +30,7 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
     }
 
     public func encode(to encoder: any Encoder) throws {
-        fatalError()
+        // TODO
     }
 
     case tiers(TiersComponent)
