@@ -30,9 +30,6 @@ struct NoSubscriptionsView: View {
     // TODO: build screen using this configuration
     let configuration: CustomerCenterConfigData
 
-    @Environment(\.dismiss)
-    var dismiss
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -73,9 +70,7 @@ struct NoSubscriptionsView: View {
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton {
-                    dismiss()
-                }
+                DismissCircleButton()
             }
         }
     }

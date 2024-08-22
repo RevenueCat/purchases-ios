@@ -41,9 +41,6 @@ struct AppUpdateWarningView: View {
         )
     }
 
-    @Environment(\.dismiss)
-    var dismiss
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -80,9 +77,7 @@ struct AppUpdateWarningView: View {
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton {
-                    dismiss()
-                }
+                DismissCircleButton()
             }
         }
     }

@@ -26,9 +26,6 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView: View {
 
-    @Environment(\.dismiss)
-    var dismiss
-
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.localization)
@@ -102,9 +99,7 @@ struct ManageSubscriptionsView: View {
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton {
-                    dismiss()
-                }
+                DismissCircleButton()
             }
         }
         .task {
