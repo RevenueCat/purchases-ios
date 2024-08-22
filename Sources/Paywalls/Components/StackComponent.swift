@@ -19,6 +19,34 @@ public extension PaywallComponent {
 
     struct StackComponent: PaywallComponentBase {
 
+        let type: String
+        public let components: [PaywallComponent]
+        public let spacing: CGFloat?
+        public let backgroundColor: ColorInfo?
+        public let dimension: Dimension
+        let displayPreferences: [DisplayPreference]?
+        var focusIdentifiers: [FocusIdentifier]?
+
+        enum CodingKeys: String, CodingKey {
+            case components
+            case spacing
+            case backgroundColor
+            case focusIdentifiers
+            case displayPreferences
+            case type
+            case dimension
+        }
+
+        public init(components: [PaywallComponent], dimension: Dimension = .vertical(.center), spacing: CGFloat?, backgroundColor: ColorInfo?) {
+            self.components = components
+            self.spacing = spacing
+            self.backgroundColor = backgroundColor
+            self.displayPreferences = nil
+            self.focusIdentifiers = nil
+            self.type = "stack"
+            self.dimension = dimension
+        }
+
         public enum Dimension: Decodable, Sendable, Hashable {
             case vertical(HorizontalAlignment)
             case horizontal(VerticalAlignment)
@@ -61,33 +89,6 @@ public extension PaywallComponent {
             }
         }
 
-        let type: String
-        public let components: [PaywallComponent]
-        public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
-        public let dimension: Dimension
-        let displayPreferences: [DisplayPreference]?
-        var focusIdentifiers: [FocusIdentifier]?
-
-        enum CodingKeys: String, CodingKey {
-            case components
-            case spacing
-            case backgroundColor
-            case focusIdentifiers
-            case displayPreferences
-            case type
-            case dimension
-        }
-
-        public init(components: [PaywallComponent], dimension: Dimension = .vertical(.center), spacing: CGFloat?, backgroundColor: ColorInfo?) {
-            self.components = components
-            self.spacing = spacing
-            self.backgroundColor = backgroundColor
-            self.displayPreferences = nil
-            self.focusIdentifiers = nil
-            self.type = "stack"
-            self.dimension = dimension
-        }
     }
 }
 
