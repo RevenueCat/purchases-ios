@@ -26,9 +26,6 @@ struct AppUpdateWarningView: View {
     let onUpdateAppClick: () -> Void
     let onContinueAnywayClick: () -> Void
 
-    @Environment(\.dismiss)
-    var dismiss
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -65,9 +62,7 @@ struct AppUpdateWarningView: View {
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton {
-                    dismiss()
-                }
+                DismissCircleButton()
             }
         }
     }
