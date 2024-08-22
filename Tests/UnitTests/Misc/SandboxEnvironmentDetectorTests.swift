@@ -45,7 +45,7 @@ class SandboxEnvironmentDetectorTests: TestCase {
 // `macOS` sandbox detection does not rely on receipt path
 class SandboxEnvironmentDetectorTests: TestCase {
 
-    func testIsNotSandboxIfReceiptIsProductionAndMAS() throws {
+    func testIsNotSandboxIfReceiptIsProduction() throws {
         expect(
             SystemInfo.with(
                 macAppStore: true,
@@ -54,49 +54,20 @@ class SandboxEnvironmentDetectorTests: TestCase {
         ) == false
     }
 
-    func testIsSandboxIfReceiptIsProductionAndNotMAS() throws {
-        expect(
-            SystemInfo.with(
-                macAppStore: false,
-                receiptEnvironment: .production
-            ).isSandbox
-        ) == true
-    }
-
-    func testIsSandboxIfReceiptIsNotProductionAndNotMAS() throws {
+    func testIsSandboxIfReceiptIsNotProduction() throws {
         expect(
             SystemInfo.with(
                 macAppStore: false,
                 receiptEnvironment: .sandbox
-            ).isSandbox
-        ) == true
-    }
-
-    func testIsSandboxIfReceiptIsNotProductionAndMAS() throws {
-        expect(
-            SystemInfo.with(
-                macAppStore: true,
-                receiptEnvironment: .sandbox
-            ).isSandbox
-        ) == true
-    }
-
-    func testIsSandboxIfReceiptParsingFailsAndBundleSignatureIsNotMAS() throws {
-        expect(
-            SystemInfo.with(
-                macAppStore: false,
-                receiptEnvironment: .production,
-                failReceiptParsing: true
             ).isSandbox
         ) == true
     }
 
     func testIsSandboxWhenReceiptEnvironmentIsUnknownDefaultToMacAppStoreDetector() throws {
-        let macAppStore = false
         var isSandbox = false
-        let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: macAppStore)
-        let detector = SystemInfo.with(
-            macAppStore: macAppStore,
+        var macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
+        var detector = SystemInfo.with(
+            macAppStore: !isSandbox,
             receiptEnvironment: .unknown,
             macAppStoreDetector: macAppStoreDetector
         )
@@ -105,6 +76,37 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(macAppStoreDetector.isMacAppStoreCalled) == true
 
         isSandbox = !isSandbox
+
+        macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
+        detector = SystemInfo.with(
+            macAppStore: !isSandbox,
+            receiptEnvironment: .unknown,
+            macAppStoreDetector: macAppStoreDetector
+        )
+
+        expect(detector.isSandbox) == isSandbox
+    }
+
+    func testIsSandboxWhenReceiptParsingFailsDefaultsToMacAppStoreDetector() throws {
+        var isSandbox = false
+        var macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
+        var detector = SystemInfo.with(
+            macAppStore: !isSandbox,
+            failReceiptParsing: true,
+            macAppStoreDetector: macAppStoreDetector
+        )
+
+        expect(detector.isSandbox) == isSandbox
+        expect(macAppStoreDetector.isMacAppStoreCalled) == true
+
+        isSandbox = !isSandbox
+
+        macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: !isSandbox)
+        detector = SystemInfo.with(
+            macAppStore: !isSandbox,
+            failReceiptParsing: true,
+            macAppStoreDetector: macAppStoreDetector
+        )
 
         expect(detector.isSandbox) == isSandbox
     }
@@ -131,24 +133,6 @@ class SandboxEnvironmentDetectorTests: TestCase {
 
         expect(detector.isSandbox) == true
         expect(macAppStoreDetector.isMacAppStoreCalled) == false
-    }
-
-    func testIsSandboxIfReceiptParsingFailsAndNotInMacAppStore() throws {
-        let macAppStore = false
-        var isSandbox = false
-        let macAppStoreDetector = MockMacAppStoreDetector(isMacAppStore: macAppStore)
-        let detector = SystemInfo.with(
-            macAppStore: macAppStore,
-            failReceiptParsing: true,
-            macAppStoreDetector: macAppStoreDetector
-        )
-
-        expect(detector.isSandbox) == isSandbox
-        expect(macAppStoreDetector.isMacAppStoreCalled) == true
-
-        isSandbox = !isSandbox
-
-        expect(detector.isSandbox) == isSandbox
     }
 
 }
