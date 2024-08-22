@@ -266,14 +266,6 @@ Creates RevenueCat-Swift.h for a new release
 
 Run BackendIntegrationTests
 
-### ios retry_failed_tests
-
-```sh
-[bundle exec] fastlane ios retry_failed_tests
-```
-
-
-
 ### ios v3_loadshedder_integration_tests
 
 ```sh

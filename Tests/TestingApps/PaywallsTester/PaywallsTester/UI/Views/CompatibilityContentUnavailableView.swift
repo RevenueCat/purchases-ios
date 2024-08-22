@@ -13,9 +13,9 @@
 //  Created by Cody Kerns on 8/6/24.
 //
 
+import Foundation
 import SwiftUI
 
-#if CUSTOMER_CENTER_ENABLED
 #if os(iOS)
 
 /// A SwiftUI view for displaying a message about unavailable content
@@ -82,5 +82,4 @@ struct CompatibilityContentUnavailableView: View {
     }
 }
 
-#endif
 #endif

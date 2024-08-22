@@ -10,7 +10,7 @@ import RevenueCat
 
 struct PaywallForID: View {
 
-    @State
+    @StateObject
     private var viewModel: OfferingsPaywallsViewModel
     private let id: String
     private let introEligible: IntroEligibilityStatus
@@ -18,7 +18,7 @@ struct PaywallForID: View {
     init(apps: [DeveloperResponse.App], id: String, introEligible: IntroEligibilityStatus = .unknown) {
         self.id = id
         self.introEligible = introEligible
-        self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: apps))
+        self._viewModel = StateObject(wrappedValue: OfferingsPaywallsViewModel(apps: apps))
     }
 
     var body: some View {

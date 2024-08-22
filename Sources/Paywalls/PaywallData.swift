@@ -44,6 +44,9 @@ public struct PaywallData {
 
     internal private(set) var _zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries?
 
+    /// The default locale identifier for this paywall.
+    public var defaultLocale: String?
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -823,6 +826,7 @@ extension PaywallData: Codable {
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
         case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
+        case defaultLocale = "defaultLocale"
     }
 
 }
