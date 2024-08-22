@@ -140,7 +140,7 @@ class CustomerCenterConfigDataTests: TestCase {
         }
 
         expect(configData.lastPublishedAppVersion) == "1.2.3"
-        expect(configData.itunesTrackId) == 123
+        expect(configData.productId) == 123
     }
 
 }
