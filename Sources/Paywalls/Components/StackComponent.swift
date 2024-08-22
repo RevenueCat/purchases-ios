@@ -19,21 +19,27 @@ public extension PaywallComponent {
 
     struct StackComponent: PaywallComponentBase {
 
-        public enum Dimension: Codable, Sendable, Hashable {
+        public enum Dimension: Decodable, Sendable, Hashable {
             case vertical(HorizontalAlignment)
             case horizontal(VerticalAlignment)
             case zlayer(TwoDimensionAlignment)
 
-            public func encode(to encoder: Encoder) throws {
-                //TODO
-                fatalError()
-            }
-
             public init(from decoder: Decoder) throws {
-                // TODO
-                fatalError()
-            }
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(DimensionType.self, forKey: .type)
 
+                switch type {
+                case .vertical:
+                    let alignment = try container.decode(HorizontalAlignment.self, forKey: .alignment)
+                    self = .vertical(alignment)
+                case .horizontal:
+                    let alignment = try container.decode(VerticalAlignment.self, forKey: .alignment)
+                    self = .horizontal(alignment)
+                case .zlayer:
+                    let alignment = try container.decode(TwoDimensionAlignment.self, forKey: .alignment)
+                    self = .zlayer(alignment)
+                }
+            }
 
             public static func horizontal() -> Dimension {
                 return .horizontal(.center)
@@ -42,11 +48,21 @@ public extension PaywallComponent {
             public static func vertical() -> Dimension {
                 return .vertical(.center)
             }
+
+            private enum CodingKeys: String, CodingKey {
+                case type
+                case alignment
+            }
+
+            private enum DimensionType: String, Decodable {
+                case vertical
+                case horizontal
+                case zlayer
+            }
         }
 
         let type: String
         public let components: [PaywallComponent]
-//        let alignment: HorizontalAlignment?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
@@ -55,7 +71,6 @@ public extension PaywallComponent {
 
         enum CodingKeys: String, CodingKey {
             case components
-//            case alignment
             case spacing
             case backgroundColor
             case focusIdentifiers
