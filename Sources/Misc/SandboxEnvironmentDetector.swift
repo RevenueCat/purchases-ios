@@ -82,7 +82,9 @@ private extension BundleSandboxEnvironmentDetector {
 
     var isProductionReceipt: Bool? {
         do {
-            return try self.receiptFetcher.fetchAndParseLocalReceipt().environment == .production
+            let receiptEnvironment = try self.receiptFetcher.fetchAndParseLocalReceipt().environment
+            guard receiptEnvironment != .unknown else { return nil } // don't make assumptions if we're not sure
+            return receiptEnvironment == .production
         } catch {
             Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
             return nil
