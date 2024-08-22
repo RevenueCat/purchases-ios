@@ -15,6 +15,39 @@ import Foundation
 
 // swiftlint:disable nesting
 
+public struct PaywallComponentsData: Codable, Equatable {
+
+    public struct ComponentsConfig: Codable, Equatable {
+
+        public var components: [PaywallComponent]
+
+    }
+
+    public var templateName: String
+
+    /// The base remote URL where assets for this paywall are stored.
+    public var assetBaseURL: URL
+
+    /// The revision identifier for this paywall.
+    public var revision: Int {
+        get { return self._revision }
+        set { self._revision = newValue }
+    }
+
+    public var componentsConfig: ComponentsConfig
+
+    @DefaultDecodable.Zero
+    internal private(set) var _revision: Int = 0
+
+    private enum CodingKeys: String, CodingKey {
+        case templateName
+        case componentsConfig
+        case assetBaseURL = "assetBaseUrl"
+        case _revision = "revision"
+    }
+
+}
+
 struct OfferingsResponse {
 
     struct Offering {
@@ -33,6 +66,9 @@ struct OfferingsResponse {
         var paywall: PaywallData?
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
+
+        // components
+        var paywallComponents: PaywallComponentsData
 
     }
 

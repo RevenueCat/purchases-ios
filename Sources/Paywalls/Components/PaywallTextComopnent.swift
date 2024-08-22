@@ -22,7 +22,6 @@ public extension PaywallComponent {
         public let horizontalAlignment: HorizontalAlignment
         public let backgroundColor: ColorInfo?
         public let padding: Padding
-        public let displayPreferences: [DisplayPreference]?
 
         public init(
             text: DisplayString,
@@ -32,8 +31,7 @@ public extension PaywallComponent {
             backgroundColor: ColorInfo? = nil,
             padding: Padding = .default,
             textStyle: TextStyle = .body,
-            horitzontalAlignment: HorizontalAlignment = .center,
-            displayPreferences: [DisplayPreference]? = nil
+            horitzontalAlignment: HorizontalAlignment = .center
         ) {
             self.type = "text"
             self.text = text
@@ -44,10 +42,7 @@ public extension PaywallComponent {
             self.padding = padding
             self.textStyle = textStyle
             self.horizontalAlignment = horitzontalAlignment
-            self.displayPreferences = displayPreferences
         }
-
-        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }

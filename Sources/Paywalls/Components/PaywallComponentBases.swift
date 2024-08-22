@@ -18,15 +18,19 @@ public typealias ColorHex = String
 public typealias DisplayString = PaywallComponent.LocaleResources<String>
 public typealias FocusIdentifier = String
 
-protocol PaywallComponentBase: Decodable, Sendable, Hashable, Equatable {
-    var displayPreferences: [DisplayPreference]? { get }
+protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {
+//    var displayPreferences: [DisplayPreference]? { get }
 
-    var focusIdentifiers: [FocusIdentifier]? { get }
+//    var focusIdentifiers: [FocusIdentifier]? { get }
 }
 
-public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
+public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
     public static func == (lhs: PaywallComponent, rhs: PaywallComponent) -> Bool {
         return false // TODO: Fix
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        fatalError()
     }
 
     case tiers(TiersComponent)
@@ -77,47 +81,6 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
         }
     }
 
-    public var displayPreferences: [DisplayPreference]? {
-        switch self {
-        case .tiers(let component):
-            return component.displayPreferences
-        case .tierSelector(let component):
-            return component.displayPreferences
-        case .tierToggle(let component):
-            return component.displayPreferences
-        case .text(let component):
-            return component.displayPreferences
-        case .image(let component):
-            return component.displayPreferences
-        case .spacer(let component):
-            return component.displayPreferences
-        case .stack(let component):
-            return component.displayPreferences
-        case .linkButton(let component):
-            return component.displayPreferences
-        }
-    }
-
-    public var focusIdentifier: [FocusIdentifier]? {
-        switch self {
-        case .tiers(let component):
-            return component.focusIdentifiers
-        case .tierSelector(let component):
-            return component.focusIdentifiers
-        case .tierToggle(let component):
-            return component.focusIdentifiers
-        case .text(let component):
-            return component.focusIdentifiers
-        case .image(let component):
-            return component.focusIdentifiers
-        case .spacer(let component):
-            return component.focusIdentifiers
-        case .stack(let component):
-            return component.focusIdentifiers
-        case .linkButton(let component):
-            return component.focusIdentifiers
-        }
-    }
 }
 
 public enum DisplayPreference: String, Decodable, Sendable, Hashable, Equatable {
@@ -216,7 +179,7 @@ public extension PaywallComponent {
         public let components: [PaywallComponent]
     }
     
-    enum HorizontalAlignment: String, Decodable, Sendable, Hashable, Equatable {
+    enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
         case leading
         case center
         case trailing
@@ -244,7 +207,7 @@ public extension PaywallComponent {
         }
     }
 
-    enum VerticalAlignment: String, Decodable, Sendable, Hashable, Equatable {
+    enum VerticalAlignment: String, Codable, Sendable, Hashable, Equatable {
         case top
         case center
         case bottom
@@ -297,7 +260,7 @@ public extension PaywallComponent {
         }
     }
 
-    enum FontWeight: String, Decodable, Sendable, Hashable, Equatable {
+    enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
         case ultraLight
         case thin
         case light
@@ -332,7 +295,7 @@ public extension PaywallComponent {
         }
     }
 
-    enum TextStyle: String, Decodable, Sendable, Hashable, Equatable {
+    enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
         case largeTitle
         case title
         case title2

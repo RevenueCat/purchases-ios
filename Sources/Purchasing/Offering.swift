@@ -50,6 +50,8 @@ import Foundation
      */
     public let paywall: PaywallData?
 
+    public let paywallComponentsData: PaywallComponentsData?
+
     /**
      Array of ``Package`` objects available for purchase.
      */
@@ -144,6 +146,7 @@ import Foundation
             serverDescription: serverDescription,
             metadata: metadata,
             paywall: nil,
+            paywallComponentsData: nil,
             availablePackages: availablePackages
         )
     }
@@ -153,6 +156,7 @@ import Foundation
         serverDescription: String,
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
+        paywallComponentsData: PaywallComponentsData? = nil,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
@@ -160,6 +164,7 @@ import Foundation
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
+        self.paywallComponentsData = paywallComponentsData
 
         var foundPackages: [PackageType: Package] = [:]
 

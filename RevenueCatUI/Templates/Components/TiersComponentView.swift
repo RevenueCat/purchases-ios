@@ -23,7 +23,6 @@ struct TiersComponentView: View {
 
     let locale: Locale
     let component: PaywallComponent.TiersComponent
-    let configuration: TemplateViewConfiguration
 
     @State private var selectedTierIndex = 0
 
@@ -89,8 +88,7 @@ struct TiersComponentView: View {
         VStack(spacing: 0) {
             ComponentsView(
                 locale: locale,
-                components: self.componentBeforeSelector,
-                configuration: self.configuration
+                components: self.componentBeforeSelector
             )
 
             if let tierSelector {
@@ -110,7 +108,7 @@ struct TiersComponentView: View {
             } else {
                 TierSelectorComponentView(
                     locale: locale,
-                    component: .init(displayPreferences: self.component.displayPreferences),
+                    component: .init(),
                     tiers: tiers,
                     selectedTierIndex: $selectedTierIndex
                 )
@@ -118,8 +116,7 @@ struct TiersComponentView: View {
 
             ComponentsView(
                 locale: locale,
-                components: self.componentAfterSelector,
-                configuration: self.configuration
+                components: self.componentAfterSelector
             )
         }
     }

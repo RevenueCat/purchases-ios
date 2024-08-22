@@ -15,18 +15,13 @@ public extension PaywallComponent {
 
         let type: String
         public let url: URL
-        public let displayPreferences: [DisplayPreference]?
 
         public init(
-            url: URL,
-            displayPreferences: [DisplayPreference]? = nil
+            url: URL
         ) {
             self.type = "image"
             self.url = url
-            self.displayPreferences = displayPreferences
         }
-
-        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }

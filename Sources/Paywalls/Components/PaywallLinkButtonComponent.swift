@@ -16,20 +16,15 @@ public extension PaywallComponent {
         let type: String
         public let url: URL
         public let textComponent: PaywallComponent.TextComponent
-        public let displayPreferences: [DisplayPreference]?
 
         public init(
             url: URL,
-            textComponent: PaywallComponent.TextComponent,
-            displayPreferences: [DisplayPreference]? = nil
+            textComponent: PaywallComponent.TextComponent
         ) {
             self.type = "button"
             self.url = url
             self.textComponent = textComponent
-            self.displayPreferences = displayPreferences
         }
-
-        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }

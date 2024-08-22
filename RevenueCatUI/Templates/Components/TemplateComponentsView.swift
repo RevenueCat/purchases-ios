@@ -13,21 +13,20 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class ComponentPaywallData: ObservableObject {
-    @Published var selectedPackage: TemplateViewConfiguration.Package
-
-    init(selectedPackage: TemplateViewConfiguration.Package) {
-        self._selectedPackage = .init(initialValue: selectedPackage)
-    }
+//    @Published var selectedPackage: TemplateViewConfiguration.Package
+//
+//    init(selectedPackage: TemplateViewConfiguration.Package) {
+//        self._selectedPackage = .init(initialValue: selectedPackage)
+//    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TemplateComponentsView: TemplateViewType {
+struct TemplateComponentsView: View {
 
+    let paywallComponentsData: PaywallComponentsData
 
     @StateObject
     private var componentPaywallData: ComponentPaywallData
-
-    let configuration: TemplateViewConfiguration
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
@@ -39,26 +38,24 @@ struct TemplateComponentsView: TemplateViewType {
     var verticalSizeClass
     #endif
 
-    init(_ configuration: TemplateViewConfiguration) {
-        self.configuration = configuration
-        self._componentPaywallData = .init(wrappedValue: .init(selectedPackage: configuration.packages.default))
+    init(paywallComponentsData: PaywallComponentsData) {
+        self.paywallComponentsData = paywallComponentsData
+        self._componentPaywallData = .init(wrappedValue: .init(/*selectedPackage: configuration.packages.default*/))
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            if let data = self.configuration.components {
                 ComponentsView(
                     locale: self.locale,
-                    components: data.components,
-                    configuration: self.configuration,
+                    components: paywallComponentsData.componentsConfig.components,
                     shouldSplitLandscape: true
                 )
                 .environmentObject(self.componentPaywallData)
-            }
         }
         .edgesIgnoringSafeArea(.top)
         .background(
-            try! PaywallColor(stringRepresentation: self.configuration.components!.backgroundColor.light).underlyingColor
+
+//            try! PaywallColor(stringRepresentation: self.configuration.components!.backgroundColor.light).underlyingColor
         )
     }
 
@@ -78,61 +75,17 @@ struct ComponentsView: View {
 
     let locale: Locale
     let components: [PaywallComponent]
-    let configuration: TemplateViewConfiguration
     let shouldSplitLandscape: Bool
 
-    init(locale: Locale, components: [PaywallComponent], configuration: TemplateViewConfiguration, shouldSplitLandscape: Bool = false) {
+    init(locale: Locale, components: [PaywallComponent], shouldSplitLandscape: Bool = false) {
         self.locale = locale
         self.components = components
-        self.configuration = configuration
         self.shouldSplitLandscape = shouldSplitLandscape
     }
 
-    var landscapeLeftComponents: [PaywallComponent] {
-        return self.components.filter { component in
-            guard let displayPreferences = component.displayPreferences else {
-                return true
-            }
-            return displayPreferences.contains(.landscapeLeft)
-        }
-    }
-
-    var landscapeRightComponents: [PaywallComponent] {
-        return self.components.filter { component in
-            guard let displayPreferences = component.displayPreferences else {
-                return true
-            }
-            return displayPreferences.contains(.landscapeRight)
-        }
-    }
-
-    var portraitComponents: [PaywallComponent] {
-        return self.components.filter { component in
-            guard let displayPreferences = component.displayPreferences else {
-                return true
-            }
-            return displayPreferences.contains(.portrait)
-        }
-    }
-
     var body: some View {
-        if self.shouldUseLandscapeLayout {
-            HStack {
-                VStack(spacing: 0) {
-                    self.layoutComponents(self.landscapeLeftComponents)
-                }
+            self.layoutComponents(self.components)
 //                .scrollableIfNecessaryWhenAvailable()
-
-                VStack(spacing: 0) {
-                    self.layoutComponents(self.landscapeRightComponents)
-                }
-//                .scrollableIfNecessaryWhenAvailable()
-            }
-
-        } else {
-            self.layoutComponents(self.portraitComponents)
-//                .scrollableIfNecessaryWhenAvailable()
-        }
     }
 
     @ViewBuilder
@@ -142,8 +95,7 @@ struct ComponentsView: View {
             case .tiers(let component):
                 TiersComponentView(
                     locale: locale,
-                    component: component,
-                    configuration: configuration
+                    component: component
                 )
             case .tierSelector:
                 // This gets displayed in TiersComponentView right now
@@ -161,7 +113,7 @@ struct ComponentsView: View {
                     component: component
                 )
             case .stack(let component):
-                StackComponentView(component: component, locale: locale, configuration: configuration)
+                StackComponentView(component: component, locale: locale)
             case .linkButton(let component):
                 LinkButtonComponentView(locale: locale, component: component)
             }
@@ -185,20 +137,21 @@ struct ComponentsView: View {
     #endif
 
     var shouldUseLandscapeLayout: Bool {
-        #if os(tvOS)
-        // tvOS never reports UserInterfaceSizeClass.compact
-        // but for the purposes of template layouts, we consider landscape
-        // on tvOS as compact to produce horizontal layouts.
-        return true
-        #elseif os(macOS)
         return false
-        #elseif os(watchOS)
-        return false
-        #else
-        // Ignore size class when displaying footer paywalls.
-        return (self.configuration.mode.isFullScreen &&
-                self.verticalSizeClass == .compact)
-        #endif
+//        #if os(tvOS)
+//        // tvOS never reports UserInterfaceSizeClass.compact
+//        // but for the purposes of template layouts, we consider landscape
+//        // on tvOS as compact to produce horizontal layouts.
+//        return true
+//        #elseif os(macOS)
+//        return false
+//        #elseif os(watchOS)
+//        return false
+//        #else
+//        // Ignore size class when displaying footer paywalls.
+//        return (self.configuration.mode.isFullScreen &&
+//                self.verticalSizeClass == .compact)
+//        #endif
     }
     
 }

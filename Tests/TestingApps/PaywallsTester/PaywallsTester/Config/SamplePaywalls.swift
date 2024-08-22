@@ -690,8 +690,7 @@ private extension SamplePaywallLoader {
             fontWeight: .semibold,
             color: .init(light: "#f7d216"),
             padding: .init(top: 20, bottom: 0, leading: 20, trailing: 0),
-            textStyle: .title,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .title
         ))
     }()
 
@@ -704,8 +703,7 @@ private extension SamplePaywallLoader {
             fontWeight: .semibold,
             color: .init(light: "#633306"),
             padding: .init(top: 21, bottom: 0, leading: 21, trailing: 0),
-            textStyle: .title,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .title
         ))
     }()
 
@@ -724,8 +722,7 @@ private extension SamplePaywallLoader {
             ]),
             fontWeight: .heavy,
             color: .init(light: "#000000"),
-            textStyle: .extraLargeTitle,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .extraLargeTitle
         ))
     }()
 
@@ -735,8 +732,7 @@ private extension SamplePaywallLoader {
                 "en_US": "Get access to all ouir educational content trusted by thousands of parents."
             ]),
             color: .init(light: "#000000"),
-            textStyle: .headline,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .headline
         ))
     }()
 
@@ -763,8 +759,7 @@ private extension SamplePaywallLoader {
             ]),
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .headline
         ))
     }()
 
@@ -775,8 +770,7 @@ private extension SamplePaywallLoader {
             ]),
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .headline
         ))
     }()
 
@@ -787,8 +781,7 @@ private extension SamplePaywallLoader {
             ]),
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .headline
         ))
     }()
 
@@ -798,8 +791,7 @@ private extension SamplePaywallLoader {
                 "en_US": "$6.99 per month"
             ]),
             color: .init(light: "#000000"),
-            textStyle: .subheadline,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .subheadline
         ))
     }()
 
@@ -817,8 +809,7 @@ private extension SamplePaywallLoader {
             color: .init(light: "#FFFFFF"),
             backgroundColor: .init(light: "#00AA00"),
             padding: .init(top: 10, bottom: 10, leading: 100, trailing: 100),
-            textStyle: .title3,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .title3
         )
     }()
 
@@ -831,8 +822,7 @@ private extension SamplePaywallLoader {
             fontWeight: .regular,
             color: .init(light: "#000000"),
             padding: .zero, 
-            textStyle: .caption,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .caption
         ))
     }()
 
@@ -845,8 +835,7 @@ private extension SamplePaywallLoader {
             fontWeight: .regular,
             color: .init(light: "#000000"),
             padding: .zero, 
-            textStyle: .caption,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .caption
         ))
     }()
 
@@ -859,8 +848,7 @@ private extension SamplePaywallLoader {
             fontWeight: .regular,
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .caption,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .caption
         ))
     }()
 
@@ -907,8 +895,7 @@ private extension SamplePaywallLoader {
                 "en_US": "Popular Plan"
             ]),
             color: .init(light: "#000000"),
-            textStyle: .body,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .body
         ))
     }()
 
@@ -919,8 +906,7 @@ private extension SamplePaywallLoader {
             ]),
             color: .init(light: "#FF0000"),
             backgroundColor: .init(light: "#FF00FF"),
-            textStyle: .body,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .body
         ))
     }()
 
@@ -931,8 +917,7 @@ private extension SamplePaywallLoader {
             ]),
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#FF00FF"),
-            textStyle: .body,
-            displayPreferences: [.portrait, .landscapeLeft]
+            textStyle: .body
         ))
     }()
 

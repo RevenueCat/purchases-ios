@@ -40,32 +40,30 @@ struct StackComponentView: View {
     }
 
     let locale: Locale
-    let configuration: TemplateViewConfiguration
 
     var body: some View {
         switch dimension {
         case .vertical(let horizontalAlignment):
             VStack(alignment: horizontalAlignment.stackAlignment, spacing: spacing) {
-                ComponentsView(locale: locale, components: components, configuration: configuration)
+                ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
         case .horizontal(let verticalAlignment):
             HStack(alignment: verticalAlignment.stackAlignment,spacing: spacing) {
-                ComponentsView(locale: locale, components: components, configuration: configuration)
+                ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
         case .zlayer(let alignment):
             ZStack(alignment: alignment.stackAlignment) {
-                ComponentsView(locale: locale, components: components, configuration: configuration)
+                ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
         }
     }
 
-    init(component: PaywallComponent.StackComponent, locale: Locale, configuration: TemplateViewConfiguration) {
+    init(component: PaywallComponent.StackComponent, locale: Locale) {
         self.component = component
         self.locale = locale
-        self.configuration = configuration
     }
 }
 

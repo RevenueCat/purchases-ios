@@ -53,6 +53,7 @@ class OfferingsFactory {
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
                         paywall: offering.paywall,
+                        paywallComponentsData: offering.paywallComponents,
                         availablePackages: availablePackages)
     }
 

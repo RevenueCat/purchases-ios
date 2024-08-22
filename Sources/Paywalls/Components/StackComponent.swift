@@ -24,15 +24,11 @@ public extension PaywallComponent {
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
-        let displayPreferences: [DisplayPreference]?
-        var focusIdentifiers: [FocusIdentifier]?
 
         enum CodingKeys: String, CodingKey {
             case components
             case spacing
             case backgroundColor
-            case focusIdentifiers
-            case displayPreferences
             case type
             case dimension
         }
@@ -41,16 +37,18 @@ public extension PaywallComponent {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
-            self.displayPreferences = nil
-            self.focusIdentifiers = nil
             self.type = "stack"
             self.dimension = dimension
         }
 
-        public enum Dimension: Decodable, Sendable, Hashable {
+        public enum Dimension: Codable, Sendable, Hashable {
             case vertical(HorizontalAlignment)
             case horizontal(VerticalAlignment)
             case zlayer(TwoDimensionAlignment)
+
+            public func encode(to encoder: any Encoder) throws {
+                fatalError()
+            }
 
             public init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: CodingKeys.self)

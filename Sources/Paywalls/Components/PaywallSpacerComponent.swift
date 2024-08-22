@@ -14,16 +14,11 @@ public extension PaywallComponent {
     struct SpacerComponent: PaywallComponentBase {
 
         let type: String
-        public let displayPreferences: [DisplayPreference]?
 
-        public init(
-            displayPreferences: [DisplayPreference]? = nil
-        ) {
+        public init() {
             self.type = "spacer"
-            self.displayPreferences = displayPreferences
         }
 
-        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }
