@@ -30,9 +30,6 @@ struct WrongPlatformView: View {
     @State
     private var store: Store?
 
-    @Environment(\.dismiss)
-    var dismiss
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -84,9 +81,7 @@ struct WrongPlatformView: View {
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton {
-                    dismiss()
-                }
+                DismissCircleButton()
             }
         }
         .task {
