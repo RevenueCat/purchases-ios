@@ -54,30 +54,29 @@ struct AppUpdateWarningView: View {
     @ViewBuilder
     var content: some View {
         ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-            let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
-
-            VStack {
-                CompatibilityContentUnavailableView(
-                    localization.commonLocalizedString(for: .updateWarningTitle),
-                    systemImage: "arrowshape.up.circle.fill",
-                    description: Text(localization.commonLocalizedString(for: .updateWarningDescription))
-                )
-
-                Button(localization.commonLocalizedString(for: .updateWarningUpdate)) {
-                    onUpdateAppClick()
+            List {
+                Section {
+                    CompatibilityContentUnavailableView(
+                        localization.commonLocalizedString(for: .updateWarningTitle),
+                        systemImage: "arrowshape.up.circle.fill",
+                        description: Text(localization.commonLocalizedString(for: .updateWarningDescription))
+                    )
                 }
-                .buttonStyle(ProminentButtonStyle())
-                .padding(.bottom)
 
-                Button(localization.commonLocalizedString(for: .updateWarningIgnore)) {
-                    onContinueAnywayClick()
+                Section {
+                    Button(localization.commonLocalizedString(for: .updateWarningUpdate)) {
+                        onUpdateAppClick()
+                    }
+                    .buttonStyle(ProminentButtonStyle())
+                    .padding(.top, 4)
+
+                    Button(localization.commonLocalizedString(for: .updateWarningIgnore)) {
+                        onContinueAnywayClick()
+                    }
+                    .buttonStyle(TextButtonStyle())
                 }
+                .listRowSeparator(.hidden)
             }
-            .padding(.horizontal)
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
@@ -99,6 +98,22 @@ struct AppUpdateWarningView: View {
             }
         }
     }
+}
+
+/// This is a workaround to be able to have 2 buttons in a single Section. Buttons without ButtonStyles make the entire
+/// section clickable.
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct TextButtonStyle: PrimitiveButtonStyle {
+
+    func makeBody(configuration: PrimitiveButtonStyleConfiguration) -> some View {
+        Button(action: { configuration.trigger() }, label: {
+            configuration.label.frame(maxWidth: .infinity)
+        })
+    }
+
 }
 
 #if DEBUG
