@@ -1732,7 +1732,7 @@ internal extension Purchases {
     }
 
     var offlineCustomerInfoEnabled: Bool {
-        return self.backend.offlineCustomerInfoEnabled
+        return self.backend.offlineCustomerInfoEnabled && self.systemInfo.supportsOfflineEntitlements
     }
 
     var publicKey: Signing.PublicKey? {
