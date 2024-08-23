@@ -21,7 +21,7 @@ public extension PaywallComponent {
             url: URL,
             textComponent: PaywallComponent.TextComponent
         ) {
-            self.type = "button"
+            self.type = "link_button"
             self.url = url
             self.textComponent = textComponent
         }

@@ -30,7 +30,35 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
     }
 
     public func encode(to encoder: any Encoder) throws {
-        // TODO
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        switch self {
+        case .tiers(let component):
+            try container.encode(ComponentType.tiers, forKey: .type)
+            try component.encode(to: encoder)
+        case .tierSelector(let component):
+            try container.encode(ComponentType.tierSelector, forKey: .type)
+            try component.encode(to: encoder)
+        case .tierToggle(let component):
+            try container.encode(ComponentType.tierToggle, forKey: .type)
+            try component.encode(to: encoder)
+        case .text(let component):
+            try container.encode(ComponentType.text, forKey: .type)
+            try component.encode(to: encoder)
+        case .image(let component):
+            try container.encode(ComponentType.image, forKey: .type)
+            try component.encode(to: encoder)
+        case .spacer(let component):
+            try container.encode(ComponentType.spacer, forKey: .type)
+            try component.encode(to: encoder)
+        case .stack(let component):
+            try container.encode(ComponentType.stack, forKey: .type)
+            try component.encode(to: encoder)
+        case .linkButton(let component):
+            try container.encode(ComponentType.linkButton, forKey: .type)
+            try component.encode(to: encoder)
+        }
+
     }
 
     case tiers(TiersComponent)
@@ -54,7 +82,7 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         case image
         case spacer
         case stack
-        case linkButton
+        case linkButton = "link_button"
     }
 
     public init(from decoder: Decoder) throws {

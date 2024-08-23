@@ -47,7 +47,19 @@ public extension PaywallComponent {
             case zlayer(TwoDimensionAlignment)
 
             public func encode(to encoder: any Encoder) throws {
-                fatalError()
+                var container = encoder.container(keyedBy: CodingKeys.self)
+
+                switch self {
+                case .vertical(let alignment):
+                    try container.encode(DimensionType.vertical.rawValue, forKey: .type)
+                    try container.encode(alignment, forKey: .alignment)
+                case .horizontal(let alignment):
+                    try container.encode(DimensionType.horizontal.rawValue, forKey: .type)
+                    try container.encode(alignment, forKey: .alignment)
+                case .zlayer(let alignment):
+                    try container.encode(DimensionType.zlayer.rawValue, forKey: .type)
+                    try container.encode(alignment.rawValue, forKey: .alignment)
+                }
             }
 
             public init(from decoder: Decoder) throws {
