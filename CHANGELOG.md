@@ -1,3 +1,15 @@
+## 5.3.0-customercenter.alpha.4
+* Fix `FeedbackSurveyView` not opening (#4208) via Cesar de la Vega (@vegaro)
+* Migrate to List style (#4190) via Cody Kerns (@codykerns)
+* Hide Contact Support button if URL can't be created (#4192) via Cesar de la Vega (@vegaro)
+* Improving customer center buttons (#4165) via Cody Kerns (@codykerns)
+* Clean up colors in WrongPlatformView and NoSubscriptionsView (#4204) via Cesar de la Vega (@vegaro)
+* CustomerCenterViewModel checks whether the app is the latest version (#4169) via JayShortway (@JayShortway)
+* Corrects references from ManageSubscriptionsButtonStyle to ButtonsStyle.  (#4186) via JayShortway (@JayShortway)
+* Customer center improvements (#4166) via James Borthwick (@jamesrb1)
+* replace `color(from colorInformation:)` global with extension (#4183) via Andy Boedo (@aboedo)
+* Enable customer center tests (#4171) via James Borthwick (@jamesrb1)
+
 ## 5.3.0
 ### New Features
 * Price rounding logic (#4132) via James Borthwick (@jamesrb1)
@@ -37,15 +49,15 @@
 
 ## 5.2.2-customercenter.alpha.3
 
-- Fix for disabled promo offer button (#4142) 
+* Fix for disabled promo offer button (#4142) 
 
 ## 5.2.2-customercenter.alpha.2
 
-- Fix project.pbxproj (#4122)
-- Fix BackendGetCustomerCenterConfigTests (#4124)
-- Add contact support button (#4023) 
-- Fix checking eligibility (#4138)
-- Make colors nullable (#4134)
+* Fix project.pbxproj (#4122)
+* Fix BackendGetCustomerCenterConfigTests (#4124)
+* Add contact support button (#4023) 
+* Fix checking eligibility (#4138)
+* Make colors nullable (#4134)
 
 ## 5.2.3
 ### Bugfixes
