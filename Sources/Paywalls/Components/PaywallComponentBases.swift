@@ -16,7 +16,51 @@ public typealias LocaleId = String
 public typealias ColorHex = String
 
 public typealias DisplayString = PaywallComponent.LocaleResources<String>
-public typealias FocusIdentifier = String
+
+extension ColorHex {
+
+    enum Error: Swift.Error {
+
+        case invalidStringFormat(String)
+        case invalidColor(String)
+
+    }
+    
+    public func toColor() throws -> Color {
+        let red, green, blue, alpha: CGFloat
+
+        guard self.hasPrefix("#") else {
+            throw Error.invalidStringFormat(self)
+        }
+
+        let start = self.index(self.startIndex, offsetBy: 1)
+        let hexColor = String(self[start...])
+
+        guard hexColor.count == 6 || hexColor.count == 8 else {
+            throw Error.invalidStringFormat(self)
+        }
+
+        let scanner = Scanner(string: hexColor)
+        var hexNumber: UInt64 = 0
+
+        if scanner.scanHexInt64(&hexNumber) {
+            // If Alpha channel is missing, it's a fully opaque color.
+            if hexNumber <= 0xffffff {
+                hexNumber <<= 8
+                hexNumber |= 0xff
+            }
+
+            red = CGFloat((hexNumber & 0xff000000) >> 24) / 255
+            green = CGFloat((hexNumber & 0x00ff0000) >> 16) / 255
+            blue = CGFloat((hexNumber & 0x0000ff00) >> 8) / 255
+            alpha = CGFloat(hexNumber & 0x000000ff) / 255
+
+            return .init(red: red, green: green, blue: blue, opacity: alpha)
+        } else {
+            throw Error.invalidColor(self)
+        }
+    }
+}
 
 protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {
 //    var displayPreferences: [DisplayPreference]? { get }

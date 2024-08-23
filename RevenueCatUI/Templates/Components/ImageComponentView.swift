@@ -33,10 +33,29 @@ struct ImageComponentView: View {
         }
     }
 
+    var cornerRadius: CGFloat {
+        component.cornerRadius
+    }
+
+    var gradientColors: [Color] {
+        component.gradientColors.compactMap { try? $0.toColor() }
+    }
+
     var body: some View {
-        RemoteImage(url: component.url,
-                    aspectRatio: self.headerAspectRatio,
-                    maxWidth: .infinity)
+        RemoteImage(url: component.url, content: { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .cornerRadius(cornerRadius)
+                .overlay(
+                    LinearGradient(
+                        gradient: Gradient(colors: gradientColors),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .cornerRadius(cornerRadius)
+        })
         .clipped()
     }
 
