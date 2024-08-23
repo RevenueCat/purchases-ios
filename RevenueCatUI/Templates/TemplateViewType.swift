@@ -161,8 +161,7 @@ extension PaywallData {
             Template7View(configuration)
         #if PAYWALL_COMPONENTS
         case .templateComponents:
-            EmptyView()
-//            TemplateComponentsView(configuration)
+            ComponentsView(locale: .current, components: configuration.components!.components)
         #endif
         }
         #endif
