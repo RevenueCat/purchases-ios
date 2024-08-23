@@ -914,7 +914,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: '15.2.0'
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -930,7 +930,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: '15.2.0'
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
