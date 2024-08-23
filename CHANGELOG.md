@@ -1,3 +1,8 @@
+## 5.3.1
+### Bugfixes
+* [Customer Center] Fix `FeedbackSurveyView` not opening (#4208) via Cesar de la Vega (@vegaro)
+* Remove `unneeded_override` disable to fix linter (#4209) via Cesar de la Vega (@vegaro)
+
 ## 5.3.0
 ### New Features
 * Price rounding logic (#4132) via James Borthwick (@jamesrb1)
