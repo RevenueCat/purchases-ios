@@ -259,12 +259,17 @@ public extension PaywallComponent {
                 return .caption
             }
 
-            #if swift(>=5.9) && os(visionOS)
-            case .extraLargeTitle: return .extraLargeTitle
-            case .extraLargeTitle2: return .extraLargeTitle2
+            #if swift(>=5.9)
+              #if os(visionOS)
+                case .extraLargeTitle: return .extraLargeTitle
+                case .extraLargeTitle2: return .extraLargeTitle2
+              #else
+                case .extraLargeTitle: return .largeTitle
+                case .extraLargeTitle2: return .largeTitle
+              #endif
             #else
-            case .extraLargeTitle: return .largeTitle
-            case .extraLargeTitle2: return .largeTitle
+              case .extraLargeTitle: return .largeTitle
+              case .extraLargeTitle2: return .largeTitle
             #endif
             }
         }
