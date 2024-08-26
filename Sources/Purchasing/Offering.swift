@@ -51,6 +51,9 @@ import Foundation
     public let paywall: PaywallData?
 
     #if PAYWALL_COMPONENTS
+    /**
+    Paywall components configuration defined in RevenueCat dashboard.
+     */
     public let paywallComponentsData: PaywallComponentsData?
     #endif
 
