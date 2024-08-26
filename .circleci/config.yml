@@ -37,7 +37,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '15.3'
+        default: '15.4'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
@@ -50,7 +50,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '15.3'
+        default: '15.4'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.large.gen1
@@ -374,7 +374,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 (17.4.0)
+            SCAN_DEVICE: iPhone 15 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -534,8 +534,6 @@ jobs:
   run-revenuecat-ui-ios-17:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
-
     steps:
       - checkout
       - install-dependencies:
@@ -550,7 +548,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 15 Pro,OS=17.2
+            DEVICE: iPhone 15 Pro,OS=17.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -614,8 +612,6 @@ jobs:
   run-test-ios-17:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
-
     steps:
       - checkout
       - install-dependencies:
@@ -625,7 +621,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 (17.2.0)
+            SCAN_DEVICE: iPhone 15 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -642,8 +638,6 @@ jobs:
   run-test-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '15.4.0'
-
     steps:
       - checkout
       - install-dependencies:
@@ -923,7 +917,7 @@ jobs:
           name: Build docs
           command: bundle exec fastlane build_docs
           environment:
-            DOCS_IOS_VERSION: "17.4"
+            DOCS_IOS_VERSION: "17.5"
 
   docs-deploy:
     executor:
@@ -939,7 +933,7 @@ jobs:
           name: Build docs
           command: bundle exec fastlane build_and_publish_docs
           environment:
-            DOCS_IOS_VERSION: "17.4"
+            DOCS_IOS_VERSION: "17.5"
 
   make-release:
     executor:
@@ -1150,7 +1144,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (17.2.0)
+            SCAN_DEVICE: iPhone 14 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
