@@ -105,6 +105,18 @@ struct ManageSubscriptionsView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .sheet(item: self.$viewModel.promotionalOfferData,
+               onDismiss: {
+            Task {
+                await self.viewModel.handleSheetDismiss()
+            }
+        },
+               content: { promotionalOfferData in
+            PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
+                                 product: promotionalOfferData.product,
+                                 promoOfferDetails: promotionalOfferData.promoOfferDetails)
+        })
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -178,18 +190,6 @@ struct ManageSubscriptionButton: View {
             }
         })
         .disabled(self.viewModel.loadingPath != nil)
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(item: self.$viewModel.promotionalOfferData,
-               onDismiss: {
-            Task {
-                await self.viewModel.handleSheetDismiss()
-            }
-        },
-               content: { promotionalOfferData in
-            PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                 product: promotionalOfferData.product,
-                                 promoOfferDetails: promotionalOfferData.promoOfferDetails)
-        })
     }
 
 }
