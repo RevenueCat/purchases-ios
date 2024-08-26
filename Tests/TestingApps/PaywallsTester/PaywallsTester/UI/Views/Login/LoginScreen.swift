@@ -7,12 +7,13 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 struct LoginScreen: View {
 
     private var onAuthentication: @Sendable () -> Void
 
-    @State
+    @StateObject
     private var model = LoginViewModel()
 
     init(
@@ -42,7 +43,7 @@ struct LoginScreen: View {
                     if self.model.codeRequired {
                         TextField("2FA code", text: self.$model.code)
                             .textContentType(.oneTimeCode)
-                            .transition(.push(from: .bottom))
+                            .transition(.move(edge: .bottom))
 #if !os(macOS) && !os(watchOS)
                             .autocapitalization(.none)
                             .keyboardType(.numberPad)
@@ -61,7 +62,7 @@ struct LoginScreen: View {
             }
             .disabled(self.model.operationInProgress)
             .animation(.snappy(), value: self.model.codeRequired)
-            .onChange(of: self.model.authenticated) { _, authenticated in
+            .onChange(of: self.model.authenticated) { authenticated in
                 if authenticated {
                     self.onAuthentication()
                 }
@@ -72,19 +73,37 @@ struct LoginScreen: View {
 }
 
 // MARK: - Private
+@MainActor
+private final class LoginViewModel: ObservableObject {
 
-@Observable
-private final class LoginViewModel {
+    @Published
+    var username: String = "" {
+        didSet {
+            self.formIsComplete = self.username.isNotEmpty && self.password.isNotEmpty
+        }
+    }
 
-    @ObservationIgnored
-    var username: String = ""
-    var password: String = ""
+    @Published
+    var password: String = "" {
+        didSet {
+            self.formIsComplete = self.username.isNotEmpty && self.password.isNotEmpty
+        }
+    }
+
+    @Published
     var code: String = ""
 
+    @Published
     var codeRequired: Bool = false
 
+    @Published
     private(set) var operationInProgress = false
+
+    @Published
     private(set) var authenticated = false
+
+    @Published
+    var formIsComplete: Bool = false
 
     @MainActor
     func attemptLogin() async throws {
@@ -102,11 +121,6 @@ private final class LoginViewModel {
         }
     }
 
-    var formIsComplete: Bool {
-        return self.username.isNotEmpty && self.password.isNotEmpty
-    }
-
-    @ObservationIgnored
     private var authentication = AuthenticationActor()
 
 }

@@ -30,15 +30,25 @@ struct WrongPlatformView: View {
     @State
     private var store: Store?
 
-    @Environment(\.dismiss)
-    var dismiss
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.supportInformation)
+    private var supportInformation: CustomerCenterConfigData.Support?
+    @Environment(\.openURL)
+    private var openURL
+
+    private var supportURL: URL? {
+        guard let supportInformation = self.supportInformation else { return nil }
+        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+        let body = self.localization.commonLocalizedString(for: .defaultBody)
+        return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
+                                                    subject: subject,
+                                                    body: body)
+    }
 
     init() {
     }
@@ -47,31 +57,31 @@ struct WrongPlatformView: View {
         self._store = State(initialValue: store)
     }
 
-    @ViewBuilder
-    var content: some View {
-        ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-            let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
-
-            VStack {
+    var body: some View {
+        List {
+            Section {
                 let platformInstructions = self.humanReadableInstructions(for: store)
 
                 CompatibilityContentUnavailableView(
-                    title: platformInstructions.0,
-                    description: platformInstructions.1,
-                    systemImage: "exclamationmark.triangle.fill"
+                    platformInstructions.0,
+                    systemImage: "exclamationmark.triangle.fill",
+                    description: Text(platformInstructions.1)
                 )
             }
-            .padding(.horizontal)
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+            if let url = supportURL {
+                Section {
+                    AsyncButton {
+                        openURL(url)
+                    } label: {
+                        Text(localization.commonLocalizedString(for: .contactSupport))
+                    }
+                }
+            }
+
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                DismissCircleButton {
-                    dismiss()
-                }
+            ToolbarItem(placement: .compatibleTopBarTrailing) {
+                DismissCircleButton()
             }
         }
         .task {
@@ -80,18 +90,6 @@ struct WrongPlatformView: View {
                    let firstEntitlement = customerInfo.entitlements.active.first {
                     self.store = firstEntitlement.value.store
                 }
-            }
-        }
-    }
-
-    var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
             }
         }
     }
