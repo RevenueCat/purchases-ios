@@ -60,15 +60,15 @@ extension ColorHex {
             throw Error.invalidColor(self)
         }
     }
+
 }
 
 protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {
-//    var displayPreferences: [DisplayPreference]? { get }
 
-//    var focusIdentifiers: [FocusIdentifier]? { get }
 }
 
-public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
+public enum PaywallComponent: PaywallComponentBase {
+
     public static func == (lhs: PaywallComponent, rhs: PaywallComponent) -> Bool {
         return false // TODO: Fix
     }
@@ -103,15 +103,19 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
     case linkButton(LinkButtonComponent)
 
     enum CodingKeys: String, CodingKey {
+
         case type
+
     }
 
     enum ComponentType: String, Codable {
+
         case text
         case image
         case spacer
         case stack
         case linkButton = "link_button"
+
     }
 
     public init(from decoder: Decoder) throws {
@@ -141,6 +145,7 @@ public enum DisplayPreference: String, Decodable, Sendable, Hashable, Equatable 
 public extension PaywallComponent {
 
     struct ColorInfo: Codable, Sendable, Hashable, Equatable {
+
         public init(light: ColorHex, dark: ColorHex? = nil) {
             self.light = light
             self.dark = dark
@@ -148,14 +153,7 @@ public extension PaywallComponent {
         
         public let light: ColorHex
         public let dark: ColorHex?
-    }
 
-    struct TierResources<T: Codable & Sendable & Hashable & Equatable>: Codable, Sendable, Hashable, Equatable {
-        public init(value: [TierId : T]) {
-            self.value = value
-        }
-        
-        public let value: [TierId: T]
     }
 
     struct LocaleResources<T: Codable & Sendable & Hashable & Equatable>: Codable, Sendable, Hashable, Equatable {
@@ -164,39 +162,6 @@ public extension PaywallComponent {
         }
         
         public let value: [LocaleId: T]
-    }
-
-    struct Packages: Codable, Sendable, Hashable, Equatable {
-        public init(`default`: PaywallComponent.Packages.Package, packages: [PaywallComponent.Packages.Package]) {
-            self.`default` = `default`
-            self.packages = packages
-        }
-        
-        public let `default`: Package
-        public let packages: [Package]
-
-        public struct Package: Codable, Sendable, Hashable, Equatable, Identifiable {
-            public var id: String {
-                return self.packageId
-            }
-
-            public init(
-                packageId: String,
-                name: PaywallComponent.LocaleResources<String>,
-                details: PaywallComponent.LocaleResources<String>,
-                detailsIntroOffer: PaywallComponent.LocaleResources<String>
-            ) {
-                self.packageId = packageId
-                self.name = name
-                self.details = details
-                self.detailsIntroOffer = detailsIntroOffer
-            }
-            
-            let packageId: String
-            let name: LocaleResources<String>
-            let details: LocaleResources<String>
-            let detailsIntroOffer: LocaleResources<String>
-        }
     }
 
     struct Padding: Codable, Sendable, Hashable, Equatable {
@@ -215,9 +180,11 @@ public extension PaywallComponent {
 
         public static let `default` = Padding(top: 10, bottom: 10, leading: 20, trailing: 20)
         public static let zero = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
+
     }
 
     struct Data: Sendable, Hashable, Equatable {
+
         public init(
             backgroundColor: ColorInfo,
             components: [PaywallComponent]
@@ -228,9 +195,11 @@ public extension PaywallComponent {
         
         public let backgroundColor: ColorInfo
         public let components: [PaywallComponent]
+
     }
     
     enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
+
         case leading
         case center
         case trailing
@@ -256,9 +225,11 @@ public extension PaywallComponent {
                 return .trailing
             }
         }
+
     }
 
     enum VerticalAlignment: String, Codable, Sendable, Hashable, Equatable {
+
         case top
         case center
         case bottom
@@ -273,9 +244,11 @@ public extension PaywallComponent {
                 return .bottom
             }
         }
+
     }
 
     enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
+
         case center
         case leading
         case trailing
@@ -309,9 +282,11 @@ public extension PaywallComponent {
                 return .bottomTrailing
             }
         }
+
     }
 
     enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
+
         case ultraLight
         case thin
         case light
@@ -344,9 +319,11 @@ public extension PaywallComponent {
                 return .black
             }
         }
+
     }
 
     enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
+
         case largeTitle
         case title
         case title2
@@ -398,7 +375,9 @@ public extension PaywallComponent {
             #endif
             }
         }
+
     }
+    
 }
 
 #endif
