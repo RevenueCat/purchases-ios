@@ -49,7 +49,7 @@ struct StackComponentView: View {
             }
             .background(backgroundColor)
         case .horizontal(let verticalAlignment):
-            HStack(alignment: verticalAlignment.stackAlignment,spacing: spacing) {
+            HStack(alignment: verticalAlignment.stackAlignment, spacing: spacing) {
                 ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
@@ -65,7 +65,7 @@ struct StackComponentView: View {
         self.component = component
         self.locale = locale
     }
-    
+
 }
 
 #endif

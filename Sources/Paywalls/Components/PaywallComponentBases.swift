@@ -4,12 +4,11 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-
+// swiftlint:disable missing_docs todo
 import Foundation
 import SwiftUI // TODO: This feels wrong
 
 #if PAYWALL_COMPONENTS
-
 public typealias TierId = String
 public typealias LocaleId = String
 public typealias ColorHex = String
@@ -24,7 +23,7 @@ extension ColorHex {
         case invalidColor(String)
 
     }
-    
+
     public func toColor() throws -> Color {
         let red, green, blue, alpha: CGFloat
 
@@ -67,10 +66,6 @@ protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {
 }
 
 public enum PaywallComponent: PaywallComponentBase {
-
-    public static func == (lhs: PaywallComponent, rhs: PaywallComponent) -> Bool {
-        return false // TODO: Fix
-    }
 
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -137,10 +132,6 @@ public enum PaywallComponent: PaywallComponentBase {
 
 }
 
-public enum DisplayPreference: String, Decodable, Sendable, Hashable, Equatable {
-    case landscapeLeft, landscapeRight, portrait
-}
-
 public extension PaywallComponent {
 
     struct ColorInfo: Codable, Sendable, Hashable, Equatable {
@@ -149,18 +140,20 @@ public extension PaywallComponent {
             self.light = light
             self.dark = dark
         }
-        
+
         public let light: ColorHex
         public let dark: ColorHex?
 
     }
 
     struct LocaleResources<T: Codable & Sendable & Hashable & Equatable>: Codable, Sendable, Hashable, Equatable {
-        public init(value: [LocaleId : T]) {
+
+        public init(value: [LocaleId: T]) {
             self.value = value
         }
-        
+
         public let value: [LocaleId: T]
+
     }
 
     struct Padding: Codable, Sendable, Hashable, Equatable {
@@ -191,12 +184,12 @@ public extension PaywallComponent {
             self.backgroundColor = backgroundColor
             self.components = components
         }
-        
+
         public let backgroundColor: ColorInfo
         public let components: [PaywallComponent]
 
     }
-    
+
     enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case leading
@@ -257,7 +250,6 @@ public extension PaywallComponent {
         case topTrailing
         case bottomLeading
         case bottomTrailing
-
 
         public var stackAlignment: SwiftUI.Alignment {
             switch self {
@@ -376,7 +368,7 @@ public extension PaywallComponent {
         }
 
     }
-    
+
 }
 
 #endif

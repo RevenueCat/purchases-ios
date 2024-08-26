@@ -13,7 +13,7 @@
 
 import Foundation
 
-// swiftlint:disable nesting identifier_name
+// swiftlint:disable nesting identifier_name missing_docs
 
 #if PAYWALL_COMPONENTS
 
