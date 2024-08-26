@@ -10,7 +10,7 @@
 //  StackComponent.swift
 //
 //  Created by James Borthwick on 2024-08-20.
-
+// swiftlint:disable missing_docs nesting
 import Foundation
 
 #if PAYWALL_COMPONENTS
@@ -32,10 +32,14 @@ public extension PaywallComponent {
             case backgroundColor
             case type
             case dimension
-            
+
         }
 
-        public init(components: [PaywallComponent], dimension: Dimension = .vertical(.center), spacing: CGFloat?, backgroundColor: ColorInfo?) {
+        public init(components: [PaywallComponent],
+                    dimension: Dimension = .vertical(.center),
+                    spacing: CGFloat?,
+                    backgroundColor: ColorInfo?
+        ) {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
