@@ -49,7 +49,7 @@ struct APIKeyDashboardList: View {
 
                 let offeringsBySection = Dictionary(
                     grouping: offerings,
-                    by: { Template(name: $0.paywall?.templateName ?? $0.paywallComponentsData?.templateName) }
+                    by: { Template(name: templateGroupName(offering: $0)) }
                 )
 
                 self.offerings = .success(
@@ -62,6 +62,14 @@ struct APIKeyDashboardList: View {
                 self.offerings = .failure(error)
             }
         }
+    }
+
+    private func templateGroupName(offering: Offering) -> String? {
+        #if PAYWALL_COMPONENTS
+        offering.paywall?.templateName ?? offering.paywallComponentsData?.templateName
+        #else
+        offering.paywall?.templateName
+        #endif
     }
 
     @ViewBuilder
@@ -84,11 +92,18 @@ struct APIKeyDashboardList: View {
 
     @ViewBuilder
     private func list(with data: Data) -> some View {
+        var hasComponents: Bool {
+            #if PAYWALL_COMPONENTS
+            offering.paywallComponentsData != nil
+            #else
+            false
+            #endif
+        }
         List {
             ForEach(data.sections, id: \.self) { template in
                 Section {
                     ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
-                        if offering.paywall != nil || offering.paywallComponentsData != nil {
+                        if offering.paywall != nil || hasComponents {
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
                                 destination: PaywallPresenter(offering: offering,
@@ -124,6 +139,7 @@ struct APIKeyDashboardList: View {
             }
         }
         .sheet(item: self.$presentedPaywall) { paywall in
+            #if PAYWALL_COMPONENTS
             if let componentData = paywall.offering.paywallComponentsData {
                 TemplateComponentsView(paywallComponentsData: componentData)
             } else {
@@ -132,6 +148,12 @@ struct APIKeyDashboardList: View {
                         self.presentedPaywall = nil
                     }
             }
+            #else
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
+                .onRestoreCompleted { _ in
+                    self.presentedPaywall = nil
+                }
+            #endif
         }
     }
 

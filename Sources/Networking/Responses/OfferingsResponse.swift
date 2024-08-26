@@ -15,6 +15,8 @@ import Foundation
 
 // swiftlint:disable nesting
 
+#if PAYWALL_COMPONENTS
+
 public struct PaywallComponentsData: Codable, Equatable {
 
     public struct ComponentsConfig: Codable, Equatable {
@@ -48,6 +50,8 @@ public struct PaywallComponentsData: Codable, Equatable {
 
 }
 
+#endif
+
 struct OfferingsResponse {
 
     struct Offering {
@@ -67,8 +71,10 @@ struct OfferingsResponse {
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
 
+        #if PAYWALL_COMPONENTS
         // components
         var paywallComponents: PaywallComponentsData
+        #endif
 
     }
 
