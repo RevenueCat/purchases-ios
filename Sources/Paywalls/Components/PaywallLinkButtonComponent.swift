@@ -4,14 +4,14 @@
 //
 //  Created by James Borthwick on 2024-08-21.
 //
+// swiftlint:disable missing_docs
 
 import Foundation
-
 
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
-    
+
     struct LinkButtonComponent: PaywallComponentBase {
 
         let type: String
