@@ -6,7 +6,6 @@
 //
 
 import Foundation
-// swiftlint:disable all
 
 #if PAYWALL_COMPONENTS
 

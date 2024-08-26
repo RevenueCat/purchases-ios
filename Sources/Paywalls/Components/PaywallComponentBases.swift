@@ -4,7 +4,6 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable all
 
 import Foundation
 import SwiftUI // TODO: This feels wrong

@@ -43,6 +43,7 @@ public extension PaywallComponent {
         }
 
     }
+    
 }
 
 #endif

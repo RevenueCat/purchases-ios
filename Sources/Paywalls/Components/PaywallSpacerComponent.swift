@@ -6,11 +6,11 @@
 //
 
 import Foundation
-// swiftlint:disable all
 
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
+    
     struct SpacerComponent: PaywallComponentBase {
 
         let type: String
@@ -19,8 +19,8 @@ public extension PaywallComponent {
             self.type = "spacer"
         }
 
-
     }
+
 }
 
 #endif

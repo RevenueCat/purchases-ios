@@ -11,6 +11,7 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
+    
     struct LinkButtonComponent: PaywallComponentBase {
 
         let type: String
@@ -27,6 +28,7 @@ public extension PaywallComponent {
         }
 
     }
+
 }
 
 #endif
