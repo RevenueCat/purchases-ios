@@ -21,10 +21,6 @@ struct LinkButtonComponentView: View {
         component.url
     }
 
-    @Environment(\.userInterfaceIdiom)
-    var userInterfaceIdiom
-
-
     var body: some View {
         Link(destination: url) {
             TextComponentView(locale: locale, component:component.textComponent)

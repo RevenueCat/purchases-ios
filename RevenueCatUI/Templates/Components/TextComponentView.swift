@@ -23,16 +23,17 @@ struct TextComponentView: View {
     let locale: Locale
     let component: PaywallComponent.TextComponent
 
+    var backgroundColor: Color? {
+        if let thing = component.backgroundColor?.light {
+            return (try? PaywallColor(stringRepresentation: thing).underlyingColor) ?? Color.clear
+        }
+        return nil
+    }
+
     var body: some View {
         Text(getLocalization(locale, component.text))
-//            .font(.custom(component.fontFamily,
-//                          size: UIFont.preferredFont(forTextStyle: component.textStyle.font).pointSize))
-//            .font(.custom(component.fontFamily,
-//                          size: UIFont.preferredFont(forTextStyle: component.textStyle.font).pointSize,
-//                          relativeTo: component.textStyle.font)
             .font(component.textStyle.font)
             .fontWeight(component.fontWeight.fontWeight)
-//            .fontWeight(component.fontWeight.fontWeight)
             .multilineTextAlignment(component.horizontalAlignment.textAlignment)
             .foregroundStyle(
                 (try? PaywallColor(stringRepresentation: component.color.light).underlyingColor) ?? Color.clear
@@ -42,13 +43,6 @@ struct TextComponentView: View {
             .padding(.leading, component.padding.leading)
             .padding(.trailing, component.padding.trailing)
             .background(self.backgroundColor)
-    }
-
-    var backgroundColor: Color? {
-        if let thing = component.backgroundColor?.light {
-            return (try? PaywallColor(stringRepresentation: thing).underlyingColor) ?? Color.clear
-        }
-        return nil
     }
 
 }

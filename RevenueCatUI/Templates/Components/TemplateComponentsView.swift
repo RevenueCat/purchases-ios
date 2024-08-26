@@ -92,17 +92,6 @@ struct ComponentsView: View {
     func layoutComponents(_ layoutComponentsArray: [PaywallComponent]) -> some View {
         ForEach(Array(layoutComponentsArray.enumerated()), id: \.offset) { index, item in
             switch (item) {
-            case .tiers(let component):
-                TiersComponentView(
-                    locale: locale,
-                    component: component
-                )
-            case .tierSelector:
-                // This gets displayed in TiersComponentView right now
-                EmptyView()
-            case .tierToggle:
-                // This gets displayed in TiersComponentView right now
-                EmptyView()
             case .text(let component):
                 TextComponentView(locale: locale, component: component)
             case .image(let component):

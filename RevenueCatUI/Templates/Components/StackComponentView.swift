@@ -65,6 +65,7 @@ struct StackComponentView: View {
         self.component = component
         self.locale = locale
     }
+    
 }
 
 #endif

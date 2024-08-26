@@ -26,6 +26,7 @@ struct SpacerComponentView: View {
     var body: some View {
         Spacer()
     }
+    
 }
 
 #endif

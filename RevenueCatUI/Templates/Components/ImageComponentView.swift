@@ -23,16 +23,6 @@ struct ImageComponentView: View {
     let locale: Locale
     let component: PaywallComponent.ImageComponent
 
-    @Environment(\.userInterfaceIdiom)
-    var userInterfaceIdiom
-
-    private var headerAspectRatio: CGFloat {
-        switch self.userInterfaceIdiom {
-        case .pad: return 3
-        default: return 2
-        }
-    }
-
     var cornerRadius: CGFloat {
         component.cornerRadius
     }
@@ -41,12 +31,18 @@ struct ImageComponentView: View {
         component.gradientColors.compactMap { try? $0.toColor() }
     }
 
+    private var headerAspectRatio: CGFloat {
+        switch self.userInterfaceIdiom {
+        case .pad: return 3
+        default: return 2
+        }
+    }
+
     var body: some View {
-        RemoteImage(url: component.url, content: { image in
+        RemoteImage(url: component.url) { image in
             image
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .cornerRadius(cornerRadius)
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: gradientColors),
@@ -55,7 +51,7 @@ struct ImageComponentView: View {
                     )
                 )
                 .cornerRadius(cornerRadius)
-        })
+        }
         .clipped()
     }
 
