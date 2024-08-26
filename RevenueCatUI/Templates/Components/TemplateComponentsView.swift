@@ -41,7 +41,6 @@ func getLocalization(_ locale: Locale, _ displayString: DisplayString) -> String
     return displayString.value.values.first!
 }
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ComponentsView: View {
 
@@ -59,8 +58,8 @@ struct ComponentsView: View {
 
     @ViewBuilder
     func layoutComponents(_ layoutComponentsArray: [PaywallComponent]) -> some View {
-        ForEach(Array(layoutComponentsArray.enumerated()), id: \.offset) { index, item in
-            switch (item) {
+        ForEach(Array(layoutComponentsArray.enumerated()), id: \.offset) { _, item in
+            switch item {
             case .text(let component):
                 TextComponentView(locale: locale, component: component)
             case .image(let component):
@@ -77,7 +76,7 @@ struct ComponentsView: View {
             }
         }
     }
-    
+
 }
 
 #endif
