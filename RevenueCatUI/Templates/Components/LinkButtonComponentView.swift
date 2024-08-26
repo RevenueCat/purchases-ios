@@ -23,10 +23,9 @@ struct LinkButtonComponentView: View {
 
     var body: some View {
         Link(destination: url) {
-            TextComponentView(locale: locale, component:component.textComponent)
+            TextComponentView(locale: locale, component: component.textComponent)
                 .cornerRadius(25)
         }
-
     }
 
 }
