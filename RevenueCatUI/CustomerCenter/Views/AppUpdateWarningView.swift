@@ -55,7 +55,7 @@ struct AppUpdateWarningView: View {
                 Section {
                     CompatibilityContentUnavailableView(
                         localization.commonLocalizedString(for: .updateWarningTitle),
-                        systemImage: "arrowshape.up.circle.fill",
+                        systemImage: "arrow.up.circle.fill",
                         description: Text(localization.commonLocalizedString(for: .updateWarningDescription))
                     )
                 }

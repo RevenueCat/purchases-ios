@@ -50,7 +50,14 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         }
 
         #if os(macOS) || targetEnvironment(macCatalyst)
-            return !self.isProductionReceipt || !self.isMacAppStore
+        // this relies on an undocumented field in the receipt that provides the Environment.
+        // if it's not present, we go to a secondary check.
+        if let isProductionReceipt = self.isProductionReceipt {
+            return !isProductionReceipt
+        } else {
+            return !self.isMacAppStore
+        }
+
         #else
             return path.contains("sandboxReceipt")
         #endif
@@ -73,12 +80,14 @@ extension BundleSandboxEnvironmentDetector: Sendable {}
 
 private extension BundleSandboxEnvironmentDetector {
 
-    var isProductionReceipt: Bool {
+    var isProductionReceipt: Bool? {
         do {
-            return try self.receiptFetcher.fetchAndParseLocalReceipt().environment == .production
+            let receiptEnvironment = try self.receiptFetcher.fetchAndParseLocalReceipt().environment
+            guard receiptEnvironment != .unknown else { return nil } // don't make assumptions if we're not sure
+            return receiptEnvironment == .production
         } catch {
             Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-            return false
+            return nil
         }
     }
 

@@ -300,7 +300,7 @@ GEM
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     retriable (3.1.2)
-    rexml (3.3.3)
+    rexml (3.3.6)
       strscan
     rouge (2.0.7)
     ruby-macho (2.5.1)
