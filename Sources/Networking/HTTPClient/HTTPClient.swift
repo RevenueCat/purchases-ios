@@ -130,6 +130,7 @@ class HTTPClient {
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
+            "X-RC-Canary": "cat-1674",
             RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]

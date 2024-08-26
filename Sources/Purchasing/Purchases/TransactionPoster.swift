@@ -28,6 +28,7 @@ struct PurchasedTransactionData {
     var presentedOfferingContext: PresentedOfferingContext?
     var presentedPaywall: PaywallEvent?
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
+    var transactionMetadata: [String: String]?
     var aadAttributionToken: String?
     var storefront: StorefrontType?
     var source: PurchaseSource
@@ -112,6 +113,7 @@ final class TransactionPoster: TransactionPosterType {
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
+                                         transactionMetadata: data.transactionMetadata,
                                          completion: completion)
                     }
                 }
@@ -240,6 +242,7 @@ private extension TransactionPoster {
                      receipt: EncodedAppleReceipt,
                      product: StoreProduct?,
                      appTransaction: String?,
+                     transactionMetadata: [String: String]?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
@@ -247,7 +250,8 @@ private extension TransactionPoster {
                           productData: productData,
                           transactionData: purchasedTransactionData,
                           observerMode: self.observerMode,
-                          appTransaction: appTransaction) { result in
+                          appTransaction: appTransaction,
+                          transactionMetadata: transactionMetadata) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
                                    subscriberAttributes: purchasedTransactionData.unsyncedAttributes,

@@ -535,7 +535,7 @@ final class PurchasesOrchestrator {
         let customerInfo: CustomerInfo
 
         if let transaction = transaction {
-            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase)
+            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, ["book_number": "1234"])
         } else {
             // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
             // `Product.PurchaseResult.userCancelled`.
@@ -1478,7 +1478,8 @@ extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
-        _ initiationSource: ProductRequestData.InitiationSource
+        _ initiationSource: ProductRequestData.InitiationSource,
+        _ transactionMetadata: [String: String]?
     ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
@@ -1490,6 +1491,7 @@ extension PurchasesOrchestrator {
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
             unsyncedAttributes: unsyncedAttributes,
+            transactionMetadata: transactionMetadata,
             aadAttributionToken: adServicesToken,
             storefront: storefront,
             source: .init(isRestore: self.allowSharingAppStoreAccount,
