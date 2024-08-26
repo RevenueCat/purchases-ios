@@ -226,6 +226,7 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
+        #if PAYWALL_COMPONENTS
         if let componentData = offering.paywallComponentsData {
             TemplateComponentsView(paywallComponentsData: componentData)
         } else {
