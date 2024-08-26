@@ -41,6 +41,11 @@ struct StackComponentView: View {
 
     let locale: Locale
 
+    init(component: PaywallComponent.StackComponent, locale: Locale) {
+        self.component = component
+        self.locale = locale
+    }
+
     var body: some View {
         switch dimension {
         case .vertical(let horizontalAlignment):
@@ -59,11 +64,6 @@ struct StackComponentView: View {
             }
             .background(backgroundColor)
         }
-    }
-
-    init(component: PaywallComponent.StackComponent, locale: Locale) {
-        self.component = component
-        self.locale = locale
     }
 
 }
