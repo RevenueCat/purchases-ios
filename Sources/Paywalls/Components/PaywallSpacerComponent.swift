@@ -6,11 +6,12 @@
 //
 
 import Foundation
+// swiftlint:disable missing_docs
 
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
-    
+
     struct SpacerComponent: PaywallComponentBase {
 
         let type: String
