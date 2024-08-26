@@ -77,15 +77,6 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
-        case .tiers(let component):
-            try container.encode(ComponentType.tiers, forKey: .type)
-            try component.encode(to: encoder)
-        case .tierSelector(let component):
-            try container.encode(ComponentType.tierSelector, forKey: .type)
-            try component.encode(to: encoder)
-        case .tierToggle(let component):
-            try container.encode(ComponentType.tierToggle, forKey: .type)
-            try component.encode(to: encoder)
         case .text(let component):
             try container.encode(ComponentType.text, forKey: .type)
             try component.encode(to: encoder)
@@ -105,9 +96,6 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     }
 
-    case tiers(TiersComponent)
-    case tierSelector(TierSelectorComponent)
-    case tierToggle(TierToggleComponent)
     case text(TextComponent)
     case image(ImageComponent)
     case spacer(SpacerComponent)
@@ -119,9 +107,6 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
     }
 
     enum ComponentType: String, Codable {
-        case tiers
-        case tierSelector
-        case tierToggle
         case text
         case image
         case spacer
@@ -134,12 +119,6 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         let type = try container.decode(ComponentType.self, forKey: .type)
 
         switch type {
-        case .tiers:
-            self = .tiers(try TiersComponent(from: decoder))
-        case .tierSelector:
-            self = .tierSelector(try TierSelectorComponent(from: decoder))
-        case .tierToggle:
-            self = .tierToggle(try TierToggleComponent(from: decoder))
         case .text:
             self = .text(try TextComponent(from: decoder))
         case .image:

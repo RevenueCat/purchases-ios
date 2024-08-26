@@ -15,9 +15,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
-    @StateObject
-    private var componentPaywallData: ComponentPaywallData
-
     @Environment(\.locale)
     var locale
 
@@ -33,7 +30,6 @@ struct TemplateComponentsView: View {
                     locale: self.locale,
                     components: paywallComponentsData.componentsConfig.components
                 )
-                .environmentObject(self.componentPaywallData)
         }
         .edgesIgnoringSafeArea(.top)
     }

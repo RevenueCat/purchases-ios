@@ -31,13 +31,6 @@ struct ImageComponentView: View {
         component.gradientColors.compactMap { try? $0.toColor() }
     }
 
-    private var headerAspectRatio: CGFloat {
-        switch self.userInterfaceIdiom {
-        case .pad: return 3
-        default: return 2
-        }
-    }
-
     var body: some View {
         RemoteImage(url: component.url) { image in
             image
