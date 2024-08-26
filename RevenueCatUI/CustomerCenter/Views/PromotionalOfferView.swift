@@ -62,10 +62,13 @@ struct PromotionalOfferView: View {
 
                     PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
 
-                    let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
-                    Button(dismissButtonTitle) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text(self.localization.commonLocalizedString(for: .noThanks))
                     }
+                    .padding()
+                    .frame(maxWidth: .infinity)
                 } else {
                     EmptyView()
                         .onAppear {
