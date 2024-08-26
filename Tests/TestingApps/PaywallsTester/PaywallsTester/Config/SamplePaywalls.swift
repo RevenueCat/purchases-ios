@@ -970,7 +970,6 @@ private extension SamplePaywallLoader {
         )
     }
 
-
 }
 
 private extension SamplePaywallLoader {
