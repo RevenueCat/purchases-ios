@@ -26,11 +26,13 @@ public extension PaywallComponent {
         public let dimension: Dimension
 
         enum CodingKeys: String, CodingKey {
+
             case components
             case spacing
             case backgroundColor
             case type
             case dimension
+            
         }
 
         public init(components: [PaywallComponent], dimension: Dimension = .vertical(.center), spacing: CGFloat?, backgroundColor: ColorInfo?) {
@@ -42,6 +44,7 @@ public extension PaywallComponent {
         }
 
         public enum Dimension: Codable, Sendable, Hashable {
+
             case vertical(HorizontalAlignment)
             case horizontal(VerticalAlignment)
             case zlayer(TwoDimensionAlignment)
@@ -88,15 +91,20 @@ public extension PaywallComponent {
             }
 
             private enum CodingKeys: String, CodingKey {
+
                 case type
                 case alignment
+
             }
 
             private enum DimensionType: String, Decodable {
+
                 case vertical
                 case horizontal
                 case zlayer
+
             }
+
         }
 
     }
