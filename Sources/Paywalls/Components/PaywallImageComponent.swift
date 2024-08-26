@@ -4,9 +4,9 @@
 //
 //  Created by Josh Holtz on 6/12/24.
 //
+// swiftlint:disable missing_docs identifier_name
 
 import Foundation
-// swiftlint:disable all
 
 #if PAYWALL_COMPONENTS
 
@@ -43,7 +43,7 @@ public extension PaywallComponent {
         }
 
     }
-    
+
 }
 
 #endif
