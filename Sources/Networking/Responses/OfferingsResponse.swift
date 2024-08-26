@@ -13,13 +13,13 @@
 
 import Foundation
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting identifier_name
 
 #if PAYWALL_COMPONENTS
 
-public struct PaywallComponentsData: Codable, Equatable {
+public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
-    public struct ComponentsConfig: Codable, Equatable {
+    public struct ComponentsConfig: Codable, Equatable, Sendable {
 
         public var components: [PaywallComponent]
 
