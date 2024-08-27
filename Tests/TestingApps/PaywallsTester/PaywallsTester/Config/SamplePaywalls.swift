@@ -628,7 +628,7 @@ private extension SamplePaywallLoader {
 
     #if PAYWALL_COMPONENTS
 
-    static var sampleComponents = PaywallComponent.Data(
+    internal static var sampleComponents = PaywallComponent.Data(
         backgroundColor: .init(light: "#FFFFFF"),
         components: vstack
     )

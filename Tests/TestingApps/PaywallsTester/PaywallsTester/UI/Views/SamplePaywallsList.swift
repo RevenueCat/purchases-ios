@@ -91,11 +91,27 @@ struct SamplePaywallsList: View {
             #if CUSTOMER_CENTER_ENABLED
             CustomerCenterView()
             #endif
+        #if PAYWALL_COMPONENTS
+        case .componentPaywall(let data):
+            ComponentsView(locale: .current, components: data.components)
+        #endif
         }
+
     }
 
     private func list(with loader: SamplePaywallLoader) -> some View {
         List {
+
+            #if PAYWALL_COMPONENTS
+            Section("Components") {
+                Button {
+                    self.display = .componentPaywall(SamplePaywallLoader.sampleComponents)
+                } label: {
+                    TemplateLabel(name: "Components", icon: "iphone")
+                }
+            }
+            #endif
+
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
                     ForEach(PaywallViewMode.allCases, id: \.self) { mode in
@@ -250,6 +266,9 @@ private extension SamplePaywallsList {
         case missingPaywall
         case unrecognizedPaywall
         case customerCenter
+        #if PAYWALL_COMPONENTS
+        case componentPaywall(PaywallComponent.Data)
+        #endif
 
     }
 
@@ -276,6 +295,10 @@ extension SamplePaywallsList.Display: Identifiable {
             
         case .customerCenter:
             return "customer-center"
+        #if PAYWALL_COMPONENTS
+        case .componentPaywall:
+            return "component-paywall)"
+        #endif
         }
     }
 

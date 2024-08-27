@@ -42,16 +42,19 @@ func getLocalization(_ locale: Locale, _ displayString: DisplayString) -> String
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// @PublicForExternalTesting
 struct ComponentsView: View {
 
     let locale: Locale
     let components: [PaywallComponent]
 
+    // @PublicForExternalTesting
     init(locale: Locale, components: [PaywallComponent]) {
         self.locale = locale
         self.components = components
     }
 
+    // @PublicForExternalTesting
     var body: some View {
         self.layoutComponents(self.components)
     }
