@@ -74,10 +74,6 @@ final class SamplePaywallLoader {
             return Self.template5()
         case .template7:
             return Self.template7()
-        #if PAYWALL_COMPONENTS
-        case .templateComponents:
-            return Self.templateComponents()
-        #endif
         }
     }
 
@@ -631,31 +627,11 @@ private extension SamplePaywallLoader {
     }
 
     #if PAYWALL_COMPONENTS
-    static func templateComponents() -> PaywallData {
-        return .init(
-            templateName: PaywallTemplate.templateComponents.rawValue,
-            config: .init(
-                packages: [PackageType.annual.identifier,
-                           PackageType.monthly.identifier],
-                defaultPackage: PackageType.annual.identifier,
-                images: .init(),
-                colors: .init(
-                    light: .init()
-                ),
-                termsOfServiceURL: nil
-            ),
-            localization: .init(
-                title: "",
-                callToAction: "Continue"
-            ),
-            assetBaseURL: Self.paywallAssetBaseURL,
 
-            componentData: PaywallComponent.Data(
-                backgroundColor: .init(light: "#FFFFFF"),
-                components: vstack
-            )
-        )
-    }
+    static var sampleComponents = PaywallComponent.Data(
+        backgroundColor: .init(light: "#FFFFFF"),
+        components: vstack
+    )
 
     static var vstack: [PaywallComponent] = {
         [.stack(.init(components: [headerZStack,
