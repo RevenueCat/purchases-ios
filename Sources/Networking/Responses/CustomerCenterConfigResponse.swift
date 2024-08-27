@@ -21,6 +21,7 @@ struct CustomerCenterConfigResponse {
 
     let customerCenter: CustomerCenter
     let lastPublishedAppVersion: String?
+    let itunesTrackId: UInt?
 
     struct CustomerCenter {
 

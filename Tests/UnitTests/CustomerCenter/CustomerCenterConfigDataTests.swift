@@ -83,7 +83,8 @@ class CustomerCenterConfigDataTests: TestCase {
                 localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
                 support: .init(email: "support@example.com")
             ),
-            lastPublishedAppVersion: "1.2.3"
+            lastPublishedAppVersion: "1.2.3",
+            itunesTrackId: 123
         )
 
         let configData = CustomerCenterConfigData(from: mockResponse)
@@ -139,6 +140,7 @@ class CustomerCenterConfigDataTests: TestCase {
         }
 
         expect(configData.lastPublishedAppVersion) == "1.2.3"
+        expect(configData.productId) == 123
     }
 
 }
