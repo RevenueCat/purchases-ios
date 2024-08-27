@@ -820,7 +820,6 @@
 		88AD01122C740CF400AA1F2B /* PaywallSpacerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */; };
 		88AD01132C740CF400AA1F2B /* PaywallTextComopnent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */; };
 		88AD01342C7418EE00AA1F2B /* TemplateComponentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01332C7418EE00AA1F2B /* TemplateComponentsView.swift */; };
-		88AD01372C74198C00AA1F2B /* TiersComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01362C74198C00AA1F2B /* TiersComponentView.swift */; };
 		88AD01392C741AAB00AA1F2B /* TextComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01382C741AAB00AA1F2B /* TextComponentView.swift */; };
 		88AD013B2C741B5300AA1F2B /* ImageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */; };
 		88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */; };
@@ -1982,7 +1981,6 @@
 		88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallSpacerComponent.swift; sourceTree = "<group>"; };
 		88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallTextComopnent.swift; sourceTree = "<group>"; };
 		88AD01332C7418EE00AA1F2B /* TemplateComponentsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplateComponentsView.swift; sourceTree = "<group>"; };
-		88AD01362C74198C00AA1F2B /* TiersComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TiersComponentView.swift; sourceTree = "<group>"; };
 		88AD01382C741AAB00AA1F2B /* TextComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentView.swift; sourceTree = "<group>"; };
 		88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentView.swift; sourceTree = "<group>"; };
 		88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExternalPurchaseAndRestoreTests.swift; path = Templates/ExternalPurchaseAndRestoreTests.swift; sourceTree = "<group>"; };
@@ -5942,7 +5940,6 @@
 				88A543E52C37A4AF0039C6A5 /* ConsistentTierContentView.swift in Sources */,
 				3525D8A42C4AB3D600C21D99 /* CustomerCenterEnvironment.swift in Sources */,
 				35C496062C482ACC0023E924 /* PromotionalOfferData.swift in Sources */,
-				88AD01372C74198C00AA1F2B /* TiersComponentView.swift in Sources */,
 				887A606E2C1D037000E1A461 /* LocalizedAlertError.swift in Sources */,
 				887A60802C1D037000E1A461 /* Package+VariableDataProvider.swift in Sources */,
 				887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */,
