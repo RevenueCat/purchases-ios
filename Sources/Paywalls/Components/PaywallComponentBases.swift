@@ -357,7 +357,7 @@ public extension PaywallComponent {
                 return .caption
             }
 
-            #if swift(>=5.9) && os(visionOS)
+            #if swift(>=5.9) && VISION_OS
             case .extraLargeTitle: return .extraLargeTitle
             case .extraLargeTitle2: return .extraLargeTitle2
             #else
