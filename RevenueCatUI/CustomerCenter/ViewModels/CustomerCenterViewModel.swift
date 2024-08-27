@@ -146,6 +146,11 @@ import RevenueCat
             return .purchasesNotFound
         }
     }
+
+    func onAppUpdateClick() {
+        // swiftlint:disable:next todo
+        // TODO: implement opening the App Store
+    }
 }
 
 fileprivate extension String {

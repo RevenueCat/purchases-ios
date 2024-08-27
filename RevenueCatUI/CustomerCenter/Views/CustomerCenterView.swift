@@ -29,6 +29,7 @@ public struct CustomerCenterView: View {
 
     @StateObject private var viewModel: CustomerCenterViewModel
     @State private var ignoreAppUpdateWarning: Bool = false
+    @State private var ignoreAppUpdateWarning: Bool = false
 
     @Environment(\.colorScheme)
     private var colorScheme
