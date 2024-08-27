@@ -4248,7 +4248,6 @@
 				88E679282C741E08007E69D5 /* SpacerComponentView.swift */,
 				88E679562C750AE1007E69D5 /* StackComponentView.swift */,
 				88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */,
-				88AD01362C74198C00AA1F2B /* TiersComponentView.swift */,
 				88AD01382C741AAB00AA1F2B /* TextComponentView.swift */,
 			);
 			path = Components;
