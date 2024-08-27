@@ -32,6 +32,8 @@ struct RemoteImage<Content: View>: View {
         lowResUrl != nil
     }
 
+    private let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
+
     init(
         url: URL,
         lowResUrl: URL? = nil,
@@ -90,6 +92,7 @@ struct RemoteImage<Content: View>: View {
                 emptyView(error: nil)
             }
         }
+        .transition(self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
             await loadImages()
         }
