@@ -153,6 +153,10 @@ class SystemInfo {
         self.preferredLocalesProvider = preferredLocalesProvider
     }
 
+    var supportsOfflineEntitlements: Bool {
+        !self.observerMode && !self.dangerousSettings.customEntitlementComputation
+    }
+
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
     /// - Seealso: `isApplicationBackgrounded`
     func isApplicationBackgrounded(completion: @escaping @Sendable (Bool) -> Void) {
