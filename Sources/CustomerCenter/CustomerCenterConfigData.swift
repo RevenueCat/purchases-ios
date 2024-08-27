@@ -27,17 +27,20 @@ public struct CustomerCenterConfigData {
     public let localization: Localization
     public let support: Support
     public let lastPublishedAppVersion: String?
+    public let productId: UInt?
 
     public init(screens: [Screen.ScreenType: Screen],
                 appearance: Appearance,
                 localization: Localization,
                 support: Support,
-                lastPublishedAppVersion: String?) {
+                lastPublishedAppVersion: String?,
+                productId: UInt?) {
         self.screens = screens
         self.appearance = appearance
         self.localization = localization
         self.support = support
         self.lastPublishedAppVersion = lastPublishedAppVersion
+        self.productId = productId
     }
 
     public struct Localization {
@@ -345,6 +348,7 @@ extension CustomerCenterConfigData {
         })
         self.support = Support(from: response.customerCenter.support)
         self.lastPublishedAppVersion = response.lastPublishedAppVersion
+        self.productId = response.itunesTrackId
     }
 
 }

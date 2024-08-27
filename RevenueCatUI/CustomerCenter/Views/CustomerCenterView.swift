@@ -94,18 +94,18 @@ private extension CustomerCenterView {
         if viewModel.hasSubscriptions {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
-                if ignoreAppUpdateWarning || viewModel.appIsLatestVersion {
-                    ManageSubscriptionsView(screen: screen,
-                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
-                } else {
+                if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
                     AppUpdateWarningView(
-                        onUpdateAppClick: { viewModel.onAppUpdateClick() },
+                        productId: productId,
                         onContinueAnywayClick: {
                             withAnimation {
                                 ignoreAppUpdateWarning = true
                             }
                         }
                     )
+                } else {
+                    ManageSubscriptionsView(screen: screen,
+                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 }
             } else {
                 WrongPlatformView()

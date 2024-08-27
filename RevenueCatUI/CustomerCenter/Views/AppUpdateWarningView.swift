@@ -26,6 +26,21 @@ struct AppUpdateWarningView: View {
     let onUpdateAppClick: () -> Void
     let onContinueAnywayClick: () -> Void
 
+    init(onUpdateAppClick: @escaping () -> Void, onContinueAnywayClick: @escaping () -> Void) {
+        self.onUpdateAppClick = onUpdateAppClick
+        self.onContinueAnywayClick = onContinueAnywayClick
+    }
+
+    init(productId: UInt, onContinueAnywayClick: @escaping () -> Void) {
+        self.init(
+            onUpdateAppClick: {
+                // productId is a positive integer, so it should be safe to construct a URL from it.
+                UIApplication.shared.open(URL(string: "https://itunes.apple.com/app/id\(productId)")!)
+            },
+            onContinueAnywayClick: onContinueAnywayClick
+        )
+    }
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
