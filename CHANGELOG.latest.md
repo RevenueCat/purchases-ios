@@ -1,3 +1,7 @@
+* Open App Store when the user wants to update their app (#4199) via JayShortway (@JayShortway)
+* Move sheet and restore alert creation to ManageSubscriptionsView (#4220) via Cesar de la Vega (@vegaro)
+* Shows a warning when the app is not the latest version (#4193) via JayShortway (@JayShortway)
+* Add padding to No thanks in promotional offer screen (#4221) via Cesar de la Vega (@vegaro)
 * Fix `FeedbackSurveyView` not opening (#4208) via Cesar de la Vega (@vegaro)
 * Migrate to List style (#4190) via Cody Kerns (@codykerns)
 * Hide Contact Support button if URL can't be created (#4192) via Cesar de la Vega (@vegaro)
