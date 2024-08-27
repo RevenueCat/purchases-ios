@@ -17,7 +17,7 @@
 
 import Foundation
 
-// swiftlint:disable missing_docs nesting file_length
+// swiftlint:disable missing_docs nesting file_length type_body_length
 public typealias RCColor = PaywallColor
 
 public struct CustomerCenterConfigData {
@@ -73,6 +73,10 @@ public struct CustomerCenterConfigData {
             case defaultBody = "default_body"
             case defaultSubject = "default_subject"
             case dismiss = "dismiss"
+            case updateWarningTitle = "update_warning_title"
+            case updateWarningDescription = "update_warning_description"
+            case updateWarningUpdate = "update_warning_update"
+            case updateWarningIgnore = "update_warning_ignore"
 
             var defaultValue: String {
                 switch self {
@@ -118,6 +122,14 @@ public struct CustomerCenterConfigData {
                     return "Support Request"
                 case .dismiss:
                     return "Dismiss"
+                case .updateWarningTitle:
+                    return "Update available"
+                case .updateWarningDescription:
+                    return "Downloading the latest version of the app may help solve the problem."
+                case .updateWarningUpdate:
+                    return "Update"
+                case .updateWarningIgnore:
+                    return "Continue"
                 }
             }
 
