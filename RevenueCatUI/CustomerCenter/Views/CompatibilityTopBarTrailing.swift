@@ -12,6 +12,7 @@
 //  Created by Josh Holtz on 8/16/24.
 
 #if CUSTOMER_CENTER_ENABLED
+#if os(iOS)
 
 import SwiftUI
 
@@ -36,4 +37,5 @@ internal extension ToolbarItemPlacement {
 
 }
 
+#endif
 #endif
