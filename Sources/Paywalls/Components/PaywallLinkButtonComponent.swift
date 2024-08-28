@@ -14,7 +14,7 @@ public extension PaywallComponent {
 
     struct LinkButtonComponent: PaywallComponentBase {
 
-        let type: String
+        let type: ComponentType
         public let url: URL
         public let textComponent: PaywallComponent.TextComponent
 
@@ -22,7 +22,7 @@ public extension PaywallComponent {
             url: URL,
             textComponent: PaywallComponent.TextComponent
         ) {
-            self.type = "link_button"
+            self.type = .linkButton
             self.url = url
             self.textComponent = textComponent
         }

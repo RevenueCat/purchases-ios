@@ -13,7 +13,7 @@ import Foundation
 public extension PaywallComponent {
     struct TextComponent: PaywallComponentBase {
 
-        let type: String
+        let type: ComponentType
         public let text: DisplayString
         public let textLid: String?
         public let fontFamily: String
@@ -35,7 +35,7 @@ public extension PaywallComponent {
             textStyle: TextStyle = .body,
             horitzontalAlignment: HorizontalAlignment = .center
         ) {
-            self.type = "text"
+            self.type = .text
             self.text = text
             self.textLid = textLid
             self.fontFamily = fontFamily

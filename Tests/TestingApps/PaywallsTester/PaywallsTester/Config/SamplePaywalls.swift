@@ -651,11 +651,12 @@ private extension SamplePaywallLoader {
     }()
 
     static var headerImage: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/9a17e0a7_1689854430..jpeg")!))
+        .image(.init(url: curiousKidImageURL))
     }()
 
-    // fuzzy cat: https://assets.pawwalls.com/954459_1701163461.jpg
-    // kid: https://assets.pawwalls.com/9a17e0a7_1689854430..jpeg
+    static let fuzzyCatImageURL = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+    static let curiousKidImageURL = URL(string: "https://assets.pawwalls.com/9a17e0a7_1689854430..jpeg")!
+
 
     static var myGreatAppText: PaywallComponent = {
         .text(.init(

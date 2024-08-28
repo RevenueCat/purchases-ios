@@ -14,7 +14,7 @@ public extension PaywallComponent {
 
     struct ImageComponent: PaywallComponentBase {
 
-        let type: String
+        let type: ComponentType
         public let url: URL
 
         public var cornerRadius: Double {
@@ -36,7 +36,7 @@ public extension PaywallComponent {
             cornerRadius: Double = 0.0,
             gradientColors: [ColorHex] = []
         ) {
-            self.type = "image"
+            self.type = .image
             self.url = url
             self._cornerRadius = cornerRadius
             self._gradientColors = gradientColors
