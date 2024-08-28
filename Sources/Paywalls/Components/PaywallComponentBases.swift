@@ -10,7 +10,6 @@ import Foundation
 #if PAYWALL_COMPONENTS
 import SwiftUI // TODO: This feels wrong
 
-
 public typealias TierId = String
 public typealias LocaleId = String
 public typealias ColorHex = String
