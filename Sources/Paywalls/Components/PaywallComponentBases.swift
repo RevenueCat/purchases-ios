@@ -63,9 +63,7 @@ extension ColorHex {
 
 }
 
-protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {
-
-}
+protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 public enum PaywallComponent: PaywallComponentBase {
 
