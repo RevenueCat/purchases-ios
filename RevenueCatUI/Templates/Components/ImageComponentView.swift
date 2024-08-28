@@ -20,8 +20,15 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
-    let locale: Locale
-    let component: PaywallComponent.ImageComponent
+    let viewModel: ImageComponentViewModel
+
+    var locale: Locale {
+        return viewModel.locale
+    }
+
+    var component: PaywallComponent.ImageComponent {
+        return viewModel.component
+    }
 
     var cornerRadius: CGFloat {
         component.cornerRadius
