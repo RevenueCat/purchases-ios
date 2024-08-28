@@ -297,7 +297,7 @@ extension SamplePaywallsList.Display: Identifiable {
             return "customer-center"
         #if PAYWALL_COMPONENTS
         case .componentPaywall:
-            return "component-paywall)"
+            return "component-paywall"
         #endif
         }
     }
