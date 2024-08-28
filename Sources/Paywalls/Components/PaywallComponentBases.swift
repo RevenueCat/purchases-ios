@@ -6,9 +6,11 @@
 //
 // swiftlint:disable missing_docs todo
 import Foundation
-import SwiftUI // TODO: This feels wrong
 
 #if PAYWALL_COMPONENTS
+import SwiftUI // TODO: This feels wrong
+
+
 public typealias TierId = String
 public typealias LocaleId = String
 public typealias ColorHex = String
