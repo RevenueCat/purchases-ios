@@ -101,7 +101,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
     }
 
-    enum ComponentType: String, Codable {
+    public enum ComponentType: String, Codable {
 
         case text
         case image

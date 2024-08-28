@@ -20,8 +20,15 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
-    let locale: Locale
-    let component: PaywallComponent.TextComponent
+    let viewModel: TextComponentViewModel
+
+    var locale: Locale {
+        return viewModel.locale
+    }
+
+    var component: PaywallComponent.TextComponent {
+        return viewModel.component
+    }
 
     var backgroundColor: Color? {
         if let thing = component.backgroundColor?.light {
@@ -31,7 +38,7 @@ struct TextComponentView: View {
     }
 
     var body: some View {
-        Text(getLocalization(locale, component.text))
+        Text(viewModel.text)
             .font(component.textStyle.font)
             .fontWeight(component.fontWeight.fontWeight)
             .multilineTextAlignment(component.horizontalAlignment.textAlignment)

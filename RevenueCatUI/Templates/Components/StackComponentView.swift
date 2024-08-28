@@ -19,11 +19,20 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
-    let component: PaywallComponent.StackComponent
+    let viewModel: StackComponentViewModel
+
+    var locale: Locale {
+        return viewModel.locale
+    }
+
+    var component: PaywallComponent.StackComponent {
+        return viewModel.component
+    }
 
     var dimension: PaywallComponent.StackComponent.Dimension {
         component.dimension
     }
+
     var components: [PaywallComponent] {
         component.components
     }
@@ -39,28 +48,21 @@ struct StackComponentView: View {
         return Color.clear
     }
 
-    let locale: Locale
-
-    init(component: PaywallComponent.StackComponent, locale: Locale) {
-        self.component = component
-        self.locale = locale
-    }
-
     var body: some View {
         switch dimension {
         case .vertical(let horizontalAlignment):
             VStack(alignment: horizontalAlignment.stackAlignment, spacing: spacing) {
-                ComponentsView(locale: locale, components: components)
+                ComponentsView(componentViewModels: self.viewModel.viewModels)
             }
             .background(backgroundColor)
         case .horizontal(let verticalAlignment):
             HStack(alignment: verticalAlignment.stackAlignment, spacing: spacing) {
-                ComponentsView(locale: locale, components: components)
+                ComponentsView(componentViewModels: self.viewModel.viewModels)
             }
             .background(backgroundColor)
         case .zlayer(let alignment):
             ZStack(alignment: alignment.stackAlignment) {
-                ComponentsView(locale: locale, components: components)
+                ComponentsView(componentViewModels: self.viewModel.viewModels)
             }
             .background(backgroundColor)
         }

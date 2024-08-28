@@ -15,6 +15,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let text: DisplayString
+        public let textLid: String?
         public let fontFamily: String
         public let fontWeight: FontWeight
         public let color: ColorInfo
@@ -25,6 +26,7 @@ public extension PaywallComponent {
 
         public init(
             text: DisplayString,
+            textLid: String,
             fontFamily: String = "SF Pro",
             fontWeight: FontWeight = .regular,
             color: ColorInfo,
@@ -35,6 +37,7 @@ public extension PaywallComponent {
         ) {
             self.type = .text
             self.text = text
+            self.textLid = textLid
             self.fontFamily = fontFamily
             self.fontWeight = fontWeight
             self.color = color
