@@ -19,7 +19,7 @@ public extension PaywallComponent {
 
     struct StackComponent: PaywallComponentBase {
 
-        let type: String
+        let type: ComponentType
         public let components: [PaywallComponent]
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
@@ -43,7 +43,7 @@ public extension PaywallComponent {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
-            self.type = "stack"
+            self.type = .stack
             self.dimension = dimension
         }
 

@@ -14,10 +14,10 @@ public extension PaywallComponent {
 
     struct SpacerComponent: PaywallComponentBase {
 
-        let type: String
+        let type: ComponentType
 
         public init() {
-            self.type = "spacer"
+            self.type = .spacer
         }
 
     }
