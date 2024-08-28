@@ -14,32 +14,33 @@ public extension PaywallComponent {
 
     struct ImageComponent: PaywallComponentBase {
 
+        public enum FitMode: Codable, Sendable, Hashable {
+
+            case fit
+            case crop
+
+        }
+
         let type: String
         public let url: URL
-
-        public var cornerRadius: Double {
-            _cornerRadius
-        }
-
-        public var gradientColors: [ColorHex] {
-            _gradientColors
-        }
-
-        @DefaultDecodable.ZeroDouble
-        var _cornerRadius: Double
-
-        @DefaultDecodable.EmptyArray
-        var _gradientColors: [ColorHex]
+        public let fitMode: FitMode
+        public var gradientColors: [ColorHex]
+        public var cornerRadius: Double
+        public var maxHeight: CGFloat?
 
         public init(
             url: URL,
             cornerRadius: Double = 0.0,
-            gradientColors: [ColorHex] = []
+            gradientColors: [ColorHex] = [],
+            fitMode: FitMode = .fit,
+            maxHeight: CGFloat? = nil
         ) {
             self.type = "image"
             self.url = url
-            self._cornerRadius = cornerRadius
-            self._gradientColors = gradientColors
+            self.cornerRadius = cornerRadius
+            self.gradientColors = gradientColors
+            self.fitMode = fitMode
+            self.maxHeight = maxHeight
         }
 
     }

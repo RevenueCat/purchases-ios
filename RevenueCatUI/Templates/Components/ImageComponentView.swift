@@ -31,11 +31,16 @@ struct ImageComponentView: View {
         component.gradientColors.compactMap { try? $0.toColor() }
     }
 
+    var contentMode: ContentMode {
+        component.fitMode.contentMode
+    }
+
     var body: some View {
         RemoteImage(url: component.url) { image in
             image
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .aspectRatio(contentMode: self.contentMode)
+                .frame(maxHeight: component.maxHeight)
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: gradientColors),
@@ -43,11 +48,23 @@ struct ImageComponentView: View {
                         endPoint: .bottom
                     )
                 )
+
                 .cornerRadius(cornerRadius)
         }
-        .clipped()
+//        .clipped()
     }
 
+}
+
+private extension PaywallComponent.ImageComponent.FitMode {
+    var contentMode: ContentMode {
+        switch self {
+        case .fit:
+            ContentMode.fit
+        case .crop:
+            ContentMode.fill
+        }
+    }
 }
 
 #endif

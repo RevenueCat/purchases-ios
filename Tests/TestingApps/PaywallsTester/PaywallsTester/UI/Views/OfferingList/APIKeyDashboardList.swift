@@ -35,32 +35,36 @@ struct APIKeyDashboardList: View {
     @State
     private var presentedPaywall: PresentedPaywall?
 
+    private func fetchOfferings() async {
+        do {
+            let offerings = try await Purchases.shared.offerings()
+                .all
+                .map(\.value)
+                .sorted { $0.serverDescription > $1.serverDescription }
+            
+            let offeringsBySection = Dictionary(
+                grouping: offerings,
+                by: { Template(name: templateGroupName(offering: $0)) }
+            )
+            
+            self.offerings = .success(
+                .init(
+                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    offeringsBySection: offeringsBySection
+                )
+            )
+        } catch let error as NSError {
+            self.offerings = .failure(error)
+        }
+    }
+    
     var body: some View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
         }
         .task {
-            do {
-                let offerings = try await Purchases.shared.offerings()
-                    .all
-                    .map(\.value)
-                    .sorted { $0.serverDescription > $1.serverDescription }
-
-                let offeringsBySection = Dictionary(
-                    grouping: offerings,
-                    by: { Template(name: templateGroupName(offering: $0)) }
-                )
-
-                self.offerings = .success(
-                    .init(
-                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
-                        offeringsBySection: offeringsBySection
-                    )
-                )
-            } catch let error as NSError {
-                self.offerings = .failure(error)
-            }
+            await fetchOfferings()
         }
     }
 
@@ -139,7 +143,11 @@ struct APIKeyDashboardList: View {
                 }
             }
         }
-        .sheet(item: self.$presentedPaywall) { paywall in
+        .sheet(item: self.$presentedPaywall, onDismiss: {
+            Task {
+                await self.fetchOfferings()
+            }
+        }) { paywall in
             #if PAYWALL_COMPONENTS
             if let componentData = paywall.offering.paywallComponentsData {
                 TemplateComponentsView(paywallComponentsData: componentData)

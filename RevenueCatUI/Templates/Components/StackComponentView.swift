@@ -53,16 +53,28 @@ struct StackComponentView: View {
                 ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
+            .padding(.top, component.padding.top)
+            .padding(.bottom, component.padding.bottom)
+            .padding(.leading, component.padding.leading)
+            .padding(.trailing, component.padding.trailing)
         case .horizontal(let verticalAlignment):
             HStack(alignment: verticalAlignment.stackAlignment, spacing: spacing) {
                 ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
+            .padding(.top, component.padding.top)
+            .padding(.bottom, component.padding.bottom)
+            .padding(.leading, component.padding.leading)
+            .padding(.trailing, component.padding.trailing)
         case .zlayer(let alignment):
             ZStack(alignment: alignment.stackAlignment) {
                 ComponentsView(locale: locale, components: components)
             }
             .background(backgroundColor)
+            .padding(.top, component.padding.top)
+            .padding(.bottom, component.padding.bottom)
+            .padding(.leading, component.padding.leading)
+            .padding(.trailing, component.padding.trailing)
         }
     }
 
