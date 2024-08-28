@@ -105,9 +105,14 @@ struct SamplePaywallsList: View {
             #if PAYWALL_COMPONENTS
             Section("Components") {
                 Button {
-                    self.display = .componentPaywall(SamplePaywallLoader.sampleComponents)
+                    self.display = .componentPaywall(SamplePaywallLoader.template1Components)
                 } label: {
-                    TemplateLabel(name: "Components", icon: "iphone")
+                    TemplateLabel(name: "Curiosity Components", icon: "iphone")
+                }
+                Button {
+                    self.display = .componentPaywall(SamplePaywallLoader.fitnessComponents)
+                } label: {
+                    TemplateLabel(name: "Fitness Components", icon: "iphone")
                 }
             }
             #endif

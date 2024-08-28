@@ -630,9 +630,14 @@ private extension SamplePaywallLoader {
 
 
 
-    internal static var sampleComponents = PaywallComponent.Data(
+    internal static var fitnessComponents = PaywallComponent.Data(
         backgroundColor: .init(light: "#000000"),
         components: fitnessSample
+    )
+
+    internal static var template1Components = PaywallComponent.Data(
+        backgroundColor: .init(light: "#000000"),
+        components: vstack
     )
 
     static var simpleSample: [PaywallComponent] = {
@@ -691,8 +696,8 @@ private extension SamplePaywallLoader {
                                    featureImageStack1,
                                    featureImageStack2,
                                    featureImageStack3,
-                                   purchaseButton,
-                                   footerStack],
+                                   purchaseFitnessButton,
+                                   fitnessFooter],
                       dimension: .vertical(.center),
                       spacing: 25,
                       backgroundColor: .init(light: "#000000")))]
@@ -833,6 +838,72 @@ private extension SamplePaywallLoader {
                      spacing: nil,
                      backgroundColor: nil,
                      padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
+    }()
+
+    static var purchaseFitnessButton: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseFitnessNowText))
+    }()
+
+    static var purchaseFitnessNowText: PaywallComponent.TextComponent = {
+        .init(
+            text: .init(value: [
+                "en_US": "Start Today for $9.99/mo"
+            ]),
+            fontWeight: .semibold,
+            color: .init(light: "#FFFFFF"),
+            backgroundColor: .init(light: "#DD4444"),
+            padding: .init(top: 10, bottom: 10, leading: 50, trailing: 50),
+            textStyle: .title3
+        )
+    }()
+
+    static var fitnessFooter: PaywallComponent = {
+        .stack(.init(components: [spacer, restoreFitnessPurchases, bulletFitness, termsAndConditionsFitness, spacer],
+                      dimension: .horizontal(),
+                     spacing: 10,
+                     backgroundColor: nil,
+                     padding: .zero))
+
+    }()
+
+    static var restoreFitnessPurchases: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Restore purchases"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .caption
+        ))
+    }()
+
+    static var bulletFitness: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "•"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .caption
+        ))
+    }()
+
+    static var termsAndConditionsFitness: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Terms and conditions"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .caption
+        ))
     }()
 
 
@@ -992,14 +1063,36 @@ private extension SamplePaywallLoader {
     static var purchaseNowText: PaywallComponent.TextComponent = {
         .init(
             text: .init(value: [
-                "en_US": "Start Today for $9.99/mo"
+                "en_US": "Purchase for $6.99"
             ]),
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
-            backgroundColor: .init(light: "#DD4444"),
+            backgroundColor: .init(light: "#5CD27A"), //92 210 122
             padding: .init(top: 10, bottom: 10, leading: 50, trailing: 50),
             textStyle: .title3
         )
+    }()
+
+    static var footerStack: PaywallComponent = {
+        .stack(.init(components: [spacer, restorePurchases, bullet, termsAndConditions, spacer],
+                      dimension: .horizontal(),
+                     spacing: 10,
+                     backgroundColor: nil,
+                     padding: .zero))
+
+    }()
+
+    static var bullet: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "•"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .caption
+        ))
     }()
 
     static var restorePurchases: PaywallComponent = {
@@ -1009,7 +1102,7 @@ private extension SamplePaywallLoader {
             ]),
             fontFamily: "",
             fontWeight: .regular,
-            color: .init(light: "#FFFFFF"),
+            color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .caption
         ))
@@ -1022,32 +1115,10 @@ private extension SamplePaywallLoader {
             ]),
             fontFamily: "",
             fontWeight: .regular,
-            color: .init(light: "#FFFFFF"),
+            color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .caption
         ))
-    }()
-
-    static var bullet: PaywallComponent = {
-        .text(.init(
-            text: .init(value: [
-                "en_US": "•"
-            ]),
-            fontFamily: "",
-            fontWeight: .regular,
-            color: .init(light: "#FFFFFF"),
-            padding: .zero,
-            textStyle: .caption
-        ))
-    }()
-
-    static var footerStack: PaywallComponent = {
-        .stack(.init(components: [spacer, restorePurchases, bullet, termsAndConditions, spacer],
-                      dimension: .horizontal(),
-                     spacing: 10,
-                     backgroundColor: nil,
-                     padding: .zero))
-
     }()
 
 
