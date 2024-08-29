@@ -14,6 +14,7 @@
 import SwiftUI
 import RevenueCat
 
+// @PublicForExternalTesting
 struct TextComponentViewModel {
     let locale: Locale
     let localization: [String: String]
@@ -28,6 +29,7 @@ struct TextComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
+// @PublicForExternalTesting
 struct ImageComponentViewModel {
     let locale: Locale
     let component: PaywallComponent.ImageComponent
@@ -35,6 +37,7 @@ struct ImageComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
+// @PublicForExternalTesting
 struct SpacerComponentViewModel {
     let locale: Locale
     let component: PaywallComponent.SpacerComponent
@@ -42,6 +45,7 @@ struct SpacerComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
+// @PublicForExternalTesting
 struct StackComponentViewModel {
     let locale: Locale
     let component: PaywallComponent.StackComponent
@@ -50,6 +54,7 @@ struct StackComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
+// @PublicForExternalTesting
 struct LinkButtonComponentViewModel {
     let locale: Locale
     let component: PaywallComponent.LinkButtonComponent
@@ -57,6 +62,7 @@ struct LinkButtonComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
+// @PublicForExternalTesting
 enum PaywallComponentViewModel {
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
