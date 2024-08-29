@@ -618,7 +618,6 @@ extension PaywallData {
 // MARK: - Constructors
 
 extension PaywallData {
-
     init(
         templateName: String,
         config: Configuration,
@@ -633,8 +632,8 @@ extension PaywallData {
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
-        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
         self.revision = revision
+        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
     }
 
     /// Creates a test ``PaywallData`` with one localization.

@@ -50,6 +50,13 @@ import Foundation
      */
     public let paywall: PaywallData?
 
+    #if PAYWALL_COMPONENTS
+    /**
+    Paywall components configuration defined in RevenueCat dashboard.
+     */
+    public let paywallComponentsData: PaywallComponentsData?
+    #endif
+
     /**
      Array of ``Package`` objects available for purchase.
      */
@@ -139,6 +146,16 @@ import Foundation
         metadata: [String: Any] = [:],
         availablePackages: [Package]
     ) {
+        #if PAYWALL_COMPONENTS
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: nil,
+            paywallComponentsData: nil,
+            availablePackages: availablePackages
+        )
+        #else
         self.init(
             identifier: identifier,
             serverDescription: serverDescription,
@@ -146,7 +163,74 @@ import Foundation
             paywall: nil,
             availablePackages: availablePackages
         )
+        #endif
     }
+
+    #if PAYWALL_COMPONENTS
+    /// Initialize an ``Offering`` given a list of ``Package``s.
+    public init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponentsData: PaywallComponentsData? = nil,
+        availablePackages: [Package]
+    ) {
+        self.identifier = identifier
+        self.serverDescription = serverDescription
+        self.availablePackages = availablePackages
+        self._metadata = Metadata(data: metadata)
+        self.paywall = paywall
+        self.paywallComponentsData = paywallComponentsData
+
+        var foundPackages: [PackageType: Package] = [:]
+
+        var lifetime: Package?
+        var annual: Package?
+        var sixMonth: Package?
+        var threeMonth: Package?
+        var twoMonth: Package?
+        var monthly: Package?
+        var weekly: Package?
+
+        for package in availablePackages {
+            Self.checkForNilAndLogReplacement(previousPackages: foundPackages, newPackage: package)
+
+            switch package.packageType {
+            case .lifetime: lifetime = package
+            case .annual: annual = package
+            case .sixMonth: sixMonth = package
+            case .threeMonth: threeMonth = package
+            case .twoMonth: twoMonth = package
+            case .monthly: monthly = package
+            case .weekly: weekly = package
+            case .custom where package.storeProduct.productCategory == .nonSubscription:
+                // Non-subscription product, ignoring
+                continue
+
+            case .custom:
+                Logger.debug(Strings.offering.custom_package_type(package))
+                continue
+
+            case .unknown:
+                Logger.warn(Strings.offering.unknown_package_type(package))
+                continue
+            }
+
+            foundPackages[package.packageType] = package
+        }
+
+        self.lifetime = lifetime
+        self.annual = annual
+        self.sixMonth = sixMonth
+        self.threeMonth = threeMonth
+        self.twoMonth = twoMonth
+        self.monthly = monthly
+        self.weekly = weekly
+
+        super.init()
+    }
+    #else
     /// Initialize an ``Offering`` given a list of ``Package``s.
     public init(
         identifier: String,
@@ -208,6 +292,7 @@ import Foundation
 
         super.init()
     }
+    #endif
 
     // swiftlint:enable cyclomatic_complexity
 

@@ -222,7 +222,7 @@ private extension SamplePaywallLoader {
 // MARK: - Paywalls
 
 private extension SamplePaywallLoader {
-    
+
     static func template1() -> PaywallData {
         return .init(
             templateName: PaywallTemplate.template1.rawValue,
@@ -625,6 +625,298 @@ private extension SamplePaywallLoader {
             assetBaseURL: Self.paywallAssetBaseURL
         )
     }
+
+    #if PAYWALL_COMPONENTS
+
+    internal static var sampleComponents = PaywallComponent.Data(
+        backgroundColor: .init(light: "#FFFFFF"),
+        components: vstack
+    )
+
+    static var vstack: [PaywallComponent] = {
+        [.stack(.init(components: [headerZStack,
+                                   spacer,
+                                   headingText,
+                                   subHeadingText,
+                                   spacer,
+                                   featureVStack,
+                                   spacer,
+                                   costText,
+                                   purchaseButton,
+                                   footerStack],
+                      dimension: .vertical(),
+                      spacing: nil,
+                      backgroundColor: nil))]
+
+    }()
+
+    static var headerImage: PaywallComponent = {
+        .image(.init(url: curiousKidImageURL))
+    }()
+
+    static let fuzzyCatImageURL = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+    static let curiousKidImageURL = URL(string: "https://assets.pawwalls.com/9a17e0a7_1689854430..jpeg")!
+
+
+    static var myGreatAppText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Explore"
+            ]),
+            fontFamily: "",
+            fontWeight: .semibold,
+            color: .init(light: "#f7d216"),
+            padding: .init(top: 20, bottom: 0, leading: 20, trailing: 0),
+            textStyle: .title
+        ))
+    }()
+
+    static var myGreatAppTextOffset: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Explore"
+            ]),
+            fontFamily: "",
+            fontWeight: .semibold,
+            color: .init(light: "#633306"),
+            padding: .init(top: 21, bottom: 0, leading: 21, trailing: 0),
+            textStyle: .title
+        ))
+    }()
+
+    static var headerZStack: PaywallComponent = {
+        .stack(.init(components: [headerImage, myGreatAppTextOffset, myGreatAppText],
+                      dimension: .zlayer(.topLeading),
+                      spacing: 0,
+                      backgroundColor: nil))
+
+    }()
+
+    static var headingText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Ignite your child's curiosity"
+            ]),
+            fontWeight: .heavy,
+            color: .init(light: "#000000"),
+            textStyle: .extraLargeTitle
+        ))
+    }()
+
+    static var subHeadingText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Get access to all ouir educational content trusted by thousands of parents."
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .headline
+        ))
+    }()
+
+    static var featureVStack: PaywallComponent = {
+        .stack(.init(components: [feature1Text, feature2Text, feature3Text],
+                     dimension: .vertical(.leading),
+                     spacing: 10,
+                     backgroundColor: nil))
+
+    }()
+
+
+    static var featureHStack: PaywallComponent = {
+        .stack(.init(components: [feature1Text, spacer],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil))
+    }()
+
+    static var feature1Text: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "✅ Valuable features"
+            ]),
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .headline
+        ))
+    }()
+
+    static var feature2Text: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "✅ Great Price"
+            ]),
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .headline
+        ))
+    }()
+
+    static var feature3Text: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "✅ Support"
+            ]),
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .headline
+        ))
+    }()
+
+    static var costText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "$6.99 per month"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .subheadline
+        ))
+    }()
+
+    static var purchaseButton: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseNowText))
+    }()
+
+    static var purchaseNowText: PaywallComponent.TextComponent = {
+        .init(
+            text: .init(value: [
+                "en_US": "Purchase for $6.99"
+            ]),
+            fontWeight: .semibold,
+            color: .init(light: "#FFFFFF"),
+            backgroundColor: .init(light: "#00AA00"),
+            padding: .init(top: 10, bottom: 10, leading: 100, trailing: 100),
+            textStyle: .title3
+        )
+    }()
+
+    static var restorePurchases: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Restore purchases"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero, 
+            textStyle: .caption
+        ))
+    }()
+
+    static var termsAndConditions: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Terms and conditions"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero, 
+            textStyle: .caption
+        ))
+    }()
+
+    static var bullet: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "•"
+            ]),
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .caption
+        ))
+    }()
+
+    static var footerStack: PaywallComponent = {
+        .stack(.init(components: [spacer, restorePurchases, bullet, termsAndConditions, spacer],
+                      dimension: .horizontal(),
+                     spacing: 10,
+                     backgroundColor: nil))
+
+    }()
+
+
+    static var spacer: PaywallComponent = {
+        .spacer(PaywallComponent.SpacerComponent())
+    }()
+
+    static var mainVStack: [PaywallComponent] = {
+        [.stack(.init(components: imageZStack + twoHorizontal + [button],
+                      dimension: .vertical(),
+                      spacing: 0,
+                      backgroundColor: nil))]
+
+    }()
+
+    static var twoHorizontal: [PaywallComponent] = {
+        [.stack(.init(components: [verticalTextStack, middleText, verticalTextStack],
+                      dimension: .horizontal(),
+                      spacing: nil,
+                      backgroundColor: .init(light: "#1122AA")))]
+
+    }()
+
+    static var verticalTextStack: PaywallComponent = {
+        .stack(.init(components: [getStartedText, spacer, upgradeText],
+                     dimension: .vertical(.leading),
+                      spacing: nil,
+                      backgroundColor: .init(light: "#11AA22")))
+
+    }()
+
+    static var middleText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Popular Plan"
+            ]),
+            color: .init(light: "#000000"),
+            textStyle: .body
+        ))
+    }()
+
+    static var getStartedText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Get started with our plan"
+            ]),
+            color: .init(light: "#FF0000"),
+            backgroundColor: .init(light: "#FF00FF"),
+            textStyle: .body
+        ))
+    }()
+
+    static var upgradeText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Upgrade to our premium plan"
+            ]),
+            color: .init(light: "#000000"),
+            backgroundColor: .init(light: "#FF00FF"),
+            textStyle: .body
+        ))
+    }()
+
+
+
+    static var button: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseNowText))
+    }()
+
+
+
+
+    static var imageZStack: [PaywallComponent] = {
+        [.stack(.init(components: [headerImage, .text(purchaseNowText)],
+                      dimension: .zlayer(.center),
+                      spacing: 0,
+                      backgroundColor: nil))]
+
+    }()
+
+    #endif
 
     static func unrecognizedTemplate() -> PaywallData {
         return .init(

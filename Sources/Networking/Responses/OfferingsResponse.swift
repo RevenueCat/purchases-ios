@@ -13,7 +13,44 @@
 
 import Foundation
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting identifier_name missing_docs
+
+#if PAYWALL_COMPONENTS
+
+public struct PaywallComponentsData: Codable, Equatable, Sendable {
+
+    public struct ComponentsConfig: Codable, Equatable, Sendable {
+
+        public var components: [PaywallComponent]
+
+    }
+
+    public var templateName: String
+
+    /// The base remote URL where assets for this paywall are stored.
+    public var assetBaseURL: URL
+
+    /// The revision identifier for this paywall.
+    public var revision: Int {
+        get { return self._revision }
+        set { self._revision = newValue }
+    }
+
+    public var componentsConfig: ComponentsConfig
+
+    @DefaultDecodable.Zero
+    internal private(set) var _revision: Int = 0
+
+    private enum CodingKeys: String, CodingKey {
+        case templateName
+        case componentsConfig
+        case assetBaseURL = "assetBaseUrl"
+        case _revision = "revision"
+    }
+
+}
+
+#endif
 
 struct OfferingsResponse {
 
@@ -33,6 +70,11 @@ struct OfferingsResponse {
         var paywall: PaywallData?
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
+
+        #if PAYWALL_COMPONENTS
+        // components
+        var paywallComponents: PaywallComponentsData
+        #endif
 
     }
 
