@@ -127,10 +127,10 @@ public class TextComponentViewModel: ObservableObject {
                 return localizedText
             }
             else {
-                return "missing localized text for \(textLid)"
+                return component.text.value.first?.value as? String ?? "missing localized text for \(textLid)"
             }
         } else {
-            return "missing localized text"
+            return component.text.value.first?.value as? String ?? "missing localized text"
         }
     }
 
