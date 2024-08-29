@@ -33,7 +33,6 @@ public class StackComponentViewModel: ObservableObject {
         self.viewModels = component.components.map {
             $0.toViewModel(offering: offering, locale: locale, localization: localization)
         }
-
     }
 
 }
