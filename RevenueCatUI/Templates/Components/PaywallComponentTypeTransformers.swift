@@ -14,7 +14,10 @@
 import SwiftUI
 import RevenueCat
 
+#if PAYWALL_COMPONENTS
+
 extension PaywallComponent.TextStyle {
+
     public var font: Font {
         switch self {
         case .largeTitle: return .largeTitle
@@ -50,9 +53,11 @@ extension PaywallComponent.TextStyle {
         #endif
         }
     }
+
 }
 
 extension PaywallComponent.FontWeight {
+
     public var fontWeight: Font.Weight {
         switch self {
         case .ultraLight:
@@ -75,9 +80,11 @@ extension PaywallComponent.FontWeight {
             return .black
         }
     }
+
 }
 
 extension PaywallComponent.VerticalAlignment {
+
     public var stackAlignment: SwiftUI.VerticalAlignment {
         switch self {
         case .top:
@@ -88,9 +95,11 @@ extension PaywallComponent.VerticalAlignment {
             return .bottom
         }
     }
+
 }
 
 extension PaywallComponent.TwoDimensionAlignment {
+
     public var stackAlignment: SwiftUI.Alignment {
         switch self {
         case .center:
@@ -113,9 +122,11 @@ extension PaywallComponent.TwoDimensionAlignment {
             return .bottomTrailing
         }
     }
+
 }
 
 extension PaywallComponent.HorizontalAlignment {
+
     public var textAlignment: TextAlignment {
         switch self {
         case .leading:
@@ -137,12 +148,15 @@ extension PaywallComponent.HorizontalAlignment {
             return .trailing
         }
     }
+
 }
 
 extension PaywallComponent.Padding {
+
     var edgeInsets: EdgeInsets {
             EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
         }
+
 }
 
 extension ColorHex {
@@ -190,3 +204,5 @@ extension ColorHex {
     }
 
 }
+
+#endif
