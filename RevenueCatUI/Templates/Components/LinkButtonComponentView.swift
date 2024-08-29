@@ -20,20 +20,16 @@ struct LinkButtonComponentView: View {
         return viewModel.locale
     }
 
-    var component: PaywallComponent.LinkButtonComponent {
-        return viewModel.component
-    }
-
     var url: URL {
         component.url
     }
 
     var body: some View {
         EmptyView()
-//        Link(destination: url) {
-//            TextComponentView(locale: locale, component: component.textComponent)
-//                .cornerRadius(25)
-//        }
+        Link(destination: url) {
+            TextComponentView(viewModel: viewModel.textComponentViewModel)
+                .cornerRadius(25)
+        }
     }
 
 }
