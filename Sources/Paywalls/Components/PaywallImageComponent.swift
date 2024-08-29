@@ -16,20 +16,8 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let url: URL
-
-        public var cornerRadius: Double {
-            _cornerRadius
-        }
-
-        public var gradientColors: [ColorHex] {
-            _gradientColors
-        }
-
-        @DefaultDecodable.ZeroDouble
-        var _cornerRadius: Double
-
-        @DefaultDecodable.EmptyArray
-        var _gradientColors: [ColorHex]
+        public let cornerRadius: Double
+        public let gradientColors: [ColorHex]
 
         public init(
             url: URL,
@@ -38,8 +26,8 @@ public extension PaywallComponent {
         ) {
             self.type = .image
             self.url = url
-            self._cornerRadius = cornerRadius
-            self._gradientColors = gradientColors
+            self.cornerRadius = cornerRadius
+            self.gradientColors = gradientColors
         }
 
     }
