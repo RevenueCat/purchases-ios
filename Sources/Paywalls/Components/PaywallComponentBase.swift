@@ -19,6 +19,32 @@ protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 public enum PaywallComponent: PaywallComponentBase {
 
+    case text(TextComponent)
+    case image(ImageComponent)
+    case spacer(SpacerComponent)
+    case stack(StackComponent)
+    case linkButton(LinkButtonComponent)
+
+    public enum ComponentType: String, Codable, Sendable {
+
+        case text
+        case image
+        case spacer
+        case stack
+        case linkButton = "link_button"
+
+    }
+
+}
+
+extension PaywallComponent: Codable {
+
+    enum CodingKeys: String, CodingKey {
+
+        case type
+
+    }
+
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -39,29 +65,6 @@ public enum PaywallComponent: PaywallComponentBase {
             try container.encode(ComponentType.linkButton, forKey: .type)
             try component.encode(to: encoder)
         }
-
-    }
-
-    case text(TextComponent)
-    case image(ImageComponent)
-    case spacer(SpacerComponent)
-    case stack(StackComponent)
-    case linkButton(LinkButtonComponent)
-
-    enum CodingKeys: String, CodingKey {
-
-        case type
-
-    }
-
-    public enum ComponentType: String, Codable, Sendable {
-
-        case text
-        case image
-        case spacer
-        case stack
-        case linkButton = "link_button"
-
     }
 
     public init(from decoder: Decoder) throws {
