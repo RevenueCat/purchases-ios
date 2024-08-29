@@ -42,10 +42,7 @@ struct StackComponentView: View {
     }
 
     var backgroundColor: Color {
-        if let lightColor = component.backgroundColor?.light {
-            return (try? PaywallColor(stringRepresentation: lightColor).underlyingColor) ?? Color.clear
-        }
-        return Color.clear
+        component.backgroundColor?.toDyanmicColor() ?? Color.clear
     }
 
     var body: some View {

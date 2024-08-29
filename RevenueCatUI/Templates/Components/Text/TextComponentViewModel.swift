@@ -54,9 +54,7 @@ public class TextComponentViewModel: ObservableObject {
     }
 
     public var color: Color {
-        // TODO: implement color transformation
-        // component.color
-        Color.cyan
+        component.color.toDyanmicColor()
     }
 
     public var textStyle: Font {
@@ -68,9 +66,7 @@ public class TextComponentViewModel: ObservableObject {
     }
 
     public var backgroundColor: Color {
-        // TODO: implement color transformation
-        // component.color
-        Color.mint
+        component.backgroundColor?.toDyanmicColor() ?? Color.clear
     }
 
     public var padding: EdgeInsets {

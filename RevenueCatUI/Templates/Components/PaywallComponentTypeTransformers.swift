@@ -161,25 +161,20 @@ extension PaywallComponent.Padding {
 
 extension ColorHex {
 
-    enum Error: Swift.Error {
-
-        case invalidStringFormat(String)
-        case invalidColor(String)
-
-    }
-
-    public func toColor() throws -> Color {
+    public func toColor(fallback: Color) -> Color {
         let red, green, blue, alpha: CGFloat
 
         guard self.hasPrefix("#") else {
-            throw Error.invalidStringFormat(self)
+            // TODO: Log
+            return fallback
         }
 
         let start = self.index(self.startIndex, offsetBy: 1)
         let hexColor = String(self[start...])
 
         guard hexColor.count == 6 || hexColor.count == 8 else {
-            throw Error.invalidStringFormat(self)
+            // TODO: Log
+            return fallback
         }
 
         let scanner = Scanner(string: hexColor)
@@ -199,8 +194,34 @@ extension ColorHex {
 
             return .init(red: red, green: green, blue: blue, opacity: alpha)
         } else {
-            throw Error.invalidColor(self)
+            // TODO: Log
+            return fallback
         }
+    }
+
+}
+
+extension PaywallComponent.ColorInfo {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func toDyanmicColor() -> Color {
+
+        guard let darkModeColor = self.dark else {
+            return light.toColor(fallback: Color.clear)
+        }
+
+        let lightModeColor = light
+
+        return Color(UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .light, .unspecified:
+                return UIColor(lightModeColor.toColor(fallback: Color.clear))
+            case .dark:
+                return UIColor(darkModeColor.toColor(fallback: Color.clear))
+            @unknown default:
+                return UIColor(lightModeColor.toColor(fallback: Color.clear))
+            }
+        })
     }
 
 }
