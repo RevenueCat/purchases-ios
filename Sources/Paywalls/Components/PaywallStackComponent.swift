@@ -25,16 +25,6 @@ public extension PaywallComponent {
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
 
-        enum CodingKeys: String, CodingKey {
-
-            case components
-            case spacing
-            case backgroundColor
-            case type
-            case dimension
-
-        }
-
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     spacing: CGFloat?,
