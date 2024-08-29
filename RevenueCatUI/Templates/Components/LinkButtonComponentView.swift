@@ -21,7 +21,7 @@ struct LinkButtonComponentView: View {
     }
 
     var url: URL {
-        component.url
+        viewModel.url
     }
 
     var body: some View {
