@@ -26,30 +26,14 @@ struct TextComponentView: View {
         return viewModel.locale
     }
 
-    var component: PaywallComponent.TextComponent {
-        return viewModel.component
-    }
-
-    var backgroundColor: Color? {
-        if let thing = component.backgroundColor?.light {
-            return (try? PaywallColor(stringRepresentation: thing).underlyingColor) ?? Color.clear
-        }
-        return nil
-    }
-
     var body: some View {
         Text(viewModel.text)
-            .font(component.textStyle.font)
-            .fontWeight(component.fontWeight.fontWeight)
-            .multilineTextAlignment(component.horizontalAlignment.textAlignment)
-            .foregroundStyle(
-                (try? PaywallColor(stringRepresentation: component.color.light).underlyingColor) ?? Color.clear
-            )
-            .padding(.top, component.padding.top)
-            .padding(.bottom, component.padding.bottom)
-            .padding(.leading, component.padding.leading)
-            .padding(.trailing, component.padding.trailing)
-            .background(self.backgroundColor)
+            .font(viewModel.textStyle)
+            .fontWeight(viewModel.fontWeight)
+            .multilineTextAlignment(viewModel.horizontalAlignment)
+            .foregroundStyle(viewModel.color)
+            .padding(viewModel.padding)
+            .background(viewModel.backgroundColor)
     }
 
 }

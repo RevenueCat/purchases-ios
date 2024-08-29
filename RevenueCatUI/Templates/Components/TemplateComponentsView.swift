@@ -15,6 +15,7 @@ struct TemplateComponentsView: View {
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
 
+    @MainActor
     init(paywallComponentsData: PaywallComponentsData, locale: Locale, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
 
@@ -26,7 +27,7 @@ struct TemplateComponentsView: View {
             // STEP 2 - Get localization for one of preferred locales in order
             // TOOD: This logic is so wrong
             let localizations = paywallComponentsData.componentsLocalizations
-            let localization = localizations[locale.identifier] ?? localizations.values.first!
+            let localization = localizations[locale.identifier] ?? localizations.values.first ?? [String:String]()
 
             // Step 3 - Validate all variables are supported in localization
 

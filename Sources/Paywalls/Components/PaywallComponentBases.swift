@@ -149,28 +149,6 @@ public extension PaywallComponent {
         case center
         case trailing
 
-        public var textAlignment: TextAlignment {
-            switch self {
-            case .leading:
-                return .leading
-            case .center:
-                return .center
-            case .trailing:
-                return .trailing
-            }
-        }
-
-        public var stackAlignment: SwiftUI.HorizontalAlignment {
-            switch self {
-            case .leading:
-                return .leading
-            case .center:
-                return .center
-            case .trailing:
-                return .trailing
-            }
-        }
-
     }
 
     enum VerticalAlignment: String, Codable, Sendable, Hashable, Equatable {
@@ -241,29 +219,6 @@ public extension PaywallComponent {
         case heavy
         case black
 
-        public var fontWeight: Font.Weight {
-            switch self {
-            case .ultraLight:
-                return .ultraLight
-            case .thin:
-                return .thin
-            case .light:
-                return .light
-            case .regular:
-                return .regular
-            case .medium:
-                return .medium
-            case .semibold:
-                return .semibold
-            case .bold:
-                return .bold
-            case .heavy:
-                return .heavy
-            case .black:
-                return .black
-            }
-        }
-
     }
 
     enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
@@ -283,42 +238,6 @@ public extension PaywallComponent {
         // Swift 5.9 stuff
         case extraLargeTitle
         case extraLargeTitle2
-
-        public var font: Font {
-            switch self {
-            case .largeTitle: return .largeTitle
-            case .title: return .title
-            case .title2: if #available(iOS 14.0, *) {
-                return .title2
-            } else {
-                return .title
-            }
-            case .title3: if #available(iOS 14.0, *) {
-                return .title3
-            } else {
-                return .title
-            }
-            case .headline: return .headline
-            case .subheadline: return .subheadline
-            case .body: return .body
-            case .callout: return .callout
-            case .footnote: return .footnote
-            case .caption: return .caption
-            case .caption2: if #available(iOS 14.0, *) {
-                return .caption2
-            } else {
-                return .caption
-            }
-
-            #if swift(>=5.9) && VISION_OS
-            case .extraLargeTitle: return .extraLargeTitle
-            case .extraLargeTitle2: return .extraLargeTitle2
-            #else
-            case .extraLargeTitle: return .largeTitle
-            case .extraLargeTitle2: return .largeTitle
-            #endif
-            }
-        }
 
     }
 
