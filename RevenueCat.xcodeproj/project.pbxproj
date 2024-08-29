@@ -4236,10 +4236,11 @@
 		88AD010B2C740CF400AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				88AD01012C740CF400AA1F2B /* PaywallComponentBases.swift */,
+				88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */,
+				88B1BAD72C812D72001B7EE5 /* PaywallComponentTypes.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
 				88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */,
-				88E679462C7503C1007E69D5 /* StackComponent.swift */,
+				88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */,
 				8893C9B42C7D1F090060B030 /* PaywallLinkButtonComponent.swift */,
 				88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */,
 			);
@@ -5237,6 +5238,7 @@
 				57E9CF0F290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
+				88B1BAD82C812D72001B7EE5 /* PaywallComponentTypes.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
 				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
