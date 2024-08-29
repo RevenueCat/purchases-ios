@@ -15,7 +15,6 @@ struct TemplateComponentsView: View {
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
 
-    @MainActor
     init(paywallComponentsData: PaywallComponentsData, locale: Locale, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
 

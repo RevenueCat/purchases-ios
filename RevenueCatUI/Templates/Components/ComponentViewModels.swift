@@ -107,7 +107,6 @@ extension PaywallComponent.Padding {
         }
 }
 
-@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class TextComponentViewModel: ObservableObject {
     let locale: Locale
@@ -186,7 +185,6 @@ struct SpacerComponentViewModel {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
 // @PublicForExternalTesting
 class StackComponentViewModel: ObservableObject {
     let locale: Locale
@@ -227,7 +225,6 @@ enum PaywallComponentViewModel {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
-    @MainActor 
     func toViewModel(offering: Offering, locale: Locale, localization: [String: String]) -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
