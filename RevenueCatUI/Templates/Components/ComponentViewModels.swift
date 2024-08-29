@@ -189,12 +189,16 @@ class ImageComponentViewModel: ObservableObject {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
-struct SpacerComponentViewModel {
+class SpacerComponentViewModel: ObservableObject {
     let locale: Locale
     let component: PaywallComponent.SpacerComponent
 
-    // Add properties or methods needed to support the view
+    init(locale: Locale, component: PaywallComponent.SpacerComponent) {
+        self.locale = locale
+        self.component = component
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
