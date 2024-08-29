@@ -51,6 +51,18 @@ struct StackComponentViewModel {
     let component: PaywallComponent.StackComponent
     let viewModels: [PaywallComponentViewModel]
 
+    init(locale: Locale,
+         component: PaywallComponent.StackComponent,
+         localization: [String: String],
+         offering: Offering
+    ) {
+        self.locale = locale
+        self.component = component
+        self.viewModels = component.components.map {
+            $0.toViewModel(offering: offering, locale: locale, localization: localization)
+        }
+
+    }
     // Add properties or methods needed to support the view
 }
 
@@ -87,11 +99,8 @@ extension PaywallComponent {
                 SpacerComponentViewModel(locale: locale, component: component)
             )
         case .stack(let component):
-            // Move to initializer
-            let viewModels = component.components.map { $0.toViewModel(offering: offering, locale: locale, localization: localization) }
-
             return .stack(
-                StackComponentViewModel(locale: locale, component: component, viewModels: viewModels)
+                StackComponentViewModel(locale: locale, component: component, localization: localization, offering: offering)
             )
         case .linkButton(let component):
             return .linkButton(
