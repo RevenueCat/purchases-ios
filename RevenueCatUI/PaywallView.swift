@@ -219,6 +219,7 @@ public struct PaywallView: View {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     private func paywallView(
         for offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -226,6 +227,40 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
+
+        #if PAYWALL_COMPONENTS
+        if let componentData = offering.paywallComponentsData {
+            TemplateComponentsView(paywallComponentsData: componentData)
+        } else {
+
+            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
+
+            let paywallView = LoadedOfferingPaywallView(
+                offering: offering,
+                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                paywall: paywall,
+                template: template,
+                mode: self.mode,
+                fonts: fonts,
+                displayCloseButton: self.displayCloseButton,
+                introEligibility: checker,
+                purchaseHandler: purchaseHandler,
+                locale: displayedLocale
+            )
+
+            if let error {
+                DebugErrorView(
+                    "\(error.description)\n" +
+                    "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
+                    "The displayed paywall contains default configuration.\n" +
+                    "This error will be hidden in production.",
+                    replacement: paywallView
+                )
+            } else {
+                paywallView
+            }
+        }
+        #else
         let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
 
         let paywallView = LoadedOfferingPaywallView(
@@ -252,6 +287,7 @@ public struct PaywallView: View {
         } else {
             paywallView
         }
+        #endif
     }
 
     // MARK: -
