@@ -21,9 +21,18 @@ struct TextComponentViewModel {
     let component: PaywallComponent.TextComponent
 
     var text: String {
-        // TODO: Remove explicit unwrap
         // TODO: Replace variables like "{{ }}"
-        return localization[component.textLid!] ?? ""
+        // TODO: Add logs?
+        if let textLid = component.textLid {
+            if let localizedText = localization[textLid] {
+                return localizedText
+            }
+            else {
+                return "missing localized text for \(textLid)"
+            }
+        } else {
+            return "missing localized text"
+        }
     }
 
     // Add properties or methods needed to support the view
