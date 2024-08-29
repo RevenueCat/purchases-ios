@@ -14,11 +14,111 @@
 import SwiftUI
 import RevenueCat
 
-// @PublicForExternalTesting
-struct TextComponentViewModel {
+extension PaywallComponent.TextStyle {
+    public var font: Font {
+        switch self {
+        case .largeTitle: return .largeTitle
+        case .title: return .title
+        case .title2: if #available(iOS 14.0, *) {
+            return .title2
+        } else {
+            return .title
+        }
+        case .title3: if #available(iOS 14.0, *) {
+            return .title3
+        } else {
+            return .title
+        }
+        case .headline: return .headline
+        case .subheadline: return .subheadline
+        case .body: return .body
+        case .callout: return .callout
+        case .footnote: return .footnote
+        case .caption: return .caption
+        case .caption2: if #available(iOS 14.0, *) {
+            return .caption2
+        } else {
+            return .caption
+        }
+
+        #if swift(>=5.9) && VISION_OS
+        case .extraLargeTitle: return .extraLargeTitle
+        case .extraLargeTitle2: return .extraLargeTitle2
+        #else
+        case .extraLargeTitle: return .largeTitle
+        case .extraLargeTitle2: return .largeTitle
+        #endif
+        }
+    }
+}
+
+extension PaywallComponent.FontWeight {
+    public var fontWeight: Font.Weight {
+        switch self {
+        case .ultraLight:
+            return .ultraLight
+        case .thin:
+            return .thin
+        case .light:
+            return .light
+        case .regular:
+            return .regular
+        case .medium:
+            return .medium
+        case .semibold:
+            return .semibold
+        case .bold:
+            return .bold
+        case .heavy:
+            return .heavy
+        case .black:
+            return .black
+        }
+    }
+}
+
+extension PaywallComponent.HorizontalAlignment {
+    public var textAlignment: TextAlignment {
+        switch self {
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        }
+    }
+
+    public var stackAlignment: SwiftUI.HorizontalAlignment {
+        switch self {
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        }
+    }
+}
+
+extension PaywallComponent.Padding {
+    var edgeInsets: EdgeInsets {
+            EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
+        }
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public class TextComponentViewModel: ObservableObject {
     let locale: Locale
     let localization: [String: String]
-    let component: PaywallComponent.TextComponent
+    @Published var component: PaywallComponent.TextComponent
+
+    init(locale: Locale, localization: [String : String], component: PaywallComponent.TextComponent) {
+        self.locale = locale
+        self.localization = localization
+        self.component = component
+    }
 
     var text: String {
         // TODO: Replace variables like "{{ }}"
@@ -36,6 +136,37 @@ struct TextComponentViewModel {
     }
 
     // Add properties or methods needed to support the view
+    public var fontFamily: String {
+        component.fontFamily
+    }
+
+    public var fontWeight: Font.Weight {
+        component.fontWeight.fontWeight
+    }
+
+    public var color: Color {
+        // TODO: implement color transformation
+        // component.color
+        Color.cyan
+    }
+
+    public var textStyle: Font {
+        component.textStyle.font
+    }
+
+    public var horizontalAlignment: TextAlignment {
+        component.horizontalAlignment.textAlignment
+    }
+
+    public var backgroundColor: Color {
+        // TODO: implement color transformation
+        // component.color
+        Color.mint
+    }
+
+    public var padding: EdgeInsets {
+        component.padding.edgeInsets
+    }
 }
 
 // @PublicForExternalTesting
@@ -54,8 +185,10 @@ struct SpacerComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 // @PublicForExternalTesting
-struct StackComponentViewModel {
+class StackComponentViewModel: ObservableObject {
     let locale: Locale
     let component: PaywallComponent.StackComponent
     let viewModels: [PaywallComponentViewModel]
@@ -83,7 +216,7 @@ struct LinkButtonComponentViewModel {
     // Add properties or methods needed to support the view
 }
 
-// @PublicForExternalTesting
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
@@ -92,7 +225,9 @@ enum PaywallComponentViewModel {
     case linkButton(LinkButtonComponentViewModel)
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
+    @MainActor 
     func toViewModel(offering: Offering, locale: Locale, localization: [String: String]) -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
