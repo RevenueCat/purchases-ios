@@ -220,15 +220,34 @@ class StackComponentViewModel: ObservableObject {
         }
 
     }
-    // Add properties or methods needed to support the view
+
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
-struct LinkButtonComponentViewModel {
+class LinkButtonComponentViewModel: ObservableObject {
     let locale: Locale
-    let component: PaywallComponent.LinkButtonComponent
+    @Published private(set) var component: PaywallComponent.LinkButtonComponent
+    let textComponentViewModel: TextComponentViewModel
 
-    // Add properties or methods needed to support the view
+    public var url: URL {
+        component.url
+    }
+    public var textComponent: PaywallComponent.TextComponent {
+        component.textComponent
+    }
+
+    init(locale: Locale,
+         component: PaywallComponent.LinkButtonComponent,
+         localization: [String: String],
+         offering: Offering
+    ) {
+        self.locale = locale
+        self.component = component
+        self.textComponentViewModel = TextComponentViewModel(locale: locale, localization: localization, component: component.textComponent)
+
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -262,7 +281,7 @@ extension PaywallComponent {
             )
         case .linkButton(let component):
             return .linkButton(
-                LinkButtonComponentViewModel(locale: locale, component: component)
+                LinkButtonComponentViewModel(locale: locale, component: component, localization: localization, offering: offering)
             )
         }
     }
