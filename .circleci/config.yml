@@ -632,8 +632,6 @@ jobs:
 
     steps:
       - checkout
-      - set-maximum-duration:
-          seconds: 60
       - install-dependencies:
           install_swiftlint: false
       - run:
