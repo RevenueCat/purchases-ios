@@ -94,18 +94,18 @@ aliases:
 commands:
   set-maximum-duration:
     parameters:
-      time:
+      seconds:
         type: integer
         default: 600
     steps:
       - run:
-          name: Set maximum job duration to << parameters.time >> minutes
+          name: Set maximum job duration to << parameters.seconds >> seconds
           background: true
           command: |
-            sleep << parameters.time >>
+            sleep << parameters.seconds >>
             curl --request POST \
             --url https://circleci.com/api/v2/project/gh/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/job/$CIRCLE_BUILD_NUM/cancel \
-          --header "Circle-Token: $CIRCLECI_API_TOKEN"
+            --header "Circle-Token: $CIRCLECI_API_TOKEN"
   install-runtime:
     parameters:
       runtime-name:
@@ -633,7 +633,7 @@ jobs:
     steps:
       - checkout
       - set-maximum-duration:
-          time: 60
+          seconds: 60
       - install-dependencies:
           install_swiftlint: false
       - run:
