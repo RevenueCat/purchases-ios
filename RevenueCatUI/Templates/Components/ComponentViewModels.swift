@@ -77,6 +77,44 @@ extension PaywallComponent.FontWeight {
     }
 }
 
+extension PaywallComponent.VerticalAlignment {
+    public var stackAlignment: SwiftUI.VerticalAlignment {
+        switch self {
+        case .top:
+            return .top
+        case .center:
+            return .center
+        case .bottom:
+            return .bottom
+        }
+    }
+}
+
+extension PaywallComponent.TwoDimensionAlignment {
+    public var stackAlignment: SwiftUI.Alignment {
+        switch self {
+        case .center:
+            return .center
+        case .leading:
+            return .leading
+        case .trailing:
+            return .trailing
+        case .top:
+            return .top
+        case .bottom:
+            return .bottom
+        case .topLeading:
+            return .topLeading
+        case .topTrailing:
+            return .topTrailing
+        case .bottomLeading:
+            return .bottomLeading
+        case .bottomTrailing:
+            return .bottomTrailing
+        }
+    }
+}
+
 extension PaywallComponent.HorizontalAlignment {
     public var textAlignment: TextAlignment {
         switch self {
