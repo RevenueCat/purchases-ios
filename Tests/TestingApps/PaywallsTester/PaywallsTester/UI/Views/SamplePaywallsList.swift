@@ -92,8 +92,9 @@ struct SamplePaywallsList: View {
             CustomerCenterView()
             #endif
         #if PAYWALL_COMPONENTS
-        case .componentPaywall(let data):
-            ComponentsView(locale: .current, components: data.components)
+        case .componentPaywall(let components):
+            Text("ComponentsView backed by ViewModel Currently Unsupported")
+            // ComponentsView(componentViewModels: components)
         #endif
         }
 
@@ -267,7 +268,7 @@ private extension SamplePaywallsList {
         case unrecognizedPaywall
         case customerCenter
         #if PAYWALL_COMPONENTS
-        case componentPaywall(PaywallComponent.Data)
+        case componentPaywall([PaywallComponent])
         #endif
 
     }
