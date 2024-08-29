@@ -55,7 +55,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
     }
 
-    public enum ComponentType: String, Codable {
+    public enum ComponentType: String, Codable, Sendable {
 
         case text
         case image
