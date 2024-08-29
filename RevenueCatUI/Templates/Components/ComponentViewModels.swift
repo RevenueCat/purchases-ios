@@ -111,7 +111,7 @@ extension PaywallComponent.Padding {
 public class TextComponentViewModel: ObservableObject {
     let locale: Locale
     let localization: [String: String]
-    @Published var component: PaywallComponent.TextComponent
+    @Published private(set) var component: PaywallComponent.TextComponent
 
     init(locale: Locale, localization: [String : String], component: PaywallComponent.TextComponent) {
         self.locale = locale
@@ -134,7 +134,6 @@ public class TextComponentViewModel: ObservableObject {
         }
     }
 
-    // Add properties or methods needed to support the view
     public var fontFamily: String {
         component.fontFamily
     }
@@ -168,12 +167,26 @@ public class TextComponentViewModel: ObservableObject {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
-struct ImageComponentViewModel {
+class ImageComponentViewModel: ObservableObject {
     let locale: Locale
-    let component: PaywallComponent.ImageComponent
+    @Published private(set) var component: PaywallComponent.ImageComponent
 
-    // Add properties or methods needed to support the view
+    init(locale: Locale, component: PaywallComponent.ImageComponent) {
+        self.locale = locale
+        self.component = component
+    }
+    
+    public var url: URL {
+        component.url
+    }
+    public var cornerRadius: Double {
+        component.cornerRadius
+    }
+    public var gradientColors: [Color] {
+        component.gradientColors.compactMap { try? $0.toColor() }
+    }
 }
 
 // @PublicForExternalTesting

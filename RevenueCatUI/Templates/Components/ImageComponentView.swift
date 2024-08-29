@@ -26,31 +26,19 @@ struct ImageComponentView: View {
         return viewModel.locale
     }
 
-    var component: PaywallComponent.ImageComponent {
-        return viewModel.component
-    }
-
-    var cornerRadius: CGFloat {
-        component.cornerRadius
-    }
-
-    var gradientColors: [Color] {
-        component.gradientColors.compactMap { try? $0.toColor() }
-    }
-
     var body: some View {
-        RemoteImage(url: component.url) { image in
+        RemoteImage(url: viewModel.url) { image in
             image
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .overlay(
                     LinearGradient(
-                        gradient: Gradient(colors: gradientColors),
+                        gradient: Gradient(colors: viewModel.gradientColors),
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .cornerRadius(cornerRadius)
+                .cornerRadius(viewModel.cornerRadius)
         }
         .clipped()
     }
