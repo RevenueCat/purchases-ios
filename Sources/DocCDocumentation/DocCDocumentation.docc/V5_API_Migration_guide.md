@@ -61,11 +61,11 @@ _ = try await Purchases.shared.recordPurchase(result)
 
 #### Observing Purchases Completed by Your App with StoreKit 1
 
-If purchases are performed and completed by your app using StoreKit 1, outside of the RevenueCat SDK, you will need to explicitly configure the SDK to use StoreKit 1:
+If you're using RevenueCat only to track purchases, and you have your own implementation of StoreKit 1 to make purchases, you will need to explicitly configure the SDK to use StoreKit 1
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-  // Only configure if your app is making purchases using StoreKit 1 **outside** of the RevenueCat SDK.
+  // Only configure if your app has its own implementation of StoreKit 1 to make purchases.
   .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit1)
   .build()
 ```
