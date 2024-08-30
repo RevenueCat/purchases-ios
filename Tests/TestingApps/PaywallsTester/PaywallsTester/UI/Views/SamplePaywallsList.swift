@@ -92,9 +92,8 @@ struct SamplePaywallsList: View {
             CustomerCenterView()
             #endif
         #if PAYWALL_COMPONENTS
-        case .componentPaywall(let components):
-            Text("ComponentsView backed by ViewModel Currently Unsupported")
-            // ComponentsView(componentViewModels: components)
+        case .componentPaywall(let data):
+            TemplateComponentsView(paywallComponentsData: data, offering: Self.loader.offeringWithDefaultPaywall())
         #endif
         }
 
@@ -106,7 +105,7 @@ struct SamplePaywallsList: View {
             #if PAYWALL_COMPONENTS
             Section("Components") {
                 Button {
-                    self.display = .componentPaywall(SamplePaywallLoader.sampleComponents)
+                    self.display = .componentPaywall(SamplePaywallLoader.sampleData)
                 } label: {
                     TemplateLabel(name: "Components", icon: "iphone")
                 }

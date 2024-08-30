@@ -39,6 +39,12 @@ public class ImageComponentViewModel: ObservableObject {
     public var gradientColors: [Color] {
         component.gradientColors.compactMap { $0.toColor(fallback: Color.clear) }
     }
+    public var contentMode: ContentMode {
+        component.fitMode.contentMode
+    }
+    public var maxHeight: CGFloat? {
+        component.maxHeight
+    }
 
 }
 

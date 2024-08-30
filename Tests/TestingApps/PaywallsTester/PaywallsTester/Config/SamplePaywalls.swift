@@ -630,6 +630,13 @@ private extension SamplePaywallLoader {
 
     internal static var sampleComponents = vstack
 
+    internal static var sampleData = 
+        PaywallComponentsData(templateName: "Component Sample",
+                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
+                              componentsConfig: PaywallComponentsData.ComponentsConfig(components: sampleComponents),
+                               componentsLocalizations: [String: [String: String]](),
+                               revision: 0)
+
     static var vstack: [PaywallComponent] = {
         [.stack(.init(components: [headerZStack,
                                    spacer,

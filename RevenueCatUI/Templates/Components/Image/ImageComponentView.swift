@@ -26,7 +26,8 @@ struct ImageComponentView: View {
         RemoteImage(url: viewModel.url) { image in
             image
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .aspectRatio(contentMode: viewModel.contentMode)
+                .frame(maxHeight: viewModel.component.maxHeight)
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: viewModel.gradientColors),

@@ -123,6 +123,13 @@ public extension PaywallComponent {
 
     }
 
+    enum FitMode: String, Codable, Sendable, Hashable, Equatable {
+
+        case fit
+        case fill
+
+    }
+
 }
 
 #endif

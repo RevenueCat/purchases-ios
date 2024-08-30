@@ -152,11 +152,21 @@ extension PaywallComponent.HorizontalAlignment {
 }
 
 extension PaywallComponent.Padding {
-
     var edgeInsets: EdgeInsets {
             EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
         }
 
+}
+
+extension PaywallComponent.FitMode {
+    var contentMode: ContentMode {
+        switch self {
+        case .fit:
+            ContentMode.fit
+        case .fill:
+            ContentMode.fill
+        }
+    }
 }
 
 extension ColorHex {

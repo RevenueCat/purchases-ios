@@ -16,10 +16,6 @@ struct LinkButtonComponentView: View {
 
     let viewModel: LinkButtonComponentViewModel
 
-    var locale: Locale {
-        return viewModel.locale
-    }
-
     var url: URL {
         viewModel.url
     }

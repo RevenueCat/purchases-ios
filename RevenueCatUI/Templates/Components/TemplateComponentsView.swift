@@ -10,12 +10,12 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TemplateComponentsView: View {
+public struct TemplateComponentsView: View {
 
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
 
-    init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
+    public init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
 
         let components = paywallComponentsData.componentsConfig.components
@@ -40,7 +40,7 @@ struct TemplateComponentsView: View {
         }
     }
 
-    var body: some View {
+    public var body: some View {
         // Step 5 - Show fallback paywall and/or pop error messages if any validation errors occured
         VStack(spacing: 0) {
                 ComponentsView(
