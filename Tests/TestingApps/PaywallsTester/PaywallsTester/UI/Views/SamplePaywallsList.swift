@@ -89,7 +89,7 @@ struct SamplePaywallsList: View {
             )
         case .customerCenter:
             #if CUSTOMER_CENTER_ENABLED
-            CustomerCenterView()
+            CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
             #endif
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
@@ -248,6 +248,8 @@ extension SamplePaywallsList {
             print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
         case .refundRequestCompleted(let status):
             print("CustomerCenter: refundRequestCompleted. Result: \(status)")
+        case .feedbackSurveyCompleted(let option):
+            print("CustomerCenter: feedbackSurveyCompleted. Option selected: \(option)")
         }
     }
 }

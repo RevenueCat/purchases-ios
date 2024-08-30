@@ -20,6 +20,8 @@ public enum CustomerCenterAction {
     case refundRequestStarted(_ productId: String)
     /// Refund request process finished, with result provided.
     case refundRequestCompleted(_ refundRequestStatus: RefundRequestStatus)
+    /// An option of the feedback survey has been selected
+    case feedbackSurveyCompleted(_ feedbackSurveyOptionId: String)
 
 }
 

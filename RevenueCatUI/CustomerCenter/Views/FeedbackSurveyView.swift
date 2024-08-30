@@ -35,8 +35,10 @@ struct FeedbackSurveyView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    init(feedbackSurveyData: FeedbackSurveyData) {
-        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData)
+    init(feedbackSurveyData: FeedbackSurveyData,
+         customerCenterActionHandler: CustomerCenterActionHandler?) {
+        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData,
+                                                customerCenterActionHandler: customerCenterActionHandler)
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
 
