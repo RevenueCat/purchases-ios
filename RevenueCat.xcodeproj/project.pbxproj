@@ -821,7 +821,7 @@
 		88AD01122C740CF400AA1F2B /* PaywallSpacerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */; };
 		88AD01132C740CF400AA1F2B /* PaywallTextComopnent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */; };
 		88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */; };
-		88B1BAD82C812D72001B7EE5 /* PaywallComponentTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD72C812D72001B7EE5 /* PaywallComponentTypes.swift */; };
+		88B1BAD82C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */; };
 		88B1BAEC2C813A3C001B7EE5 /* PaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */; };
 		88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */; };
 		88B1BAF02C813A3C001B7EE5 /* TextComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */; };
@@ -1992,7 +1992,7 @@
 		88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallSpacerComponent.swift; sourceTree = "<group>"; };
 		88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallTextComopnent.swift; sourceTree = "<group>"; };
 		88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExternalPurchaseAndRestoreTests.swift; path = Templates/ExternalPurchaseAndRestoreTests.swift; sourceTree = "<group>"; };
-		88B1BAD72C812D72001B7EE5 /* PaywallComponentTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentTypes.swift; sourceTree = "<group>"; };
+		88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentPropertyTypes.swift; sourceTree = "<group>"; };
 		88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentViewModel.swift; sourceTree = "<group>"; };
 		88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextComponentView.swift; sourceTree = "<group>"; };
 		88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextComponentViewModel.swift; sourceTree = "<group>"; };
@@ -4253,7 +4253,7 @@
 			isa = PBXGroup;
 			children = (
 				88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */,
-				88B1BAD72C812D72001B7EE5 /* PaywallComponentTypes.swift */,
+				88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
 				88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */,
 				88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */,
@@ -5302,7 +5302,7 @@
 				57E9CF0F290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
-				88B1BAD82C812D72001B7EE5 /* PaywallComponentTypes.swift in Sources */,
+				88B1BAD82C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
 				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,

@@ -22,11 +22,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class SpacerComponentViewModel: ObservableObject {
 
-    let locale: Locale
     let component: PaywallComponent.SpacerComponent
 
-    init(locale: Locale, component: PaywallComponent.SpacerComponent) {
-        self.locale = locale
+    init(component: PaywallComponent.SpacerComponent) {
         self.component = component
     }
 

@@ -152,7 +152,7 @@ extension Strings: CustomStringConvertible {
             return "Could not round price because formatter failed to round price."
 
         case .invalid_color_string(let colorString):
-            return "Invalid hex colour string: \(colorString)"
+            return "Invalid hex color string: \(colorString)"
 
         case .could_not_find_subscription_information:
             return "Could not find information for an active subscription"

@@ -21,10 +21,6 @@ struct StackComponentView: View {
 
     let viewModel: StackComponentViewModel
 
-    var locale: Locale {
-        return viewModel.locale
-    }
-
     var component: PaywallComponent.StackComponent {
         return viewModel.component
     }

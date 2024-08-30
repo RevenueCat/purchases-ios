@@ -15,7 +15,7 @@ struct TemplateComponentsView: View {
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
 
-    init(paywallComponentsData: PaywallComponentsData, locale: Locale, offering: Offering) {
+    init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
 
         let components = paywallComponentsData.componentsConfig.components
@@ -24,16 +24,17 @@ struct TemplateComponentsView: View {
             // STEP 1 - Get list of preferred locales (and default)
 
             // STEP 2 - Get localization for one of preferred locales in order
+            let chosenLocale = Locale.current
             // TOOD: This logic is so wrong
             let localizations = paywallComponentsData.componentsLocalizations
-            let localization = localizations[locale.identifier] ?? localizations.values.first ?? [String: String]()
+            let localization = localizations[chosenLocale.identifier] ?? localizations.values.first ?? [String: String]()
 
             // Step 3 - Validate all variables are supported in localization
 
             // Step 3.5 - Validate all packages needed exist (????)
 
             // Step 4 - Make the view models
-            return component.toViewModel(offering: offering, locale: locale, localization: localization)
+            return component.toViewModel(offering: offering, locale: chosenLocale, localization: localization)
         }
     }
 

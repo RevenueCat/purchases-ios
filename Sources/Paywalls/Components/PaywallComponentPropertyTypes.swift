@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallComponentTypes.swift
+//  PaywallComponentPropertyTypes.swift
 //
 //  Created by James Borthwick on 2024-08-29.
 

@@ -19,7 +19,7 @@ import SwiftUI
 
 extension PaywallComponent.TextStyle {
 
-    public var font: Font {
+    var font: Font {
         switch self {
         case .largeTitle: return .largeTitle
         case .title: return .title
@@ -59,7 +59,7 @@ extension PaywallComponent.TextStyle {
 
 extension PaywallComponent.FontWeight {
 
-    public var fontWeight: Font.Weight {
+    var fontWeight: Font.Weight {
         switch self {
         case .ultraLight:
             return .ultraLight
@@ -86,7 +86,7 @@ extension PaywallComponent.FontWeight {
 
 extension PaywallComponent.VerticalAlignment {
 
-    public var stackAlignment: SwiftUI.VerticalAlignment {
+    var stackAlignment: SwiftUI.VerticalAlignment {
         switch self {
         case .top:
             return .top
@@ -101,7 +101,7 @@ extension PaywallComponent.VerticalAlignment {
 
 extension PaywallComponent.TwoDimensionAlignment {
 
-    public var stackAlignment: SwiftUI.Alignment {
+    var stackAlignment: SwiftUI.Alignment {
         switch self {
         case .center:
             return .center
@@ -128,7 +128,7 @@ extension PaywallComponent.TwoDimensionAlignment {
 
 extension PaywallComponent.HorizontalAlignment {
 
-    public var textAlignment: TextAlignment {
+    var textAlignment: TextAlignment {
         switch self {
         case .leading:
             return .leading
@@ -139,7 +139,7 @@ extension PaywallComponent.HorizontalAlignment {
         }
     }
 
-    public var stackAlignment: SwiftUI.HorizontalAlignment {
+    var stackAlignment: SwiftUI.HorizontalAlignment {
         switch self {
         case .leading:
             return .leading
@@ -162,7 +162,7 @@ extension PaywallComponent.Padding {
 
 extension ColorHex {
 
-    public func toColor(fallback: Color) -> Color {
+    func toColor(fallback: Color) -> Color {
         let red, green, blue, alpha: CGFloat
 
         guard self.hasPrefix("#") else {

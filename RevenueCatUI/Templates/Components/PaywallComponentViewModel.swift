@@ -37,7 +37,7 @@ extension PaywallComponent {
             )
         case .spacer(let component):
             return .spacer(
-                SpacerComponentViewModel(locale: locale, component: component)
+                SpacerComponentViewModel(component: component)
             )
         case .stack(let component):
             return .stack(
