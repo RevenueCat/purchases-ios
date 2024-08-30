@@ -22,10 +22,6 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
-    var locale: Locale {
-        return viewModel.locale
-    }
-
     var body: some View {
         RemoteImage(url: viewModel.url) { image in
             image

@@ -22,10 +22,6 @@ struct TextComponentView: View {
 
     let viewModel: TextComponentViewModel
 
-    var locale: Locale {
-        return viewModel.locale
-    }
-
     var body: some View {
         Text(viewModel.text)
             .font(viewModel.textStyle)
