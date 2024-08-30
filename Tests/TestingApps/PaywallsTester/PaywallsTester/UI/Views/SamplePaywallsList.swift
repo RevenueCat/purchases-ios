@@ -102,6 +102,7 @@ struct SamplePaywallsList: View {
     func printComponents(_ components: [PaywallComponent])
     {
         let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.outputFormatting = .prettyPrinted
 
         do {
