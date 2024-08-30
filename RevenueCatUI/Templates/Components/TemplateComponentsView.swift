@@ -27,7 +27,9 @@ struct TemplateComponentsView: View {
             let chosenLocale = Locale.current
             // TOOD: This logic is so wrong
             let localizations = paywallComponentsData.componentsLocalizations
-            let localization = localizations[chosenLocale.identifier] ?? localizations.values.first ?? [String: String]()
+            let localization = localizations[chosenLocale.identifier] ??
+                                  localizations.values.first ??
+                                  [String: String]()
 
             // Step 3 - Validate all variables are supported in localization
 
