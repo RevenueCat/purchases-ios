@@ -165,7 +165,7 @@ extension ColorHex {
         let red, green, blue, alpha: CGFloat
 
         guard self.hasPrefix("#") else {
-            // TODO: Log
+            Logger.error(Strings.invalid_color_string(self))
             return fallback
         }
 
@@ -173,7 +173,7 @@ extension ColorHex {
         let hexColor = String(self[start...])
 
         guard hexColor.count == 6 || hexColor.count == 8 else {
-            // TODO: Log
+            Logger.error(Strings.invalid_color_string(self))
             return fallback
         }
 
@@ -194,7 +194,7 @@ extension ColorHex {
 
             return .init(red: red, green: green, blue: blue, opacity: alpha)
         } else {
-            // TODO: Log
+            Logger.error(Strings.invalid_color_string(self))
             return fallback
         }
     }
