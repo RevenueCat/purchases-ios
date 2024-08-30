@@ -21,43 +21,27 @@ struct StackComponentView: View {
 
     let viewModel: StackComponentViewModel
 
-    var component: PaywallComponent.StackComponent {
-        return viewModel.component
-    }
-
-    var dimension: PaywallComponent.StackComponent.Dimension {
-        component.dimension
-    }
-
-    var components: [PaywallComponent] {
-        component.components
-    }
-
-    var spacing: CGFloat? {
-        component.spacing
-    }
-
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
-    }
 
     var body: some View {
-        switch dimension {
+        switch viewModel.dimension {
         case .vertical(let horizontalAlignment):
-            VStack(alignment: horizontalAlignment.stackAlignment, spacing: spacing) {
+            VStack(alignment: horizontalAlignment.stackAlignment, spacing: viewModel.spacing) {
                 ComponentsView(componentViewModels: self.viewModel.viewModels)
             }
-            .background(backgroundColor)
+            .background(viewModel.backgroundColor)
+            .padding(viewModel.padding)
         case .horizontal(let verticalAlignment):
-            HStack(alignment: verticalAlignment.stackAlignment, spacing: spacing) {
+            HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
                 ComponentsView(componentViewModels: self.viewModel.viewModels)
             }
-            .background(backgroundColor)
+            .background(viewModel.backgroundColor)
+            .padding(viewModel.padding)
         case .zlayer(let alignment):
             ZStack(alignment: alignment.stackAlignment) {
                 ComponentsView(componentViewModels: self.viewModel.viewModels)
             }
-            .background(backgroundColor)
+            .background(viewModel.backgroundColor)
+            .padding(viewModel.padding)
         }
     }
 

@@ -37,6 +37,26 @@ public class StackComponentViewModel: ObservableObject {
         }
     }
 
+    var dimension: PaywallComponent.StackComponent.Dimension {
+        component.dimension
+    }
+
+    var components: [PaywallComponent] {
+        component.components
+    }
+
+    var spacing: CGFloat? {
+        component.spacing
+    }
+
+    var backgroundColor: Color {
+        component.backgroundColor?.toDyanmicColor() ?? Color.clear
+    }
+
+    var padding: EdgeInsets {
+        component.padding.edgeInsets
+    }
+
 }
 
 #endif

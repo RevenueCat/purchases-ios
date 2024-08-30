@@ -636,21 +636,15 @@ private extension SamplePaywallLoader {
                                revision: 0)
     }
 
-    static var sampleComponents = vstack
-
-    static var sampleData: PaywallComponentsData {
-        createFakePaywallComponentsData(components: sampleComponents)
-    }
-
-    static var fitnessComponents: PaywallComponentsData {
+    internal static var fitnessComponents: PaywallComponentsData {
         return createFakePaywallComponentsData(components: fitnessSample)
     }
 
-    static var template1Components: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: vstack)
+    internal static var template1Components: PaywallComponentsData {
+        return createFakePaywallComponentsData(components: curiosity)
     }
 
-    static var simpleSampleComponents: PaywallComponentsData {
+    internal static var simpleSampleComponents: PaywallComponentsData {
         return createFakePaywallComponentsData(components: simpleSix)
     }
 
@@ -668,7 +662,8 @@ private extension SamplePaywallLoader {
                             [fuzzyCat, helloWorld],
                          dimension: .vertical(.center),
                          spacing: nil,
-                         backgroundColor: .init(light: "#FFFFFF")))]
+                         backgroundColor: .init(light: "#FFFFFF"), 
+                         padding: .zero))]
 
         return components
     }()
@@ -679,7 +674,8 @@ private extension SamplePaywallLoader {
                             [fuzzyCat, helloWorld, purchaseSimpleButton],
                          dimension: .vertical(.center),
                          spacing: nil,
-                         backgroundColor: .init(light: "#FFFFFF")))]
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
 
         return components
     }()
@@ -690,7 +686,8 @@ private extension SamplePaywallLoader {
                             [fuzzyCat, spacer, simpleText(text: "Feature"), spacer, purchaseSimpleButton],
                          dimension: .vertical(.center),
                          spacing: nil,
-                         backgroundColor: .init(light: "#FFFFFF")))]
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
 
         return components
     }()
@@ -701,7 +698,8 @@ private extension SamplePaywallLoader {
                             [fuzzyCat, spacer, simpleFeatureStack(text: simpleText(text: "Feature")), spacer, purchaseSimpleButton],
                          dimension: .vertical(.center),
                          spacing: nil,
-                         backgroundColor: .init(light: "#FFFFFF")))]
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
 
         return components
     }()
@@ -713,7 +711,8 @@ private extension SamplePaywallLoader {
                             [helloWorld, helloWorld],
                          dimension: .vertical(.center),
                          spacing: nil,
-                         backgroundColor: .init(light: "#FFFFFF")))]
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
 
         return components
 
@@ -724,7 +723,8 @@ private extension SamplePaywallLoader {
                         [helloWorld, helloWorld, helloWorld],
                      dimension: .vertical(.center),
                      spacing: nil,
-                     backgroundColor: .init(light: "#FFFFFF")))
+                     backgroundColor: .init(light: "#FFFFFF"),
+                     padding: .zero))
     }()
 
     static var fuzzyCat: PaywallComponent = {
@@ -752,6 +752,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": text
             ]),
+            textLid: "randomId",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -765,6 +766,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Hello, Paywall Components!"
             ]),
+            textLid: "randomId",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -783,6 +785,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Purchase Now! $19.99/year"
             ]),
+            textLid: "randomId",
             fontWeight: .regular,
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#9EE5FF"),
@@ -802,7 +805,8 @@ private extension SamplePaywallLoader {
                                    fitnessFooter],
                       dimension: .vertical(.center),
                       spacing: 25,
-                      backgroundColor: .init(light: "#000000")))]
+                      backgroundColor: .init(light: "#000000"),
+                      padding: .zero))]
 
 
 
@@ -830,37 +834,38 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [homeGym, headlineText],
                      dimension: .zlayer(.bottom),
                       spacing: 0,
-                      backgroundColor: nil))
+                      backgroundColor: nil,
+                      padding: .zero))
 
     }()
 
 
     static var treadmill: PaywallComponent = {
         .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724796818.jpeg")!,
-                    cornerRadius: 23,
                      fitMode: .fit,
-                    maxHeight: 125))
+                     maxHeight: 125,
+                     cornerRadius: 23))
     }()
 
     static var cycle: PaywallComponent = {
         .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724797044.jpg")!,
-                    cornerRadius: 23,
                      fitMode: .fit,
-                     maxHeight: 125))
+                     maxHeight: 125,
+                     cornerRadius: 23))
     }()
 
     static var homeGym: PaywallComponent = {
         .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724799222.jpeg")!,
-                     gradientColors: ["#FF000000", "#FF000000", "#00000000"],
-                     fitMode: .crop,
-                     maxHeight: 200))
+                     fitMode: .fill,
+                     maxHeight: 200,
+                     gradientColors: ["#FF000000", "#FF000000", "#00000000"]))
     }()
 
     static var weights: PaywallComponent = {
         .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724797320.jpg")!,
-                    cornerRadius: 23,
                      fitMode: .fit,
-                    maxHeight: 125))
+                     maxHeight: 125,
+                     cornerRadius: 23))
     }()
 
 
@@ -869,6 +874,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Fitness Coach"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .black,
             color: .init(light: "#EE4444"),
@@ -883,6 +889,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "New workouts added every day"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -896,6 +903,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Challenge others and climb the leader ladder"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -909,6 +917,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Conquer your goals"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -952,6 +961,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Start Today for $9.99/mo"
             ]),
+            textLid: "randomID",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
             backgroundColor: .init(light: "#DD4444"),
@@ -974,6 +984,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Restore purchases"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#FFFFFF"),
@@ -987,6 +998,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "•"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#FFFFFF"),
@@ -1000,6 +1012,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Terms and conditions"
             ]),
+            textLid: "randomID",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#FFFFFF"),
@@ -1011,13 +1024,8 @@ private extension SamplePaywallLoader {
 
     // CURIOSITY
 
-    internal static var curiosity = PaywallComponent.Data(
-        backgroundColor: .init(light: "#FFFFFF"),
-        components: vstack
-    )
 
-
-    static var vstack: [PaywallComponent] = {
+    static var curiosity: [PaywallComponent] = {
         [.stack(.init(components: [headerZStack,
                                    spacer,
                                    headingText,
@@ -1030,7 +1038,8 @@ private extension SamplePaywallLoader {
                                    footerStack],
                       dimension: .vertical(),
                       spacing: nil,
-                      backgroundColor: nil))]
+                      backgroundColor: nil,
+                      padding: .zero))]
 
     }()
 
@@ -1074,7 +1083,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [headerImage, myGreatAppTextOffset, myGreatAppText],
                       dimension: .zlayer(.topLeading),
                       spacing: 0,
-                      backgroundColor: nil))
+                      backgroundColor: nil,
+                     padding: .zero))
 
     }()
 
@@ -1105,7 +1115,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [feature1Text, feature2Text, feature3Text],
                      dimension: .vertical(.leading),
                      spacing: 10,
-                     backgroundColor: nil))
+                     backgroundColor: nil,
+                     padding: .zero))
 
     }()
 
@@ -1114,7 +1125,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [feature1Text, spacer],
                      dimension: .horizontal(.center),
                      spacing: nil,
-                     backgroundColor: nil))
+                     backgroundColor: nil,
+                     padding: .zero))
     }()
 
     static var feature1Text: PaywallComponent = {
@@ -1229,7 +1241,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [spacer, restorePurchases, bullet, termsAndConditions, spacer],
                       dimension: .horizontal(),
                      spacing: 10,
-                     backgroundColor: nil))
+                     backgroundColor: nil,
+                     padding: .zero))
 
     }()
 
@@ -1242,7 +1255,8 @@ private extension SamplePaywallLoader {
         [.stack(.init(components: imageZStack + twoHorizontal + [button],
                       dimension: .vertical(),
                       spacing: 0,
-                      backgroundColor: nil))]
+                      backgroundColor: nil,
+                      padding: .zero))]
 
     }()
 
@@ -1250,15 +1264,17 @@ private extension SamplePaywallLoader {
         [.stack(.init(components: [verticalTextStack, middleText, verticalTextStack],
                       dimension: .horizontal(),
                       spacing: nil,
-                      backgroundColor: .init(light: "#1122AA")))]
+                      backgroundColor: .init(light: "#1122AA"),
+                      padding: .zero))]
 
     }()
 
     static var verticalTextStack: PaywallComponent = {
         .stack(.init(components: [getStartedText, spacer, upgradeText],
                      dimension: .vertical(.leading),
-                      spacing: nil,
-                      backgroundColor: .init(light: "#11AA22")))
+                     spacing: nil,
+                     backgroundColor: .init(light: "#11AA22"),
+                     padding: .zero))
 
     }()
 
@@ -1311,7 +1327,8 @@ private extension SamplePaywallLoader {
         [.stack(.init(components: [headerImage, .text(purchaseNowText)],
                       dimension: .zlayer(.center),
                       spacing: 0,
-                      backgroundColor: nil))]
+                      backgroundColor: nil,
+                      padding: .zero))]
 
     }()
 

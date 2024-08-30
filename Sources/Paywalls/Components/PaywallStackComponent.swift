@@ -24,17 +24,20 @@ public extension PaywallComponent {
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
+        public let padding: Padding
 
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     spacing: CGFloat?,
-                    backgroundColor: ColorInfo?
+                    backgroundColor: ColorInfo?,
+                    padding: Padding
         ) {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.type = .stack
             self.dimension = dimension
+            self.padding = padding
         }
 
         public enum Dimension: Codable, Sendable, Hashable {
