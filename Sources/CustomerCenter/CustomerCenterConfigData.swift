@@ -80,6 +80,11 @@ public struct CustomerCenterConfigData {
             case updateWarningDescription = "update_warning_description"
             case updateWarningUpdate = "update_warning_update"
             case updateWarningIgnore = "update_warning_ignore"
+            case pleaseContactSupportToManage = "please_contact_support"
+            case appleSubscriptionManage = "apple_subscription_manage"
+            case googleSubscriptionManage = "google_subscription_manage"
+            case amazonSubscriptionManage = "amazon_subscription_manage"
+            case platformMismatch = "platform_mismatch"
 
             var defaultValue: String {
                 switch self {
@@ -133,6 +138,16 @@ public struct CustomerCenterConfigData {
                     return "Update"
                 case .updateWarningIgnore:
                     return "Continue"
+                case .platformMismatch:
+                    return "Platform mismatch"
+                case .pleaseContactSupportToManage:
+                    return "Please contact support to manage your subscription."
+                case .appleSubscriptionManage:
+                    return "You can manage your subscription via the App Store app on an Apple device."
+                case .googleSubscriptionManage:
+                    return "You can manage your subscription via the Play Store app on an Android device"
+                case .amazonSubscriptionManage:
+                    return "You can manage your subscription via the Amazon Appstore app."
                 }
             }
 
