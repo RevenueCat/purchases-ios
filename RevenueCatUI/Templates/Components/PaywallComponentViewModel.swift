@@ -19,7 +19,7 @@ enum PaywallComponentViewModel {
     case spacer(SpacerComponentViewModel)
     case stack(StackComponentViewModel)
     case linkButton(LinkButtonComponentViewModel)
-    
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -41,11 +41,17 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                StackComponentViewModel(locale: locale, component: component, localization: localization, offering: offering)
+                StackComponentViewModel(locale: locale,
+                                        component: component,
+                                        localization: localization,
+                                        offering: offering)
             )
         case .linkButton(let component):
             return .linkButton(
-                LinkButtonComponentViewModel(locale: locale, component: component, localization: localization, offering: offering)
+                LinkButtonComponentViewModel(locale: locale,
+                                             component: component,
+                                             localization: localization,
+                                             offering: offering)
             )
         }
     }

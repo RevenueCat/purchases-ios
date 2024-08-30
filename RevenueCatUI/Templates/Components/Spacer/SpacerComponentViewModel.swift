@@ -10,7 +10,9 @@
 //  SpacerComponentView.swift
 //
 //  Created by James Borthwick on 2024-08-19.
+// swiftlint:disable missing_docs
 
+import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -27,7 +29,7 @@ public class SpacerComponentViewModel: ObservableObject {
         self.locale = locale
         self.component = component
     }
-    
+
 }
 
 #endif

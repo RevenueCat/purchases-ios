@@ -10,7 +10,9 @@
 //  ImageComponentView.swift
 //
 //  Created by Josh Holtz on 6/11/24.
+// swiftlint:disable missing_docs
 
+import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -19,7 +21,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ImageComponentViewModel: ObservableObject {
-    
+
     let locale: Locale
     @Published private(set) var component: PaywallComponent.ImageComponent
 
@@ -35,10 +37,9 @@ public class ImageComponentViewModel: ObservableObject {
         component.cornerRadius
     }
     public var gradientColors: [Color] {
-        component.gradientColors.compactMap { try? $0.toColor(fallback: Color.clear) }
+        component.gradientColors.compactMap { $0.toColor(fallback: Color.clear) }
     }
 
 }
-
 
 #endif

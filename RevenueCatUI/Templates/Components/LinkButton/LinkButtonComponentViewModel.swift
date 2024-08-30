@@ -4,7 +4,9 @@
 //
 //  Created by James Borthwick on 2024-08-21.
 //
+// swiftlint:disable missing_docs
 
+import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -32,7 +34,9 @@ public class LinkButtonComponentViewModel: ObservableObject {
     ) {
         self.locale = locale
         self.component = component
-        self.textComponentViewModel = TextComponentViewModel(locale: locale, localization: localization, component: component.textComponent)
+        self.textComponentViewModel = TextComponentViewModel(locale: locale,
+                                                             localization: localization,
+                                                             component: component.textComponent)
 
     }
 

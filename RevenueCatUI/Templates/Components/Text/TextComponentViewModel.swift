@@ -10,7 +10,9 @@
 //  TextComponentView.swift
 //
 //  Created by Josh Holtz on 6/11/24.
+// swiftlint:disable missing_docs
 
+import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -24,7 +26,7 @@ public class TextComponentViewModel: ObservableObject {
     let localization: [String: String]
     @Published private(set) var component: PaywallComponent.TextComponent
 
-    init(locale: Locale, localization: [String : String], component: PaywallComponent.TextComponent) {
+    init(locale: Locale, localization: [String: String], component: PaywallComponent.TextComponent) {
         self.locale = locale
         self.localization = localization
         self.component = component
@@ -36,8 +38,7 @@ public class TextComponentViewModel: ObservableObject {
         if let textLid = component.textLid {
             if let localizedText = localization[textLid] {
                 return localizedText
-            }
-            else {
+            } else {
                 return component.text.value.first?.value as? String ?? "missing localized text for \(textLid)"
             }
         } else {
@@ -72,6 +73,6 @@ public class TextComponentViewModel: ObservableObject {
     public var padding: EdgeInsets {
         component.padding.edgeInsets
     }
-    
+
 }
 #endif
