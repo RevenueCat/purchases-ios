@@ -35,7 +35,7 @@ public class ImageComponentViewModel: ObservableObject {
         component.cornerRadius
     }
     public var gradientColors: [Color] {
-        component.gradientColors.compactMap { try? $0.toColor() }
+        component.gradientColors.compactMap { try? $0.toColor(fallback: Color.clear) }
     }
 
 }
