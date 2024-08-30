@@ -660,6 +660,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Explore"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#f7d216"),
@@ -673,6 +674,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Explore"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#633306"),
@@ -694,6 +696,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Ignite your child's curiosity"
             ]),
+            textLid: "",
             fontWeight: .heavy,
             color: .init(light: "#000000"),
             textStyle: .extraLargeTitle
@@ -705,6 +708,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Get access to all ouir educational content trusted by thousands of parents."
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             textStyle: .headline
         ))
@@ -731,6 +735,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "✅ Valuable features"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline
@@ -742,6 +747,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "✅ Great Price"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline
@@ -753,6 +759,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "✅ Support"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline
@@ -764,6 +771,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "$6.99 per month"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             textStyle: .subheadline
         ))
@@ -779,6 +787,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Purchase for $6.99"
             ]),
+            textLid: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
             backgroundColor: .init(light: "#00AA00"),
@@ -792,6 +801,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Restore purchases"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -805,6 +815,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Terms and conditions"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -818,6 +829,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "•"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -868,6 +880,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Popular Plan"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             textStyle: .body
         ))
@@ -878,6 +891,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Get started with our plan"
             ]),
+            textLid: "",
             color: .init(light: "#FF0000"),
             backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body
@@ -889,6 +903,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Upgrade to our premium plan"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body
