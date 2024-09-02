@@ -48,7 +48,7 @@ Add this configuration only if you previously had `observerMode: true` in your S
 
 | Version 4 | Version 5 |
 |------------|------------|
-| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  // Set only if your app has its own implementation of StoreKit to make purchases.<br>   Select the version of StoreKit you're using.<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: /* Select .storeKit1 or .storekit2 */)<br>  .build()</code></pre> |
+| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  // Set only if your app has its own implementation of StoreKit to make purchases.<br>   Select the version of StoreKit you're using.<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: /* Select .storeKit1 or .storeKit2 */)<br>  .build()</code></pre> |
 
 #### ⚠️ Observing Purchases Completed by Your App on macOS
 
