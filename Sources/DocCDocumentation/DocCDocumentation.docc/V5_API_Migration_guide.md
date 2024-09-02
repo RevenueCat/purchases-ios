@@ -2,7 +2,7 @@
 
 ## StoreKit 2
 
-> Important: When upgrading to v5, you **must** configure your [In-App Purchase Key](/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
+> Warning: When upgrading to v5, you **must** configure your [In-App Purchase Key](/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
 
 Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
@@ -40,13 +40,15 @@ If you're using the Firebase SDK, you'll need to follow [these instructions](htt
 Version 5.0 of the SDK  deprecates the term "Observer Mode" (and the APIs where this term was used), and replaces it
 with `PurchasesAreCompletedBy` (either RevenueCat or your app).
 
-Version 5.0 of the SDK also introduces support for recording purchases made directly by your app calling StoreKit 2.
+Version 5.0 of the SDK also introduces support for tracking purchases made directly by your app calling StoreKit 2.
 
-You can enable it when configuring the SDK:
+If you're using RevenueCat only to track purchases, and you have your own implementation of StoreKit to make purchases, you will need to explicitly configure the SDK.
+
+Add this configuration only if you previously had `observerMode: true` in your SDK initialization or your app has its own implementation of StoreKit to make purchases.
 
 | Version 4 | Version 5 |
 |------------|------------|
-| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)<br>  .build()</code></pre> |
+| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  // Set only if your app has its own implementation of StoreKit to make purchases.<br>   Select the version of StoreKit you're using.<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: /* Select .storeKit1 or .storekit2 */)<br>  .build()</code></pre> |
 
 #### ⚠️ Observing Purchases Completed by Your App on macOS
 
@@ -57,17 +59,6 @@ let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
 let result = try await product?.purchase()
 
 _ = try await Purchases.shared.recordPurchase(result)
-```
-
-#### Observing Purchases Completed by Your App with StoreKit 1
-
-If you're using RevenueCat only to track purchases, and you have your own implementation of StoreKit 1 to make purchases, you will need to explicitly configure the SDK to use StoreKit 1
-
-```swift
-Purchases.configure(with: .builder(withAPIKey: apiKey)
-  // Only configure if your app has its own implementation of StoreKit 1 to make purchases.
-  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit1)
-  .build()
 ```
 
 ## Trusted Entitlements
