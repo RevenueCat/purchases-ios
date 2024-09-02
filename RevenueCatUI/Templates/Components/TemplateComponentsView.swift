@@ -8,6 +8,49 @@
 import RevenueCat
 import SwiftUI
 
+
+extension Locale {
+
+    fileprivate static var preferredLocales: [Self] {
+        let test = Self.preferredLanguages
+        return Self.preferredLanguages.map(Locale.init(identifier:))
+    }
+
+    fileprivate static var deviceLocales: [Self] {
+        Self.preferredLocales.flatMap { [$0, $0.removingRegion].compactMap { $0 } }
+    }
+
+    // swiftlint:disable:next identifier_name
+    var rc_languageCode: String? {
+        #if swift(>=5.9)
+        // `Locale.languageCode` is deprecated
+        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
+            return self.language.languageCode?.identifier
+        } else {
+            return self.languageCode
+        }
+        #else
+        return self.languageCode
+        #endif
+    }
+
+    /// - Returns: the same locale as `self` but removing its region.
+    var removingRegion: Self? {
+        return self.rc_languageCode.map(Locale.init(identifier:))
+    }
+
+    static func preferredLocale(from paywallLocales: [Locale]) -> Locale? {
+        for deviceLocale in deviceLocales {
+            if let match = paywallLocales.first(where: { $0 == deviceLocale || $0.removingRegion == deviceLocale }) {
+                return match
+            }
+        }
+        return nil
+    }
+
+}
+
+
 #if PAYWALL_COMPONENTS
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct TemplateComponentsView: View {
@@ -21,22 +64,32 @@ public struct TemplateComponentsView: View {
         let components = paywallComponentsData.componentsConfig.components
         self.componentViewModels = components.map { component in
 
-            // STEP 1 - Get list of preferred locales (and default)
+            // STEP 1 - Get available paywall locales
+            let paywallLocales = paywallComponentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
+
+            // STEP 2 - choose best locale based on device's list of preferred locales.
+            let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! //TODO: should be default
 
             // STEP 2 - Get localization for one of preferred locales in order
-            let chosenLocale = Locale.current
-            // TOOD: This logic is so wrong
-            let localizations = paywallComponentsData.componentsLocalizations
-            let localization = localizations[chosenLocale.identifier] ??
-                                  localizations.values.first ??
-                                  [String: String]()
+            // TODO: use default locale
+            let paywallLocalizations = paywallComponentsData.componentsLocalizations
+            let localizationDict = paywallLocalizations[chosenLocale.identifier] ??
+                                     paywallLocalizations[paywallLocales.first!.identifier, default: [String: String]()]
 
+
+            var isValid = true
             // Step 3 - Validate all variables are supported in localization
+            for component in paywallComponentsData.componentsConfig.components {
+                isValid = isValid && component.validateLocalizationIDs(using: localizationDict)
+            }
+
+            assert(isValid)
+
 
             // Step 3.5 - Validate all packages needed exist (????)
 
             // Step 4 - Make the view models
-            return component.toViewModel(offering: offering, locale: chosenLocale, localization: localization)
+            return component.toViewModel(offering: offering, locale: chosenLocale, localization: localizationDict)
         }
     }
 
