@@ -61,24 +61,22 @@ public struct TemplateComponentsView: View {
         self.paywallComponentsData = paywallComponentsData
 
         let components = paywallComponentsData.componentsConfig.components
+
+        // STEP 1 - Get available paywall locales
+        let paywallLocales = paywallComponentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
+
+        // STEP 2 - choose best locale based on device's list of preferred locales.
+        let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! //TODO: should be default
+
+        // STEP 2 - Get localization for one of preferred locales in order
+        // TODO: use default locale
+        let paywallLocalizations = paywallComponentsData.componentsLocalizations
+        let localizationDict = paywallLocalizations[chosenLocale.identifier] ??
+                                 paywallLocalizations[paywallLocales.first!.identifier, default: [String: String]()]
+
         self.componentViewModels = components.map { component in
 
-            // STEP 1 - Get available paywall locales
-            let paywallLocales = paywallComponentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
-
-            // STEP 2 - choose best locale based on device's list of preferred locales.
-            let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! //TODO: should be default
-
-            // STEP 2 - Get localization for one of preferred locales in order
-            // TODO: use default locale
-            let paywallLocalizations = paywallComponentsData.componentsLocalizations
-            let localizationDict = paywallLocalizations[chosenLocale.identifier] ??
-                                     paywallLocalizations[paywallLocales.first!.identifier, default: [String: String]()]
-
-
-
-//            // Step 3 - Validate all variables are supported in localization - done in ViewModel creation
-
+            // Step 3 - Validate all variables are supported in localization - done in ViewModel creation
 
             // Step 3.5 - Validate all packages needed exist (????)
 
