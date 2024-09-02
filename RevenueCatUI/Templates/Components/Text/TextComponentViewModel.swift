@@ -26,7 +26,8 @@ public class TextComponentViewModel: ObservableObject {
     let localization: [String: String]
     @Published private(set) var component: PaywallComponent.TextComponent
 
-    init(locale: Locale, localization: [String: String], component: PaywallComponent.TextComponent) {
+    init(locale: Locale, localization: [String: String], component: PaywallComponent.TextComponent) throws {
+        try component.validateLocalizationIDs(using: localization)
         self.locale = locale
         self.localization = localization
         self.component = component

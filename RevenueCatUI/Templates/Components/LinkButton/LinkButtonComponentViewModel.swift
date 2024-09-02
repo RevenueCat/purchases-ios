@@ -31,10 +31,11 @@ public class LinkButtonComponentViewModel: ObservableObject {
          component: PaywallComponent.LinkButtonComponent,
          localization: [String: String],
          offering: Offering
-    ) {
+    ) throws {
+        try component.validateLocalizationIDs(using: localization)
         self.locale = locale
         self.component = component
-        self.textComponentViewModel = TextComponentViewModel(locale: locale,
+        self.textComponentViewModel = try TextComponentViewModel(locale: locale,
                                                              localization: localization,
                                                              component: component.textComponent)
 

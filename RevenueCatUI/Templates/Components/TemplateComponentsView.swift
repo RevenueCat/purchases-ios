@@ -12,7 +12,6 @@ import SwiftUI
 extension Locale {
 
     fileprivate static var preferredLocales: [Self] {
-        let test = Self.preferredLanguages
         return Self.preferredLanguages.map(Locale.init(identifier:))
     }
 
@@ -77,19 +76,24 @@ public struct TemplateComponentsView: View {
                                      paywallLocalizations[paywallLocales.first!.identifier, default: [String: String]()]
 
 
-            var isValid = true
-            // Step 3 - Validate all variables are supported in localization
-            for component in paywallComponentsData.componentsConfig.components {
-                isValid = isValid && component.validateLocalizationIDs(using: localizationDict)
-            }
 
-            assert(isValid)
+//            // Step 3 - Validate all variables are supported in localization - done in ViewModel creation
 
 
             // Step 3.5 - Validate all packages needed exist (????)
 
             // Step 4 - Make the view models
-            return component.toViewModel(offering: offering, locale: chosenLocale, localization: localizationDict)
+            do {
+                return try component.toViewModel(offering: offering, locale: chosenLocale, localization: localizationDict)
+            } catch {
+                let errorDict: [String: String] = ["errorID": "Error creating paywall"]
+                let textComponent = PaywallComponent.TextComponent(
+                    text: DisplayString(value: errorDict),
+                    textLid: "errorID",
+                    color: PaywallComponent.ColorInfo(light:"#000000")
+                )
+                return try! PaywallComponentViewModel.text(TextComponentViewModel(locale: .current, localization: errorDict, component: textComponent))
+            }
         }
     }
 

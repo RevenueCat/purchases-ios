@@ -25,7 +25,7 @@ enum PaywallComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
-    func toViewModel(offering: Offering, locale: Locale, localization: [String: String]) -> PaywallComponentViewModel {
+    func toViewModel(offering: Offering, locale: Locale, localization: [String: String]) throws -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
             return .text(
@@ -41,7 +41,7 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                StackComponentViewModel(locale: locale,
+                try StackComponentViewModel(locale: locale,
                                         component: component,
                                         localization: localization,
                                         offering: offering)

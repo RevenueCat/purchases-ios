@@ -15,7 +15,33 @@ public typealias ColorHex = String
 
 public typealias DisplayString = PaywallComponent.LocaleResources<String>
 
-protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
+public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { 
+
+    func validateLocalizationIDs(using localizationDict: [String: String]) throws
+
+}
+
+enum LocalizationValidationError: Error {
+    case missingLocalization(String)
+}
+
+extension PaywallComponentBase {
+
+    public func validateLocalizationIDs(using localizationDict: [String: String]) throws {
+        let mirror = Mirror(reflecting: self)
+
+        for child in mirror.children {
+            if let label = child.label, label.hasSuffix("Lid") {
+                if let localizationID = child.value as? String {
+                    if localizationDict[localizationID] == nil {
+                        throw LocalizationValidationError.missingLocalization("Missing localization for ID: \(localizationID)")
+                    }
+                }
+            }
+        }
+    }
+
+}
 
 public enum PaywallComponent: PaywallComponentBase {
 
