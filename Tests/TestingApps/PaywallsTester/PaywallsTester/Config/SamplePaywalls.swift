@@ -632,7 +632,7 @@ private extension SamplePaywallLoader {
         PaywallComponentsData(templateName: "Component Sample",
                                assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
                                componentsConfig: PaywallComponentsData.ComponentsConfig(components: components),
-                               componentsLocalizations: [LocaleId: LocalizationDictionary](),
+                               componentsLocalizations: [LocaleID: LocalizationDictionary](),
                                revision: 0,
                                defaultLocaleIdentifier: "en_US")
     }

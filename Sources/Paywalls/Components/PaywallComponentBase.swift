@@ -10,7 +10,7 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public typealias TierId = String
-public typealias LocaleId = String
+public typealias LocaleID = String
 public typealias ColorHex = String
 public typealias LocalizationDictionary = [String: String]
 
