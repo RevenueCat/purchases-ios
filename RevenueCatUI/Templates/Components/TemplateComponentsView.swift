@@ -60,24 +60,24 @@ public struct TemplateComponentsView: View {
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
 
+        // Step 1: Get localization
         let localization = Self.chooseLocalization(for: paywallComponentsData)
 
         self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
-            // Step 3 - Validate all packages needed exist (????)
+            //TODO: Step 2 - Validate all packages needed exist (????)
 
-            // Step 4 - Make the view models & validate all components have required localization
+            // Step 3 - Make the view models & validate all components have required localization
             do {
                 return try component.toViewModel(offering: offering, locale: localization.locale, localization: localization.dict)
             } catch {
+                // Use fallback paywall if viewmodel construction fails
                 return Self.fallbackPaywallViewModels()
             }
-            
         }
     }
 
     public var body: some View {
-        // Step 5 - Show fallback paywall and/or pop error messages if any validation errors occured
         VStack(spacing: 0) {
                 ComponentsView(
                     componentViewModels: self.componentViewModels
@@ -87,7 +87,6 @@ public struct TemplateComponentsView: View {
     }
 
     static func chooseLocalization(for paywallComponentsData: PaywallComponentsData) -> (locale: Locale, dict: [String: String]) {
-
         guard !paywallComponentsData.componentsLocalizations.isEmpty else {
             Logger.error("Paywall contains no localization data.")
             return (Locale.current, [String: String]())
@@ -99,10 +98,9 @@ public struct TemplateComponentsView: View {
         // STEP 2 - choose best locale based on device's list of preferred locales.
         let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! // TOOD: default locale
 
-        // STEP 2 - Get localization for one of preferred locales in order
+        // STEP 3 - Get localization for one of preferred locales in order
         // TODO: use default locale
         let paywallLocalizations = paywallComponentsData.componentsLocalizations
-
 
         if let localizationDict = paywallLocalizations[chosenLocale.identifier] {
             return (chosenLocale, localizationDict)
