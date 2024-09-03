@@ -10,39 +10,11 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public typealias TierId = String
-public typealias LocaleID = String
 public typealias ColorHex = String
-public typealias LocalizationDictionary = [String: String]
-public typealias LocalizationKey = String
 
-extension LocalizationDictionary {
-
-    public func string<T: PaywallComponentBase>(
-        for keyPath: KeyPath<T, LocalizationKey?>,
-        from component: T
-    ) throws -> String {
-        guard let stringID = component[keyPath: keyPath] else {
-            let propertyName = "\(keyPath)"
-            throw LocalizationValidationError.missingLocalization(
-                "Required localization ID \(propertyName) is null."
-            )
-        }
-        guard let value = self[stringID] else {
-            let propertyName = "\(keyPath)"
-            throw LocalizationValidationError.missingLocalization(
-                "Missing localization for property \(propertyName) with id: \"\(stringID)\""
-            )
-        }
-        return value
-    }
-    
-}
 
 public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
-enum LocalizationValidationError: Error {
-    case missingLocalization(String)
-}
 
 public enum PaywallComponent: PaywallComponentBase {
 
