@@ -24,6 +24,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CompatibilityContentUnavailableView: View {
+
     let title: String
     let systemImage: String
     let description: Text?

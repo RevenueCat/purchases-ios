@@ -63,9 +63,9 @@ struct WrongPlatformView: View {
                 let platformInstructions = self.humanReadableInstructions(for: store)
 
                 CompatibilityContentUnavailableView(
-                    platformInstructions.0,
+                    localization.commonLocalizedString(for: .platformMismatch),
                     systemImage: "exclamationmark.triangle.fill",
-                    description: Text(platformInstructions.1)
+                    description: Text(platformInstructions)
                 )
             }
             if let url = supportURL {
@@ -94,56 +94,22 @@ struct WrongPlatformView: View {
         }
     }
 
-    private func humanReadablePlatformName(store: Store) -> String {
-        switch store {
-        case .appStore, .macAppStore:
-            return "Apple App Store"
-        case .playStore:
-            return "Google Play Store"
-        case .stripe,
-                .rcBilling,
-                .external:
-            return "Web"
-        case .promotional:
-            return "Free"
-        case .amazon:
-            return "Amazon Appstore"
-        case .unknownStore:
-            return "Unknown"
-        }
-    }
-
-    private func humanReadableInstructions(for store: Store?) -> (String, String) {
-        let defaultContactSupport = "Please contact support to manage your subscription."
+    private func humanReadableInstructions(for store: Store?) -> String {
+        let defaultContactSupport = localization.commonLocalizedString(for: .pleaseContactSupportToManage)
 
         if let store {
-            let platformName = humanReadablePlatformName(store: store)
-
             switch store {
             case .appStore, .macAppStore:
-                return (
-                    "You have an \(platformName) subscription.",
-                    "You can manage your subscription via the App Store app on an Apple device."
-                )
+                return localization.commonLocalizedString(for: .appleSubscriptionManage)
             case .playStore:
-                return (
-                    "You have a \(platformName) subscription.",
-                    "You can manage your subscription via the Google Play app on an Android device."
-                )
-            case .stripe, .rcBilling, .external:
-                return ("Active \(platformName) Subscription", defaultContactSupport)
-            case .promotional:
-                return ("Active \(platformName) Subscription", defaultContactSupport)
+                return localization.commonLocalizedString(for: .googleSubscriptionManage)
+            case .stripe, .rcBilling, .external, .promotional, .unknownStore:
+                return defaultContactSupport
             case .amazon:
-                return (
-                    "You have an \(platformName) subscription.",
-                    "You can manage your subscription via the Amazon Appstore app."
-                )
-            case .unknownStore:
-                return ("Unknown Subscription", defaultContactSupport)
+                return localization.commonLocalizedString(for: .amazonSubscriptionManage)
             }
         } else {
-            return ("Unknown Subscription", defaultContactSupport)
+            return defaultContactSupport
         }
     }
 

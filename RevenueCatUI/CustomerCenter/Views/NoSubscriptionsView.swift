@@ -26,8 +26,6 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct NoSubscriptionsView: View {
 
-    // swiftlint:disable:next todo
-    // TODO: build screen using this configuration
     let configuration: CustomerCenterConfigData
 
     @Environment(\.localization)
