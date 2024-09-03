@@ -60,21 +60,9 @@ public struct TemplateComponentsView: View {
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
 
-        let components = paywallComponentsData.componentsConfig.components
+        let localization = Self.chooseLocalization(for: paywallComponentsData)
 
-        // STEP 1 - Get available paywall locales
-        let paywallLocales = paywallComponentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
-
-        // STEP 2 - choose best locale based on device's list of preferred locales.
-        let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! //TODO: should be default
-
-        // STEP 2 - Get localization for one of preferred locales in order
-        // TODO: use default locale
-        let paywallLocalizations = paywallComponentsData.componentsLocalizations
-        let localizationDict = paywallLocalizations[chosenLocale.identifier] ??
-                                 paywallLocalizations[paywallLocales.first!.identifier, default: [String: String]()]
-
-        self.componentViewModels = components.map { component in
+        self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
             // Step 3 - Validate all variables are supported in localization - done in ViewModel creation
 
@@ -82,15 +70,9 @@ public struct TemplateComponentsView: View {
 
             // Step 4 - Make the view models
             do {
-                return try component.toViewModel(offering: offering, locale: chosenLocale, localization: localizationDict)
+                return try component.toViewModel(offering: offering, locale: localization.locale, localization: localization.dict)
             } catch {
-                let errorDict: [String: String] = ["errorID": "Error creating paywall"]
-                let textComponent = PaywallComponent.TextComponent(
-                    text: DisplayString(value: errorDict),
-                    textLid: "errorID",
-                    color: PaywallComponent.ColorInfo(light:"#000000")
-                )
-                return try! PaywallComponentViewModel.text(TextComponentViewModel(locale: .current, localization: errorDict, component: textComponent))
+                return Self.fallbackPaywallViewModels()
             }
         }
     }
@@ -105,14 +87,32 @@ public struct TemplateComponentsView: View {
         .edgesIgnoringSafeArea(.top)
     }
 
-}
+    static func chooseLocalization(for paywallComponentsData: PaywallComponentsData) -> (locale: Locale, dict: [String: String]) {
 
-func getLocalization(_ locale: Locale, _ displayString: DisplayString) -> String {
-    if let found = displayString.value[locale.identifier] {
-        return found
+        guard !paywallComponentsData.componentsLocalizations.isEmpty else {
+            Logger.error("Paywall contains no localization data.")
+            return (Locale.current, [String: String]())
+        }
+
+        // STEP 1 - Get available paywall locales
+        let paywallLocales = paywallComponentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
+
+        // STEP 2 - choose best locale based on device's list of preferred locales.
+        let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! // TOOD: default locale
+
+        // STEP 2 - Get localization for one of preferred locales in order
+        // TODO: use default locale
+        let paywallLocalizations = paywallComponentsData.componentsLocalizations
+
+
+        if let localizationDict = paywallLocalizations[chosenLocale.identifier] {
+            return (chosenLocale, localizationDict)
+        } else {
+            Logger.error("Could not find localization data for \(chosenLocale).")
+            //TODO: should be default
+            return (Locale.current, [String: String]())
+        }
     }
-
-    return displayString.value.values.first!
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
