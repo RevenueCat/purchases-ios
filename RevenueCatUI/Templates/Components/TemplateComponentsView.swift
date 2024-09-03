@@ -23,11 +23,11 @@ public struct TemplateComponentsView: View {
 
         self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
-            //TODO: STEP 2: Validate all packages needed exist (????)
+            // TODO: STEP 2: Validate all packages needed exist (????)
 
             do {
                 // STEP 3: Make the view models & validate all components have required localization
-                return try component.toViewModel(offering: offering, 
+                return try component.toViewModel(offering: offering,
                                                  locale: localization.locale,
                                                  localizedStrings: localization.localizedStrings)
             } catch {

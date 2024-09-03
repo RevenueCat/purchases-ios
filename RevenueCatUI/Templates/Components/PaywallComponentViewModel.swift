@@ -25,7 +25,11 @@ enum PaywallComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
-    func toViewModel(offering: Offering, locale: Locale, localizedStrings: LocalizationDictionary) throws -> PaywallComponentViewModel {
+    func toViewModel(
+        offering: Offering,
+        locale: Locale,
+        localizedStrings: LocalizationDictionary
+    ) throws -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
             return .text(

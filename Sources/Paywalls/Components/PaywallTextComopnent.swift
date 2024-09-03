@@ -24,7 +24,6 @@ public extension PaywallComponent {
         public let backgroundColor: ColorInfo?
         public let padding: Padding
 
-
         public init(
             text: String,
             textLid: String,

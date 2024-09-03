@@ -24,7 +24,7 @@ extension TemplateComponentsView {
         let textComponent = PaywallComponent.TextComponent(
             text: "Error!",
             textLid: "errorID",
-            color: PaywallComponent.ColorInfo(light:"#000000")
+            color: PaywallComponent.ColorInfo(light: "#000000")
         )
         return try! PaywallComponentViewModel.text(
             TextComponentViewModel(localizedStrings: errorDict, component: textComponent)
@@ -38,7 +38,8 @@ extension TemplateComponentsView {
     /// the function returns `nil`.
     ///
     /// - Parameter paywallLocales: An array of `Locale` objects representing the paywall's available locales.
-    /// - Returns: A `Locale` available on the paywall chosen based on the device's preferred locales, or `nil` if no match is found.
+    /// - Returns: A `Locale` available on the paywall chosen based on the device's preferredlocales, 
+    /// or `nil` if no match is found.
     ///
     /// # Example 1
     ///   device locales: `en_CA, en_US, fr_CA`

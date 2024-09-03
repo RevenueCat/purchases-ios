@@ -21,7 +21,6 @@ struct StackComponentView: View {
 
     let viewModel: StackComponentViewModel
 
-
     var body: some View {
         switch viewModel.dimension {
         case .vertical(let horizontalAlignment):
