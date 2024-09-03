@@ -1342,7 +1342,13 @@ private extension SamplePaywallLoader {
                 "feature_support": "✅ Support",
                 "subscription_price": "6,99€ par mois",
                 "purchase_for_price": "Achetez pour 6,99€",
+                "popular_plan_label": "Plan populaire",
+                "get_started_text": "Commencez avec notre plan",
+                "upgrade_plan_text": "Passez à notre plan premium",
                 "explore_button_text": "Explorer",
+                "restore_purchases": "Restaurer les achats",
+                "bullet_point": "•",
+                "terms_and_conditions": "Conditions générales",
             ],
             "es_ES": [
                 "curiosity_headline": "Despierta la curiosidad de tu hijo",
@@ -1352,10 +1358,17 @@ private extension SamplePaywallLoader {
                 "feature_support": "✅ Soporte",
                 "subscription_price": "6,99€ por mes",
                 "purchase_for_price": "Compra por 6,99€",
+                "popular_plan_label": "Plan popular",
+                "get_started_text": "Empieza con nuestro plan",
+                "upgrade_plan_text": "Actualiza a nuestro plan premium",
                 "explore_button_text": "Explorar",
+                "restore_purchases": "Restaurar compras",
+                "bullet_point": "•",
+                "terms_and_conditions": "Términos y condiciones",
             ]
         ]
     }
+
 
     static func simplePaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
@@ -1374,7 +1387,8 @@ private extension SamplePaywallLoader {
                 "explore_button_text": "Explorer",
                 "popular_plan_label": "Plan populaire",
                 "get_started_text": "Commencez avec notre plan",
-                "upgrade_plan_text": "Passez à notre plan premium"
+                "upgrade_plan_text": "Passez à notre plan premium",
+                "feature_text": "Fonctionnalité"
             ],
             "es_ES": [
                 "welcome_message": "¡Hola, Componentes Paywall!",
@@ -1382,10 +1396,12 @@ private extension SamplePaywallLoader {
                 "explore_button_text": "Explorar",
                 "popular_plan_label": "Plan popular",
                 "get_started_text": "Empieza con nuestro plan",
-                "upgrade_plan_text": "Actualiza a nuestro plan premium"
+                "upgrade_plan_text": "Actualiza a nuestro plan premium",
+                "feature_text": "Función"
             ]
         ]
     }
+
 
 
 
