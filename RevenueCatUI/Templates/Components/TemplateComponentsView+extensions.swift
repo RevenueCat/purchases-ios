@@ -26,7 +26,9 @@ extension TemplateComponentsView {
             textLid: "errorID",
             color: PaywallComponent.ColorInfo(light:"#000000")
         )
-        return try! PaywallComponentViewModel.text(TextComponentViewModel(locale: .current, localizedStrings: errorDict, component: textComponent))
+        return try! PaywallComponentViewModel.text(
+            TextComponentViewModel(locale: .current, localizedStrings: errorDict, component: textComponent)
+        )
 
     }
 

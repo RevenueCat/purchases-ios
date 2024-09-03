@@ -27,7 +27,9 @@ public struct TemplateComponentsView: View {
 
             do {
                 // STEP 3: Make the view models & validate all components have required localization
-                return try component.toViewModel(offering: offering, locale: localization.locale, localizedStrings: localization.localizedStrings)
+                return try component.toViewModel(offering: offering, 
+                                                 locale: localization.locale,
+                                                 localizedStrings: localization.localizedStrings)
             } catch {
 
                 // STEP 3.5: Use fallback paywall if viewmodel construction fails
@@ -48,7 +50,10 @@ public struct TemplateComponentsView: View {
         .edgesIgnoringSafeArea(.top)
     }
 
-    static func chooseLocalization(for componentsData: PaywallComponentsData) -> (locale: Locale, localizedStrings: LocalizationDictionary) {
+    static func chooseLocalization(
+        for componentsData: PaywallComponentsData
+    ) -> (locale: Locale, localizedStrings: LocalizationDictionary) {
+
         guard !componentsData.componentsLocalizations.isEmpty else {
             Logger.error("Paywall contains no localization data.")
             return (Locale.current, LocalizationDictionary())
