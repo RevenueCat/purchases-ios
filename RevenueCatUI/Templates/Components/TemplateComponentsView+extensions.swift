@@ -22,7 +22,7 @@ extension TemplateComponentsView {
 
         let errorDict: LocalizationDictionary = ["errorID": "Error creating paywall"]
         let textComponent = PaywallComponent.TextComponent(
-            text: DisplayString(value: errorDict),
+            text: "Error!",
             textLid: "errorID",
             color: PaywallComponent.ColorInfo(light:"#000000")
         )
