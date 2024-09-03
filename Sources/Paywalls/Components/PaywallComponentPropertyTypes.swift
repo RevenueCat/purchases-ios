@@ -16,10 +16,10 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
-public extension PaywallComponent {
+public typealias TierId = String
+public typealias ColorHex = String
 
-    typealias TierId = String
-    typealias ColorHex = String
+public extension PaywallComponent {
 
     struct ColorInfo: Codable, Sendable, Hashable, Equatable {
 
