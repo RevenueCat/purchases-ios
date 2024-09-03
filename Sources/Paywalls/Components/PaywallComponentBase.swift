@@ -33,7 +33,7 @@ extension PaywallComponentBase {
         for child in mirror.children {
             if let label = child.label, label.hasSuffix("Lid") {
                 if let localizationID = child.value as? String {
-                    if localizationDict[localizationID] == nil {
+                    guard localizationDict[localizationID] != nil else {
                         throw LocalizationValidationError.missingLocalization("Missing localization for ID: \(localizationID)")
                     }
                 }

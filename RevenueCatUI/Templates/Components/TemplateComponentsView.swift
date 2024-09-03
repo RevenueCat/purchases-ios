@@ -8,10 +8,6 @@
 import RevenueCat
 import SwiftUI
 
-
-
-
-
 #if PAYWALL_COMPONENTS
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct TemplateComponentsView: View {
@@ -80,18 +76,15 @@ public struct TemplateComponentsView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
-struct ComponentsView: View {
+public struct ComponentsView: View {
 
     let componentViewModels: [PaywallComponentViewModel]
 
-    // @PublicForExternalTesting
-    init(componentViewModels: [PaywallComponentViewModel]) {
+    public init(componentViewModels: [PaywallComponentViewModel]) {
         self.componentViewModels = componentViewModels
     }
 
-    // @PublicForExternalTesting
-    var body: some View {
+    public var body: some View {
         self.layoutComponents(self.componentViewModels)
     }
 
