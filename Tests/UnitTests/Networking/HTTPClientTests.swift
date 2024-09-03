@@ -1634,6 +1634,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             -1, // Any
             true,
             200,
+            nil,
             .backend,
             .notRequested
         )))
@@ -1661,6 +1662,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             -1, // Any
             false,
             401,
+            nil,
             nil,
             .notRequested
         )))
@@ -2253,8 +2255,8 @@ extension HTTPClientTests {
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
-    _ data: (String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)
-) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)> {
+    _ data: (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
+) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.1 ?? -1
@@ -2263,7 +2265,8 @@ private func matchTrackParams(
                        other?.2 == data.2 &&
                        other?.3 == data.3 &&
                        other?.4 == data.4 &&
-                       other?.5 == data.5)
+                       other?.5 == data.5 &&
+                       other?.6 == data.6)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }
