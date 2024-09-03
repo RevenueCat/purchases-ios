@@ -29,7 +29,7 @@ public class TextComponentViewModel: ObservableObject {
     init(localizedStrings: LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-        self.text = try localizedStrings.string(from: component, key: \.textLid)
+        self.text = try localizedStrings.string(for: \.textLid, from: component)
     }
 
     public var fontFamily: String {
