@@ -12,12 +12,13 @@ import Foundation
 public typealias TierId = String
 public typealias LocaleId = String
 public typealias ColorHex = String
+public typealias LocalizationDictionary = [String: String]
 
 public typealias DisplayString = PaywallComponent.LocaleResources<String>
 
 public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { 
 
-    func validateLocalizationIDs(using localizationDict: [String: String]) throws
+    func validateLocalizationIDs(using localizedStrings: LocalizationDictionary) throws
 
 }
 
@@ -27,13 +28,13 @@ enum LocalizationValidationError: Error {
 
 extension PaywallComponentBase {
 
-    public func validateLocalizationIDs(using localizationDict: [String: String]) throws {
+    public func validateLocalizationIDs(using localizedStrings: LocalizationDictionary) throws {
         let mirror = Mirror(reflecting: self)
 
         for child in mirror.children {
             if let label = child.label, label.hasSuffix("Lid") {
                 if let localizationID = child.value as? String {
-                    guard localizationDict[localizationID] != nil else {
+                    guard localizedStrings[localizationID] != nil else {
                         throw LocalizationValidationError.missingLocalization("Missing localization for ID: \(localizationID)")
                     }
                 }

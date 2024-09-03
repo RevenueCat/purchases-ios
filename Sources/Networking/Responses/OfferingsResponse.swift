@@ -43,7 +43,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public var componentsConfig: ComponentsConfig
 
     // TODO: Make struct or typealiases for this
-    public var componentsLocalizations: [String: [String: String]]
+    public var componentsLocalizations: [LocaleId: LocalizationDictionary]
 
     public var defaultLocale: String
 
@@ -62,7 +62,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public init(templateName: String,
          assetBaseURL: URL,
          componentsConfig: ComponentsConfig,
-         componentsLocalizations: [String : [String : String]],
+         componentsLocalizations: [LocaleId : LocalizationDictionary],
          revision: Int,
          defaultLocaleIdentifier: String) {
         self.templateName = templateName

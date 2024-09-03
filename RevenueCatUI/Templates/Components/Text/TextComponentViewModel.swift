@@ -23,13 +23,13 @@ import SwiftUI
 public class TextComponentViewModel: ObservableObject {
 
     let locale: Locale
-    let localization: [String: String]
+    let localizedStrings: LocalizationDictionary
     @Published private(set) var component: PaywallComponent.TextComponent
 
-    init(locale: Locale, localization: [String: String], component: PaywallComponent.TextComponent) throws {
-        try component.validateLocalizationIDs(using: localization)
+    init(locale: Locale, localizedStrings: LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
+        try component.validateLocalizationIDs(using: localizedStrings)
         self.locale = locale
-        self.localization = localization
+        self.localizedStrings = localizedStrings
         self.component = component
     }
 
@@ -37,7 +37,7 @@ public class TextComponentViewModel: ObservableObject {
         // TODO: Replace variables like "{{ }}"
         // TODO: Add logs?
         if let textLid = component.textLid {
-            if let localizedText = localization[textLid] {
+            if let localizedText = localizedStrings[textLid] {
                 return localizedText
             } else {
                 return component.text.value.first?.value as? String ?? "missing localized text for \(textLid)"

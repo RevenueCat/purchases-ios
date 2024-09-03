@@ -29,15 +29,15 @@ public class LinkButtonComponentViewModel: ObservableObject {
 
     init(locale: Locale,
          component: PaywallComponent.LinkButtonComponent,
-         localization: [String: String],
+         localizedStrings: LocalizationDictionary,
          offering: Offering
     ) throws {
-        try component.validateLocalizationIDs(using: localization)
+        try component.validateLocalizationIDs(using: localizedStrings)
         self.locale = locale
         self.component = component
         self.textComponentViewModel = try TextComponentViewModel(locale: locale,
-                                                             localization: localization,
-                                                             component: component.textComponent)
+                                                                 localizedStrings: localizedStrings,
+                                                                 component: component.textComponent)
 
     }
 

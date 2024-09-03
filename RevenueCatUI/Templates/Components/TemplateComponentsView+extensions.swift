@@ -20,13 +20,13 @@ extension TemplateComponentsView {
 
     static func fallbackPaywallViewModels(error: Error? = nil) -> PaywallComponentViewModel {
 
-        let errorDict: [String: String] = ["errorID": "Error creating paywall"]
+        let errorDict: LocalizationDictionary = ["errorID": "Error creating paywall"]
         let textComponent = PaywallComponent.TextComponent(
             text: DisplayString(value: errorDict),
             textLid: "errorID",
             color: PaywallComponent.ColorInfo(light:"#000000")
         )
-        return try! PaywallComponentViewModel.text(TextComponentViewModel(locale: .current, localization: errorDict, component: textComponent))
+        return try! PaywallComponentViewModel.text(TextComponentViewModel(locale: .current, localizedStrings: errorDict, component: textComponent))
 
     }
 

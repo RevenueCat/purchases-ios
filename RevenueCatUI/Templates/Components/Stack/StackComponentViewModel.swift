@@ -27,14 +27,14 @@ public class StackComponentViewModel: ObservableObject {
 
     init(locale: Locale,
          component: PaywallComponent.StackComponent,
-         localization: [String: String],
+         localizedStrings: LocalizationDictionary,
          offering: Offering
     ) throws {
-        try component.validateLocalizationIDs(using: localization)
+        try component.validateLocalizationIDs(using: localizedStrings)
         self.locale = locale
         self.component = component
         self.viewModels = try component.components.map {
-            try $0.toViewModel(offering: offering, locale: locale, localization: localization)
+            try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }
     }
 

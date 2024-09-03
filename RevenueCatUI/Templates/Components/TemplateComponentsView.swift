@@ -27,7 +27,7 @@ public struct TemplateComponentsView: View {
 
             do {
                 // STEP 3: Make the view models & validate all components have required localization
-                return try component.toViewModel(offering: offering, locale: localization.locale, localization: localization.dict)
+                return try component.toViewModel(offering: offering, locale: localization.locale, localizedStrings: localization.localizedStrings)
             } catch {
 
                 // STEP 3.5: Use fallback paywall if viewmodel construction fails
@@ -48,10 +48,10 @@ public struct TemplateComponentsView: View {
         .edgesIgnoringSafeArea(.top)
     }
 
-    static func chooseLocalization(for componentsData: PaywallComponentsData) -> (locale: Locale, dict: [String: String]) {
+    static func chooseLocalization(for componentsData: PaywallComponentsData) -> (locale: Locale, localizedStrings: LocalizationDictionary) {
         guard !componentsData.componentsLocalizations.isEmpty else {
             Logger.error("Paywall contains no localization data.")
-            return (Locale.current, [String: String]())
+            return (Locale.current, LocalizationDictionary())
         }
 
         // STEP 1: Get available paywall locales
@@ -63,14 +63,14 @@ public struct TemplateComponentsView: View {
         let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? fallbackLocale
 
         // STEP 3: Get localization for one of preferred locales in order
-        if let localizationDict = componentsData.componentsLocalizations[chosenLocale.identifier] {
-            return (chosenLocale, localizationDict)
-        } else if let localizationDict = componentsData.componentsLocalizations[fallbackLocale.identifier] {
+        if let localizedStrings = componentsData.componentsLocalizations[chosenLocale.identifier] {
+            return (chosenLocale, localizedStrings)
+        } else if let localizedStrings = componentsData.componentsLocalizations[fallbackLocale.identifier] {
             Logger.error("Could not find localization data for \(chosenLocale).")
-            return (fallbackLocale, localizationDict)
+            return (fallbackLocale, localizedStrings)
         } else {
             Logger.error("Could not find localization data for \(chosenLocale) or \(fallbackLocale).")
-            return (fallbackLocale, [String: String]())
+            return (fallbackLocale, LocalizationDictionary())
         }
     }
 }

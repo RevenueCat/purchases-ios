@@ -25,11 +25,11 @@ enum PaywallComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
-    func toViewModel(offering: Offering, locale: Locale, localization: [String: String]) throws -> PaywallComponentViewModel {
+    func toViewModel(offering: Offering, locale: Locale, localizedStrings: LocalizationDictionary) throws -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
             return .text(
-                try TextComponentViewModel(locale: locale, localization: localization, component: component)
+                try TextComponentViewModel(locale: locale, localizedStrings: localizedStrings, component: component)
             )
         case .image(let component):
             return .image(
@@ -43,14 +43,14 @@ extension PaywallComponent {
             return .stack(
                 try StackComponentViewModel(locale: locale,
                                         component: component,
-                                        localization: localization,
+                                            localizedStrings: localizedStrings,
                                         offering: offering)
             )
         case .linkButton(let component):
             return .linkButton(
                 try LinkButtonComponentViewModel(locale: locale,
                                              component: component,
-                                             localization: localization,
+                                             localizedStrings: localizedStrings,
                                              offering: offering)
             )
         }
