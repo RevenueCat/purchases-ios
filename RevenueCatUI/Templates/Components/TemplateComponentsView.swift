@@ -9,45 +9,7 @@ import RevenueCat
 import SwiftUI
 
 
-extension Locale {
 
-    fileprivate static var preferredLocales: [Self] {
-        return Self.preferredLanguages.map(Locale.init(identifier:))
-    }
-
-    fileprivate static var deviceLocales: [Self] {
-        Self.preferredLocales.flatMap { [$0, $0.removingRegion].compactMap { $0 } }
-    }
-
-    // swiftlint:disable:next identifier_name
-    var rc_languageCode: String? {
-        #if swift(>=5.9)
-        // `Locale.languageCode` is deprecated
-        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
-            return self.language.languageCode?.identifier
-        } else {
-            return self.languageCode
-        }
-        #else
-        return self.languageCode
-        #endif
-    }
-
-    /// - Returns: the same locale as `self` but removing its region.
-    var removingRegion: Self? {
-        return self.rc_languageCode.map(Locale.init(identifier:))
-    }
-
-    static func preferredLocale(from paywallLocales: [Locale]) -> Locale? {
-        for deviceLocale in deviceLocales {
-            if let match = paywallLocales.first(where: { $0 == deviceLocale || $0.removingRegion == deviceLocale }) {
-                return match
-            }
-        }
-        return nil
-    }
-
-}
 
 
 #if PAYWALL_COMPONENTS
@@ -65,13 +27,17 @@ public struct TemplateComponentsView: View {
 
         self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
-            //TODO: Step 2 - Validate all packages needed exist (????)
+            //TODO: STEP 2: Validate all packages needed exist (????)
 
-            // Step 3 - Make the view models & validate all components have required localization
             do {
+                // STEP 3: Make the view models & validate all components have required localization
                 return try component.toViewModel(offering: offering, locale: localization.locale, localization: localization.dict)
             } catch {
-                // Use fallback paywall if viewmodel construction fails
+
+                // STEP 3.5: Use fallback paywall if viewmodel construction fails
+                Logger.error("View model construction failed: \(error)")
+                Logger.debug("Will use fallback paywall.")
+
                 return Self.fallbackPaywallViewModels()
             }
         }
@@ -86,28 +52,29 @@ public struct TemplateComponentsView: View {
         .edgesIgnoringSafeArea(.top)
     }
 
-    static func chooseLocalization(for paywallComponentsData: PaywallComponentsData) -> (locale: Locale, dict: [String: String]) {
-        guard !paywallComponentsData.componentsLocalizations.isEmpty else {
+    static func chooseLocalization(for componentsData: PaywallComponentsData) -> (locale: Locale, dict: [String: String]) {
+        guard !componentsData.componentsLocalizations.isEmpty else {
             Logger.error("Paywall contains no localization data.")
             return (Locale.current, [String: String]())
         }
 
-        // STEP 1 - Get available paywall locales
-        let paywallLocales = paywallComponentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
+        // STEP 1: Get available paywall locales
+        let paywallLocales = componentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
 
-        // STEP 2 - choose best locale based on device's list of preferred locales.
-        let chosenLocale = Locale.preferredLocale(from: paywallLocales) ?? paywallLocales.first! // TOOD: default locale
+        let fallbackLocale = Locale(identifier: componentsData.defaultLocale)
 
-        // STEP 3 - Get localization for one of preferred locales in order
-        // TODO: use default locale
-        let paywallLocalizations = paywallComponentsData.componentsLocalizations
+        // STEP 2: choose best locale based on device's list of preferred locales.
+        let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? fallbackLocale
 
-        if let localizationDict = paywallLocalizations[chosenLocale.identifier] {
+        // STEP 3: Get localization for one of preferred locales in order
+        if let localizationDict = componentsData.componentsLocalizations[chosenLocale.identifier] {
             return (chosenLocale, localizationDict)
-        } else {
+        } else if let localizationDict = componentsData.componentsLocalizations[fallbackLocale.identifier] {
             Logger.error("Could not find localization data for \(chosenLocale).")
-            //TODO: should be default
-            return (Locale.current, [String: String]())
+            return (fallbackLocale, localizationDict)
+        } else {
+            Logger.error("Could not find localization data for \(chosenLocale) or \(fallbackLocale).")
+            return (fallbackLocale, [String: String]())
         }
     }
 }

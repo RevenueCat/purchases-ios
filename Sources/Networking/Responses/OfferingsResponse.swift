@@ -45,6 +45,8 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     // TODO: Make struct or typealiases for this
     public var componentsLocalizations: [String: [String: String]]
 
+    public var defaultLocale: String
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -52,6 +54,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case templateName
         case componentsConfig
         case componentsLocalizations
+        case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
     }
@@ -60,12 +63,14 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
          assetBaseURL: URL,
          componentsConfig: ComponentsConfig,
          componentsLocalizations: [String : [String : String]],
-         revision: Int) {
+         revision: Int,
+         defaultLocaleIdentifier: String) {
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
         self._revision = revision
+        self.defaultLocale = defaultLocaleIdentifier
     }
 
 }

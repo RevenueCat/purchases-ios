@@ -633,7 +633,8 @@ private extension SamplePaywallLoader {
                                assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
                                componentsConfig: PaywallComponentsData.ComponentsConfig(components: components),
                                componentsLocalizations: [String: [String: String]](),
-                               revision: 0)
+                               revision: 0,
+                               defaultLocaleIdentifier: "en_US")
     }
 
     internal static var fitnessComponents: PaywallComponentsData {
