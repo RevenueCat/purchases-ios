@@ -22,29 +22,14 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class TextComponentViewModel: ObservableObject {
 
-    let locale: Locale
     let localizedStrings: LocalizationDictionary
+    let text: String
     @Published private(set) var component: PaywallComponent.TextComponent
 
-    init(locale: Locale, localizedStrings: LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
-        try component.validateLocalizationIDs(using: localizedStrings)
-        self.locale = locale
+    init(localizedStrings: LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-    }
-
-    var text: String {
-        // TODO: Replace variables like "{{ }}"
-        // TODO: Add logs?
-        if let textLid = component.textLid {
-            if let localizedText = localizedStrings[textLid] {
-                return localizedText
-            } else {
-                return component.text.value.first?.value as? String ?? "missing localized text for \(textLid)"
-            }
-        } else {
-            return component.text.value.first?.value as? String ?? "missing localized text"
-        }
+        self.text = try localizedStrings.string(from: component, key: \.textLid)
     }
 
     public var fontFamily: String {

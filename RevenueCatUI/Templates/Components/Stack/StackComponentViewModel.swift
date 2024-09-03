@@ -30,7 +30,6 @@ public class StackComponentViewModel: ObservableObject {
          localizedStrings: LocalizationDictionary,
          offering: Offering
     ) throws {
-        try component.validateLocalizationIDs(using: localizedStrings)
         self.locale = locale
         self.component = component
         self.viewModels = try component.components.map {

@@ -16,7 +16,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class LinkButtonComponentViewModel: ObservableObject {
 
-    let locale: Locale
+
     @Published private(set) var component: PaywallComponent.LinkButtonComponent
     let textComponentViewModel: TextComponentViewModel
 
@@ -27,18 +27,13 @@ public class LinkButtonComponentViewModel: ObservableObject {
         component.textComponent
     }
 
-    init(locale: Locale,
-         component: PaywallComponent.LinkButtonComponent,
+    init(component: PaywallComponent.LinkButtonComponent,
          localizedStrings: LocalizationDictionary,
          offering: Offering
     ) throws {
-        try component.validateLocalizationIDs(using: localizedStrings)
-        self.locale = locale
         self.component = component
-        self.textComponentViewModel = try TextComponentViewModel(locale: locale,
-                                                                 localizedStrings: localizedStrings,
+        self.textComponentViewModel = try TextComponentViewModel(localizedStrings: localizedStrings,
                                                                  component: component.textComponent)
-
     }
 
 }

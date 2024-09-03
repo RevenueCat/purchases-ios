@@ -15,7 +15,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let text: DisplayString
-        public let textLid: String?
+        public let textLid: LocalizationKey?
         public let fontFamily: String
         public let fontWeight: FontWeight
         public let color: ColorInfo
@@ -23,6 +23,7 @@ public extension PaywallComponent {
         public let horizontalAlignment: HorizontalAlignment
         public let backgroundColor: ColorInfo?
         public let padding: Padding
+
 
         public init(
             text: DisplayString,

@@ -22,11 +22,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ImageComponentViewModel: ObservableObject {
 
-    let locale: Locale
     @Published private(set) var component: PaywallComponent.ImageComponent
 
-    init(locale: Locale, component: PaywallComponent.ImageComponent) {
-        self.locale = locale
+    init(component: PaywallComponent.ImageComponent) {
         self.component = component
     }
 

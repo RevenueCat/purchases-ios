@@ -27,7 +27,7 @@ extension TemplateComponentsView {
             color: PaywallComponent.ColorInfo(light:"#000000")
         )
         return try! PaywallComponentViewModel.text(
-            TextComponentViewModel(locale: .current, localizedStrings: errorDict, component: textComponent)
+            TextComponentViewModel(localizedStrings: errorDict, component: textComponent)
         )
 
     }

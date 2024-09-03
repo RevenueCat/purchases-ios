@@ -13,35 +13,30 @@ public typealias TierId = String
 public typealias LocaleID = String
 public typealias ColorHex = String
 public typealias LocalizationDictionary = [String: String]
+public typealias LocalizationKey = String
+
+extension LocalizationDictionary {
+
+    public func string<T: PaywallComponentBase>(from component: T, key keyPath: KeyPath<T, LocalizationKey?>) throws -> String {
+        guard let stringID = component[keyPath: keyPath] else {
+            let propertyName = "\(keyPath)"
+            throw LocalizationValidationError.missingLocalization("Required localization ID for \(propertyName) is null.")
+        }
+        guard let value = self[stringID] else {
+            let propertyName = "\(keyPath)"
+            throw LocalizationValidationError.missingLocalization("Missing localization for property \(propertyName) with id: \"\(stringID)\"")
+        }
+        return value
+    }
+    
+}
 
 public typealias DisplayString = PaywallComponent.LocaleResources<String>
 
-public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { 
-
-    func validateLocalizationIDs(using localizedStrings: LocalizationDictionary) throws
-
-}
+public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 enum LocalizationValidationError: Error {
     case missingLocalization(String)
-}
-
-extension PaywallComponentBase {
-
-    public func validateLocalizationIDs(using localizedStrings: LocalizationDictionary) throws {
-        let mirror = Mirror(reflecting: self)
-
-        for child in mirror.children {
-            if let label = child.label, label.hasSuffix("Lid") {
-                if let localizationID = child.value as? String {
-                    guard localizedStrings[localizationID] != nil else {
-                        throw LocalizationValidationError.missingLocalization("Missing localization for ID: \(localizationID)")
-                    }
-                }
-            }
-        }
-    }
-
 }
 
 public enum PaywallComponent: PaywallComponentBase {
