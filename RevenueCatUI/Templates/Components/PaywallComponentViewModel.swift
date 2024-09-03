@@ -29,11 +29,11 @@ extension PaywallComponent {
         switch self {
         case .text(let component):
             return .text(
-                try TextComponentViewModel(locale: locale, localizedStrings: localizedStrings, component: component)
+                try TextComponentViewModel( localizedStrings: localizedStrings, component: component)
             )
         case .image(let component):
             return .image(
-                ImageComponentViewModel(locale: locale, component: component)
+                ImageComponentViewModel(component: component)
             )
         case .spacer(let component):
             return .spacer(
@@ -48,8 +48,7 @@ extension PaywallComponent {
             )
         case .linkButton(let component):
             return .linkButton(
-                try LinkButtonComponentViewModel(locale: locale,
-                                             component: component,
+                try LinkButtonComponentViewModel(component: component,
                                              localizedStrings: localizedStrings,
                                              offering: offering)
             )
