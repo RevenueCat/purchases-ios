@@ -20,7 +20,7 @@ extension LocalizationDictionary {
     public func string<T: PaywallComponentBase>(from component: T, key keyPath: KeyPath<T, LocalizationKey?>) throws -> String {
         guard let stringID = component[keyPath: keyPath] else {
             let propertyName = "\(keyPath)"
-            throw LocalizationValidationError.missingLocalization("Required localization ID for \(propertyName) is null.")
+            throw LocalizationValidationError.missingLocalization("Required localization ID \(propertyName) is null.")
         }
         guard let value = self[stringID] else {
             let propertyName = "\(keyPath)"
