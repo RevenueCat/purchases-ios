@@ -45,7 +45,7 @@ extension LocalizationDictionary {
 enum LocalizationValidationError: Error {
 
     case missingLocalization(String)
-    
+
 }
 
 #endif
