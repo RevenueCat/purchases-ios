@@ -1662,7 +1662,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             -1, // Any
             false,
             401,
-            nil,
+            7225,
             nil,
             .notRequested
         )))
