@@ -15,12 +15,12 @@ public extension PaywallComponent {
     struct PurchaseButtonComponent: PaywallComponentBase {
 
         let type: String
-        let cta: LocaleResources<String>
-        let ctaIntroOffer: LocaleResources<String>?
+        let cta: LocalizationKey
+        let ctaIntroOffer: LocalizationKey?
 
         public init(
-            cta: LocaleResources<String>,
-            ctaIntroOffer: LocaleResources<String>? = nil
+            cta: LocalizationKey,
+            ctaIntroOffer: LocalizationKey? = nil
         ) {
             self.type = "purchase_button"
             self.cta = cta

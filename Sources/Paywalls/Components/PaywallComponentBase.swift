@@ -38,8 +38,6 @@ extension LocalizationDictionary {
     
 }
 
-public typealias DisplayString = PaywallComponent.LocaleResources<String>
-
 public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 enum LocalizationValidationError: Error {

@@ -30,16 +30,6 @@ public extension PaywallComponent {
 
     }
 
-    struct LocaleResources<T: Codable & Sendable & Hashable & Equatable>: Codable, Sendable, Hashable, Equatable {
-
-        public init(value: [LocaleID: T]) {
-            self.value = value
-        }
-
-        public let value: [LocaleID: T]
-
-    }
-
     struct Padding: Codable, Sendable, Hashable, Equatable {
 
         public init(top: Double, bottom: Double, leading: Double, trailing: Double) {

@@ -14,7 +14,7 @@ public extension PaywallComponent {
     struct TextComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let text: DisplayString
+        public let text: String
         public let textLid: LocalizationKey?
         public let fontFamily: String
         public let fontWeight: FontWeight
@@ -26,7 +26,7 @@ public extension PaywallComponent {
 
 
         public init(
-            text: DisplayString,
+            text: String,
             textLid: String,
             fontFamily: String = "SF Pro",
             fontWeight: FontWeight = .regular,
