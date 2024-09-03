@@ -33,8 +33,7 @@ public struct TemplateComponentsView: View {
             } catch {
 
                 // STEP 3.5: Use fallback paywall if viewmodel construction fails
-                Logger.error("View model construction failed: \(error)")
-                Logger.debug("Will use fallback paywall.")
+                Logger.error(Strings.paywall_view_model_construction_failed(error))
 
                 return Self.fallbackPaywallViewModels()
             }
@@ -55,7 +54,7 @@ public struct TemplateComponentsView: View {
     ) -> (locale: Locale, localizedStrings: LocalizationDictionary) {
 
         guard !componentsData.componentsLocalizations.isEmpty else {
-            Logger.error("Paywall contains no localization data.")
+            Logger.error(Strings.paywall_contains_no_localization_data)
             return (Locale.current, LocalizationDictionary())
         }
 
@@ -71,10 +70,10 @@ public struct TemplateComponentsView: View {
         if let localizedStrings = componentsData.componentsLocalizations[chosenLocale.identifier] {
             return (chosenLocale, localizedStrings)
         } else if let localizedStrings = componentsData.componentsLocalizations[fallbackLocale.identifier] {
-            Logger.error("Could not find localization data for \(chosenLocale).")
+            Logger.error(Strings.paywall_could_not_find_localization_for("\(chosenLocale)"))
             return (fallbackLocale, localizedStrings)
         } else {
-            Logger.error("Could not find localization data for \(chosenLocale) or \(fallbackLocale).")
+            Logger.error(Strings.paywall_could_not_find_localization_for("\(chosenLocale) or \(fallbackLocale)"))
             return (fallbackLocale, LocalizationDictionary())
         }
     }
