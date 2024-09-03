@@ -143,11 +143,11 @@ public struct CustomerCenterConfigData {
                 case .pleaseContactSupportToManage:
                     return "Please contact support to manage your subscription."
                 case .appleSubscriptionManage:
-                    return "You can manage your subscription via the App Store app on an Apple device."
+                    return "You can manage your subscription by using the App Store app on an Apple device."
                 case .googleSubscriptionManage:
-                    return "You can manage your subscription via the Play Store app on an Android device"
+                    return "You can manage your subscription by using the Play Store app on an Android device"
                 case .amazonSubscriptionManage:
-                    return "You can manage your subscription via the Amazon Appstore app."
+                    return "You can manage your subscription in the Amazon Appstore app on an Amazon device."
                 }
             }
 
