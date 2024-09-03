@@ -9,12 +9,7 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
-public typealias TierId = String
-public typealias ColorHex = String
-
-
 public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
-
 
 public enum PaywallComponent: PaywallComponentBase {
 

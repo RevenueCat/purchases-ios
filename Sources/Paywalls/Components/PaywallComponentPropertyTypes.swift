@@ -18,6 +18,9 @@ import Foundation
 
 public extension PaywallComponent {
 
+    public typealias TierId = String
+    public typealias ColorHex = String
+
     struct ColorInfo: Codable, Sendable, Hashable, Equatable {
 
         public init(light: ColorHex, dark: ColorHex? = nil) {
