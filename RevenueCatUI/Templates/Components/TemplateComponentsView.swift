@@ -64,16 +64,15 @@ public struct TemplateComponentsView: View {
 
         self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
-            // Step 3 - Validate all variables are supported in localization - done in ViewModel creation
+            // Step 3 - Validate all packages needed exist (????)
 
-            // Step 3.5 - Validate all packages needed exist (????)
-
-            // Step 4 - Make the view models
+            // Step 4 - Make the view models & validate all components have required localization
             do {
                 return try component.toViewModel(offering: offering, locale: localization.locale, localization: localization.dict)
             } catch {
                 return Self.fallbackPaywallViewModels()
             }
+            
         }
     }
 
