@@ -106,21 +106,24 @@ struct SamplePaywallsList: View {
             Section("Components") {
                 Button {
                     let data = SamplePaywallLoader.template1Components
-                    data.componentsConfig.components.printComponents()
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
                     TemplateLabel(name: "Curiosity Components", icon: "iphone")
                 }
                 Button {
                     let data = SamplePaywallLoader.fitnessComponents
-                    data.componentsConfig.components.printComponents()
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
                     TemplateLabel(name: "Fitness Components", icon: "iphone")
                 }
                 Button {
                     let data = SamplePaywallLoader.simpleSampleComponents
-                    data.componentsConfig.components.printComponents()
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
                     TemplateLabel(name: "Simple Sample Components", icon: "iphone")

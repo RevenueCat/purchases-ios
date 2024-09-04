@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RevenueCat
 
 public extension Sequence {
 
@@ -20,7 +21,7 @@ public extension Sequence {
 #if PAYWALL_COMPONENTS
 public extension Array where Element == PaywallComponent {
 
-    func printComponents() {
+    func printAsJSON() {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.outputFormatting = .prettyPrinted
@@ -28,15 +29,26 @@ public extension Array where Element == PaywallComponent {
         do {
             let jsonData = try encoder.encode(self)
 
-            // Convert JSON data to a string if needed for debugging or logging
             if let jsonString = String(data: jsonData, encoding: .utf8) {
-                print("JSON Representation:\n\(jsonString)")
+                print("Components as JSON:\n\(jsonString)")
             }
 
         } catch {
-            print("Failed to encode components: \(error)")
+            print("Failed to convert components to JSON: \(error)")
         }
     }
 
 }
+
+extension Dictionary where Key == LocaleID, Value == LocalizationDictionary {
+    func printAsJSON() {
+        if let jsonData = try? JSONSerialization.data(withJSONObject: self, options: .prettyPrinted),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("Localization as JSON:\n\(jsonString)")
+        } else {
+            print("Failed to convert localization to JSON: \(error)")
+        }
+    }
+}
+
 #endif
