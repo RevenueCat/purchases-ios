@@ -12,7 +12,6 @@
 //  Created by James Borthwick on 2024-08-19.
 // swiftlint:disable missing_docs
 
-import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -20,7 +19,7 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class SpacerComponentViewModel: ObservableObject {
+public class SpacerComponentViewModel {
 
     let component: PaywallComponent.SpacerComponent
 

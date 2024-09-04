@@ -12,14 +12,13 @@
 //  Created by James Borthwick on 2024-08-20.
 // swiftlint:disable missing_docs
 
-import Combine
 import RevenueCat
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class StackComponentViewModel: ObservableObject {
+public class StackComponentViewModel {
 
     let locale: Locale
     let component: PaywallComponent.StackComponent

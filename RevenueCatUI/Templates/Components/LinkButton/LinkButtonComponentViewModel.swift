@@ -6,7 +6,6 @@
 //
 // swiftlint:disable missing_docs
 
-import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -14,9 +13,10 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class LinkButtonComponentViewModel: ObservableObject {
+public class LinkButtonComponentViewModel {
 
-    @Published private(set) var component: PaywallComponent.LinkButtonComponent
+    let locale: Locale
+    let component: PaywallComponent.LinkButtonComponent
     let textComponentViewModel: TextComponentViewModel
 
     public var url: URL {
