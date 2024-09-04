@@ -96,6 +96,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.cleverTapID, value: cleverTapID, appUserID: appUserID)
     }
 
+    func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
+        setReservedAttribute(.kochavaDeviceID, value: kochavaDeviceID, appUserID: appUserID)
+    }
+
     func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {
         setReservedAttribute(.mixpanelDistinctID, value: mixpanelDistinctID, appUserID: appUserID)
     }
