@@ -32,8 +32,6 @@ public class TextComponentViewModel {
     }
 
     var text: String {
-        // TODO: Replace variables like "{{ }}"
-        // TODO: Add logs?
         if let textLid = component.textLid {
             if let localizedText = localization[textLid] {
                 return localizedText

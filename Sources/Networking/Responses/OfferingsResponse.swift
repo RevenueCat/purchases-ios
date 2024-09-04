@@ -42,7 +42,6 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public var componentsConfig: ComponentsConfig
 
-    // TODO: Make struct or typealiases for this
     public var componentsLocalizations: [String: [String: String]]
 
     @DefaultDecodable.Zero
@@ -57,10 +56,10 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     }
 
     public init(templateName: String,
-         assetBaseURL: URL,
-         componentsConfig: ComponentsConfig,
-         componentsLocalizations: [String : [String : String]],
-         revision: Int) {
+                assetBaseURL: URL,
+                componentsConfig: ComponentsConfig,
+                componentsLocalizations: [String : [String : String]],
+                revision: Int) {
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig

@@ -4,7 +4,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable missing_docs todo
+// swiftlint:disable missing_docs
 import Foundation
 
 #if PAYWALL_COMPONENTS
