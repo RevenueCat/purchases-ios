@@ -71,10 +71,10 @@ public struct TemplateComponentsView: View {
         if let localizedStrings = componentsData.componentsLocalizations[chosenLocale.identifier] {
             return (chosenLocale, localizedStrings)
         } else if let localizedStrings = componentsData.componentsLocalizations[fallbackLocale.identifier] {
-            Logger.error(Strings.paywall_could_not_find_localization_for("\(chosenLocale)"))
+            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
             return (fallbackLocale, localizedStrings)
         } else {
-            Logger.error(Strings.paywall_could_not_find_localization_for("\(chosenLocale) or \(fallbackLocale)"))
+            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(fallbackLocale)"))
             return (fallbackLocale, LocalizationDictionary())
         }
     }

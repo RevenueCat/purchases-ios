@@ -54,7 +54,7 @@ enum Strings {
     case invalid_color_string(String)
     case paywall_view_model_construction_failed(Error)
     case paywall_contains_no_localization_data
-    case paywall_could_not_find_localization_for(String)
+    case paywall_could_not_find_localization(String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -158,7 +158,7 @@ extension Strings: CustomStringConvertible {
             return "Paywall view model construction failed: \(error)\n" +
             "Will use fallback paywall."
 
-        case .paywall_could_not_find_localization_for(let string):
+        case .paywall_could_not_find_localization(let string):
             return "Could not find paywall localization data for \(string)"
 
         case .paywall_contains_no_localization_data:
