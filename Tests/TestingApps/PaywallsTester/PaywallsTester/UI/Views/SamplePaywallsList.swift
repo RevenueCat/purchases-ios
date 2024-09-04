@@ -99,6 +99,7 @@ struct SamplePaywallsList: View {
 
     }
 
+    #if PAYWALL_COMPONENTS
     func printComponents(_ components: [PaywallComponent])
     {
         let encoder = JSONEncoder()
@@ -117,6 +118,7 @@ struct SamplePaywallsList: View {
             print("Failed to encode components: \(error)")
         }
     }
+    #endif
 
     private func list(with loader: SamplePaywallLoader) -> some View {
         List {
