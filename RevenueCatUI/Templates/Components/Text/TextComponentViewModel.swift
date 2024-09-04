@@ -12,7 +12,6 @@
 //  Created by Josh Holtz on 6/11/24.
 // swiftlint:disable missing_docs
 
-import Combine
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -20,11 +19,11 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class TextComponentViewModel: ObservableObject {
+public class TextComponentViewModel {
 
     let locale: Locale
     let localization: [String: String]
-    @Published private(set) var component: PaywallComponent.TextComponent
+    let component: PaywallComponent.TextComponent
 
     init(locale: Locale, localization: [String: String], component: PaywallComponent.TextComponent) {
         self.locale = locale
