@@ -16,8 +16,8 @@ import SwiftUI
 public class LinkButtonComponentViewModel {
 
     let locale: Locale
-    let component: PaywallComponent.LinkButtonComponent
     let textComponentViewModel: TextComponentViewModel
+    private let component: PaywallComponent.LinkButtonComponent
 
     public var url: URL {
         component.url

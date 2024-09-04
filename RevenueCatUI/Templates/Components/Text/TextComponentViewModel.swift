@@ -23,7 +23,7 @@ public class TextComponentViewModel {
 
     let localizedStrings: LocalizationDictionary
     let text: String
-    let component: PaywallComponent.TextComponent
+    private let component: PaywallComponent.TextComponent
 
     init(localizedStrings: LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
