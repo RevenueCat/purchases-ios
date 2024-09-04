@@ -41,10 +41,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     }
 
     public var componentsConfig: ComponentsConfig
-
-    // TODO: Make struct or typealiases for this
     public var componentsLocalizations: [LocaleID: LocalizationDictionary]
-
     public var defaultLocale: String
 
     @DefaultDecodable.Zero
