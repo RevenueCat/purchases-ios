@@ -23,7 +23,7 @@ public class TextComponentViewModel {
 
     let locale: Locale
     let localization: [String: String]
-    let component: PaywallComponent.TextComponent
+    private let component: PaywallComponent.TextComponent
 
     init(locale: Locale, localization: [String: String], component: PaywallComponent.TextComponent) {
         self.locale = locale

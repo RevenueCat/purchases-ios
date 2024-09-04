@@ -21,8 +21,8 @@ import SwiftUI
 public class StackComponentViewModel {
 
     let locale: Locale
-    let component: PaywallComponent.StackComponent
     let viewModels: [PaywallComponentViewModel]
+    private let component: PaywallComponent.StackComponent
 
     init(locale: Locale,
          component: PaywallComponent.StackComponent,
