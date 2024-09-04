@@ -15,7 +15,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let text: String
-        public let textLid: LocalizationKey?
+        public let textLid: LocalizationKey
         public let fontFamily: String
         public let fontWeight: FontWeight
         public let color: ColorInfo

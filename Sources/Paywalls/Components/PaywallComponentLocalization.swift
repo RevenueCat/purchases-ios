@@ -23,15 +23,11 @@ public typealias LocalizationKey = String
 extension LocalizationDictionary {
 
     public func string<T: PaywallComponentBase>(
-        for keyPath: KeyPath<T, LocalizationKey?>,
+        for keyPath: KeyPath<T, LocalizationKey>,
         from component: T
     ) throws -> String {
-        guard let stringID = component[keyPath: keyPath] else {
-            let propertyName = "\(keyPath)"
-            throw LocalizationValidationError.missingLocalization(
-                "Required localization ID \(propertyName) is null."
-            )
-        }
+        let stringID = component[keyPath: keyPath]
+
         guard let value = self[stringID] else {
             let propertyName = "\(keyPath)"
             throw LocalizationValidationError.missingLocalization(
