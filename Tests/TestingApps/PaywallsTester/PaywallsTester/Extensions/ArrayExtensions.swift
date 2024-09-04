@@ -41,6 +41,7 @@ public extension Array where Element == PaywallComponent {
 }
 
 extension Dictionary where Key == LocaleID, Value == LocalizationDictionary {
+
     func printAsJSON() {
         if let jsonData = try? JSONSerialization.data(withJSONObject: self, options: .prettyPrinted),
            let jsonString = String(data: jsonData, encoding: .utf8) {
@@ -49,6 +50,7 @@ extension Dictionary where Key == LocaleID, Value == LocalizationDictionary {
             print("Failed to convert localization to JSON: \(error)")
         }
     }
+    
 }
 
 #endif
