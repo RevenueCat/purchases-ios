@@ -84,6 +84,8 @@ private extension DiagnosticsEvent.DiagnosticsPropertyKey {
             return "successful"
         case .responseCodeKey:
             return "response_code"
+        case .backendErrorCodeKey:
+            return "backend_error_code"
         case .eTagHitKey:
             return "etag_hit"
         }
