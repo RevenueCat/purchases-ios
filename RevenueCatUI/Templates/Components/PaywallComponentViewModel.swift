@@ -53,8 +53,7 @@ extension PaywallComponent {
         case .linkButton(let component):
             return .linkButton(
                 try LinkButtonComponentViewModel(component: component,
-                                                 localizedStrings: localizedStrings,
-                                                 offering: offering)
+                                                 localizedStrings: localizedStrings)
             )
         }
     }
