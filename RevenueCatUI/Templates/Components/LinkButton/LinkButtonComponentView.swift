@@ -14,16 +14,16 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct LinkButtonComponentView: View {
 
-    let locale: Locale
-    let component: PaywallComponent.LinkButtonComponent
+    let viewModel: LinkButtonComponentViewModel
 
     var url: URL {
-        component.url
+        viewModel.url
     }
 
     var body: some View {
+        EmptyView()
         Link(destination: url) {
-            TextComponentView(locale: locale, component: component.textComponent)
+            TextComponentView(viewModel: viewModel.textComponentViewModel)
                 .cornerRadius(25)
         }
     }

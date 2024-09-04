@@ -51,6 +51,8 @@ enum Strings {
     case no_price_round_price_string_incompatible
     case no_price_round_formatter_failed
 
+    case invalid_color_string(String)
+
     // Customer Center
     case could_not_find_subscription_information
     case could_not_offer_for_active_subscriptions
@@ -148,6 +150,9 @@ extension Strings: CustomStringConvertible {
 
         case .no_price_round_formatter_failed:
             return "Could not round price because formatter failed to round price."
+
+        case .invalid_color_string(let colorString):
+            return "Invalid hex color string: \(colorString)"
 
         case .could_not_find_subscription_information:
             return "Could not find information for an active subscription"
