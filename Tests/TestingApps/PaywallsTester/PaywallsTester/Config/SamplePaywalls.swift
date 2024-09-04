@@ -628,12 +628,404 @@ private extension SamplePaywallLoader {
 
     #if PAYWALL_COMPONENTS
 
-    internal static var sampleComponents = PaywallComponent.Data(
-        backgroundColor: .init(light: "#FFFFFF"),
-        components: vstack
-    )
+    static func createFakePaywallComponentsData(components: [PaywallComponent]) -> PaywallComponentsData {
+        PaywallComponentsData(templateName: "Component Sample",
+                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
+                               componentsConfig: PaywallComponentsData.ComponentsConfig(components: components),
+                               componentsLocalizations: [String: [String: String]](),
+                               revision: 0)
+    }
 
-    static var vstack: [PaywallComponent] = {
+    internal static var fitnessComponents: PaywallComponentsData {
+        return createFakePaywallComponentsData(components: fitnessSample)
+    }
+
+    internal static var template1Components: PaywallComponentsData {
+        return createFakePaywallComponentsData(components: curiosity)
+    }
+
+    internal static var simpleSampleComponents: PaywallComponentsData {
+        return createFakePaywallComponentsData(components: simpleSix)
+    }
+
+    static var simpleOne: [PaywallComponent] = {
+            [helloWorld]
+    }()
+
+    static var simpleTwo: [PaywallComponent] = {
+            [fuzzyCat]
+    }()
+
+    static var simpleThree: [PaywallComponent] = {
+        let components: [PaywallComponent] = [
+            .stack(.init(components:
+                            [fuzzyCat, helloWorld],
+                         dimension: .vertical(.center),
+                         spacing: nil,
+                         backgroundColor: .init(light: "#FFFFFF"), 
+                         padding: .zero))]
+
+        return components
+    }()
+
+    static var simpleFour: [PaywallComponent] = {
+        let components: [PaywallComponent] = [
+            .stack(.init(components:
+                            [fuzzyCat, helloWorld, purchaseSimpleButton],
+                         dimension: .vertical(.center),
+                         spacing: nil,
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
+
+        return components
+    }()
+
+    static var simpleFive: [PaywallComponent] = {
+        let components: [PaywallComponent] = [
+            .stack(.init(components:
+                            [fuzzyCat, spacer, simpleText(text: "Feature"), spacer, purchaseSimpleButton],
+                         dimension: .vertical(.center),
+                         spacing: nil,
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
+
+        return components
+    }()
+
+    static var simpleSix: [PaywallComponent] = {
+        let components: [PaywallComponent] = [
+            .stack(.init(components:
+                            [fuzzyCat, spacer, simpleFeatureStack(text: simpleText(text: "Feature")), spacer, purchaseSimpleButton],
+                         dimension: .vertical(.center),
+                         spacing: nil,
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
+
+        return components
+    }()
+
+    static var simpleSample: [PaywallComponent] = {
+        let components: [PaywallComponent] = [
+            .stack(.init(components:
+                            //[fuzzyCat, spacer, simpleFeatureStack, spacer, purchaseSimpleButton],
+                            [helloWorld, helloWorld],
+                         dimension: .vertical(.center),
+                         spacing: nil,
+                         backgroundColor: .init(light: "#FFFFFF"),
+                         padding: .zero))]
+
+        return components
+
+    }()
+
+    static var triStacked: PaywallComponent = {
+        .stack(.init(components:
+                        [helloWorld, helloWorld, helloWorld],
+                     dimension: .vertical(.center),
+                     spacing: nil,
+                     backgroundColor: .init(light: "#FFFFFF"),
+                     padding: .zero))
+    }()
+
+    static var fuzzyCat: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!))
+    }()
+
+
+
+    static var checkmarkImage: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724808304.png")!,
+                     maxHeight: 20))
+    }()
+
+
+    static func simpleFeatureStack(text: PaywallComponent) -> PaywallComponent {
+        .stack(.init(components: [checkmarkImage, text],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
+    }
+
+    static func simpleText(text: String) -> PaywallComponent {
+        .text(.init(
+            text: .init(value: [
+                "en_US": text
+            ]),
+            textLid: "randomId",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body
+        ))
+    }
+
+    static var helloWorld: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Hello, Paywall Components!"
+            ]),
+            textLid: "randomId",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body
+        ))
+    }()
+
+    static var purchaseSimpleButton: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseSimpleNowText))
+    }()
+
+    static var purchaseSimpleNowText: PaywallComponent.TextComponent = {
+        .init(
+            text: .init(value: [
+                "en_US": "Purchase Now! $19.99/year"
+            ]),
+            textLid: "randomId",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            backgroundColor: .init(light: "#9EE5FF"),
+            padding: .init(top: 10, bottom: 10, leading: 50, trailing: 50),
+            textStyle: .body
+        )
+    }()
+
+    // fitness
+
+    static var fitnessSample: [PaywallComponent] = {
+        let components: [PaywallComponent] = [.stack(.init(components: [gymZStack,
+                                   featureImageStack1,
+                                   featureImageStack2,
+                                   featureImageStack3,
+                                   purchaseFitnessButton,
+                                   fitnessFooter],
+                      dimension: .vertical(.center),
+                      spacing: 25,
+                      backgroundColor: .init(light: "#000000"),
+                      padding: .zero))]
+
+
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+
+        do {
+            let jsonData = try encoder.encode(components)
+
+            // Convert JSON data to a string if needed for debugging or logging
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("JSON Representation:\n\(jsonString)")
+            }
+
+            // Return components as usual
+            return components
+        } catch {
+            print("Failed to encode components: \(error)")
+            return components
+        }
+
+    }()
+
+    static var gymZStack: PaywallComponent = {
+        .stack(.init(components: [homeGym, headlineText],
+                     dimension: .zlayer(.bottom),
+                      spacing: 0,
+                      backgroundColor: nil,
+                      padding: .zero))
+
+    }()
+
+
+    static var treadmill: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724796818.jpeg")!,
+                     fitMode: .fit,
+                     maxHeight: 125,
+                     cornerRadius: 23))
+    }()
+
+    static var cycle: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724797044.jpg")!,
+                     fitMode: .fit,
+                     maxHeight: 125,
+                     cornerRadius: 23))
+    }()
+
+    static var homeGym: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724799222.jpeg")!,
+                     fitMode: .fill,
+                     maxHeight: 200,
+                     gradientColors: ["#FF000000", "#FF000000", "#00000000"]))
+    }()
+
+    static var weights: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724797320.jpg")!,
+                     fitMode: .fit,
+                     maxHeight: 125,
+                     cornerRadius: 23))
+    }()
+
+
+    static var headlineText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Fitness Coach"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .black,
+            color: .init(light: "#EE4444"),
+            padding: .init(top: 0, bottom: 10, leading: 0, trailing: 0),
+            textStyle: .largeTitle
+        ))
+    }()
+
+
+    static var treadmillText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "New workouts added every day"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .semibold,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .title2
+        ))
+    }()
+
+    static var cycleText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Challenge others and climb the leader ladder"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .semibold,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .title2
+        ))
+    }()
+
+    static var weightsText: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Conquer your goals"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .semibold,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .title2
+        ))
+    }()
+
+
+    static var featureImageStack1: PaywallComponent = {
+        .stack(.init(components: [treadmillText, spacer, treadmill, spacer],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
+    }()
+
+    static var featureImageStack2: PaywallComponent = {
+        .stack(.init(components: [spacer, cycle, spacer, cycleText],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
+    }()
+
+    static var featureImageStack3: PaywallComponent = {
+        .stack(.init(components: [weightsText, spacer, weights, spacer],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
+    }()
+
+    static var purchaseFitnessButton: PaywallComponent = {
+        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
+                      textComponent: purchaseFitnessNowText))
+    }()
+
+    static var purchaseFitnessNowText: PaywallComponent.TextComponent = {
+        .init(
+            text: .init(value: [
+                "en_US": "Start Today for $9.99/mo"
+            ]),
+            textLid: "randomID",
+            fontWeight: .semibold,
+            color: .init(light: "#FFFFFF"),
+            backgroundColor: .init(light: "#DD4444"),
+            padding: .init(top: 10, bottom: 10, leading: 50, trailing: 50),
+            textStyle: .title3
+        )
+    }()
+
+    static var fitnessFooter: PaywallComponent = {
+        .stack(.init(components: [spacer, restoreFitnessPurchases, bulletFitness, termsAndConditionsFitness, spacer],
+                      dimension: .horizontal(),
+                     spacing: 10,
+                     backgroundColor: nil,
+                     padding: .zero))
+
+    }()
+
+    static var restoreFitnessPurchases: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Restore purchases"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .caption
+        ))
+    }()
+
+    static var bulletFitness: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "•"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .caption
+        ))
+    }()
+
+    static var termsAndConditionsFitness: PaywallComponent = {
+        .text(.init(
+            text: .init(value: [
+                "en_US": "Terms and conditions"
+            ]),
+            textLid: "randomID",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FFFFFF"),
+            padding: .zero,
+            textStyle: .caption
+        ))
+    }()
+
+
+    // CURIOSITY
+
+
+    static var curiosity: [PaywallComponent] = {
         [.stack(.init(components: [headerZStack,
                                    spacer,
                                    headingText,
@@ -646,7 +1038,8 @@ private extension SamplePaywallLoader {
                                    footerStack],
                       dimension: .vertical(),
                       spacing: nil,
-                      backgroundColor: nil))]
+                      backgroundColor: nil,
+                      padding: .zero))]
 
     }()
 
@@ -663,6 +1056,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Explore"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#f7d216"),
@@ -676,6 +1070,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Explore"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#633306"),
@@ -688,7 +1083,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [headerImage, myGreatAppTextOffset, myGreatAppText],
                       dimension: .zlayer(.topLeading),
                       spacing: 0,
-                      backgroundColor: nil))
+                      backgroundColor: nil,
+                     padding: .zero))
 
     }()
 
@@ -697,6 +1093,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Ignite your child's curiosity"
             ]),
+            textLid: "",
             fontWeight: .heavy,
             color: .init(light: "#000000"),
             textStyle: .extraLargeTitle
@@ -708,6 +1105,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Get access to all ouir educational content trusted by thousands of parents."
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             textStyle: .headline
         ))
@@ -717,7 +1115,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [feature1Text, feature2Text, feature3Text],
                      dimension: .vertical(.leading),
                      spacing: 10,
-                     backgroundColor: nil))
+                     backgroundColor: nil,
+                     padding: .zero))
 
     }()
 
@@ -726,7 +1125,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [feature1Text, spacer],
                      dimension: .horizontal(.center),
                      spacing: nil,
-                     backgroundColor: nil))
+                     backgroundColor: nil,
+                     padding: .zero))
     }()
 
     static var feature1Text: PaywallComponent = {
@@ -734,6 +1134,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "✅ Valuable features"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline
@@ -745,6 +1146,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "✅ Great Price"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline
@@ -756,6 +1158,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "✅ Support"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline
@@ -767,6 +1170,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "$6.99 per month"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             textStyle: .subheadline
         ))
@@ -782,6 +1186,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Purchase for $6.99"
             ]),
+            textLid: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
             backgroundColor: .init(light: "#00AA00"),
@@ -795,6 +1200,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Restore purchases"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -808,6 +1214,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Terms and conditions"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -821,6 +1228,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "•"
             ]),
+            textLid: "",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -833,7 +1241,8 @@ private extension SamplePaywallLoader {
         .stack(.init(components: [spacer, restorePurchases, bullet, termsAndConditions, spacer],
                       dimension: .horizontal(),
                      spacing: 10,
-                     backgroundColor: nil))
+                     backgroundColor: nil,
+                     padding: .zero))
 
     }()
 
@@ -846,7 +1255,8 @@ private extension SamplePaywallLoader {
         [.stack(.init(components: imageZStack + twoHorizontal + [button],
                       dimension: .vertical(),
                       spacing: 0,
-                      backgroundColor: nil))]
+                      backgroundColor: nil,
+                      padding: .zero))]
 
     }()
 
@@ -854,15 +1264,17 @@ private extension SamplePaywallLoader {
         [.stack(.init(components: [verticalTextStack, middleText, verticalTextStack],
                       dimension: .horizontal(),
                       spacing: nil,
-                      backgroundColor: .init(light: "#1122AA")))]
+                      backgroundColor: .init(light: "#1122AA"),
+                      padding: .zero))]
 
     }()
 
     static var verticalTextStack: PaywallComponent = {
         .stack(.init(components: [getStartedText, spacer, upgradeText],
                      dimension: .vertical(.leading),
-                      spacing: nil,
-                      backgroundColor: .init(light: "#11AA22")))
+                     spacing: nil,
+                     backgroundColor: .init(light: "#11AA22"),
+                     padding: .zero))
 
     }()
 
@@ -871,6 +1283,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Popular Plan"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             textStyle: .body
         ))
@@ -881,6 +1294,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Get started with our plan"
             ]),
+            textLid: "",
             color: .init(light: "#FF0000"),
             backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body
@@ -892,6 +1306,7 @@ private extension SamplePaywallLoader {
             text: .init(value: [
                 "en_US": "Upgrade to our premium plan"
             ]),
+            textLid: "",
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body
@@ -912,7 +1327,8 @@ private extension SamplePaywallLoader {
         [.stack(.init(components: [headerImage, .text(purchaseNowText)],
                       dimension: .zlayer(.center),
                       spacing: 0,
-                      backgroundColor: nil))]
+                      backgroundColor: nil,
+                      padding: .zero))]
 
     }()
 

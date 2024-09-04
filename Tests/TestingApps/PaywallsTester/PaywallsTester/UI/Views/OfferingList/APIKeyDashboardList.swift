@@ -142,7 +142,8 @@ struct APIKeyDashboardList: View {
         .sheet(item: self.$presentedPaywall) { paywall in
             #if PAYWALL_COMPONENTS
             if let componentData = paywall.offering.paywallComponentsData {
-                TemplateComponentsView(paywallComponentsData: componentData)
+                // TODO: Get locale
+                TemplateComponentsView(paywallComponentsData: componentData, offering: paywall.offering)
             } else {
                 PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                     .onRestoreCompleted { _ in

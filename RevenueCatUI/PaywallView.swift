@@ -230,7 +230,7 @@ public struct PaywallView: View {
 
         #if PAYWALL_COMPONENTS
         if let componentData = offering.paywallComponentsData {
-            TemplateComponentsView(paywallComponentsData: componentData)
+            TemplateComponentsView(paywallComponentsData: componentData, offering: offering)
         } else {
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)

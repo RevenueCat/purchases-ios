@@ -20,30 +20,22 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
-    let locale: Locale
-    let component: PaywallComponent.ImageComponent
-
-    var cornerRadius: CGFloat {
-        component.cornerRadius
-    }
-
-    var gradientColors: [Color] {
-        component.gradientColors.compactMap { try? $0.toColor() }
-    }
+    let viewModel: ImageComponentViewModel
 
     var body: some View {
-        RemoteImage(url: component.url) { image in
+        RemoteImage(url: viewModel.url) { image in
             image
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .aspectRatio(contentMode: viewModel.contentMode)
+                .frame(maxHeight: viewModel.maxHeight)
                 .overlay(
                     LinearGradient(
-                        gradient: Gradient(colors: gradientColors),
+                        gradient: Gradient(colors: viewModel.gradientColors),
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .cornerRadius(cornerRadius)
+                .cornerRadius(viewModel.cornerRadius)
         }
         .clipped()
     }

@@ -93,10 +93,29 @@ struct SamplePaywallsList: View {
             #endif
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
-            ComponentsView(locale: .current, components: data.components)
+            TemplateComponentsView(paywallComponentsData: data, offering: Self.loader.offeringWithDefaultPaywall())
         #endif
         }
 
+    }
+
+    func printComponents(_ components: [PaywallComponent])
+    {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.outputFormatting = .prettyPrinted
+
+        do {
+            let jsonData = try encoder.encode(components)
+
+            // Convert JSON data to a string if needed for debugging or logging
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("JSON Representation:\n\(jsonString)")
+            }
+
+        } catch {
+            print("Failed to encode components: \(error)")
+        }
     }
 
     private func list(with loader: SamplePaywallLoader) -> some View {
@@ -105,9 +124,25 @@ struct SamplePaywallsList: View {
             #if PAYWALL_COMPONENTS
             Section("Components") {
                 Button {
-                    self.display = .componentPaywall(SamplePaywallLoader.sampleComponents)
+                    let data = SamplePaywallLoader.template1Components
+                    printComponents(data.componentsConfig.components)
+                    self.display = .componentPaywall(data)
                 } label: {
-                    TemplateLabel(name: "Components", icon: "iphone")
+                    TemplateLabel(name: "Curiosity Components", icon: "iphone")
+                }
+                Button {
+                    let data = SamplePaywallLoader.fitnessComponents
+                    printComponents(data.componentsConfig.components)
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Fitness Components", icon: "iphone")
+                }
+                Button {
+                    let data = SamplePaywallLoader.simpleSampleComponents
+                    printComponents(data.componentsConfig.components)
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Simple Sample Components", icon: "iphone")
                 }
             }
             #endif
@@ -269,7 +304,7 @@ private extension SamplePaywallsList {
         case unrecognizedPaywall
         case customerCenter
         #if PAYWALL_COMPONENTS
-        case componentPaywall(PaywallComponent.Data)
+        case componentPaywall(PaywallComponentsData)
         #endif
 
     }

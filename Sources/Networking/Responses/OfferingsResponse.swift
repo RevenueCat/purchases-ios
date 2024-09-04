@@ -23,6 +23,10 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
         public var components: [PaywallComponent]
 
+        public init(components: [PaywallComponent]) {
+            self.components = components
+        }
+
     }
 
     public var templateName: String
@@ -38,14 +42,29 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public var componentsConfig: ComponentsConfig
 
+    public var componentsLocalizations: [String: [String: String]]
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
     private enum CodingKeys: String, CodingKey {
         case templateName
         case componentsConfig
+        case componentsLocalizations
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+    }
+
+    public init(templateName: String,
+                assetBaseURL: URL,
+                componentsConfig: ComponentsConfig,
+                componentsLocalizations: [String: [String: String]],
+                revision: Int) {
+        self.templateName = templateName
+        self.assetBaseURL = assetBaseURL
+        self.componentsConfig = componentsConfig
+        self.componentsLocalizations = componentsLocalizations
+        self._revision = revision
     }
 
 }
