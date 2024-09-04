@@ -99,25 +99,6 @@ struct SamplePaywallsList: View {
 
     }
 
-    func printComponents(_ components: [PaywallComponent])
-    {
-        let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.outputFormatting = .prettyPrinted
-
-        do {
-            let jsonData = try encoder.encode(components)
-
-            // Convert JSON data to a string if needed for debugging or logging
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                print("JSON Representation:\n\(jsonString)")
-            }
-
-        } catch {
-            print("Failed to encode components: \(error)")
-        }
-    }
-
     private func list(with loader: SamplePaywallLoader) -> some View {
         List {
 
@@ -125,21 +106,21 @@ struct SamplePaywallsList: View {
             Section("Components") {
                 Button {
                     let data = SamplePaywallLoader.template1Components
-                    printComponents(data.componentsConfig.components)
+                    data.componentsConfig.components.printComponents()
                     self.display = .componentPaywall(data)
                 } label: {
                     TemplateLabel(name: "Curiosity Components", icon: "iphone")
                 }
                 Button {
                     let data = SamplePaywallLoader.fitnessComponents
-                    printComponents(data.componentsConfig.components)
+                    data.componentsConfig.components.printComponents()
                     self.display = .componentPaywall(data)
                 } label: {
                     TemplateLabel(name: "Fitness Components", icon: "iphone")
                 }
                 Button {
                     let data = SamplePaywallLoader.simpleSampleComponents
-                    printComponents(data.componentsConfig.components)
+                    data.componentsConfig.components.printComponents()
                     self.display = .componentPaywall(data)
                 } label: {
                     TemplateLabel(name: "Simple Sample Components", icon: "iphone")

@@ -16,3 +16,27 @@ public extension Sequence {
     }
 
 }
+
+#if PAYWALL_COMPONENTS
+public extension Array where Element == PaywallComponent {
+
+    func printComponents() {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.outputFormatting = .prettyPrinted
+
+        do {
+            let jsonData = try encoder.encode(self)
+
+            // Convert JSON data to a string if needed for debugging or logging
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("JSON Representation:\n\(jsonString)")
+            }
+
+        } catch {
+            print("Failed to encode components: \(error)")
+        }
+    }
+
+}
+#endif
