@@ -590,17 +590,21 @@ private extension HTTPClient {
                                                                        responseTime: responseTime,
                                                                        wasSuccessful: true,
                                                                        responseCode: httpStatusCode,
+                                                                       backendErrorCode: nil,
                                                                        resultOrigin: response.origin,
                                                                        verificationResult: verificationResult)
                 case let .failure(error):
                     var responseCode = -1
-                    if case let .errorResponse(_, code, _) = error {
+                    var backendErrorCode: Int?
+                    if case let .errorResponse(errorResponse, code, _) = error {
                         responseCode = code.rawValue
+                        backendErrorCode = errorResponse.code.rawValue
                     }
                     await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
                                                                        responseTime: responseTime,
                                                                        wasSuccessful: false,
                                                                        responseCode: responseCode,
+                                                                       backendErrorCode: backendErrorCode,
                                                                        resultOrigin: nil,
                                                                        verificationResult: .notRequested)
                 }

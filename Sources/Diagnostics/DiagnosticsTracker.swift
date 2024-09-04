@@ -27,6 +27,7 @@ protocol DiagnosticsTrackerType {
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
+                                   backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult) async
 
@@ -70,6 +71,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
+                                   backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult) async {
         await track(
@@ -80,6 +82,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                     .responseTimeMillisKey: AnyEncodable(responseTime * 1000),
                     .successfulKey: AnyEncodable(wasSuccessful),
                     .responseCodeKey: AnyEncodable(responseCode),
+                    .backendErrorCodeKey: AnyEncodable(backendErrorCode),
                     .eTagHitKey: AnyEncodable(resultOrigin == .cache),
                     .verificationResultKey: AnyEncodable(verificationResult.name)
                 ],
