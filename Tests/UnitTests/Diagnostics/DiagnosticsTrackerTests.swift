@@ -113,6 +113,7 @@ class DiagnosticsTrackerTests: TestCase {
                                                      responseTime: 50,
                                                      wasSuccessful: true,
                                                      responseCode: 200,
+                                                     backendErrorCode: 7121,
                                                      resultOrigin: .cache,
                                                      verificationResult: .verified)
         let entries = await self.handler.getEntries()
@@ -123,6 +124,7 @@ class DiagnosticsTrackerTests: TestCase {
                     .responseTimeMillisKey: AnyEncodable(50000),
                     .successfulKey: AnyEncodable(true),
                     .responseCodeKey: AnyEncodable(200),
+                    .backendErrorCodeKey: AnyEncodable(7121),
                     .eTagHitKey: AnyEncodable(true),
                     .verificationResultKey: AnyEncodable("VERIFIED")],
                   timestamp: Self.eventTimestamp1)

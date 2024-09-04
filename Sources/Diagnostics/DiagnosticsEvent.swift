@@ -43,6 +43,7 @@ extension DiagnosticsEvent {
         case responseTimeMillisKey
         case successfulKey
         case responseCodeKey
+        case backendErrorCodeKey
         case eTagHitKey
 
     }
