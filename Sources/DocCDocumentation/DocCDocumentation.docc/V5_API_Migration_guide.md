@@ -42,7 +42,7 @@ with `PurchasesAreCompletedBy` (either RevenueCat or your app).
 
 Version 5.0 of the SDK also introduces support for tracking purchases made directly by your app calling StoreKit 2.
 
-If you're using RevenueCat only to track purchases, and you have your own implementation of StoreKit to make purchases, you will need to explicitly configure the SDK.
+If you're using RevenueCat only to track purchases, and you have your own implementation of StoreKit to make purchases, you will need to explicitly provide your StoreKit version when you configure the SDK.
 
 Add this configuration only if you previously had `observerMode: true` in your SDK initialization or your app has its own implementation of StoreKit to make purchases.
 
