@@ -26,6 +26,8 @@ extension TemplateComponentsView {
             textLid: "errorID",
             color: PaywallComponent.ColorInfo(light: "#000000")
         )
+
+        // swiftlint:disable:next force_try
         return try! PaywallComponentViewModel.text(
             TextComponentViewModel(localizedStrings: errorDict, component: textComponent)
         )

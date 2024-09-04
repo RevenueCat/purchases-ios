@@ -10,6 +10,7 @@
 //  PaywallComponentLocalization.swift
 //
 //  Created by James Borthwick on 2024-09-03.
+// swiftlint:disable missing_docs
 
 import Foundation
 
