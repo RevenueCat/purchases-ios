@@ -27,7 +27,7 @@ struct ImageComponentView: View {
             image
                 .resizable()
                 .aspectRatio(contentMode: viewModel.contentMode)
-                .frame(maxHeight: viewModel.component.maxHeight)
+                .frame(maxHeight: viewModel.maxHeight)
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: viewModel.gradientColors),
