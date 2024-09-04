@@ -58,7 +58,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public init(templateName: String,
                 assetBaseURL: URL,
                 componentsConfig: ComponentsConfig,
-                componentsLocalizations: [String : [String : String]],
+                componentsLocalizations: [String: [String : String]],
                 revision: Int) {
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
