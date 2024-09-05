@@ -55,6 +55,13 @@ extension PaywallComponent {
                 try LinkButtonComponentViewModel(component: component,
                                                  localizedStrings: localizedStrings)
             )
+        case .packages(let component):
+            return .stack( //TODO: Make PACKAGE
+                try StackComponentViewModel(locale: locale,
+                                            component: component,
+                                            localizedStrings: localizedStrings,
+                                            offering: offering)
+            )
         }
     }
 

@@ -26,18 +26,24 @@ public extension PaywallComponent {
         public let dimension: Dimension
         public let padding: Padding
 
-        public init(components: [PaywallComponent],
+        // packages
+        public let defaultSelectedPackageID: String?
+
+        public init(type: ComponentType = .stack,
+                    components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     spacing: CGFloat?,
                     backgroundColor: ColorInfo?,
-                    padding: Padding
+                    padding: Padding,
+                    defaultSelectedPackageID: String? = nil
         ) {
             self.components = components
             self.spacing = spacing
             self.backgroundColor = backgroundColor
-            self.type = .stack
+            self.type = type
             self.dimension = dimension
             self.padding = padding
+            self.defaultSelectedPackageID = defaultSelectedPackageID
         }
 
         public enum Dimension: Codable, Sendable, Hashable {

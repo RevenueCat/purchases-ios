@@ -1086,9 +1086,10 @@ private extension SamplePaywallLoader {
     }()
 
     static var featureVStack: PaywallComponent = {
-        .stack(.init(components: [feature1Text, feature2Text, feature3Text],
+        .packages(.init(type: .packages,
+                     components: [feature1Text, feature2Text, feature3Text],
                      dimension: .vertical(.leading),
-                     spacing: 10,
+                     spacing: 11.5,
                      backgroundColor: nil,
                      padding: .zero))
 
