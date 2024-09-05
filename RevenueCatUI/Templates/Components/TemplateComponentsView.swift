@@ -52,11 +52,11 @@ public struct TemplateComponentsView: View {
 
     static func chooseLocalization(
         for componentsData: PaywallComponentsData
-    ) -> (locale: Locale, localizedStrings: LocalizationDictionary) {
+    ) -> (locale: Locale, localizedStrings: PaywallComponent.LocalizationDictionary) {
 
         guard !componentsData.componentsLocalizations.isEmpty else {
             Logger.error(Strings.paywall_contains_no_localization_data)
-            return (Locale.current, LocalizationDictionary())
+            return (Locale.current, PaywallComponent.LocalizationDictionary())
         }
 
         // STEP 1: Get available paywall locales
@@ -75,7 +75,7 @@ public struct TemplateComponentsView: View {
             return (fallbackLocale, localizedStrings)
         } else {
             Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(fallbackLocale)"))
-            return (fallbackLocale, LocalizationDictionary())
+            return (fallbackLocale, PaywallComponent.LocalizationDictionary())
         }
     }
 }
