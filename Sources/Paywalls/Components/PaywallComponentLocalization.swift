@@ -16,11 +16,7 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
-public typealias LocaleID = String
-public typealias LocalizationDictionary = [String: String]
-public typealias LocalizationKey = String
-
-extension LocalizationDictionary {
+extension PaywallComponent.LocalizationDictionary {
 
     public func string(key: String) throws -> String {
         guard let value = self[key] else {

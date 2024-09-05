@@ -40,17 +40,19 @@ public extension Array where Element == PaywallComponent {
 
 }
 
-extension Dictionary where Key == LocaleID, Value == LocalizationDictionary {
+extension Dictionary where Key == PaywallComponent.LocaleID, Value == PaywallComponent.LocalizationDictionary {
 
     func printAsJSON() {
-        if let jsonData = try? JSONSerialization.data(withJSONObject: self, options: .prettyPrinted),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            print("Localization as JSON:\n\(jsonString)")
-        } else {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: self, options: .prettyPrinted)
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("Localization as JSON:\n\(jsonString)")
+            }
+        } catch {
             print("Failed to convert localization to JSON: \(error)")
         }
     }
-    
+
 }
 
 #endif

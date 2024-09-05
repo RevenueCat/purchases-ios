@@ -26,7 +26,7 @@ public class StackComponentViewModel {
 
     init(locale: Locale,
          component: PaywallComponent.StackComponent,
-         localizedStrings: LocalizationDictionary,
+         localizedStrings: PaywallComponent.LocalizationDictionary,
          offering: Offering
     ) throws {
         self.locale = locale

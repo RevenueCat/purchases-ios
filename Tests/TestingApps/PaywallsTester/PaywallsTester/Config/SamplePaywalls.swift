@@ -628,6 +628,9 @@ private extension SamplePaywallLoader {
 
     #if PAYWALL_COMPONENTS
 
+    typealias LocaleID = PaywallComponent.LocaleID
+    typealias LocalizationDictionary = PaywallComponent.LocalizationDictionary
+
     static func createFakePaywallComponentsData(components: [PaywallComponent], localization: [LocaleID: LocalizationDictionary]) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
                                assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,

@@ -31,6 +31,14 @@ public enum PaywallComponent: PaywallComponentBase {
 
 }
 
+public extension PaywallComponent {
+    public typealias LocaleID = String
+    public typealias LocalizationDictionary = [String: String]
+    public typealias LocalizationKey = String
+    public typealias TierId = String
+    public typealias ColorHex = String
+}
+
 extension PaywallComponent: Codable {
 
     enum CodingKeys: String, CodingKey {

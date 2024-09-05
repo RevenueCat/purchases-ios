@@ -26,7 +26,7 @@ public class LinkButtonComponentViewModel {
     }
 
     init(component: PaywallComponent.LinkButtonComponent,
-         localizedStrings: LocalizationDictionary
+         localizedStrings: PaywallComponent.LocalizationDictionary
     ) throws {
         self.component = component
         self.textComponentViewModel = try TextComponentViewModel(localizedStrings: localizedStrings,
