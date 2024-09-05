@@ -89,7 +89,7 @@ struct SamplePaywallsList: View {
             )
         case .customerCenter:
             #if CUSTOMER_CENTER_ENABLED
-            CustomerCenterView()
+            CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
             #endif
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
