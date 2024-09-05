@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  FallbackPaywall.swift
+//  TemplateComponentsView+extensions.swift
 //
 //  Created by James Borthwick on 2024-09-03.
 
