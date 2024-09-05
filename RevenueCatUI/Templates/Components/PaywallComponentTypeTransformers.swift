@@ -169,7 +169,7 @@ extension PaywallComponent.FitMode {
     }
 }
 
-extension ColorHex {
+extension PaywallComponent.ColorHex {
 
     func toColor(fallback: Color) -> Color {
         let red, green, blue, alpha: CGFloat

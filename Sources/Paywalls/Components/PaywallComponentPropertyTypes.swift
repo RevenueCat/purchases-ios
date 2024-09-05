@@ -16,9 +16,6 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
-public typealias TierId = String
-public typealias ColorHex = String
-
 public extension PaywallComponent {
 
     struct ColorInfo: Codable, Sendable, Hashable, Equatable {
