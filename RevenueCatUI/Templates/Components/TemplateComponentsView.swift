@@ -62,20 +62,21 @@ public struct TemplateComponentsView: View {
         // STEP 1: Get available paywall locales
         let paywallLocales = componentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
 
-        let fallbackLocale = Locale(identifier: componentsData.defaultLocale)
+        // use default locale as a fallback if none of the user's preferred locales are not available in the paywall
+        let defaultLocale = Locale(identifier: componentsData.defaultLocale)
 
         // STEP 2: choose best locale based on device's list of preferred locales.
-        let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? fallbackLocale
+        let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? defaultLocale
 
         // STEP 3: Get localization for one of preferred locales in order
         if let localizedStrings = componentsData.componentsLocalizations[chosenLocale.identifier] {
             return (chosenLocale, localizedStrings)
-        } else if let localizedStrings = componentsData.componentsLocalizations[fallbackLocale.identifier] {
+        } else if let localizedStrings = componentsData.componentsLocalizations[defaultLocale.identifier] {
             Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
-            return (fallbackLocale, localizedStrings)
+            return (defaultLocale, localizedStrings)
         } else {
-            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(fallbackLocale)"))
-            return (fallbackLocale, PaywallComponent.LocalizationDictionary())
+            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(defaultLocale)"))
+            return (defaultLocale, PaywallComponent.LocalizationDictionary())
         }
     }
 }
