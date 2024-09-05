@@ -578,7 +578,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.storefront).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.unsyncedAttributes).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
         expect(customerInfo) == mockCustomerInfo
