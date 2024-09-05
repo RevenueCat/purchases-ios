@@ -1143,7 +1143,6 @@ private extension PurchasesOrchestrator {
                         appUserID: currentAppUserID,
                         presentedOfferingContext: nil,
                         unsyncedAttributes: unsyncedAttributes,
-                        storefront: await Storefront.currentStorefront,
                         source: .init(
                             isRestore: isRestore,
                             initiationSource: initiationSource
