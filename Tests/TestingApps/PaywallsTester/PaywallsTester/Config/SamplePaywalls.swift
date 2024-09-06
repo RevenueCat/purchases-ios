@@ -1432,7 +1432,6 @@ private extension SamplePaywallLoader {
         ]
     }
 
-
     static func fitnessPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
