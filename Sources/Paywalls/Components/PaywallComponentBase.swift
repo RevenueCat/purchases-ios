@@ -18,7 +18,8 @@ public enum PaywallComponent: PaywallComponentBase {
     case spacer(SpacerComponent)
     case stack(StackComponent)
     case linkButton(LinkButtonComponent)
-    case packages(StackComponent)
+    case packages(PackagesComponent)
+    case package(PackageComponent)
 
     public enum ComponentType: String, Codable, Sendable {
 
@@ -28,6 +29,7 @@ public enum PaywallComponent: PaywallComponentBase {
         case stack
         case linkButton = "link_button"
         case packages
+        case package
 
     }
 
@@ -70,6 +72,9 @@ extension PaywallComponent: Codable {
         case .packages(let component):
             try container.encode(ComponentType.packages, forKey: .type)
             try component.encode(to: encoder)
+        case .package(let component):
+            try container.encode(ComponentType.package, forKey: .type)
+            try component.encode(to: encoder)
         }
     }
 
@@ -89,7 +94,9 @@ extension PaywallComponent: Codable {
         case .linkButton:
             self = .linkButton(try LinkButtonComponent(from: decoder))
         case .packages:
-            self = .packages(try StackComponent(from: decoder))
+            self = .packages(try PackagesComponent(from: decoder))
+        case .package:
+            self = .package(try PackageComponent(from: decoder))
         }
     }
 
