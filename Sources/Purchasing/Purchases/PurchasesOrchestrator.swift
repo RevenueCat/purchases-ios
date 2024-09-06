@@ -1139,6 +1139,16 @@ private extension PurchasesOrchestrator {
                         return
                     }
 
+                    // We dont have an AppTransactionJWS, and no transaction, return error
+                    if appTransactionJWS == nil {
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion?(.failure(ErrorUtils.storeProblemError(
+                                withMessage: Strings.storeKit.sk2_app_transaction_unavailable.description
+                            )))
+                        }
+                        return
+                    }
+
                     self.backend.post(receipt: .empty,
                                       productData: nil,
                                       transactionData: .init(appUserID: currentAppUserID,
