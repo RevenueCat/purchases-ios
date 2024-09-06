@@ -26,13 +26,13 @@ public class StackComponentViewModel {
 
     init(locale: Locale,
          component: PaywallComponent.StackComponent,
-         localization: [String: String],
+         localizedStrings: PaywallComponent.LocalizationDictionary,
          offering: Offering
-    ) {
+    ) throws {
         self.locale = locale
         self.component = component
-        self.viewModels = component.components.map {
-            $0.toViewModel(offering: offering, locale: locale, localization: localization)
+        self.viewModels = try component.components.map {
+            try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }
     }
 

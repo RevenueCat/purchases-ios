@@ -10,7 +10,6 @@
 //  PaywallComponentPropertyTypes.swift
 //
 //  Created by James Borthwick on 2024-08-29.
-
 // swiftlint:disable missing_docs
 
 import Foundation
@@ -28,16 +27,6 @@ public extension PaywallComponent {
 
         public let light: ColorHex
         public let dark: ColorHex?
-
-    }
-
-    struct LocaleResources<T: Codable & Sendable & Hashable & Equatable>: Codable, Sendable, Hashable, Equatable {
-
-        public init(value: [LocaleId: T]) {
-            self.value = value
-        }
-
-        public let value: [LocaleId: T]
 
     }
 

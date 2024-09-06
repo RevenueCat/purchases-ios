@@ -15,7 +15,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class LinkButtonComponentViewModel {
 
-    let locale: Locale
     let textComponentViewModel: TextComponentViewModel
     private let component: PaywallComponent.LinkButtonComponent
 
@@ -26,17 +25,12 @@ public class LinkButtonComponentViewModel {
         component.textComponent
     }
 
-    init(locale: Locale,
-         component: PaywallComponent.LinkButtonComponent,
-         localization: [String: String],
-         offering: Offering
-    ) {
-        self.locale = locale
+    init(component: PaywallComponent.LinkButtonComponent,
+         localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws {
         self.component = component
-        self.textComponentViewModel = TextComponentViewModel(locale: locale,
-                                                             localization: localization,
-                                                             component: component.textComponent)
-
+        self.textComponentViewModel = try TextComponentViewModel(localizedStrings: localizedStrings,
+                                                                 component: component.textComponent)
     }
 
 }

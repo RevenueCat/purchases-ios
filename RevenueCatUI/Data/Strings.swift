@@ -52,6 +52,9 @@ enum Strings {
     case no_price_round_formatter_failed
 
     case invalid_color_string(String)
+    case paywall_view_model_construction_failed(Error)
+    case paywall_contains_no_localization_data
+    case paywall_could_not_find_localization(String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -150,6 +153,16 @@ extension Strings: CustomStringConvertible {
 
         case .no_price_round_formatter_failed:
             return "Could not round price because formatter failed to round price."
+
+        case .paywall_view_model_construction_failed(let error):
+            return "Paywall view model construction failed: \(error)\n" +
+            "Will use fallback paywall."
+
+        case .paywall_could_not_find_localization(let string):
+            return "Could not find paywall localization data for \(string)"
+
+        case .paywall_contains_no_localization_data:
+            return "Paywall contains no localization data."
 
         case .invalid_color_string(let colorString):
             return "Invalid hex color string: \(colorString)"
