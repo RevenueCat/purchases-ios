@@ -80,4 +80,26 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    private(set) var trackedProductsRequestParams: [
+        // swiftlint:disable:next large_tuple
+        (wasSuccessful: Bool,
+         storeKitVersion: StoreKitVersion,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ] = []
+    func trackProductsRequest(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              responseTime: TimeInterval) async {
+        self.trackedProductsRequestParams.append(
+            (wasSuccessful,
+            storeKitVersion,
+            errorMessage,
+            errorCode,
+            responseTime)
+        )
+    }
+
 }

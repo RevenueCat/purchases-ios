@@ -18,6 +18,7 @@ import XCTest
 class CachingProductsManagerTests: TestCase {
 
     private var mockManager: MockProductsManager!
+    private var mockDiagnosticsTracker: DiagnosticsTrackerType?
     private var cachingManager: CachingProductsManager!
 
     override func setUp() async throws {
@@ -25,7 +26,12 @@ class CachingProductsManagerTests: TestCase {
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+        }
+
         self.mockManager = MockProductsManager(
+            diagnosticsTracker: self.mockDiagnosticsTracker,
             systemInfo: systemInfo,
             requestTimeout: Configuration.storeKitRequestTimeoutDefault
         )

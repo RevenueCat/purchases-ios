@@ -354,6 +354,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let productsRequestFactory = ProductsRequestFactory()
         let productsManager = CachingProductsManager(
             manager: ProductsManager(productsRequestFactory: productsRequestFactory,
+                                     diagnosticsTracker: diagnosticsTracker,
                                      systemInfo: systemInfo,
                                      requestTimeout: storeKitTimeout)
         )

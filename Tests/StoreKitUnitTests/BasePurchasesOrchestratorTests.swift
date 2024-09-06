@@ -55,7 +55,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.setUpSystemInfo()
 
-        self.productsManager = MockProductsManager(systemInfo: self.systemInfo,
+        self.productsManager = MockProductsManager(diagnosticsTracker: nil,
+                                                   systemInfo: self.systemInfo,
                                                    requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.purchasedProductsFetcher = .init()
         self.operationDispatcher = MockOperationDispatcher()
