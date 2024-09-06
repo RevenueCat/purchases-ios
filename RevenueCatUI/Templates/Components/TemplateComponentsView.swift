@@ -115,6 +115,8 @@ struct ComponentsView: View {
                 PackagesComponentView(viewModel: viewModel)
             case .package(let viewModel):
                 PackageComponentView(viewModel: viewModel)
+            case .purchaseButton(let viewModel):
+                PurchaseButtonComponentView(viewModel: viewModel)
             }
         }
     }

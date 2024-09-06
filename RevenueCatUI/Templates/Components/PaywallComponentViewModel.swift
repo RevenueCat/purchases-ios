@@ -21,6 +21,7 @@ enum PaywallComponentViewModel {
     case linkButton(LinkButtonComponentViewModel)
     case packages(PackagesComponentViewModel)
     case package(PackageComponentViewModel)
+    case purchaseButton(PurchaseButtonComponentViewModel)
 
 }
 
@@ -71,6 +72,11 @@ extension PaywallComponent {
                                           locale: locale,
                                           localizedStrings: localizedStrings)
                 )
+        case .purchaseButton(let component):
+            return .purchaseButton(
+                try PurchaseButtonComponentViewModel(component: component,
+                                                 localizedStrings: localizedStrings)
+            )
         }
     }
 

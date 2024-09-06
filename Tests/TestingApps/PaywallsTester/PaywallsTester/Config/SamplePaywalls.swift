@@ -717,7 +717,6 @@ private extension SamplePaywallLoader {
                   padding: .zero))
     }()
 
-
     static var package1Text: PaywallComponent = {
      .text(.init(
          text: "Package one",
