@@ -663,7 +663,8 @@ private extension SamplePaywallLoader {
                                    titleText,
                                    spacer,
                                    packages,
-                                   spacer
+                                   spacer,
+                                   purchasePackageButton
                                   ],
                       dimension: .vertical(),
                       spacing: nil,
@@ -761,6 +762,23 @@ private extension SamplePaywallLoader {
          padding: .zero,
          textStyle: .body
      ))
+    }()
+
+
+    static var purchasePackageButton: PaywallComponent = {
+        .purchaseButton(.init(textComponent: purchasePackageText))
+    }()
+
+    static var purchasePackageText: PaywallComponent.TextComponent = {
+        .init(
+            text: "Purchase Now! $19.99/year",
+            textLid: "purchase_button_text",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            backgroundColor: .init(light: "#9EE5FF"),
+            padding: .init(top: 10, bottom: 10, leading: 50, trailing: 50),
+            textStyle: .body
+        )
     }()
 
 
@@ -1409,6 +1427,7 @@ private extension SamplePaywallLoader {
                 "package_4": "Package Four",
                 "package_5": "Package Five",
                 "package_6": "Package Six",
+                "purchase_button_text": "Purchase Now! $19.99/year"
             ],
             "fr_FR": [
                 "package_title": "Sélectionnez un forfait",
@@ -1418,6 +1437,7 @@ private extension SamplePaywallLoader {
                 "package_4": "Forfait Quatre",
                 "package_5": "Forfait Cinq",
                 "package_6": "Forfait Six",
+                "purchase_button_text": "Achetez maintenant! 19,99$/an"
             ],
             "es_ES": [
                 "package_title": "Seleccione un paquete",
@@ -1427,6 +1447,7 @@ private extension SamplePaywallLoader {
                 "package_4": "Paquete Cuatro",
                 "package_5": "Paquete Cinco",
                 "package_6": "Paquete Seis",
+                "purchase_button_text": "¡Compra ahora! 19,99€/año"
             ]
         ]
     }
