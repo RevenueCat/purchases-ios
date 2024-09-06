@@ -1,0 +1,351 @@
+[
+  {
+    "spacing" : 25,
+    "type" : "stack",
+    "components" : [
+      {
+        "padding" : {
+          "top" : 0,
+          "trailing" : 0,
+          "leading" : 0,
+          "bottom" : 0
+        },
+        "type" : "stack",
+        "dimension" : {
+          "alignment" : "bottom",
+          "type" : "zlayer"
+        },
+        "components" : [
+          {
+            "url" : "https:\/\/assets.pawwalls.com\/1075077_1724799222.jpeg",
+            "gradientColors" : [
+              "#FF000000",
+              "#FF000000",
+              "#00000000"
+            ],
+            "_cornerRadius" : 0,
+            "fitMode" : {
+              "crop" : {
+
+              }
+            },
+            "type" : "image"
+          },
+          {
+            "fontWeight" : "black",
+            "padding" : {
+              "bottom" : 10,
+              "leading" : 0,
+              "top" : 0,
+              "trailing" : 0
+            },
+            "textStyle" : "largeTitle",
+            "type" : "text",
+            "text" : {
+              "value" : {
+                "en_US" : "Fitness Coach"
+              }
+            },
+            "fontFamily" : "",
+            "horizontalAlignment" : "center",
+            "color" : {
+              "light" : "#EE4444"
+            }
+          }
+        ],
+        "spacing" : 0
+      },
+      {
+        "dimension" : {
+          "alignment" : "center",
+          "type" : "horizontal"
+        },
+        "components" : [
+          {
+            "type" : "text",
+            "horizontalAlignment" : "center",
+            "fontFamily" : "",
+            "textStyle" : "title2",
+            "text" : {
+              "value" : {
+                "en_US" : "Do a daily workout"
+              }
+            },
+            "fontWeight" : "semibold",
+            "padding" : {
+              "leading" : 0,
+              "top" : 0,
+              "bottom" : 0,
+              "trailing" : 0
+            },
+            "color" : {
+              "light" : "#FFFFFF"
+            }
+          },
+          {
+            "type" : "spacer"
+          },
+          {
+            "_cornerRadius" : 23,
+            "url" : "https:\/\/assets.pawwalls.com\/1075077_1724796818.jpeg",
+            "gradientColors" : [
+
+            ],
+            "type" : "image",
+            "fitMode" : {
+              "fit" : {
+
+              }
+            }
+          },
+          {
+            "type" : "spacer"
+          }
+        ],
+        "padding" : {
+          "trailing" : 40,
+          "top" : 0,
+          "bottom" : 0,
+          "leading" : 40
+        },
+        "type" : "stack"
+      },
+      {
+        "padding" : {
+          "top" : 0,
+          "leading" : 40,
+          "bottom" : 0,
+          "trailing" : 40
+        },
+        "dimension" : {
+          "alignment" : "center",
+          "type" : "horizontal"
+        },
+        "components" : [
+          {
+            "type" : "spacer"
+          },
+          {
+            "_cornerRadius" : 23,
+            "type" : "image",
+            "gradientColors" : [
+
+            ],
+            "url" : "https:\/\/assets.pawwalls.com\/1075077_1724797044.jpg",
+            "fitMode" : {
+              "fit" : {
+
+              }
+            }
+          },
+          {
+            "type" : "spacer"
+          },
+          {
+            "fontFamily" : "",
+            "fontWeight" : "semibold",
+            "text" : {
+              "value" : {
+                "en_US" : "Challenge others and climb the leader ladder"
+              }
+            },
+            "type" : "text",
+            "padding" : {
+              "bottom" : 0,
+              "trailing" : 0,
+              "leading" : 0,
+              "top" : 0
+            },
+            "horizontalAlignment" : "center",
+            "textStyle" : "title2",
+            "color" : {
+              "light" : "#FFFFFF"
+            }
+          }
+        ],
+        "type" : "stack"
+      },
+      {
+        "padding" : {
+          "bottom" : 0,
+          "trailing" : 40,
+          "top" : 0,
+          "leading" : 40
+        },
+        "components" : [
+          {
+            "text" : {
+              "value" : {
+                "en_US" : "Conquer your goals"
+              }
+            },
+            "fontWeight" : "semibold",
+            "textStyle" : "title2",
+            "type" : "text",
+            "color" : {
+              "light" : "#FFFFFF"
+            },
+            "fontFamily" : "",
+            "horizontalAlignment" : "center",
+            "padding" : {
+              "leading" : 0,
+              "bottom" : 0,
+              "top" : 0,
+              "trailing" : 0
+            }
+          },
+          {
+            "type" : "spacer"
+          },
+          {
+            "gradientColors" : [
+
+            ],
+            "fitMode" : {
+              "fit" : {
+
+              }
+            },
+            "_cornerRadius" : 23,
+            "type" : "image",
+            "url" : "https:\/\/assets.pawwalls.com\/1075077_1724797320.jpg"
+          },
+          {
+            "type" : "spacer"
+          }
+        ],
+        "type" : "stack",
+        "dimension" : {
+          "type" : "horizontal",
+          "alignment" : "center"
+        }
+      },
+      {
+        "type" : "link_button",
+        "url" : "https:\/\/pay.rev.cat\/d1db8380eeb98a92\/josh",
+        "textComponent" : {
+          "text" : {
+            "value" : {
+              "en_US" : "Start Today for $9.99\/mo"
+            }
+          },
+          "backgroundColor" : {
+            "light" : "#DD4444"
+          },
+          "textStyle" : "title3",
+          "fontFamily" : "SF Pro",
+          "color" : {
+            "light" : "#FFFFFF"
+          },
+          "fontWeight" : "semibold",
+          "horizontalAlignment" : "center",
+          "padding" : {
+            "leading" : 50,
+            "top" : 10,
+            "trailing" : 50,
+            "bottom" : 10
+          },
+          "type" : "text"
+        }
+      },
+      {
+        "padding" : {
+          "top" : 0,
+          "leading" : 0,
+          "trailing" : 0,
+          "bottom" : 0
+        },
+        "type" : "stack",
+        "components" : [
+          {
+            "type" : "spacer"
+          },
+          {
+            "text" : {
+              "value" : {
+                "en_US" : "Restore purchases"
+              }
+            },
+            "textStyle" : "caption",
+            "fontFamily" : "",
+            "type" : "text",
+            "padding" : {
+              "leading" : 0,
+              "bottom" : 0,
+              "top" : 0,
+              "trailing" : 0
+            },
+            "horizontalAlignment" : "center",
+            "color" : {
+              "light" : "#FFFFFF"
+            },
+            "fontWeight" : "regular"
+          },
+          {
+            "fontWeight" : "regular",
+            "fontFamily" : "",
+            "horizontalAlignment" : "center",
+            "padding" : {
+              "top" : 0,
+              "leading" : 0,
+              "trailing" : 0,
+              "bottom" : 0
+            },
+            "textStyle" : "caption",
+            "text" : {
+              "value" : {
+                "en_US" : "•"
+              }
+            },
+            "color" : {
+              "light" : "#FFFFFF"
+            },
+            "type" : "text"
+          },
+          {
+            "text" : {
+              "value" : {
+                "en_US" : "Terms and conditions"
+              }
+            },
+            "fontWeight" : "regular",
+            "padding" : {
+              "bottom" : 0,
+              "leading" : 0,
+              "trailing" : 0,
+              "top" : 0
+            },
+            "color" : {
+              "light" : "#FFFFFF"
+            },
+            "textStyle" : "caption",
+            "horizontalAlignment" : "center",
+            "fontFamily" : "",
+            "type" : "text"
+          },
+          {
+            "type" : "spacer"
+          }
+        ],
+        "dimension" : {
+          "type" : "horizontal",
+          "alignment" : "center"
+        },
+        "spacing" : 10
+      }
+    ],
+    "backgroundColor" : {
+      "light" : "#000000"
+    },
+    "dimension" : {
+      "type" : "vertical",
+      "alignment" : "center"
+    },
+    "padding" : {
+      "leading" : 0,
+      "bottom" : 0,
+      "top" : 0,
+      "trailing" : 0
+    }
+  }
+]
