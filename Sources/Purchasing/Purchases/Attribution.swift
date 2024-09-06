@@ -287,7 +287,7 @@ public extension Attribution {
      * #### Related Articles
      * - [Kochava RevenueCat Integration](https://docs.revenuecat.com/docs/kochava)
      *
-     *- Parameter kochavaDeviceID: Empty String or `nil` will delete the subscriber attribute.
+     * - Parameter kochavaDeviceID: Empty String or `nil` will delete the subscriber attribute.
      */
     @objc func setKochavaDeviceID(_ kochavaDeviceID: String?) {
         self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceID, appUserID: appUserID)
