@@ -939,6 +939,9 @@ jobs:
           command: bundle exec fastlane build_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
+      - store_artifacts:
+          path: fastlane/output/docs
+          destination: docs_output
 
   docs-deploy:
     executor:
