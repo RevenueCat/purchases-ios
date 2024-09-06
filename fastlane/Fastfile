@@ -776,7 +776,8 @@ platform :ios do
 
     hosting_base_path = File.join(docs_repo_name, version_number)
 
-    docs_generation_folder = Dir.mktmpdir
+    docs_generation_folder = "fastlane/output/docs"
+    FileUtils.mkdir_p(docs_generation_folder)
 
     # swift package must be run from the dir that contains the Package.swift
     # output is generated in docs_generation_folder

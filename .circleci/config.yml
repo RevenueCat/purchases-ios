@@ -1397,6 +1397,6 @@ workflows:
       # - installation-tests-xcode-direct-integration
       # - installation-tests-receipt-parser
       # - api-tests
-      - deploy-purchase-tester:
-          dry_run: true
+      # - deploy-purchase-tester:
+      #     dry_run: true
       
