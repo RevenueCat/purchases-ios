@@ -14,6 +14,16 @@
 import Foundation
 import StoreKit
 
+/// Determines the behavior when fetching the AppTransaction
+enum AppTransactionRefreshPolicy {
+
+    // Calls refresh() only if AppTransaction.shared returns empty
+    case onlyIfEmpty
+    // Never calls refresh()
+    case never
+
+}
+
 protocol StoreKit2TransactionFetcherType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -31,9 +41,9 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedTransaction: StoreTransaction? { get async }
 
-    var appTransactionJWS: String? { get async }
+    func appTransactionJWS(refreshPolicy: AppTransactionRefreshPolicy) async -> String?
 
-    func appTransactionJWS(_ completionHandler: @escaping (String?) -> Void)
+    func appTransactionJWS(refreshPolicy: AppTransactionRefreshPolicy, _ completionHandler: @escaping (String?) -> Void)
 
 }
 
@@ -85,7 +95,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
         async let transactions = verifiedTransactions(containing: transaction)
         async let subscriptionStatuses = subscriptionStatusBySubscriptionGroupId
-        async let appTransaction = appTransaction
+        async let appTransaction = appTransaction(refreshPolicy: .onlyIfEmpty)
 
         return await .init(
             environment: .xcode,
@@ -110,13 +120,11 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     ///
     /// - Returns: A `String` containing the JWS representation of the app transaction, 
     /// or `nil` if the feature is unavailable on the current platform version.
-    var appTransactionJWS: String? {
-        get async {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                return try? await AppTransaction.shared.jwsRepresentation
-            } else {
-                return nil
-            }
+    func appTransactionJWS(refreshPolicy: AppTransactionRefreshPolicy) async -> String? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return await appTransaction(refreshPolicy: refreshPolicy)?.jwsRepresentation
+        } else {
+            return nil
         }
     }
 
@@ -130,10 +138,10 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     /// if the feature is unavailable on the current platform version.
     /// - Parameter result: A `String?` containing the JWS representation of the app transaction, 
     /// or `nil` if unavailable.
-    func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
+    func appTransactionJWS(refreshPolicy: AppTransactionRefreshPolicy, _ completion: @escaping (String?) -> Void) {
         Async.call(with: completion) {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                return try? await AppTransaction.shared.jwsRepresentation
+                return await self.appTransaction(refreshPolicy: refreshPolicy)?.jwsRepresentation
             } else {
                 return nil
             }
@@ -181,7 +189,8 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.AppTransactio
 
     var verifiedAppTransaction: SK2AppTransaction? {
         switch self {
-        case let .verified(transaction): return .init(appTransaction: transaction)
+        case let .verified(transaction):
+            return .init(appTransaction: transaction, jwsRepresentation: self.jwsRepresentation)
         case let .unverified(transaction, error):
             Logger.warn(
                 Strings.storeKit.sk2_unverified_transaction(identifier: transaction.bundleID, error)
@@ -279,21 +288,41 @@ extension StoreKit2TransactionFetcher {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private var appTransaction: SK2AppTransaction? {
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    private var refreshedAppTransaction: SK2AppTransaction? {
         get async {
             do {
-                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                    let transaction = try await StoreKit.AppTransaction.shared
-                    return transaction.verifiedAppTransaction
-                } else {
-                    Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
-                    return nil
-                }
+                let transaction = try await StoreKit.AppTransaction.refresh()
+                return transaction.verifiedAppTransaction
             } catch {
                 Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
                 return nil
             }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func appTransaction(refreshPolicy: AppTransactionRefreshPolicy) async -> SK2AppTransaction? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            do {
+                let transaction = try await StoreKit.AppTransaction.shared
+                if let transaction = transaction.verifiedAppTransaction {
+                    return transaction
+                } else {
+                    return await refreshedAppTransaction
+                }
+            } catch {
+                switch refreshPolicy {
+                case .onlyIfEmpty:
+                    return await refreshedAppTransaction
+                case .never:
+                    Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+                    return nil
+                }
+            }
+        } else {
+            Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
+            return nil
         }
     }
 

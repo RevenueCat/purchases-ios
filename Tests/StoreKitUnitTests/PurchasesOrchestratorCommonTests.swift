@@ -166,7 +166,7 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
     func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsNotDefined() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
-        _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
+        _ = try? await self.orchestrator.syncPurchases(receiptRefreshAllowed: false,
                                                        isRestore: false,
                                                        initiationSource: .restore)
 
@@ -182,7 +182,7 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
-        _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
+        _ = try? await self.orchestrator.syncPurchases(receiptRefreshAllowed: false,
                                                        isRestore: false,
                                                        initiationSource: .restore)
 
@@ -198,7 +198,7 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
-        _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
+        _ = try? await self.orchestrator.syncPurchases(receiptRefreshAllowed: false,
                                                        isRestore: false,
                                                        initiationSource: .restore)
 

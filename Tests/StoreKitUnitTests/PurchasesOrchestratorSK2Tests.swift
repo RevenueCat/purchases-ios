@@ -54,6 +54,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             package: package,
                                             promotionalOffer: nil)
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
@@ -232,6 +233,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
         expect(result.transaction) == transaction.verifiedStoreTransaction
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
@@ -470,6 +472,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             updatedTransaction: transaction
         )
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .never
         expect(transaction.finishInvoked) == true
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
@@ -545,6 +548,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             updatedTransaction: transaction
         )
 
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .never
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
@@ -572,9 +576,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: false,
                                                                      initiationSource: .purchase)
+
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
@@ -622,9 +628,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: false,
                                                                      initiationSource: .purchase)
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
@@ -636,11 +643,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
         self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: true,
                                                                      initiationSource: .restore)
 
         expect(self.backend.invokedPostReceiptData).to(beFalse())
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy).to(beNil())
 
         expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
@@ -655,12 +663,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalPurchaseDate
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: true,
                                                                      initiationSource: .restore)
 
         expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -682,12 +691,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalApplicationVersion
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: true,
                                                                      initiationSource: .restore)
 
         expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -709,12 +719,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                      isRestore: true,
                                                                      initiationSource: .restore)
 
         expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
+        expect(self.mockTransactionFetcher.receivedRefreshPolicy) == .onlyIfEmpty
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -734,7 +745,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let receivedCustomerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+        let receivedCustomerInfo = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                                              isRestore: false,
                                                                              initiationSource: .purchase)
 
@@ -750,7 +761,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.backend.stubbedPostReceiptResult = .failure(expectedError)
 
         do {
-            _ = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+            _ = try await self.orchestrator.syncPurchases(receiptRefreshAllowed: true,
                                                           isRestore: false,
                                                           initiationSource: .purchase)
             fail("Expected error")
