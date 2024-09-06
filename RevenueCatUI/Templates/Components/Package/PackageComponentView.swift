@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SpacerComponentView.swift
+//  PackageComponentView.swift
 //
 //  Created by James Borthwick on 2024-09-06.
 
