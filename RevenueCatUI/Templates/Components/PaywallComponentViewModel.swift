@@ -25,15 +25,19 @@ enum PaywallComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
-    func toViewModel(offering: Offering, locale: Locale, localization: [String: String]) -> PaywallComponentViewModel {
+    func toViewModel(
+        offering: Offering,
+        locale: Locale,
+        localizedStrings: LocalizationDictionary
+    ) throws -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
             return .text(
-                TextComponentViewModel(locale: locale, localization: localization, component: component)
+                try TextComponentViewModel(localizedStrings: localizedStrings, component: component)
             )
         case .image(let component):
             return .image(
-                ImageComponentViewModel(locale: locale, component: component)
+                ImageComponentViewModel(component: component)
             )
         case .spacer(let component):
             return .spacer(
@@ -41,17 +45,15 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                StackComponentViewModel(locale: locale,
-                                        component: component,
-                                        localization: localization,
-                                        offering: offering)
+                try StackComponentViewModel(locale: locale,
+                                            component: component,
+                                            localizedStrings: localizedStrings,
+                                            offering: offering)
             )
         case .linkButton(let component):
             return .linkButton(
-                LinkButtonComponentViewModel(locale: locale,
-                                             component: component,
-                                             localization: localization,
-                                             offering: offering)
+                try LinkButtonComponentViewModel(component: component,
+                                                 localizedStrings: localizedStrings)
             )
         }
     }

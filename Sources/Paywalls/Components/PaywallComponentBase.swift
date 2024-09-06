@@ -9,13 +9,7 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
-public typealias TierId = String
-public typealias LocaleId = String
-public typealias ColorHex = String
-
-public typealias DisplayString = PaywallComponent.LocaleResources<String>
-
-protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
+public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 public enum PaywallComponent: PaywallComponentBase {
 
@@ -35,6 +29,13 @@ public enum PaywallComponent: PaywallComponentBase {
 
     }
 
+}
+
+public extension PaywallComponent {
+    typealias LocaleID = String
+    typealias LocalizationDictionary = [String: String]
+    typealias LocalizationKey = String
+    typealias ColorHex = String
 }
 
 extension PaywallComponent: Codable {
