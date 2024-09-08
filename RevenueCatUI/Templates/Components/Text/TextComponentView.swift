@@ -20,16 +20,18 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
+    @Environment(\.selectionState) var selectionState
+
     let viewModel: TextComponentViewModel
 
     var body: some View {
         Text(viewModel.text)
-            .font(viewModel.textStyle)
-            .fontWeight(viewModel.fontWeight)
-            .multilineTextAlignment(viewModel.horizontalAlignment)
-            .foregroundStyle(viewModel.color)
-            .padding(viewModel.padding)
-            .background(viewModel.backgroundColor)
+            .font(viewModel.textStyle(for: selectionState))
+            .fontWeight(viewModel.fontWeight(for: selectionState))
+            .multilineTextAlignment(viewModel.horizontalAlignment(for: selectionState))
+            .foregroundStyle(viewModel.color(for: selectionState))
+            .padding(viewModel.padding(for: selectionState))
+            .background(viewModel.backgroundColor(for: selectionState))
     }
 
 }

@@ -699,7 +699,7 @@ private extension SamplePaywallLoader {
 
     // package 1
     static var package1: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_weekly", selectedComponents: [package1VStackSelected], notSelectedComponents: [package1VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_weekly", selectedComponents: [PaywallComponent](), notSelectedComponents: [package1VStackNotSelected]))
     }()
 
     static var package1VStackNotSelected: PaywallComponent = {
@@ -726,13 +726,21 @@ private extension SamplePaywallLoader {
          fontWeight: .regular,
          color: .init(light: "#000000"),
          padding: .zero,
-         textStyle: .body
-     ))
+         textStyle: .body,
+         selectedComponent: .init(
+            text: "Package one",
+            textLid: "package_1",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FF2222"),
+            padding: .zero,
+            textStyle: .body
+     )))
     }()
 
     // package 2
     static var package2: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_monthly", selectedComponents: [package2VStackSelected], notSelectedComponents: [package2VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_monthly", selectedComponents: [PaywallComponent](), notSelectedComponents: [package2VStackNotSelected]))
     }()
 
     static var package2VStackSelected: PaywallComponent = {
@@ -760,8 +768,16 @@ private extension SamplePaywallLoader {
          fontWeight: .regular,
          color: .init(light: "#000000"),
          padding: .zero,
-         textStyle: .body
-     ))
+         textStyle: .body,
+         selectedComponent: .init(
+            text: "Package two",
+            textLid: "package_2",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#FF2222"),
+            padding: .zero,
+            textStyle: .body
+     )))
     }()
 
 

@@ -24,6 +24,9 @@ public class PackageComponentViewModel: ObservableObject {
     private let component: PaywallComponent.PackageComponent
     let selectedViewModels: [PaywallComponentViewModel]
     let notSelectedViewModels: [PaywallComponentViewModel]
+    var viewModels: [PaywallComponentViewModel] {
+        notSelectedViewModels
+    }
     let offering: Offering
     init(
         component: PaywallComponent.PackageComponent,
