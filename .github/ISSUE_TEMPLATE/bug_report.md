@@ -1,9 +1,10 @@
 ---
 name: 🐛 Bug report
 about: Filling a bug report
-title: ""
+title: ''
 labels: bug
-assignees: ""
+assignees: ''
+
 ---
 
 - [ ] I have updated Purchases SDK to the latest version
@@ -19,8 +20,8 @@ A clear and concise description of what the bug is. The more detail you can prov
    1. Platform:
    2. SDK version:
    3. StoreKit version:
-      - [ ] StoreKit 1 (default on versions <5.0.0. Can be enabled in versions >=5.0.0 with `.with(storeKitVersion: .storeKit1)`)
-      - [x] StoreKit 2 (default on versions >=5.0.0)
+      - [x] StoreKit 1
+      - [ ] StoreKit 2 (_enabled with `usesStoreKit2IfAvailable(true)`_)
    4. OS version:
    5. Xcode version:
    6. Device and/or simulator:
@@ -40,8 +41,8 @@ Logs here
 3. Steps to reproduce, with a description of expected vs. actual behavior
 
 _Please fill in_
-
+ 
 4. **Other information** (e.g. stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, etc.)
 
 5. **Additional context**
-   Add any other context about the problem here.
+Add any other context about the problem here.
