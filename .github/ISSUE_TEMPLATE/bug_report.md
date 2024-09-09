@@ -1,9 +1,10 @@
 ---
 name: 🐛 Bug report
 about: Filling a bug report
-title: ""
+title: ''
 labels: bug
-assignees: ""
+assignees: ''
+
 ---
 
 - [ ] I have updated Purchases SDK to the latest version
@@ -31,7 +32,7 @@ A clear and concise description of what the bug is. The more detail you can prov
       - [ ] TestFlight
       - [ ] Production
    8. How widespread is the issue. Percentage of devices affected.
-2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. **Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.**
+2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. **Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.**
 
 ```
 Logs here
@@ -40,8 +41,8 @@ Logs here
 3. Steps to reproduce, with a description of expected vs. actual behavior
 
 _Please fill in_
-
+ 
 4. **Other information** (e.g. stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, etc.)
 
 5. **Additional context**
-   Add any other context about the problem here.
+Add any other context about the problem here.
