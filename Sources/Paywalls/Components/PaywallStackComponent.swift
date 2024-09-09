@@ -17,7 +17,27 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct StackComponent: PaywallComponentBase {
+    final class StackComponent: PaywallComponentBase {
+
+        public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.components == rhs.components &&
+                   lhs.spacing == rhs.spacing &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.dimension == rhs.dimension &&
+                   lhs.padding == rhs.padding &&
+                   lhs.selectedComponent == rhs.selectedComponent
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(components)
+            hasher.combine(spacing)
+            hasher.combine(backgroundColor)
+            hasher.combine(dimension)
+            hasher.combine(padding)
+            hasher.combine(selectedComponent)
+        }
 
         let type: ComponentType
         public let components: [PaywallComponent]
@@ -25,13 +45,14 @@ public extension PaywallComponent {
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
         public let padding: Padding
-
+        public let selectedComponent: StackComponent?
 
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     spacing: CGFloat?,
                     backgroundColor: ColorInfo?,
-                    padding: Padding
+                    padding: Padding,
+                    selectedComponent: StackComponent? = nil
         ) {
             self.components = components
             self.spacing = spacing
@@ -39,6 +60,7 @@ public extension PaywallComponent {
             self.type = .stack
             self.dimension = dimension
             self.padding = padding
+            self.selectedComponent = selectedComponent
         }
 
         public enum Dimension: Codable, Sendable, Hashable {

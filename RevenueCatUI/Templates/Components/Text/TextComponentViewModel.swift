@@ -33,42 +33,41 @@ public class TextComponentViewModel {
     }
 
     private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.TextComponent {
-           switch selectionState {
-           case .selected:
-               return component.selectedComponent ?? component
-           case .unselected:
-               return component
-           }
-       }
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
+    }
 
-       // Computed properties for the current selection state
-       func fontFamily(for selectionState: SelectionState) -> String {
-           currentComponent(for: selectionState).fontFamily
-       }
+    func fontFamily(for selectionState: SelectionState) -> String {
+        currentComponent(for: selectionState).fontFamily
+    }
 
-       func fontWeight(for selectionState: SelectionState) -> Font.Weight {
-           currentComponent(for: selectionState).fontWeight.fontWeight
-       }
+    func fontWeight(for selectionState: SelectionState) -> Font.Weight {
+        currentComponent(for: selectionState).fontWeight.fontWeight
+    }
 
-       func color(for selectionState: SelectionState) -> Color {
-           currentComponent(for: selectionState).color.toDyanmicColor()
-       }
+    func color(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).color.toDyanmicColor()
+    }
 
-       func textStyle(for selectionState: SelectionState) -> Font {
-           currentComponent(for: selectionState).textStyle.font
-       }
+    func textStyle(for selectionState: SelectionState) -> Font {
+        currentComponent(for: selectionState).textStyle.font
+    }
 
-       func horizontalAlignment(for selectionState: SelectionState) -> TextAlignment {
-           currentComponent(for: selectionState).horizontalAlignment.textAlignment
-       }
+    func horizontalAlignment(for selectionState: SelectionState) -> TextAlignment {
+        currentComponent(for: selectionState).horizontalAlignment.textAlignment
+    }
 
-       func backgroundColor(for selectionState: SelectionState) -> Color {
-           currentComponent(for: selectionState).backgroundColor?.toDyanmicColor() ?? Color.clear
-       }
+    func backgroundColor(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).backgroundColor?.toDyanmicColor() ?? Color.clear
+    }
 
-       func padding(for selectionState: SelectionState) -> EdgeInsets {
-           currentComponent(for: selectionState).padding.edgeInsets
-       }
+    func padding(for selectionState: SelectionState) -> EdgeInsets {
+        currentComponent(for: selectionState).padding.edgeInsets
+    }
 
 }
 #endif
