@@ -75,6 +75,7 @@ final class PurchasesOrchestrator {
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
     var _diagnosticsSynchronizer: Any?
+    var _diagnosticsTracker: Any?
     var _storeKit2ObserverModePurchaseDetector: Any?
     // swiftlint:enable identifier_name
 
@@ -93,6 +94,11 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
         return self._diagnosticsSynchronizer as? DiagnosticsSynchronizerType
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -122,7 +128,8 @@ final class PurchasesOrchestrator {
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
                      storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
                      storeMessagesHelper: StoreMessagesHelperType?,
-                     diagnosticsSynchronizer: DiagnosticsSynchronizerType?
+                     diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
+                     diagnosticsTracker: DiagnosticsTrackerType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -146,6 +153,7 @@ final class PurchasesOrchestrator {
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
+        self._diagnosticsTracker = diagnosticsTracker
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
@@ -415,6 +423,7 @@ final class PurchasesOrchestrator {
             productIdentifier: productIdentifier,
             completion: { transaction, customerInfo, error, cancelled in
                 if !cancelled {
+                    self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit1, error: error)
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
                             productIdentifier: productIdentifier,
@@ -869,6 +878,24 @@ private extension PurchasesOrchestrator {
                 ErrorUtils.paymentDeferredError().asPublicError,
                 userCancelled
             )
+        }
+    }
+
+    func trackPurchaseEventIfNeeded(storeKitVersion: StoreKitVersion,
+                                    error: PublicError?) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+        let diagnosticsTracker = self.diagnosticsTracker {
+            let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
+            let errorCode = error?.code
+            let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError
+            let skErrorCode = skError?.code
+            Async.call(with: {}, asyncMethod: {
+                await diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
+                                                              storeKitVersion: storeKitVersion,
+                                                              errorMessage: errorMessage,
+                                                              errorCode: errorCode,
+                                                              skErrorCode: skErrorCode?.rawValue)
+            })
         }
     }
 
