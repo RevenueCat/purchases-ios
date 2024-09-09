@@ -163,8 +163,10 @@ private let pollInterval: DispatchTimeInterval = .milliseconds(100)
 private extension Encodable {
 
     func asFormattedString(backwardsCompatible: Bool) throws -> String {
-        return String(decoding: try self.asFormattedData(backwardsCompatible: backwardsCompatible),
-                      as: UTF8.self)
+        return String(
+            data: try self.asFormattedData(backwardsCompatible: backwardsCompatible),
+            encoding: .utf8
+        )!
     }
 
     func asFormattedData(backwardsCompatible: Bool) throws -> Data {
