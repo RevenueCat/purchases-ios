@@ -87,12 +87,12 @@ class ProductsManager: NSObject, ProductsManagerType {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
-                self.trackProductRequestIfNeeded(startTime, storeKitVersion: .storeKit2, error: result.error)
+                self.trackProductsRequestIfNeeded(startTime, storeKitVersion: .storeKit2, error: result.error)
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         } else {
             self.sk1Products(withIdentifiers: identifiers) { result in
-                self.trackProductRequestIfNeeded(startTime, storeKitVersion: .storeKit1, error: result.error)
+                self.trackProductsRequestIfNeeded(startTime, storeKitVersion: .storeKit1, error: result.error)
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         }
@@ -135,12 +135,12 @@ private extension ProductsManager {
         return self.productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
     }
 
-    func trackProductRequestIfNeeded(_ startTime: Date,
+    func trackProductsRequestIfNeeded(_ startTime: Date,
                                      storeKitVersion: StoreKitVersion,
                                      error: PurchasesError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            let diagnosticsTracker = self.diagnosticsTracker {
-            let requestTime = self.dateProvider.now().timeIntervalSince(startTime)
+            let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
             let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
                 ?? error?.localizedDescription
             let errorCode = error?.errorCode
@@ -149,7 +149,7 @@ private extension ProductsManager {
                                                               storeKitVersion: storeKitVersion,
                                                               errorMessage: errorMessage,
                                                               errorCode: errorCode,
-                                                              responseTime: requestTime)
+                                                              responseTime: responseTime)
             })
         }
     }
