@@ -28,6 +28,31 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     }
 
+    public enum LocalizationData: Codable, Equatable, Sendable {
+        case string(String), image(PaywallComponent.ThemeImageUrls)
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let stringValue = try? container.decode(String.self) {
+                self = .string(stringValue)
+            } else if let imageValue = try? container.decode(PaywallComponent.ThemeImageUrls.self) {
+                self = .image(imageValue)
+            } else {
+                throw DecodingError.typeMismatch(LocalizationData.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for LocalizationData"))
+            }
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .string(let stringValue):
+                try container.encode(stringValue)
+            case .image(let imageValue):
+                try container.encode(imageValue)
+            }
+        }
+    }
+
     public var templateName: String
 
     /// The base remote URL where assets for this paywall are stored.
@@ -94,7 +119,7 @@ struct OfferingsResponse {
 
         #if PAYWALL_COMPONENTS
         // components
-        var paywallComponents: PaywallComponentsData
+        var paywallComponents: PaywallComponentsData?
         #endif
 
     }

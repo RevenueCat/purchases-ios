@@ -31,7 +31,7 @@ public class TextComponentViewModel {
         self.text = try localizedStrings.string(key: component.textLid)
     }
 
-    public var fontFamily: String {
+    public var fontFamily: String? {
         component.fontFamily
     }
 
@@ -57,6 +57,10 @@ public class TextComponentViewModel {
 
     public var padding: EdgeInsets {
         component.padding.edgeInsets
+    }
+
+    var margin: EdgeInsets {
+        component.margin.edgeInsets
     }
 
 }

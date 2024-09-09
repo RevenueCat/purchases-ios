@@ -26,10 +26,13 @@ struct TextComponentView: View {
         Text(viewModel.text)
             .font(viewModel.textStyle)
             .fontWeight(viewModel.fontWeight)
+            .lineLimit(nil)
+            .fixedSize(horizontal: false, vertical: true)
             .multilineTextAlignment(viewModel.horizontalAlignment)
             .foregroundStyle(viewModel.color)
             .padding(viewModel.padding)
             .background(viewModel.backgroundColor)
+            .padding(viewModel.margin)
     }
 
 }

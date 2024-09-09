@@ -22,28 +22,66 @@ struct StackComponentView: View {
     let viewModel: StackComponentViewModel
 
     var body: some View {
-        switch viewModel.dimension {
-        case .vertical(let horizontalAlignment):
-            VStack(alignment: horizontalAlignment.stackAlignment, spacing: viewModel.spacing) {
-                ComponentsView(componentViewModels: self.viewModel.viewModels)
+        Group {
+            switch viewModel.dimension {
+            case .vertical(let horizontalAlignment):
+                VStack(spacing: viewModel.spacing) {
+                    Group {
+                        ComponentsView(componentViewModels: self.viewModel.viewModels)
+                    }
+                    .frame(maxWidth: .infinity, alignment: horizontalAlignment.stackAlignment)
+                }
+            case .horizontal(let verticalAlignment):
+                HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
+                    ComponentsView(componentViewModels: self.viewModel.viewModels)
+                }
+            case .zlayer(let alignment):
+                ZStack(alignment: alignment.stackAlignment) {
+                    ComponentsView(componentViewModels: self.viewModel.viewModels)
+                }
             }
-            .background(viewModel.backgroundColor)
-            .padding(viewModel.padding)
-        case .horizontal(let verticalAlignment):
-            HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
-                ComponentsView(componentViewModels: self.viewModel.viewModels)
-            }
-            .background(viewModel.backgroundColor)
-            .padding(viewModel.padding)
-        case .zlayer(let alignment):
-            ZStack(alignment: alignment.stackAlignment) {
-                ComponentsView(componentViewModels: self.viewModel.viewModels)
-            }
-            .background(viewModel.backgroundColor)
-            .padding(viewModel.padding)
         }
+        .padding(viewModel.padding)
+        .fullOrPercentageWidth(viewModel.width)
+        .background(viewModel.backgroundColor)
+        .roundedCorner(viewModel.cornerRadiuses.topLeading, corners: .topLeft)
+        .roundedCorner(viewModel.cornerRadiuses.topTrailing, corners: .topRight)
+        .roundedCorner(viewModel.cornerRadiuses.bottomLeading, corners: .bottomLeft)
+        .roundedCorner(viewModel.cornerRadiuses.bottomTrailing, corners: .bottomRight)
+        .padding(viewModel.margin)
     }
 
+}
+
+struct FullOrPercentageWidthModifier: ViewModifier {
+    var width: PaywallComponent.WidthSize?
+
+    func body(content: Content) -> some View {
+        if let width = width {
+            switch width.type {
+            case .fit:
+                content
+            case .fill:
+                content
+                    .frame(maxWidth: .infinity)
+            case .fixed:
+                if let value = width.value {
+                    content
+                        .frame(width: CGFloat(value))
+                } else {
+                    content
+                }
+            }
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func fullOrPercentageWidth(_ width: PaywallComponent.WidthSize? = nil) -> some View {
+        self.modifier(FullOrPercentageWidthModifier(width: width))
+    }
 }
 
 #endif
