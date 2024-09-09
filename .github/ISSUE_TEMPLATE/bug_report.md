@@ -20,8 +20,8 @@ A clear and concise description of what the bug is. The more detail you can prov
    1. Platform:
    2. SDK version:
    3. StoreKit version:
-      - [x] StoreKit 1
-      - [ ] StoreKit 2 (_enabled with `usesStoreKit2IfAvailable(true)`_)
+      - [ ] StoreKit 1 (default on versions <5.0.0. Can be enabled in versions >=5.0.0 with `.with(storeKitVersion: .storeKit1)`)
+      - [x] StoreKit 2 (default on versions >=5.0.0)
    4. OS version:
    5. Xcode version:
    6. Device and/or simulator:
