@@ -10,6 +10,7 @@
 //  SpacerComponentView.swift
 //
 //  Created by James Borthwick on 2024-08-19.
+// swiftlint:disable missing_docs
 
 import Foundation
 import RevenueCat
@@ -18,13 +19,12 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct SpacerComponentView: View {
+public class SpacerComponentViewModel {
 
-    let locale: Locale
-    let component: PaywallComponent.SpacerComponent
+    private let component: PaywallComponent.SpacerComponent
 
-    var body: some View {
-        Spacer()
+    init(component: PaywallComponent.SpacerComponent) {
+        self.component = component
     }
 
 }

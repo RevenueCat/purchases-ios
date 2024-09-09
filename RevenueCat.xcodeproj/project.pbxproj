@@ -816,19 +816,30 @@
 		88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E22C37A4970039C6A5 /* Template7View.swift */; };
 		88A543E52C37A4AF0039C6A5 /* ConsistentTierContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E42C37A4AF0039C6A5 /* ConsistentTierContentView.swift */; };
 		88A543E72C37A4C40039C6A5 /* TierSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E62C37A4C40039C6A5 /* TierSelectorView.swift */; };
-		88AD010D2C740CF400AA1F2B /* PaywallComponentBases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01012C740CF400AA1F2B /* PaywallComponentBases.swift */; };
+		88AD010D2C740CF400AA1F2B /* PaywallComponentBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */; };
 		88AD010F2C740CF400AA1F2B /* PaywallImageComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */; };
 		88AD01122C740CF400AA1F2B /* PaywallSpacerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */; };
 		88AD01132C740CF400AA1F2B /* PaywallTextComopnent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */; };
-		88AD01342C7418EE00AA1F2B /* TemplateComponentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01332C7418EE00AA1F2B /* TemplateComponentsView.swift */; };
-		88AD01392C741AAB00AA1F2B /* TextComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01382C741AAB00AA1F2B /* TextComponentView.swift */; };
-		88AD013B2C741B5300AA1F2B /* ImageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */; };
 		88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */; };
+		88B1BAD82C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */; };
+		88B1BAEC2C813A3C001B7EE5 /* PaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */; };
+		88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */; };
+		88B1BAF02C813A3C001B7EE5 /* TextComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */; };
+		88B1BAF22C813A3C001B7EE5 /* SpacerComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADD2C813A3C001B7EE5 /* SpacerComponentView.swift */; };
+		88B1BAF42C813A3C001B7EE5 /* SpacerComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADE2C813A3C001B7EE5 /* SpacerComponentViewModel.swift */; };
+		88B1BAF62C813A3C001B7EE5 /* LinkButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE02C813A3C001B7EE5 /* LinkButtonComponentView.swift */; };
+		88B1BAF82C813A3C001B7EE5 /* LinkButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE12C813A3C001B7EE5 /* LinkButtonComponentViewModel.swift */; };
+		88B1BAFA2C813A3C001B7EE5 /* TemplateComponentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE32C813A3C001B7EE5 /* TemplateComponentsView.swift */; };
+		88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE42C813A3C001B7EE5 /* ImageComponentView.swift */; };
+		88B1BAFE2C813A3C001B7EE5 /* ImageComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE52C813A3C001B7EE5 /* ImageComponentViewModel.swift */; };
+		88B1BB022C813A3C001B7EE5 /* StackComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE82C813A3C001B7EE5 /* StackComponentView.swift */; };
+		88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */; };
+		88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */; };
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88DE93E22C211CBC0086B6D8 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		88E679292C741E08007E69D5 /* SpacerComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679282C741E08007E69D5 /* SpacerComponentView.swift */; };
-		88E679472C7503C1007E69D5 /* StackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* StackComponent.swift */; };
-		88E679572C750AE1007E69D5 /* StackComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679562C750AE1007E69D5 /* StackComponentView.swift */; };
+		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
+		88EA80ED2C8771A7003E6675 /* TemplateComponentsView+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88EA80EC2C8771A7003E6675 /* TemplateComponentsView+extensions.swift */; };
+		88EA80EF2C87D68F003E6675 /* PaywallComponentLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */; };
 		9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */; };
@@ -1978,17 +1989,28 @@
 		88A543E22C37A4970039C6A5 /* Template7View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template7View.swift; sourceTree = "<group>"; };
 		88A543E42C37A4AF0039C6A5 /* ConsistentTierContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsistentTierContentView.swift; sourceTree = "<group>"; };
 		88A543E62C37A4C40039C6A5 /* TierSelectorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TierSelectorView.swift; sourceTree = "<group>"; };
-		88AD01012C740CF400AA1F2B /* PaywallComponentBases.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentBases.swift; sourceTree = "<group>"; };
+		88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentBase.swift; sourceTree = "<group>"; };
 		88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallImageComponent.swift; sourceTree = "<group>"; };
 		88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallSpacerComponent.swift; sourceTree = "<group>"; };
 		88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallTextComopnent.swift; sourceTree = "<group>"; };
-		88AD01332C7418EE00AA1F2B /* TemplateComponentsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplateComponentsView.swift; sourceTree = "<group>"; };
-		88AD01382C741AAB00AA1F2B /* TextComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentView.swift; sourceTree = "<group>"; };
-		88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentView.swift; sourceTree = "<group>"; };
 		88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExternalPurchaseAndRestoreTests.swift; path = Templates/ExternalPurchaseAndRestoreTests.swift; sourceTree = "<group>"; };
-		88E679282C741E08007E69D5 /* SpacerComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacerComponentView.swift; sourceTree = "<group>"; };
-		88E679462C7503C1007E69D5 /* StackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackComponent.swift; sourceTree = "<group>"; };
-		88E679562C750AE1007E69D5 /* StackComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackComponentView.swift; sourceTree = "<group>"; };
+		88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentPropertyTypes.swift; sourceTree = "<group>"; };
+		88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentViewModel.swift; sourceTree = "<group>"; };
+		88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextComponentView.swift; sourceTree = "<group>"; };
+		88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextComponentViewModel.swift; sourceTree = "<group>"; };
+		88B1BADD2C813A3C001B7EE5 /* SpacerComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpacerComponentView.swift; sourceTree = "<group>"; };
+		88B1BADE2C813A3C001B7EE5 /* SpacerComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpacerComponentViewModel.swift; sourceTree = "<group>"; };
+		88B1BAE02C813A3C001B7EE5 /* LinkButtonComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinkButtonComponentView.swift; sourceTree = "<group>"; };
+		88B1BAE12C813A3C001B7EE5 /* LinkButtonComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinkButtonComponentViewModel.swift; sourceTree = "<group>"; };
+		88B1BAE32C813A3C001B7EE5 /* TemplateComponentsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplateComponentsView.swift; sourceTree = "<group>"; };
+		88B1BAE42C813A3C001B7EE5 /* ImageComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageComponentView.swift; sourceTree = "<group>"; };
+		88B1BAE52C813A3C001B7EE5 /* ImageComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageComponentViewModel.swift; sourceTree = "<group>"; };
+		88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentTypeTransformers.swift; sourceTree = "<group>"; };
+		88B1BAE82C813A3C001B7EE5 /* StackComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentView.swift; sourceTree = "<group>"; };
+		88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentViewModel.swift; sourceTree = "<group>"; };
+		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
+		88EA80EC2C8771A7003E6675 /* TemplateComponentsView+extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TemplateComponentsView+extensions.swift"; sourceTree = "<group>"; };
+		88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentLocalization.swift; sourceTree = "<group>"; };
 		9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogIntent.swift; sourceTree = "<group>"; };
 		9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigureStrings.swift; sourceTree = "<group>"; };
 		9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoStrings.swift; sourceTree = "<group>"; };
@@ -4234,10 +4256,12 @@
 		88AD010B2C740CF400AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				88AD01012C740CF400AA1F2B /* PaywallComponentBases.swift */,
+				88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */,
+				88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */,
+				88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
 				88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */,
-				88E679462C7503C1007E69D5 /* StackComponent.swift */,
+				88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */,
 				8893C9B42C7D1F090060B030 /* PaywallLinkButtonComponent.swift */,
 				88AD01072C740CF400AA1F2B /* PaywallTextComopnent.swift */,
 			);
@@ -4247,13 +4271,62 @@
 		88AD01352C74196600AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				88AD01332C7418EE00AA1F2B /* TemplateComponentsView.swift */,
-				88E679282C741E08007E69D5 /* SpacerComponentView.swift */,
-				88E679562C750AE1007E69D5 /* StackComponentView.swift */,
-				88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */,
-				88AD01382C741AAB00AA1F2B /* TextComponentView.swift */,
+				88B1BAE62C813A3C001B7EE5 /* Image */,
+				88B1BAE22C813A3C001B7EE5 /* LinkButton */,
+				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
+				88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */,
+				88B1BADF2C813A3C001B7EE5 /* Spacer */,
+				88B1BAEA2C813A3C001B7EE5 /* Stack */,
+				88B1BAE32C813A3C001B7EE5 /* TemplateComponentsView.swift */,
+				88EA80EC2C8771A7003E6675 /* TemplateComponentsView+extensions.swift */,
+				88B1BADC2C813A3C001B7EE5 /* Text */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		88B1BADC2C813A3C001B7EE5 /* Text */ = {
+			isa = PBXGroup;
+			children = (
+				88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */,
+				88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */,
+			);
+			path = Text;
+			sourceTree = "<group>";
+		};
+		88B1BADF2C813A3C001B7EE5 /* Spacer */ = {
+			isa = PBXGroup;
+			children = (
+				88B1BADD2C813A3C001B7EE5 /* SpacerComponentView.swift */,
+				88B1BADE2C813A3C001B7EE5 /* SpacerComponentViewModel.swift */,
+			);
+			path = Spacer;
+			sourceTree = "<group>";
+		};
+		88B1BAE22C813A3C001B7EE5 /* LinkButton */ = {
+			isa = PBXGroup;
+			children = (
+				88B1BAE02C813A3C001B7EE5 /* LinkButtonComponentView.swift */,
+				88B1BAE12C813A3C001B7EE5 /* LinkButtonComponentViewModel.swift */,
+			);
+			path = LinkButton;
+			sourceTree = "<group>";
+		};
+		88B1BAE62C813A3C001B7EE5 /* Image */ = {
+			isa = PBXGroup;
+			children = (
+				88B1BAE42C813A3C001B7EE5 /* ImageComponentView.swift */,
+				88B1BAE52C813A3C001B7EE5 /* ImageComponentViewModel.swift */,
+			);
+			path = Image;
+			sourceTree = "<group>";
+		};
+		88B1BAEA2C813A3C001B7EE5 /* Stack */ = {
+			isa = PBXGroup;
+			children = (
+				88B1BAE82C813A3C001B7EE5 /* StackComponentView.swift */,
+				88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */,
+			);
+			path = Stack;
 			sourceTree = "<group>";
 		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
@@ -5235,6 +5308,8 @@
 				57E9CF0F290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
+				88B1BAD82C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift in Sources */,
+				88EA80EF2C87D68F003E6675 /* PaywallComponentLocalization.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
 				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
@@ -5282,7 +5357,7 @@
 				B378156D285A9772000A7B93 /* OfferingsAPI.swift in Sources */,
 				B34605C0279A6E380031CA74 /* CustomerInfoCallback.swift in Sources */,
 				B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */,
-				88AD010D2C740CF400AA1F2B /* PaywallComponentBases.swift in Sources */,
+				88AD010D2C740CF400AA1F2B /* PaywallComponentBase.swift in Sources */,
 				4FBBC5682A61E42F0077281F /* NonEmptyStringDecodable.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* PurchasesReceiptParser.swift in Sources */,
 				2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */,
@@ -5321,7 +5396,7 @@
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,
 				4DBF1F362B4D572400D52354 /* LocalReceiptFetcher.swift in Sources */,
 				57488A7F29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift in Sources */,
-				88E679472C7503C1007E69D5 /* StackComponent.swift in Sources */,
+				88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */,
 				B34605BC279A6E380031CA74 /* CallbackCache.swift in Sources */,
 				3592E8862C2ED51700D7F91D /* CustomerCenterConfigCallback.swift in Sources */,
 				B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */,
@@ -5863,10 +5938,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
+				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
 				1E5F8F782C46BBD90041EECD /* CustomerCenterAction.swift in Sources */,
 				887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */,
 				887A60B82C1D037000E1A461 /* Template1View.swift in Sources */,
 				887A60C62C1D037000E1A461 /* LoadingPaywallView.swift in Sources */,
+				88B1BAF22C813A3C001B7EE5 /* SpacerComponentView.swift in Sources */,
 				77791ECF2C6B852000BCEF03 /* SemanticVersion.swift in Sources */,
 				887A60C72C1D037000E1A461 /* PackageButtonStyle.swift in Sources */,
 				77372D992C6F8C7B008E59D3 /* AppUpdateWarningView.swift in Sources */,
@@ -5886,10 +5964,12 @@
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
 				2D2AFE8D2C6A834D00D1B0B4 /* TestData.swift in Sources */,
 				887A60C92C1D037000E1A461 /* PurchaseButton.swift in Sources */,
+				88B1BAF02C813A3C001B7EE5 /* TextComponentViewModel.swift in Sources */,
 				2D2AFE912C6A9EF500D1B0B4 /* Binding+Extensions.swift in Sources */,
 				7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */,
 				887A60812C1D037000E1A461 /* PaywallData+Default.swift in Sources */,
 				887A606A2C1D037000E1A461 /* TrialOrIntroEligibilityChecker.swift in Sources */,
+				88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */,
 				3546355F2C391F4D001D7E85 /* PromotionalOfferView.swift in Sources */,
 				353756722C382C2800A1B8D6 /* URLUtilities.swift in Sources */,
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
@@ -5900,15 +5980,15 @@
 				2D2AFE8F2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift in Sources */,
 				3537566E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift in Sources */,
 				887A60692C1D037000E1A461 /* IntroEligibilityViewModel.swift in Sources */,
+				88EA80ED2C8771A7003E6675 /* TemplateComponentsView+extensions.swift in Sources */,
 				88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */,
 				887A60CB2C1D037000E1A461 /* TemplateBackgroundImageView.swift in Sources */,
 				C3AD12BA2C6EA61F00A4F86F /* CompatibilityNavigationStack.swift in Sources */,
 				353756682C382C2800A1B8D6 /* CustomerCenterViewModel.swift in Sources */,
 				887A60BD2C1D037000E1A461 /* TemplateViewType.swift in Sources */,
 				887A606D2C1D037000E1A461 /* Localization.swift in Sources */,
-				88AD01392C741AAB00AA1F2B /* TextComponentView.swift in Sources */,
 				887A60CA2C1D037000E1A461 /* RemoteImage.swift in Sources */,
-				88E679292C741E08007E69D5 /* SpacerComponentView.swift in Sources */,
+				88B1BAF42C813A3C001B7EE5 /* SpacerComponentViewModel.swift in Sources */,
 				887A607B2C1D037000E1A461 /* Bundle+Extensions.swift in Sources */,
 				353756662C382C2800A1B8D6 /* CustomerCenterError.swift in Sources */,
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
@@ -5921,14 +6001,15 @@
 				3546355C2C391F38001D7E85 /* FeedbackSurveyViewModel.swift in Sources */,
 				353756692C382C2800A1B8D6 /* CustomerCenterViewState.swift in Sources */,
 				887A608B2C1D037000E1A461 /* PurchaseHandler+TestData.swift in Sources */,
-				88E679572C750AE1007E69D5 /* StackComponentView.swift in Sources */,
 				35F249CE2C493E3D0058993A /* CustomerCenterPurchases.swift in Sources */,
 				353756672C382C2800A1B8D6 /* SubscriptionInformation.swift in Sources */,
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
 				887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */,
 				C3AD12BC2C6EA69D00A4F86F /* SubscriptionDetailsView.swift in Sources */,
+				88B1BAEC2C813A3C001B7EE5 /* PaywallComponentViewModel.swift in Sources */,
 				887A60742C1D037000E1A461 /* Strings.swift in Sources */,
 				887A60712C1D037000E1A461 /* PaywallViewConfiguration.swift in Sources */,
+				88B1BAFA2C813A3C001B7EE5 /* TemplateComponentsView.swift in Sources */,
 				3537566C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift in Sources */,
 				887A60C82C1D037000E1A461 /* ProgressView.swift in Sources */,
 				887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */,
@@ -5936,8 +6017,8 @@
 				1E5F8F6E2C4515430041EECD /* View+PresentCustomerCenter.swift in Sources */,
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,
+				88B1BAFE2C813A3C001B7EE5 /* ImageComponentViewModel.swift in Sources */,
 				35C200B12C39254100B9778B /* FeedbackSurveyView.swift in Sources */,
-				88AD013B2C741B5300AA1F2B /* ImageComponentView.swift in Sources */,
 				35F249CC2C493DCC0058993A /* CustomerCenterPurchasesType.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,
 				88A543E52C37A4AF0039C6A5 /* ConsistentTierContentView.swift in Sources */,
@@ -5948,11 +6029,13 @@
 				887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */,
 				357CEC702C5940CE00A80837 /* ColorFromAppearance.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
+				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,
 				887A60872C1D037000E1A461 /* ViewExtensions.swift in Sources */,
-				88AD01342C7418EE00AA1F2B /* TemplateComponentsView.swift in Sources */,
+				88B1BB022C813A3C001B7EE5 /* StackComponentView.swift in Sources */,
 				353756712C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift in Sources */,
 				35C200AF2C39252D00B9778B /* FeedbackSurveyData.swift in Sources */,
 				3551E39D2C4A6A1400D27C25 /* TintedProgressView.swift in Sources */,
+				88B1BAF82C813A3C001B7EE5 /* LinkButtonComponentViewModel.swift in Sources */,
 				887A60BA2C1D037000E1A461 /* Template3View.swift in Sources */,
 				887A607D2C1D037000E1A461 /* ImageLoader.swift in Sources */,
 				887A60822C1D037000E1A461 /* PreviewHelpers.swift in Sources */,
@@ -5969,6 +6052,7 @@
 				887A606F2C1D037000E1A461 /* PaywallData+Validation.swift in Sources */,
 				88A543DF2C37A45B0039C6A5 /* TemplatePackageSetting.swift in Sources */,
 				3546355D2C391F38001D7E85 /* PromotionalOfferViewModel.swift in Sources */,
+				88B1BAF62C813A3C001B7EE5 /* LinkButtonComponentView.swift in Sources */,
 				35F249CA2C493D970058993A /* LoadPromotionalOfferUseCase.swift in Sources */,
 				887A60762C1D037000E1A461 /* TemplateViewConfiguration+Extensions.swift in Sources */,
 				887A607A2C1D037000E1A461 /* Variables.swift in Sources */,

@@ -93,7 +93,7 @@ struct SamplePaywallsList: View {
             #endif
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
-            ComponentsView(locale: .current, components: data.components)
+            TemplateComponentsView(paywallComponentsData: data, offering: Self.loader.offeringWithDefaultPaywall())
         #endif
         }
 
@@ -105,9 +105,28 @@ struct SamplePaywallsList: View {
             #if PAYWALL_COMPONENTS
             Section("Components") {
                 Button {
-                    self.display = .componentPaywall(SamplePaywallLoader.sampleComponents)
+                    let data = SamplePaywallLoader.template1Components
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
                 } label: {
-                    TemplateLabel(name: "Components", icon: "iphone")
+                    TemplateLabel(name: "Curiosity Components", icon: "iphone")
+                }
+                Button {
+                    let data = SamplePaywallLoader.fitnessComponents
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Fitness Components", icon: "iphone")
+                }
+                Button {
+                    let data = SamplePaywallLoader.simpleSampleComponents
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Simple Sample Components", icon: "iphone")
                 }
             }
             #endif
@@ -248,8 +267,6 @@ extension SamplePaywallsList {
             print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
         case .refundRequestCompleted(let status):
             print("CustomerCenter: refundRequestCompleted. Result: \(status)")
-        case .feedbackSurveyCompleted(let option):
-            print("CustomerCenter: feedbackSurveyCompleted. Option selected: \(option)")
         }
     }
 }
@@ -269,7 +286,7 @@ private extension SamplePaywallsList {
         case unrecognizedPaywall
         case customerCenter
         #if PAYWALL_COMPONENTS
-        case componentPaywall(PaywallComponent.Data)
+        case componentPaywall(PaywallComponentsData)
         #endif
 
     }

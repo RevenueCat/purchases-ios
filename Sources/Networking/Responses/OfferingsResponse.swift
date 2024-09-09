@@ -10,10 +10,9 @@
 //  OfferingsResponse.swift
 //
 //  Created by Nacho Soto on 3/31/22.
+// swiftlint:disable nesting identifier_name missing_docs
 
 import Foundation
-
-// swiftlint:disable nesting identifier_name missing_docs
 
 #if PAYWALL_COMPONENTS
 
@@ -22,6 +21,10 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public struct ComponentsConfig: Codable, Equatable, Sendable {
 
         public var components: [PaywallComponent]
+
+        public init(components: [PaywallComponent]) {
+            self.components = components
+        }
 
     }
 
@@ -37,6 +40,8 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     }
 
     public var componentsConfig: ComponentsConfig
+    public var componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    public var defaultLocale: String
 
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
@@ -44,8 +49,24 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case templateName
         case componentsConfig
+        case componentsLocalizations
+        case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+    }
+
+    public init(templateName: String,
+                assetBaseURL: URL,
+                componentsConfig: ComponentsConfig,
+                componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+                revision: Int,
+                defaultLocaleIdentifier: String) {
+        self.templateName = templateName
+        self.assetBaseURL = assetBaseURL
+        self.componentsConfig = componentsConfig
+        self.componentsLocalizations = componentsLocalizations
+        self._revision = revision
+        self.defaultLocale = defaultLocaleIdentifier
     }
 
 }
