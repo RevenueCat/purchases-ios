@@ -23,23 +23,35 @@ struct ImageComponentView: View {
     let viewModel: ImageComponentViewModel
 
     var body: some View {
-        RemoteImage(url: viewModel.url) { image in
-            switch viewModel.contentMode {
-            case .fit:
-                renderImage(image)
-            case .fill:
-                // Need this to be in a clear color overlay so the image
-                // doesn't push/adjust any parent sizes
-                Color.clear.overlay {
-                    renderImage(image)
+        RemoteImage(url: viewModel.url) { (image, size) in
+            Group {
+                switch viewModel.contentMode {
+                case .fit:
+                    renderImage(image, size)
+                case .fill:
+                    // Need this to be in a clear color overlay so the image
+                    // doesn't push/adjust any parent sizes
+                    Color.clear.overlay {
+                        renderImage(image, size)
+                    }
                 }
             }
+            // Works as a max height for both fit and fill
+            // using the CGSize of an image
+            .applyIfLet(viewModel.maxHeight, apply: { view, value in
+                Group {
+                    if let height = viewModel.maxHeight {
+                        view.frame(height: height)
+                    } else {
+                        view
+                    }
+                }
+            })
         }
-        .frame(maxHeight: viewModel.maxHeight)
         .clipped()
     }
 
-    private func renderImage(_ image: Image) -> some View {
+    private func renderImage(_ image: Image, _ size: CGSize) -> some View {
         image
             .resizable()
             .aspectRatio(contentMode: viewModel.contentMode)
