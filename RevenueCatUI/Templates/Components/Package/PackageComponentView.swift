@@ -43,6 +43,7 @@ struct PackageComponentView: View {
     var selectionState: SelectionState {
         return selectionManager.selectedID == viewModel.packageID ? .selected : .unselected
     }
+
     var body: some View {
         Button {
             selectionManager.selectedID = viewModel.packageID

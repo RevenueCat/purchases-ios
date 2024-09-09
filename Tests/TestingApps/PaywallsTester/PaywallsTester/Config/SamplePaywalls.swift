@@ -699,7 +699,7 @@ private extension SamplePaywallLoader {
 
     // package 1
     static var package1: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_weekly", selectedComponents: [PaywallComponent](), notSelectedComponents: [package1VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_weekly", components: [package1VStackNotSelected]))
     }()
 
     static var package1VStackNotSelected: PaywallComponent = {
@@ -710,13 +710,6 @@ private extension SamplePaywallLoader {
                   padding: .zero))
     }()
 
-    static var package1VStackSelected: PaywallComponent = {
-     .stack(.init(components: [package1Text],
-                  dimension: .horizontal(.center),
-                  spacing: nil,
-                  backgroundColor: .init(light: "#FFFFAA"),
-                  padding: .zero))
-    }()
 
     static var package1Text: PaywallComponent = {
      .text(.init(
@@ -740,16 +733,9 @@ private extension SamplePaywallLoader {
 
     // package 2
     static var package2: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_monthly", selectedComponents: [PaywallComponent](), notSelectedComponents: [package2VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStackNotSelected]))
     }()
 
-    static var package2VStackSelected: PaywallComponent = {
-     .stack(.init(components: [package2Text],
-                  dimension: .horizontal(.center),
-                  spacing: nil,
-                  backgroundColor: .init(light: "#FFFFAA"),
-                  padding: .zero))
-    }()
 
     static var package2VStackNotSelected: PaywallComponent = {
      .stack(.init(components: [package2Text],

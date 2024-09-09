@@ -22,11 +22,8 @@ import SwiftUI
 public class PackageComponentViewModel: ObservableObject {
 
     private let component: PaywallComponent.PackageComponent
-    let selectedViewModels: [PaywallComponentViewModel]
-    let notSelectedViewModels: [PaywallComponentViewModel]
-    var viewModels: [PaywallComponentViewModel] {
-        notSelectedViewModels
-    }
+    var viewModels: [PaywallComponentViewModel]
+
     let offering: Offering
     init(
         component: PaywallComponent.PackageComponent,
@@ -36,10 +33,7 @@ public class PackageComponentViewModel: ObservableObject {
     ) throws {
         self.component = component
         self.offering = offering
-        self.selectedViewModels = try component.selectedComponents.map {
-            try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
-        }
-        self.notSelectedViewModels = try component.notSelectedComponents.map {
+        self.viewModels = try component.components.map {
             try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }
     }

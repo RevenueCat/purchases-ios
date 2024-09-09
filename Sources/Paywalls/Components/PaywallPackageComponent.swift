@@ -15,14 +15,12 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let packageID: String
-        public let selectedComponents: [PaywallComponent]
-        public let notSelectedComponents: [PaywallComponent]
+        public let components: [PaywallComponent]
 
-        public init(type: ComponentType, packageID: String, selectedComponents: [PaywallComponent], notSelectedComponents: [PaywallComponent]) {
+        public init(type: ComponentType, packageID: String, components: [PaywallComponent]) {
             self.type = .package
             self.packageID = packageID
-            self.selectedComponents = selectedComponents
-            self.notSelectedComponents = notSelectedComponents
+            self.components = components
         }
 
     }
