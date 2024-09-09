@@ -236,7 +236,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
             }
 
         case let .multiTier(tiers, localization):
-            let filteredTiers: [(PaywallData.Tier, (MultiPackage, String))] = try tiers.compactMap { tier in
+            let filteredTiers: [(PaywallData.Tier, (package: MultiPackage, tierName: String))] =
+            try tiers.compactMap { tier in
                 guard let localization = localization[tier.id] else {
                     throw TemplateError.missingLocalization(tier)
                 }
@@ -273,19 +274,19 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 )
             }
 
-            let filteredTiersMap: [PaywallData.Tier: (package: MultiPackage, tierName: String)] = Dictionary(
-                filteredTiers,
-                uniquingKeysWith: { _, new in new }
-            )
-
             guard let (firstTier, _) = filteredTiers.first else {
                 throw TemplateError.noTiers
             }
 
+            let packagesAndTierNamesByTier: [PaywallData.Tier: (package: MultiPackage, tierName: String)] = Dictionary(
+                filteredTiers,
+                uniquingKeysWith: { _, new in new }
+            )
+
             return .multiTier(
                 firstTier: firstTier,
-                all: filteredTiersMap.mapValues { $0.package },
-                tierNames: filteredTiersMap.mapValues { $0.tierName }
+                all: packagesAndTierNamesByTier.mapValues { $0.package },
+                tierNames: packagesAndTierNamesByTier.mapValues { $0.tierName }
             )
         }
     }
