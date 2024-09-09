@@ -412,6 +412,17 @@ extension View {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension View {
+    @ViewBuilder func applyIfLet<T, Content: View>(_ value: T?, apply: (Self, T) -> Content) -> some View {
+        if let value = value {
+            apply(self, value)
+        } else {
+            self
+        }
+    }
+}
+
 #endif
 
 // swiftlint:enable file_length
