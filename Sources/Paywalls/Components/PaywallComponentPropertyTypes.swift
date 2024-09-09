@@ -18,6 +18,17 @@ import Foundation
 
 public extension PaywallComponent {
 
+    struct ThemeImageUrls: Codable, Sendable, Hashable, Equatable {
+        public let light: ImageUrls
+        public let dark: ImageUrls?
+    }
+
+    struct ImageUrls: Codable, Sendable, Hashable, Equatable {
+        public let original: URL
+        public let heic: URL
+        public let heicLowRes: URL
+    }
+
     struct ColorInfo: Codable, Sendable, Hashable, Equatable {
 
         public init(light: ColorHex, dark: ColorHex? = nil) {
@@ -46,6 +57,44 @@ public extension PaywallComponent {
 
         public static let `default` = Padding(top: 10, bottom: 10, leading: 20, trailing: 20)
         public static let zero = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
+
+    }
+
+    struct CornerRadiuses: Codable, Sendable, Hashable, Equatable {
+
+        public init(topLeading: Double,
+                    topTrailing: Double,
+                    bottomLeading: Double,
+                    bottomTrailing: Double) {
+            self.topLeading = topLeading
+            self.topTrailing = topTrailing
+            self.bottomLeading = bottomLeading
+            self.bottomTrailing = bottomTrailing
+        }
+
+        public let topLeading: Double
+        public let topTrailing: Double
+        public let bottomLeading: Double
+        public let bottomTrailing: Double
+
+        public static let `default` = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
+        public static let zero = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
+
+    }
+
+    enum WidthSizeType: String, Codable, Sendable, Hashable, Equatable {
+        case fit, fill, fixed
+    }
+
+    struct WidthSize: Codable, Sendable, Hashable, Equatable {
+
+        public init(type: WidthSizeType, value: Int? ) {
+            self.type = type
+            self.value = value
+        }
+
+        public let type: WidthSizeType
+        public let value: Int?
 
     }
 
@@ -81,7 +130,7 @@ public extension PaywallComponent {
 
     enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
 
-        case ultraLight
+        case ultraLight = "ultra_light"
         case thin
         case light
         case regular
@@ -95,7 +144,7 @@ public extension PaywallComponent {
 
     enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
 
-        case largeTitle
+        case largeTitle = "large_title"
         case title
         case title2
         case title3
@@ -108,8 +157,8 @@ public extension PaywallComponent {
         case caption2
 
         // Swift 5.9 stuff
-        case extraLargeTitle
-        case extraLargeTitle2
+        case extraLargeTitle = "extra_large_title"
+        case extraLargeTitle2 = "extra-large_title_2"
 
     }
 

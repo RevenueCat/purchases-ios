@@ -43,9 +43,10 @@ public struct TemplateComponentsView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-                ComponentsView(
-                    componentViewModels: self.componentViewModels
-                )
+            ComponentsView(
+                componentViewModels: self.componentViewModels
+            )
+            Spacer()
         }
         .edgesIgnoringSafeArea(.top)
     }

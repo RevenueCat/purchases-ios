@@ -56,6 +56,18 @@ public class StackComponentViewModel {
         component.padding.edgeInsets
     }
 
+    var margin: EdgeInsets {
+        component.margin.edgeInsets
+    }
+
+    var cornerRadiuses: PaywallComponent.CornerRadiuses {
+        component.cornerRadiuses
+    }
+
+    var width: PaywallComponent.WidthSize? {
+        component.width
+    }
+
 }
 
 #endif
