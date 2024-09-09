@@ -31,6 +31,13 @@ protocol DiagnosticsTrackerType {
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult) async
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackPurchaseRequest(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              skErrorCode: Int?) async
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -88,6 +95,24 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                 ],
                 timestamp: self.dateProvider.now()
             )
+        )
+    }
+
+    func trackPurchaseRequest(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              skErrorCode: Int?) async {
+        await track(
+            DiagnosticsEvent(eventType: .applePurchaseAttempt,
+                             properties: [
+                                .successfulKey: AnyEncodable(wasSuccessful),
+                                .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
+                                .errorMessageKey: AnyEncodable(errorMessage),
+                                .errorCodeKey: AnyEncodable(errorCode),
+                                .skErrorCodeKey: AnyEncodable(skErrorCode)
+                             ],
+                             timestamp: self.dateProvider.now())
         )
     }
 
