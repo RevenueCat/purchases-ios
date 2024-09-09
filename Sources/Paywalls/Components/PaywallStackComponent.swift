@@ -21,23 +21,32 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let components: [PaywallComponent]
+        public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
         public let padding: Padding
+        public let margin: Padding
+        public let cornerRadiuses: CornerRadiuses
 
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
+                    width: WidthSize?,
                     spacing: CGFloat?,
                     backgroundColor: ColorInfo?,
-                    padding: Padding
+                    padding: Padding,
+                    margin: Padding,
+                    cornerRadiuses: CornerRadiuses
         ) {
             self.components = components
+            self.width = width
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.type = .stack
             self.dimension = dimension
             self.padding = padding
+            self.margin = margin
+            self.cornerRadiuses = cornerRadiuses
         }
 
         public enum Dimension: Codable, Sendable, Hashable {

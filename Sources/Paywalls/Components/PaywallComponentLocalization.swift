@@ -19,9 +19,18 @@ import Foundation
 extension PaywallComponent.LocalizationDictionary {
 
     public func string(key: String) throws -> String {
-        guard let value = self[key] else {
+        guard case let .string(value) = self[key] else {
             throw LocalizationValidationError.missingLocalization(
-                "Missing localization for property with id: \"\(key)\""
+                "Missing string localization for property with id: \"\(key)\""
+            )
+        }
+        return value
+    }
+
+    public func image(key: String) throws -> PaywallComponent.ThemeImageUrls {
+        guard case let .image(value) = self[key] else {
+            throw LocalizationValidationError.missingLocalization(
+                "Missing image localization for property with id: \"\(key)\""
             )
         }
         return value
@@ -32,6 +41,7 @@ extension PaywallComponent.LocalizationDictionary {
 enum LocalizationValidationError: Error {
 
     case missingLocalization(String)
+    case invalidUrl(String)
 
 }
 
