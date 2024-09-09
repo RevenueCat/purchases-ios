@@ -20,7 +20,7 @@ struct RemoteImage<Content: View>: View {
     let lowResUrl: URL?
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
-    let content: (Image) -> Content
+    let content: (Image, CGSize) -> Content
 
     @StateObject
     private var highResLoader: ImageLoader = .init()
@@ -37,7 +37,7 @@ struct RemoteImage<Content: View>: View {
     init(
         url: URL,
         lowResUrl: URL? = nil,
-        @ViewBuilder content: @escaping (Image) -> Content
+        @ViewBuilder content: @escaping (Image, CGSize) -> Content
     ) {
         self.url = url
         self.lowResUrl = lowResUrl
@@ -56,7 +56,7 @@ struct RemoteImage<Content: View>: View {
         self.lowResUrl = lowResUrl
         self.maxWidth = maxWidth
         self.aspectRatio = aspectRatio
-        self.content = { image in
+        self.content = { (image, size) in
             if let aspectRatio {
                 return AnyView(
                     image
@@ -76,10 +76,10 @@ struct RemoteImage<Content: View>: View {
 
     var body: some View {
         Group {
-            if case let .success(image) = highResLoader.result {
-                content(image)
-            } else if case let .success(image) = lowResLoader.result {
-                content(image)
+            if case let .success(result) = highResLoader.result {
+                content(result.image, result.size)
+            } else if case let .success(result) = lowResLoader.result {
+                content(result.image, result.size)
             } else if case let .failure(highResError) = highResLoader.result {
                 if !fetchLowRes {
                     emptyView(error: highResError)
