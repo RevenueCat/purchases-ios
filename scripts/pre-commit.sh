@@ -51,7 +51,7 @@ verify_no_included_apikeys() {
   done
 }
 
-echo "SwiftLint version: $(${SWIFT_LINT} version)"
+echo "SwiftLint version: $(${SWIFT_LINT} --version)"
 # Run only if not merging
 if ! git rev-parse -q --verify MERGE_HEAD; then 
   # Run for just staged files
