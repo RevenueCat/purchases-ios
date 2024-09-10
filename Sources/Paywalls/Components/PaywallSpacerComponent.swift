@@ -12,12 +12,15 @@ import Foundation
 
 public extension PaywallComponent {
 
+    public let selectedComponent: SpacerComponent?
+
     struct SpacerComponent: PaywallComponentBase {
 
         let type: ComponentType
 
-        public init() {
+        public init(selectedComponent: SpacerComponent? = nil) {
             self.type = .spacer
+            self.selectedComponent = selectedComponent
         }
 
     }
