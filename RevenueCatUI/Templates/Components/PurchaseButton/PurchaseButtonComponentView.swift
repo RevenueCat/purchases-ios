@@ -16,12 +16,19 @@ struct PurchaseButtonComponentView: View {
 
     let viewModel: PurchaseButtonComponentViewModel
 
+    @EnvironmentObject var selectionManager: PackageSelectionManager
+
     var body: some View {
-        Button {
-            print("Purchase button pressed")
-        } label: {
-            TextComponentView(viewModel: viewModel.textComponentViewModel)
-                .cornerRadius(25)
+        VStack {
+            if let selectedID = selectionManager.selectedID {
+                Text("Purchase for package \(selectedID)")
+            }
+            Button {
+                print("Purchase button pressed")
+            } label: {
+                TextComponentView(viewModel: viewModel.textComponentViewModel)
+                    .cornerRadius(25)
+            }
         }
 
     }
