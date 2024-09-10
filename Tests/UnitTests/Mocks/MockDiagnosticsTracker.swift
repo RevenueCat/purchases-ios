@@ -63,7 +63,6 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          errorCode: Int?,
          storeKitErrorDescription: String?)
     ]> = .init([])
-
     func trackPurchaseRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
@@ -80,26 +79,28 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
-    private(set) var trackedProductsRequestParams: [
+    let trackedProductsRequestParams: Atomic<[
         // swiftlint:disable:next large_tuple
         (wasSuccessful: Bool,
          storeKitVersion: StoreKitVersion,
          errorMessage: String?,
          errorCode: Int?,
          responseTime: TimeInterval)
-    ] = []
+    ]> = .init([])
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
                               responseTime: TimeInterval) async {
-        self.trackedProductsRequestParams.append(
-            (wasSuccessful,
-            storeKitVersion,
-            errorMessage,
-            errorCode,
-            responseTime)
-        )
+        self.trackedProductsRequestParams.modify {
+            $0.append(
+                (wasSuccessful,
+                storeKitVersion,
+                errorMessage,
+                errorCode,
+                responseTime)
+            )
+        }
     }
 
 }

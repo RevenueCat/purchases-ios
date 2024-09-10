@@ -153,8 +153,8 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
             manager.products(withIdentifiers: Set([identifier]), completion: completed)
         }
 
-        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.count) == 1
-        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.first
+        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
+        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
         expect(params?.wasSuccessful) == true
         expect(params?.storeKitVersion) == .storeKit1
         expect(params?.errorMessage).to(beNil())
@@ -170,8 +170,8 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
             manager.products(withIdentifiers: Set([identifier]), completion: completed)
         }
 
-        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.count) == 1
-        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.first
+        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
+        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
         expect(params?.wasSuccessful) == true
         expect(params?.storeKitVersion) == .storeKit2
         expect(params?.errorMessage).to(beNil())
@@ -190,8 +190,14 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         _ = try? await manager.products(withIdentifiers: Set([identifier]))
 
-        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.count) == 1
-        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.first
+        try await asyncWait(
+            description: "Diagnostics tracker should have been called",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        ) { [diagnosticsTracker = self.mockDiagnosticsTracker!] in
+            diagnosticsTracker.trackedProductsRequestParams.value.count == 1
+        }
+        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
         expect(params?.wasSuccessful) == false
         expect(params?.storeKitVersion) == .storeKit2
         expect(params?.errorMessage) == "Products request error: Unable to Complete Request"

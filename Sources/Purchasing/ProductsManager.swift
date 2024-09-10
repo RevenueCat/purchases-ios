@@ -144,13 +144,13 @@ private extension ProductsManager {
             let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
                 ?? error?.localizedDescription
             let errorCode = error?.errorCode
-            Async.call(with: {}, asyncMethod: {
+            Task(priority: .background) {
                 await diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
                                                               storeKitVersion: storeKitVersion,
                                                               errorMessage: errorMessage,
                                                               errorCode: errorCode,
                                                               responseTime: responseTime)
-            })
+            }
         }
     }
 
