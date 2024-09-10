@@ -658,11 +658,13 @@ private extension SamplePaywallLoader {
 
     // PACKAGES
 
-    static var packagesSample: [PaywallComponent] = {
+    static var packageWall: [PaywallComponent] = {
         [.stack(.init(components: [spacer,
                                    titleText,
                                    spacer,
-                                   packages,
+                                   packageHStack,
+                                   spacer,
+                                   packageHStack,
                                    spacer,
                                    purchasePackageButton
                                   ],
@@ -685,8 +687,8 @@ private extension SamplePaywallLoader {
         ))
     }()
 
-    static var packages: PaywallComponent = {
-        .packages(.init(type: .packages, defaultSelectedPackageID: "$rc_weekly", components: [packageHStack]))
+    static var packagesSample: [PaywallComponent] = {
+        [.packages(.init(type: .packages, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
     }()
 
     static var packageHStack: PaywallComponent = {
@@ -749,7 +751,7 @@ private extension SamplePaywallLoader {
                   padding: .zero,
                   selectedComponent: .init(components: [package2Text],
                                            spacing: nil,
-                                           backgroundColor: .init(light: "#00FFAA"),
+                                           backgroundColor: .init(light: "#00FFAA", dark: "#00AAFF"),
                                            padding: .zero)))
     }()
 
