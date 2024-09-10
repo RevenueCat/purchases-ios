@@ -1089,8 +1089,14 @@ jobs:
       - run:
           name: Run fastlane swiftlint lane
           command: |
-            bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
-            reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
+            # FIXME This doesn't work because somehow swift package plugins run for every target/module/scheme?
+            #  Only the last of those runs will save the output file, causing issues to be lost.
+            swift package plugin \
+              --allow-writing-to-directory fastlane/test_output/swiftlint \
+              swiftlint \
+              --strict \
+              --reporter junit \
+              --output fastlane/test_output/swiftlint/junit.xml
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
