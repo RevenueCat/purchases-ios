@@ -164,9 +164,6 @@ commands:
       install_mint:
         type: boolean
         default: false
-      install_swiftlint:
-        type: boolean
-        default: true
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
@@ -183,16 +180,10 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
-      - when:
-          condition: << parameters.install_swiftlint >>
-          steps:
-            - install-brew-dependency:
-                dependency_name: "swiftlint"
       - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
           paths:
-            - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
             - /Users/$USER/Library/Caches/Homebrew/
 
@@ -490,8 +481,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -519,8 +509,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -552,8 +541,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -632,8 +620,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -660,8 +647,7 @@ jobs:
 
     steps:
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -693,8 +679,7 @@ jobs:
     steps:
       - checkout
       - set-maximum-duration
-      - install-dependencies:
-          install_swiftlint: false
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -773,7 +758,6 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -807,7 +791,6 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
-          install_swiftlint: false
       - macos/install-rosetta
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
