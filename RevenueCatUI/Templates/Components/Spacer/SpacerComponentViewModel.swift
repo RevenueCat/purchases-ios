@@ -27,7 +27,7 @@ public class SpacerComponentViewModel {
         self.component = component
     }
 
-    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.TextComponent {
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.SpacerComponent {
         switch selectionState {
         case .selected:
             return component.selectedComponent ?? component
