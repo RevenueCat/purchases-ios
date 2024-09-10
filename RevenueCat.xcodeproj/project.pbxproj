@@ -4573,11 +4573,11 @@
 				2DC5621224EC63420031F69B /* Sources */,
 				2DC5621324EC63420031F69B /* Frameworks */,
 				2DC5621424EC63420031F69B /* Resources */,
+				B3C302D926D8066F002B72D1 /* SwiftLint */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				77BA4EF82C906489002B726B /* PBXTargetDependency */,
 			);
 			name = RevenueCat;
 			packageProductDependencies = (
@@ -4884,7 +4884,6 @@
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
 				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
-				77BA4EF62C906435002B726B /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -5127,6 +5126,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B3C302D926D8066F002B72D1 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "scripts/swiftlint.sh\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2DAC5F6E26F13C9800C5258F /* Sources */ = {
@@ -6120,10 +6141,6 @@
 			isa = PBXTargetDependency;
 			target = 57D92C32293E4D0C00D1912A /* ReceiptParser */;
 			targetProxy = 5759B420296DFEE2002472D5 /* PBXContainerItemProxy */;
-		};
-		77BA4EF82C906489002B726B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 77BA4EF72C906489002B726B /* SwiftLintBuildToolPlugin */;
 		};
 		88DE93E42C211CBC0086B6D8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -7568,14 +7585,6 @@
 				minimumVersion = 1.11.0;
 			};
 		};
-		77BA4EF62C906435002B726B /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
-			requirement = {
-				kind = exactVersion;
-				version = 0.57.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -7648,11 +7657,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
-		};
-		77BA4EF72C906489002B726B /* SwiftLintBuildToolPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 77BA4EF62C906435002B726B /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
-			productName = "plugin:SwiftLintBuildToolPlugin";
 		};
 		887A63492C1D17EF00E1A461 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
