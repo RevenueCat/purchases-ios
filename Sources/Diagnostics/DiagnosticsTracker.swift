@@ -36,7 +36,7 @@ protocol DiagnosticsTrackerType {
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              skErrorCode: Int?) async
+                              storeKitErrorDescription: String?) async
 
 }
 
@@ -102,7 +102,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              skErrorCode: Int?) async {
+                              storeKitErrorDescription: String?) async {
         await track(
             DiagnosticsEvent(eventType: .applePurchaseAttempt,
                              properties: [
@@ -110,7 +110,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                                 .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
                                 .errorMessageKey: AnyEncodable(errorMessage),
                                 .errorCodeKey: AnyEncodable(errorCode),
-                                .skErrorCodeKey: AnyEncodable(skErrorCode)
+                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription)
                              ],
                              timestamp: self.dateProvider.now())
         )

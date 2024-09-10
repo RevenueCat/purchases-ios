@@ -500,7 +500,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
-                    diagnosticsSynchronizer: diagnosticsSynchronizer
+                    diagnosticsSynchronizer: diagnosticsSynchronizer,
+                    diagnosticsTracker: diagnosticsTracker
                 )
             } else {
                 return .init(

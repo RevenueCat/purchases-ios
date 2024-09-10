@@ -484,12 +484,11 @@ final class PurchasesOrchestrator {
         }
     }
 
+    // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(
-        sk2Product: SK2Product,
-        package: Package?,
-        promotionalOffer: PromotionalOffer.SignedData?
-    ) async throws -> PurchaseResultData {
+    func purchase(sk2Product: SK2Product,
+                  package: Package?,
+                  promotionalOffer: PromotionalOffer.SignedData?) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
         do {
@@ -526,10 +525,14 @@ final class PurchasesOrchestrator {
                 userCancelled: true
             )
         } catch let error as PromotionalOffer.SignedData.Error {
-            throw ErrorUtils.invalidPromotionalOfferError(error: error,
-                                                          message: error.localizedDescription)
+            let error = ErrorUtils.invalidPromotionalOfferError(error: error,
+                                                                message: error.localizedDescription)
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: error.asPublicError)
+            throw error
         } catch {
-            throw ErrorUtils.purchasesError(withStoreKitError: error)
+            let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: purchasesError.asPublicError)
+            throw error
         }
 
         // `userCancelled` above comes from `StoreKitError.userCancelled`.
@@ -552,8 +555,13 @@ final class PurchasesOrchestrator {
                                                                            fetchPolicy: .cachedOrFetched)
         }
 
+        if !userCancelled {
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: nil)
+        }
+
         return (transaction, customerInfo, userCancelled)
     }
+    // swiftlint:enable function_body_length
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func purchase(
@@ -885,17 +893,26 @@ private extension PurchasesOrchestrator {
                                     error: PublicError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
         let diagnosticsTracker = self.diagnosticsTracker {
-            let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
-            let errorCode = error?.code
-            let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError
-            let skErrorCode = skError?.code
-            Async.call(with: {}, asyncMethod: {
+            Task(priority: .background) {
+                let errorMessage =
+                (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
+                let errorCode = error?.code
+                let storeKitErrorDescription: String?
+                
+                if let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError {
+                    storeKitErrorDescription = skError.code.trackingDescription
+                } else if let storeKitError = error?.userInfo[NSUnderlyingErrorKey] as? StoreKitError {
+                    storeKitErrorDescription = storeKitError.trackingDescription
+                } else {
+                    storeKitErrorDescription = nil
+                }
+                
                 await diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
                                                               storeKitVersion: storeKitVersion,
                                                               errorMessage: errorMessage,
                                                               errorCode: errorCode,
-                                                              skErrorCode: skErrorCode?.rawValue)
-            })
+                                                              storeKitErrorDescription: storeKitErrorDescription)
+            }
         }
     }
 
