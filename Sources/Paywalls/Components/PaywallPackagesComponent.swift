@@ -12,7 +12,7 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct PackagesComponent: PaywallComponentBase {
+    final class PackagesComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let defaultSelectedPackageID: String
@@ -24,6 +24,23 @@ public extension PaywallComponent {
             self.components = components
         }
 
+    }
+
+}
+
+extension PaywallComponent.PackagesComponent: Equatable, Hashable {
+
+    public static func == (lhs: PaywallComponent.PackagesComponent, rhs: PaywallComponent.PackagesComponent) -> Bool {
+        return lhs.type == rhs.type &&
+               lhs.defaultSelectedPackageID == rhs.defaultSelectedPackageID &&
+               lhs.components == rhs.components
+    }
+
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(defaultSelectedPackageID)
+        hasher.combine(components)
     }
 
 }
