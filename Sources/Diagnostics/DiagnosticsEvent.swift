@@ -48,7 +48,7 @@ extension DiagnosticsEvent {
         case backendErrorCodeKey
         case errorMessageKey
         case errorCodeKey
-        case skErrorCodeKey
+        case skErrorDescriptionKey
         case eTagHitKey
 
     }

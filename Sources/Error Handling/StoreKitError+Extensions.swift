@@ -47,6 +47,29 @@ extension StoreKitError: PurchasesErrorConvertible {
         }
     }
 
+    var trackingDescription: String {
+        switch self {
+        case .unknown:
+            return "unknown"
+        case .userCancelled:
+            return "user_cancelled"
+        case .networkError(let urlError):
+            return "network_error_\(urlError.code.rawValue)"
+        case .systemError(let error):
+            return "system_error_\(String(describing: error))"
+        case .notAvailableInStorefront:
+            return "not_available_in_storefront"
+        case .notEntitled:
+            if #available(iOS 15.4, macOS 12.3, tvOS 15.4, watchOS 8.5, visionOS 1.0, *) {
+                return "not_entitled"
+            } else {
+                return "unknown"
+            }
+        @unknown default:
+            return "unknown_future_error"
+        }
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

@@ -53,4 +53,27 @@ class MockDiagnosticsTracker: DiagnosticsTrackerType {
         )
     }
 
+    private(set) var trackedPurchaseRequestParams: [
+        // swiftlint:disable:next large_tuple
+        (wasSuccessful: Bool,
+         storeKitVersion: StoreKitVersion,
+         errorMessage: String?,
+         errorCode: Int?,
+         storeKitErrorDescription: String?)
+    ] = []
+
+    func trackPurchaseRequest(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              storeKitErrorDescription: String?) async {
+        self.trackedPurchaseRequestParams.append(
+            (wasSuccessful,
+             storeKitVersion,
+             errorMessage,
+             errorCode,
+             storeKitErrorDescription)
+        )
+    }
+
 }

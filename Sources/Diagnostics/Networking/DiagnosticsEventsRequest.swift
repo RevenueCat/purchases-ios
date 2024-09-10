@@ -93,8 +93,8 @@ private extension DiagnosticsEvent.DiagnosticsPropertyKey {
             return "error_message"
         case .errorCodeKey:
             return "error_code"
-        case .skErrorCodeKey:
-            return "sk_error_code"
+        case .skErrorDescriptionKey:
+            return "sk_error_description"
         case .eTagHitKey:
             return "etag_hit"
         }
