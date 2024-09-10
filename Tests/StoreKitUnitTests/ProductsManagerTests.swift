@@ -157,8 +157,8 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.first
         expect(params?.wasSuccessful) == true
         expect(params?.storeKitVersion) == .storeKit1
-        expect(params?.errorMessage) == nil
-        expect(params?.errorCode) == nil
+        expect(params?.errorMessage).to(beNil())
+        expect(params?.errorCode).to(beNil())
     }
 
     func testFetchProductsWithIdentifiersSK2TracksCorrectly() throws {
@@ -174,8 +174,8 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.first
         expect(params?.wasSuccessful) == true
         expect(params?.storeKitVersion) == .storeKit2
-        expect(params?.errorMessage) == nil
-        expect(params?.errorCode) == nil
+        expect(params?.errorMessage).to(beNil())
+        expect(params?.errorCode).to(beNil())
     }
 
     #if swift(>=5.9)
