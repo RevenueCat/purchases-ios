@@ -20,25 +20,30 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
+    @Environment(\.selectionState) var selectionState
+
     let viewModel: ImageComponentViewModel
 
     var body: some View {
-        RemoteImage(url: viewModel.url) { image in
+        RemoteImage(url: viewModel.url(for: selectionState)) { image in
             image
                 .resizable()
-                .aspectRatio(contentMode: viewModel.contentMode)
-                .frame(maxHeight: viewModel.maxHeight)
+                .aspectRatio(contentMode: viewModel.contentMode(for: selectionState))
+                .frame(maxHeight: viewModel.maxHeight(for: selectionState))
                 .overlay(
                     LinearGradient(
-                        gradient: Gradient(colors: viewModel.gradientColors),
+                        gradient: Gradient(colors: viewModel.gradientColors(for: selectionState)),
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .cornerRadius(viewModel.cornerRadius)
+                .cornerRadius(viewModel.cornerRadius(for: selectionState))
         }
         .clipped()
     }
+
+
+    
 
 }
 

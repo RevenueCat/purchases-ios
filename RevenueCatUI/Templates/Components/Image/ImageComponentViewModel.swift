@@ -27,20 +27,33 @@ public class ImageComponentViewModel {
         self.component = component
     }
 
-    public var url: URL {
-        component.url
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.ImageComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
     }
-    public var cornerRadius: Double {
-        component.cornerRadius
+
+    func url(for selectionState: SelectionState) -> URL {
+        currentComponent(for: selectionState).url
     }
-    public var gradientColors: [Color] {
-        component.gradientColors.compactMap { $0.toColor(fallback: Color.clear) }
+
+    func cornerRadius(for selectionState: SelectionState) -> Double {
+        currentComponent(for: selectionState).cornerRadius
     }
-    public var contentMode: ContentMode {
-        component.fitMode.contentMode
+
+    func gradientColors(for selectionState: SelectionState) -> [Color] {
+        currentComponent(for: selectionState).gradientColors.compactMap { $0.toColor(fallback: Color.clear) }
     }
-    public var maxHeight: CGFloat? {
-        component.maxHeight
+
+    func contentMode(for selectionState: SelectionState) -> ContentMode {
+        currentComponent(for: selectionState).fitMode.contentMode
+    }
+
+    func maxHeight(for selectionState: SelectionState) -> CGFloat? {
+        currentComponent(for: selectionState).maxHeight
     }
 
 }
