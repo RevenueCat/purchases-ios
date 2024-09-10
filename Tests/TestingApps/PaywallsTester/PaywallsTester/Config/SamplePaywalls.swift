@@ -707,7 +707,11 @@ private extension SamplePaywallLoader {
                   dimension: .horizontal(.center),
                   spacing: nil,
                   backgroundColor: nil,
-                  padding: .zero))
+                  padding: .zero,
+                  selectedComponent: .init(components: [package1Text],
+                                           spacing: nil,
+                                           backgroundColor: .init(light: "#00FFAA"),
+                                           padding: .zero)))
     }()
 
 
@@ -742,7 +746,11 @@ private extension SamplePaywallLoader {
                   dimension: .horizontal(.center),
                   spacing: nil,
                   backgroundColor: nil,
-                  padding: .zero))
+                  padding: .zero,
+                  selectedComponent: .init(components: [package2Text],
+                                           spacing: nil,
+                                           backgroundColor: .init(light: "#00FFAA"),
+                                           padding: .zero)))
     }()
 
 
