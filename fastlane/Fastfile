@@ -542,17 +542,17 @@ platform :ios do
   end
 
   lane :export_xcframeworks do |options|
-    create_and_sign_xcframework(
-      scheme: 'RevenueCat',
-      product_name: 'RevenueCat',
-      platforms: [
-      'iOS',
-      'macOS',
-      'maccatalyst',
-      'tvOS',
-      'watchOS',
-      'visionOS'
-    ])
+    # create_and_sign_xcframework(
+    #   scheme: 'RevenueCat',
+    #   product_name: 'RevenueCat',
+    #   platforms: [
+    #   'iOS',
+    #   'macOS',
+    #   'maccatalyst',
+    #   'tvOS',
+    #   'watchOS',
+    #   'visionOS'
+    # ])
     create_and_sign_xcframework(
       scheme: 'RevenueCatUIDev',
       product_name: 'RevenueCatUI',

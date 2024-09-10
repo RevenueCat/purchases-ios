@@ -956,6 +956,22 @@ jobs:
           environment:
             DOCS_IOS_VERSION: "17.4"
 
+  export-xcframeworks:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Export xcframeworks
+          command: bundle exec fastlane export_xcframeworks
+      - store_artifacts:
+          path: RevenueCat.xcframework.zip
+          destination: xcframeworks
+      - store_artifacts:
+          path: RevenueCatUI.xcframework.zip
+          destination: xcframeworks
+
   make-release:
     executor:
       name: macos-executor
@@ -1253,10 +1269,7 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - run-test-ios-17
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-17
+      - export-xcframeworks
 
   create-tag:
     when:

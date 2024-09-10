@@ -825,7 +825,6 @@
 		88AD013B2C741B5300AA1F2B /* ImageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD013A2C741B5300AA1F2B /* ImageComponentView.swift */; };
 		88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */; };
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
-		88DE93E22C211CBC0086B6D8 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		88E679292C741E08007E69D5 /* SpacerComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679282C741E08007E69D5 /* SpacerComponentView.swift */; };
 		88E679472C7503C1007E69D5 /* StackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* StackComponent.swift */; };
 		88E679572C750AE1007E69D5 /* StackComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679562C750AE1007E69D5 /* StackComponentView.swift */; };
@@ -1118,17 +1117,6 @@
 				57E6C2CB2975C777001AFE98 /* base64encoded_sandboxReceipt.txt in CopyFiles */,
 				57E6C2CC2975C777001AFE98 /* base64EncodedReceiptSampleForDataExtension.txt in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		88DE93E52C211CBC0086B6D8 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				88DE93E22C211CBC0086B6D8 /* RevenueCat.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -4666,7 +4654,6 @@
 				887A5FB62C1D036200E1A461 /* Sources */,
 				887A5FB72C1D036200E1A461 /* Frameworks */,
 				887A5FB82C1D036200E1A461 /* Resources */,
-				88DE93E52C211CBC0086B6D8 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
