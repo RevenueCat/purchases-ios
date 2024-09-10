@@ -708,9 +708,15 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         }
 
         expect(transaction).toNot(beNil())
-        expect(diagnosticsTracker.trackedPurchaseRequestParams.count) == 1
+        try await asyncWait(
+            description: "Diagnostics tracker should have been called",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        ) { [diagnosticsTracker = diagnosticsTracker] in
+            diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+        }
 
-        let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.first)
+        let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
         expect(params.wasSuccessful).to(beTrue())
         expect(params.storeKitVersion) == .storeKit1
         expect(params.errorMessage).to(beNil())
@@ -751,9 +757,14 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
             }
         }
         expect(transaction).toNot(beNil())
-        expect(diagnosticsTracker.trackedPurchaseRequestParams.count) == 1
-
-        let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.first)
+        try await asyncWait(
+            description: "Diagnostics tracker should have been called",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        ) { [diagnosticsTracker = diagnosticsTracker] in
+            diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+        }
+        let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
         expect(params.wasSuccessful).to(beFalse())
         expect(params.storeKitVersion) == .storeKit1
         expect(params.errorMessage) == "The operation couldn’t be completed. (SKErrorDomain error 12.)"
