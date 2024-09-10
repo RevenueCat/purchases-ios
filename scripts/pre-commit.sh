@@ -1,13 +1,7 @@
 #!/bin/bash
 
 # Figure out where swiftlint is
-HOMEBREW_BINARY_DESTINATION="/opt/homebrew/bin"
-SWIFT_LINT="${HOMEBREW_BINARY_DESTINATION}/swiftlint"
-
-if ! test -d $HOMEBREW_BINARY_DESTINATION; then
-  # X86_64 macs have this destination
-  SWIFT_LINT="/usr/local/bin/swiftlint"
-fi
+SWIFT_LINT="swift package plugin swiftlint"
 
 # Start timer
 START_DATE=$(date +"%s")
@@ -57,18 +51,13 @@ verify_no_included_apikeys() {
   done
 }
 
-if [[ -e "${SWIFT_LINT}" ]]; then
-  echo "SwiftLint version: $(${SWIFT_LINT} version)"
-  # Run only if not merging
-  if ! git rev-parse -q --verify MERGE_HEAD; then 
-    # Run for just staged files
-    while IFS= read -r -d '' file; do
-      run_swiftlint "${file}"
-    done < <(git diff --cached --name-only -z)
-  fi
-else
-  echo "${SWIFT_LINT} is not installed. Please install it via: fastlane setup_dev"
-  exit -1
+echo "SwiftLint version: $(${SWIFT_LINT} version)"
+# Run only if not merging
+if ! git rev-parse -q --verify MERGE_HEAD; then 
+  # Run for just staged files
+  while IFS= read -r -d '' file; do
+    run_swiftlint "${file}"
+  done < <(git diff --cached --name-only -z)
 fi
 
 END_DATE=$(date +"%s")
