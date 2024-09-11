@@ -10,7 +10,6 @@
 //  LocalizationProvider.swift
 //
 //  Created by Josh Holtz on 9/10/24.
-// swiftlint:disable missing_docs todo
 
 import Foundation
 import RevenueCat
@@ -44,7 +43,7 @@ struct LocalizationProvider {
             throw LocalizationValidationError.noDefaultLocalization
         }
 
-        let defaultLocalizationInfo = LocalizationInfo.init(
+        let defaultLocalizationInfo = LocalizationInfo(
             locale: defaultLocale,
             localizedStrings: localizedStrings
         )
@@ -53,7 +52,6 @@ struct LocalizationProvider {
         let paywallLocales = componentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
 
         // use default locale as a fallback if none of the user's preferred locales are not available in the paywall
-
 
         // STEP 2: choose best locale based on device's list of preferred locales.
         let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? defaultLocale
@@ -137,7 +135,7 @@ extension LocalizationProvider {
 
 extension LocalizationProvider {
 
-    public func string(key: String) throws -> String {
+    func string(key: String) throws -> String {
         guard case let .string(value) = preferred.localizedStrings[key] else {
             throw LocalizationValidationError.missingLocalization(
                 "Missing string localization for property with id: \"\(key)\""
@@ -146,7 +144,7 @@ extension LocalizationProvider {
         return value
     }
 
-    public func image(key: String) throws -> PaywallComponent.ThemeImageUrls {
+    func image(key: String) throws -> PaywallComponent.ThemeImageUrls {
         let rawValue = preferred.localizedStrings[key] ?? `default`.localizedStrings[key]
 
         guard case let .image(value) = rawValue else {

@@ -31,7 +31,6 @@ extension TemplateComponentsView {
             default: localizationInfo
         )
 
-
         let textComponent = PaywallComponent.TextComponent(
             textLid: "errorID",
             color: PaywallComponent.ColorInfo(light: "#000000")

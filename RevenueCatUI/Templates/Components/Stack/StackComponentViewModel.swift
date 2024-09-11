@@ -29,7 +29,7 @@ public class StackComponentViewModel {
     ) throws {
         self.component = component
         self.viewModels = try component.components.map {
-            try $0.toViewModel(offering: offering, 
+            try $0.toViewModel(offering: offering,
                                localizationProvider: localizationProvider)
         }
     }
