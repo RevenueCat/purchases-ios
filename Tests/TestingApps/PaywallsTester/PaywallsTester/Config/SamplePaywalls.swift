@@ -946,10 +946,10 @@ private extension SamplePaywallLoader {
     static var fitnessWall: [PaywallComponent] = {
         let components: [PaywallComponent] = [.stack(.init(components: [gymZStack,
                                                                         featureImageStack1,
-                                                                        featureImageStack2,
-                                                                        // featureImageStack3,
+                                                                        //featureImageStack2,
+                                                                        featureImageStack3,
                                                                         spacer,
-                                                                        packageHStack,
+                                                                        fitnesspackageVStack,
                                                                         spacer,
                                                                         purchaseFitnessButton,
                                                                         fitnessFooter],
@@ -979,6 +979,156 @@ private extension SamplePaywallLoader {
         }
 
     }()
+
+    static var fitnesspackageVStack: PaywallComponent = {
+        .stack(.init(components: [fitnessPackage1, spacer, fitnessPackage2],
+                     dimension: .vertical(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero))
+    }()
+
+    static var fitnessPackage1: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_weekly", components: [fitnessItem(headingLid:"sub_period", subHeadlingLid:"offer_details")]))
+    }()
+
+    static var fitnessPackage2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [fitnessItem(headingLid:"sub_period", subHeadlingLid:"offer_details")]))
+    }()
+
+    static func fitnessItem(headingLid: String, subHeadlingLid: String) -> PaywallComponent {
+
+        let heading: PaywallComponent = {
+         .text(.init(
+             text: "",
+             textLid: "package_1_unselected",
+             fontFamily: "",
+             fontWeight: .regular,
+             color: .init(light: "#33AAFF"),
+             padding: .zero,
+             textStyle: .body,
+             selectedComponent: .init(
+                text: "",
+                textLid: "package_1_selected",
+                fontFamily: "",
+                fontWeight: .regular,
+                color: .init(light: "#FF2222"),
+                padding: .zero,
+                textStyle: .body
+         )))
+        }()
+
+        let topHStack: PaywallComponent = {
+         .stack(.init(components: [heading],
+                      dimension: .horizontal(.center),
+                      spacing: nil,
+                      backgroundColor: .init(light: "#FFFF00"),
+                      padding: .zero,
+                      selectedComponent: .init(components: [checkmarkImage, heading],
+                                               dimension: .horizontal(.center),
+                                               spacing: nil,
+                                               backgroundColor: .init(light: "#00FF00"),
+                                               padding: .zero)))
+        }()
+
+        let subHeading: PaywallComponent = {
+         .text(.init(
+             text: "",
+             textLid: subHeadlingLid,
+             fontFamily: "",
+             fontWeight: .regular,
+             color: .init(light: "#33AAFF"),
+             padding: .zero,
+             textStyle: .caption,
+             selectedComponent: .init(
+                text: "",
+                textLid: subHeadlingLid,
+                fontFamily: "",
+                fontWeight: .regular,
+                color: .init(light: "#FF2222"),
+                padding: .zero,
+                textStyle: .caption
+         )))
+        }()
+
+
+        let packageVStack: PaywallComponent = {
+         .stack(.init(components: [topHStack, subHeading],
+                      dimension: .vertical(.leading),
+                      spacing: nil,
+                      backgroundColor: nil,
+                      padding: .zero,
+                      selectedComponent: .init(components: [topHStack, subHeading],
+                                               dimension: .vertical(.leading),
+                                               spacing: nil,
+                                               backgroundColor: .init(light: "#00FF00"),
+                                               padding: .zero)))
+        }()
+
+
+        return packageVStack
+
+    }
+
+
+//    static var package1Text: PaywallComponent = {
+//     .text(.init(
+//         text: "Package one",
+//         textLid: "package_1",
+//         fontFamily: "",
+//         fontWeight: .regular,
+//         color: .init(light: "#000000"),
+//         padding: .zero,
+//         textStyle: .body,
+//         selectedComponent: .init(
+//            text: "Package one",
+//            textLid: "package_1",
+//            fontFamily: "",
+//            fontWeight: .regular,
+//            color: .init(light: "#FF2222"),
+//            padding: .zero,
+//            textStyle: .body
+//     )))
+//    }()
+
+    // package 2
+    static var fitnesspackage2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStackNotSelected]))
+    }()
+
+
+//    static var package2VStackNotSelected: PaywallComponent = {
+//     .stack(.init(components: [package2Text],
+//                  dimension: .horizontal(.center),
+//                  spacing: nil,
+//                  backgroundColor: nil,
+//                  padding: .zero,
+//                  selectedComponent: .init(components: [package2Text],
+//                                           spacing: nil,
+//                                           backgroundColor: .init(light: "#00FFAA", dark: "#00AAFF"),
+//                                           padding: .zero)))
+//    }()
+//
+//
+//    static var package2Text: PaywallComponent = {
+//     .text(.init(
+//         text: "Package two",
+//         textLid: "package_2",
+//         fontFamily: "",
+//         fontWeight: .regular,
+//         color: .init(light: "#000000"),
+//         padding: .zero,
+//         textStyle: .body,
+//         selectedComponent: .init(
+//            text: "Package two",
+//            textLid: "package_2",
+//            fontFamily: "",
+//            fontWeight: .regular,
+//            color: .init(light: "#FF2222"),
+//            padding: .zero,
+//            textStyle: .body
+//     )))
+//    }()
 
     static var gymZStack: PaywallComponent = {
         .stack(.init(components: [homeGym, headlineText],
@@ -1461,9 +1611,15 @@ private extension SamplePaywallLoader {
     static func packagesPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
+                "offer_details": "{{ total_price_and_per_month }}",
+                "sub_period": "{{ sub_period }}",
                 "package_title": "Select a Package",
                 "package_1": "Package One",
                 "package_2": "Package Two",
+                "package_1_selected": "Package One Selected",
+                "package_2_selected": "Package Two Selected",
+                "package_1_unselected": "Package One Unselected",
+                "package_2_unselected": "Package Two Unselected",
                 "package_3": "Package Three",
                 "package_4": "Package Four",
                 "package_5": "Package Five",
@@ -1471,6 +1627,8 @@ private extension SamplePaywallLoader {
                 "purchase_button_text": "Purchase Now! $19.99/year"
             ],
             "fr_FR": [
+                "offer_details": "{{ total_price_and_per_month }}",
+                "sub_period": "{{ sub_period }}",
                 "package_title": "Sélectionnez un forfait",
                 "package_1": "Forfait Un",
                 "package_2": "Forfait Deux",
@@ -1481,6 +1639,8 @@ private extension SamplePaywallLoader {
                 "purchase_button_text": "Achetez maintenant! 19,99$/an"
             ],
             "es_ES": [
+                "offer_details": "{{ total_price_and_per_month }}",
+                "sub_period": "{{ sub_period }}",
                 "package_title": "Seleccione un paquete",
                 "package_1": "Paquete Uno",
                 "package_2": "Paquete Dos",
@@ -1496,6 +1656,7 @@ private extension SamplePaywallLoader {
     static func fitnessPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
+                "best_value": "Best Value",
                 "fitness_coach_title": "Fitness Coach",
                 "fitness_new_workouts": "New workouts added every day",
                 "fitness_challenge_text": "Challenge others and climb the leader ladder",
@@ -1506,6 +1667,7 @@ private extension SamplePaywallLoader {
                 "terms_and_conditions": "Terms and conditions"
             ],
             "fr_FR": [
+                "best_value": "Meilleur prix",
                 "fitness_coach_title": "Coach Fitness",
                 "fitness_new_workouts": "Nouveaux entraînements ajoutés chaque jour",
                 "fitness_challenge_text": "Défiez les autres et grimpez l'échelle des leaders",
@@ -1516,6 +1678,7 @@ private extension SamplePaywallLoader {
                 "terms_and_conditions": "Conditions générales"
             ],
             "es_ES": [
+                "best_value": "Mejor precio",
                 "fitness_coach_title": "Entrenador de fitness",
                 "fitness_new_workouts": "Nuevos entrenamientos añadidos todos los días",
                 "fitness_challenge_text": "Desafía a otros y escala en la clasificación",
