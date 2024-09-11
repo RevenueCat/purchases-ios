@@ -190,7 +190,7 @@ class ImageLoaderTests: TestCase {
             throw XCTSkip("API only available on iOS 16")
         }
 
-        let renderedImage = try XCTUnwrap(self.loader.result?.value?.getUIImage())
+        let renderedImage = try XCTUnwrap(self.loader.result?.value?.image.getUIImage())
         let expectedImage = try XCTUnwrap(Image(uiImage: try XCTUnwrap(UIImage(data: data)))
             .getUIImage())
 
