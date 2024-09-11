@@ -34,7 +34,7 @@ extension DiagnosticsEvent {
         case customerInfoVerificationResult
         case maxEventsStoredLimitReached
         case applePurchaseAttempt
-        case appleCheckTrialAttempt
+        case checkIntroTrial
 
     }
 
