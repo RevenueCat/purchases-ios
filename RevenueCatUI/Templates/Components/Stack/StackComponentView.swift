@@ -42,7 +42,7 @@ struct StackComponentView: View {
             }
         }
         .padding(viewModel.padding)
-        .fullOrPercentageWidth(viewModel.width)
+        .width(viewModel.width)
         .background(viewModel.backgroundColor)
         .roundedCorner(viewModel.cornerRadiuses.topLeading, corners: .topLeft)
         .roundedCorner(viewModel.cornerRadiuses.topTrailing, corners: .topRight)
@@ -53,7 +53,7 @@ struct StackComponentView: View {
 
 }
 
-struct FullOrPercentageWidthModifier: ViewModifier {
+struct WidthModifier: ViewModifier {
     var width: PaywallComponent.WidthSize?
 
     func body(content: Content) -> some View {
@@ -79,8 +79,8 @@ struct FullOrPercentageWidthModifier: ViewModifier {
 }
 
 extension View {
-    func fullOrPercentageWidth(_ width: PaywallComponent.WidthSize? = nil) -> some View {
-        self.modifier(FullOrPercentageWidthModifier(width: width))
+    func width(_ width: PaywallComponent.WidthSize? = nil) -> some View {
+        self.modifier(WidthModifier(width: width))
     }
 }
 
