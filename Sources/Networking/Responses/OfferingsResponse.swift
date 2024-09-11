@@ -38,7 +38,11 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
             } else if let imageValue = try? container.decode(PaywallComponent.ThemeImageUrls.self) {
                 self = .image(imageValue)
             } else {
-                throw DecodingError.typeMismatch(LocalizationData.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for LocalizationData"))
+                throw DecodingError.typeMismatch(
+                    LocalizationData.self,
+                    DecodingError.Context(codingPath: decoder.codingPath,
+                                          debugDescription: "Wrong type for LocalizationData")
+                )
             }
         }
 

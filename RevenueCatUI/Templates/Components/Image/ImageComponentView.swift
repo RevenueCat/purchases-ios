@@ -39,13 +39,7 @@ struct ImageComponentView: View {
             // Works as a max height for both fit and fill
             // using the CGSize of an image
             .applyIfLet(viewModel.maxHeight, apply: { view, value in
-                Group {
-                    if let height = viewModel.maxHeight {
-                        view.frame(height: height)
-                    } else {
-                        view
-                    }
-                }
+                view.frame(height: value)
             })
         }
         .clipped()

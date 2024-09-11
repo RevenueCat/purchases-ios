@@ -56,7 +56,7 @@ struct RemoteImage<Content: View>: View {
         self.lowResUrl = lowResUrl
         self.maxWidth = maxWidth
         self.aspectRatio = aspectRatio
-        self.content = { (image, size) in
+        self.content = { (image, _) in
             if let aspectRatio {
                 return AnyView(
                     image

@@ -29,8 +29,6 @@ public class ImageComponentViewModel {
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-
-        // TODO: JOSH replace
         self.imageInfo = try localizedStrings.image(key: component.urlsLid)
     }
 
