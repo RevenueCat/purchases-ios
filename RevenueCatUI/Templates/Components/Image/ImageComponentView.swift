@@ -23,7 +23,7 @@ struct ImageComponentView: View {
     let viewModel: ImageComponentViewModel
 
     var body: some View {
-        RemoteImage(url: viewModel.url) { (image, size) in
+        RemoteImage(url: viewModel.highResUrl, lowResUrl: viewModel.lowResUrl) { (image, size) in
             Group {
                 switch viewModel.contentMode {
                 case .fit:
