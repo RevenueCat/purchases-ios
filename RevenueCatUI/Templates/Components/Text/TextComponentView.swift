@@ -25,7 +25,7 @@ struct TextComponentView: View {
     let viewModel: TextComponentViewModel
 
     var body: some View {
-        Text(viewModel.text)
+        Text(viewModel.text(for: selectionState))
             .font(viewModel.textStyle(for: selectionState))
             .fontWeight(viewModel.fontWeight(for: selectionState))
             .multilineTextAlignment(viewModel.horizontalAlignment(for: selectionState))

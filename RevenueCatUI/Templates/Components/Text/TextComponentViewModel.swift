@@ -22,14 +22,20 @@ import SwiftUI
 public class TextComponentViewModel {
 
     let localizedStrings: PaywallComponent.LocalizationDictionary
-    let text: String
+    private let textUnselected: String
+    private let textSelected: String?
 
     private let component: PaywallComponent.TextComponent
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-        self.text = try localizedStrings.string(key: component.textLid)
+        self.textUnselected = try localizedStrings.string(key: component.textLid)
+        if let selectedComponent = component.selectedComponent {
+            self.textSelected = try localizedStrings.string(key: selectedComponent.textLid)
+        } else {
+            self.textSelected = nil
+        }
     }
 
     private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.TextComponent {
@@ -38,6 +44,15 @@ public class TextComponentViewModel {
             return component.selectedComponent ?? component
         case .unselected:
             return component
+        }
+    }
+
+    func text(for selectionState: SelectionState) -> String {
+        switch selectionState {
+        case .selected:
+            return textSelected ?? textUnselected
+        case .unselected:
+            return textUnselected
         }
     }
 
