@@ -21,7 +21,8 @@ import SwiftUI
 public class StackComponentViewModel {
 
     let locale: Locale
-    let viewModels: [PaywallComponentViewModel]
+    private let unselectedViewModels: [PaywallComponentViewModel]
+    private let selectedViewModels: [PaywallComponentViewModel]?
     private let component: PaywallComponent.StackComponent
 
     init(locale: Locale,
@@ -31,7 +32,10 @@ public class StackComponentViewModel {
     ) throws {
         self.locale = locale
         self.component = component
-        self.viewModels = try component.components.map {
+        self.unselectedViewModels = try component.components.map {
+            try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
+        }
+        self.selectedViewModels = try component.selectedComponent?.components.map {
             try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }
     }
@@ -42,6 +46,15 @@ public class StackComponentViewModel {
             return component.selectedComponent ?? component
         case .unselected:
             return component
+        }
+    }
+
+    func viewModels(for selectionState: SelectionState) -> [PaywallComponentViewModel] {
+        switch selectionState {
+        case .selected:
+            return selectedViewModels ?? unselectedViewModels
+        case .unselected:
+            return unselectedViewModels
         }
     }
 

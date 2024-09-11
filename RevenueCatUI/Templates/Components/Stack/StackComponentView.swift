@@ -27,19 +27,19 @@ struct StackComponentView: View {
         switch viewModel.dimension(for: selectionState) {
         case .vertical(let horizontalAlignment):
             VStack(alignment: horizontalAlignment.stackAlignment, spacing: viewModel.spacing(for: selectionState)) {
-                ComponentsView(componentViewModels: self.viewModel.viewModels)
+                ComponentsView(componentViewModels: self.viewModel.viewModels(for: selectionState))
             }
             .background(viewModel.backgroundColor(for: selectionState))
             .padding(viewModel.padding(for: selectionState))
         case .horizontal(let verticalAlignment):
             HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing(for: selectionState)) {
-                ComponentsView(componentViewModels: self.viewModel.viewModels)
+                ComponentsView(componentViewModels: self.viewModel.viewModels(for: selectionState))
             }
             .background(viewModel.backgroundColor(for: selectionState))
             .padding(viewModel.padding(for: selectionState))
         case .zlayer(let alignment):
             ZStack(alignment: alignment.stackAlignment) {
-                ComponentsView(componentViewModels: self.viewModel.viewModels)
+                ComponentsView(componentViewModels: self.viewModel.viewModels(for: selectionState))
             }
             .background(viewModel.backgroundColor(for: selectionState))
             .padding(viewModel.padding(for: selectionState))
