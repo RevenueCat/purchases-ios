@@ -887,6 +887,11 @@ private extension SamplePaywallLoader {
                      maxHeight: 20))
     }()
 
+    static var blankCheckmarkImage: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1726019114.png")!,
+                     maxHeight: 20))
+    }()
+
 
     static func simpleFeatureStack(text: PaywallComponent) -> PaywallComponent {
         .stack(.init(components: [checkmarkImage, text],
@@ -946,11 +951,11 @@ private extension SamplePaywallLoader {
     static var fitnessWall: [PaywallComponent] = {
         let components: [PaywallComponent] = [.stack(.init(components: [gymZStack,
                                                                         featureImageStack1,
-                                                                        //featureImageStack2,
-                                                                        featureImageStack3,
+                                                                        featureImageStack2,
+                                                                        //featureImageStack3,
                                                                         spacer,
                                                                         fitnesspackageVStack,
-                                                                        spacer,
+                                                                        //spacer,
                                                                         purchaseFitnessButton,
                                                                         fitnessFooter],
                       dimension: .vertical(.center),
@@ -1001,35 +1006,24 @@ private extension SamplePaywallLoader {
         let heading: PaywallComponent = {
          .text(.init(
              text: "",
-             textLid: "package_1_unselected",
+             textLid: headingLid,
              fontFamily: "",
              fontWeight: .regular,
-             color: .init(light: "#33AAFF"),
+             color: .init(light: "#FFFFFF"),
              padding: .zero,
              textStyle: .body,
              selectedComponent: .init(
                 text: "",
-                textLid: "package_1_selected",
+                textLid: headingLid,
                 fontFamily: "",
                 fontWeight: .regular,
-                color: .init(light: "#FF2222"),
+                color: .init(light: "#FFFFFF"),
                 padding: .zero,
                 textStyle: .body
          )))
         }()
 
-        let topHStack: PaywallComponent = {
-         .stack(.init(components: [heading],
-                      dimension: .horizontal(.center),
-                      spacing: nil,
-                      backgroundColor: .init(light: "#FFFF00"),
-                      padding: .zero,
-                      selectedComponent: .init(components: [checkmarkImage, heading],
-                                               dimension: .horizontal(.center),
-                                               spacing: nil,
-                                               backgroundColor: .init(light: "#00FF00"),
-                                               padding: .zero)))
-        }()
+
 
         let subHeading: PaywallComponent = {
          .text(.init(
@@ -1037,7 +1031,7 @@ private extension SamplePaywallLoader {
              textLid: subHeadlingLid,
              fontFamily: "",
              fontWeight: .regular,
-             color: .init(light: "#33AAFF"),
+             color: .init(light: "#FFFFFF"),
              padding: .zero,
              textStyle: .caption,
              selectedComponent: .init(
@@ -1045,7 +1039,7 @@ private extension SamplePaywallLoader {
                 textLid: subHeadlingLid,
                 fontFamily: "",
                 fontWeight: .regular,
-                color: .init(light: "#FF2222"),
+                color: .init(light: "#FFFFFF"),
                 padding: .zero,
                 textStyle: .caption
          )))
@@ -1053,20 +1047,33 @@ private extension SamplePaywallLoader {
 
 
         let packageVStack: PaywallComponent = {
-         .stack(.init(components: [topHStack, subHeading],
+         .stack(.init(components: [heading, subHeading],
                       dimension: .vertical(.leading),
                       spacing: nil,
                       backgroundColor: nil,
-                      padding: .zero,
-                      selectedComponent: .init(components: [topHStack, subHeading],
+                      padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
+                      selectedComponent: .init(components: [heading, subHeading],
                                                dimension: .vertical(.leading),
                                                spacing: nil,
-                                               backgroundColor: .init(light: "#00FF00"),
+                                               backgroundColor: nil,
+                                               padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10))))
+        }()
+
+        let topHStack: PaywallComponent = {
+         .stack(.init(components: [blankCheckmarkImage, packageVStack],
+                      dimension: .horizontal(.center),
+                      spacing: nil,
+                      backgroundColor: nil,
+                      padding: .zero,
+                      selectedComponent: .init(components: [checkmarkImage, packageVStack],
+                                               dimension: .horizontal(.center),
+                                               spacing: nil,
+                                               backgroundColor: nil,
                                                padding: .zero)))
         }()
 
 
-        return packageVStack
+        return topHStack
 
     }
 
@@ -1244,9 +1251,9 @@ private extension SamplePaywallLoader {
     }()
 
     static var purchaseFitnessButton: PaywallComponent = {
-        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
-                      textComponent: purchaseFitnessNowText))
+        .purchaseButton(.init(textComponent: purchaseFitnessNowText))
     }()
+
 
     static var purchaseFitnessNowText: PaywallComponent.TextComponent = {
         .init(

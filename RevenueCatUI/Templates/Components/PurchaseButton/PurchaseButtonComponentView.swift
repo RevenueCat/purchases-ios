@@ -18,18 +18,24 @@ struct PurchaseButtonComponentView: View {
 
     @EnvironmentObject var selectionManager: PackageSelectionManager
 
+    @State
+    private var showAlert = false
+
     var body: some View {
-        VStack {
-            if let selectedID = selectionManager.selectedID {
-                Text("Purchase for package \(selectedID)")
-            }
+
             Button {
-                print("Purchase button pressed")
+                //TODO: Make Purchase
+                showAlert = true
             } label: {
                 TextComponentView(viewModel: viewModel.textComponentViewModel)
                     .cornerRadius(25)
             }
-        }
+            .alert("Purchase", isPresented: $showAlert) {
+                Button("OK", role: .cancel) {
+                }
+            } message: {
+                Text("Purchase for package \(selectionManager.selectedID ?? "nil")")
+            }
 
     }
 

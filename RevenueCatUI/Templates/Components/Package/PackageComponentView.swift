@@ -49,11 +49,11 @@ struct PackageComponentView: View {
             selectionManager.selectedID = viewModel.packageID
         } label: {
             VStack {
-                Text(viewModel.title)
                 ComponentsView(componentViewModels: self.viewModel.viewModels)
                     .environment(\.selectionState, selectionState)
             }
         }
+        
     }
 
 }
