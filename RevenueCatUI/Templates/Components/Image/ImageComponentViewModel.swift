@@ -21,22 +21,27 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ImageComponentViewModel {
 
-    let localizedStrings: PaywallComponent.LocalizationDictionary
+    let localizationProvider: LocalizationProvider
     private let component: PaywallComponent.ImageComponent
 
     let imageInfo: PaywallComponent.ThemeImageUrls
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
-        self.localizedStrings = localizedStrings
+    init(localizationProvider: LocalizationProvider,
+         component: PaywallComponent.ImageComponent) throws {
+        self.localizationProvider = localizationProvider
         self.component = component
-
-        // TODO: JOSH replace
-        self.imageInfo = try localizedStrings.image(key: component.urlsLid)
+ 
+        self.imageInfo = try localizationProvider.image(key: component.urlsLid)
     }
 
-    public var url: URL {
+    public var highResUrl: URL {
         self.imageInfo.light.heic
     }
+
+    public var lowResUrl: URL {
+        self.imageInfo.light.heicLowRes
+    }
+
     public var cornerRadiuses: PaywallComponent.CornerRadiuses {
         component.cornerRadiuses
     }

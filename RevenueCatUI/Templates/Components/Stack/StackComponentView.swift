@@ -25,7 +25,8 @@ struct StackComponentView: View {
         Group {
             switch viewModel.dimension {
             case .vertical(let horizontalAlignment):
-                VStack(spacing: viewModel.spacing) {
+                // LazyVStack is important for loading performance
+                LazyVStack(spacing: viewModel.spacing) {
                     Group {
                         ComponentsView(componentViewModels: self.viewModel.viewModels)
                     }

@@ -20,19 +20,17 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class StackComponentViewModel {
 
-    let locale: Locale
     let viewModels: [PaywallComponentViewModel]
     private let component: PaywallComponent.StackComponent
 
-    init(locale: Locale,
-         component: PaywallComponent.StackComponent,
-         localizedStrings: PaywallComponent.LocalizationDictionary,
+    init(component: PaywallComponent.StackComponent,
+         localizationProvider: LocalizationProvider,
          offering: Offering
     ) throws {
-        self.locale = locale
         self.component = component
         self.viewModels = try component.components.map {
-            try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
+            try $0.toViewModel(offering: offering, 
+                               localizationProvider: localizationProvider)
         }
     }
 
