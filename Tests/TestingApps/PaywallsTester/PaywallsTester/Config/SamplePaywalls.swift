@@ -641,19 +641,19 @@ private extension SamplePaywallLoader {
     }
 
     internal static var packagesComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: packagesSample, localization: packagesPaywallStrings())
+        return createFakePaywallComponentsData(components: packagesSample, localization: allStrings())
     }
 
     internal static var fitnessComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: fitnessSample, localization: fitnessPaywallStrings())
+        return createFakePaywallComponentsData(components: fitnessSample, localization: allStrings())
     }
 
     internal static var template1Components: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: curiosity, localization: curiosityPaywallStrings())
+        return createFakePaywallComponentsData(components: curiosity, localization: allStrings())
     }
 
     internal static var simpleSampleComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: simpleSix, localization: simplePaywallStrings())
+        return createFakePaywallComponentsData(components: simpleSix, localization: allStrings())
     }
 
     // PACKAGES
@@ -940,12 +940,19 @@ private extension SamplePaywallLoader {
     // fitness
 
     static var fitnessSample: [PaywallComponent] = {
+        [.packages(.init(type: .packages, defaultSelectedPackageID: "$rc_weekly", components: fitnessWall))]
+    }()
+
+    static var fitnessWall: [PaywallComponent] = {
         let components: [PaywallComponent] = [.stack(.init(components: [gymZStack,
-                                   featureImageStack1,
-                                   featureImageStack2,
-                                   featureImageStack3,
-                                   purchaseFitnessButton,
-                                   fitnessFooter],
+                                                                        featureImageStack1,
+                                                                        featureImageStack2,
+                                                                        // featureImageStack3,
+                                                                        spacer,
+                                                                        packageHStack,
+                                                                        spacer,
+                                                                        purchaseFitnessButton,
+                                                                        fitnessFooter],
                       dimension: .vertical(.center),
                       spacing: 25,
                       backgroundColor: .init(light: "#000000"),
@@ -1428,6 +1435,28 @@ private extension SamplePaywallLoader {
                       padding: .zero))]
 
     }()
+
+
+    static func allStrings() -> [LocaleID: LocalizationDictionary] {
+        mergeDictionaries(packagesPaywallStrings(),
+                                fitnessPaywallStrings(),
+                                curiosityPaywallStrings(),
+                                simplePaywallStrings())
+    }
+
+    static func mergeDictionaries(_ dictionaries: [LocaleID: LocalizationDictionary]...) -> [LocaleID: LocalizationDictionary] {
+        var result: [LocaleID: LocalizationDictionary] = [:]
+        for dictionary in dictionaries {
+            for (key, nestedDict) in dictionary {
+                if let existing = result[key] {
+                    result[key] = existing.merging(nestedDict) { (_, new) in new }
+                } else {
+                    result[key] = nestedDict
+                }
+            }
+        }
+        return result
+    }
 
     static func packagesPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
