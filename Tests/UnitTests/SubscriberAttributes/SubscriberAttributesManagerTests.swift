@@ -1825,6 +1825,11 @@ private extension SubscriberAttributesManagerTests {
 
         expect(ipReceived.value) == "true"
         expect(ipReceived.isSynced) == false
+
+        let userAgentReceived = findInvokedAttribute(withName: "$userAgent")
+
+        expect(userAgentReceived.value) == "true"
+        expect(userAgentReceived.isSynced) == false
     }
 
     func checkDeviceIdentifiersAreNotSet() {
@@ -1835,6 +1840,8 @@ private extension SubscriberAttributesManagerTests {
         expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfa" }))
 
         expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$ip" }))
+
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$userAgent" }))
     }
 
 }
