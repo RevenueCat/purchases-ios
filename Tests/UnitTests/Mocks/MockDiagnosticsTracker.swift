@@ -14,16 +14,17 @@
 import Foundation
 @testable import RevenueCat
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedEvents: Atomic<[DiagnosticsEvent]> = .init([])
     let trackedCustomerInfo: Atomic<[CustomerInfo]> = .init([])
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent) async {
         self.trackedEvents.modify { $0.append(event) }
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackCustomerInfoVerificationResultIfNeeded(
         _ customerInfo: RevenueCat.CustomerInfo
     ) async {
@@ -34,7 +35,9 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         // swiftlint:disable:next large_tuple
         (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
     ]> = .init([])
+
     // swiftlint:disable:next function_parameter_count
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
@@ -64,6 +67,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          storeKitErrorDescription: String?)
     ]> = .init([])
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackPurchaseRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
@@ -76,6 +80,35 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  errorMessage,
                  errorCode,
                  storeKitErrorDescription)
+            )
+        }
+    }
+
+    let trackedCheckIntroTrialParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (wasSuccessful: Bool,
+         storeKitVersion: StoreKitVersion,
+         errorMessage: String?,
+         errorCode: Int?,
+         storeKitErrorDescription: String?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackCheckIntroTrial(wasSuccessful: Bool,
+                              storeKitVersion: RevenueCat.StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              storeKitErrorDescription: String?,
+                              responseTime: TimeInterval) async {
+        self.trackedCheckIntroTrialParams.modify {
+            $0.append(
+                (wasSuccessful,
+                 storeKitVersion,
+                 errorMessage,
+                 errorCode,
+                 storeKitErrorDescription,
+                 responseTime)
             )
         }
     }

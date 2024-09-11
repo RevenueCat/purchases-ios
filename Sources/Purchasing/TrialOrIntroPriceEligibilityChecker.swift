@@ -45,7 +45,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         currentUserProvider: CurrentUserProvider,
         operationDispatcher: OperationDispatcher,
         productsManager: ProductsManagerType,
-        diagnosticsTracker: DiagnosticsTrackerType?,
+        diagnosticsTracker: DiagnosticsTrackerType? = nil,
         dateProvider: DateProvider = DateProvider()
     ) {
         self.systemInfo = systemInfo
@@ -87,7 +87,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 } catch {
                     let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
                     Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
-                    self.trackCheckEligibilityIfNeeded(startTime, 
+                    self.trackCheckEligibilityIfNeeded(startTime,
                                                        storeKitVersion: .storeKit2,
                                                        error: purchasesError.asPublicError)
                     return productIdentifiers.reduce(into: [:]) { resultDict, productId in

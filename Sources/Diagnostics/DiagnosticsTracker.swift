@@ -39,6 +39,7 @@ protocol DiagnosticsTrackerType {
                               storeKitErrorDescription: String?) async
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_parameter_count
     func trackCheckIntroTrial(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,

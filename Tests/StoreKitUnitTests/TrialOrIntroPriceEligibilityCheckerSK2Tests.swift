@@ -26,6 +26,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     var mockBackend: MockBackend!
     var mockProductsManager: MockProductsManager!
     var mockSystemInfo: MockSystemInfo!
+    var diagnosticsTracker: DiagnosticsTrackerType!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -52,7 +53,8 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             backend: mockBackend,
             currentUserProvider: currentUserProvider,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
+            productsManager: mockProductsManager,
+            diagnosticsTracker: MockDiagnosticsTracker()
         )
     }
 
