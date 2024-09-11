@@ -18,9 +18,6 @@ public class PurchaseButtonComponentViewModel {
     let textComponentViewModel: TextComponentViewModel
     private let component: PaywallComponent.PurchaseButtonComponent
 
-    public var textComponent: PaywallComponent.TextComponent {
-        component.textComponent
-    }
 
     init(component: PaywallComponent.PurchaseButtonComponent,
          localizedStrings: PaywallComponent.LocalizationDictionary
@@ -28,6 +25,15 @@ public class PurchaseButtonComponentViewModel {
         self.component = component
         self.textComponentViewModel = try TextComponentViewModel(localizedStrings: localizedStrings,
                                                                  component: component.textComponent)
+    }
+
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.PurchaseButtonComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
     }
 
 }

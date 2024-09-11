@@ -36,24 +36,33 @@ public class StackComponentViewModel {
         }
     }
 
-    var dimension: PaywallComponent.StackComponent.Dimension {
-        component.dimension
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.StackComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
+    }
+
+    func dimension(for selectionState: SelectionState) -> PaywallComponent.StackComponent.Dimension {
+        currentComponent(for: selectionState).dimension
     }
 
     var components: [PaywallComponent] {
         component.components
     }
 
-    var spacing: CGFloat? {
-        component.spacing
+    func spacing(for selectionState: SelectionState) -> CGFloat? {
+        currentComponent(for: selectionState).spacing
     }
 
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
+    func backgroundColor(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).backgroundColor?.toDyanmicColor() ?? Color.clear
     }
 
-    var padding: EdgeInsets {
-        component.padding.edgeInsets
+    func padding(for selectionState: SelectionState) -> EdgeInsets {
+        currentComponent(for: selectionState).padding.edgeInsets
     }
 
 }

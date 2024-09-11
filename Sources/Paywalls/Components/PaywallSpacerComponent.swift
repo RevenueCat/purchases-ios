@@ -12,14 +12,30 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct SpacerComponent: PaywallComponentBase {
+    final class SpacerComponent: PaywallComponentBase {
 
         let type: ComponentType
 
-        public init() {
+        public let selectedComponent: SpacerComponent?
+
+        public init(selectedComponent: SpacerComponent? = nil) {
             self.type = .spacer
+            self.selectedComponent = selectedComponent
         }
 
+    }
+
+}
+
+extension PaywallComponent.SpacerComponent: Equatable, Hashable {
+
+    public static func == (lhs: PaywallComponent.SpacerComponent, rhs: PaywallComponent.SpacerComponent) -> Bool {
+        return lhs.type == rhs.type && lhs.selectedComponent == rhs.selectedComponent
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(selectedComponent)
     }
 
 }

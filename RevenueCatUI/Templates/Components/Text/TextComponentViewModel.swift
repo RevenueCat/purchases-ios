@@ -23,6 +23,7 @@ public class TextComponentViewModel {
 
     let localizedStrings: PaywallComponent.LocalizationDictionary
     let text: String
+
     private let component: PaywallComponent.TextComponent
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
@@ -31,32 +32,41 @@ public class TextComponentViewModel {
         self.text = try localizedStrings.string(key: component.textLid)
     }
 
-    public var fontFamily: String {
-        component.fontFamily
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.TextComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
     }
 
-    public var fontWeight: Font.Weight {
-        component.fontWeight.fontWeight
+    func fontFamily(for selectionState: SelectionState) -> String {
+        currentComponent(for: selectionState).fontFamily
     }
 
-    public var color: Color {
-        component.color.toDyanmicColor()
+    func fontWeight(for selectionState: SelectionState) -> Font.Weight {
+        currentComponent(for: selectionState).fontWeight.fontWeight
     }
 
-    public var textStyle: Font {
-        component.textStyle.font
+    func color(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).color.toDyanmicColor()
     }
 
-    public var horizontalAlignment: TextAlignment {
-        component.horizontalAlignment.textAlignment
+    func textStyle(for selectionState: SelectionState) -> Font {
+        currentComponent(for: selectionState).textStyle.font
     }
 
-    public var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
+    func horizontalAlignment(for selectionState: SelectionState) -> TextAlignment {
+        currentComponent(for: selectionState).horizontalAlignment.textAlignment
     }
 
-    public var padding: EdgeInsets {
-        component.padding.edgeInsets
+    func backgroundColor(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).backgroundColor?.toDyanmicColor() ?? Color.clear
+    }
+
+    func padding(for selectionState: SelectionState) -> EdgeInsets {
+        currentComponent(for: selectionState).padding.edgeInsets
     }
 
 }

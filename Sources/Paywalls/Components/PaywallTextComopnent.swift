@@ -11,8 +11,34 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
-    struct TextComponent: PaywallComponentBase {
+    final class TextComponent: PaywallComponentBase {
+        public static func == (lhs: PaywallComponent.TextComponent, rhs: PaywallComponent.TextComponent) -> Bool {
+            lhs.text == rhs.text &&
+            lhs.textLid == rhs.textLid &&
+            lhs.fontFamily == rhs.fontFamily &&
+            lhs.fontWeight == rhs.fontWeight &&
+            lhs.color == rhs.color &&
+            lhs.textStyle == rhs.textStyle &&
+            lhs.horizontalAlignment == rhs.horizontalAlignment &&
+            lhs.backgroundColor == rhs.backgroundColor &&
+            lhs.padding == rhs.padding
+}
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(text)
+            hasher.combine(textLid)
+            hasher.combine(fontFamily)
+            hasher.combine(fontWeight)
+            hasher.combine(color)
+            hasher.combine(textStyle)
+            hasher.combine(horizontalAlignment)
+            hasher.combine(backgroundColor)
+            hasher.combine(padding)
+        }
+
+
+        public let selectedComponent: TextComponent?
         let type: ComponentType
         public let text: String
         public let textLid: LocalizationKey
@@ -33,7 +59,8 @@ public extension PaywallComponent {
             backgroundColor: ColorInfo? = nil,
             padding: Padding = .default,
             textStyle: TextStyle = .body,
-            horitzontalAlignment: HorizontalAlignment = .center
+            horitzontalAlignment: HorizontalAlignment = .center,
+            selectedComponent: TextComponent? = nil
         ) {
             self.type = .text
             self.text = text
@@ -45,6 +72,7 @@ public extension PaywallComponent {
             self.padding = padding
             self.textStyle = textStyle
             self.horizontalAlignment = horitzontalAlignment
+            self.selectedComponent = selectedComponent
         }
 
     }

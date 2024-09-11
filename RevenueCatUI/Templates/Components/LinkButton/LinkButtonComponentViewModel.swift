@@ -18,19 +18,25 @@ public class LinkButtonComponentViewModel {
     let textComponentViewModel: TextComponentViewModel
     private let component: PaywallComponent.LinkButtonComponent
 
-    public var url: URL {
-        component.url
-    }
-    public var textComponent: PaywallComponent.TextComponent {
-        component.textComponent
-    }
-
     init(component: PaywallComponent.LinkButtonComponent,
          localizedStrings: PaywallComponent.LocalizationDictionary
     ) throws {
         self.component = component
         self.textComponentViewModel = try TextComponentViewModel(localizedStrings: localizedStrings,
                                                                  component: component.textComponent)
+    }
+
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.LinkButtonComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
+    }
+
+    func url(for selectionState: SelectionState) -> URL {
+        currentComponent(for: selectionState).url
     }
 
 }

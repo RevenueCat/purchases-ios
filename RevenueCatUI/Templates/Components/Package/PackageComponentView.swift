@@ -17,6 +17,22 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
+enum SelectionState {
+    case unselected
+    case selected
+}
+
+struct SelectionStateKey: EnvironmentKey {
+    static let defaultValue: SelectionState = .unselected
+}
+
+extension EnvironmentValues {
+    var selectionState: SelectionState {
+        get { self[SelectionStateKey.self] }
+        set { self[SelectionStateKey.self] = newValue }
+    }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageComponentView: View {
 
@@ -24,8 +40,8 @@ struct PackageComponentView: View {
 
     @EnvironmentObject var selectionManager: PackageSelectionManager
 
-    var isSelected: Bool {
-        selectionManager.selectedID == viewModel.packageID
+    var selectionState: SelectionState {
+        return selectionManager.selectedID == viewModel.packageID ? .selected : .unselected
     }
 
     var body: some View {
@@ -34,10 +50,8 @@ struct PackageComponentView: View {
         } label: {
             VStack {
                 Text(viewModel.title)
-                ComponentsView(componentViewModels:
-                                isSelected ?
-                               self.viewModel.selectedViewModels :
-                                self.viewModel.notSelectedViewModels)
+                ComponentsView(componentViewModels: self.viewModel.viewModels)
+                    .environment(\.selectionState, selectionState)
             }
         }
     }
