@@ -38,8 +38,6 @@
     [a setOnesignalUserID: @""];
     [a setCleverTapID: nil];
     [a setCleverTapID: @""];
-    [a setKochavaDeviceID:nil];
-    [a setKochavaDeviceID:@""];
     [a setMixpanelDistinctID: nil];
     [a setMixpanelDistinctID: @""];
     [a setFirebaseAppInstanceID: nil];
