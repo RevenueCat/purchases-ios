@@ -1139,11 +1139,19 @@ private extension PurchasesOrchestrator {
                         return
                     }
 
+                    let transactionData: PurchasedTransactionData = .init(
+                        appUserID: currentAppUserID,
+                        presentedOfferingContext: nil,
+                        unsyncedAttributes: unsyncedAttributes,
+                        source: .init(
+                            isRestore: isRestore,
+                            initiationSource: initiationSource
+                        )
+                    )
+
                     self.backend.post(receipt: .empty,
                                       productData: nil,
-                                      transactionData: .init(appUserID: currentAppUserID,
-                                                             source: .init(isRestore: isRestore,
-                                                                           initiationSource: initiationSource)),
+                                      transactionData: transactionData,
                                       observerMode: self.observerMode,
                                       appTransaction: appTransactionJWS) { result in
 
