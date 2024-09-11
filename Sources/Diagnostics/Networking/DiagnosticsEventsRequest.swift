@@ -65,6 +65,7 @@ private extension DiagnosticsEvent.EventType {
         case .customerInfoVerificationResult: return "customer_info_verification_result"
         case .maxEventsStoredLimitReached: return "max_events_stored_limit_reached"
         case .applePurchaseAttempt: return "apple_purchase_attempt"
+        case .appleCheckTrialAttempt: return "apple_check_intro_trial"
         }
 
     }

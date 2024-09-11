@@ -28,7 +28,7 @@ class IntroEligibilityCalculator {
 
     func checkEligibility(with receiptData: Data,
                           productIdentifiers candidateProductIdentifiers: Set<String>,
-                          completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
+                          completion: @escaping ([String: IntroEligibilityStatus], PurchasesError?) -> Void) {
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return
@@ -73,8 +73,10 @@ class IntroEligibilityCalculator {
                 completion(result, nil)
             }
         } catch {
+            let message = Strings.customerInfo.checking_intro_eligibility_locally_error(error: error).description
+            let purchasesError = ErrorUtils.invalidReceiptError(withMessage: message, error: error)
             Logger.error(Strings.customerInfo.checking_intro_eligibility_locally_error(error: error))
-            completion([:], error)
+            completion([:], purchasesError)
             return
         }
     }

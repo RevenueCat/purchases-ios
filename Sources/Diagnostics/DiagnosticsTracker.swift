@@ -38,6 +38,14 @@ protocol DiagnosticsTrackerType {
                               errorCode: Int?,
                               storeKitErrorDescription: String?) async
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackCheckIntroTrial(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              storeKitErrorDescription: String?,
+                              responseTime: TimeInterval) async
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -111,6 +119,26 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                                 .errorMessageKey: AnyEncodable(errorMessage),
                                 .errorCodeKey: AnyEncodable(errorCode),
                                 .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription)
+                             ],
+                             timestamp: self.dateProvider.now())
+        )
+    }
+
+    func trackCheckIntroTrial(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              storeKitErrorDescription: String?,
+                              responseTime: TimeInterval) async {
+        await track(
+            DiagnosticsEvent(eventType: .applePurchaseAttempt,
+                             properties: [
+                                .successfulKey: AnyEncodable(wasSuccessful),
+                                .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
+                                .errorMessageKey: AnyEncodable(errorMessage),
+                                .errorCodeKey: AnyEncodable(errorCode),
+                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
+                                .responseTimeMillisKey: AnyEncodable(responseTime * 1000)
                              ],
                              timestamp: self.dateProvider.now())
         )
