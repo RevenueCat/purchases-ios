@@ -554,7 +554,7 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetAdjustID() {
         let adjustID = "adjustID"
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -570,7 +570,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setAdjustID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -588,7 +588,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
     }
 
     func testSetAdjustIDOverwritesIfNewValue() {
@@ -602,7 +602,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -616,9 +616,9 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetAdjustIDSetsDeviceIdentifiers() {
         let adjustID = "adjustID"
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
     }
@@ -627,7 +627,7 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetAppsflyerID() {
         let appsflyerID = "appsflyerID"
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -643,7 +643,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setAppsflyerID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -661,7 +661,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
     }
 
     func testSetAppsflyerIDOverwritesIfNewValue() {
@@ -675,7 +675,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -689,9 +689,9 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetAppsflyerIDSetsDeviceIdentifiers() {
         let appsflyerID = "appsflyerID"
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
     }
@@ -700,7 +700,7 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetFBAnonymousID() {
         let fbAnonID = "fbAnonID"
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -716,7 +716,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setFBAnonymousID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -734,7 +734,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
     }
 
     func testSetFBAnonymousIDOverwritesIfNewValue() {
@@ -748,7 +748,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -762,9 +762,9 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetFBAnonymousIDSetsDeviceIdentifiers() {
         let fbAnonID = "fbAnonID"
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
     }
@@ -773,7 +773,7 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetMparticleID() {
         let mparticleID = "mparticleID"
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -789,7 +789,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setMparticleID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 8
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -807,7 +807,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 3
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
     }
 
     func testSetMparticleIDOverwritesIfNewValue() {
@@ -821,7 +821,7 @@ class SubscriberAttributesManagerTests: TestCase {
 
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
         }
@@ -835,9 +835,9 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetMparticleIDSetsDeviceIdentifiers() {
         let mparticleID = "mparticleID"
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 4
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
     }
