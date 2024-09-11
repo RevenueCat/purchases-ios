@@ -21,6 +21,17 @@ extension TemplateComponentsView {
     static func fallbackPaywallViewModels(error: Error? = nil) -> PaywallComponentViewModel {
 
         let errorDict: PaywallComponent.LocalizationDictionary = ["errorID": .string("Error creating paywall")]
+
+        let localizationInfo = LocalizationProvider.LocalizationInfo(
+            locale: Locale.current,
+            localizedStrings: errorDict
+        )
+        let localizationProvider = LocalizationProvider(
+            preferred: localizationInfo,
+            default: localizationInfo
+        )
+
+
         let textComponent = PaywallComponent.TextComponent(
             textLid: "errorID",
             color: PaywallComponent.ColorInfo(light: "#000000")
@@ -28,66 +39,23 @@ extension TemplateComponentsView {
 
         // swiftlint:disable:next force_try
         return try! PaywallComponentViewModel.text(
-            TextComponentViewModel(localizedStrings: errorDict, component: textComponent)
+            TextComponentViewModel(
+                localizationProvider: localizationProvider,
+                component: textComponent
+            )
         )
 
-    }
-
-    /// Returns the preferred paywall locale from the device's preferred locales.
-    ///
-    /// The algorithm matches first on language, then on region. If no matching locale is found,
-    /// the function returns `nil`.
-    ///
-    /// - Parameter paywallLocales: An array of `Locale` objects representing the paywall's available locales.
-    /// - Returns: A `Locale` available on the paywall chosen based on the device's preferredlocales, 
-    /// or `nil` if no match is found.
-    ///
-    /// # Example 1
-    ///   device locales: `en_CA, en_US, fr_CA`
-    ///   paywall locales: `en_US, fr_FR, en_CA, de_DE`
-    ///   returns `en_CA`
-    ///
-    ///
-    /// # Example 2
-    ///   device locales: `en_CA, en_US, fr_CA`
-    ///   paywall locales: `en_US, fr_FR, de_DE`
-    ///   returns `en_US`
-    ///
-    /// # Example 3
-    ///   device locales: `fr_CA, en_CA, en_US`
-    ///   paywall locales: `en_US, fr_FR, de_DE, en_CA`
-    ///   returns `fr_FR`
-    ///
-    /// # Example 4
-    ///   device locales: `es_ES`
-    ///   paywall locales: `en_US, de_DE`
-    ///   returns `nil`
-    ///
-    static func preferredLocale(from paywallLocales: [Locale]) -> Locale? {
-        for preferredLocale in Locale.preferredLocales {
-            // match language
-            if let languageMatch = paywallLocales.first(where: { $0.matchesLanguage(preferredLocale) }) {
-                // Look for a match that includes region
-                if let exactMatch = paywallLocales.first(where: { $0 == preferredLocale }) {
-                    return exactMatch
-                }
-                // If no region match, return match that matched on region only
-                return languageMatch
-            }
-        }
-
-        return nil
     }
 
 }
 
 extension Locale {
 
-    fileprivate static var preferredLocales: [Self] {
+    internal static var preferredLocales: [Self] {
         return Self.preferredLanguages.map(Locale.init(identifier:))
     }
 
-    fileprivate func matchesLanguage(_ rhs: Locale) -> Bool {
+    internal func matchesLanguage(_ rhs: Locale) -> Bool {
         self.removingRegion == rhs.removingRegion
     }
 

@@ -27,17 +27,22 @@ extension PaywallComponent {
 
     func toViewModel(
         offering: Offering,
-        locale: Locale,
-        localizedStrings: LocalizationDictionary
+        localizationProvider: LocalizationProvider
     ) throws -> PaywallComponentViewModel {
         switch self {
         case .text(let component):
             return .text(
-                try TextComponentViewModel(localizedStrings: localizedStrings, component: component)
+                try TextComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    component: component
+                )
             )
         case .image(let component):
             return .image(
-                try ImageComponentViewModel(localizedStrings: localizedStrings, component: component)
+                try ImageComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    component: component
+                )
             )
         case .spacer(let component):
             return .spacer(
@@ -45,15 +50,18 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                try StackComponentViewModel(locale: locale,
-                                            component: component,
-                                            localizedStrings: localizedStrings,
-                                            offering: offering)
+                try StackComponentViewModel(
+                    component: component,
+                    localizationProvider: localizationProvider,
+                    offering: offering
+                )
             )
         case .linkButton(let component):
             return .linkButton(
-                try LinkButtonComponentViewModel(component: component,
-                                                 localizedStrings: localizedStrings)
+                try LinkButtonComponentViewModel(
+                    component: component,
+                    localizationProvider: localizationProvider
+                )
             )
         }
     }
