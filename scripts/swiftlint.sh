@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-swift package plugin swiftlint lint --quiet
+xcrun --sdk macosx swift package plugin swiftlint lint --quiet
