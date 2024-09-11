@@ -140,6 +140,7 @@ class SubscriberAttributesManager {
         setReservedAttribute(.idfa, value: identifierForAdvertisers, appUserID: appUserID)
         setReservedAttribute(.idfv, value: identifierForVendor, appUserID: appUserID)
         setReservedAttribute(.ip, value: "true", appUserID: appUserID)
+        setReservedAttribute(.userAgent, value: "true", appUserID: appUserID)
     }
 
     /// - Parameter syncedAttribute: will be called for every attribute that is updated

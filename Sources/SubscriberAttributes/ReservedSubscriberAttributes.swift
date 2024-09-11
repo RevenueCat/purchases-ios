@@ -30,6 +30,7 @@ enum ReservedSubscriberAttribute: String {
     case consentStatus = "$attConsentStatus"
 
     case ip = "$ip"
+    case userAgent = "$userAgent"
 
     case adjustID = "$adjustId"
     case appsFlyerID = "$appsflyerId"
