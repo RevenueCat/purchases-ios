@@ -640,9 +640,13 @@ private extension SamplePaywallLoader {
                               defaultLocaleIdentifier: "en_US")
     }
 
-    internal static var packagesComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: packagesSample, localization: allStrings())
+    internal static func packagesComponents(slide: Int) -> PaywallComponentsData {
+        return createFakePaywallComponentsData(components: packagesSample(slide: slide), localization: allStrings())
     }
+
+//    internal static var packagesComponents: PaywallComponentsData {
+//        return createFakePaywallComponentsData(components: packagesSample, localization: allStrings())
+//    }
 
     internal static var fitnessComponents: PaywallComponentsData {
         return createFakePaywallComponentsData(components: fitnessSample, localization: allStrings())
@@ -685,6 +689,25 @@ private extension SamplePaywallLoader {
         ))
     }()
 
+    static func packagesSample(slide: Int) -> [PaywallComponent] {
+        return switch slide {
+        case 1:
+            packagesSample1
+        case 2:
+            packagesSample2
+        case 3:
+            packagesSample3
+        case 4:
+            packagesSample4
+        case 5:
+            packagesSample5
+        case 6:
+            packagesSample6
+        default:
+            [PaywallComponent]()
+        }
+    }
+
 //    static var packagesSample: [PaywallComponent] = {
 //        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:
 //        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
@@ -696,10 +719,49 @@ private extension SamplePaywallLoader {
 //        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
 //    }()
 
-    static var packagesSample: [PaywallComponent] = {
+    // SLIDE 1
+    static var packagesSample1: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: [purchasePackageButton]))]
+    }()
+
+    // SLIDE 2
+    static var packagesSample2: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: [purchasePackageButton]))] +
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthy", components: [purchasePackageButton]))]
+    }()
+
+    // SLIDE 3
+    static var packagesSample3: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
+    }()
+
+    // SLIDE 4
+    static var packagesSample4: [PaywallComponent] = {
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
          spacer,
-         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
+         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall))]
+    }()
+
+    // SLIDE 5
+    static var packagesSample5: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:[textPackage1, textPackage2]))]
+    }()
+
+    // SLIDE 6
+    static var packagesSample6: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
+         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall)),
+         purchasePackageButton]))]
+    }()
+
+    // text packages
+    static var textPackage1: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_weekly", isButton: false, components: [package1Text]))
+    }()
+
+    static var textPackage2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", isButton: false, components: [package2Text]))
     }()
 
 
@@ -1770,7 +1832,7 @@ private extension SamplePaywallLoader {
         return [
             "en_US": [
                 "welcome_message": "Hello, Paywall Components!",
-                "purchase_button_text": "Purchase Now! $19.99/year",
+                "purchase_button_text": "Purchase Now!",
                 "explore_button_text": "Explore",
                 "popular_plan_label": "Popular Plan",
                 "get_started_text": "Get started with our plan",
@@ -1779,7 +1841,7 @@ private extension SamplePaywallLoader {
             ],
             "fr_FR": [
                 "welcome_message": "Bonjour, Composants Paywall!",
-                "purchase_button_text": "Achetez maintenant! 19,99$/an",
+                "purchase_button_text": "Achetez maintenant!",
                 "explore_button_text": "Explorer",
                 "popular_plan_label": "Plan populaire",
                 "get_started_text": "Commencez avec notre plan",
@@ -1788,7 +1850,7 @@ private extension SamplePaywallLoader {
             ],
             "es_ES": [
                 "welcome_message": "¡Hola, Componentes Paywall!",
-                "purchase_button_text": "¡Compra ahora! 19,99€/año",
+                "purchase_button_text": "¡Compra ahora!",
                 "explore_button_text": "Explorar",
                 "popular_plan_label": "Plan popular",
                 "get_started_text": "Empieza con nuestro plan",
