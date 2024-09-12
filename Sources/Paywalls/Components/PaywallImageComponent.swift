@@ -15,21 +15,24 @@ public extension PaywallComponent {
     struct ImageComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let urlsLid: LocalizationKey
+        public let source: ThemeImageUrls
+        public let overrideSourceLid: LocalizationKey?
         public let cornerRadiuses: CornerRadiuses
         public let gradientColors: [ColorHex]?
         public let maxHeight: CGFloat?
         public let fitMode: FitMode
 
         public init(
-            urlsLid: String,
+            source: ThemeImageUrls,
+            overrideSourceLid: LocalizationKey?,
             fitMode: FitMode = .fit,
             maxHeight: CGFloat? = nil,
             cornerRadiuses: CornerRadiuses,
             gradientColors: [ColorHex]? = []
         ) {
             self.type = .image
-            self.urlsLid = urlsLid
+            self.source = source
+            self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
             self.maxHeight = maxHeight
             self.cornerRadiuses = cornerRadiuses

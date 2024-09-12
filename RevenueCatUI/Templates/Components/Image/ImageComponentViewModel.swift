@@ -29,7 +29,12 @@ public class ImageComponentViewModel {
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-        self.imageInfo = try localizedStrings.image(key: component.urlsLid)
+
+        if let overrideSourceLid = component.overrideSourceLid {
+            self.imageInfo = try localizedStrings.image(key: overrideSourceLid)
+        } else {
+            self.imageInfo = component.source
+        }
     }
 
     public var url: URL {
