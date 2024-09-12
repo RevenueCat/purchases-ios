@@ -45,9 +45,14 @@ struct PackageComponentView: View {
     }
 
     var body: some View {
-        Button {
-            selectionManager.selectedID = viewModel.packageID
-        } label: {
+        if viewModel.isButton {
+            Button {
+                selectionManager.selectedID = viewModel.packageID
+            } label: {
+                ComponentsView(componentViewModels: self.viewModel.viewModels)
+                    .environment(\.selectionState, selectionState)
+            }
+        } else {
             ComponentsView(componentViewModels: self.viewModel.viewModels)
                 .environment(\.selectionState, selectionState)
         }
