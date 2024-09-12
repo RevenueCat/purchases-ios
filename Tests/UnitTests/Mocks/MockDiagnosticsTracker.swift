@@ -85,12 +85,15 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          storeKitVersion: StoreKitVersion,
          errorMessage: String?,
          errorCode: Int?,
+         storeKitErrorDescription: String?,
          responseTime: TimeInterval)
     ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
+                              storeKitErrorDescription: String?,
                               responseTime: TimeInterval) async {
         self.trackedProductsRequestParams.modify {
             $0.append(
@@ -98,6 +101,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                 storeKitVersion,
                 errorMessage,
                 errorCode,
+                storeKitErrorDescription,
                 responseTime)
             )
         }

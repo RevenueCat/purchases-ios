@@ -22,10 +22,12 @@ protocol DiagnosticsTrackerType {
     func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo) async
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
+                              storeKitErrorDescription: String?,
                               responseTime: TimeInterval) async
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -80,10 +82,12 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
         await track(event)
     }
 
+    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
+                              storeKitErrorDescription: String?,
                               responseTime: TimeInterval) async {
         await track(
             DiagnosticsEvent(eventType: .appleProductsRequest,
@@ -92,6 +96,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
                                 .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
                                 .errorMessageKey: AnyEncodable(errorMessage),
                                 .errorCodeKey: AnyEncodable(errorCode),
+                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
                                 .responseTimeMillisKey: AnyEncodable(responseTime * 1000)
                              ],
                              timestamp: self.dateProvider.now())

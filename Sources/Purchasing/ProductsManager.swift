@@ -136,19 +136,28 @@ private extension ProductsManager {
     }
 
     func trackProductsRequestIfNeeded(_ startTime: Date,
-                                     storeKitVersion: StoreKitVersion,
-                                     error: PurchasesError?) {
+                                      storeKitVersion: StoreKitVersion,
+                                      error: PurchasesError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            let diagnosticsTracker = self.diagnosticsTracker {
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
             let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
                 ?? error?.localizedDescription
             let errorCode = error?.errorCode
+            let storeKitErrorDescription: String?
+            if let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError {
+                storeKitErrorDescription = skError.code.trackingDescription
+            } else if let storeKitError = error?.userInfo[NSUnderlyingErrorKey] as? StoreKitError {
+                storeKitErrorDescription = storeKitError.trackingDescription
+            } else {
+                storeKitErrorDescription = nil
+            }
             Task(priority: .background) {
                 await diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
                                                               storeKitVersion: storeKitVersion,
                                                               errorMessage: errorMessage,
                                                               errorCode: errorCode,
+                                                              storeKitErrorDescription: storeKitErrorDescription,
                                                               responseTime: responseTime)
             }
         }
