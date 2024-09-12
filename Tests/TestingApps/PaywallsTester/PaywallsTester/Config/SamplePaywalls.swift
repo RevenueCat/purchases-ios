@@ -688,7 +688,7 @@ private extension SamplePaywallLoader {
     }()
 
     static var packagesSample: [PaywallComponent] = {
-        [.packages(.init(type: .packages, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
     }()
 
     static var packageHStack: PaywallComponent = {
@@ -945,7 +945,7 @@ private extension SamplePaywallLoader {
     // fitness
 
     static var fitnessSample: [PaywallComponent] = {
-        [.packages(.init(type: .packages, defaultSelectedPackageID: "$rc_weekly", components: fitnessWall))]
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: fitnessWall))]
     }()
 
     static var fitnessWall: [PaywallComponent] = {
@@ -994,11 +994,11 @@ private extension SamplePaywallLoader {
     }()
 
     static var fitnessPackage1: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_weekly", components: [fitnessItem(headingLid:"sub_period", subHeadlingLid:"offer_details")]))
+        .package(.init(type: .package, packageID: "$rc_weekly", components: [fitnessItem(headingLid:"package_1", subHeadlingLid:"offer_details")]))
     }()
 
     static var fitnessPackage2: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_monthly", components: [fitnessItem(headingLid:"sub_period", subHeadlingLid:"offer_details")]))
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [fitnessItem(headingLid:"package_2", subHeadlingLid:"offer_details")]))
     }()
 
     static func fitnessItem(headingLid: String, subHeadlingLid: String) -> PaywallComponent {
@@ -1621,8 +1621,8 @@ private extension SamplePaywallLoader {
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Select a Package",
-                "package_1": "Package One",
-                "package_2": "Package Two",
+                "package_1": "Package One {{ sub_period }}",
+                "package_2": "Package Two {{ sub_period }}",
                 "package_1_selected": "Package One Selected",
                 "package_2_selected": "Package Two Selected",
                 "package_1_unselected": "Package One Unselected",
@@ -1637,8 +1637,8 @@ private extension SamplePaywallLoader {
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Sélectionnez un forfait",
-                "package_1": "Forfait Un",
-                "package_2": "Forfait Deux",
+                "package_1": "Forfait Un {{ sub_period }}",
+                "package_2": "Forfait Deux {{ sub_period }}",
                 "package_3": "Forfait Trois",
                 "package_4": "Forfait Quatre",
                 "package_5": "Forfait Cinq",
@@ -1649,8 +1649,8 @@ private extension SamplePaywallLoader {
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Seleccione un paquete",
-                "package_1": "Paquete Uno",
-                "package_2": "Paquete Dos",
+                "package_1": "Paquete Uno {{ sub_period }}",
+                "package_2": "Paquete Dos {{ sub_period }}",
                 "package_3": "Paquete Tres",
                 "package_4": "Paquete Cuatro",
                 "package_5": "Paquete Cinco",

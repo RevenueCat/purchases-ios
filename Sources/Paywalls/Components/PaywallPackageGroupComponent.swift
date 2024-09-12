@@ -19,7 +19,7 @@ public extension PaywallComponent {
         public let components: [PaywallComponent]
 
         public init(type: ComponentType, defaultSelectedPackageID: String, components: [PaywallComponent]) {
-            self.type = .packages
+            self.type = .packageGroup
             self.defaultSelectedPackageID = defaultSelectedPackageID
             self.components = components
         }
