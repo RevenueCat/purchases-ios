@@ -90,9 +90,14 @@ class MockOperationDispatcher: OperationDispatcher {
         if self.forwardToOriginalDispatchOnWorkerThread {
             super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
         } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
+            let semaphore = DispatchSemaphore(value: 0)
+
             Task<Void, Never> {
                 await block()
+                semaphore.signal()
             }
+
+            semaphore.wait()
         }
     }
 
