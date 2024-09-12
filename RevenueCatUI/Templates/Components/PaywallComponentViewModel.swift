@@ -19,7 +19,7 @@ enum PaywallComponentViewModel {
     case spacer(SpacerComponentViewModel)
     case stack(StackComponentViewModel)
     case linkButton(LinkButtonComponentViewModel)
-    case packages(PackagesComponentViewModel)
+    case packages(PackageGroupComponentViewModel)
     case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
 
@@ -60,7 +60,7 @@ extension PaywallComponent {
             )
         case .packages(let component):
             return .packages(
-                try PackagesComponentViewModel(component: component,
+                try PackageGroupComponentViewModel(component: component,
                                                offering: offering,
                                                locale: locale,
                                                localizedStrings: localizedStrings)

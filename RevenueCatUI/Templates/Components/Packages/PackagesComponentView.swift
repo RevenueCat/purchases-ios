@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PackagesComponentView.swift
+//  PackageGroupComponentView.swift
 //
 //  Created by James Borthwick on 2024-09-06.
 
@@ -28,9 +28,9 @@ class PackageSelectionManager: ObservableObject {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PackagesComponentView: View {
+struct PackageGroupComponentView: View {
 
-    let viewModel: PackagesComponentViewModel
+    let viewModel: PackageGroupComponentViewModel
 
     @StateObject
     private var packageSelectionManager = PackageSelectionManager()

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PackagesComponentViewModel.swift
+//  PackageGroupComponentViewModel.swift
 //
 //  Created by James Borthwick on 2024-09-06.
 // swiftlint:disable missing_docs
@@ -19,9 +19,9 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class PackagesComponentViewModel: ObservableObject {
+public class PackageGroupComponentViewModel: ObservableObject {
 
-    private let component: PaywallComponent.PackagesComponent
+    private let component: PaywallComponent.PackageGroupComponent
     let viewModels: [PaywallComponentViewModel]
 
     var defaultSelectedPackageID: String {
@@ -29,7 +29,7 @@ public class PackagesComponentViewModel: ObservableObject {
     }
 
     init(
-         component: PaywallComponent.PackagesComponent,
+         component: PaywallComponent.PackageGroupComponent,
          offering: Offering,
          locale: Locale,
          localizedStrings: PaywallComponent.LocalizationDictionary

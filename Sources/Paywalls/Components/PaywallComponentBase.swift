@@ -18,7 +18,7 @@ public enum PaywallComponent: PaywallComponentBase {
     case spacer(SpacerComponent)
     case stack(StackComponent)
     case linkButton(LinkButtonComponent)
-    case packages(PackagesComponent)
+    case packages(PackageGroupComponent)
     case package(PackageComponent)
     case purchaseButton(PurchaseButtonComponent)
 
@@ -99,7 +99,7 @@ extension PaywallComponent: Codable {
         case .linkButton:
             self = .linkButton(try LinkButtonComponent(from: decoder))
         case .packages:
-            self = .packages(try PackagesComponent(from: decoder))
+            self = .packages(try PackageGroupComponent(from: decoder))
         case .package:
             self = .package(try PackageComponent(from: decoder))
         case .purchaseButton:

@@ -1,5 +1,5 @@
 //
-//  PackagesComponent.swift
+//  PackageGroupComponent.swift
 //  
 //
 //  Created by James Borthwick on 9/5/24.
@@ -12,7 +12,7 @@ import Foundation
 
 public extension PaywallComponent {
 
-    final class PackagesComponent: PaywallComponentBase {
+    final class PackageGroupComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let defaultSelectedPackageID: String
@@ -28,9 +28,9 @@ public extension PaywallComponent {
 
 }
 
-extension PaywallComponent.PackagesComponent: Equatable, Hashable {
+extension PaywallComponent.PackageGroupComponent: Equatable, Hashable {
 
-    public static func == (lhs: PaywallComponent.PackagesComponent, rhs: PaywallComponent.PackagesComponent) -> Bool {
+    public static func == (lhs: PaywallComponent.PackageGroupComponent, rhs: PaywallComponent.PackageGroupComponent) -> Bool {
         return lhs.type == rhs.type &&
                lhs.defaultSelectedPackageID == rhs.defaultSelectedPackageID &&
                lhs.components == rhs.components
