@@ -19,12 +19,12 @@ import SwiftUI
 
 class PackageSelectionManager: ObservableObject {
 
-    @Published var selectedID: String?
+    @Published var selectedID: String = ""
 
     func select(id: String) {
         selectedID = id
     }
-    
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -33,14 +33,20 @@ struct PackageGroupComponentView: View {
     let viewModel: PackageGroupComponentViewModel
 
     @StateObject
-    private var packageSelectionManager = PackageSelectionManager()
+    var packageSelectionManager = PackageSelectionManager()
 
     var body: some View {
-        ComponentsView(componentViewModels: self.viewModel.viewModels)
-            .environmentObject(packageSelectionManager)
-            .onAppear {
-                packageSelectionManager.selectedID = viewModel.defaultSelectedPackageID
-            }
+        VStack {
+            Text("Package Group")
+            ComponentsView(componentViewModels: self.viewModel.viewModels)
+                .environmentObject(packageSelectionManager)
+                .onAppear {
+                    packageSelectionManager.selectedID = viewModel.defaultSelectedPackageID
+                }
+                .onChange(of: packageSelectionManager.selectedID) { newSelectedID in
+                    viewModel.selectedPackageID = newSelectedID
+                }
+        }
     }
 
 }
