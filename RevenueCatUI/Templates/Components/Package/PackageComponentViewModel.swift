@@ -25,7 +25,7 @@ public class PackageComponentViewModel: ObservableObject {
 
     private let component: PaywallComponent.PackageComponent
     private let offering: Offering
-    private let package: Package
+    let package: Package
 
     init(
         component: PaywallComponent.PackageComponent,
@@ -44,15 +44,6 @@ public class PackageComponentViewModel: ObservableObject {
 
     var packageID: String {
         component.packageID
-    }
-
-    var title: String {
-        guard let package = offering.availablePackages.first(where: { package in
-            package.identifier == packageID
-        }) else {
-            return "Package for id \(packageID) not found"
-        }
-        return package.productName
     }
 
 }
