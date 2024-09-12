@@ -24,19 +24,18 @@ public struct TemplateComponentsView: View {
 
         self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
-            // TODO: STEP 2: Validate all packages needed exist (????)
-
             do {
-                // STEP 3: Make the view models & validate all components have required localization
+                // STEP 2: Make the view models & validate all components have required localization and packages
                 return try component.toViewModel(offering: offering,
                                                  locale: localization.locale,
                                                  localizedStrings: localization.localizedStrings)
             } catch {
 
-                // STEP 3.5: Use fallback paywall if viewmodel construction fails
+                // Use fallback paywall if viewmodel construction fails
                 Logger.error(Strings.paywall_view_model_construction_failed(error))
 
                 return Self.fallbackPaywallViewModels()
+
             }
         }
     }
