@@ -4,8 +4,6 @@
 * Fixes a Paywall Template 7 crash when none of the tiers have any available products. (#4243) via JayShortway (@JayShortway)
 * [SK2] send unsynced attributes when syncing purchases (#4245) via Mark Villacampa (@MarkVillacampa)
 ### Other Changes
-* Revert "Add `$kochavaDeviceId` attribution convenience method (#4238)" (#4265) via Toni Rico (@tonidero)
-* Add `$kochavaDeviceId` attribution convenience method (#4238) via Toni Rico (@tonidero)
 * Do not embed `RevenueCat.framework` in `RevenueCatUI` (#4256) via Cesar de la Vega (@vegaro)
 * Add warnings and clarifications to v5 migration docs (#4231) via Mark Villacampa (@MarkVillacampa)
 * Fixes SwiftLint violation of rule optional_data_string_conversion (#4252) via JayShortway (@JayShortway)
