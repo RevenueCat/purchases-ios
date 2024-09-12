@@ -12,31 +12,6 @@ import Foundation
 
 public extension PaywallComponent {
     final class TextComponent: PaywallComponentBase {
-        public static func == (lhs: PaywallComponent.TextComponent, rhs: PaywallComponent.TextComponent) -> Bool {
-            lhs.text == rhs.text &&
-            lhs.textLid == rhs.textLid &&
-            lhs.fontFamily == rhs.fontFamily &&
-            lhs.fontWeight == rhs.fontWeight &&
-            lhs.color == rhs.color &&
-            lhs.textStyle == rhs.textStyle &&
-            lhs.horizontalAlignment == rhs.horizontalAlignment &&
-            lhs.backgroundColor == rhs.backgroundColor &&
-            lhs.padding == rhs.padding
-}
-
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(type)
-            hasher.combine(text)
-            hasher.combine(textLid)
-            hasher.combine(fontFamily)
-            hasher.combine(fontWeight)
-            hasher.combine(color)
-            hasher.combine(textStyle)
-            hasher.combine(horizontalAlignment)
-            hasher.combine(backgroundColor)
-            hasher.combine(padding)
-        }
-
 
         public let selectedComponent: TextComponent?
         let type: ComponentType
@@ -76,6 +51,36 @@ public extension PaywallComponent {
         }
 
     }
+
+}
+
+extension PaywallComponent.TextComponent {
+
+    public static func == (lhs: PaywallComponent.TextComponent, rhs: PaywallComponent.TextComponent) -> Bool {
+        lhs.text == rhs.text &&
+        lhs.textLid == rhs.textLid &&
+        lhs.fontFamily == rhs.fontFamily &&
+        lhs.fontWeight == rhs.fontWeight &&
+        lhs.color == rhs.color &&
+        lhs.textStyle == rhs.textStyle &&
+        lhs.horizontalAlignment == rhs.horizontalAlignment &&
+        lhs.backgroundColor == rhs.backgroundColor &&
+        lhs.padding == rhs.padding
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(text)
+        hasher.combine(textLid)
+        hasher.combine(fontFamily)
+        hasher.combine(fontWeight)
+        hasher.combine(color)
+        hasher.combine(textStyle)
+        hasher.combine(horizontalAlignment)
+        hasher.combine(backgroundColor)
+        hasher.combine(padding)
+    }
+
 }
 
 #endif

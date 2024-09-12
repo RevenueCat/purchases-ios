@@ -19,26 +19,6 @@ public extension PaywallComponent {
 
     final class StackComponent: PaywallComponentBase {
 
-        public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
-            return lhs.type == rhs.type &&
-                   lhs.components == rhs.components &&
-                   lhs.spacing == rhs.spacing &&
-                   lhs.backgroundColor == rhs.backgroundColor &&
-                   lhs.dimension == rhs.dimension &&
-                   lhs.padding == rhs.padding &&
-                   lhs.selectedComponent == rhs.selectedComponent
-        }
-
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(type)
-            hasher.combine(components)
-            hasher.combine(spacing)
-            hasher.combine(backgroundColor)
-            hasher.combine(dimension)
-            hasher.combine(padding)
-            hasher.combine(selectedComponent)
-        }
-
         let type: ComponentType
         public let components: [PaywallComponent]
         public let spacing: CGFloat?
@@ -128,6 +108,30 @@ public extension PaywallComponent {
         }
 
     }
+}
+
+extension PaywallComponent.StackComponent {
+
+    public static func == (lhs: PaywallComponent.StackComponent, rhs: PaywallComponent.StackComponent) -> Bool {
+        return lhs.type == rhs.type &&
+               lhs.components == rhs.components &&
+               lhs.spacing == rhs.spacing &&
+               lhs.backgroundColor == rhs.backgroundColor &&
+               lhs.dimension == rhs.dimension &&
+               lhs.padding == rhs.padding &&
+               lhs.selectedComponent == rhs.selectedComponent
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(type)
+        hasher.combine(components)
+        hasher.combine(spacing)
+        hasher.combine(backgroundColor)
+        hasher.combine(dimension)
+        hasher.combine(padding)
+        hasher.combine(selectedComponent)
+    }
+
 }
 
 #endif
