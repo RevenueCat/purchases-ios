@@ -51,7 +51,6 @@ struct PackageComponentView: View {
             ComponentsView(componentViewModels: self.viewModel.viewModels)
                 .environment(\.selectionState, selectionState)
         }
-        
     }
 
 }
