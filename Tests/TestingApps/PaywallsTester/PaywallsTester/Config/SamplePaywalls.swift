@@ -660,10 +660,8 @@ private extension SamplePaywallLoader {
 
     static var packageWall: [PaywallComponent] = {
         [.stack(.init(components: [spacer,
-                                   titleText,
-                                   spacer,
-                                   packageHStack,
-                                   spacer,
+//                                   titleText,
+//                                   spacer,
                                    packageHStack,
                                    spacer,
                                    purchasePackageButton
@@ -687,13 +685,27 @@ private extension SamplePaywallLoader {
         ))
     }()
 
+//    static var packagesSample: [PaywallComponent] = {
+//        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:
+//        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
+//         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall)),
+//         purchasePackageButton]))]
+//    }()
+
+//    static var packagesSample: [PaywallComponent] = {
+//        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
+//    }()
+
     static var packagesSample: [PaywallComponent] = {
-        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
+         spacer,
+         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
     }()
+
 
     static var packageHStack: PaywallComponent = {
         .stack(.init(components: [package1, package2],
-                     dimension: .horizontal(.center),
+                     dimension: .vertical(.center),
                      spacing: nil,
                      backgroundColor: nil,
                      padding: .zero))
@@ -701,18 +713,19 @@ private extension SamplePaywallLoader {
 
     // package 1
     static var package1: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_weekly", components: [package1VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_weekly", components: [package1VStack]))
     }()
 
-    static var package1VStackNotSelected: PaywallComponent = {
-     .stack(.init(components: [package1Text],
+    static var package1VStack: PaywallComponent = {
+     .stack(.init(components: [blankCheckmarkImage, package1Text],
                   dimension: .horizontal(.center),
                   spacing: nil,
                   backgroundColor: nil,
                   padding: .zero,
-                  selectedComponent: .init(components: [package1Text],
+                  selectedComponent: .init(components: [checkmarkImage, package1Text],
+                                           dimension: .horizontal(.center),
                                            spacing: nil,
-                                           backgroundColor: .init(light: "#00FFAA"),
+                                           backgroundColor: nil,
                                            padding: .zero)))
     }()
 
@@ -731,7 +744,7 @@ private extension SamplePaywallLoader {
             textLid: "package_1",
             fontFamily: "",
             fontWeight: .regular,
-            color: .init(light: "#FF2222"),
+            color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .body
      )))
@@ -739,19 +752,20 @@ private extension SamplePaywallLoader {
 
     // package 2
     static var package2: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStack]))
     }()
 
 
-    static var package2VStackNotSelected: PaywallComponent = {
-     .stack(.init(components: [package2Text],
+    static var package2VStack: PaywallComponent = {
+     .stack(.init(components: [blankCheckmarkImage, package2Text],
                   dimension: .horizontal(.center),
                   spacing: nil,
                   backgroundColor: nil,
                   padding: .zero,
-                  selectedComponent: .init(components: [package2Text],
+                  selectedComponent: .init(components: [checkmarkImage, package2Text],
+                                           dimension: .horizontal(.center),
                                            spacing: nil,
-                                           backgroundColor: .init(light: "#00FFAA", dark: "#00AAFF"),
+                                           backgroundColor: nil,
                                            padding: .zero)))
     }()
 
@@ -770,7 +784,7 @@ private extension SamplePaywallLoader {
             textLid: "package_2",
             fontFamily: "",
             fontWeight: .regular,
-            color: .init(light: "#FF2222"),
+            color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .body
      )))
@@ -932,7 +946,7 @@ private extension SamplePaywallLoader {
 
     static var purchaseSimpleNowText: PaywallComponent.TextComponent = {
         .init(
-            text: "Purchase Now! $19.99/year",
+            text: "Purchase Now!",
             textLid: "purchase_button_text",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -1100,7 +1114,7 @@ private extension SamplePaywallLoader {
 
     // package 2
     static var fitnesspackage2: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStackNotSelected]))
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStack]))
     }()
 
 
@@ -1621,8 +1635,8 @@ private extension SamplePaywallLoader {
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Select a Package",
-                "package_1": "Package One {{ sub_period }}",
-                "package_2": "Package Two {{ sub_period }}",
+                "package_1": "Package One",
+                "package_2": "Package Two",
                 "package_1_selected": "Package One Selected",
                 "package_2_selected": "Package Two Selected",
                 "package_1_unselected": "Package One Unselected",
@@ -1631,31 +1645,31 @@ private extension SamplePaywallLoader {
                 "package_4": "Package Four",
                 "package_5": "Package Five",
                 "package_6": "Package Six",
-                "purchase_button_text": "Purchase Now! $19.99/year"
+                "purchase_button_text": "Purchase Now!"
             ],
             "fr_FR": [
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Sélectionnez un forfait",
-                "package_1": "Forfait Un {{ sub_period }}",
-                "package_2": "Forfait Deux {{ sub_period }}",
+                "package_1": "Forfait Un",
+                "package_2": "Forfait Deux",
                 "package_3": "Forfait Trois",
                 "package_4": "Forfait Quatre",
                 "package_5": "Forfait Cinq",
                 "package_6": "Forfait Six",
-                "purchase_button_text": "Achetez maintenant! 19,99$/an"
+                "purchase_button_text": "Achetez maintenant!"
             ],
             "es_ES": [
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Seleccione un paquete",
-                "package_1": "Paquete Uno {{ sub_period }}",
-                "package_2": "Paquete Dos {{ sub_period }}",
+                "package_1": "Paquete Uno",
+                "package_2": "Paquete Dos",
                 "package_3": "Paquete Tres",
                 "package_4": "Paquete Cuatro",
                 "package_5": "Paquete Cinco",
                 "package_6": "Paquete Seis",
-                "purchase_button_text": "¡Compra ahora! 19,99€/año"
+                "purchase_button_text": "¡Compra ahora!"
             ]
         ]
     }
