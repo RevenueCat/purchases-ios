@@ -18,11 +18,13 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 class PackageSelectionManager: ObservableObject {
+
     @Published var selectedID: String?
 
     func select(id: String) {
         selectedID = id
     }
+    
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

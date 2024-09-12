@@ -21,10 +21,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class PackageComponentViewModel: ObservableObject {
 
-    private let component: PaywallComponent.PackageComponent
     var viewModels: [PaywallComponentViewModel]
 
-    let offering: Offering
+    private let component: PaywallComponent.PackageComponent
+    private let offering: Offering
+    private let package: Package
+
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
@@ -33,9 +35,11 @@ public class PackageComponentViewModel: ObservableObject {
     ) throws {
         self.component = component
         self.offering = offering
+        self.package = try Self.retrievePackage(from: offering, id: component.packageID)
         self.viewModels = try component.components.map {
             try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }
+
     }
 
     var packageID: String {
@@ -43,12 +47,33 @@ public class PackageComponentViewModel: ObservableObject {
     }
 
     var title: String {
-        guard let title = offering.availablePackages.first(where: { package in
+        guard let package = offering.availablePackages.first(where: { package in
             package.identifier == packageID
         }) else {
             return "Package for id \(packageID) not found"
         }
-        return title.productName
+        return package.productName
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PackageComponentViewModel {
+
+    enum PackageValidationError: Error {
+
+        case missingPackage(String)
+
+    }
+
+    static func retrievePackage(from offering: Offering, id packageID: String) throws -> Package {
+        guard let thisPackage = offering.availablePackages.first(where: { package in
+            package.identifier == packageID
+        }) else {
+            throw PackageValidationError.missingPackage("Package for id \(packageID) not found.")
+        }
+
+        return thisPackage
     }
 
 }
