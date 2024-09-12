@@ -52,7 +52,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [.define("CUSTOMER_CENTER_ENABLED"), visionOSSetting]),
+                swiftSettings: [visionOSSetting]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -78,7 +78,7 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: [.define("CUSTOMER_CENTER_ENABLED")]),
+                swiftSettings: []),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
