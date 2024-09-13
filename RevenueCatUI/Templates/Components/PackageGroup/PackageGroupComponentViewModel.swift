@@ -28,8 +28,6 @@ public class PackageGroupComponentViewModel: ObservableObject {
         component.defaultSelectedPackageID
     }
 
-    var selectedPackageID: String
-
     init(
          component: PaywallComponent.PackageGroupComponent,
          offering: Offering,
@@ -37,7 +35,6 @@ public class PackageGroupComponentViewModel: ObservableObject {
          localizedStrings: PaywallComponent.LocalizationDictionary
     ) throws {
         self.component = component
-        self.selectedPackageID = component.defaultSelectedPackageID
         self.viewModels = try component.components.map {
             try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }

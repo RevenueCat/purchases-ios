@@ -19,7 +19,7 @@ import SwiftUI
 
 class PackageSelectionManager: ObservableObject {
 
-    @Published var selectedID: String = ""
+    @Published var selectedID: String?
 
     func select(id: String) {
         selectedID = id
@@ -37,14 +37,10 @@ struct PackageGroupComponentView: View {
 
     var body: some View {
         VStack {
-            Text("Package Group")
             ComponentsView(componentViewModels: self.viewModel.viewModels)
                 .environmentObject(packageSelectionManager)
                 .onAppear {
                     packageSelectionManager.selectedID = viewModel.defaultSelectedPackageID
-                }
-                .onChange(of: packageSelectionManager.selectedID) { newSelectedID in
-                    viewModel.selectedPackageID = newSelectedID
                 }
         }
     }
