@@ -644,10 +644,6 @@ private extension SamplePaywallLoader {
         return createFakePaywallComponentsData(components: packagesSample(slide: slide), localization: allStrings())
     }
 
-//    internal static var packagesComponents: PaywallComponentsData {
-//        return createFakePaywallComponentsData(components: packagesSample, localization: allStrings())
-//    }
-
     internal static var fitnessComponents: PaywallComponentsData {
         return createFakePaywallComponentsData(components: fitnessSample, localization: allStrings())
     }
@@ -660,7 +656,7 @@ private extension SamplePaywallLoader {
         return createFakePaywallComponentsData(components: simpleSix, localization: allStrings())
     }
 
-    // PACKAGES
+    // MARK: - Package Tests
 
     static var packageWall: [PaywallComponent] = {
         [.stack(.init(components: [packageVStackSimple,
@@ -705,17 +701,6 @@ private extension SamplePaywallLoader {
         }
     }
 
-//    static var packagesSample: [PaywallComponent] = {
-//        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:
-//        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
-//         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall)),
-//         purchasePackageButton]))]
-//    }()
-
-//    static var packagesSample: [PaywallComponent] = {
-//        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
-//    }()
-
     // SLIDE 1
     static var packagesSample1: [PaywallComponent] = {
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: [purchasePackageButton]))]
@@ -744,16 +729,9 @@ private extension SamplePaywallLoader {
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components:[textPackage1, textPackage2, purchasePackageButton]))]
     }()
 
+    // SLIDE 6
     static var packagesSample6: [PaywallComponent] = {
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components:[packageVStackA, packageVStackB, purchasePackageButton]))]
-    }()
-
-    // SLIDE 7 - unsupported what is this even
-    static var packagesSample7: [PaywallComponent] = {
-        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:
-        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
-         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall)),
-         purchasePackageButton]))]
     }()
 
     // text packages
@@ -960,7 +938,7 @@ private extension SamplePaywallLoader {
 
 
 
-    // SIMPLE
+    // MARK: - Simple
 
     static var simpleOne: [PaywallComponent] = {
             [helloWorld]
@@ -1107,7 +1085,7 @@ private extension SamplePaywallLoader {
         )
     }()
 
-    // fitness
+    // MARK: - Fitness
 
     static var fitnessSample: [PaywallComponent] = {
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: fitnessWall))]
@@ -1242,65 +1220,10 @@ private extension SamplePaywallLoader {
 
     }
 
-
-//    static var package1Text: PaywallComponent = {
-//     .text(.init(
-//         text: "Package one",
-//         textLid: "package_1",
-//         fontFamily: "",
-//         fontWeight: .regular,
-//         color: .init(light: "#000000"),
-//         padding: .zero,
-//         textStyle: .body,
-//         selectedComponent: .init(
-//            text: "Package one",
-//            textLid: "package_1",
-//            fontFamily: "",
-//            fontWeight: .regular,
-//            color: .init(light: "#FF2222"),
-//            padding: .zero,
-//            textStyle: .body
-//     )))
-//    }()
-
     // package 2
     static var fitnesspackage2: PaywallComponent = {
         .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStack]))
     }()
-
-
-//    static var package2VStackNotSelected: PaywallComponent = {
-//     .stack(.init(components: [package2Text],
-//                  dimension: .horizontal(.center),
-//                  spacing: nil,
-//                  backgroundColor: nil,
-//                  padding: .zero,
-//                  selectedComponent: .init(components: [package2Text],
-//                                           spacing: nil,
-//                                           backgroundColor: .init(light: "#00FFAA", dark: "#00AAFF"),
-//                                           padding: .zero)))
-//    }()
-//
-//
-//    static var package2Text: PaywallComponent = {
-//     .text(.init(
-//         text: "Package two",
-//         textLid: "package_2",
-//         fontFamily: "",
-//         fontWeight: .regular,
-//         color: .init(light: "#000000"),
-//         padding: .zero,
-//         textStyle: .body,
-//         selectedComponent: .init(
-//            text: "Package two",
-//            textLid: "package_2",
-//            fontFamily: "",
-//            fontWeight: .regular,
-//            color: .init(light: "#FF2222"),
-//            padding: .zero,
-//            textStyle: .body
-//     )))
-//    }()
 
     static var gymZStack: PaywallComponent = {
         .stack(.init(components: [homeGym, headlineText],
@@ -1477,9 +1400,7 @@ private extension SamplePaywallLoader {
         ))
     }()
 
-
-    // CURIOSITY
-
+    // MARK: - Curiosity
 
     static var curiosity: [PaywallComponent] = {
         [.stack(.init(components: [headerZStack,
@@ -1948,11 +1869,6 @@ private extension SamplePaywallLoader {
             ]
         ]
     }
-
-
-
-
-
 
     #endif
 
