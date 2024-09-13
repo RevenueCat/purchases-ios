@@ -18,7 +18,6 @@ public class PurchaseButtonComponentViewModel {
     let textComponentViewModel: TextComponentViewModel
     private let component: PaywallComponent.PurchaseButtonComponent
 
-
     init(component: PaywallComponent.PurchaseButtonComponent,
          localizedStrings: PaywallComponent.LocalizationDictionary
     ) throws {

@@ -21,7 +21,7 @@ enum SelectionState {
 
     case unselected
     case selected
-    
+
 }
 
 struct SelectionStateKey: EnvironmentKey {
