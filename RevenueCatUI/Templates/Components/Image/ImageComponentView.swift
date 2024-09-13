@@ -42,9 +42,6 @@ struct ImageComponentView: View {
         .clipped()
     }
 
-
-    
-
 }
 
 #endif

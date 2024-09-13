@@ -23,14 +23,15 @@ public extension PaywallComponent {
             self.defaultSelectedPackageID = defaultSelectedPackageID
             self.components = components
         }
-
     }
 
 }
 
 extension PaywallComponent.PackageGroupComponent: Equatable, Hashable {
 
-    public static func == (lhs: PaywallComponent.PackageGroupComponent, rhs: PaywallComponent.PackageGroupComponent) -> Bool {
+    public static func == (lhs: PaywallComponent.PackageGroupComponent, 
+                           rhs: PaywallComponent.PackageGroupComponent
+    ) -> Bool {
         return lhs.type == rhs.type &&
                lhs.defaultSelectedPackageID == rhs.defaultSelectedPackageID &&
                lhs.components == rhs.components

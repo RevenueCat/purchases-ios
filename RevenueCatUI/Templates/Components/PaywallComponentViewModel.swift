@@ -61,21 +61,21 @@ extension PaywallComponent {
         case .packageGroup(let component):
             return .packageGroup(
                 try PackageGroupComponentViewModel(component: component,
-                                               offering: offering,
-                                               locale: locale,
-                                               localizedStrings: localizedStrings)
+                                                   offering: offering,
+                                                   locale: locale,
+                                                   localizedStrings: localizedStrings)
             )
         case .package(let component):
             return .package(
                 try PackageComponentViewModel(component: component,
-                                          offering: offering,
-                                          locale: locale,
-                                          localizedStrings: localizedStrings)
-                )
+                                              offering: offering,
+                                              locale: locale,
+                                              localizedStrings: localizedStrings)
+            )
         case .purchaseButton(let component):
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(component: component,
-                                                 localizedStrings: localizedStrings)
+                                                     localizedStrings: localizedStrings)
             )
         }
     }

@@ -28,7 +28,6 @@ public extension PaywallComponent {
             self.isButton = isButton
             self.components = components
         }
-
     }
 
 }

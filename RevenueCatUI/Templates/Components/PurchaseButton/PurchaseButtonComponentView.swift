@@ -24,7 +24,6 @@ struct PurchaseButtonComponentView: View {
     var body: some View {
 
             Button {
-                //TODO: Make Purchase
                 showAlert = true
             } label: {
                 TextComponentView(viewModel: viewModel.textComponentViewModel)

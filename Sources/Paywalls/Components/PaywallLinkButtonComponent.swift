@@ -36,7 +36,9 @@ public extension PaywallComponent {
 
 extension PaywallComponent.LinkButtonComponent: Equatable, Hashable {
 
-    public static func == (lhs: PaywallComponent.LinkButtonComponent, rhs: PaywallComponent.LinkButtonComponent) -> Bool {
+    public static func == (lhs: PaywallComponent.LinkButtonComponent, 
+                           rhs: PaywallComponent.LinkButtonComponent
+    ) -> Bool {
         return lhs.type == rhs.type &&
                lhs.url == rhs.url &&
                lhs.textComponent == rhs.textComponent &&
