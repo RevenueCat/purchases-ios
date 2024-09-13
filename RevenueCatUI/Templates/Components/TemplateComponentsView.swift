@@ -99,7 +99,7 @@ struct ComponentsView: View {
 
     @ViewBuilder
     func layoutComponents(_ componentViewModels: [PaywallComponentViewModel]) -> some View {
-        ForEach(Array(componentViewModels.enumerated()), id: \.offset) { _, item in
+        ForEach(Array(componentViewModels.enumerated()), id: \.offset) { offset, item in
             switch item {
             case .text(let viewModel):
                 TextComponentView(viewModel: viewModel)
@@ -115,6 +115,7 @@ struct ComponentsView: View {
                 PackageGroupComponentView(viewModel: viewModel)
             case .package(let viewModel):
                 PackageComponentView(viewModel: viewModel)
+                    .tag(offset)
             case .purchaseButton(let viewModel):
                 PurchaseButtonComponentView(viewModel: viewModel)
             }

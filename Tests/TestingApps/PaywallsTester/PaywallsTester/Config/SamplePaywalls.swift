@@ -663,10 +663,7 @@ private extension SamplePaywallLoader {
     // PACKAGES
 
     static var packageWall: [PaywallComponent] = {
-        [.stack(.init(components: [spacer,
-//                                   titleText,
-//                                   spacer,
-                                   packageHStack,
+        [.stack(.init(components: [packageVStackSimple,
                                    spacer,
                                    purchasePackageButton
                                   ],
@@ -744,11 +741,15 @@ private extension SamplePaywallLoader {
 
     // SLIDE 5
     static var packagesSample5: [PaywallComponent] = {
-        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:[textPackage1, textPackage2]))]
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components:[textPackage1, textPackage2, purchasePackageButton]))]
     }()
 
-    // SLIDE 6
     static var packagesSample6: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components:[packageVStackA, packageVStackB, purchasePackageButton]))]
+    }()
+
+    // SLIDE 7 - unsupported what is this even
+    static var packagesSample7: [PaywallComponent] = {
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "none", components:
         [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
          .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall)),
@@ -757,21 +758,109 @@ private extension SamplePaywallLoader {
 
     // text packages
     static var textPackage1: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_weekly", isButton: false, components: [package1Text]))
+        .package(.init(type: .package, packageID: "$rc_weekly", isButton: false, components: [simple1Text]))
     }()
 
     static var textPackage2: PaywallComponent = {
-        .package(.init(type: .package, packageID: "$rc_monthly", isButton: false, components: [package2Text]))
+        .package(.init(type: .package, packageID: "$rc_monthly", isButton: false, components: [simple2Text]))
+    }()
+
+    static var simple1Text: PaywallComponent = {
+     .text(.init(
+         text: "Package one",
+         textLid: "package_1",
+         fontFamily: "",
+         fontWeight: .regular,
+         color: .init(light: "#000000"),
+         backgroundColor: .init(light: "#AAEE00"),
+         padding: .init(top: 25, bottom: 25, leading: 25, trailing: 25),
+         textStyle: .body,
+         selectedComponent: nil))
+    }()
+
+    static var simple2Text: PaywallComponent = {
+     .text(.init(
+         text: "Package one",
+         textLid: "package_2",
+         fontFamily: "",
+         fontWeight: .regular,
+         color: .init(light: "#000000"),
+         backgroundColor: .init(light: "#00AAEE"),
+         padding: .init(top: 25, bottom: 25, leading: 25, trailing: 25),
+         textStyle: .body,
+         selectedComponent: nil))
     }()
 
 
-    static var packageHStack: PaywallComponent = {
+    static var packageVStackSimple: PaywallComponent = {
         .stack(.init(components: [package1, package2],
                      dimension: .vertical(.center),
                      spacing: nil,
                      backgroundColor: nil,
                      padding: .zero))
     }()
+
+    static var packageVStackA: PaywallComponent = {
+        .stack(.init(components: [spacer,
+                                  package(number: 1, packageID: "$rc_weekly"),
+                                  package(number: 2, packageID: "$rc_monthly"),
+                                 spacer],
+                     dimension: .vertical(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero))
+    }()
+
+   static var packageVStackB: PaywallComponent = {
+       .stack(.init(components: [spacer,
+                                 package(number: 3, packageID: "$rc_annual"),
+                                 package(number: 4, packageID: "$rc_lifetime"),
+                                spacer],
+                    dimension: .vertical(.center),
+                    spacing: nil,
+                    backgroundColor: nil,
+                    padding: .zero))
+   }()
+
+
+    // dyanmic package
+    static func package(number: Int, packageID: String) -> PaywallComponent {
+        .package(.init(type: .package, packageID: packageID, components: [packageStack(number: number)]))
+    }
+
+    static func packageStack(number: Int) -> PaywallComponent {
+        let packageText = packageText(number: number)
+        return .stack(.init(components: [blankCheckmarkImage, packageText],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero,
+                     selectedComponent: .init(components: [checkmarkImage, packageText],
+                                              dimension: .horizontal(.center),
+                                              spacing: nil,
+                                              backgroundColor: nil,
+                                              padding: .zero)))
+    }
+
+    static func packageText(number: Int) -> PaywallComponent {
+        .text(.init(
+            text: "Package one",
+            textLid: "package_\(number)",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body,
+            selectedComponent: .init(
+               text: "Package one",
+               textLid: "package_\(number)",
+               fontFamily: "",
+               fontWeight: .regular,
+               color: .init(light: "#000000"),
+               padding: .zero,
+               textStyle: .body
+        )))
+    }
 
     // package 1
     static var package1: PaywallComponent = {
@@ -1697,14 +1786,14 @@ private extension SamplePaywallLoader {
                 "offer_details": "{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Select a Package",
-                "package_1": "Package One",
-                "package_2": "Package Two",
+                "package_1": "Package One (weekly)",
+                "package_2": "Package Two (monthly)",
                 "package_1_selected": "Package One Selected",
                 "package_2_selected": "Package Two Selected",
                 "package_1_unselected": "Package One Unselected",
                 "package_2_unselected": "Package Two Unselected",
-                "package_3": "Package Three",
-                "package_4": "Package Four",
+                "package_3": "Package Three (annual)",
+                "package_4": "Package Four (lifetime)",
                 "package_5": "Package Five",
                 "package_6": "Package Six",
                 "purchase_button_text": "Purchase Now!"
