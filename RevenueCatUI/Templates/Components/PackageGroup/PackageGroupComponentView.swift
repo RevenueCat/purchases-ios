@@ -36,13 +36,11 @@ struct PackageGroupComponentView: View {
     var packageSelectionManager = PackageSelectionManager()
 
     var body: some View {
-        VStack {
-            ComponentsView(componentViewModels: self.viewModel.viewModels)
-                .environmentObject(packageSelectionManager)
-                .onAppear {
-                    packageSelectionManager.selectedID = viewModel.defaultSelectedPackageID
-                }
-        }
+        ComponentsView(componentViewModels: self.viewModel.viewModels)
+            .environmentObject(packageSelectionManager)
+            .onAppear {
+                packageSelectionManager.selectedID = viewModel.defaultSelectedPackageID
+            }
     }
 
 }
