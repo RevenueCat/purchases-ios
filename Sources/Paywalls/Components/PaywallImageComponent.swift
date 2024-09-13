@@ -38,7 +38,6 @@ public extension PaywallComponent {
             self.gradientColors = gradientColors
             self.selectedComponent = selectedComponent
         }
-
     }
 
 }
@@ -54,7 +53,6 @@ extension PaywallComponent.ImageComponent {
                lhs.gradientColors == rhs.gradientColors &&
                lhs.selectedComponent == rhs.selectedComponent
     }
-
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(type)
