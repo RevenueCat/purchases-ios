@@ -21,9 +21,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class TextComponentViewModel {
 
-    let localizedStrings: PaywallComponent.LocalizationDictionary
-    let text: String
+    private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.TextComponent
+
+    let text: String
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings

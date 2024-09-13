@@ -31,12 +31,12 @@ public extension PaywallComponent {
 
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
-                    width: WidthSize?,
-                    spacing: CGFloat?,
+                    width: WidthSize? = nil,
+                    spacing: CGFloat? = 0,
                     backgroundColor: ColorInfo?,
-                    padding: Padding,
-                    margin: Padding,
-                    cornerRadiuses: CornerRadiuses
+                    padding: Padding = .zero,
+                    margin: Padding = .zero,
+                    cornerRadiuses: CornerRadiuses = .zero
         ) {
             self.components = components
             self.width = width

@@ -25,7 +25,8 @@ struct StackComponentView: View {
         Group {
             switch viewModel.dimension {
             case .vertical(let horizontalAlignment):
-                VStack(spacing: viewModel.spacing) {
+                // LazyVStack needed for performance when loading
+                LazyVStack(spacing: viewModel.spacing) {
                     Group {
                         ComponentsView(componentViewModels: self.viewModel.viewModels)
                     }
@@ -79,9 +80,11 @@ struct WidthModifier: ViewModifier {
 }
 
 extension View {
+
     func width(_ width: PaywallComponent.WidthSize? = nil) -> some View {
         self.modifier(WidthModifier(width: width))
     }
+
 }
 
 #endif

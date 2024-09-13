@@ -19,11 +19,25 @@ import Foundation
 public extension PaywallComponent {
 
     struct ThemeImageUrls: Codable, Sendable, Hashable, Equatable {
+
+        public init(light: ImageUrls, dark: ImageUrls? = nil) {
+            self.light = light
+            self.dark = dark
+        }
+
         public let light: ImageUrls
         public let dark: ImageUrls?
+
     }
 
     struct ImageUrls: Codable, Sendable, Hashable, Equatable {
+
+        public init(original: URL, heic: URL, heicLowRes: URL) {
+            self.original = original
+            self.heic = heic
+            self.heicLowRes = heicLowRes
+        }
+        
         public let original: URL
         public let heic: URL
         public let heicLowRes: URL
@@ -77,8 +91,14 @@ public extension PaywallComponent {
         public let bottomLeading: Double
         public let bottomTrailing: Double
 
-        public static let `default` = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
-        public static let zero = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
+        public static let `default` = CornerRadiuses(topLeading: 0, 
+                                                     topTrailing: 0,
+                                                     bottomLeading: 0,
+                                                     bottomTrailing: 0)
+        public static let zero = CornerRadiuses(topLeading: 0, 
+                                                topTrailing: 0,
+                                                bottomLeading: 0,
+                                                bottomTrailing: 0)
 
     }
 
@@ -130,7 +150,7 @@ public extension PaywallComponent {
 
     enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
 
-        case ultraLight = "ultra_light"
+        case ultraLight
         case thin
         case light
         case regular
@@ -158,7 +178,7 @@ public extension PaywallComponent {
 
         // Swift 5.9 stuff
         case extraLargeTitle = "extra_large_title"
-        case extraLargeTitle2 = "extra-large_title_2"
+        case extraLargeTitle2 = "extra_large_title2"
 
     }
 

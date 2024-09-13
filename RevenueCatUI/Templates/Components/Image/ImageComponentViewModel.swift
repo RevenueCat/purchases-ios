@@ -21,10 +21,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ImageComponentViewModel {
 
-    let localizedStrings: PaywallComponent.LocalizationDictionary
+    private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.ImageComponent
 
-    let imageInfo: PaywallComponent.ThemeImageUrls
+    private let imageInfo: PaywallComponent.ThemeImageUrls
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
         self.localizedStrings = localizedStrings

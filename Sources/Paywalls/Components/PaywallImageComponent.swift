@@ -24,10 +24,10 @@ public extension PaywallComponent {
 
         public init(
             source: ThemeImageUrls,
-            overrideSourceLid: LocalizationKey?,
+            overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode = .fit,
             maxHeight: CGFloat? = nil,
-            cornerRadiuses: CornerRadiuses,
+            cornerRadiuses: CornerRadiuses = .zero,
             gradientColors: [ColorHex]? = []
         ) {
             self.type = .image
