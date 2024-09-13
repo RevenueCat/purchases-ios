@@ -172,8 +172,8 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.periodNameOrIdentifier(Self.english)) == "6 Month"
         expect(TestData.annualPackage.periodNameOrIdentifier(Self.english)) == "Annual"
         expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.english)) == "Lifetime"
-        expect(TestData.customPackage.periodNameOrIdentifier(Self.english)) == "Custom"
-        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.english)) == "Unknown"
+        expect(TestData.customPackage.periodNameOrIdentifier(Self.english)) == "Annual"
+        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.english)) == "Annual"
     }
 
     func testSpanishPeriodName() {
@@ -183,8 +183,8 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.periodNameOrIdentifier(Self.spanish)) == "6 meses"
         expect(TestData.annualPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
         expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.spanish)) == "Toda la vida"
-        expect(TestData.customPackage.periodNameOrIdentifier(Self.spanish)) == "Custom"
-        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.spanish)) == "Unknown"
+        expect(TestData.customPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
+        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
     }
 
     func testEnglishPeriodAbbreviation() {
