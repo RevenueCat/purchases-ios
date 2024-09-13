@@ -79,8 +79,6 @@ extension Package: VariableDataProvider {
             return nil
         }
 
-        product.productType
-
         switch (period.value, period.unit) {
         case (_, .day):
             return nil
