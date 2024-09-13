@@ -22,10 +22,10 @@ import SwiftUI
 public class PackageComponentViewModel: ObservableObject {
 
     var viewModels: [PaywallComponentViewModel]
+    let package: Package
 
     private let component: PaywallComponent.PackageComponent
     private let offering: Offering
-    let package: Package
 
     init(
         component: PaywallComponent.PackageComponent,

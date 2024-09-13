@@ -18,19 +18,25 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 enum SelectionState {
+
     case unselected
     case selected
+    
 }
 
 struct SelectionStateKey: EnvironmentKey {
+
     static let defaultValue: SelectionState = .unselected
+
 }
 
 extension EnvironmentValues {
+
     var selectionState: SelectionState {
         get { self[SelectionStateKey.self] }
         set { self[SelectionStateKey.self] = newValue }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

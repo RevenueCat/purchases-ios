@@ -33,7 +33,7 @@ struct PackageGroupComponentView: View {
     let viewModel: PackageGroupComponentViewModel
 
     @StateObject
-    var packageSelectionManager = PackageSelectionManager()
+    private var packageSelectionManager = PackageSelectionManager()
 
     var body: some View {
         ComponentsView(componentViewModels: self.viewModel.viewModels)
