@@ -26,7 +26,7 @@ public class PackageGroupComponentViewModel: ObservableObject {
     var defaultSelectedPackageID: String {
         component.defaultSelectedPackageID
     }
-    
+
     private let component: PaywallComponent.PackageGroupComponent
 
     init(
