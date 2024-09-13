@@ -1550,7 +1550,7 @@ public extension Purchases {
      */
     @available(*, deprecated, message: """
     Configure behavior through the RevenueCat dashboard instead. If you have configured the \"Legacy\" restore 
-    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep 
+    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep
     this setting active.
     """
     )
