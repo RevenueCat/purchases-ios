@@ -1548,7 +1548,12 @@ public extension Purchases {
     /**
      * Deprecated
      */
-    @available(*, deprecated, message: "Configure behavior through the RevenueCat dashboard instead")
+    @available(*, deprecated, message: """
+    Configure behavior through the RevenueCat dashboard instead. If you have configured the \"Legacy\" restore
+    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep
+    this setting active.
+    """
+    )
     @objc var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
