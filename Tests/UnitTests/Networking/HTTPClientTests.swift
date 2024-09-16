@@ -922,6 +922,23 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent.value) == true
     }
 
+    func testPassesPlatformDeviceHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        stub(condition: hasHeaderNamed("X-Platform-Device", value: SystemInfo.deviceVersion)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
     func testPassesPlatformFlavorVersionHeader() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
