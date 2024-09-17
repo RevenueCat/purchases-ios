@@ -97,7 +97,7 @@ class SubscriberAttributesManager {
     }
 
     func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
-        setReservedAttribute(.kochavaDeviceID, value: kochavaDeviceID, appUserID: appUserID)
+        setAttributionID(kochavaDeviceID, forNetworkID: .kochavaDeviceID, appUserID: appUserID)
     }
 
     func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {
