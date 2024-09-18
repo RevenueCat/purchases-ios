@@ -2811,7 +2811,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 + (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
 + (void)setDebugLogsEnabled:(BOOL)newValue;
 /// Deprecated
-@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("Configure behavior through the RevenueCat dashboard instead");
+@property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED_MSG("\n    Configure behavior through the RevenueCat dashboard instead. If you have configured the \"Legacy\" restore\n    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep\n    this setting active.\n    ");
 /// Deprecated. Where responsibility for completing purchase transactions lies.
 @property (nonatomic) BOOL finishTransactions SWIFT_DEPRECATED_MSG("Use ``purchasesAreCompletedBy`` instead.");
 /// Deprecated
