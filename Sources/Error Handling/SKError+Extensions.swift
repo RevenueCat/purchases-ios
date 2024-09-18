@@ -92,6 +92,7 @@ extension SKError: PurchasesErrorConvertible {
 }
 
 extension SKError.Code {
+
     var trackingDescription: String {
         switch self {
         case .unknown:
@@ -121,7 +122,7 @@ extension SKError.Code {
         case .invalidSignature:
             return "invalid_signature"
         case .missingOfferParams:
-            return "missing_offer_params"
+            return "missing_offer_parameters"
         case .invalidOfferPrice:
             return "invalid_offer_price"
         case .overlayCancelled:
@@ -140,6 +141,7 @@ extension SKError.Code {
             return "unknown_store_kit_error"
         }
     }
+
 }
 
 private extension SKError {
