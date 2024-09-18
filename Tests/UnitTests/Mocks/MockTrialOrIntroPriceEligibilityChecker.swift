@@ -52,14 +52,16 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var invokedSk1checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: Set<String>, Void)?
     var invokedSk1checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: Set<String>, Void)]()
     var stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
+    var stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityError: PurchasesError? = nil
 
     override func sk1CheckEligibility(_ productIdentifiers: Set<String>,
-                                      completion: @escaping ReceiveIntroEligibilityBlock) {
+                                      completion: @escaping ReceiveIntroEligibilityWithErrorBlock) {
         invokedSk1checkTrialOrIntroPriceEligibility = true
         invokedSk1checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk1checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())
         invokedSk1checkTrialOrIntroPriceEligibilityParametersList.append((productIdentifiers, ()))
-        completion(stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult)
+        completion(stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult,
+                   stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityError)
     }
 
     var invokedSk2checkTrialOrIntroPriceEligibility = false

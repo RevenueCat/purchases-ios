@@ -544,6 +544,29 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
+    static func invalidReceiptError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .invalidReceiptError,
+                                fileName: fileName, functionName: functionName, line: line)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/invalidReceiptError`` code.
+     *
+     * - Note: This error is used when there is a problem with the receipt.
+     */
+    static func invalidReceiptError(
+        withMessage message: String, error: Error? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        let errorCode = ErrorCode.invalidReceiptError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error,
+                                fileName: fileName, functionName: functionName, line: line)
+    }
+
 }
 
 extension ErrorUtils {

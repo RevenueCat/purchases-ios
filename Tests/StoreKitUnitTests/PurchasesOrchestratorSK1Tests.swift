@@ -591,7 +591,6 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSyncPurchasesPostsReceiptIfNoTransactionsAndEmptyOriginalPurchaseDate() async throws {
-
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
         self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalPurchaseDate
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
