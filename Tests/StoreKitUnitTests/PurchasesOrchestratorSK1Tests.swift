@@ -260,7 +260,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         payment.productIdentifier = ""
 
         let (transaction, customerInfo, error, cancelled) =
-        try await withCheckedThrowingContinuation { continuation in
+        try await withUnsafeThrowingContinuation { continuation in
             self.orchestrator.purchase(
                 sk1Product: product,
                 payment: payment,
@@ -287,7 +287,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let payment = self.storeKit1Wrapper.payment(with: product)
         self.receiptFetcher.shouldReturnReceipt = false
 
-        let (_, _, error, _) = try await withCheckedThrowingContinuation { continuation in
+        let (_, _, error, _) = try await withUnsafeThrowingContinuation { continuation in
             self.orchestrator.purchase(
                 sk1Product: product,
                 payment: payment,
