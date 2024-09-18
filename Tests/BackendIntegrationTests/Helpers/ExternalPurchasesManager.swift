@@ -83,7 +83,7 @@ final class ExternalPurchasesManager: NSObject {
 extension ExternalPurchasesManager {
 
     func purchase(sk1Product product: SK1Product) async throws -> SK1PurchaseCompletedResult {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await withUnsafeThrowingContinuation { continuation in
             self.purchase(sk1Product: product) { transaction in
                 if let error = transaction.error {
                     continuation.resume(throwing: error)
