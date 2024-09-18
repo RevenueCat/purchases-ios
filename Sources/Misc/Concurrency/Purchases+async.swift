@@ -19,7 +19,7 @@ extension Purchases {
     // Note: We're using UnsafeContinuation instead of Checked because
     // of a crash in iOS 18.0 devices when CheckedContinuations are used.
     // See: https://github.com/RevenueCat/purchases-ios/issues/4177
-    
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
