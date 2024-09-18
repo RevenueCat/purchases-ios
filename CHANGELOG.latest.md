@@ -1,12 +1,16 @@
-### Bugfixes
-* Remove usage of adServicesToken in syncPurchases (#4257) via Mark Villacampa (@MarkVillacampa)
-* Fixes a Paywall Template 7 crash when none of the tiers have any available products. (#4243) via JayShortway (@JayShortway)
-* [SK2] send unsynced attributes when syncing purchases (#4245) via Mark Villacampa (@MarkVillacampa)
-### Other Changes
-* Do not embed `RevenueCat.framework` in `RevenueCatUI` (#4256) via Cesar de la Vega (@vegaro)
-* Add warnings and clarifications to v5 migration docs (#4231) via Mark Villacampa (@MarkVillacampa)
-* Fixes SwiftLint violation of rule optional_data_string_conversion (#4252) via JayShortway (@JayShortway)
-* Paywall Components Localized Strings (#4237) via James Borthwick (@jamesrb1)
-* Update `fastlane-plugin-revenuecat_internal` (#4244) via Cesar de la Vega (@vegaro)
-* Add missing `#if PAYWALL_COMPONENTS` (#4241) via James Borthwick (@jamesrb1)
-* Paywalls Components Viewmodels + partial localization support (#4230) via James Borthwick (@jamesrb1)
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Round price per period calculations to nearest 2-decimal (#4275) via Toni Rico (@tonidero)
+### 📦 Dependency Updates
+* Bump fastlane-plugin-revenuecat_internal from `5140dbc` to `55a0455` (#4277) via dependabot[bot] (@dependabot[bot])
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* [Paywalls] Use store product for `{{ sub_period }}` duration (#4273) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### 🐞 Bugfixes
+* Stateobject instantiation fix (#4271) via James Borthwick (@jamesrb1)
+
+### 🔄 Other Changes
+* Update allowSharingAppStoreAccount deprecation message (#4272) via Will Taylor (@fire-at-will)
+* Update StoreKit Version Info in GitHub Issues Template (#4254) via Will Taylor (@fire-at-will)
