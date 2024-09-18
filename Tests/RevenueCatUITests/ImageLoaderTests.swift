@@ -238,7 +238,10 @@ private final class MockAsyncURLSession: NSObject, URLSessionType {
         self.completionSet = false
         self.completion = nil
 
-        return try await withCheckedContinuation { continuation in
+        // Note: We're using UnsafeContinuation instead of Checked because
+        // of a crash in iOS 18.0 devices when CheckedContinuations are used.
+        // See: https://github.com/RevenueCat/purchases-ios/pull/4286
+        return try await withUnsafeContinuation { continuation in
             self.completion = { value in
                 continuation.resume(returning: value)
             }

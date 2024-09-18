@@ -76,7 +76,10 @@ class ReceiptFetcher {
     }
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy) async -> Data? {
-        return await withCheckedContinuation { continuation in
+        // Note: We're using UnsafeContinuation instead of Checked because
+        // of a crash in iOS 18.0 devices when CheckedContinuations are used.
+        // See: https://github.com/RevenueCat/purchases-ios/pull/4286
+        return await withUnsafeContinuation { continuation in
             self.receiptData(refreshPolicy: refreshPolicy) { result, _ in
                 continuation.resume(returning: result)
             }
@@ -155,7 +158,10 @@ private extension ReceiptFetcher {
 
     /// `async` version of `refreshReceipt(_:)`
     func refreshReceipt() async -> (Data, URL?) {
-        await withCheckedContinuation { continuation in
+        // Note: We're using UnsafeContinuation instead of Checked because
+        // of a crash in iOS 18.0 devices when CheckedContinuations are used.
+        // See: https://github.com/RevenueCat/purchases-ios/pull/4286
+        await withUnsafeContinuation { continuation in
             self.refreshReceipt {
                 continuation.resume(returning: ($0, $1))
             }

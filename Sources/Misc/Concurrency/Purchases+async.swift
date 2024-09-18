@@ -16,6 +16,10 @@ import Foundation
 /// This extension holds the biolerplate logic to convert methods with completion blocks into async / await syntax.
 extension Purchases {
 
+    // Note: We're using UnsafeContinuation instead of Checked because
+    // of a crash in iOS 18.0 devices when CheckedContinuations are used.
+    // See: https://github.com/RevenueCat/purchases-ios/pull/4286
+    
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
@@ -54,7 +58,7 @@ extension Purchases {
     }
 
     func productsAsync(_ productIdentifiers: [String]) async -> [StoreProduct] {
-        return await withCheckedContinuation { continuation in
+        return await withUnsafeContinuation { continuation in
             getProducts(productIdentifiers) { result in
                 continuation.resume(returning: result)
             }
@@ -127,7 +131,7 @@ extension Purchases {
 
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
     -> IntroEligibilityStatus {
-        return await withCheckedContinuation { continuation in
+        return await withUnsafeContinuation { continuation in
             checkTrialOrIntroDiscountEligibility(product: product) { status in
                 continuation.resume(returning: status)
             }
@@ -136,7 +140,7 @@ extension Purchases {
 
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
     -> [String: IntroEligibility] {
-        return await withCheckedContinuation { continuation in
+        return await withUnsafeContinuation { continuation in
             checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
                 continuation.resume(returning: result)
             }
