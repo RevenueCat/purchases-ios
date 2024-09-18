@@ -898,10 +898,13 @@ private extension PurchasesOrchestrator {
                 (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
                 let errorCode = error?.code
                 let storeKitErrorDescription: String?
+                let underlyingError = error?.userInfo[NSUnderlyingErrorKey]
 
-                if let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError {
+                if let skError = underlyingError as? SKError {
                     storeKitErrorDescription = skError.code.trackingDescription
-                } else if let storeKitError = error?.userInfo[NSUnderlyingErrorKey] as? StoreKitError {
+                } else if let storeKitError = underlyingError as? StoreKitError {
+                    storeKitErrorDescription = storeKitError.trackingDescription
+                } else if let storeKitError = underlyingError as? StoreKit.Product.PurchaseError {
                     storeKitErrorDescription = storeKitError.trackingDescription
                 } else {
                     storeKitErrorDescription = nil

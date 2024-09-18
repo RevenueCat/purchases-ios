@@ -97,4 +97,27 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
         }
     }
 
+    var trackingDescription: String {
+        switch self {
+        case .invalidQuantity:
+            return "invalid_quantity"
+        case .productUnavailable:
+            return "product_unavailable"
+        case .purchaseNotAllowed:
+            return "purchase_not_allowed"
+        case .ineligibleForOffer:
+            return "ineligible_for_offer"
+        case .invalidOfferIdentifier:
+            return "invalid_offer_identifier"
+        case .invalidOfferPrice:
+            return "invalid_offer_price"
+        case .invalidOfferSignature:
+            return "invalid_offer_signature"
+        case .missingOfferParameters:
+            return "missing_offer_parameters"
+        @unknown default:
+            return "unknown_store_kit_error"
+        }
+    }
+
 }
