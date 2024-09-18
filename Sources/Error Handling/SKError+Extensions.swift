@@ -137,7 +137,7 @@ extension SKError.Code {
         case .overlayPresentedInBackgroundScene:
             return "overlay_presented_in_background_scene"
         @unknown default:
-            return "unknown_future_error"
+            return "unknown_store_kit_error"
         }
     }
 }

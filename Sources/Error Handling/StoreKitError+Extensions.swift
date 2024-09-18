@@ -60,13 +60,9 @@ extension StoreKitError: PurchasesErrorConvertible {
         case .notAvailableInStorefront:
             return "not_available_in_storefront"
         case .notEntitled:
-            if #available(iOS 15.4, macOS 12.3, tvOS 15.4, watchOS 8.5, visionOS 1.0, *) {
-                return "not_entitled"
-            } else {
-                return "unknown"
-            }
+            return "not_entitled"
         @unknown default:
-            return "unknown_future_error"
+            return "unknown_store_kit_error"
         }
     }
 
