@@ -898,7 +898,7 @@ private extension PurchasesOrchestrator {
                 (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
                 let errorCode = error?.code
                 let storeKitErrorDescription: String?
-                
+
                 if let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError {
                     storeKitErrorDescription = skError.code.trackingDescription
                 } else if let storeKitError = error?.userInfo[NSUnderlyingErrorKey] as? StoreKitError {
@@ -906,7 +906,7 @@ private extension PurchasesOrchestrator {
                 } else {
                     storeKitErrorDescription = nil
                 }
-                
+
                 await diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
                                                               storeKitVersion: storeKitVersion,
                                                               errorMessage: errorMessage,
