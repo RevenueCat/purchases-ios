@@ -98,7 +98,7 @@ func - (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInt
     return .milliseconds(lhs.milliseconds - rhs.milliseconds)
 }
 
-#if swift(>=5.10)
+#if swift(>=6.0)
 extension DispatchTimeInterval: @retroactive Comparable {
 
     // swiftlint:disable:next missing_docs
