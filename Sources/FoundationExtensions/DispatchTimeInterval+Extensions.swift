@@ -98,6 +98,16 @@ func - (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> DispatchTimeInt
     return .milliseconds(lhs.milliseconds - rhs.milliseconds)
 }
 
+#if swift(>=5.10)
+extension DispatchTimeInterval: @retroactive Comparable {
+
+    // swiftlint:disable:next missing_docs
+    public static func < (lhs: DispatchTimeInterval, rhs: DispatchTimeInterval) -> Bool {
+        return lhs.nanoseconds < rhs.nanoseconds
+    }
+
+}
+#else
 extension DispatchTimeInterval: Comparable {
 
     // swiftlint:disable:next missing_docs
@@ -106,6 +116,7 @@ extension DispatchTimeInterval: Comparable {
     }
 
 }
+#endif
 
 #if swift(<5.9)
 // `DispatchTimeInterval` is not `Sendable` as of Swift 5.8.
