@@ -37,7 +37,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '15.3'
+        default: '16.0'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
@@ -50,7 +50,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '15.3'
+        default: '16.0'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.large.gen1
@@ -403,6 +403,18 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: '14.3.0'
+
+    steps:
+      - checkout
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-release-build-xcode-16-1:
+    executor:
+      name: macos-executor
+      xcode_version: '16.1.0'
 
     steps:
       - checkout
@@ -1383,6 +1395,7 @@ workflows:
       - spm-release-build
       - spm-release-build-xcode-14
       - spm-release-build-xcode-15
+      - spm-release-build-xcode-16-1
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
       - run-revenuecat-ui-ios-17
