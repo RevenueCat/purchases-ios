@@ -14,7 +14,7 @@
 import Foundation
 
 /// A `NetworkOperation` for posting ``PaywallEvent``s.
-final class PostPaywallEventsOperation: NetworkOperation {
+final class PostPaywallEventsOperation: NetworkOperation, @unchecked Sendable {
 
     private let configuration: Configuration
     private let request: PaywallEventsRequest

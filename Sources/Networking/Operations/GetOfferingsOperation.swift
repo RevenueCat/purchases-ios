@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class GetOfferingsOperation: CacheableNetworkOperation {
+final class GetOfferingsOperation: CacheableNetworkOperation, @unchecked Sendable {
 
     private let offeringsCallbackCache: CallbackCache<OfferingsCallback>
     private let configuration: AppUserConfiguration

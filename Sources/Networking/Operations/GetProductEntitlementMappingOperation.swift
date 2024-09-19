@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class GetProductEntitlementMappingOperation: CacheableNetworkOperation {
+final class GetProductEntitlementMappingOperation: CacheableNetworkOperation, @unchecked Sendable {
 
     private let callbackCache: CallbackCache<ProductEntitlementMappingCallback>
 

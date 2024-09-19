@@ -36,7 +36,7 @@ final class CacheableNetworkOperationFactory<T: CacheableNetworkOperation> {
 
 }
 
-class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
+class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding, @unchecked Sendable {
 
     let cacheKey: String
 
@@ -52,7 +52,7 @@ class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
 
 }
 
-class NetworkOperation: Operation {
+class NetworkOperation: Operation, @unchecked Sendable {
 
     let httpClient: HTTPClient
 

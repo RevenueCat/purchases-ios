@@ -15,7 +15,7 @@
 
 import Foundation
 
-final class GetCustomerCenterConfigOperation: CacheableNetworkOperation {
+final class GetCustomerCenterConfigOperation: CacheableNetworkOperation, @unchecked Sendable {
 
     private let customerCenterConfigCallbackCache: CallbackCache<CustomerCenterConfigCallback>
     private let configuration: AppUserConfiguration

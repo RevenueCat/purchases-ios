@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class DiagnosticsPostOperation: NetworkOperation {
+final class DiagnosticsPostOperation: NetworkOperation, @unchecked Sendable {
 
     private let configuration: Configuration
     private let request: DiagnosticsEventsRequest

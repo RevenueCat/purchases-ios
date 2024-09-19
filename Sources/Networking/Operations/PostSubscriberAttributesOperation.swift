@@ -13,7 +13,7 @@
 
 import Foundation
 
-class PostSubscriberAttributesOperation: NetworkOperation {
+class PostSubscriberAttributesOperation: NetworkOperation, @unchecked Sendable {
 
     private let configuration: UserSpecificConfiguration
     private let subscriberAttributes: SubscriberAttribute.Dictionary
