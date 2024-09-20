@@ -897,18 +897,7 @@ private extension PurchasesOrchestrator {
                 let errorMessage =
                 (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
                 let errorCode = error?.code
-                let storeKitErrorDescription: String?
-                let underlyingError = error?.userInfo[NSUnderlyingErrorKey]
-
-                if let skError = underlyingError as? SKError {
-                    storeKitErrorDescription = skError.code.trackingDescription
-                } else if let storeKitError = underlyingError as? StoreKitError {
-                    storeKitErrorDescription = storeKitError.trackingDescription
-                } else if let storeKitError = underlyingError as? StoreKit.Product.PurchaseError {
-                    storeKitErrorDescription = storeKitError.trackingDescription
-                } else {
-                    storeKitErrorDescription = nil
-                }
+                let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
 
                 await diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
                                                               storeKitVersion: storeKitVersion,
