@@ -421,7 +421,9 @@ final class PurchasesOrchestrator {
 
         let addPayment: Bool = self.addPurchaseCompletedCallback(
             productIdentifier: productIdentifier,
-            completion: { transaction, customerInfo, error, cancelled in
+            completion: { [weak self] transaction, customerInfo, error, cancelled in
+                guard let self = self else { return }
+
                 if !cancelled {
                     self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit1, error: error)
                     if let error = error {
