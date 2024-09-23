@@ -233,7 +233,7 @@ class VariablesTests: TestCase {
                 offeringIdentifier: ""
             )
         )
-        expect(result) == "$53.99/yr ($4.49/mo)"
+        expect(result) == "$53.99/yr ($4.50/mo)"
     }
 
     func testRelativeDiscountWithNoDiscount() {

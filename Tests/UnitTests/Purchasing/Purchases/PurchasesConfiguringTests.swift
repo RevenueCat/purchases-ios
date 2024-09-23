@@ -516,10 +516,25 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Self.create(purchasesAreCompletedBy: .revenueCat).offlineCustomerInfoEnabled) == true
     }
 
-    private static func create(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Purchases {
+    func testOfflineCustomerInfoDisabledForCustomEntitlementsComputation() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        expect(
+            Self.create(
+                purchasesAreCompletedBy: .revenueCat,
+                dangerousSettings: .init(customEntitlementComputation: true)
+            ).offlineCustomerInfoEnabled
+        ) == false
+    }
+
+  private static func create(
+      purchasesAreCompletedBy: PurchasesAreCompletedBy,
+      dangerousSettings: DangerousSettings = .init()
+  ) -> Purchases {
         return Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: .storeKit1)
+                .with(dangerousSettings: dangerousSettings)
         )
     }
 

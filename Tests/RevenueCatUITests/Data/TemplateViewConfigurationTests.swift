@@ -214,6 +214,40 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         }.to(throwError(TemplateError.noTiers))
     }
 
+    func testCreateMultitierWithNoAvailableProductsForAnyTier() {
+        expect {
+            let config = try Config.create(
+                // We have some packages, but none of them are part of any tiers.
+                with: [
+                    TestData.weeklyPackage,
+                    TestData.lifetimePackage
+                ],
+                activelySubscribedProductIdentifiers: [],
+                filter: [PackageType.annual.identifier],
+                default: nil,
+                localization: nil,
+                localizationByTier: [
+                    "basic": Self.localization,
+                    "standard": Self.localization
+                ],
+                // Our tiers contain 2 packages, but none of them are in the `with` array above.
+                tiers: [
+                    PaywallData.Tier(
+                        id: "basic",
+                        packages: [TestData.monthlyPackage.identifier],
+                        defaultPackage: TestData.monthlyPackage.identifier
+                    ),
+                    PaywallData.Tier(
+                        id: "standard",
+                        packages: [TestData.sixMonthPackage.identifier],
+                        defaultPackage: TestData.sixMonthPackage.identifier
+                    )
+                ],
+                setting: .multiTier
+            )
+        }.to(throwError(TemplateError.noTiers))
+    }
+
     func testCreateSingleTier() throws {
         let tier: PaywallData.Tier = .init(
             id: "standard",

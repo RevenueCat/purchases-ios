@@ -41,11 +41,13 @@ struct PromotionalOfferView: View {
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer) {
-        let promotionalOfferData = PromotionalOfferData(promotionalOffer: promotionalOffer,
-                                                        product: product,
-                                                        promoOfferDetails: promoOfferDetails)
-        let viewModel = PromotionalOfferViewModel(promotionalOfferData: promotionalOfferData)
-        self._viewModel = StateObject(wrappedValue: viewModel)
+        _viewModel = StateObject(wrappedValue: PromotionalOfferViewModel(
+            promotionalOfferData: PromotionalOfferData(
+                promotionalOffer: promotionalOffer,
+                product: product,
+                promoOfferDetails: promoOfferDetails
+            )
+        ))
     }
 
     var body: some View {
@@ -62,10 +64,13 @@ struct PromotionalOfferView: View {
 
                     PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
 
-                    let dismissButtonTitle = self.localization.commonLocalizedString(for: .noThanks)
-                    Button(dismissButtonTitle) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text(self.localization.commonLocalizedString(for: .noThanks))
                     }
+                    .padding()
+                    .frame(maxWidth: .infinity)
                 } else {
                     EmptyView()
                         .onAppear {

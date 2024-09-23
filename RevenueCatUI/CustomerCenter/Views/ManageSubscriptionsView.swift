@@ -36,15 +36,19 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
+    private let customerCenterActionHandler: CustomerCenterActionHandler?
+
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
                                                      customerCenterActionHandler: customerCenterActionHandler)
-        self._viewModel = .init(wrappedValue: viewModel)
+        self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
+    fileprivate init(viewModel: ManageSubscriptionsViewModel,
+                     customerCenterActionHandler: CustomerCenterActionHandler?) {
         self._viewModel = .init(wrappedValue: viewModel)
+        self.customerCenterActionHandler = customerCenterActionHandler
     }
 
     var body: some View {
@@ -52,14 +56,16 @@ struct ManageSubscriptionsView: View {
             content
                 .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
                     if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                        FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
+                        FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
+                                           customerCenterActionHandler: self.customerCenterActionHandler)
                     }
                 }
         } else {
             content
                 .background(NavigationLink(
                     destination: self.viewModel.feedbackSurveyData.map { data in
-                        FeedbackSurveyView(feedbackSurveyData: data)
+                        FeedbackSurveyView(feedbackSurveyData: data,
+                                           customerCenterActionHandler: self.customerCenterActionHandler)
                     },
                     isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
                 ) {
@@ -105,6 +111,18 @@ struct ManageSubscriptionsView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .sheet(item: self.$viewModel.promotionalOfferData,
+               onDismiss: {
+            Task {
+                await self.viewModel.handleSheetDismiss()
+            }
+        },
+               content: { promotionalOfferData in
+            PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
+                                 product: promotionalOfferData.product,
+                                 promoOfferDetails: promotionalOfferData.promoOfferDetails)
+        })
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -178,18 +196,6 @@ struct ManageSubscriptionButton: View {
             }
         })
         .disabled(self.viewModel.loadingPath != nil)
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(item: self.$viewModel.promotionalOfferData,
-               onDismiss: {
-            Task {
-                await self.viewModel.handleSheetDismiss()
-            }
-        },
-               content: { promotionalOfferData in
-            PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                 product: promotionalOfferData.product,
-                                 promoOfferDetails: promotionalOfferData.promoOfferDetails)
-        })
     }
 
 }
@@ -209,7 +215,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                 subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                 customerCenterActionHandler: nil,
                 refundRequestStatusMessage: "Refund granted successfully!")
-            ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+            ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
+                                    customerCenterActionHandler: nil)
                 .previewDisplayName("Monthly renewing")
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -220,7 +227,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                 screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                 subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
                 customerCenterActionHandler: nil)
-            ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+            ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+                                    customerCenterActionHandler: nil)
                 .previewDisplayName("Yearly expiring")
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)

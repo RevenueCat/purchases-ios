@@ -103,7 +103,8 @@ enum CustomerCenterConfigTestData {
                 ]
             ),
             support: .init(email: "test-support@revenuecat.com"),
-            lastPublishedAppVersion: lastPublishedAppVersion
+            lastPublishedAppVersion: lastPublishedAppVersion,
+            productId: 1
         )
     }
 

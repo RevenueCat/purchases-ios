@@ -28,6 +28,7 @@ import SwiftUI
 public struct CustomerCenterView: View {
 
     @StateObject private var viewModel: CustomerCenterViewModel
+    @State private var ignoreAppUpdateWarning: Bool = false
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -93,8 +94,19 @@ private extension CustomerCenterView {
         if viewModel.hasSubscriptions {
             if viewModel.subscriptionsAreFromApple,
                let screen = configuration.screens[.management] {
-                ManageSubscriptionsView(screen: screen,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
+                    AppUpdateWarningView(
+                        productId: productId,
+                        onContinueAnywayClick: {
+                            withAnimation {
+                                ignoreAppUpdateWarning = true
+                            }
+                        }
+                    )
+                } else {
+                    ManageSubscriptionsView(screen: screen,
+                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                }
             } else {
                 WrongPlatformView()
             }

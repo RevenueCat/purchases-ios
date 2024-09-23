@@ -49,11 +49,20 @@ class OfferingsFactory {
             return nil
         }
 
+        #if PAYWALL_COMPONENTS
+        return Offering(identifier: offering.identifier,
+                        serverDescription: offering.description,
+                        metadata: offering.metadata.mapValues(\.asAny),
+                        paywall: offering.paywall,
+                        paywallComponentsData: offering.paywallComponents,
+                        availablePackages: availablePackages)
+        #else
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
                         paywall: offering.paywall,
                         availablePackages: availablePackages)
+        #endif
     }
 
     func createPackage(
