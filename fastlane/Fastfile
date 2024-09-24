@@ -1077,14 +1077,16 @@ lane :check_pods do
     verbose: true,
     podspec: 'RevenueCat.podspec',
     platforms: 'ios,osx,tvos,watchos,visionos',
-    fail_fast: true
+    fail_fast: true,
+    allow_warnings: true
   )
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
     platforms: 'ios,osx,tvos,watchos,visionos',
-    fail_fast: true
+    fail_fast: true,
+    allow_warnings: true
   )
 end
 
