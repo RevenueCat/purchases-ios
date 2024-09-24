@@ -13,7 +13,7 @@
 
 import Foundation
 
-class PostOfferForSigningOperation: NetworkOperation, @unchecked Sendable {
+class PostOfferForSigningOperation: NetworkOperation {
 
     typealias SigningData = (signature: String, keyIdentifier: String, nonce: UUID, timestamp: Int)
 

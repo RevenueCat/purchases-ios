@@ -13,7 +13,7 @@
 
 import Foundation
 
-class PostAttributionDataOperation: NetworkOperation, @unchecked Sendable {
+class PostAttributionDataOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let attributionData: [String: Any]

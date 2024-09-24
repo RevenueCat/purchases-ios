@@ -13,7 +13,7 @@
 
 import Foundation
 
-class PostAdServicesTokenOperation: NetworkOperation, @unchecked Sendable {
+class PostAdServicesTokenOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let token: String

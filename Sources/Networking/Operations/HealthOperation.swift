@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class HealthOperation: CacheableNetworkOperation, @unchecked Sendable {
+final class HealthOperation: CacheableNetworkOperation {
 
     struct Callback: CacheKeyProviding {
 

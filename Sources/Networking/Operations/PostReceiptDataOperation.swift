@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class PostReceiptDataOperation: CacheableNetworkOperation, @unchecked Sendable {
+final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private let postData: PostData
     private let configuration: AppUserConfiguration

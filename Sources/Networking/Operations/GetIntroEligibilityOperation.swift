@@ -13,7 +13,7 @@
 
 import Foundation
 
-class GetIntroEligibilityOperation: NetworkOperation, @unchecked Sendable {
+class GetIntroEligibilityOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let receiptData: Data

@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class LogInOperation: CacheableNetworkOperation, @unchecked Sendable {
+final class LogInOperation: CacheableNetworkOperation {
 
     private let loginCallbackCache: CallbackCache<LogInCallback>
     private let configuration: UserSpecificConfiguration
