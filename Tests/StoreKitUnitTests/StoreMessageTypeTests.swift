@@ -36,6 +36,10 @@ class StoreMessagesTypeTests: TestCase {
         #endif
         expect(Message.Reason.priceIncreaseConsent.messageType) == .priceIncreaseConsent
         expect(Message.Reason.generic.messageType) == .generic
+
+        if #available(iOS 18.0, *) {
+            expect(Message.Reason.winBackOffer.messageType) == .winBackOffer
+        }
     }
 
 }

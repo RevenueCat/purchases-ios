@@ -25,6 +25,10 @@ import StoreKit
     case priceIncreaseConsent
     /// Generic Store messages
     case generic
+    /// Message shown when a win-back offer is purchased through the App Store
+    /// with Streamlined Purchasing enabled. More information can be found here:
+    /// https://developer.apple.com/documentation/storekit/in-app_purchase/supporting_win-back_offers_in_your_app#4480115
+    case winBackOffer
 }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
@@ -40,6 +44,10 @@ extension Message.Reason {
         case .priceIncreaseConsent: return .priceIncreaseConsent
         case .generic: return .generic
         default:
+            if #available(iOS 18.0, *), case .winBackOffer = self {
+                return .winBackOffer
+            }
+
             // billingIssue message reason was added in iOS 16.4, but it's not recognized by older xcode versions.
             // https://developer.apple.com/documentation/xcode-release-notes/xcode-14_3-release-notes
             #if swift(>=5.8)
