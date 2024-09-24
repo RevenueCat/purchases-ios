@@ -236,13 +236,24 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
 private extension SubscriptionPeriod {
 
     var durationTitle: String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        var components = DateComponents()
+
         switch self.unit {
-        case .day: return "day"
-        case .week: return "week"
-        case .month: return "month"
-        case .year: return "year"
-        default: return "Unknown"
+        case .day:
+            components.day = self.value
+        case .week:
+            components.weekOfMonth = self.value
+        case .month:
+            components.month = self.value
+        case .year:
+            components.year = self.value
+        default:
+            return NSLocalizedString("common_unknown", comment: "Unknown duration")
         }
+
+        return formatter.string(from: components) ?? NSLocalizedString("common_unknown", comment: "Unknown duration")
     }
 
 }
