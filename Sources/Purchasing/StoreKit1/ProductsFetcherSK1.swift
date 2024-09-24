@@ -119,26 +119,26 @@ private extension ProductsFetcherSK1 {
 extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-//        self.queue.async { [self] in
-//            Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
-//            guard let productRequest = self.productsByRequests[request] else {
-//                Logger.error("requested products not found for request: \(request)")
-//                return
-//            }
-//            guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
-//                Logger.error("callback not found for failing request: \(request)")
-//                self.productsByRequests.removeValue(forKey: request)
-//                return
-//            }
-//
-//            self.completionHandlers.removeValue(forKey: productRequest.identifiers)
-//            self.productsByRequests.removeValue(forKey: request)
-//
-//            self.cacheProducts(response.products)
-//            for completion in completionBlocks {
-//                completion(.success(Set(response.products)))
-//            }
-//        }
+        self.queue.async { [self] in
+            Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
+            guard let productRequest = self.productsByRequests[request] else {
+                Logger.error("requested products not found for request: \(request)")
+                return
+            }
+            guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
+                Logger.error("callback not found for failing request: \(request)")
+                self.productsByRequests.removeValue(forKey: request)
+                return
+            }
+
+            self.completionHandlers.removeValue(forKey: productRequest.identifiers)
+            self.productsByRequests.removeValue(forKey: request)
+
+            self.cacheProducts(response.products)
+            for completion in completionBlocks {
+                completion(.success(Set(response.products)))
+            }
+        }
     }
 
     func requestDidFinish(_ request: SKRequest) {
@@ -147,38 +147,38 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
-//        defer {
-//            self.cancelRequestToPreventTimeoutWarnings(request)
-//        }
-//
-//        self.queue.async { [self] in
-//            Logger.appleError(Strings.storeKit.store_products_request_failed(error as NSError))
-//
-//            guard let productRequest = self.productsByRequests[request] else {
-//                Logger.error(Strings.purchase.requested_products_not_found(request: request))
-//                return
-//            }
-//
-//            if productRequest.retriesLeft <= 0 {
-//                guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
-//                    Logger.error(Strings.purchase.callback_not_found_for_request(request: request))
-//                    self.productsByRequests.removeValue(forKey: request)
-//                    return
-//                }
-//
-//                self.completionHandlers.removeValue(forKey: productRequest.identifiers)
-//                self.productsByRequests.removeValue(forKey: request)
-//                for completion in completionBlocks {
-//                    completion(.failure(ErrorUtils.purchasesError(withSKError: error)))
-//                }
-//            } else {
-//                let delayInSeconds = Int((self.requestTimeout / 10).rounded())
-//                self.queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
-//                    self.startRequest(forIdentifiers: productRequest.identifiers,
-//                                      retriesLeft: productRequest.retriesLeft - 1)
-//                }
-//            }
-//        }
+        defer {
+            self.cancelRequestToPreventTimeoutWarnings(request)
+        }
+
+        self.queue.async { [self] in
+            Logger.appleError(Strings.storeKit.store_products_request_failed(error as NSError))
+
+            guard let productRequest = self.productsByRequests[request] else {
+                Logger.error(Strings.purchase.requested_products_not_found(request: request))
+                return
+            }
+
+            if productRequest.retriesLeft <= 0 {
+                guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
+                    Logger.error(Strings.purchase.callback_not_found_for_request(request: request))
+                    self.productsByRequests.removeValue(forKey: request)
+                    return
+                }
+
+                self.completionHandlers.removeValue(forKey: productRequest.identifiers)
+                self.productsByRequests.removeValue(forKey: request)
+                for completion in completionBlocks {
+                    completion(.failure(ErrorUtils.purchasesError(withSKError: error)))
+                }
+            } else {
+                let delayInSeconds = Int((self.requestTimeout / 10).rounded())
+                self.queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
+                    self.startRequest(forIdentifiers: productRequest.identifiers,
+                                      retriesLeft: productRequest.retriesLeft - 1)
+                }
+            }
+        }
     }
 
     func cacheProduct(_ product: SK1Product) {
