@@ -132,11 +132,11 @@ commands:
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
       # Also, not using macos/switch-ruby because its broken
       - run:
-          name: Set Ruby 3.2.0
+          name: Set Ruby 3.2.2
           command: |
             eval "$(rbenv init -)"
-            rbenv install -s 3.2.0  # Replace with your required Ruby version
-            rbenv global 3.2.0
+            rbenv install -s 3.2.2  # Replace with your required Ruby version
+            rbenv global 3.2.2
             rbenv rehash
       - run:
           name: Verify Ruby version
