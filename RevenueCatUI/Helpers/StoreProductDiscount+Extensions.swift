@@ -17,9 +17,7 @@ import RevenueCat
 extension StoreProductDiscount {
 
     func localizedPricePerPeriodByPaymentMode(_ locale: Locale) -> String {
-        guard let period = self.subscriptionPeriod.durationTitle else {
-            return ""
-        }
+        let discountDuration = self.subscriptionPeriod.durationTitle
 
         let localizedBundle = Localization.localizedBundle(locale)
 
@@ -28,23 +26,20 @@ extension StoreProductDiscount {
             // 3 months for free
             let format = localizedBundle.localizedString(forKey: "free_trial_period", value: "%@ for free", table: nil)
 
-            return String(format: format, period)
+            return String(format: format, discountDuration)
         case .payAsYouGo:
             // $0.99/month for 3 months
             let format =
             localizedBundle.localizedString(forKey: "pay_as_you_go_period", value: "%@ during %@", table: nil)
-            guard let discountedPeriodsWithUnit = discountedPeriodsWithUnit else {
-                return localizedPricePerPeriod(locale)
-            }
             return String(format: format, localizedPricePerPeriod(locale), discountedPeriodsWithUnit)
         case .payUpFront:
             // 3 months for $0.99
             let format = localizedBundle.localizedString(forKey: "pay_up_front_period", value: "%@ for %@", table: nil)
-            return String(format: format, period, self.localizedPriceString)
+            return String(format: format, discountDuration, self.localizedPriceString)
         }
     }
 
-    var discountedPeriodsWithUnit: String? {
+    var discountedPeriodsWithUnit: String {
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .full
         var components = DateComponents()
@@ -59,10 +54,10 @@ extension StoreProductDiscount {
         case .year:
             components.year = self.numberOfPeriods
         default:
-            return nil
+            return "\(self.numberOfPeriods)"
         }
 
-        return formatter.string(from: components)
+        return formatter.string(from: components) ?? "\(self.numberOfPeriods)"
     }
 
     func localizedPricePerPeriod(_ locale: Locale) -> String {

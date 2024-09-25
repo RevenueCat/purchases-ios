@@ -16,7 +16,7 @@ import RevenueCat
 
 extension SubscriptionPeriod {
 
-    var durationTitle: String? {
+    var durationTitle: String {
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .full
         var components = DateComponents()
@@ -31,10 +31,10 @@ extension SubscriptionPeriod {
         case .year:
             components.year = self.value
         default:
-            return nil
+            return "\(self.value)"
         }
 
-        return formatter.string(from: components)
+        return formatter.string(from: components) ?? "\(self.value)"
     }
 
 }
