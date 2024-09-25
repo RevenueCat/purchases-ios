@@ -1624,8 +1624,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
-        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.count).toEventually(equal(1))
-        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.first else {
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
             fail("Should have at least one call to tracked diagnostics")
             return
         }
@@ -1652,8 +1652,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
-        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.count).toEventually(equal(1))
-        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.first else {
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
             fail("Should have at least one call to tracked diagnostics")
             return
         }
