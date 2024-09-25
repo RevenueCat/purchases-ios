@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% diskaun";
 "Continue" = "teruskan";
 "Default_offer_details_with_intro_offer" = "Mulakan percubaan {{ sub_offer_duration }} anda, kemudian {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ percuma";
+"pay_as_you_go_period" = "%@ semasa %@";
+"pay_up_front_period" = "%@ untuk %@";
+"then_price_per_period" = "kemudian %@";
