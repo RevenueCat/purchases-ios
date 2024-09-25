@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% sleva";
 "Continue" = "Pokračovat";
 "Default_offer_details_with_intro_offer" = "Začněte {{ sub_offer_duration }} zkušební období, poté {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ zdarma";
+"pay_as_you_go_period" = "%@ během %@";
+"pay_up_front_period" = "%@ za %@";
+"then_price_per_period" = "poté %@";

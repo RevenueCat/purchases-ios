@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% kedvezménnyel";
 "Continue" = "Folytatni";
 "Default_offer_details_with_intro_offer" = "Indítsa el a {{ sub_offer_duration }} próbaidőszakot, majd {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ ingyenes";
+"pay_as_you_go_period" = "%@ során %@";
+"pay_up_front_period" = "%@ ért %@";
+"then_price_per_period" = "majd %@";
