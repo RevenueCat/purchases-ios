@@ -1135,76 +1135,76 @@ class SubscriberAttributesManagerTests: TestCase {
     }
     // endregion
     // region kochavaDeviceID
-    func testSetKochavaDeviceID() throws {
-        let kochavaDeviceID = "kochavaDeviceID"
-
-        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 1
-
-        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+    func testSetKochavaDeviceID() {
+        let kochavaDeviceId = "kochavaDeviceID"
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
         let receivedAttribute = invokedParams.attribute
-
         expect(receivedAttribute.key) == "$kochavaDeviceId"
-        expect(receivedAttribute.value) == kochavaDeviceID
+        expect(receivedAttribute.value) == kochavaDeviceId
         expect(receivedAttribute.isSynced) == false
     }
 
-    func testSetKochavaDeviceIDSetsEmptyIfNil() throws {
-        let kochavaDeviceID = "kochavaDeviceID"
+    func testSetKochavaDeviceIDSetsEmptyIfNil() {
+        let kochavaDeviceId = "kochavaDeviceID"
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
 
-        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceID, appUserID: "kratos")
         self.subscriberAttributesManager.setKochavaDeviceID(nil, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 2
-
-        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
         let receivedAttribute = invokedParams.attribute
-
         expect(receivedAttribute.key) == "$kochavaDeviceId"
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
 
     func testSetKochavaDeviceIDSkipsIfSameValue() {
-        let kochavaDeviceID = "kochavaDeviceID"
+        let kochavaDeviceId = "kochavaDeviceID"
 
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$kochavaDeviceId",
-                                                                                    value: kochavaDeviceID)
-        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceID, appUserID: "kratos")
+                                                                                    value: kochavaDeviceId)
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 0
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
     }
 
-    func testSetKochavaDeviceIDOverwritesIfNewValue() throws {
+    func testSetKochavaDeviceIDOverwritesIfNewValue() {
         let oldSyncTime = Date()
-        let kochavaDeviceID = "kochavaDeviceID"
+        let kochavaDeviceId = "kochavaDeviceID"
 
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$kochavaDeviceId",
                                                                                     value: "old_id",
                                                                                     isSynced: true,
                                                                                     setTime: oldSyncTime)
 
-        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceID, appUserID: "kratos")
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
 
-        expect(self.mockDeviceCache.invokedStoreCount) == 1
-
-        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
         let receivedAttribute = invokedParams.attribute
-
         expect(receivedAttribute.key) == "$kochavaDeviceId"
-        expect(receivedAttribute.value) == kochavaDeviceID
+        expect(receivedAttribute.value) == kochavaDeviceId
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
 
-    func testSetKochavaDeviceIDDoesNotSetDeviceIdentifiers() {
-        let kochavaDeviceID = "kochavaDeviceID"
-        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceID, appUserID: "kratos")
-        expect(self.mockDeviceCache.invokedStoreCount) == 1
+    func testSetKochavaDeviceIDSetsDeviceIdentifiers() {
+        let kochavaDeviceId = "kochavaDeviceID"
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
 
-        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
-        checkDeviceIdentifiersAreNotSet()
+        checkDeviceIdentifiersAreSet()
     }
     // endregion
     // region MixpanelDistinctID
