@@ -851,7 +851,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
     func testPurchaseWithSimulatedErrorTracksError() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
         try await self.testSession.setSimulatedError(.generic(.unknown), forAPI: .purchase)
 
         let transactionListener = MockStoreKit2TransactionListener()
