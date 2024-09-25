@@ -123,6 +123,7 @@ class HTTPClient {
             "X-Platform": SystemInfo.platformHeader,
             "X-Platform-Version": SystemInfo.systemVersion,
             "X-Platform-Flavor": self.systemInfo.platformFlavor,
+            "X-Platform-Device": SystemInfo.deviceVersion,
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,

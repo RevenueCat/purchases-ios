@@ -438,6 +438,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearKochavaDeviceID() {
+        setupPurchases()
+        purchases.attribution.setKochavaDeviceID("kochava")
+        purchases.attribution.setKochavaDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[0])
+            .to(equal(("kochava", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearMixpanelDistinctID() {
         setupPurchases()
         purchases.attribution.setMixpanelDistinctID("mixp")
