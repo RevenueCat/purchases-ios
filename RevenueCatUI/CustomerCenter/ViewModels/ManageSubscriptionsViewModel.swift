@@ -17,6 +17,7 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 #if os(iOS)
 
@@ -33,7 +34,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
-
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
     @Published
@@ -60,6 +60,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
+    @Environment(\.localization)
+    private var localization
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
@@ -178,16 +180,15 @@ private extension ManageSubscriptionsViewModel {
                 self.customerCenterActionHandler?(.refundRequestCompleted(status))
                 switch status {
                 case .error:
-                    self.refundRequestStatusMessage = String(localized: "Error when requesting refund, try again")
+                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundErrorGeneric)
                 case .success:
-                    self.refundRequestStatusMessage = String(localized: "Refund granted successfully!")
+                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundGranted)
                 case .userCancelled:
-                    self.refundRequestStatusMessage = String(localized: "Refund canceled")
+                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundCanceled)
                 }
             } catch {
                 self.customerCenterActionHandler?(.refundRequestCompleted(.error))
-                self.refundRequestStatusMessage =
-                String(localized: "An error occurred while processing the refund request.")
+                self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundErrorGeneric)
             }
         case .changePlans, .cancel:
             do {
@@ -225,24 +226,6 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         await Purchases.shared.products(productIdentifiers)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension SubscriptionPeriod {
-
-    var durationTitle: String {
-        switch self.unit {
-        case .day: return "day"
-        case .week: return "week"
-        case .month: return "month"
-        case .year: return "year"
-        default: return "Unknown"
-        }
     }
 
 }

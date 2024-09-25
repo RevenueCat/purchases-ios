@@ -17,3 +17,7 @@
 "%d%% off" = "Скидка %d%%";
 "Continue" = "Продолжать";
 "Default_offer_details_with_intro_offer" = "Начните пробную версию {{ sub_offer_duration }}, затем {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ бесплатно";
+"pay_as_you_go_period" = "%@ в течение %@";
+"pay_up_front_period" = "%@ за %@";
+"then_price_per_period" = "затем %@";
