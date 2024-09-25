@@ -623,34 +623,6 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
 
-    #       run-test-ios-18:
-    # executor:
-    #   name: macos-executor
-    #   xcode_version: '16.0'
-
-    # steps:
-    #   - checkout
-    #   - install-dependencies:
-    #       install_swiftlint: false
-    #   - run:
-    #       name: Run tests
-    #       command: bundle exec fastlane test_ios
-    #       no_output_timeout: 15m
-    #       environment:
-    #         SCAN_DEVICE: iPhone 16 (18.0)
-    #   - compress_result_bundle:
-    #       directory: fastlane/test_output/xctest/ios
-    #       bundle_name: RevenueCat
-    #   - create-snapshot-pr-if-needed:
-    #       condition: << pipeline.parameters.generate_snapshots >>
-    #       job: "create_snapshot_pr"
-    #       version: "ios-18"
-    #   - store_test_results:
-    #       path: fastlane/test_output
-    #   - store_artifacts:
-    #       path: fastlane/test_output/xctest
-    #       destination: scan-test-output
-
   spm-revenuecat-ui-watchos:
     executor:
       name: macos-executor
@@ -664,7 +636,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             PLATFORM: watchOS Simulator
-            DEVICE: Apple Watch Series 9 (45mm),OS=10.4
+            DEVICE: Apple Watch Series 10 (46mm),OS=11.0
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
