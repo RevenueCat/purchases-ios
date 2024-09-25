@@ -93,7 +93,7 @@ struct SamplePaywallsList: View {
             #endif
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
-            TemplateComponentsView(paywallComponentsData: data, offering: Self.loader.offeringWithDefaultPaywall())
+            TemplateComponentsView(paywallComponentsData: data, offering: Self.loader.offering(for: .template2))
         #endif
         }
 
@@ -104,6 +104,18 @@ struct SamplePaywallsList: View {
 
             #if PAYWALL_COMPONENTS
             Section("Components") {
+
+                ForEach(1...6, id: \.self) { index in
+                    Button {
+                        let data = SamplePaywallLoader.packagesComponents(slide: index)
+                        data.componentsConfig.components.printAsJSON()
+                        data.componentsLocalizations.printAsJSON()
+                        self.display = .componentPaywall(data)
+                    } label: {
+                        TemplateLabel(name: "Packages Components \(index)", icon: "iphone")
+                    }
+                }
+
                 Button {
                     let data = SamplePaywallLoader.template1Components
                     data.componentsConfig.components.printAsJSON()

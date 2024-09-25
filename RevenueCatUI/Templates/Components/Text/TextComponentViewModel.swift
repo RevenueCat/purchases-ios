@@ -21,42 +21,67 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class TextComponentViewModel {
 
-    let localizedStrings: PaywallComponent.LocalizationDictionary
-    let text: String
+    private let localizedStrings: PaywallComponent.LocalizationDictionary
+    private let textUnselected: String
+    private let textSelected: String?
+
     private let component: PaywallComponent.TextComponent
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-        self.text = try localizedStrings.string(key: component.textLid)
+        self.textUnselected = try localizedStrings.string(key: component.textLid)
+        if let selectedComponent = component.selectedComponent {
+            self.textSelected = try localizedStrings.string(key: selectedComponent.textLid)
+        } else {
+            self.textSelected = nil
+        }
     }
 
-    public var fontFamily: String {
-        component.fontFamily
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.TextComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
     }
 
-    public var fontWeight: Font.Weight {
-        component.fontWeight.fontWeight
+    func text(for selectionState: SelectionState) -> String {
+        switch selectionState {
+        case .selected:
+            return textSelected ?? textUnselected
+        case .unselected:
+            return textUnselected
+        }
     }
 
-    public var color: Color {
-        component.color.toDyanmicColor()
+    func fontFamily(for selectionState: SelectionState) -> String {
+        currentComponent(for: selectionState).fontFamily
     }
 
-    public var textStyle: Font {
-        component.textStyle.font
+    func fontWeight(for selectionState: SelectionState) -> Font.Weight {
+        currentComponent(for: selectionState).fontWeight.fontWeight
     }
 
-    public var horizontalAlignment: TextAlignment {
-        component.horizontalAlignment.textAlignment
+    func color(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).color.toDyanmicColor()
     }
 
-    public var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
+    func textStyle(for selectionState: SelectionState) -> Font {
+        currentComponent(for: selectionState).textStyle.font
     }
 
-    public var padding: EdgeInsets {
-        component.padding.edgeInsets
+    func horizontalAlignment(for selectionState: SelectionState) -> TextAlignment {
+        currentComponent(for: selectionState).horizontalAlignment.textAlignment
+    }
+
+    func backgroundColor(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).backgroundColor?.toDyanmicColor() ?? Color.clear
+    }
+
+    func padding(for selectionState: SelectionState) -> EdgeInsets {
+        currentComponent(for: selectionState).padding.edgeInsets
     }
 
 }

@@ -633,24 +633,312 @@ private extension SamplePaywallLoader {
 
     static func createFakePaywallComponentsData(components: [PaywallComponent], localization: [LocaleID: LocalizationDictionary]) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
-                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
-                               componentsConfig: PaywallComponentsData.ComponentsConfig(components: components),
+                              assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
+                              componentsConfig: PaywallComponentsData.ComponentsConfig(components: components),
                               componentsLocalizations: localization,
-                               revision: 0,
-                               defaultLocaleIdentifier: "en_US")
+                              revision: 0,
+                              defaultLocaleIdentifier: "en_US")
+    }
+
+    internal static func packagesComponents(slide: Int) -> PaywallComponentsData {
+        return createFakePaywallComponentsData(components: packagesSample(slide: slide), localization: allStrings())
     }
 
     internal static var fitnessComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: fitnessSample, localization: fitnessPaywallStrings())
+        return createFakePaywallComponentsData(components: fitnessSample, localization: allStrings())
     }
 
     internal static var template1Components: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: curiosity, localization: curiosityPaywallStrings())
+        return createFakePaywallComponentsData(components: curiosity, localization: allStrings())
     }
 
     internal static var simpleSampleComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: simpleSix, localization: simplePaywallStrings())
+        return createFakePaywallComponentsData(components: simpleSix, localization: allStrings())
     }
+
+    // MARK: - Package Tests
+
+    static var packageWall: [PaywallComponent] = {
+        [.stack(.init(components: [packageVStackSimple,
+                                   spacer,
+                                   purchasePackageButton
+                                  ],
+                      dimension: .vertical(),
+                      spacing: nil,
+                      backgroundColor: nil,
+                      padding: .zero))]
+
+    }()
+
+    static var titleText: PaywallComponent = {
+        .text(.init(
+            text: "Title Text",
+            textLid: "package_title",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body
+        ))
+    }()
+
+    static func packagesSample(slide: Int) -> [PaywallComponent] {
+        return switch slide {
+        case 1:
+            packagesSample1
+        case 2:
+            packagesSample2
+        case 3:
+            packagesSample3
+        case 4:
+            packagesSample4
+        case 5:
+            packagesSample5
+        case 6:
+            packagesSample6
+        default:
+            [PaywallComponent]()
+        }
+    }
+
+    // SLIDE 1
+    static var packagesSample1: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: [purchasePackageButton]))]
+    }()
+
+    // SLIDE 2
+    static var packagesSample2: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: [purchasePackageButton]))] +
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthy", components: [purchasePackageButton]))]
+    }()
+
+    // SLIDE 3
+    static var packagesSample3: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall))]
+    }()
+
+    // SLIDE 4
+    static var packagesSample4: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: packageWall)),
+         spacer,
+         .packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_monthly", components: packageWall))]
+    }()
+
+    // SLIDE 5
+    static var packagesSample5: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components:[textPackage1, textPackage2, purchasePackageButton]))]
+    }()
+
+    // SLIDE 6
+    static var packagesSample6: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components:[packageVStackA, packageVStackB, purchasePackageButton]))]
+    }()
+
+    // text packages
+    static var textPackage1: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_weekly", isButton: false, components: [simple1Text]))
+    }()
+
+    static var textPackage2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", isButton: false, components: [simple2Text]))
+    }()
+
+    static var simple1Text: PaywallComponent = {
+     .text(.init(
+         text: "Package one",
+         textLid: "package_1",
+         fontFamily: "",
+         fontWeight: .regular,
+         color: .init(light: "#000000"),
+         backgroundColor: .init(light: "#AAEE00"),
+         padding: .init(top: 25, bottom: 25, leading: 25, trailing: 25),
+         textStyle: .body,
+         selectedComponent: nil))
+    }()
+
+    static var simple2Text: PaywallComponent = {
+     .text(.init(
+         text: "Package one",
+         textLid: "package_2",
+         fontFamily: "",
+         fontWeight: .regular,
+         color: .init(light: "#000000"),
+         backgroundColor: .init(light: "#00AAEE"),
+         padding: .init(top: 25, bottom: 25, leading: 25, trailing: 25),
+         textStyle: .body,
+         selectedComponent: nil))
+    }()
+
+
+    static var packageVStackSimple: PaywallComponent = {
+        .stack(.init(components: [package1, package2],
+                     dimension: .vertical(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero))
+    }()
+
+    static var packageVStackA: PaywallComponent = {
+        .stack(.init(components: [spacer,
+                                  package(number: 1, packageID: "$rc_weekly"),
+                                  package(number: 2, packageID: "$rc_monthly"),
+                                 spacer],
+                     dimension: .vertical(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero))
+    }()
+
+   static var packageVStackB: PaywallComponent = {
+       .stack(.init(components: [spacer,
+                                 package(number: 3, packageID: "$rc_annual"),
+                                 package(number: 4, packageID: "$rc_lifetime"),
+                                spacer],
+                    dimension: .vertical(.center),
+                    spacing: nil,
+                    backgroundColor: nil,
+                    padding: .zero))
+   }()
+
+
+    // dyanmic package
+    static func package(number: Int, packageID: String) -> PaywallComponent {
+        .package(.init(type: .package, packageID: packageID, components: [packageStack(number: number)]))
+    }
+
+    static func packageStack(number: Int) -> PaywallComponent {
+        let packageText = packageText(number: number)
+        return .stack(.init(components: [blankCheckmarkImage, packageText],
+                     dimension: .horizontal(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero,
+                     selectedComponent: .init(components: [checkmarkImage, packageText],
+                                              dimension: .horizontal(.center),
+                                              spacing: nil,
+                                              backgroundColor: nil,
+                                              padding: .zero)))
+    }
+
+    static func packageText(number: Int) -> PaywallComponent {
+        .text(.init(
+            text: "Package one",
+            textLid: "package_\(number)",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body,
+            selectedComponent: .init(
+               text: "Package one",
+               textLid: "package_\(number)",
+               fontFamily: "",
+               fontWeight: .regular,
+               color: .init(light: "#000000"),
+               padding: .zero,
+               textStyle: .body
+        )))
+    }
+
+    // package 1
+    static var package1: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_weekly", components: [package1VStack]))
+    }()
+
+    static var package1VStack: PaywallComponent = {
+     .stack(.init(components: [blankCheckmarkImage, package1Text],
+                  dimension: .horizontal(.center),
+                  spacing: nil,
+                  backgroundColor: nil,
+                  padding: .zero,
+                  selectedComponent: .init(components: [checkmarkImage, package1Text],
+                                           dimension: .horizontal(.center),
+                                           spacing: nil,
+                                           backgroundColor: nil,
+                                           padding: .zero)))
+    }()
+
+
+    static var package1Text: PaywallComponent = {
+     .text(.init(
+         text: "Package one",
+         textLid: "package_1",
+         fontFamily: "",
+         fontWeight: .regular,
+         color: .init(light: "#000000"),
+         padding: .zero,
+         textStyle: .body,
+         selectedComponent: .init(
+            text: "Package one",
+            textLid: "package_1",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body
+     )))
+    }()
+
+    // package 2
+    static var package2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStack]))
+    }()
+
+
+    static var package2VStack: PaywallComponent = {
+     .stack(.init(components: [blankCheckmarkImage, package2Text],
+                  dimension: .horizontal(.center),
+                  spacing: nil,
+                  backgroundColor: nil,
+                  padding: .zero,
+                  selectedComponent: .init(components: [checkmarkImage, package2Text],
+                                           dimension: .horizontal(.center),
+                                           spacing: nil,
+                                           backgroundColor: nil,
+                                           padding: .zero)))
+    }()
+
+
+    static var package2Text: PaywallComponent = {
+     .text(.init(
+         text: "Package two",
+         textLid: "package_2",
+         fontFamily: "",
+         fontWeight: .regular,
+         color: .init(light: "#000000"),
+         padding: .zero,
+         textStyle: .body,
+         selectedComponent: .init(
+            text: "Package two",
+            textLid: "package_2",
+            fontFamily: "",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            padding: .zero,
+            textStyle: .body
+     )))
+    }()
+
+
+    static var purchasePackageButton: PaywallComponent = {
+        .purchaseButton(.init(textComponent: purchasePackageText))
+    }()
+
+    static var purchasePackageText: PaywallComponent.TextComponent = {
+        .init(
+            text: "Purchase Now! $19.99/year",
+            textLid: "purchase_button_text",
+            fontWeight: .regular,
+            color: .init(light: "#000000"),
+            backgroundColor: .init(light: "#9EE5FF"),
+            padding: .init(top: 10, bottom: 10, leading: 50, trailing: 50),
+            textStyle: .body
+        )
+    }()
+
+
+
+    // MARK: - Simple
 
     static var simpleOne: [PaywallComponent] = {
             [helloWorld]
@@ -742,6 +1030,11 @@ private extension SamplePaywallLoader {
                      maxHeight: 20))
     }()
 
+    static var blankCheckmarkImage: PaywallComponent = {
+        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1726019114.png")!,
+                     maxHeight: 20))
+    }()
+
 
     static func simpleFeatureStack(text: PaywallComponent) -> PaywallComponent {
         .stack(.init(components: [checkmarkImage, text],
@@ -782,7 +1075,7 @@ private extension SamplePaywallLoader {
 
     static var purchaseSimpleNowText: PaywallComponent.TextComponent = {
         .init(
-            text: "Purchase Now! $19.99/year",
+            text: "Purchase Now!",
             textLid: "purchase_button_text",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -792,15 +1085,22 @@ private extension SamplePaywallLoader {
         )
     }()
 
-    // fitness
+    // MARK: - Fitness
 
     static var fitnessSample: [PaywallComponent] = {
+        [.packageGroup(.init(type: .packageGroup, defaultSelectedPackageID: "$rc_weekly", components: fitnessWall))]
+    }()
+
+    static var fitnessWall: [PaywallComponent] = {
         let components: [PaywallComponent] = [.stack(.init(components: [gymZStack,
-                                   featureImageStack1,
-                                   featureImageStack2,
-                                   featureImageStack3,
-                                   purchaseFitnessButton,
-                                   fitnessFooter],
+                                                                        featureImageStack1,
+                                                                        featureImageStack2,
+                                                                        //featureImageStack3,
+                                                                        spacer,
+                                                                        fitnesspackageVStack,
+                                                                        //spacer,
+                                                                        purchaseFitnessButton,
+                                                                        fitnessFooter],
                       dimension: .vertical(.center),
                       spacing: 25,
                       backgroundColor: .init(light: "#000000"),
@@ -826,6 +1126,103 @@ private extension SamplePaywallLoader {
             return components
         }
 
+    }()
+
+    static var fitnesspackageVStack: PaywallComponent = {
+        .stack(.init(components: [fitnessPackage1, spacer, fitnessPackage2],
+                     dimension: .vertical(.center),
+                     spacing: nil,
+                     backgroundColor: nil,
+                     padding: .zero))
+    }()
+
+    static var fitnessPackage1: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_weekly", components: [fitnessItem(headingLid:"package_1", subHeadlingLid:"offer_details")]))
+    }()
+
+    static var fitnessPackage2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [fitnessItem(headingLid:"package_2", subHeadlingLid:"offer_details")]))
+    }()
+
+    static func fitnessItem(headingLid: String, subHeadlingLid: String) -> PaywallComponent {
+
+        let heading: PaywallComponent = {
+         .text(.init(
+             text: "",
+             textLid: headingLid,
+             fontFamily: "",
+             fontWeight: .regular,
+             color: .init(light: "#FFFFFF"),
+             padding: .zero,
+             textStyle: .body,
+             selectedComponent: .init(
+                text: "",
+                textLid: headingLid,
+                fontFamily: "",
+                fontWeight: .regular,
+                color: .init(light: "#FFFFFF"),
+                padding: .zero,
+                textStyle: .body
+         )))
+        }()
+
+
+
+        let subHeading: PaywallComponent = {
+         .text(.init(
+             text: "",
+             textLid: subHeadlingLid,
+             fontFamily: "",
+             fontWeight: .regular,
+             color: .init(light: "#FFFFFF"),
+             padding: .zero,
+             textStyle: .caption,
+             selectedComponent: .init(
+                text: "",
+                textLid: subHeadlingLid,
+                fontFamily: "",
+                fontWeight: .regular,
+                color: .init(light: "#FFFFFF"),
+                padding: .zero,
+                textStyle: .caption
+         )))
+        }()
+
+
+        let packageVStack: PaywallComponent = {
+         .stack(.init(components: [heading, subHeading],
+                      dimension: .vertical(.leading),
+                      spacing: nil,
+                      backgroundColor: nil,
+                      padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
+                      selectedComponent: .init(components: [heading, subHeading],
+                                               dimension: .vertical(.leading),
+                                               spacing: nil,
+                                               backgroundColor: nil,
+                                               padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10))))
+        }()
+
+        let topHStack: PaywallComponent = {
+         .stack(.init(components: [blankCheckmarkImage, packageVStack],
+                      dimension: .horizontal(.center),
+                      spacing: nil,
+                      backgroundColor: nil,
+                      padding: .zero,
+                      selectedComponent: .init(components: [checkmarkImage, packageVStack],
+                                               dimension: .horizontal(.center),
+                                               spacing: nil,
+                                               backgroundColor: nil,
+                                               padding: .zero)))
+        }()
+
+
+        return topHStack
+
+    }
+
+    // package 2
+    static var fitnesspackage2: PaywallComponent = {
+        .package(.init(type: .package, packageID: "$rc_monthly", components: [package2VStack]))
     }()
 
     static var gymZStack: PaywallComponent = {
@@ -942,9 +1339,9 @@ private extension SamplePaywallLoader {
     }()
 
     static var purchaseFitnessButton: PaywallComponent = {
-        .linkButton(.init(url: URL(string: "https://pay.rev.cat/d1db8380eeb98a92/josh")!,
-                      textComponent: purchaseFitnessNowText))
+        .purchaseButton(.init(textComponent: purchaseFitnessNowText))
     }()
+
 
     static var purchaseFitnessNowText: PaywallComponent.TextComponent = {
         .init(
@@ -1003,9 +1400,7 @@ private extension SamplePaywallLoader {
         ))
     }()
 
-
-    // CURIOSITY
-
+    // MARK: - Curiosity
 
     static var curiosity: [PaywallComponent] = {
         [.stack(.init(components: [headerZStack,
@@ -1088,7 +1483,7 @@ private extension SamplePaywallLoader {
     static var featureVStack: PaywallComponent = {
         .stack(.init(components: [feature1Text, feature2Text, feature3Text],
                      dimension: .vertical(.leading),
-                     spacing: 10,
+                     spacing: 11.5,
                      backgroundColor: nil,
                      padding: .zero))
 
@@ -1284,9 +1679,77 @@ private extension SamplePaywallLoader {
 
     }()
 
+
+    static func allStrings() -> [LocaleID: LocalizationDictionary] {
+        mergeDictionaries(packagesPaywallStrings(),
+                                fitnessPaywallStrings(),
+                                curiosityPaywallStrings(),
+                                simplePaywallStrings())
+    }
+
+    static func mergeDictionaries(_ dictionaries: [LocaleID: LocalizationDictionary]...) -> [LocaleID: LocalizationDictionary] {
+        var result: [LocaleID: LocalizationDictionary] = [:]
+        for dictionary in dictionaries {
+            for (key, nestedDict) in dictionary {
+                if let existing = result[key] {
+                    result[key] = existing.merging(nestedDict) { (_, new) in new }
+                } else {
+                    result[key] = nestedDict
+                }
+            }
+        }
+        return result
+    }
+
+    static func packagesPaywallStrings() -> [LocaleID: LocalizationDictionary] {
+        return [
+            "en_US": [
+                "offer_details": "{{ total_price_and_per_month }}",
+                "sub_period": "{{ sub_period }}",
+                "package_title": "Select a Package",
+                "package_1": "Package One (weekly)",
+                "package_2": "Package Two (monthly)",
+                "package_1_selected": "Package One Selected",
+                "package_2_selected": "Package Two Selected",
+                "package_1_unselected": "Package One Unselected",
+                "package_2_unselected": "Package Two Unselected",
+                "package_3": "Package Three (annual)",
+                "package_4": "Package Four (lifetime)",
+                "package_5": "Package Five",
+                "package_6": "Package Six",
+                "purchase_button_text": "Purchase Now!"
+            ],
+            "fr_FR": [
+                "offer_details": "{{ total_price_and_per_month }}",
+                "sub_period": "{{ sub_period }}",
+                "package_title": "Sélectionnez un forfait",
+                "package_1": "Forfait Un",
+                "package_2": "Forfait Deux",
+                "package_3": "Forfait Trois",
+                "package_4": "Forfait Quatre",
+                "package_5": "Forfait Cinq",
+                "package_6": "Forfait Six",
+                "purchase_button_text": "Achetez maintenant!"
+            ],
+            "es_ES": [
+                "offer_details": "{{ total_price_and_per_month }}",
+                "sub_period": "{{ sub_period }}",
+                "package_title": "Seleccione un paquete",
+                "package_1": "Paquete Uno",
+                "package_2": "Paquete Dos",
+                "package_3": "Paquete Tres",
+                "package_4": "Paquete Cuatro",
+                "package_5": "Paquete Cinco",
+                "package_6": "Paquete Seis",
+                "purchase_button_text": "¡Compra ahora!"
+            ]
+        ]
+    }
+
     static func fitnessPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
+                "best_value": "Best Value",
                 "fitness_coach_title": "Fitness Coach",
                 "fitness_new_workouts": "New workouts added every day",
                 "fitness_challenge_text": "Challenge others and climb the leader ladder",
@@ -1297,6 +1760,7 @@ private extension SamplePaywallLoader {
                 "terms_and_conditions": "Terms and conditions"
             ],
             "fr_FR": [
+                "best_value": "Meilleur prix",
                 "fitness_coach_title": "Coach Fitness",
                 "fitness_new_workouts": "Nouveaux entraînements ajoutés chaque jour",
                 "fitness_challenge_text": "Défiez les autres et grimpez l'échelle des leaders",
@@ -1307,6 +1771,7 @@ private extension SamplePaywallLoader {
                 "terms_and_conditions": "Conditions générales"
             ],
             "es_ES": [
+                "best_value": "Mejor precio",
                 "fitness_coach_title": "Entrenador de fitness",
                 "fitness_new_workouts": "Nuevos entrenamientos añadidos todos los días",
                 "fitness_challenge_text": "Desafía a otros y escala en la clasificación",
@@ -1377,7 +1842,7 @@ private extension SamplePaywallLoader {
         return [
             "en_US": [
                 "welcome_message": "Hello, Paywall Components!",
-                "purchase_button_text": "Purchase Now! $19.99/year",
+                "purchase_button_text": "Purchase Now!",
                 "explore_button_text": "Explore",
                 "popular_plan_label": "Popular Plan",
                 "get_started_text": "Get started with our plan",
@@ -1386,7 +1851,7 @@ private extension SamplePaywallLoader {
             ],
             "fr_FR": [
                 "welcome_message": "Bonjour, Composants Paywall!",
-                "purchase_button_text": "Achetez maintenant! 19,99$/an",
+                "purchase_button_text": "Achetez maintenant!",
                 "explore_button_text": "Explorer",
                 "popular_plan_label": "Plan populaire",
                 "get_started_text": "Commencez avec notre plan",
@@ -1395,7 +1860,7 @@ private extension SamplePaywallLoader {
             ],
             "es_ES": [
                 "welcome_message": "¡Hola, Componentes Paywall!",
-                "purchase_button_text": "¡Compra ahora! 19,99€/año",
+                "purchase_button_text": "¡Compra ahora!",
                 "explore_button_text": "Explorar",
                 "popular_plan_label": "Plan popular",
                 "get_started_text": "Empieza con nuestro plan",
@@ -1404,11 +1869,6 @@ private extension SamplePaywallLoader {
             ]
         ]
     }
-
-
-
-
-
 
     #endif
 

@@ -14,15 +14,17 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct LinkButtonComponentView: View {
 
+    @Environment(\.selectionState) var selectionState
+
     let viewModel: LinkButtonComponentViewModel
 
     var url: URL {
-        viewModel.url
+        viewModel.url(for: selectionState)
     }
 
     var body: some View {
         EmptyView()
-        Link(destination: url) {
+        Link(destination: self.url) {
             TextComponentView(viewModel: viewModel.textComponentViewModel)
                 .cornerRadius(25)
         }

@@ -21,7 +21,8 @@ import SwiftUI
 public class StackComponentViewModel {
 
     let locale: Locale
-    let viewModels: [PaywallComponentViewModel]
+    private let unselectedViewModels: [PaywallComponentViewModel]
+    private let selectedViewModels: [PaywallComponentViewModel]?
     private let component: PaywallComponent.StackComponent
 
     init(locale: Locale,
@@ -31,29 +32,50 @@ public class StackComponentViewModel {
     ) throws {
         self.locale = locale
         self.component = component
-        self.viewModels = try component.components.map {
+        self.unselectedViewModels = try component.components.map {
+            try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
+        }
+        self.selectedViewModels = try component.selectedComponent?.components.map {
             try $0.toViewModel(offering: offering, locale: locale, localizedStrings: localizedStrings)
         }
     }
 
-    var dimension: PaywallComponent.StackComponent.Dimension {
-        component.dimension
+    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.StackComponent {
+        switch selectionState {
+        case .selected:
+            return component.selectedComponent ?? component
+        case .unselected:
+            return component
+        }
+    }
+
+    func viewModels(for selectionState: SelectionState) -> [PaywallComponentViewModel] {
+        switch selectionState {
+        case .selected:
+            return selectedViewModels ?? unselectedViewModels
+        case .unselected:
+            return unselectedViewModels
+        }
+    }
+
+    func dimension(for selectionState: SelectionState) -> PaywallComponent.StackComponent.Dimension {
+        currentComponent(for: selectionState).dimension
     }
 
     var components: [PaywallComponent] {
         component.components
     }
 
-    var spacing: CGFloat? {
-        component.spacing
+    func spacing(for selectionState: SelectionState) -> CGFloat? {
+        currentComponent(for: selectionState).spacing
     }
 
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
+    func backgroundColor(for selectionState: SelectionState) -> Color {
+        currentComponent(for: selectionState).backgroundColor?.toDyanmicColor() ?? Color.clear
     }
 
-    var padding: EdgeInsets {
-        component.padding.edgeInsets
+    func padding(for selectionState: SelectionState) -> EdgeInsets {
+        currentComponent(for: selectionState).padding.edgeInsets
     }
 
 }
