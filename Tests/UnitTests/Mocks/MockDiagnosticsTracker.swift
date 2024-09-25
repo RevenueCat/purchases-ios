@@ -15,25 +15,25 @@ import Foundation
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class MockDiagnosticsTracker: DiagnosticsTrackerType {
+final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
-    private(set) var trackedEvents: [DiagnosticsEvent] = []
-    private(set) var trackedCustomerInfo: [CustomerInfo] = []
+    let trackedEvents: Atomic<[DiagnosticsEvent]> = .init([])
+    let trackedCustomerInfo: Atomic<[CustomerInfo]> = .init([])
 
     func track(_ event: DiagnosticsEvent) async {
-        trackedEvents.append(event)
+        self.trackedEvents.modify { $0.append(event) }
     }
 
     func trackCustomerInfoVerificationResultIfNeeded(
         _ customerInfo: RevenueCat.CustomerInfo
     ) async {
-        trackedCustomerInfo.append(customerInfo)
+        self.trackedCustomerInfo.modify { $0.append(customerInfo) }
     }
 
-    private(set) var trackedHttpRequestPerformedParams: [
+    let trackedHttpRequestPerformedParams: Atomic<[
         // swiftlint:disable:next large_tuple
         (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
-    ] = []
+    ]> = .init([])
     // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
@@ -42,15 +42,42 @@ class MockDiagnosticsTracker: DiagnosticsTrackerType {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult) async {
-        self.trackedHttpRequestPerformedParams.append(
-            (endpointName,
-             responseTime,
-             wasSuccessful,
-             responseCode,
-             backendErrorCode,
-             resultOrigin,
-             verificationResult)
-        )
+        self.trackedHttpRequestPerformedParams.modify {
+            $0.append(
+                (endpointName,
+                 responseTime,
+                 wasSuccessful,
+                 responseCode,
+                 backendErrorCode,
+                 resultOrigin,
+                 verificationResult)
+            )
+        }
+    }
+
+    let trackedPurchaseRequestParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (wasSuccessful: Bool,
+         storeKitVersion: StoreKitVersion,
+         errorMessage: String?,
+         errorCode: Int?,
+         storeKitErrorDescription: String?)
+    ]> = .init([])
+
+    func trackPurchaseRequest(wasSuccessful: Bool,
+                              storeKitVersion: StoreKitVersion,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              storeKitErrorDescription: String?) async {
+        self.trackedPurchaseRequestParams.modify {
+            $0.append(
+                (wasSuccessful,
+                 storeKitVersion,
+                 errorMessage,
+                 errorCode,
+                 storeKitErrorDescription)
+            )
+        }
     }
 
 }

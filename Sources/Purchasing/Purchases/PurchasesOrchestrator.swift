@@ -75,6 +75,7 @@ final class PurchasesOrchestrator {
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
     var _diagnosticsSynchronizer: Any?
+    var _diagnosticsTracker: Any?
     var _storeKit2ObserverModePurchaseDetector: Any?
     // swiftlint:enable identifier_name
 
@@ -93,6 +94,11 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
         return self._diagnosticsSynchronizer as? DiagnosticsSynchronizerType
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -122,7 +128,8 @@ final class PurchasesOrchestrator {
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
                      storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
                      storeMessagesHelper: StoreMessagesHelperType?,
-                     diagnosticsSynchronizer: DiagnosticsSynchronizerType?
+                     diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
+                     diagnosticsTracker: DiagnosticsTrackerType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -146,6 +153,7 @@ final class PurchasesOrchestrator {
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
+        self._diagnosticsTracker = diagnosticsTracker
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
@@ -413,8 +421,11 @@ final class PurchasesOrchestrator {
 
         let addPayment: Bool = self.addPurchaseCompletedCallback(
             productIdentifier: productIdentifier,
-            completion: { transaction, customerInfo, error, cancelled in
+            completion: { [weak self] transaction, customerInfo, error, cancelled in
+                guard let self = self else { return }
+
                 if !cancelled {
+                    self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit1, error: error)
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
                             productIdentifier: productIdentifier,
@@ -475,12 +486,11 @@ final class PurchasesOrchestrator {
         }
     }
 
+    // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(
-        sk2Product: SK2Product,
-        package: Package?,
-        promotionalOffer: PromotionalOffer.SignedData?
-    ) async throws -> PurchaseResultData {
+    func purchase(sk2Product: SK2Product,
+                  package: Package?,
+                  promotionalOffer: PromotionalOffer.SignedData?) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
         do {
@@ -517,10 +527,14 @@ final class PurchasesOrchestrator {
                 userCancelled: true
             )
         } catch let error as PromotionalOffer.SignedData.Error {
-            throw ErrorUtils.invalidPromotionalOfferError(error: error,
-                                                          message: error.localizedDescription)
+            let error = ErrorUtils.invalidPromotionalOfferError(error: error,
+                                                                message: error.localizedDescription)
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: error.asPublicError)
+            throw error
         } catch {
-            throw ErrorUtils.purchasesError(withStoreKitError: error)
+            let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: purchasesError.asPublicError)
+            throw error
         }
 
         // `userCancelled` above comes from `StoreKitError.userCancelled`.
@@ -543,8 +557,13 @@ final class PurchasesOrchestrator {
                                                                            fetchPolicy: .cachedOrFetched)
         }
 
+        if !userCancelled {
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: nil)
+        }
+
         return (transaction, customerInfo, userCancelled)
     }
+    // swiftlint:enable function_body_length
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func purchase(
@@ -869,6 +888,25 @@ private extension PurchasesOrchestrator {
                 ErrorUtils.paymentDeferredError().asPublicError,
                 userCancelled
             )
+        }
+    }
+
+    func trackPurchaseEventIfNeeded(storeKitVersion: StoreKitVersion,
+                                    error: PublicError?) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+        let diagnosticsTracker = self.diagnosticsTracker {
+            Task(priority: .background) {
+                let errorMessage =
+                (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
+                let errorCode = error?.code
+                let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
+
+                await diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
+                                                              storeKitVersion: storeKitVersion,
+                                                              errorMessage: errorMessage,
+                                                              errorCode: errorCode,
+                                                              storeKitErrorDescription: storeKitErrorDescription)
+            }
         }
     }
 
