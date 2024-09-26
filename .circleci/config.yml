@@ -147,7 +147,7 @@ commands:
           command: |
             bundle config set --local clean 'true'
             bundle config set --local path 'vendor/bundle'
-            bundle install --redownload
+            bundle install
       - save_cache:
           key: v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
