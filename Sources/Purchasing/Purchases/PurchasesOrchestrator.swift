@@ -895,7 +895,7 @@ private extension PurchasesOrchestrator {
                                     error: PublicError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
         let diagnosticsTracker = self.diagnosticsTracker {
-            let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription 
+            let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
                 ?? error?.localizedDescription
             let errorCode = error?.code
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
