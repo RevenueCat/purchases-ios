@@ -582,33 +582,31 @@ private extension HTTPClient {
             guard let diagnosticsTracker = self.diagnosticsTracker, let result else { return }
             let responseTime = self.dateProvider.now().timeIntervalSince(requestStartTime)
             let requestPathName = request.httpRequest.path.name
-            Task(priority: .background) {
-                switch result {
-                case let .success(response):
-                    let httpStatusCode = response.httpStatusCode.rawValue
-                    let verificationResult = response.verificationResult
-                    await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
-                                                                       responseTime: responseTime,
-                                                                       wasSuccessful: true,
-                                                                       responseCode: httpStatusCode,
-                                                                       backendErrorCode: nil,
-                                                                       resultOrigin: response.origin,
-                                                                       verificationResult: verificationResult)
-                case let .failure(error):
-                    var responseCode = -1
-                    var backendErrorCode: Int?
-                    if case let .errorResponse(errorResponse, code, _) = error {
-                        responseCode = code.rawValue
-                        backendErrorCode = errorResponse.code.rawValue
-                    }
-                    await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
-                                                                       responseTime: responseTime,
-                                                                       wasSuccessful: false,
-                                                                       responseCode: responseCode,
-                                                                       backendErrorCode: backendErrorCode,
-                                                                       resultOrigin: nil,
-                                                                       verificationResult: .notRequested)
+            switch result {
+            case let .success(response):
+                let httpStatusCode = response.httpStatusCode.rawValue
+                let verificationResult = response.verificationResult
+                diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
+                                                             responseTime: responseTime,
+                                                             wasSuccessful: true,
+                                                             responseCode: httpStatusCode,
+                                                             backendErrorCode: nil,
+                                                             resultOrigin: response.origin,
+                                                             verificationResult: verificationResult)
+            case let .failure(error):
+                var responseCode = -1
+                var backendErrorCode: Int?
+                if case let .errorResponse(errorResponse, code, _) = error {
+                    responseCode = code.rawValue
+                    backendErrorCode = errorResponse.code.rawValue
                 }
+                diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
+                                                             responseTime: responseTime,
+                                                             wasSuccessful: false,
+                                                             responseCode: responseCode,
+                                                             backendErrorCode: backendErrorCode,
+                                                             resultOrigin: nil,
+                                                             verificationResult: .notRequested)
             }
         }
     }

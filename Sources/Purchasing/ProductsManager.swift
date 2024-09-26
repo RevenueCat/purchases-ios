@@ -145,14 +145,12 @@ private extension ProductsManager {
                 ?? error?.localizedDescription
             let errorCode = error?.errorCode
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-            Task(priority: .background) {
-                await diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
-                                                              storeKitVersion: storeKitVersion,
-                                                              errorMessage: errorMessage,
-                                                              errorCode: errorCode,
-                                                              storeKitErrorDescription: storeKitErrorDescription,
-                                                              responseTime: responseTime)
-            }
+            diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
+                                                    storeKitVersion: storeKitVersion,
+                                                    errorMessage: errorMessage,
+                                                    errorCode: errorCode,
+                                                    storeKitErrorDescription: storeKitErrorDescription,
+                                                    responseTime: responseTime)
         }
     }
 
