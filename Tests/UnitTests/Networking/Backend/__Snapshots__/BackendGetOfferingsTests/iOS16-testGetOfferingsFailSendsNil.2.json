@@ -21,6 +21,6 @@
   "request" : {
     "body" : null,
     "method" : "GET",
-    "url" : "https://api.revenuecat.com/v1/subscribers/user_id_2/offerings"
+    "url" : "https://api.revenuecat.com/v1/subscribers/user/offerings"
   }
 }
