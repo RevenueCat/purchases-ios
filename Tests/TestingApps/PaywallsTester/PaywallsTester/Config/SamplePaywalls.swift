@@ -1020,13 +1020,13 @@ private extension SamplePaywallLoader {
     }()
 
     static var fuzzyCat: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!))
+        .image(.init(source: fuzzyCatImageSource))
     }()
 
 
 
     static var checkmarkImage: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724808304.png")!,
+        .image(.init(source: imageSource,
                      maxHeight: 20))
     }()
 
@@ -1046,7 +1046,6 @@ private extension SamplePaywallLoader {
 
     static var featureText: PaywallComponent = {
         .text(.init(
-            text: "Feature",
             textLid: "feature_text",
             fontFamily: "",
             fontWeight: .regular,
@@ -1058,7 +1057,6 @@ private extension SamplePaywallLoader {
 
     static var helloWorld: PaywallComponent = {
         .text(.init(
-            text: "Hello, Paywall Components!",
             textLid: "welcome_message",
             fontFamily: "",
             fontWeight: .regular,
@@ -1075,7 +1073,6 @@ private extension SamplePaywallLoader {
 
     static var purchaseSimpleNowText: PaywallComponent.TextComponent = {
         .init(
-            text: "Purchase Now!",
             textLid: "purchase_button_text",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -1234,39 +1231,52 @@ private extension SamplePaywallLoader {
 
     }()
 
+    static var imageURL = URL(string: "https://assets.pawwalls.com/1075077_1724796818.jpeg")!
+
+    static var imageSource: PaywallComponent.ThemeImageUrls = .init(
+        light: .init(original: imageURL, heic: imageURL, heicLowRes: imageURL)
+    )
 
     static var treadmill: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724796818.jpeg")!,
+        .image(.init(source: imageSource,
                      fitMode: .fit,
                      maxHeight: 125,
-                     cornerRadius: 23))
+                     cornerRadiuses: .init(topLeading: 23,
+                                           topTrailing: 23,
+                                           bottomLeading: 23,
+                                           bottomTrailing: 23)))
     }()
 
     static var cycle: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724797044.jpg")!,
+        .image(.init(source: imageSource,
                      fitMode: .fit,
                      maxHeight: 125,
-                     cornerRadius: 23))
+                     cornerRadiuses: .init(topLeading: 23,
+                                         topTrailing: 23,
+                                         bottomLeading: 23,
+                                         bottomTrailing: 23)))
     }()
 
     static var homeGym: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724799222.jpeg")!,
+        .image(.init(source: imageSource,
                      fitMode: .fill,
                      maxHeight: 200,
                      gradientColors: ["#FF000000", "#FF000000", "#00000000"]))
     }()
 
     static var weights: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1724797320.jpg")!,
+        .image(.init(source: imageSource,
                      fitMode: .fit,
                      maxHeight: 125,
-                     cornerRadius: 23))
+                     cornerRadiuses: .init(topLeading: 23,
+                                           topTrailing: 23,
+                                           bottomLeading: 23,
+                                           bottomTrailing: 23)))
     }()
 
 
     static var headlineText: PaywallComponent = {
         .text(.init(
-            text: "Fitness Coach",
             textLid: "fitness_coach_title",
             fontFamily: "",
             fontWeight: .black,
@@ -1279,7 +1289,6 @@ private extension SamplePaywallLoader {
 
     static var treadmillText: PaywallComponent = {
         .text(.init(
-            text: "New workouts added every day",
             textLid: "fitness_new_workouts",
             fontFamily: "",
             fontWeight: .semibold,
@@ -1291,7 +1300,6 @@ private extension SamplePaywallLoader {
 
     static var cycleText: PaywallComponent = {
         .text(.init(
-            text: "Challenge others and climb the leader ladder",
             textLid: "fitness_challenge_text",
             fontFamily: "",
             fontWeight: .semibold,
@@ -1303,7 +1311,6 @@ private extension SamplePaywallLoader {
 
     static var weightsText: PaywallComponent = {
         .text(.init(
-            text: "Conquer your goals",
             textLid: "fitness_conquer_goals",
             fontFamily: "",
             fontWeight: .semibold,
@@ -1345,7 +1352,6 @@ private extension SamplePaywallLoader {
 
     static var purchaseFitnessNowText: PaywallComponent.TextComponent = {
         .init(
-            text: "Start Today for $9.99/mo",
             textLid: "fitness_start_today",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -1366,7 +1372,6 @@ private extension SamplePaywallLoader {
 
     static var restoreFitnessPurchases: PaywallComponent = {
         .text(.init(
-            text: "Restore purchases",
             textLid: "restore_purchases",
             fontFamily: "",
             fontWeight: .regular,
@@ -1378,7 +1383,6 @@ private extension SamplePaywallLoader {
 
     static var bulletFitness: PaywallComponent = {
         .text(.init(
-            text: "•",
             textLid: "bullet_point",
             fontFamily: "",
             fontWeight: .regular,
@@ -1390,7 +1394,6 @@ private extension SamplePaywallLoader {
 
     static var termsAndConditionsFitness: PaywallComponent = {
         .text(.init(
-            text: "Terms and conditions",
             textLid: "terms_and_conditions",
             fontFamily: "",
             fontWeight: .regular,
@@ -1420,17 +1423,25 @@ private extension SamplePaywallLoader {
 
     }()
 
+
+
     static var headerImage: PaywallComponent = {
-        .image(.init(url: curiousKidImageURL))
+        .image(.init(source: curiousKidImageSource))
     }()
 
     static let fuzzyCatImageURL = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
     static let curiousKidImageURL = URL(string: "https://assets.pawwalls.com/9a17e0a7_1689854430..jpeg")!
 
+    static var fuzzyCatImageSource: PaywallComponent.ThemeImageUrls = .init(
+        light: .init(original: fuzzyCatImageURL, heic: fuzzyCatImageURL, heicLowRes: fuzzyCatImageURL)
+    )
+    static var curiousKidImageSource: PaywallComponent.ThemeImageUrls = .init(
+        light: .init(original: curiousKidImageURL, heic: curiousKidImageURL, heicLowRes: curiousKidImageURL)
+    )
+
 
     static var myGreatAppText: PaywallComponent = {
         .text(.init(
-            text: "Explore",
             textLid: "explore_button_text",
             fontFamily: "",
             fontWeight: .semibold,
@@ -1442,7 +1453,6 @@ private extension SamplePaywallLoader {
 
     static var myGreatAppTextOffset: PaywallComponent = {
         .text(.init(
-            text: "Explore",
             textLid: "explore_button_text",
             fontFamily: "",
             fontWeight: .semibold,
@@ -1463,7 +1473,6 @@ private extension SamplePaywallLoader {
 
     static var headingText: PaywallComponent = {
         .text(.init(
-            text: "Ignite your child's curiosity",
             textLid: "curiosity_headline",
             fontWeight: .heavy,
             color: .init(light: "#000000"),
@@ -1473,7 +1482,6 @@ private extension SamplePaywallLoader {
 
     static var subHeadingText: PaywallComponent = {
         .text(.init(
-            text: "Get access to all ouir educational content trusted by thousands of parents.",
             textLid: "curiosity_subheadline",
             color: .init(light: "#000000"),
             textStyle: .headline
@@ -1483,54 +1491,46 @@ private extension SamplePaywallLoader {
     static var featureVStack: PaywallComponent = {
         .stack(.init(components: [feature1Text, feature2Text, feature3Text],
                      dimension: .vertical(.leading),
-                     spacing: 11.5,
+                     width: .init(type: .fit, value: nil),
+                     spacing: 0,
                      backgroundColor: nil,
-                     padding: .zero))
+                     padding: .zero,
+                     margin: .init(top: 0, bottom: 0, leading: 40, trailing: 40)))
 
-    }()
-
-
-    static var featureHStack: PaywallComponent = {
-        .stack(.init(components: [feature1Text, spacer],
-                     dimension: .horizontal(.center),
-                     spacing: nil,
-                     backgroundColor: nil,
-                     padding: .zero))
     }()
 
     static var feature1Text: PaywallComponent = {
         .text(.init(
-            text: "✅ Valuable features",
             textLid: "feature_valuable",
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline
+            textStyle: .headline,
+            horizontalAlignment: .leading
         ))
     }()
 
     static var feature2Text: PaywallComponent = {
         .text(.init(
-            text: "✅ Great Price",
             textLid: "feature_great_price",
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline
+            textStyle: .headline,
+            horizontalAlignment: .leading
         ))
     }()
 
     static var feature3Text: PaywallComponent = {
         .text(.init(
-            text: "✅ Support",
             textLid: "feature_support",
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline
+            textStyle: .headline,
+            horizontalAlignment: .leading
         ))
     }()
 
     static var costText: PaywallComponent = {
         .text(.init(
-            text: "$6.99 per month",
             textLid: "subscription_price",
             color: .init(light: "#000000"),
             textStyle: .subheadline
@@ -1544,7 +1544,6 @@ private extension SamplePaywallLoader {
 
     static var purchaseNowText: PaywallComponent.TextComponent = {
         .init(
-            text: "Purchase for $6.99",
             textLid: "purchase_for_price",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -1556,7 +1555,6 @@ private extension SamplePaywallLoader {
 
     static var restorePurchases: PaywallComponent = {
         .text(.init(
-            text: "Restore purchases",
             textLid: "restore_purchases",
             fontFamily: "",
             fontWeight: .regular,
@@ -1568,7 +1566,6 @@ private extension SamplePaywallLoader {
 
     static var termsAndConditions: PaywallComponent = {
         .text(.init(
-            text: "Terms and conditions",
             textLid: "terms_and_conditions",
             fontFamily: "",
             fontWeight: .regular,
@@ -1580,7 +1577,6 @@ private extension SamplePaywallLoader {
 
     static var bullet: PaywallComponent = {
         .text(.init(
-            text: "•",
             textLid: "bullet_point",
             fontFamily: "",
             fontWeight: .regular,
@@ -1633,7 +1629,6 @@ private extension SamplePaywallLoader {
 
     static var middleText: PaywallComponent = {
         .text(.init(
-            text: "Popular Plan",
             textLid: "popular_plan_label",
             color: .init(light: "#000000"),
             textStyle: .body
@@ -1642,7 +1637,6 @@ private extension SamplePaywallLoader {
 
     static var getStartedText: PaywallComponent = {
         .text(.init(
-            text: "Get started with our plan",
             textLid: "get_started_text",
             color: .init(light: "#FF0000"),
             backgroundColor: .init(light: "#FF00FF"),
@@ -1652,7 +1646,6 @@ private extension SamplePaywallLoader {
 
     static var upgradeText: PaywallComponent = {
         .text(.init(
-            text: "Upgrade to our premium plan",
             textLid: "upgrade_plan_text",
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#FF00FF"),
@@ -1749,37 +1742,37 @@ private extension SamplePaywallLoader {
     static func fitnessPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
-                "best_value": "Best Value",
-                "fitness_coach_title": "Fitness Coach",
-                "fitness_new_workouts": "New workouts added every day",
-                "fitness_challenge_text": "Challenge others and climb the leader ladder",
-                "fitness_conquer_goals": "Conquer your goals",
-                "fitness_start_today": "Start Today for $9.99/mo",
-                "restore_purchases": "Restore purchases",
-                "bullet_point": "•",
-                "terms_and_conditions": "Terms and conditions"
+                "best_value": .string("Best Value"),
+                "fitness_coach_title": .string("Fitness Coach"),
+                "fitness_new_workouts": .string("New workouts added every day"),
+                "fitness_challenge_text": .string("Challenge others and climb the leader ladder"),
+                "fitness_conquer_goals": .string("Conquer your goals"),
+                "fitness_start_today": .string("Start Today for $9.99/mo"),
+                "restore_purchases": .string("Restore purchases"),
+                "bullet_point": .string("•"),
+                "terms_and_conditions": .string("Terms and conditions")
             ],
             "fr_FR": [
-                "best_value": "Meilleur prix",
-                "fitness_coach_title": "Coach Fitness",
-                "fitness_new_workouts": "Nouveaux entraînements ajoutés chaque jour",
-                "fitness_challenge_text": "Défiez les autres et grimpez l'échelle des leaders",
-                "fitness_conquer_goals": "Conquérir vos objectifs",
-                "fitness_start_today": "Commencez aujourd'hui pour 9,99€/mois",
-                "restore_purchases": "Restaurer les achats",
-                "bullet_point": "•",
-                "terms_and_conditions": "Conditions générales"
+                "best_value": .string("Meilleur prix"),
+                "fitness_coach_title": .string("Coach Fitness"),
+                "fitness_new_workouts": .string("Nouveaux entraînements ajoutés chaque jour"),
+                "fitness_challenge_text": .string("Défiez les autres et grimpez l'échelle des leaders"),
+                "fitness_conquer_goals": .string("Conquérir vos objectifs"),
+                "fitness_start_today": .string("Commencez aujourd'hui pour 9,99€/mois"),
+                "restore_purchases": .string("Restaurer les achats"),
+                "bullet_point": .string("•"),
+                "terms_and_conditions": .string("Conditions générales")
             ],
             "es_ES": [
-                "best_value": "Mejor precio",
-                "fitness_coach_title": "Entrenador de fitness",
-                "fitness_new_workouts": "Nuevos entrenamientos añadidos todos los días",
-                "fitness_challenge_text": "Desafía a otros y escala en la clasificación",
-                "fitness_conquer_goals": "Conquista tus objetivos",
-                "fitness_start_today": "Comienza hoy por 9,99€/mes",
-                "restore_purchases": "Restaurar compras",
-                "bullet_point": "•",
-                "terms_and_conditions": "Términos y condiciones"
+                "best_value": .string("Mejor precio"),
+                "fitness_coach_title": .string("Entrenador de fitness"),
+                "fitness_new_workouts": .string("Nuevos entrenamientos añadidos todos los días"),
+                "fitness_challenge_text": .string("Desafía a otros y escala en la clasificación"),
+                "fitness_conquer_goals": .string("Conquista tus objetivos"),
+                "fitness_start_today": .string("Comienza hoy por 9,99€/mes"),
+                "restore_purchases": .string("Restaurar compras"),
+                "bullet_point": .string("•"),
+                "terms_and_conditions": .string("Términos y condiciones")
             ]
         ]
     }
@@ -1787,52 +1780,52 @@ private extension SamplePaywallLoader {
     static func curiosityPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
-                "curiosity_headline": "Ignite your child's curiosity",
-                "curiosity_subheadline": "Get access to all our educational content trusted by thousands of parents.",
-                "feature_valuable": "✅ Valuable features",
-                "feature_great_price": "✅ Great Price",
-                "feature_support": "✅ Support",
-                "subscription_price": "$6.99 per month",
-                "purchase_for_price": "Purchase for $6.99",
-                "popular_plan_label": "Popular Plan",
-                "get_started_text": "Get started with our plan",
-                "upgrade_plan_text": "Upgrade to our premium plan",
-                "explore_button_text": "Explore",
-                "restore_purchases": "Restore purchases",
-                "bullet_point": "•",
-                "terms_and_conditions": "Terms and conditions",
+                "curiosity_headline": .string("Ignite your child's curiosity"),
+                "curiosity_subheadline": .string("Get access to all our educational content trusted by thousands of parents."),
+                "feature_valuable": .string("✅ Valuable features"),
+                "feature_great_price": .string("✅ Great Price"),
+                "feature_support": .string("✅ Support"),
+                "subscription_price": .string("$6.99 per month"),
+                "purchase_for_price": .string("Purchase for $6.99"),
+                "popular_plan_label": .string("Popular Plan"),
+                "get_started_text": .string("Get started with our plan"),
+                "upgrade_plan_text": .string("Upgrade to our premium plan"),
+                "explore_button_text": .string("Explore"),
+                "restore_purchases": .string("Restore purchases"),
+                "bullet_point": .string("•"),
+                "terms_and_conditions": .string("Terms and conditions"),
             ],
             "fr_FR": [
-                "curiosity_headline": "Éveillez la curiosité de votre enfant",
-                "curiosity_subheadline": "Accédez à tout notre contenu éducatif approuvé par des milliers de parents.",
-                "feature_valuable": "✅ Fonctionnalités précieuses",
-                "feature_great_price": "✅ Excellent prix",
-                "feature_support": "✅ Support",
-                "subscription_price": "6,99€ par mois",
-                "purchase_for_price": "Achetez pour 6,99€",
-                "popular_plan_label": "Plan populaire",
-                "get_started_text": "Commencez avec notre plan",
-                "upgrade_plan_text": "Passez à notre plan premium",
-                "explore_button_text": "Explorer",
-                "restore_purchases": "Restaurer les achats",
-                "bullet_point": "•",
-                "terms_and_conditions": "Conditions générales",
+                "curiosity_headline": .string("Éveillez la curiosité de votre enfant"),
+                "curiosity_subheadline": .string("Accédez à tout notre contenu éducatif approuvé par des milliers de parents."),
+                "feature_valuable": .string("✅ Fonctionnalités précieuses"),
+                "feature_great_price": .string("✅ Excellent prix"),
+                "feature_support": .string("✅ Support"),
+                "subscription_price": .string("6,99€ par mois"),
+                "purchase_for_price": .string("Achetez pour 6,99€"),
+                "popular_plan_label": .string("Plan populaire"),
+                "get_started_text": .string("Commencez avec notre plan"),
+                "upgrade_plan_text": .string("Passez à notre plan premium"),
+                "explore_button_text": .string("Explorer"),
+                "restore_purchases": .string("Restaurer les achats"),
+                "bullet_point": .string("•"),
+                "terms_and_conditions": .string("Conditions générales"),
             ],
             "es_ES": [
-                "curiosity_headline": "Despierta la curiosidad de tu hijo",
-                "curiosity_subheadline": "Accede a todo nuestro contenido educativo confiado por miles de padres.",
-                "feature_valuable": "✅ Funciones valiosas",
-                "feature_great_price": "✅ Gran precio",
-                "feature_support": "✅ Soporte",
-                "subscription_price": "6,99€ por mes",
-                "purchase_for_price": "Compra por 6,99€",
-                "popular_plan_label": "Plan popular",
-                "get_started_text": "Empieza con nuestro plan",
-                "upgrade_plan_text": "Actualiza a nuestro plan premium",
-                "explore_button_text": "Explorar",
-                "restore_purchases": "Restaurar compras",
-                "bullet_point": "•",
-                "terms_and_conditions": "Términos y condiciones",
+                "curiosity_headline": .string("Despierta la curiosidad de tu hijo"),
+                "curiosity_subheadline": .string("Accede a todo nuestro contenido educativo confiado por miles de padres."),
+                "feature_valuable": .string("✅ Funciones valiosas"),
+                "feature_great_price": .string("✅ Gran precio"),
+                "feature_support": .string("✅ Soporte"),
+                "subscription_price": .string("6,99€ por mes"),
+                "purchase_for_price": .string("Compra por 6,99€"),
+                "popular_plan_label": .string("Plan popular"),
+                "get_started_text": .string("Empieza con nuestro plan"),
+                "upgrade_plan_text": .string("Actualiza a nuestro plan premium"),
+                "explore_button_text": .string("Explorar"),
+                "restore_purchases": .string("Restaurar compras"),
+                "bullet_point": .string("•"),
+                "terms_and_conditions": .string("Términos y condiciones")
             ]
         ]
     }
@@ -1841,31 +1834,31 @@ private extension SamplePaywallLoader {
     static func simplePaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
-                "welcome_message": "Hello, Paywall Components!",
-                "purchase_button_text": "Purchase Now!",
-                "explore_button_text": "Explore",
-                "popular_plan_label": "Popular Plan",
-                "get_started_text": "Get started with our plan",
-                "upgrade_plan_text": "Upgrade to our premium plan",
-                "feature_text": "Feature"
+                "welcome_message": .string("Hello, Paywall Components!"),
+                "purchase_button_text": .string("Purchase Now! $19.99/year"),
+                "explore_button_text": .string("Explore"),
+                "popular_plan_label": .string("Popular Plan"),
+                "get_started_text": .string("Get started with our plan"),
+                "upgrade_plan_text": .string("Upgrade to our premium plan"),
+                "feature_text": .string("Feature")
             ],
             "fr_FR": [
-                "welcome_message": "Bonjour, Composants Paywall!",
-                "purchase_button_text": "Achetez maintenant!",
-                "explore_button_text": "Explorer",
-                "popular_plan_label": "Plan populaire",
-                "get_started_text": "Commencez avec notre plan",
-                "upgrade_plan_text": "Passez à notre plan premium",
-                "feature_text": "Fonctionnalité"
+                "welcome_message": .string("Bonjour, Composants Paywall!"),
+                "purchase_button_text": .string("Achetez maintenant! 19,99$/an"),
+                "explore_button_text": .string("Explorer"),
+                "popular_plan_label": .string("Plan populaire"),
+                "get_started_text": .string("Commencez avec notre plan"),
+                "upgrade_plan_text": .string("Passez à notre plan premium"),
+                "feature_text": .string("Fonctionnalité")
             ],
             "es_ES": [
-                "welcome_message": "¡Hola, Componentes Paywall!",
-                "purchase_button_text": "¡Compra ahora!",
-                "explore_button_text": "Explorar",
-                "popular_plan_label": "Plan popular",
-                "get_started_text": "Empieza con nuestro plan",
-                "upgrade_plan_text": "Actualiza a nuestro plan premium",
-                "feature_text": "Función"
+                "welcome_message": .string("¡Hola, Componentes Paywall!"),
+                "purchase_button_text": .string("¡Compra ahora! 19,99€/año"),
+                "explore_button_text": .string("Explorar"),
+                "popular_plan_label": .string("Plan popular"),
+                "get_started_text": .string("Empieza con nuestro plan"),
+                "upgrade_plan_text": .string("Actualiza a nuestro plan premium"),
+                "feature_text": .string("Función")
             ]
         ]
     }

@@ -88,8 +88,7 @@ extension View {
     }
 
     @ViewBuilder
-    // @PublicForExternalTesting
-    func scrollableIfNecessary(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+    public func scrollableIfNecessary(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
         if enabled {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits(in: axis.scrollViewAxis) {
@@ -297,24 +296,28 @@ extension View {
         corners: UIRectCorner,
         edgesIgnoringSafeArea edges: Edge.Set = []
     ) -> some View {
-        #if swift(>=5.9)
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            self.mask(
-                UnevenRoundedRectangle(radius: radius, corners: corners),
-                edgesIgnoringSafeArea: edges
-            )
-        } else {
+        if radius > 0 {
+            #if swift(>=5.9)
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                self.mask(
+                    UnevenRoundedRectangle(radius: radius, corners: corners),
+                    edgesIgnoringSafeArea: edges
+                )
+            } else {
+                self.mask(
+                    RoundedCorner(radius: radius, corners: corners),
+                    edgesIgnoringSafeArea: edges
+                )
+            }
+            #else
             self.mask(
                 RoundedCorner(radius: radius, corners: corners),
                 edgesIgnoringSafeArea: edges
             )
+            #endif
+        } else {
+            self
         }
-        #else
-        self.mask(
-            RoundedCorner(radius: radius, corners: corners),
-            edgesIgnoringSafeArea: edges
-        )
-        #endif
     }
 
     private func mask(_ shape: some Shape, edgesIgnoringSafeArea edges: Edge.Set) -> some View {

@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% намаление";
 "Continue" = "продължи";
 "Default_offer_details_with_intro_offer" = "Започнете своя пробен период от {{ sub_offer_duration }}, след което {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ безплатно";
+"pay_as_you_go_period" = "%@ през %@";
+"pay_up_front_period" = "%@ за %@";
+"then_price_per_period" = "след това %@";

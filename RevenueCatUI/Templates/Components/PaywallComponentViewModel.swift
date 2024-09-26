@@ -11,8 +11,7 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
-enum PaywallComponentViewModel {
+public enum PaywallComponentViewModel {
 
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
@@ -40,7 +39,7 @@ extension PaywallComponent {
             )
         case .image(let component):
             return .image(
-                ImageComponentViewModel(component: component)
+                try ImageComponentViewModel(localizedStrings: localizedStrings, component: component)
             )
         case .spacer(let component):
             return .spacer(

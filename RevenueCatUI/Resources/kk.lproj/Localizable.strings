@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% жеңілдік";
 "Continue" = "Жалғастыру";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} сынақ нұсқасын бастаңыз, содан кейін {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ тегін";
+"pay_as_you_go_period" = "%@ ішінде %@";
+"pay_up_front_period" = "%@ үшін %@";
+"then_price_per_period" = "содан кейін %@";

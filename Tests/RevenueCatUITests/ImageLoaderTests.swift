@@ -190,7 +190,7 @@ class ImageLoaderTests: TestCase {
             throw XCTSkip("API only available on iOS 16")
         }
 
-        let renderedImage = try XCTUnwrap(self.loader.result?.value?.getUIImage())
+        let renderedImage = try XCTUnwrap(self.loader.result?.value?.image.getUIImage())
         let expectedImage = try XCTUnwrap(Image(uiImage: try XCTUnwrap(UIImage(data: data)))
             .getUIImage())
 
@@ -238,7 +238,10 @@ private final class MockAsyncURLSession: NSObject, URLSessionType {
         self.completionSet = false
         self.completion = nil
 
-        return try await withCheckedContinuation { continuation in
+        // Note: We're using UnsafeContinuation instead of Checked because
+        // of a crash in iOS 18.0 devices when CheckedContinuations are used.
+        // See: https://github.com/RevenueCat/purchases-ios/issues/4177
+        return try await withUnsafeContinuation { continuation in
             self.completion = { value in
                 continuation.resume(returning: value)
             }

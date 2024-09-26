@@ -37,17 +37,14 @@ struct FeedbackSurveyView: View {
 
     init(feedbackSurveyData: FeedbackSurveyData,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
-        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData,
-                                                customerCenterActionHandler: customerCenterActionHandler)
-        self._viewModel = StateObject(wrappedValue: viewModel)
+        self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
+            feedbackSurveyData: feedbackSurveyData,
+            customerCenterActionHandler: customerCenterActionHandler
+        ))
     }
 
     var body: some View {
         ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-
             List {
                 FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                           onOptionSelected: self.viewModel.handleAction(for:),

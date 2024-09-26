@@ -16,7 +16,11 @@ struct LinkButtonComponentView: View {
 
     @Environment(\.selectionState) var selectionState
 
-    let viewModel: LinkButtonComponentViewModel
+    private let viewModel: LinkButtonComponentViewModel
+
+    internal init(viewModel: LinkButtonComponentViewModel) {
+        self.viewModel = viewModel
+    }
 
     var url: URL {
         viewModel.url(for: selectionState)

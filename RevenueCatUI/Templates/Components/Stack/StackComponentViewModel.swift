@@ -20,10 +20,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class StackComponentViewModel {
 
-    let locale: Locale
+    private let locale: Locale
     private let unselectedViewModels: [PaywallComponentViewModel]
     private let selectedViewModels: [PaywallComponentViewModel]?
     private let component: PaywallComponent.StackComponent
+
+    let viewModels: [PaywallComponentViewModel]
 
     init(locale: Locale,
          component: PaywallComponent.StackComponent,
@@ -76,6 +78,18 @@ public class StackComponentViewModel {
 
     func padding(for selectionState: SelectionState) -> EdgeInsets {
         currentComponent(for: selectionState).padding.edgeInsets
+    }
+
+    var margin: EdgeInsets {
+        component.margin.edgeInsets
+    }
+
+    var cornerRadiuses: PaywallComponent.CornerRadiuses {
+        component.cornerRadiuses
+    }
+
+    var width: PaywallComponent.WidthSize? {
+        component.width
     }
 
 }

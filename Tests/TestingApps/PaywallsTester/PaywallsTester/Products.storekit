@@ -4,7 +4,36 @@
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "531C0472",
+      "localizations" : [
+        {
+          "description" : "Lifetime",
+          "displayName" : "Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.simpleapp.lifetime",
+      "referenceName" : "Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "AE159122",
+      "localizations" : [
+        {
+          "description" : "Liftime",
+          "displayName" : "Lifetime Lite",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.simpleapp.lifetimelite",
+      "referenceName" : "Lifetime Lite",
+      "type" : "NonConsumable"
+    }
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,

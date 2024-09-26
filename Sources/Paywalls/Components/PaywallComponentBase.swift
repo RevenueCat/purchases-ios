@@ -39,7 +39,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
 public extension PaywallComponent {
     typealias LocaleID = String
-    typealias LocalizationDictionary = [String: String]
+    typealias LocalizationDictionary = [String: PaywallComponentsData.LocalizationData]
     typealias LocalizationKey = String
     typealias ColorHex = String
 }

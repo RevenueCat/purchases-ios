@@ -1,6 +1,12 @@
-### Bugfixes
-* [Customer Center] Build `WrongPlatformView` from JSON (#4234) via Cesar de la Vega (@vegaro)
-* Add `feedbackSurveyCompleted` event to Customer Center events (#4194) via Cesar de la Vega (@vegaro)
-### Other Changes
-* [Diagnostics] Add `backend_error_code` property (#4236) via Toni Rico (@tonidero)
-* Update README.md (#3986) via Khoa (@onmyway133)
+## RevenueCat SDK
+### ✨ New Features
+* Add `kochava` integration (#4274) via Toni Rico (@tonidero)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Cleanup of strings in Customer Center (#4294) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* [Diagnostics] Add `apple_purchase_attempt ` event (#4253) via Cesar de la Vega (@vegaro)
+* Temporarily set SWIFT_TREAT_WARNINGS_AS_ERRORS as NO (#4292) via Cesar de la Vega (@vegaro)

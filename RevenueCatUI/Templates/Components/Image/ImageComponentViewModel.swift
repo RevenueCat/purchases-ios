@@ -21,10 +21,20 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ImageComponentViewModel {
 
+    private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.ImageComponent
 
-    init(component: PaywallComponent.ImageComponent) {
+    private let imageInfo: PaywallComponent.ThemeImageUrls
+
+    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
+        self.localizedStrings = localizedStrings
         self.component = component
+
+        if let overrideSourceLid = component.overrideSourceLid {
+            self.imageInfo = try localizedStrings.image(key: overrideSourceLid)
+        } else {
+            self.imageInfo = component.source
+        }
     }
 
     private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.ImageComponent {
@@ -42,6 +52,14 @@ public class ImageComponentViewModel {
 
     func cornerRadius(for selectionState: SelectionState) -> Double {
         currentComponent(for: selectionState).cornerRadius
+    }
+
+    func url(for selectionState: SelectionState) -> URL {
+        currentComponent(for: selectionState).imageInfo.light.heic
+    }
+
+    func cornerRadiuses(for selectionState: SelectionState) -> PaywallComponent.CornerRadiuses {
+        currentComponent(for: selectionState).cornerRadiuses
     }
 
     func gradientColors(for selectionState: SelectionState) -> [Color] {

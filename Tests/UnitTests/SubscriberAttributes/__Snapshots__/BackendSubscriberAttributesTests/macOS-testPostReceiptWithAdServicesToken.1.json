@@ -8,6 +8,7 @@
     "X-Is-Sandbox" : "false",
     "X-Observer-Mode-Enabled" : "false",
     "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
     "X-Platform-Flavor" : "Unity",
     "X-Platform-Flavor-Version" : "2.3.3",
     "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",

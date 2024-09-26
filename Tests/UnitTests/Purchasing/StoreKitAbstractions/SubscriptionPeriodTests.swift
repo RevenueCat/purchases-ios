@@ -51,12 +51,13 @@ class SubscriptionPeriodTests: TestCase {
             .init(p(14, .day), 2, 1),
             .init(p(1, .week), 10, 10),
             .init(p(2, .week), 10, 5),
-            .init(p(1, .month), 14.99, 3.44),
+            .init(p(1, .month), 14.99, 3.45),
+            .init(p(1, .month), 14.9899999999, 3.45),
             .init(p(2, .month), 30, 3.45),
-            .init(p(3, .month), 40, 3.06),
+            .init(p(3, .month), 40, 3.07),
             .init(p(1, .year), 120, 2.3),
-            .init(p(1, .year), 50, 0.95),
-            .init(p(1, .year), 29.99, 0.57),
+            .init(p(1, .year), 50, 0.96),
+            .init(p(1, .year), 29.99, 0.58),
             .init(p(3, .year), 720, 4.6)
         ]
 
@@ -78,13 +79,14 @@ class SubscriptionPeriodTests: TestCase {
             .init(p(1, .day), 2, 60),
             .init(p(15, .day), 5, 10),
             .init(p(1, .week), 10, 43.45),
-            .init(p(2, .week), 10, 21.72),
+            .init(p(2, .week), 10, 21.73),
             .init(p(1, .month), 14.99, 14.99),
+            .init(p(1, .month), 14.9899999999, 14.99),
             .init(p(2, .month), 30, 15),
             .init(p(3, .month), 40, 13.33),
             .init(p(1, .year), 120, 10),
-            .init(p(1, .year), 50, 4.16),
-            .init(p(1, .year), 29.99, 2.49),
+            .init(p(1, .year), 50, 4.17),
+            .init(p(1, .year), 29.99, 2.5),
             .init(p(3, .year), 720, 20)
         ]
 
@@ -105,10 +107,11 @@ class SubscriptionPeriodTests: TestCase {
         let tests: [Test] = [
             .init(p(1, .day), 1, 365),
             .init(p(1, .day), 2, 730),
-            .init(p(15, .day), 5, 121.66),
-            .init(p(1, .week), 10, 521.42),
+            .init(p(15, .day), 5, 121.67),
+            .init(p(1, .week), 10, 521.43),
             .init(p(2, .week), 10, 260.71),
             .init(p(1, .month), 14.99, 179.88),
+            .init(p(1, .month), 14.9899999999, 179.88),
             .init(p(1, .month), 5, 60),
             .init(p(2, .month), 30, 180),
             .init(p(3, .month), 40, 160),

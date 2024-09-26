@@ -27,6 +27,8 @@ public class TextComponentViewModel {
 
     private let component: PaywallComponent.TextComponent
 
+    let text: String
+
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
@@ -82,6 +84,10 @@ public class TextComponentViewModel {
 
     func padding(for selectionState: SelectionState) -> EdgeInsets {
         currentComponent(for: selectionState).padding.edgeInsets
+    }
+
+    var margin: EdgeInsets {
+        component.margin.edgeInsets
     }
 
 }

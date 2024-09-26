@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% alennus";
 "Continue" = "Jatkaa";
 "Default_offer_details_with_intro_offer" = "Aloita {{ sub_offer_duration }} -kokeilu ja sitten {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ ilmaiseksi";
+"pay_as_you_go_period" = "%@ aikana %@";
+"pay_up_front_period" = "%@ hinnalla %@";
+"then_price_per_period" = "sitten %@";

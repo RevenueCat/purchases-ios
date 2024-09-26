@@ -279,6 +279,8 @@ extension SamplePaywallsList {
             print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
         case .refundRequestCompleted(let status):
             print("CustomerCenter: refundRequestCompleted. Result: \(status)")
+        case .feedbackSurveyCompleted(let surveyOptionID):
+            print("CustomerCenter: feedbackSurveyCompleted. Result: \(surveyOptionID)")
         }
     }
 }

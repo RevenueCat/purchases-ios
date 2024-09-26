@@ -17,3 +17,7 @@
 "%d%% off" = "%d %% Rabatt";
 "Continue" = "Weiter";
 "Default_offer_details_with_intro_offer" = "Starten Sie Ihre Testversion für {{ sub_offer_duration }} und dann für {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ kostenlos";
+"pay_as_you_go_period" = "%@ während %@";
+"pay_up_front_period" = "%@ für %@";
+"then_price_per_period" = "dann %@";

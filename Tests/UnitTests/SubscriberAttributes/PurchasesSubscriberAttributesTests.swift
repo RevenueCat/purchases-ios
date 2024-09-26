@@ -87,7 +87,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
-        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo,
+        self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
+                                                       systemInfo: systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
@@ -435,6 +436,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetCleverTapIDParametersList[0])
             .to(equal(("clever", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetCleverTapIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearKochavaDeviceID() {
+        setupPurchases()
+        purchases.attribution.setKochavaDeviceID("kochava")
+        purchases.attribution.setKochavaDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[0])
+            .to(equal(("kochava", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetKochavaDeviceIDParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
 

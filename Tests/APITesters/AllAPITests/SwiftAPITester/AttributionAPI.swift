@@ -49,6 +49,9 @@ func checkAttributionAPI() {
     attribution.setCleverTapID("")
     attribution.setCleverTapID(nil)
 
+    attribution.setKochavaDeviceID("")
+    attribution.setKochavaDeviceID(nil)
+
     attribution.setMixpanelDistinctID("")
     attribution.setMixpanelDistinctID(nil)
 
