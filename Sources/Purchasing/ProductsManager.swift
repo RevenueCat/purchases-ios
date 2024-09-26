@@ -144,14 +144,7 @@ private extension ProductsManager {
             let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
                 ?? error?.localizedDescription
             let errorCode = error?.errorCode
-            let storeKitErrorDescription: String?
-            if let skError = error?.userInfo[NSUnderlyingErrorKey] as? SKError {
-                storeKitErrorDescription = skError.code.trackingDescription
-            } else if let storeKitError = error?.userInfo[NSUnderlyingErrorKey] as? StoreKitError {
-                storeKitErrorDescription = storeKitError.trackingDescription
-            } else {
-                storeKitErrorDescription = nil
-            }
+            let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
             Task(priority: .background) {
                 await diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
                                                               storeKitVersion: storeKitVersion,
