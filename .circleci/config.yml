@@ -1328,12 +1328,6 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      # REMOVE THESE BEFORE MERGING
-      - run-revenuecat-ui-ios-17
-      - spm-revenuecat-ui-watchos
-      - installation-tests-cocoapods
-      - run-test-watchos
-
       - lint
       - run-test-ios-17
       - run-test-ios-18
