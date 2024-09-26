@@ -37,7 +37,7 @@ public extension PaywallComponent {
             self.heic = heic
             self.heicLowRes = heicLowRes
         }
-        
+
         public let original: URL
         public let heic: URL
         public let heicLowRes: URL
@@ -91,11 +91,11 @@ public extension PaywallComponent {
         public let bottomLeading: Double
         public let bottomTrailing: Double
 
-        public static let `default` = CornerRadiuses(topLeading: 0, 
+        public static let `default` = CornerRadiuses(topLeading: 0,
                                                      topTrailing: 0,
                                                      bottomLeading: 0,
                                                      bottomTrailing: 0)
-        public static let zero = CornerRadiuses(topLeading: 0, 
+        public static let zero = CornerRadiuses(topLeading: 0,
                                                 topTrailing: 0,
                                                 bottomLeading: 0,
                                                 bottomTrailing: 0)
