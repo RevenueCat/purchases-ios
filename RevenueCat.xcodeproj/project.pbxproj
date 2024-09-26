@@ -199,10 +199,10 @@
 		3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */; };
 		353756712C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756622C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift */; };
 		353756722C382C2800A1B8D6 /* URLUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756632C382C2800A1B8D6 /* URLUtilities.swift */; };
+		353FDAEC2CA1866A0055F328 /* StoreKitErrorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */; };
 		353FDC0D2CA41CB20055F328 /* SubscriptionPeriod+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDC0C2CA41CA60055F328 /* SubscriptionPeriod+Extensions.swift */; };
 		353FDC0F2CA446FA0055F328 /* StoreProductDiscount+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDC0E2CA446F50055F328 /* StoreProductDiscount+Extensions.swift */; };
 		353FDC112CA4472B0055F328 /* StoreProduct+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDC102CA447270055F328 /* StoreProduct+Extensions.swift */; };
-		353FDAEC2CA1866A0055F328 /* StoreKitErrorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */; };
 		3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift */; };
 		3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515B26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift */; };
 		3543913926F90FFB00E669DF /* MockBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514026D4498F00BD2BD7 /* MockBackend.swift */; };
@@ -1387,10 +1387,10 @@
 		3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WrongPlatformView.swift; sourceTree = "<group>"; };
 		353756622C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsPurchaseType.swift; sourceTree = "<group>"; };
 		353756632C382C2800A1B8D6 /* URLUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLUtilities.swift; sourceTree = "<group>"; };
+		353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitErrorHelper.swift; sourceTree = "<group>"; };
 		353FDC0C2CA41CA60055F328 /* SubscriptionPeriod+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionPeriod+Extensions.swift"; sourceTree = "<group>"; };
 		353FDC0E2CA446F50055F328 /* StoreProductDiscount+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreProductDiscount+Extensions.swift"; sourceTree = "<group>"; };
 		353FDC102CA447270055F328 /* StoreProduct+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreProduct+Extensions.swift"; sourceTree = "<group>"; };
-		353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitErrorHelper.swift; sourceTree = "<group>"; };
 		3544DA692C2C848E00704E9D /* CustomerCenterViewModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewModelTests.swift; sourceTree = "<group>"; };
 		3544DA6A2C2C848E00704E9D /* ManageSubscriptionsViewModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsViewModelTests.swift; sourceTree = "<group>"; };
 		3546355A2C391F38001D7E85 /* FeedbackSurveyViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyViewModel.swift; sourceTree = "<group>"; };

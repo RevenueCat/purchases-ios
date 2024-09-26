@@ -45,10 +45,6 @@ struct FeedbackSurveyView: View {
 
     var body: some View {
         ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-
             List {
                 FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                           onOptionSelected: self.viewModel.handleAction(for:),
