@@ -11,8 +11,6 @@
 //
 //  Created by Josh Holtz on 8/16/24.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -35,5 +33,3 @@ internal extension ToolbarItemPlacement {
     }
 
 }
-
-#endif

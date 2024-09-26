@@ -11,8 +11,6 @@
 //
 //  Created by Cesar de la Vega on 30/7/24.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -24,5 +22,3 @@ extension Color {
         return colorScheme == .dark ? colorInformation.dark?.underlyingColor : colorInformation.light?.underlyingColor
     }
 }
-
-#endif

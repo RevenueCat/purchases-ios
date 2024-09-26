@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 28/5/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 
 // swiftlint:disable missing_docs nesting file_length type_body_length
@@ -484,5 +482,3 @@ extension CustomerCenterConfigData.Support {
     }
 
 }
-
-#endif
