@@ -20,16 +20,22 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
-    let viewModel: TextComponentViewModel
+    private let viewModel: TextComponentViewModel
+
+    internal init(viewModel: TextComponentViewModel) {
+        self.viewModel = viewModel
+    }
 
     var body: some View {
         Text(viewModel.text)
             .font(viewModel.textStyle)
             .fontWeight(viewModel.fontWeight)
+            .fixedSize(horizontal: false, vertical: true)
             .multilineTextAlignment(viewModel.horizontalAlignment)
             .foregroundStyle(viewModel.color)
             .padding(viewModel.padding)
             .background(viewModel.backgroundColor)
+            .padding(viewModel.margin)
     }
 
 }

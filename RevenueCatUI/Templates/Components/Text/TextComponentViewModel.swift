@@ -21,9 +21,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class TextComponentViewModel {
 
-    let localizedStrings: PaywallComponent.LocalizationDictionary
-    let text: String
+    private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.TextComponent
+
+    let text: String
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
@@ -31,7 +32,7 @@ public class TextComponentViewModel {
         self.text = try localizedStrings.string(key: component.textLid)
     }
 
-    public var fontFamily: String {
+    public var fontFamily: String? {
         component.fontFamily
     }
 
@@ -57,6 +58,10 @@ public class TextComponentViewModel {
 
     public var padding: EdgeInsets {
         component.padding.edgeInsets
+    }
+
+    var margin: EdgeInsets {
+        component.margin.edgeInsets
     }
 
 }

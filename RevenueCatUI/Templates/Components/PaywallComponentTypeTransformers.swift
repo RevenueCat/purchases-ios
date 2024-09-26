@@ -138,7 +138,7 @@ extension PaywallComponent.HorizontalAlignment {
         }
     }
 
-    var stackAlignment: SwiftUI.HorizontalAlignment {
+    var stackAlignment: SwiftUI.Alignment {
         switch self {
         case .leading:
             return .leading

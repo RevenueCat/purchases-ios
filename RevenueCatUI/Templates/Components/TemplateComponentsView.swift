@@ -43,10 +43,12 @@ public struct TemplateComponentsView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-                ComponentsView(
-                    componentViewModels: self.componentViewModels
-                )
+            ComponentsView(
+                componentViewModels: self.componentViewModels
+            )
         }
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .background(.purple)
         .edgesIgnoringSafeArea(.top)
     }
 

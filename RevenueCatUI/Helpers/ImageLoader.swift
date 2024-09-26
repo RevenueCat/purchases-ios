@@ -34,7 +34,7 @@ final class ImageLoader: ObservableObject {
 
     }
 
-    typealias Value = Result<Image, Error>
+    typealias Value = Result<(image: Image, size: CGSize), Error>
 
     @Published
     private(set) var result: Value? {
@@ -101,13 +101,13 @@ private extension Data {
     func toImage() -> ImageLoader.Value {
         #if os(macOS)
         if let image = NSImage(data: self) {
-            return .success(.init(nsImage: image))
+            return .success((.init(nsImage: image), image.size))
         } else {
             return .failure(.invalidImage)
         }
         #else
         if let image = UIImage(data: self) {
-            return .success(.init(uiImage: image))
+            return .success((.init(uiImage: image), image.size))
         } else {
             return .failure(.invalidImage)
         }
