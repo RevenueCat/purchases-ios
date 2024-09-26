@@ -33,7 +33,7 @@ public extension PaywallComponent {
             padding: Padding = .default,
             margin: Padding = .default,
             textStyle: TextStyle = .body,
-            horitzontalAlignment: HorizontalAlignment = .center
+            horizontalAlignment: HorizontalAlignment = .center
         ) {
             self.type = .text
             self.textLid = textLid
@@ -44,7 +44,7 @@ public extension PaywallComponent {
             self.padding = padding
             self.margin = margin
             self.textStyle = textStyle
-            self.horizontalAlignment = horitzontalAlignment
+            self.horizontalAlignment = horizontalAlignment
         }
 
     }

@@ -46,8 +46,9 @@ public struct TemplateComponentsView: View {
             ComponentsView(
                 componentViewModels: self.componentViewModels
             )
-            Spacer()
         }
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .background(.purple)
         .edgesIgnoringSafeArea(.top)
     }
 

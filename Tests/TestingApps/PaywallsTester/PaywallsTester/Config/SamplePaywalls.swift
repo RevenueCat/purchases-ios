@@ -732,7 +732,7 @@ private extension SamplePaywallLoader {
     }()
 
     static var fuzzyCat: PaywallComponent = {
-        .image(.init(source: imageSource))
+        .image(.init(source: fuzzyCatImageSource))
     }()
 
 
@@ -1037,7 +1037,7 @@ private extension SamplePaywallLoader {
     static let fuzzyCatImageURL = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
     static let curiousKidImageURL = URL(string: "https://assets.pawwalls.com/9a17e0a7_1689854430..jpeg")!
 
-    static var fuzzyCatImageSourde: PaywallComponent.ThemeImageUrls = .init(
+    static var fuzzyCatImageSource: PaywallComponent.ThemeImageUrls = .init(
         light: .init(original: fuzzyCatImageURL, heic: fuzzyCatImageURL, heicLowRes: fuzzyCatImageURL)
     )
     static var curiousKidImageSource: PaywallComponent.ThemeImageUrls = .init(
@@ -1096,19 +1096,12 @@ private extension SamplePaywallLoader {
     static var featureVStack: PaywallComponent = {
         .stack(.init(components: [feature1Text, feature2Text, feature3Text],
                      dimension: .vertical(.leading),
-                     spacing: 10,
+                     width: .init(type: .fit, value: nil),
+                     spacing: 0,
                      backgroundColor: nil,
-                     padding: .zero))
+                     padding: .zero,
+                     margin: .init(top: 0, bottom: 0, leading: 40, trailing: 40)))
 
-    }()
-
-
-    static var featureHStack: PaywallComponent = {
-        .stack(.init(components: [feature1Text, spacer],
-                     dimension: .horizontal(.center),
-                     spacing: nil,
-                     backgroundColor: nil,
-                     padding: .zero))
     }()
 
     static var feature1Text: PaywallComponent = {
@@ -1116,7 +1109,8 @@ private extension SamplePaywallLoader {
             textLid: "feature_valuable",
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline
+            textStyle: .headline,
+            horizontalAlignment: .leading
         ))
     }()
 
@@ -1125,7 +1119,8 @@ private extension SamplePaywallLoader {
             textLid: "feature_great_price",
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline
+            textStyle: .headline,
+            horizontalAlignment: .leading
         ))
     }()
 
@@ -1134,7 +1129,8 @@ private extension SamplePaywallLoader {
             textLid: "feature_support",
             color: .init(light: "#000000"),
             padding: .zero,
-            textStyle: .headline
+            textStyle: .headline,
+            horizontalAlignment: .leading
         ))
     }()
 
