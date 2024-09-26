@@ -38,7 +38,8 @@ public struct CustomerCenterView: View {
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
-    ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions from the customer center.
+    ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
+    ///   from the customer center.
     public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
