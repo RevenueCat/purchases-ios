@@ -895,18 +895,15 @@ private extension PurchasesOrchestrator {
                                     error: PublicError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
         let diagnosticsTracker = self.diagnosticsTracker {
-            Task(priority: .background) {
-                let errorMessage =
-                (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription ?? error?.localizedDescription
-                let errorCode = error?.code
-                let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-
-                await diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
-                                                              storeKitVersion: storeKitVersion,
-                                                              errorMessage: errorMessage,
-                                                              errorCode: errorCode,
-                                                              storeKitErrorDescription: storeKitErrorDescription)
-            }
+            let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
+                ?? error?.localizedDescription
+            let errorCode = error?.code
+            let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
+            diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
+                                                    storeKitVersion: storeKitVersion,
+                                                    errorMessage: errorMessage,
+                                                    errorCode: errorCode,
+                                                    storeKitErrorDescription: storeKitErrorDescription)
         }
     }
 

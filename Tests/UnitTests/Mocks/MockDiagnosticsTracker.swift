@@ -20,13 +20,13 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     let trackedEvents: Atomic<[DiagnosticsEvent]> = .init([])
     let trackedCustomerInfo: Atomic<[CustomerInfo]> = .init([])
 
-    func track(_ event: DiagnosticsEvent) async {
+    func track(_ event: DiagnosticsEvent) {
         self.trackedEvents.modify { $0.append(event) }
     }
 
     func trackCustomerInfoVerificationResultIfNeeded(
         _ customerInfo: RevenueCat.CustomerInfo
-    ) async {
+    ) {
         self.trackedCustomerInfo.modify { $0.append(customerInfo) }
     }
 
@@ -41,7 +41,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult) async {
+                                   verificationResult: VerificationResult) {
         self.trackedHttpRequestPerformedParams.modify {
             $0.append(
                 (endpointName,
@@ -67,7 +67,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              storeKitErrorDescription: String?) async {
+                              storeKitErrorDescription: String?) {
         self.trackedPurchaseRequestParams.modify {
             $0.append(
                 (wasSuccessful,
@@ -94,7 +94,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              responseTime: TimeInterval) async {
+                              responseTime: TimeInterval) {
         self.trackedProductsRequestParams.modify {
             $0.append(
                 (wasSuccessful,
