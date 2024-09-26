@@ -31,6 +31,7 @@ extension DiagnosticsEvent {
     enum EventType: String, Codable {
 
         case httpRequestPerformed
+        case appleProductsRequest
         case customerInfoVerificationResult
         case maxEventsStoredLimitReached
         case applePurchaseAttempt

@@ -62,6 +62,7 @@ private extension DiagnosticsEvent.EventType {
     var name: String {
         switch self {
         case .httpRequestPerformed: return "http_request_performed"
+        case .appleProductsRequest: return "apple_products_request"
         case .customerInfoVerificationResult: return "customer_info_verification_result"
         case .maxEventsStoredLimitReached: return "max_events_stored_limit_reached"
         case .applePurchaseAttempt: return "apple_purchase_attempt"

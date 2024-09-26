@@ -131,6 +131,47 @@ class DiagnosticsTrackerTests: TestCase {
         ]
     }
 
+    // MARK: - product request
+
+    func testTracksProductRequestWithExpectedParameters() async {
+        await self.tracker.trackProductsRequest(wasSuccessful: false,
+                                                storeKitVersion: .storeKit2,
+                                                errorMessage: "test error message",
+                                                errorCode: 1234,
+                                                storeKitErrorDescription: "store_kit_error_type",
+                                                responseTime: 50)
+        let emptyErrorMessage: String? = nil
+        let emptyErrorCode: Int? = nil
+        let emptySkErrorDescription: String? = nil
+        await self.tracker.trackProductsRequest(wasSuccessful: true,
+                                                storeKitVersion: .storeKit1,
+                                                errorMessage: emptyErrorMessage,
+                                                errorCode: emptyErrorCode,
+                                                storeKitErrorDescription: emptySkErrorDescription,
+                                                responseTime: 20)
+        let entries = await self.handler.getEntries()
+        expect(entries) == [
+            .init(eventType: .appleProductsRequest,
+                  properties: [
+                    .responseTimeMillisKey: AnyEncodable(50000),
+                    .storeKitVersion: AnyEncodable("store_kit_2"),
+                    .successfulKey: AnyEncodable(false),
+                    .errorMessageKey: AnyEncodable("test error message"),
+                    .skErrorDescriptionKey: AnyEncodable("store_kit_error_type"),
+                    .errorCodeKey: AnyEncodable(1234)],
+                  timestamp: Self.eventTimestamp1),
+            .init(eventType: .appleProductsRequest,
+                  properties: [
+                    .responseTimeMillisKey: AnyEncodable(20000),
+                    .storeKitVersion: AnyEncodable("store_kit_1"),
+                    .successfulKey: AnyEncodable(true),
+                    .errorMessageKey: AnyEncodable(emptyErrorMessage),
+                    .skErrorDescriptionKey: AnyEncodable(emptySkErrorDescription),
+                    .errorCodeKey: AnyEncodable(emptyErrorCode)],
+                  timestamp: Self.eventTimestamp1)
+        ]
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
