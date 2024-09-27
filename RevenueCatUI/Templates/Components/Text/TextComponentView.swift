@@ -47,6 +47,7 @@ struct TextComponentView_Previews: PreviewProvider {
     static var previews: some View {
         // Default
         TextComponentView(
+            // swiftlint:disable:next force_try
             viewModel: try! .init(
                 localizedStrings: [
                     "id_1": .string("Hello, world")
@@ -62,6 +63,7 @@ struct TextComponentView_Previews: PreviewProvider {
 
         // Customizations
         TextComponentView(
+            // swiftlint:disable:next force_try
             viewModel: try! .init(
                 localizedStrings: [
                     "id_1": .string("Hello, world")
@@ -72,7 +74,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     fontWeight: .heavy,
                     color: .init(light: "#ff0000"),
                     backgroundColor: .init(light: "#dedede"),
-                    padding: .init(top: 10, 
+                    padding: .init(top: 10,
                                    bottom: 10,
                                    leading: 20,
                                    trailing: 20),

@@ -75,6 +75,7 @@ struct ImageComponentView_Previews: PreviewProvider {
         // Light - Fit
         VStack {
             ImageComponentView(
+                // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     localizedStrings: [:],
                     component: .init(
@@ -96,6 +97,7 @@ struct ImageComponentView_Previews: PreviewProvider {
         // Light - Fill
         VStack {
             ImageComponentView(
+                // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     localizedStrings: [:],
                     component: .init(
@@ -117,6 +119,7 @@ struct ImageComponentView_Previews: PreviewProvider {
         // Light - Gradient
         VStack {
             ImageComponentView(
+                // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     localizedStrings: [:],
                     component: .init(

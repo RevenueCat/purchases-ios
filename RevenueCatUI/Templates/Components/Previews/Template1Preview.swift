@@ -19,7 +19,7 @@ import SwiftUI
 
 #if DEBUG
 
-fileprivate struct Template1Preview {
+private enum Template1Preview {
 
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
 
@@ -76,7 +76,7 @@ fileprivate struct Template1Preview {
     static let stack = PaywallComponent.StackComponent(
         components: [
             .image(catImage),
-            .stack(contentStack),
+            .stack(contentStack)
         ],
         width: .init(type: .fill, value: nil),
         spacing: 20,
@@ -103,10 +103,9 @@ fileprivate struct Template1Preview {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Template1Preview_Previews: PreviewProvider {
 
-
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
-        
+
         // Template 1
         TemplateComponentsView(
             paywallComponentsData: Template1Preview.data,
