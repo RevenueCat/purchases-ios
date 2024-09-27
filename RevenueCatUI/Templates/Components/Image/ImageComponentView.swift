@@ -64,4 +64,82 @@ struct ImageComponentView: View {
 
 }
 
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct ImageComponentView_Previews: PreviewProvider {
+    static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+
+    // Need to wrap in VStack otherwise preview rerenders and images won't show
+    static var previews: some View {
+        // Light - Fit
+        VStack {
+            ImageComponentView(
+                viewModel: try! .init(
+                    localizedStrings: [:],
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit
+                    )
+                )
+            )
+        }
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fit")
+
+        // Light - Fill
+        VStack {
+            ImageComponentView(
+                viewModel: try! .init(
+                    localizedStrings: [:],
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fill
+                    )
+                )
+            )
+        }
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fill")
+
+        // Light - Gradient
+        VStack {
+            ImageComponentView(
+                viewModel: try! .init(
+                    localizedStrings: [:],
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fill,
+                        gradientColors: [
+                            "#ffffff00", "#ffffff00", "#ffffffff"
+                        ]
+                    )
+                )
+            )
+        }
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fill")
+    }
+}
+
+#endif
+
 #endif
