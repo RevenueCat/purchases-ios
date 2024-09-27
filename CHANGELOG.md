@@ -1,14 +1,127 @@
 ## 5.5.0
-## RevenueCatUI SDK
-### Paywall Components
-#### 🐞 Bugfixes
+## 🫂 Customer Center 🫂
+
+This release adds public beta support for the new Customer Center on iOS 15.0+.
+
+This central hub is a self-service section that can be added to your app to help your users manage their subscriptions on their own, reducing the support burden on developers 
+like you so you can spend more time building apps and less time dealing with support issues. We are hoping adding this new section to your app can help you reduce customer support 
+interactions, obtain feedback from your users and ultimately reduce churn by retaining them as subscribers, helping you make more money.
+
+See our [Customer Center documentation](https://www.revenuecat.com/docs/tools/customer-center) for more information.
+
+### Features currently available
+* Users can cancel current subscriptions
+* Users can ask for refunds
+* Users can change their subscription plans
+* Users can restore previous purchases and contact your support email if they have trouble restoring
+* Users will be asked to update their app if they are on an older version before being able to contact your support email
+* Developers can ask for reasons for cancellations or refunds, and automatically offer promo offers to retain users
+* Configuration is done in the RevenueCat dashboard, and advanced configuration is available via JSON
+
+### Limitations
+* Only available on iOS 15+
+* Limited visual configuration options in the dashboard. It is possible to configure the Customer Center via JSON.
+* We are exposing a SwiftUI view and a modifier at the moment. We haven't built a UIKit wrapper to help integrating on UIKit apps, but it's in the roadmap.
+
+### How to enable
+You can use the CustomerCenterView view directly:
+
+```swift
+var body: some View {
+    Group {
+        NavigationStack {
+            HomeView()
+                .navigationTitle("Home")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                        } label: {
+                            Image(systemName: "line.3.horizontal")
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            self.isCustomerCenterPresented = true
+                        } label: {
+                            Image(systemName: "person.crop.circle")
+                        }
+                    }
+                }
+        }
+    }
+    .foregroundColor(.white)
+    .sheet(isPresented: $isCustomerCenterPresented) {
+        CustomerCenterView()
+    }
+}
+```
+
+Or you can use the modifier:
+
+```swift
+VStack {
+    Button {
+        self.presentingCustomerCenter = true
+    } label: {
+        TemplateLabel(name: "Customer Center", icon: "person.fill")
+    }
+}
+.presentCustomerCenter(isPresented: self.$presentingCustomerCenter) {
+    self.presentingCustomerCenter = false
+}
+```
+
+### Listening to events
+
+You can listen to events in the Customer Center using the `customerCenterActionHandler` closure:
+
+```swift
+CustomerCenterView { customerCenterAction in
+    switch customerCenterAction {
+    case .restoreStarted:
+    case .restoreFailed(_):
+    case .restoreCompleted(_):
+    case .showingManageSubscriptions:
+    case .refundRequestStarted(_):
+    case .refundRequestCompleted(_):
+    }
+}
+```
+
+or if using the modifier:
+
+```swift
+.presentCustomerCenter(
+    isPresented: self.$presentingCustomerCenter,
+    customerCenterActionHandler: { action in
+        switch action {
+        case .restoreCompleted(let customerInfo):
+        case .restoreStarted:
+        case .restoreFailed(let error):
+        case .showingManageSubscriptions:
+        case .refundRequestStarted(let productId):
+        case .refundRequestCompleted(let status):
+        case .feedbackSurveyCompleted(let surveyOptionID):
+        }
+    }
+) {
+    self.presentingCustomerCenter = false
+}
+```
+
+### Release Notes
+
+### RevenueCatUI SDK
+#### Paywall Components
+##### 🐞 Bugfixes
 * Match text, image, and stack properties and behaviors from dashboard (#4261) via Josh Holtz (@joshdholtz)
-### Customer Center
-#### 🐞 Bugfixes
+#### Customer Center
+##### 🐞 Bugfixes
 * More customer center docs and fix init (#4304) via Cesar de la Vega (@vegaro)
 * Remove background from FeedbackSurveyView (#4300) via Cesar de la Vega (@vegaro)
 
-### 🔄 Other Changes
+#### 🔄 Other Changes
 * Remove `CUSTOMER_CENTER_ENABLED` (#4305) via Cesar de la Vega (@vegaro)
 * [Diagnostics] Refactor diagnostics track methods to handle background work automatically (#4270) via Toni Rico (@tonidero)
 * [Diagnostics] Add `apple_products_request` event (#4247) via Toni Rico (@tonidero)
