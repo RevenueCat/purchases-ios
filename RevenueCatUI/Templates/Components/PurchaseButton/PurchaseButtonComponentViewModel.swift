@@ -14,6 +14,8 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable missing_docs
+
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -22,7 +24,8 @@ public class PurchaseButtonComponentViewModel {
     private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.PurchaseButtonComponent
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.PurchaseButtonComponent) throws {
+    init(localizedStrings: PaywallComponent.LocalizationDictionary,
+         component: PaywallComponent.PurchaseButtonComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
     }
