@@ -48,7 +48,6 @@ public struct TemplateComponentsView: View {
             )
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
-        .background(.purple)
         .edgesIgnoringSafeArea(.top)
     }
 
