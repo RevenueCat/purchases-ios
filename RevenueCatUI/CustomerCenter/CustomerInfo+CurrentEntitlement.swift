@@ -11,8 +11,6 @@
 //
 //  Created by Cesar de la Vega on 17/7/24.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 
@@ -34,5 +32,3 @@ extension CustomerInfo {
     }
 
 }
-
-#endif

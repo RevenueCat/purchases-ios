@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 27/5/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -229,7 +227,5 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
     }
 
 }
-
-#endif
 
 #endif
