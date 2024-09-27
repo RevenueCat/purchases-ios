@@ -693,7 +693,7 @@ jobs:
     steps:
       - checkout
       - set-maximum-duration:
-          seconds: 900
+          seconds: 1800
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
