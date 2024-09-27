@@ -56,6 +56,12 @@ public struct PaywallView: View {
 
     private var initializationError: NSError?
 
+    @Environment(\.onRequestedDismissal)
+    private var onRequestedDismissal: (() -> Void)?
+
+    @Environment(\.dismiss)
+    private var dismiss
+
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
@@ -173,7 +179,13 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
-            .displayError(self.$error, dismissOnClose: true)
+            .displayError(self.$error) {
+                guard let onRequestedDismissal = self.onRequestedDismissal else {
+                    self.dismiss()
+                    return
+                }
+                onRequestedDismissal()
+            }
     }
 
     @MainActor
