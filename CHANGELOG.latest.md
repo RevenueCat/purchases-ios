@@ -1,4 +1,4 @@
-## 🫂 Customer Center 🫂
+## 🫂 Customer Center Beta 🫂
 
 This release adds public beta support for the new Customer Center on iOS 15.0+.
 
