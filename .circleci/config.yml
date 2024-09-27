@@ -688,7 +688,7 @@ jobs:
   run-test-ios-15:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: '16.0.0'
 
     steps:
       - checkout
@@ -696,6 +696,8 @@ jobs:
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 15.5
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
