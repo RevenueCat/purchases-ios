@@ -672,7 +672,6 @@ private extension SamplePaywallLoader {
 
     static var titleText: PaywallComponent = {
         .text(.init(
-            text: "Title Text",
             textLid: "package_title",
             fontFamily: "",
             fontWeight: .regular,
@@ -745,7 +744,6 @@ private extension SamplePaywallLoader {
 
     static var simple1Text: PaywallComponent = {
      .text(.init(
-         text: "Package one",
          textLid: "package_1",
          fontFamily: "",
          fontWeight: .regular,
@@ -758,7 +756,6 @@ private extension SamplePaywallLoader {
 
     static var simple2Text: PaywallComponent = {
      .text(.init(
-         text: "Package one",
          textLid: "package_2",
          fontFamily: "",
          fontWeight: .regular,
@@ -822,7 +819,7 @@ private extension SamplePaywallLoader {
 
     static func packageText(number: Int) -> PaywallComponent {
         .text(.init(
-            text: "Package one",
+
             textLid: "package_\(number)",
             fontFamily: "",
             fontWeight: .regular,
@@ -830,7 +827,7 @@ private extension SamplePaywallLoader {
             padding: .zero,
             textStyle: .body,
             selectedComponent: .init(
-               text: "Package one",
+
                textLid: "package_\(number)",
                fontFamily: "",
                fontWeight: .regular,
@@ -861,7 +858,7 @@ private extension SamplePaywallLoader {
 
     static var package1Text: PaywallComponent = {
      .text(.init(
-         text: "Package one",
+
          textLid: "package_1",
          fontFamily: "",
          fontWeight: .regular,
@@ -869,7 +866,6 @@ private extension SamplePaywallLoader {
          padding: .zero,
          textStyle: .body,
          selectedComponent: .init(
-            text: "Package one",
             textLid: "package_1",
             fontFamily: "",
             fontWeight: .regular,
@@ -901,7 +897,6 @@ private extension SamplePaywallLoader {
 
     static var package2Text: PaywallComponent = {
      .text(.init(
-         text: "Package two",
          textLid: "package_2",
          fontFamily: "",
          fontWeight: .regular,
@@ -909,7 +904,6 @@ private extension SamplePaywallLoader {
          padding: .zero,
          textStyle: .body,
          selectedComponent: .init(
-            text: "Package two",
             textLid: "package_2",
             fontFamily: "",
             fontWeight: .regular,
@@ -926,7 +920,6 @@ private extension SamplePaywallLoader {
 
     static var purchasePackageText: PaywallComponent.TextComponent = {
         .init(
-            text: "Purchase Now! $19.99/year",
             textLid: "purchase_button_text",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -1031,7 +1024,10 @@ private extension SamplePaywallLoader {
     }()
 
     static var blankCheckmarkImage: PaywallComponent = {
-        .image(.init(url: URL(string: "https://assets.pawwalls.com/1075077_1726019114.png")!,
+        .image(.init(source: .init(light: .init(
+            original: URL(string: "https://assets.pawwalls.com/1075077_1726019114.png")!,
+            heic: URL(string: "https://assets.pawwalls.com/1075077_1726019114.png")!,
+            heicLowRes: URL(string: "https://assets.pawwalls.com/1075077_1726019114.png")!)),
                      maxHeight: 20))
     }()
 
@@ -1145,7 +1141,6 @@ private extension SamplePaywallLoader {
 
         let heading: PaywallComponent = {
          .text(.init(
-             text: "",
              textLid: headingLid,
              fontFamily: "",
              fontWeight: .regular,
@@ -1153,7 +1148,6 @@ private extension SamplePaywallLoader {
              padding: .zero,
              textStyle: .body,
              selectedComponent: .init(
-                text: "",
                 textLid: headingLid,
                 fontFamily: "",
                 fontWeight: .regular,
@@ -1167,7 +1161,6 @@ private extension SamplePaywallLoader {
 
         let subHeading: PaywallComponent = {
          .text(.init(
-             text: "",
              textLid: subHeadlingLid,
              fontFamily: "",
              fontWeight: .regular,
@@ -1175,7 +1168,6 @@ private extension SamplePaywallLoader {
              padding: .zero,
              textStyle: .caption,
              selectedComponent: .init(
-                text: "",
                 textLid: subHeadlingLid,
                 fontFamily: "",
                 fontWeight: .regular,
@@ -1697,7 +1689,7 @@ private extension SamplePaywallLoader {
     static func packagesPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
             "en_US": [
-                "offer_details": "{{ total_price_and_per_month }}",
+                "offer_details": .string("{{ total_price_and_per_month }}",
                 "sub_period": "{{ sub_period }}",
                 "package_title": "Select a Package",
                 "package_1": "Package One (weekly)",
@@ -1718,23 +1710,23 @@ private extension SamplePaywallLoader {
                 "package_title": "Sélectionnez un forfait",
                 "package_1": "Forfait Un",
                 "package_2": "Forfait Deux",
-                "package_3": "Forfait Trois",
-                "package_4": "Forfait Quatre",
-                "package_5": "Forfait Cinq",
-                "package_6": "Forfait Six",
-                "purchase_button_text": "Achetez maintenant!"
+                "package_3": .string("Forfait Trois",
+                "package_4": .string("Forfait Quatre",
+                "package_5": .string("Forfait Cinq",
+                "package_6": .string("Forfait Six",
+                "purchase_button_text": .string("Achetez maintenant!"
             ],
             "es_ES": [
-                "offer_details": "{{ total_price_and_per_month }}",
-                "sub_period": "{{ sub_period }}",
-                "package_title": "Seleccione un paquete",
-                "package_1": "Paquete Uno",
-                "package_2": "Paquete Dos",
-                "package_3": "Paquete Tres",
-                "package_4": "Paquete Cuatro",
-                "package_5": "Paquete Cinco",
-                "package_6": "Paquete Seis",
-                "purchase_button_text": "¡Compra ahora!"
+                "offer_details": .string("{{ total_price_and_per_month }}",
+                "sub_period": .string("{{ sub_period }}",
+                "package_title": .string("Seleccione un paquete",
+                "package_1": .string("Paquete Uno",
+                "package_2": .string("Paquete Dos",
+                "package_3": .string("Paquete Tres",
+                "package_4": .string("Paquete Cuatro",
+                "package_5": .string("Paquete Cinco",
+                "package_6": .string("Paquete Seis",
+                "purchase_button_text": .string("¡Compra ahora!"
             ]
         ]
     }

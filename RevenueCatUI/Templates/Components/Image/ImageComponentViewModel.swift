@@ -22,6 +22,59 @@ import SwiftUI
 public class ImageComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
+
+    private let component: StatelessImageComponentViewModel
+    private let selectedComponent: StatelessImageComponentViewModel?
+
+    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
+        self.localizedStrings = localizedStrings
+
+        self.component = try StatelessImageComponentViewModel(
+            localizedStrings: localizedStrings,
+            component: component
+        )
+        self.selectedComponent = try component.selectedComponent.flatMap {
+            try StatelessImageComponentViewModel(
+                localizedStrings: localizedStrings,
+                component: $0
+            )
+        }
+    }
+
+    private func currentComponent(for selectionState: SelectionState) -> StatelessImageComponentViewModel {
+        switch selectionState {
+        case .selected:
+            return selectedComponent ?? component
+        case .unselected:
+            return component
+        }
+    }
+
+    func url(for selectionState: SelectionState) -> URL {
+        currentComponent(for: selectionState).url
+    }
+
+    func cornerRadiuses(for selectionState: SelectionState) -> PaywallComponent.CornerRadiuses {
+        currentComponent(for: selectionState).cornerRadiuses
+    }
+
+    func gradientColors(for selectionState: SelectionState) -> [Color] {
+        currentComponent(for: selectionState).gradientColors
+    }
+
+    func contentMode(for selectionState: SelectionState) -> ContentMode {
+        currentComponent(for: selectionState).contentMode
+    }
+
+    func maxHeight(for selectionState: SelectionState) -> CGFloat? {
+        currentComponent(for: selectionState).maxHeight
+    }
+
+}
+
+fileprivate struct StatelessImageComponentViewModel {
+
+    private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.ImageComponent
 
     private let imageInfo: PaywallComponent.ThemeImageUrls
@@ -37,41 +90,24 @@ public class ImageComponentViewModel {
         }
     }
 
-    private func currentComponent(for selectionState: SelectionState) -> PaywallComponent.ImageComponent {
-        switch selectionState {
-        case .selected:
-            return component.selectedComponent ?? component
-        case .unselected:
-            return component
-        }
+    var url: URL {
+        return imageInfo.light.heic
     }
 
-    func url(for selectionState: SelectionState) -> URL {
-        currentComponent(for: selectionState).url
+    var cornerRadiuses: PaywallComponent.CornerRadiuses {
+        return component.cornerRadiuses
     }
 
-    func cornerRadius(for selectionState: SelectionState) -> Double {
-        currentComponent(for: selectionState).cornerRadius
+    var gradientColors: [Color] {
+        return component.gradientColors?.compactMap { $0.toColor(fallback: Color.clear) } ?? []
     }
 
-    func url(for selectionState: SelectionState) -> URL {
-        currentComponent(for: selectionState).imageInfo.light.heic
+    var contentMode: ContentMode {
+        return component.fitMode.contentMode
     }
 
-    func cornerRadiuses(for selectionState: SelectionState) -> PaywallComponent.CornerRadiuses {
-        currentComponent(for: selectionState).cornerRadiuses
-    }
-
-    func gradientColors(for selectionState: SelectionState) -> [Color] {
-        currentComponent(for: selectionState).gradientColors.compactMap { $0.toColor(fallback: Color.clear) }
-    }
-
-    func contentMode(for selectionState: SelectionState) -> ContentMode {
-        currentComponent(for: selectionState).fitMode.contentMode
-    }
-
-    func maxHeight(for selectionState: SelectionState) -> CGFloat? {
-        currentComponent(for: selectionState).maxHeight
+    var maxHeight: CGFloat? {
+        return component.maxHeight
     }
 
 }
