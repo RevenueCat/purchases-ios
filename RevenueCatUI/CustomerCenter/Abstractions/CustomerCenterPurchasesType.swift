@@ -11,8 +11,6 @@
 //
 //  Created by Cesar de la Vega on 18/7/24.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 
@@ -32,5 +30,3 @@ protocol CustomerCenterPurchasesType: Sendable {
                           product: StoreProduct) async throws -> PromotionalOffer
 
 }
-
-#endif

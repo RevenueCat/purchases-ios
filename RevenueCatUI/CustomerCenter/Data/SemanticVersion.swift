@@ -11,8 +11,6 @@
 //
 //  Created by JayShortway on 08/08/2024.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 
 struct SemanticVersion: Comparable {
@@ -69,5 +67,3 @@ enum SemanticVersionError: LocalizedError {
         }
     }
 }
-
-#endif

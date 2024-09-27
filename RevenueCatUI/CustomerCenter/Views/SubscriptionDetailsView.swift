@@ -13,8 +13,6 @@
 //  Created by Cody Kerns on 8/12/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import RevenueCat
 import SwiftUI
 
@@ -148,8 +146,6 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
     }
 
 }
-
-#endif
 
 #endif
 

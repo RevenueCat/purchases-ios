@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 12/6/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 
@@ -37,5 +35,3 @@ protocol ManageSubscriptionsPurchaseType: Sendable {
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
 
 }
-
-#endif

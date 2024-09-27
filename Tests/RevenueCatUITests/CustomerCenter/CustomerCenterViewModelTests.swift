@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 11/6/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Nimble
 import RevenueCat
 @testable import RevenueCatUI
@@ -321,7 +319,5 @@ private extension CustomerCenterViewModelTests {
     }()
 
 }
-
-#endif
 
 #endif

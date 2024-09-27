@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 14/6/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 
@@ -36,7 +34,5 @@ class FeedbackSurveyData: ObservableObject {
     }
 
 }
-
-#endif
 
 #endif
