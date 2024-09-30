@@ -23,7 +23,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let packageID: String
-        
+
         public let components: [PaywallComponent]
         public let width: WidthSize?
         public let spacing: CGFloat?

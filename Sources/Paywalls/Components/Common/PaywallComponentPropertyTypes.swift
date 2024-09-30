@@ -59,7 +59,7 @@ public extension PaywallComponent {
 
         case rectangle
         case pill
-        
+
     }
 
     struct Padding: Codable, Sendable, Hashable, Equatable {

@@ -109,7 +109,7 @@ private enum Template1Preview {
             "title": .string("Ignite your cat's curiosity"),
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
             "cta": .string("Get Started"),
-            "cta_intro": .string("Claim Free Trial"),
+            "cta_intro": .string("Claim Free Trial")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"

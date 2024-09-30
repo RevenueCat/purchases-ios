@@ -10,8 +10,11 @@
 //  StackableComponent.swift
 //
 //  Created by Josh Holtz on 9/27/24.
+// swiftlint:disable missing_docs
 
 import Foundation
+
+#if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
 
@@ -25,7 +28,9 @@ public extension PaywallComponent {
         var padding: Padding { get }
         var margin: Padding { get }
         var cornerRadiuses: CornerRadiuses { get }
-        
+
     }
 
 }
+
+#endif
