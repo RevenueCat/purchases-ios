@@ -455,6 +455,7 @@ jobs:
   pod-lib-lint:
     executor:
       name: macos-executor
+      xcode_version: '15.2.0'
     steps:
       - checkout
       - install-dependencies
@@ -1337,6 +1338,9 @@ workflows:
       - run-revenuecat-ui-ios-18
 
   create-tag:
+    executor:
+      name: macos-executor
+      xcode_version: '15.2.0'
     when:
       and:
         - not:
