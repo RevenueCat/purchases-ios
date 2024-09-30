@@ -12,8 +12,8 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 // swiftlint:disable missing_docs
 

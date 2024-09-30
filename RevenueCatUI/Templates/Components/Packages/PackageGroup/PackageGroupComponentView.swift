@@ -23,7 +23,7 @@ struct PackageGroupComponentView: View {
     let viewModel: PackageGroupComponentViewModel
 
     var body: some View {
-        // TODO: Do something with default package id and selection
+        // WIP: Do something with default package id and selection
         StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
     }
 
@@ -93,8 +93,8 @@ struct PackagesComponentView_Previews: PreviewProvider {
                     components: packages
                 ),
                 offering: Offering(identifier: "",
-                                serverDescription: "",
-                                availablePackages: [])
+                                   serverDescription: "",
+                                   availablePackages: [])
             )
         )
         .previewLayout(.sizeThatFits)

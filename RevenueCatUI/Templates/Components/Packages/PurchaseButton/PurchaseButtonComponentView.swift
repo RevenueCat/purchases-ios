@@ -28,9 +28,9 @@ struct PurchaseButtonComponentView: View {
 
     var body: some View {
         Button {
-            // TODO: Need to perform purchase logic
+            // WIP: Need to perform purchase logic
         } label: {
-            // TODO: Need to add logic for intro offer
+            // WIP: Need to add logic for intro offer
             Text(viewModel.cta)
                 .font(viewModel.textStyle)
                 .fontWeight(viewModel.fontWeight)
