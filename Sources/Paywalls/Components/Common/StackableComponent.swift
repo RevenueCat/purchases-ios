@@ -27,7 +27,8 @@ public extension PaywallComponent {
         var dimension: Dimension { get }
         var padding: Padding { get }
         var margin: Padding { get }
-        var cornerRadiuses: CornerRadiuses { get }
+        var cornerRadiuses: CornerRadiuses? { get }
+        var border: Border? { get }
 
     }
 

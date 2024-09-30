@@ -31,7 +31,8 @@ public extension PaywallComponent {
         public let dimension: Dimension
         public let padding: Padding
         public let margin: Padding
-        public let cornerRadiuses: CornerRadiuses
+        public let cornerRadiuses: CornerRadiuses?
+        public let border: Border?
 
         public init(defaultSelectedPackageID: String,
                     components: [PaywallComponent],
@@ -41,7 +42,8 @@ public extension PaywallComponent {
                     backgroundColor: ColorInfo? = nil,
                     padding: Padding = .zero,
                     margin: Padding = .zero,
-                    cornerRadiuses: CornerRadiuses = .zero
+                    cornerRadiuses: CornerRadiuses? = nil,
+                    border: Border? = nil
         ) {
             self.type = .packageGroup
             self.defaultSelectedPackageID = defaultSelectedPackageID
@@ -53,6 +55,7 @@ public extension PaywallComponent {
             self.padding = padding
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
+            self.border = border
         }
     }
 
