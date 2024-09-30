@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchaseButtonComponentViewModel.swift
+//  PackageComponentViewModel.swift
 //
 //  Created by Josh Holtz on 9/27/24.
 
@@ -19,15 +19,25 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class PurchaseButtonComponentViewModel {
+public class PackageComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
-    private let component: PaywallComponent.PurchaseButtonComponent
+    private let component: PaywallComponent.PackageComponent
+    private let offering: Offering
+
+    let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
-         component: PaywallComponent.PurchaseButtonComponent) throws {
+         component: PaywallComponent.PackageComponent,
+         offering: Offering) throws {
         self.localizedStrings = localizedStrings
         self.component = component
+        self.offering = offering
+
+        self.stackComponentViewModel = try self.component.toStackComponentViewModel(
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
     }
 
 }
