@@ -53,7 +53,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
  *  framework handle the singleton instance for you.
  */
 @objc(RCPurchases) public final class Purchases: NSObject, PurchasesType, PurchasesSwiftType {
-
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
     /// ``Purchases/configure(withAPIKey:)`` or one of its overloads.
@@ -956,7 +955,7 @@ public extension Purchases {
         purchasesOrchestrator.purchase(product: product, package: nil, transactionMetadata: nil, completion: completion)
     }
 
-    func purchase(product: StoreProduct, transactionMetadata: [String : String]?, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(product: StoreProduct, transactionMetadata: [String : String], completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: product, package: nil, transactionMetadata: transactionMetadata, completion: completion)
     }
 
@@ -964,17 +963,25 @@ public extension Purchases {
         return try await purchaseAsync(product: product)
     }
 
+    func purchase(product: StoreProduct, transactionMetadata: [String : String]) async throws -> PurchaseResultData {
+        return try await purchaseAsync(product: product, transactionMetadata: transactionMetadata)
+    }
+
     @objc(purchasePackage:withCompletion:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct, package: package, transactionMetadata: nil, completion: completion)
     }
 
-    func purchase(package: Package, transactionMetadata: [String : String]?, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(package: Package, transactionMetadata: [String : String], completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct, package: package, transactionMetadata: transactionMetadata, completion: completion)
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
+    }
+
+    func purchase(package: Package, transactionMetadata: [String : String]) async throws -> PurchaseResultData {
+        return try await purchaseAsync(package: package, transactionMetadata: transactionMetadata)
     }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
@@ -1014,6 +1021,18 @@ public extension Purchases {
                                        completion: completion)
     }
 
+    @objc(purchaseProduct:withPromotionalOffer:transactionMetadata:completion:)
+    func purchase(product: StoreProduct,
+                  promotionalOffer: PromotionalOffer,
+                  transactionMetadata: [String: String],
+                  completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: product,
+                                       package: nil,
+                                       promotionalOffer: promotionalOffer.signedData,
+                                       transactionMetadata: transactionMetadata,
+                                       completion: completion)
+    }
+
     func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer)
     }
@@ -1024,6 +1043,18 @@ public extension Purchases {
                                        package: package,
                                        promotionalOffer: promotionalOffer.signedData,
                                        transactionMetadata: nil,
+                                       completion: completion)
+    }
+
+    @objc(purchasePackage:withPromotionalOffer:transactionMetadata:completion:)
+    func purchase(package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  transactionMetadata: [String: String],
+                  completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: package.storeProduct,
+                                       package: package,
+                                       promotionalOffer: promotionalOffer.signedData,
+                                       transactionMetadata: transactionMetadata,
                                        completion: completion)
     }
 
