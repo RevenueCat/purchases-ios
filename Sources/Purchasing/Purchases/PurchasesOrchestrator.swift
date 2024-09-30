@@ -494,15 +494,10 @@ final class PurchasesOrchestrator {
 
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(
-        sk2Product: SK2Product,
-        package: Package?,
-        promotionalOffer: PromotionalOffer.SignedData?,
-        transactionMetadata: [String: String]?
-    ) async throws -> PurchaseResultData {
     func purchase(sk2Product: SK2Product,
                   package: Package?,
-                  promotionalOffer: PromotionalOffer.SignedData?) async throws -> PurchaseResultData {
+                  promotionalOffer: PromotionalOffer.SignedData?,
+                  transactionMetadata: [String: String]?) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
         do {
