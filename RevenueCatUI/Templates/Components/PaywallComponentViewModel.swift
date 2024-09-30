@@ -30,7 +30,6 @@ extension PaywallComponent {
 
     func toViewModel(
         offering: Offering,
-        locale: Locale,
         localizedStrings: LocalizationDictionary
     ) throws -> PaywallComponentViewModel {
         switch self {
@@ -48,8 +47,7 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                try StackComponentViewModel(locale: locale,
-                                            component: component,
+                try StackComponentViewModel(component: component,
                                             localizedStrings: localizedStrings,
                                             offering: offering)
             )
@@ -61,12 +59,14 @@ extension PaywallComponent {
         case .packageGroup(let component):
             return .packageGroup(
                 try PackageGroupComponentViewModel(localizedStrings: localizedStrings,
-                                                   component: component)
+                                                   component: component,
+                                                   offering: offering)
             )
         case .package(let component):
             return .package(
                 try PackageComponentViewModel(localizedStrings: localizedStrings,
-                                              component: component)
+                                              component: component,
+                                              offering: offering)
             )
         case .purchaseButton(let component):
             return .purchaseButton(
