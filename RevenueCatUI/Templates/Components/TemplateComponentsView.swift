@@ -31,7 +31,6 @@ public struct TemplateComponentsView: View {
             do {
                 // STEP 3: Make the view models & validate all components have required localization
                 return try component.toViewModel(offering: offering,
-                                                 locale: localization.locale,
                                                  localizedStrings: localization.localizedStrings)
             } catch {
 

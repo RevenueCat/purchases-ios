@@ -25,6 +25,8 @@ public extension PaywallComponent {
         public let backgroundColor: ColorInfo?
         public let padding: Padding
         public let margin: Padding
+        public let shape: Shape
+        public let cornerRadiuses: CornerRadiuses?
 
         public init(
             cta: LocalizationKey,
@@ -36,7 +38,9 @@ public extension PaywallComponent {
             padding: Padding = .default,
             margin: Padding = .default,
             textStyle: TextStyle = .body,
-            horizontalAlignment: HorizontalAlignment = .center
+            horizontalAlignment: HorizontalAlignment = .center,
+            shape: Shape = .pill,
+            cornerRadiuses: CornerRadiuses? = nil
         ) {
             self.type = .purchaseButton
             self.cta = cta
@@ -49,6 +53,8 @@ public extension PaywallComponent {
             self.margin = margin
             self.textStyle = textStyle
             self.horizontalAlignment = horizontalAlignment
+            self.shape = shape
+            self.cornerRadiuses = cornerRadiuses
         }
 
     }
