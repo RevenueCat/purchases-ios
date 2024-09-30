@@ -88,9 +88,7 @@ struct SamplePaywallsList: View {
                 )
             )
         case .customerCenter:
-            #if CUSTOMER_CENTER_ENABLED
             CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
-            #endif
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
             TemplateComponentsView(paywallComponentsData: data, offering: Self.loader.offeringWithDefaultPaywall())
@@ -180,7 +178,6 @@ struct SamplePaywallsList: View {
                 }
             }
             
-            #if CUSTOMER_CENTER_ENABLED
             #if os(iOS)
             Section("Customer Center") {
                 Button {
@@ -196,16 +193,13 @@ struct SamplePaywallsList: View {
                 }
             }
             #endif
-            #endif
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
-        #if CUSTOMER_CENTER_ENABLED
         #if os(iOS)
         .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
             self.presentingCustomerCenter = false
         }
-        #endif
         #endif
     }
 
@@ -248,7 +242,6 @@ private struct TemplateLabel: View {
 
 // MARK: -
 
-#if CUSTOMER_CENTER_ENABLED
 #if os(iOS)
 
 extension SamplePaywallsList {
@@ -273,7 +266,6 @@ extension SamplePaywallsList {
     }
 }
 
-#endif
 #endif
 
 private extension SamplePaywallsList {

@@ -487,6 +487,17 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 ///   </li>
 /// </ul>
 - (void)setCleverTapID:(NSString * _Nullable)cleverTapID;
+/// Subscriber attribute associated with the Kochava Device ID for the user.
+/// Recommended for the RevenueCat Kochava integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/kochava">Kochava RevenueCat Integration</a>
+///   </li>
+/// </ul>
+/// \param kochavaDeviceID Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setKochavaDeviceID:(NSString * _Nullable)kochavaDeviceID;
 /// Subscriber attribute associated with the Mixpanel Distinct ID for the user.
 /// Optional for the RevenueCat Mixpanel integration.
 /// <h4>Related Articles</h4>

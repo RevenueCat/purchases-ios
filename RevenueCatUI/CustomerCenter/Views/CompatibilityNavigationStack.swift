@@ -13,8 +13,6 @@
 //  Created by Cody Kerns on 8/15/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 #if os(iOS)
 
 import SwiftUI
@@ -40,7 +38,5 @@ struct CompatibilityNavigationStack<Content: View>: View {
     }
 
 }
-
-#endif
 
 #endif

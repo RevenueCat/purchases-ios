@@ -13,8 +13,6 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import RevenueCat
 import SwiftUI
 
@@ -37,13 +35,14 @@ public struct CustomerCenterView: View {
     private var supportInformation: CustomerCenterConfigData.Support?
 
     /// Create a view to handle common customer support tasks
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-                localization: CustomerCenterConfigData.Localization = .default,
-                appearance: CustomerCenterConfigData.Appearance = .default) {
+    /// - Parameters:
+    ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
+    ///   from the customer center.
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
-        self.localization = localization
-        self.appearance = appearance
+        self.localization = .default
+        self.appearance = .default
     }
 
     fileprivate init(viewModel: CustomerCenterViewModel,
@@ -141,8 +140,6 @@ struct CustomerCenterView_Previews: PreviewProvider {
    }
 
 }
-
-#endif
 
 #endif
 

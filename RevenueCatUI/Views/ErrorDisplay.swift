@@ -19,10 +19,7 @@ struct ErrorDisplay: ViewModifier {
 
     @Binding
     var error: NSError?
-    var dismissOnClose: Bool
-
-    @Environment(\.dismiss)
-    private var dismiss
+    var onDismiss: (() -> Void)?
 
     func body(content: Content) -> some View {
         content
@@ -30,9 +27,7 @@ struct ErrorDisplay: ViewModifier {
                 Button {
                     self.error = nil
 
-                    if self.dismissOnClose {
-                        self.dismiss()
-                    }
+                    self.onDismiss?()
                 } label: {
                     Text("OK", bundle: .module)
                 }
@@ -56,8 +51,8 @@ struct ErrorDisplay: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func displayError(_ error: Binding<NSError?>, dismissOnClose: Bool = false) -> some View {
-        self.modifier(ErrorDisplay(error: error, dismissOnClose: dismissOnClose))
+    func displayError(_ error: Binding<NSError?>, onDismiss: (() -> Void)? = nil) -> some View {
+        self.modifier(ErrorDisplay(error: error, onDismiss: onDismiss))
     }
 
 }

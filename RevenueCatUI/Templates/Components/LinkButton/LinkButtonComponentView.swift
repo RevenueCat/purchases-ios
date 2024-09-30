@@ -14,7 +14,11 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct LinkButtonComponentView: View {
 
-    let viewModel: LinkButtonComponentViewModel
+    private let viewModel: LinkButtonComponentViewModel
+
+    internal init(viewModel: LinkButtonComponentViewModel) {
+        self.viewModel = viewModel
+    }
 
     var url: URL {
         viewModel.url

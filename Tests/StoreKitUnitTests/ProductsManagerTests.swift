@@ -113,9 +113,11 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.currencyCode) == "EUR"
     }
 
-    private func createManager(storeKitVersion: StoreKitVersion) -> ProductsManager {
+    fileprivate func createManager(storeKitVersion: StoreKitVersion,
+                                   diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(
+            diagnosticsTracker: diagnosticsTracker,
             systemInfo: MockSystemInfo(
                 platformInfo: platformInfo,
                 finishTransactions: true,
@@ -126,3 +128,102 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
 }
+
+// swiftlint:disable type_name
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
+
+    private var mockDiagnosticsTracker: MockDiagnosticsTracker!
+
+    private var productsManager: ProductsManager!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+    }
+
+    func testFetchProductsWithIdentifiersSK1TracksCorrectly() throws {
+        let manager = self.createManager(storeKitVersion: .storeKit1,
+                                         diagnosticsTracker: self.mockDiagnosticsTracker)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        _ = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([identifier]), completion: completed)
+        }
+
+        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
+        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
+        expect(params?.wasSuccessful) == true
+        expect(params?.storeKitVersion) == .storeKit1
+        expect(params?.errorMessage).to(beNil())
+        expect(params?.errorCode).to(beNil())
+    }
+
+}
+// swiftlint:enable type_name
+
+// swiftlint:disable type_name
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
+
+    private var mockDiagnosticsTracker: MockDiagnosticsTracker!
+
+    private var productsManager: ProductsManager!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+    }
+
+    func testFetchProductsWithIdentifiersSK2TracksCorrectly() throws {
+        let manager = self.createManager(storeKitVersion: .storeKit2,
+                                         diagnosticsTracker: self.mockDiagnosticsTracker)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        _ = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
+            manager.products(withIdentifiers: Set([identifier]), completion: completed)
+        }
+
+        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
+        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
+        expect(params?.wasSuccessful) == true
+        expect(params?.storeKitVersion) == .storeKit2
+        expect(params?.errorMessage).to(beNil())
+        expect(params?.errorCode).to(beNil())
+    }
+
+    #if swift(>=5.9)
+    @available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
+    func testFetchProductsWithIdentifiersSK2ErrorTracksCorrectly() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try await self.testSession.setSimulatedError(.generic(.unknown), forAPI: .loadProducts)
+        let manager = self.createManager(storeKitVersion: .storeKit2,
+                                         diagnosticsTracker: self.mockDiagnosticsTracker)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        _ = try? await manager.products(withIdentifiers: Set([identifier]))
+
+        try await asyncWait(
+            description: "Diagnostics tracker should have been called",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        ) { [diagnosticsTracker = self.mockDiagnosticsTracker!] in
+            diagnosticsTracker.trackedProductsRequestParams.value.count == 1
+        }
+        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
+        expect(params?.wasSuccessful) == false
+        expect(params?.storeKitVersion) == .storeKit2
+        expect(params?.errorMessage) == "Products request error: Unable to Complete Request"
+        expect(params?.errorCode) == 2
+    }
+    #endif
+
+}
+// swiftlint:enable type_name
