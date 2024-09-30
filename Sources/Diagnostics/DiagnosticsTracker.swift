@@ -159,14 +159,11 @@ private extension DiagnosticsTracker {
     func clearDiagnosticsFileIfTooBig() async {
         if await self.diagnosticsFileHandler.isDiagnosticsFileTooBig() {
             await self.diagnosticsFileHandler.emptyDiagnosticsFile()
-            self.trackMaxEventsStoredLimitReached()
+            let maxEventsStoredEvent = DiagnosticsEvent(eventType: .maxEventsStoredLimitReached,
+                                                        properties: [:],
+                                                        timestamp: self.dateProvider.now())
+            await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)
         }
-    }
-
-    func trackMaxEventsStoredLimitReached() {
-        self.track(.init(eventType: .maxEventsStoredLimitReached,
-                         properties: [:],
-                         timestamp: self.dateProvider.now()))
     }
 
 }
