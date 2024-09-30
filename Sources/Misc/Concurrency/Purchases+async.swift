@@ -74,6 +74,15 @@ extension Purchases {
         }
     }
 
+    func purchaseAsync(package: Package, transactionMetadata: [String : String]? = nil) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            purchase(package: package, completion:  { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }, transactionMetadata: transactionMetadata)
+        }
+    }
+
     func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer, transactionMetadata: [String : String]? = nil) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             purchase(product: product,
@@ -81,15 +90,6 @@ extension Purchases {
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
-        }
-    }
-
-    func purchaseAsync(package: Package, transactionMetadata: [String : String]? = nil) async throws -> PurchaseResultData {
-        return try await withUnsafeThrowingContinuation { continuation in
-            purchase(package: package, completion:  { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
-                    .map { PurchaseResultData(transaction, $0, userCancelled) })
-            }, transactionMetadata: transactionMetadata)
         }
     }
 
