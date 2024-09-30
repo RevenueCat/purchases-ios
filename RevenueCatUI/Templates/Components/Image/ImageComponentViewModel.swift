@@ -40,15 +40,26 @@ public class ImageComponentViewModel {
     public var url: URL {
         self.imageInfo.light.heic
     }
-    public var cornerRadiuses: PaywallComponent.CornerRadiuses {
-        component.cornerRadiuses
+
+    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
+        component.cornerRadiuses.flatMap { cornerRadiuses in
+            CornerBorderModifier.RaidusInfo(
+                topLeft: cornerRadiuses.topLeading,
+                topRight: cornerRadiuses.topTrailing,
+                bottomLeft: cornerRadiuses.bottomLeading,
+                bottomRight: cornerRadiuses.bottomLeading
+            )
+        }
     }
+
     public var gradientColors: [Color] {
         component.gradientColors?.compactMap { $0.toColor(fallback: Color.clear) } ?? []
     }
+
     public var contentMode: ContentMode {
         component.fitMode.contentMode
     }
+
     public var maxHeight: CGFloat? {
         component.maxHeight
     }
