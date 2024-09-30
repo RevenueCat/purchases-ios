@@ -53,22 +53,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
  *  framework handle the singleton instance for you.
  */
 @objc(RCPurchases) public final class Purchases: NSObject, PurchasesType, PurchasesSwiftType {
-    public func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product, package: nil, transactionMetadata: nil, completion: completion)
-    }
-
-    public func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: package.storeProduct, package: nil, transactionMetadata: nil, completion: completion)
-    }
-
-    public func purchase(product: StoreProduct, transactionMetadata: [String : String]?, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product, package: nil, transactionMetadata: transactionMetadata, completion: completion)
-    }
-
-    public func purchase(package: Package, transactionMetadata: [String : String]?, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: package.storeProduct, package: package, transactionMetadata: transactionMetadata, completion: completion)
-    }
-
 
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
@@ -967,8 +951,26 @@ public extension Purchases {
         return await productsAsync(productIdentifiers)
     }
 
+    @objc(purchaseProduct:withCompletion:)
+    func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: product, package: nil, transactionMetadata: nil, completion: completion)
+    }
+
+    func purchase(product: StoreProduct, transactionMetadata: [String : String]?, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: product, package: nil, transactionMetadata: transactionMetadata, completion: completion)
+    }
+
     func purchase(product: StoreProduct) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product)
+    }
+
+    @objc(purchasePackage:withCompletion:)
+    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: package.storeProduct, package: package, transactionMetadata: nil, completion: completion)
+    }
+
+    func purchase(package: Package, transactionMetadata: [String : String]?, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: package.storeProduct, package: package, transactionMetadata: transactionMetadata, completion: completion)
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
