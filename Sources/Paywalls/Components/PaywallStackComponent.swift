@@ -10,7 +10,8 @@
 //  StackComponent.swift
 //
 //  Created by James Borthwick on 2024-08-20.
-// swiftlint:disable missing_docs nesting
+// swiftlint:disable missing_docs
+
 import Foundation
 
 #if PAYWALL_COMPONENTS

@@ -10,8 +10,11 @@
 //  Dimension.swift
 //
 //  Created by Josh Holtz on 9/27/24.
+// swiftlint:disable missing_docs
 
 import Foundation
+
+#if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
 
@@ -62,6 +65,7 @@ public extension PaywallComponent {
             return .vertical(.center)
         }
 
+        // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
 
             case type
@@ -69,6 +73,7 @@ public extension PaywallComponent {
 
         }
 
+        // swiftlint:disable:next nesting
         private enum DimensionType: String, Decodable {
 
             case vertical
@@ -80,3 +85,5 @@ public extension PaywallComponent {
     }
 
 }
+
+#endif

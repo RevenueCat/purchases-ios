@@ -23,7 +23,7 @@ struct PackageComponentView: View {
     let viewModel: PackageComponentViewModel
 
     var body: some View {
-        // TODO: Do something with package id and selection
+        // WIP: Do something with package id and selection
         StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
     }
 
