@@ -275,33 +275,7 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      * - Parameter completion: A completion block that is called when the purchase completes.
-     *
-     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
-     *
-     * If the purchase was not successful, there will be an `NSError`.
-     *
-     * If the user cancelled, `userCancelled` will be `true`.
-     */
-    @objc(purchaseProduct:withCompletion:)
-    func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock)
-
-    /**
-     * Initiates a purchase of a ``StoreProduct``.
-     *
-     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
-     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
-     *
-     * - Important: Call this method when a user has decided to purchase a product.
-     * Only call this in direct response to user input.
-     *
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
-     *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
-     * handle this for you.
-     *
-     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
-     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
@@ -309,31 +283,8 @@ public protocol PurchasesType: AnyObject {
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @objc(purchaseProduct:transactionMetadata:withCompletion:)
-    func purchase(product: StoreProduct, transactionMetadata: [String : String], completion: @escaping PurchaseCompletedBlock)
-
-    /**
-     * Initiates a purchase of a ``StoreProduct``.
-     *
-     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
-     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
-     *
-     * - Important: Call this method when a user has decided to purchase a product.
-     * Only call this in direct response to user input.
-     *
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
-     *
-     * - Note: You do not need to finish the transaction yourself after this, ``Purchases`` will
-     * handle this for you.
-     *
-     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
-     *
-     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
-     *
-     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
-     * If the user cancelled the purchase, `userCancelled` will be `true`.
-     */
-    func purchase(product: StoreProduct) async throws -> PurchaseResultData
+    @objc(purchaseProduct:withCompletion:transactionMetadata:)
+    func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock, transactionMetadata: [String : String]?)
 
     /**
      * Initiates a purchase of a ``StoreProduct``.
@@ -351,14 +302,13 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
-
      *
      * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
      *
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    func purchase(product: StoreProduct, transactionMetadata: [String : String]) async throws -> PurchaseResultData
+    func purchase(product: StoreProduct, transactionMetadata: [String : String]?) async throws -> PurchaseResultData
 
     /**
      * Initiates a purchase of a ``Package``.
@@ -373,30 +323,7 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
-     *
-     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
-     *
-     * If the purchase was not successful, there will be an `NSError`.
-     *
-     * If the user cancelled, `userCancelled` will be `true`.
-     */
-    @objc(purchasePackage:withCompletion:)
-    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock)
-
-    /**
-     * Initiates a purchase of a ``Package``.
-     *
-     * - Important: Call this method when a user has decided to purchase a product.
-     * Only call this in direct response to user input.
-
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
-     *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
-     * handle this for you.
-     *
-     * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
-     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
@@ -404,28 +331,8 @@ public protocol PurchasesType: AnyObject {
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @objc(purchasePackage:transactionMetadata:withCompletion:)
-    func purchase(package: Package, transactionMetadata: [String : String], completion: @escaping PurchaseCompletedBlock)
-
-    /**
-     * Initiates a purchase of a ``Package``.
-     *
-     * - Important: Call this method when a user has decided to purchase a product.
-     * Only call this in direct response to user input.
-     *
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
-     *
-     * - Note: You do not need to finish the transaction yourself after this, Purchases will
-     * handle this for you.
-     *
-     * - Parameter package: The ``Package`` the user intends to purchase
-     *
-     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
-     *
-     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
-     * If the user cancelled the purchase, `userCancelled` will be `true`.
-     */
-    func purchase(package: Package) async throws -> PurchaseResultData
+    @objc(purchasePackage:withCompletion:transactionMetadata:)
+    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock, transactionMetadata: [String : String]?)
 
     /**
      * Initiates a purchase of a ``Package``.
@@ -446,7 +353,7 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    func purchase(package: Package, transactionMetadata: [String : String]) async throws -> PurchaseResultData
+    func purchase(package: Package, transactionMetadata: [String : String]?) async throws -> PurchaseResultData
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -551,6 +458,7 @@ public protocol PurchasesType: AnyObject {
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase.
      * - Parameter completion: A completion block that is called when the purchase completes.
+     * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `NSError`.
@@ -561,10 +469,11 @@ public protocol PurchasesType: AnyObject {
      * - ``StoreProduct/eligiblePromotionalOffers()``
      * - ``Purchases/promotionalOffer(forProductDiscount:product:)``
      */
-    @objc(purchaseProduct:withPromotionalOffer:completion:)
+    @objc(purchaseProduct:withPromotionalOffer:completion:transactionMetadata:)
     func purchase(product: StoreProduct,
                   promotionalOffer: PromotionalOffer,
-                  completion: @escaping PurchaseCompletedBlock)
+                  completion: @escaping PurchaseCompletedBlock,
+                  transactionMetadata: [String : String]?)
 
     /**
      * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
@@ -581,13 +490,14 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
+     * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
      *
      * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
      *
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
+    func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer, transactionMetadata: [String : String]?) async throws -> PurchaseResultData
 
     /**
      * Purchase the passed ``Package``.
@@ -601,15 +511,17 @@ public protocol PurchasesType: AnyObject {
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
+     * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
      *
      * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @objc(purchasePackage:withPromotionalOffer:completion:)
+    @objc(purchasePackage:withPromotionalOffer:completion:transactionMetadata:)
     func purchase(package: Package,
                   promotionalOffer: PromotionalOffer,
-                  completion: @escaping PurchaseCompletedBlock)
+                  completion: @escaping PurchaseCompletedBlock,
+                  transactionMetadata: [String : String]?)
 
     /**
      * Purchase the passed ``Package``.
@@ -622,13 +534,14 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
+     * - Parameter transactionMetadata: Key-value pairs of metadata to attatch to the purchase.
      *
      * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
      *
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
+    func purchase(package: Package, promotionalOffer: PromotionalOffer, transactionMetadata: [String : String]?) async throws -> PurchaseResultData
 
     /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.

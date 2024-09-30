@@ -20,7 +20,7 @@ protocol PaywallPurchasesType: Sendable {
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get }
 
     @Sendable
-    func purchase(package: Package) async throws -> PurchaseResultData
+    func purchase(package: Package, transactionMetadata: [String : String]?) async throws -> PurchaseResultData
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo

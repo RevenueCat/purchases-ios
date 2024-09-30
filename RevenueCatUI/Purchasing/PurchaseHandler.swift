@@ -151,7 +151,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performPurchase(package: Package) async throws {
+    func performPurchase(package: Package, transactionMetadata: [String : String]? = nil) async throws {
         Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
@@ -165,7 +165,7 @@ extension PurchaseHandler {
         self.startAction()
 
         do {
-            let result = try await self.purchases.purchase(package: package)
+            let result = try await self.purchases.purchase(package: package, transactionMetadata: transactionMetadata)
             self.purchaseResult = result
 
             if result.userCancelled {
@@ -403,7 +403,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         return info
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
+    func purchase(package: Package, transactionMetadata: [String : String]? = nil) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
 
