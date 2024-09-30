@@ -114,7 +114,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
-                       diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
+                                   diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(
             diagnosticsTracker: diagnosticsTracker,
@@ -129,6 +129,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
 }
 
+// swiftlint:disable type_name
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
 
@@ -162,6 +163,7 @@ class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
     }
 
 }
+// swiftlint:enable type_name
 
 // swiftlint:disable type_name
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
