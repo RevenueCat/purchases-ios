@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 28/5/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 
 // swiftlint:disable missing_docs nesting file_length type_body_length
@@ -85,6 +83,11 @@ public struct CustomerCenterConfigData {
             case googleSubscriptionManage = "google_subscription_manage"
             case amazonSubscriptionManage = "amazon_subscription_manage"
             case platformMismatch = "platform_mismatch"
+            case goingToCheckPurchases = "going_to_check_purchases"
+            case checkPastPurchases = "check_past_purchases"
+            case purchasesRecovered = "purchases_recovered"
+            case purchasesRecoveredExplanation = "purchases_recovered_explanation"
+            case purchasesNotRecovered = "purchases_not_recovered"
 
             var defaultValue: String {
                 switch self {
@@ -96,6 +99,17 @@ public struct CustomerCenterConfigData {
                     return "We can try checking your Apple account for any previous purchases"
                 case .restorePurchases:
                     return "Restore purchases"
+                case .goingToCheckPurchases:
+                    return "Let’s take a look! We’re going to check your account for missing purchases."
+                case .checkPastPurchases:
+                    return "Check past purchases"
+                case .purchasesRecovered:
+                    return "Purchases recovered!"
+                case .purchasesRecoveredExplanation:
+                    return "We applied the previously purchased items to your account. Sorry for the inconvenience."
+                case .purchasesNotRecovered:
+                    return "We couldn't find any additional purchases under this account. " +
+                    "Contact support for assistance if you think this is an error."
                 case .cancel:
                     return "Cancel"
                 case .billingCycle:
@@ -468,5 +482,3 @@ extension CustomerCenterConfigData.Support {
     }
 
 }
-
-#endif

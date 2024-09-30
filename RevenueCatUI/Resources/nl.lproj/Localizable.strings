@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% korting";
 "Continue" = "Doorgaan";
 "Default_offer_details_with_intro_offer" = "Start uw proefperiode van {{ sub_offer_duration }} en daarna {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ gratis";
+"pay_as_you_go_period" = "%@ tijdens %@";
+"pay_up_front_period" = "%@ voor %@";
+"then_price_per_period" = "dan %@";

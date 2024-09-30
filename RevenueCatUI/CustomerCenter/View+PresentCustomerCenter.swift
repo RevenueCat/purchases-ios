@@ -11,13 +11,13 @@
 //
 //  Created by Toni Rico Diez on 2024-07-15.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import RevenueCat
 import SwiftUI
 
 #if os(iOS)
 
+/// Warning: This is currently in beta and subject to change.
+///
 /// Presentation options to use with the [presentCustomerCenter](x-source-tag://presentCustomerCenter) View modifiers.
 public enum CustomerCenterPresentationMode {
 
@@ -45,6 +45,8 @@ extension CustomerCenterPresentationMode {
 #endif
 extension View {
 
+    /// Warning: This is currently in beta and subject to change.
+    ///
     /// Presents the ``CustomerCenter``.
     /// Example:
     /// ```swift
@@ -131,7 +133,5 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
 }
-
-#endif
 
 #endif

@@ -13,8 +13,6 @@
 //  Created by Cesar de la Vega on 12/6/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import RevenueCat
 import SwiftUI
 
@@ -45,10 +43,6 @@ struct FeedbackSurveyView: View {
 
     var body: some View {
         ZStack {
-            if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
-                background.edgesIgnoringSafeArea(.all)
-            }
-
             List {
                 FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                           onOptionSelected: self.viewModel.handleAction(for:),
@@ -100,7 +94,5 @@ struct FeedbackSurveyButtonsView: View {
     }
 
 }
-
-#endif
 
 #endif

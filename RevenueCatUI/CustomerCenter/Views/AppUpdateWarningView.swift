@@ -11,8 +11,6 @@
 //
 //  Created by JayShortway on 16/08/2024.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import RevenueCat
 import SwiftUI
 
@@ -133,8 +131,6 @@ struct AppUpdateWarningView_Previews: PreviewProvider {
     }
 
 }
-
-#endif
 
 #endif
 

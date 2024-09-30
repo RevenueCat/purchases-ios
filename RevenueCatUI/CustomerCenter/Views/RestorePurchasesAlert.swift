@@ -13,8 +13,6 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -63,31 +61,28 @@ struct RestorePurchasesAlert: ViewModifier {
                 switch self.alertType {
                 case .restorePurchases:
                     return Alert(
-                        title: Text("Restore purchases"),
-                        message: Text(
-                                    """
-                                    Let’s take a look! We’re going to check your Apple account for missing purchases.
-                                    """),
-                        primaryButton: .default(Text("Check past purchases"), action: {
-                            Task {
-                                let alertType = await self.customerCenterViewModel.performRestore()
-                                self.setAlertType(alertType)
-                            }
-                        }),
+                        title: Text(localization.commonLocalizedString(for: .restorePurchases)),
+                        message: Text(localization.commonLocalizedString(for: .goingToCheckPurchases)),
+                        primaryButton: .default(Text(localization.commonLocalizedString(for: .checkPastPurchases)),
+                                                action: {
+                                                    Task {
+                                                        let alertType =
+                                                        await self.customerCenterViewModel.performRestore()
+                                                        self.setAlertType(alertType)
+                                                    }
+                                                }),
                         secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .cancel)))
                     )
 
                 case .purchasesRecovered:
-                    return Alert(title: Text("Purchases recovered!"),
-                                 message: Text("We applied the previously purchased items to your account. " +
-                                               "Sorry for the inconvenience."),
+                    return Alert(title: Text(localization.commonLocalizedString(for: .purchasesRecovered)),
+                                 message: Text(localization.commonLocalizedString(for: .purchasesRecoveredExplanation)),
                                  dismissButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
                         dismiss()
                     })
 
                 case .purchasesNotFound:
-                    let message = Text("We couldn't find any additional purchases under this account. \n\n" +
-                                       "Contact support for assistance if you think this is an error.")
+                    let message = Text(localization.commonLocalizedString(for: .purchasesNotRecovered))
                     if let url = supportURL {
                         return Alert(title: Text(""),
                                      message: message,
@@ -140,7 +135,5 @@ extension View {
     }
 
 }
-
-#endif
 
 #endif

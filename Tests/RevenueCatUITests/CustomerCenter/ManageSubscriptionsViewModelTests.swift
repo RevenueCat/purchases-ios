@@ -15,8 +15,6 @@
 
 // swiftlint:disable file_length type_body_length function_body_length
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Nimble
 @testable import RevenueCat
 @testable import RevenueCatUI
@@ -120,7 +118,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         expect(subscriptionInformation.title) == "title"
-        expect(subscriptionInformation.durationTitle) == "month"
+        expect(subscriptionInformation.durationTitle) == "1 month"
         expect(subscriptionInformation.price) == "$2.99"
         expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDate)
         expect(subscriptionInformation.productIdentifier) == productId
@@ -179,7 +177,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         expect(subscriptionInformation.title) == "yearly"
-        expect(subscriptionInformation.durationTitle) == "year"
+        expect(subscriptionInformation.durationTitle) == "1 year"
         expect(subscriptionInformation.price) == "$29.99"
         expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateFirst)
         expect(subscriptionInformation.productIdentifier) == productIdOne
@@ -244,7 +242,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         expect(subscriptionInformation.title) == "yearly"
-        expect(subscriptionInformation.durationTitle) == "year"
+        expect(subscriptionInformation.durationTitle) == "1 year"
         expect(subscriptionInformation.price) == "$29.99"
         expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateFirst)
         expect(subscriptionInformation.productIdentifier) == productIdOne
@@ -310,7 +308,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         // We expect to see the monthly one, because the yearly one is a Google subscription.
         expect(subscriptionInformation.title) == "monthly"
-        expect(subscriptionInformation.durationTitle) == "month"
+        expect(subscriptionInformation.durationTitle) == "1 month"
         expect(subscriptionInformation.price) == "$2.99"
         expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateSecond)
         expect(subscriptionInformation.productIdentifier) == productIdTwo
@@ -932,7 +930,5 @@ class MockLoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
     }
 
 }
-
-#endif
 
 #endif

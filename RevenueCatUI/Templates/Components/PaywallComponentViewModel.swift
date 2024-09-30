@@ -37,7 +37,7 @@ extension PaywallComponent {
             )
         case .image(let component):
             return .image(
-                ImageComponentViewModel(component: component)
+                try ImageComponentViewModel(localizedStrings: localizedStrings, component: component)
             )
         case .spacer(let component):
             return .spacer(

@@ -11,8 +11,6 @@
 //
 //  Created by Cesar de la Vega on 19/7/24.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -73,5 +71,3 @@ extension EnvironmentValues {
     }
 
 }
-
-#endif
