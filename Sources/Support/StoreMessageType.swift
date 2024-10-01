@@ -25,9 +25,10 @@ import StoreKit
     case priceIncreaseConsent
     /// Generic Store messages
     case generic
-    /// Message shown when a win-back offer is purchased through the App Store
-    /// with Streamlined Purchasing enabled. More information can be found here:
-    /// https://developer.apple.com/documentation/storekit/in-app_purchase/supporting_win-back_offers_in_your_app#4480115
+    /// Message shown when a subscriber is eligible to redeem a win-back offer that you've configured in App Store Connect.
+    /// More information can be found
+    /// [here](https://developer.apple.com/documentation/storekit/message/reason/4418230-winbackoffer).
+    ///
     case winBackOffer
 }
 
