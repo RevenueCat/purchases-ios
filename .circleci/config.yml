@@ -412,10 +412,10 @@ jobs:
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
 
-  spm-release-build-xcode-16-1:
+  spm-release-build-xcode-16:
     executor:
       name: macos-executor
-      xcode_version: '16.1.0'
+      xcode_version: '16.0.0'
 
     steps:
       - checkout
@@ -1465,7 +1465,7 @@ workflows:
       - spm-release-build
       - spm-release-build-xcode-14
       - spm-release-build-xcode-15
-      - spm-release-build-xcode-16-1
+      - spm-release-build-xcode-16
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
       - run-revenuecat-ui-ios-17
