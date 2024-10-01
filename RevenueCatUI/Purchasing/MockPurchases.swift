@@ -53,7 +53,7 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.customerInfoBlock()
     }
 
-    func purchase(package: Package, transactionMetadata: [String : String]? = nil) async throws -> PurchaseResultData {
+    func purchase(package: Package, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         return try await self.purchaseBlock(package)
     }
 
@@ -77,7 +77,7 @@ extension PaywallPurchasesType {
     ) -> PaywallPurchasesType {
         return MockPurchases { package in
             try await purchase { package in
-                try await self.purchase(package: package, transactionMetadata: nil)
+                try await self.purchase(package: package, metadata: nil)
             }(package)
         } restorePurchases: {
             try await restore(self.restorePurchases)()
@@ -93,7 +93,7 @@ extension PaywallPurchasesType {
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
         return MockPurchases { package in
-            try await self.purchase(package: package, transactionMetadata: nil)
+            try await self.purchase(package: package, metadata: nil)
         } restorePurchases: {
             try await self.restorePurchases()
         } trackEvent: { event in

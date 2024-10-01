@@ -45,6 +45,17 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
+    
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testPurchaseMetadataIsInResponse() async throws {
+        // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT
+
+        try await self.signInAsNewAppUserID()
+        try await self.purchaseMonthlyProduct(metadata: ["sample":"data"])
+
+        let customerInfo = try await Purchases.shared.customerInfo()
+        print(customerInfo)
+    }
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testOriginalApplicationVersionAvailableAfterPurchase() async throws {

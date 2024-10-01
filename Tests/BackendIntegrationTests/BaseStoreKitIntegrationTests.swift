@@ -153,11 +153,12 @@ extension BaseStoreKitIntegrationTests {
     func purchaseMonthlyProduct(
         allowOfflineEntitlements: Bool = false,
         file: FileString = #file,
-        line: UInt = #line
+        line: UInt = #line,
+        metadata: [String: String]? = nil
     ) async throws -> PurchaseResultData {
         let logger = TestLogHandler()
 
-        let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+        let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct, metadata: metadata)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,

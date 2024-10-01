@@ -315,7 +315,7 @@ final class PurchasesOrchestrator {
 
     func purchase(product: StoreProduct,
                   package: Package?,
-                  transactionMetadata: [String: String]?,
+                  metadata: [String: String]?,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package)
 
@@ -334,7 +334,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: nil,
-                          transactionMetadata: transactionMetadata,
+                          metadata: metadata,
                           completion: completion)
         } else if product.isTestProduct {
             self.handleTestProduct(completion)
@@ -346,7 +346,7 @@ final class PurchasesOrchestrator {
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData,
-                  transactionMetadata: [String: String]?,
+                  metadata: [String: String]?,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
@@ -363,7 +363,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: promotionalOffer,
-                          transactionMetadata: transactionMetadata,
+                          metadata: metadata,
                           completion: completion)
         } else if product.isTestProduct {
             self.handleTestProduct(completion)
@@ -455,14 +455,14 @@ final class PurchasesOrchestrator {
     func purchase(sk2Product product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
-                  transactionMetadata: [String: String]?,
+                  metadata: [String: String]?,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
                 let result: PurchaseResultData = try await self.purchase(sk2Product: product,
                                                                          package: package,
                                                                          promotionalOffer: promotionalOffer,
-                                                                         transactionMetadata: transactionMetadata)
+                                                                         metadata: metadata)
 
                 if !result.userCancelled {
                     Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
@@ -497,7 +497,7 @@ final class PurchasesOrchestrator {
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
-                  transactionMetadata: [String: String]?) async throws -> PurchaseResultData {
+                  metadata: [String: String]?) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
         do {
@@ -556,7 +556,7 @@ final class PurchasesOrchestrator {
         let customerInfo: CustomerInfo
 
         if let transaction = transaction {
-            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, transactionMetadata)
+            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
         } else {
             // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
             // `Product.PurchaseResult.userCancelled`.
@@ -806,7 +806,7 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
                     self.purchase(product: product,
                                   package: nil,
                                   promotionalOffer: discount,
-                                  transactionMetadata: nil) { transaction, customerInfo, error, cancelled in
+                                  metadata: nil) { transaction, customerInfo, error, cancelled in
                         completion(transaction, customerInfo, error, cancelled)
                     }
                 }
@@ -814,7 +814,7 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
                 startPurchase = { completion in
                     self.purchase(product: product,
                                   package: nil,
-                                  transactionMetadata: nil) { transaction, customerInfo, error, cancelled in
+                                  metadata: nil) { transaction, customerInfo, error, cancelled in
                         completion(transaction, customerInfo, error, cancelled)
                     }
                 }
@@ -1526,7 +1526,7 @@ extension PurchasesOrchestrator {
     private func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
         _ initiationSource: ProductRequestData.InitiationSource,
-        _ transactionMetadata: [String: String]?
+        _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
@@ -1538,7 +1538,7 @@ extension PurchasesOrchestrator {
             presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
             unsyncedAttributes: unsyncedAttributes,
-            transactionMetadata: transactionMetadata,
+            metadata: metadata,
             aadAttributionToken: adServicesToken,
             storefront: storefront,
             source: .init(isRestore: self.allowSharingAppStoreAccount,
