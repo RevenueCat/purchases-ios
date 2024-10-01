@@ -50,7 +50,11 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
         case .caption2: return .caption2
 
         #if compiler(>=6.0) && os(tvOS)
-        case .caption3: return .system(.caption3)
+        case .caption3: if #available(tvOS 18.0, *) {
+            return .system(.caption3)
+        } else {
+            return .caption2
+        }
         #endif
 
         #if swift(>=5.9) && os(visionOS)
@@ -114,7 +118,7 @@ private extension Font.TextStyle {
         case .caption2: return .caption2
 
         #if compiler(>=6.0) && os(tvOS)
-        case .caption3: return .system(.caption3)
+        case .caption3: return .caption2
         #endif
 
         #if swift(>=5.9) && os(visionOS)
