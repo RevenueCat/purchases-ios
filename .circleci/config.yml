@@ -1337,8 +1337,6 @@ workflows:
       - run-revenuecat-ui-ios-18
 
   create-tag:
-    executor:
-      name: macos-executor
     when:
       and:
         - not:
