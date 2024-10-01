@@ -27,7 +27,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         var started = false
         var packageBeingPurchased: Package?
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -55,7 +55,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         var customerInfo: CustomerInfo?
         var purchased = false
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -78,7 +78,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnPurchaseCompleted() throws {
         var customerInfo: CustomerInfo?
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -99,7 +99,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnPurchaseCompletedWithTransaction() throws {
         var result: (transaction: StoreTransaction?, customerInfo: CustomerInfo)?
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -125,7 +125,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         var completed = false
         var cancelled = false
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -149,7 +149,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         var completed = false
         var cancelled = false
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -172,7 +172,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnPurchaseFailure() throws {
         var error: NSError?
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -193,7 +193,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnRestoreStarted() throws {
         var started = false
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -214,7 +214,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnRestoreCompleted() throws {
         var customerInfo: CustomerInfo?
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -237,7 +237,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnRestoreFailure() throws {
         var error: NSError?
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
