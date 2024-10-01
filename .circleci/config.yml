@@ -455,6 +455,9 @@ jobs:
   pod-lib-lint:
     executor:
       name: macos-executor
+      # We're using Xcode 15.2.0 temporarily to avoid some Sendable warnings in Swift 6/Xcode 16
+      # that cause pod lib lint to fail. We can use the default Xcode version once those warnings
+      # have been addressed.
       xcode_version: '15.2.0'
     steps:
       - checkout
@@ -1340,6 +1343,9 @@ workflows:
   create-tag:
     executor:
       name: macos-executor
+      # We're using Xcode 15.2.0 temporarily to avoid some Sendable warnings in Swift 6/Xcode 16
+      # that cause pod lib lint to fail. We can use the default Xcode version once those warnings
+      # have been addressed.
       xcode_version: '15.2.0'
     when:
       and:
