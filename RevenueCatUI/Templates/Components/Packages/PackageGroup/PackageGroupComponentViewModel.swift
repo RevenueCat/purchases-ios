@@ -25,6 +25,8 @@ public class PackageGroupComponentViewModel {
     private let component: PaywallComponent.PackageGroupComponent
     private let offering: Offering
 
+    let defaultPackage: Package
+
     let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
@@ -33,6 +35,11 @@ public class PackageGroupComponentViewModel {
         self.localizedStrings = localizedStrings
         self.component = component
         self.offering = offering
+
+        self.defaultPackage = try PackageValidation.findPackage(
+            identifier: component.defaultSelectedPackageID,
+            offering: offering
+        )
 
         self.stackComponentViewModel = try self.component.toStackComponentViewModel(
             localizedStrings: localizedStrings,
