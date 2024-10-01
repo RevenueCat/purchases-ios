@@ -50,7 +50,7 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
         case .caption2: return .caption2
 
         #if compiler(>=6.0) && os(tvOS)
-        case .caption3: return .caption3
+        case .caption3: return .system(.caption3)
         #endif
 
         #if swift(>=5.9) && os(visionOS)
@@ -112,6 +112,10 @@ private extension Font.TextStyle {
         case .footnote: return .footnote
         case .caption: return .caption1
         case .caption2: return .caption2
+
+        #if compiler(>=6.0) && os(tvOS)
+        case .caption3: return .system(.caption3)
+        #endif
 
         #if swift(>=5.9) && os(visionOS)
         case .extraLargeTitle: return .extraLargeTitle
