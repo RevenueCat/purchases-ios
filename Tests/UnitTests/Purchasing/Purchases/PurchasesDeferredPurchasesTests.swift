@@ -156,14 +156,12 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
     }
     private var product: MockSK1Product!
 
-    override var storeKit2Setting: StoreKit2Setting {
-        return .enabledForCompatibleDevices
-    }
+    override var storeKitVersion: StoreKitVersion { .storeKit2 }
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setupPurchases()
 

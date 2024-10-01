@@ -16,11 +16,6 @@ import Foundation
 extension HTTPRequestBody {
 
     var postParameterHeader: String? {
-        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            // Signature verification is not available.
-            return nil
-        }
-
         let keys = self.keysToSign
         guard !keys.isEmpty else {
             return nil
@@ -29,9 +24,9 @@ extension HTTPRequestBody {
         return HTTPRequest.signatureHashHeader(keys: keys, hash: self.postParameterHash)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private var postParameterHash: String {
-        return HTTPRequest.signingParameterHash(self.contentForSignature.map(\.value))
+        let nonNilValues = self.contentForSignature.compactMap { $0.value }
+        return HTTPRequest.signingParameterHash(nonNilValues)
     }
 
 }

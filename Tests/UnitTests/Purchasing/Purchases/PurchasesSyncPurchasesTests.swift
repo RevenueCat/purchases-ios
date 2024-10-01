@@ -141,6 +141,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
     func testSyncPurchasesPostsTheReceiptIfAutoSyncPurchasesSettingIsOff() {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
+                                         storeKitVersion: self.storeKitVersion,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)

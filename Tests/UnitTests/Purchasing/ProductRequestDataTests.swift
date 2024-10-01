@@ -169,10 +169,6 @@ class ProductRequestDataTests: TestCase {
     }
 
     func testCacheKey() throws {
-        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else {
-            throw XCTSkip()
-        }
-
         let discount1 = MockStoreProductDiscount(offerIdentifier: "offerid1",
                                                  currencyCode: "USD",
                                                  price: 11,

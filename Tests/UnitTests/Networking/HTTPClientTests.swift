@@ -795,10 +795,30 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         let headerPresent: Atomic<Bool> = false
 
-        let enabled = self.systemInfo.storeKit2Setting.isEnabledAndAvailable.description
+        let enabled = self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable.description
 
         stub(condition: hasHeaderNamed("X-StoreKit2-Enabled",
                                        value: enabled)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
+    func testPassesStoreKitVersionHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        let version = self.systemInfo.storeKitVersion.effectiveVersion.debugDescription
+
+        stub(condition: hasHeaderNamed("X-StoreKit-Version",
+                                       value: version)) { _ in
             headerPresent.value = true
             return .emptySuccessResponse()
         }
@@ -1728,7 +1748,7 @@ extension BaseHTTPClientTests {
         var key1: String
         var key2: String
 
-        var contentForSignature: [(key: String, value: String)] {
+        var contentForSignature: [(key: String, value: String?)] {
             return [
                 ("key1", self.key1),
                 ("key2", self.key2)
@@ -1775,6 +1795,6 @@ private struct AnyEncodableRequestBody: HTTPRequestBody, Decodable {
         self.body = .init(body)
     }
 
-    var contentForSignature: [(key: String, value: String)] { [] }
+    var contentForSignature: [(key: String, value: String?)] { [] }
 
 }

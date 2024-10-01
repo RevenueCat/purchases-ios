@@ -88,6 +88,75 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithAppTransactionCorrectly() throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = false
+        let observerMode = true
+        let appTransaction = "some_jws_token"
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: productData,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingContext: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                              ),
+                              observerMode: observerMode,
+                              appTransaction: appTransaction,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testPostsReceiptDataWithAppTransactionAndNoReceiptCorrectly() throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = false
+        let observerMode = true
+        let appTransaction = "some_jws_token"
+
+        waitUntil { completed in
+            self.backend.post(receipt: .empty,
+                              productData: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingContext: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                              ),
+                              observerMode: observerMode,
+                              appTransaction: appTransaction,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testPostsReceiptDataWithTestReceiptIdentifier() throws {
         let identifier = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
 
@@ -971,10 +1040,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
         }
 
         expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.entitlements.verification) == .verified
-        }
+        expect(result?.value?.entitlements.verification) == .verified
     }
 
     func testGetsEntitlementsWithFailedVerification() {
@@ -1002,10 +1068,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
         }
 
         expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.entitlements.verification) == .failed
-        }
+        expect(result?.value?.entitlements.verification) == .failed
     }
 
 }

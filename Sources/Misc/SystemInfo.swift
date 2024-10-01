@@ -32,7 +32,7 @@ class SystemInfo {
         set { self._forceUniversalAppStore.value = newValue }
     }
 
-    let storeKit2Setting: StoreKit2Setting
+    let storeKitVersion: StoreKitVersion
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
@@ -128,7 +128,7 @@ class SystemInfo {
          bundle: Bundle = .main,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
-         storeKit2Setting: StoreKit2Setting = .default,
+         storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
          clock: ClockType = Clock.default) {
@@ -138,7 +138,7 @@ class SystemInfo {
 
         self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
-        self.storeKit2Setting = storeKit2Setting
+        self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
@@ -258,6 +258,27 @@ extension SystemInfo {
             NSApplication.didResignActiveNotification
         #elseif os(watchOS)
             Notification.Name.NSExtensionHostDidEnterBackground
+        #endif
+    }
+
+    /// Returns the appropriate `Notification.Name` for the OS's didBecomeActive notification,
+    /// indicating that the application did become active. This value is only nil for watchOS
+    /// versions below 7.0.
+    static var applicationDidBecomeActiveNotification: Notification.Name? {
+        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+            return UIApplication.didBecomeActiveNotification
+        #elseif os(macOS)
+            return NSApplication.didBecomeActiveNotification
+        #elseif os(watchOS)
+        if #available(watchOS 9, *) {
+            return WKApplication.didBecomeActiveNotification
+        } else if #available(watchOS 7, *) {
+            // Work around for "Symbol not found" dyld crashes on watchOS 7.0..<9.0
+            return Notification.Name("WKApplicationDidBecomeActiveNotification")
+        } else {
+            // There's no equivalent notification available on watchOS <7.
+            return nil
+        }
         #endif
     }
 

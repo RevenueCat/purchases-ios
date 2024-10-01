@@ -78,7 +78,7 @@ final class HealthOperation: CacheableNetworkOperation {
     }
 
     private var verificationMode: Signing.ResponseVerificationMode {
-        if self.signatureVerification, #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+        if self.signatureVerification {
             return Signing.enforcedVerificationMode()
         } else {
             return .disabled

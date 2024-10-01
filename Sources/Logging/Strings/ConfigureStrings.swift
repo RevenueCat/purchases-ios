@@ -29,13 +29,11 @@ enum ConfigureStrings {
 
     case debug_enabled
 
-    case store_kit_2_enabled
-
     case observer_mode_enabled
 
-    case observer_mode_with_storekit2
-
     case response_verification_mode(Signing.ResponseVerificationMode)
+
+    case storekit_version(StoreKitVersion)
 
     case delegate_set
 
@@ -75,6 +73,11 @@ enum ConfigureStrings {
 
     case sk2_required_for_swiftui_paywalls
 
+    case record_purchase_requires_purchases_made_by_my_app
+
+    case sk2_required
+
+    case sk2_invalid_inapp_purchase_key
 }
 
 extension ConfigureStrings: LogMessage {
@@ -96,12 +99,8 @@ extension ConfigureStrings: LogMessage {
                 "with URL: \(url)"
         case .debug_enabled:
             return "Debug logging enabled"
-        case .store_kit_2_enabled:
-            return "StoreKit 2 support enabled"
         case .observer_mode_enabled:
-            return "Purchases is configured in observer mode"
-        case .observer_mode_with_storekit2:
-            return "Observer mode is not currently compatible with StoreKit 2"
+            return "Purchases is configured with purchasesAreCompletedBy set to .myApp"
         case let .response_verification_mode(mode):
             switch mode {
             case .disabled:
@@ -111,6 +110,8 @@ extension ConfigureStrings: LogMessage {
             case .enforced:
                 return "Purchases is configured with enforced response verification"
             }
+        case let .storekit_version(version):
+            return "Purchases is configured with StoreKit version \(version)"
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:
@@ -185,8 +186,23 @@ extension ConfigureStrings: LogMessage {
 
         case .sk2_required_for_swiftui_paywalls:
             return "Purchases is not configured with StoreKit 2 enabled. This is required in order to detect " +
-            "transactions coming from SwiftUI paywalls. You must use `.with(usesStoreKit2IfAvailable: true)` " +
+            "transactions coming from SwiftUI paywalls. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
+
+        case .record_purchase_requires_purchases_made_by_my_app:
+            return "Attempted to manually handle transactions with purchasesAreCompletedBy not set to .myApp. " +
+            "You must use `.with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)` " +
+            "when configuring the SDK."
+
+        case .sk2_required:
+            return "StoreKit 2 must be enabled. You must use `.with(storeKitVersion: .storeKit2)` " +
+            "when configuring the SDK."
+
+        case .sk2_invalid_inapp_purchase_key:
+            return "Failed to post the transaction to RevenueCat's backend because your Apple In-App Purchase Key is " +
+            "invalid or not present. This error is thrown only in debug builds; in production, it will fail " +
+            "silently. You must configure an In-App Purchase Key. Please see " +
+            "https://rev.cat/in-app-purchase-key-configuration for more info."
         }
     }
 

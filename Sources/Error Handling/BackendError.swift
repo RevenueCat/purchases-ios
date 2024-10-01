@@ -24,6 +24,7 @@ enum BackendError: Error, Equatable {
     case missingReceiptFile(URL?, Source)
     case missingTransactionProductIdentifier(Source)
     case missingCachedCustomerInfo(Source)
+    case invalidAppleSubscriptionKey(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
 
 }
@@ -116,6 +117,13 @@ extension BackendError: PurchasesErrorConvertible {
                                                         fileName: source.file,
                                                         functionName: source.function,
                                                         line: source.line)
+        case let .invalidAppleSubscriptionKey(source):
+            return ErrorUtils.configurationError(
+                message: ErrorCode.invalidAppleSubscriptionKeyError.description,
+                fileName: source.file,
+                functionName: source.function,
+                line: source.line
+            )
         }
     }
 
@@ -149,6 +157,7 @@ extension BackendError {
         case .missingAppUserID,
              .emptySubscriberAttributes,
              .missingReceiptFile,
+             .invalidAppleSubscriptionKey,
              .missingTransactionProductIdentifier,
              .missingCachedCustomerInfo,
              .unexpectedBackendResponse:
@@ -168,6 +177,7 @@ extension BackendError {
         case .missingAppUserID,
                 .emptySubscriberAttributes,
                 .missingReceiptFile,
+                .invalidAppleSubscriptionKey,
                 .missingTransactionProductIdentifier,
                 .missingCachedCustomerInfo:
             return nil

@@ -35,7 +35,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         self.systemInfo = SystemInfo(platformInfo: Purchases.platformInfo,
                                      finishTransactions: true,
                                      operationDispatcher: operationDispatcher,
-                                     storeKit2Setting: .disabled)
+                                     storeKitVersion: .storeKit1)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
         self.parser = .default
     }
@@ -66,7 +66,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testReceiptParserParsesReceiptWithSingleIAP() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let product = try await fetchSk2Product()
         let purchaseTime = Date()
 

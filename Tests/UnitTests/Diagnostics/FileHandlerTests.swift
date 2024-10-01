@@ -16,15 +16,12 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BaseFileHandlerTests: TestCase {
 
     fileprivate var handler: FileHandler!
 
     override func setUp() async throws {
         try await super.setUp()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.handler = try Self.createWithTemporaryFile()
     }
@@ -37,7 +34,6 @@ class BaseFileHandlerTests: TestCase {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class FileHandlerTests: BaseFileHandlerTests {
 
     // MARK: - readFile
@@ -247,7 +243,6 @@ class IOS15FileHandlerTests: BaseFileHandlerTests {
 
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseFileHandlerTests {
 
     func reCreateHandler() async throws {

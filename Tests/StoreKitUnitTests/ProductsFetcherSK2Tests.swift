@@ -24,7 +24,7 @@ class ProductsFetcherSK2Tests: StoreKitConfigTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.productsFetcherSK2 = ProductsFetcherSK2()
     }

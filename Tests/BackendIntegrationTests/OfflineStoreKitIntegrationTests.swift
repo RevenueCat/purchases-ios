@@ -17,7 +17,7 @@ import StoreKit
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable type_name file_length
+// swiftlint:disable file_length
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
@@ -31,19 +31,13 @@ class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
 class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
-
-}
-
-class OfflineStoreKit2JWSIntegrationTests: OfflineStoreKit1IntegrationTests {
-
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
 }
 
 class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -249,16 +243,19 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingTransactionsPostsReceiptOnlyOnce() async throws {
+        // forceRenewalOfSubscription doesn't work well, so we use this instead
+        setShortestTestSessionTimeRate(self.testSession)
+
         // This test requires the "production" behavior to make sure
         // we don't refresh the receipt a second time when posting the second transaction.
         self.enableReceiptFetchRetry = false
 
         self.serverDown()
 
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
-        try self.testSession.forceRenewalOfSubscription(
-            productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
-        )
+        try await self.purchaseShortestDuration(allowOfflineEntitlements: true)
+
+        // swiftlint:disable:next force_try
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
@@ -363,6 +360,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
 }
 
+// swiftlint:disable type_name
+
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     override var forceServerErrors: Bool { return true }
@@ -386,6 +385,8 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
     }
 
 }
+
+// swiftlint:enable type_name
 
 // MARK: -
 

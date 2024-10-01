@@ -122,7 +122,7 @@ private extension PostOfferForSigningOperation {
         }
 
         let appUserID: String
-        let fetchToken: String
+        let fetchToken: String?
         let generateOffers: [Offer]
 
         init(appUserID: String, data: PostOfferForSigningData) {

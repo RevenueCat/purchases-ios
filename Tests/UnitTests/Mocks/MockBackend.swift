@@ -12,6 +12,7 @@ class MockBackend: Backend {
                                        productData: ProductRequestData?,
                                        transactionData: PurchasedTransactionData,
                                        observerMode: Bool,
+                                       appTransaction: String?,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -45,6 +46,7 @@ class MockBackend: Backend {
                        productData: ProductRequestData?,
                        transactionData: PurchasedTransactionData,
                        observerMode: Bool,
+                       appTransaction: String? = nil,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
@@ -52,11 +54,13 @@ class MockBackend: Backend {
                                             productData,
                                             transactionData,
                                             observerMode,
+                                            appTransaction,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
                                                      transactionData,
                                                      observerMode,
+                                                     appTransaction,
                                                      completion))
 
         self.onPostReceipt?()
