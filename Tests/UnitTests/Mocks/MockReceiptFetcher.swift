@@ -38,3 +38,5 @@ class MockReceiptFetcher: ReceiptFetcher {
     }
 
 }
+
+extension MockReceiptFetcher: @unchecked Sendable {}
