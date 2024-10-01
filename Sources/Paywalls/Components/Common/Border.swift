@@ -23,6 +23,11 @@ public extension PaywallComponent {
         public let color: ColorInfo
         public let width: Double
 
+        public init(color: PaywallComponent.ColorInfo, width: Double) {
+            self.color = color
+            self.width = width
+        }
+
     }
 
 }

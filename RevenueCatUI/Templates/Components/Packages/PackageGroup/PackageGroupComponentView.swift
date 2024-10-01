@@ -20,11 +20,16 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageGroupComponentView: View {
 
+    @EnvironmentObject
+    private var paywallState: PaywallState
+
     let viewModel: PackageGroupComponentViewModel
 
     var body: some View {
-        // WIP: Do something with default package id and selection
         StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
+            .onAppear {
+                self.paywallState.select(package: self.viewModel.defaultPackage)
+            }
     }
 
 }

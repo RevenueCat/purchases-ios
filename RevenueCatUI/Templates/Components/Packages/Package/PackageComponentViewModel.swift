@@ -23,6 +23,7 @@ class PackageComponentViewModel {
     private let component: PaywallComponent.PackageComponent
     private let offering: Offering
 
+    let package: Package
     let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
@@ -31,6 +32,8 @@ class PackageComponentViewModel {
         self.localizedStrings = localizedStrings
         self.component = component
         self.offering = offering
+
+        self.package = try PackageValidation.findPackage(identifier: component.packageID, offering: offering)
 
         self.stackComponentViewModel = try self.component.toStackComponentViewModel(
             localizedStrings: localizedStrings,

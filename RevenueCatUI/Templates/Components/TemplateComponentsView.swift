@@ -10,11 +10,26 @@ import RevenueCat
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
+
+class PaywallState: ObservableObject {
+
+    @Published var selectedPackage: Package?
+
+    func select(package: Package) {
+        self.selectedPackage = package
+        print("Selected package: \(package.identifier)")
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct TemplateComponentsView: View {
 
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
+
+    @StateObject
+    var paywwallState = PaywallState()
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
         self.paywallComponentsData = paywallComponentsData
@@ -48,6 +63,7 @@ public struct TemplateComponentsView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
+        .environmentObject(self.paywwallState)
     }
 
     static func chooseLocalization(
