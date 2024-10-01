@@ -1465,7 +1465,6 @@ workflows:
       - spm-release-build
       - spm-release-build-xcode-14
       - spm-release-build-xcode-15
-      - spm-release-build-xcode-16
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
       - run-revenuecat-ui-ios-17
