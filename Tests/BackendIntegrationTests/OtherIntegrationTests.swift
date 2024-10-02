@@ -173,7 +173,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let result = try await self.purchases.productEntitlementMapping().entitlementsByProduct
-        expect(result).to(haveCount(18))
+        expect(result).to(haveCount(21))
         expect(result["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
         expect(result["lifetime"]) == ["premium"]
         expect(result["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
