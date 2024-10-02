@@ -47,7 +47,7 @@ extension Message.Reason {
         case .priceIncreaseConsent: return .priceIncreaseConsent
         case .generic: return .generic
         default:
-            if #available(iOS 18.0, *), case .winBackOffer = self {
+            if #available(iOS 18.0, visionOS 2.0, *), case .winBackOffer = self {
                 return .winBackOffer
             }
 
