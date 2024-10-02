@@ -7,7 +7,7 @@
 
 import UIKit
 import RevenueCat
-
+import RevenueCatUI
 /*
  View controller to display user's details like subscription status and ID's.
  Configured in /Resources/UI/Main.storyboard
@@ -15,6 +15,7 @@ import RevenueCat
 
 class UserViewController: UIViewController {
 
+    @IBOutlet weak var subscriptionButton: UIButton!
     @IBOutlet var userIdLabel: UILabel!
     @IBOutlet var statusLabel: UILabel!
 
@@ -119,5 +120,34 @@ extension UserViewController {
             
             self.refreshUserDetails()
         }
+    }
+}
+
+/*
+ How to present a Paywall using the Purchases SDK. Read more about paywalls here:
+ https://www.revenuecat.com/docs/tools/paywalls
+ */
+extension UserViewController: PaywallViewControllerDelegate {
+    @IBAction func subscriptionTapped(_ sender: Any) {
+        Purchases.shared.getCustomerInfo { (purchaserInfo, error) in
+            if purchaserInfo?.entitlements[Constants.entitlementID]?.isActive == true {
+                // User has an active subscription
+            } else {
+                DispatchQueue.main.async {
+                    self.presentPaywall()
+                }
+            }
+        }
+    }
+    
+    private func presentPaywall() {
+        let controller = PaywallViewController()
+        controller.delegate = self
+        present(controller, animated: true, completion: nil)
+    }
+    
+    /// - Notifies when a purchased has finished.
+    func paywallViewController(_ controller: PaywallViewController,
+                               didFinishPurchasingWith customerInfo: CustomerInfo) {
     }
 }
