@@ -78,12 +78,16 @@ struct PackageComponentView_Previews: PreviewProvider {
                     "detail": .string("Get for $39.99/wk")
                 ],
                 component: .init(
-                    packageID: "$rc_weekly",
+                    packageID: "weekly",
                     components: components
                 ),
-                offering: .init(identifier: "",
+                offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [])
+                                availablePackages: [
+                                    .init(identifier: "weekly",
+                                          packageType: .weekly,
+                                          storeProduct: .init(sk1Product: .init()),
+                                          offeringIdentifier: "default")])
             )
         )
         .previewLayout(.sizeThatFits)
