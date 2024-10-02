@@ -20,11 +20,18 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageComponentView: View {
 
+    @EnvironmentObject
+    private var paywallState: PaywallState
+
     let viewModel: PackageComponentViewModel
 
     var body: some View {
         // WIP: Do something with package id and selection
-        StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
+        Button {
+            self.paywallState.select(package: self.viewModel.package)
+        } label: {
+            StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
+        }
     }
 
 }
@@ -71,12 +78,16 @@ struct PackageComponentView_Previews: PreviewProvider {
                     "detail": .string("Get for $39.99/wk")
                 ],
                 component: .init(
-                    packageID: "$rc_weekly",
+                    packageID: "weekly",
                     components: components
                 ),
-                offering: .init(identifier: "",
+                offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [])
+                                availablePackages: [
+                                    .init(identifier: "weekly",
+                                          packageType: .weekly,
+                                          storeProduct: .init(sk1Product: .init()),
+                                          offeringIdentifier: "default")])
             )
         )
         .previewLayout(.sizeThatFits)

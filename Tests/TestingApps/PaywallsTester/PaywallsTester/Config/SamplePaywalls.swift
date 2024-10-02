@@ -38,6 +38,16 @@ final class SamplePaywallLoader {
         )
     }
 
+    func offering(with components: PaywallComponentsData) -> Offering {
+        return .init(
+            identifier: Self.offeringIdentifier,
+            serverDescription: Self.offeringIdentifier,
+            metadata: [:],
+            paywallComponentsData: components,
+            availablePackages: self.packages
+        )
+    }
+
     func offeringWithDefaultPaywall() -> Offering {
         return .init(
             identifier: Self.offeringIdentifier,
@@ -696,10 +706,93 @@ private extension SamplePaywallLoader {
         return components
     }()
 
+    static func makePackage(packageID: String,
+                            nameTextLid: String,
+                            detailTextLid: String) -> PaywallComponent {
+        let stack: PaywallComponent = .stack(.init(
+            components: [
+                .text(.init(
+                    textLid: nameTextLid,
+                    fontWeight: .bold,
+                    color: .init(light: "#000000"),
+                    padding: .zero,
+                    margin: .zero
+                )),
+                .text(.init(
+                    textLid: detailTextLid,
+                    color: .init(light: "#000000"),
+                    padding: .zero,
+                    margin: .zero
+                ))
+            ],
+            dimension: .vertical(.leading),
+            spacing: 0,
+            backgroundColor: nil,
+            padding: .init(top: 10,
+                           bottom: 10,
+                           leading: 20,
+                           trailing: 20)
+        ))
+
+        return .package(.init(
+            packageID: packageID,
+            components: [stack],
+            cornerRadiuses: .init(topLeading: 8,
+                                  topTrailing: 8,
+                                  bottomLeading: 8,
+                                  bottomTrailing: 8),
+            border: .init(color: .init(light: "#000000"), width: 1)
+        ))
+    }
+
+    static var simpleSixPackages: PaywallComponent = {
+        return .stack(.init(
+            components: [
+                .packageGroup(.init(
+                    defaultSelectedPackageID: Package.string(from: PackageType.monthly)!,
+                    components: [
+                        makePackage(packageID: Package.string(from: PackageType.monthly)!,
+                                    nameTextLid: "monthly_package_name",
+                                    detailTextLid: "monthly_package_details"),
+                        makePackage(packageID: Package.string(from: PackageType.annual)!,
+                                    nameTextLid: "annual_package_name",
+                                    detailTextLid: "annual_package_details")
+                    ],
+                    spacing: 20,
+                    margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
+                )),
+                .purchaseButton(.init(
+                    ctaLid: "cta",
+                    ctaIntroOfferLid: "cta_intro",
+                    fontWeight: .bold,
+                    color: .init(light: "#ffffff"),
+                    backgroundColor: .init(light: "#ff0000"),
+                    padding: .init(top: 10,
+                                   bottom: 10,
+                                   leading: 30,
+                                   trailing: 30),
+                    shape: .rectangle,
+                    cornerRadiuses: .init(topLeading: 10,
+                                          topTrailing: 10,
+                                          bottomLeading: 10,
+                                          bottomTrailing: 10)
+                ))
+            ],
+            width: .init(type: .fill, value: nil),
+            backgroundColor: .init(light: "#ccccccsta")
+        ))
+    }()
+
     static var simpleSix: [PaywallComponent] = {
         let components: [PaywallComponent] = [
             .stack(.init(components:
-                            [fuzzyCat, spacer, simpleFeatureStack(text: featureText), spacer, purchaseSimpleButton],
+                            [
+                                fuzzyCat,
+                                spacer,
+                                simpleFeatureStack(text: featureText),
+                                spacer,
+                                simpleSixPackages
+                            ],
                          dimension: .vertical(.center),
                          spacing: nil,
                          backgroundColor: .init(light: "#FFFFFF"),
@@ -1375,7 +1468,13 @@ private extension SamplePaywallLoader {
                 "popular_plan_label": .string("Popular Plan"),
                 "get_started_text": .string("Get started with our plan"),
                 "upgrade_plan_text": .string("Upgrade to our premium plan"),
-                "feature_text": .string("Feature")
+                "feature_text": .string("Feature"),
+                "monthly_package_name": .string("Monthly"),
+                "monthly_package_details": .string("Get now for $2.99/month"),
+                "annual_package_name": .string("Annual"),
+                "annual_package_details": .string("Get now for $19.99/month"),
+                "cta": .string("Purchase now"),
+                "cta_intro": .string("Claim free trial")
             ],
             "fr_FR": [
                 "welcome_message": .string("Bonjour, Composants Paywall!"),
@@ -1384,7 +1483,13 @@ private extension SamplePaywallLoader {
                 "popular_plan_label": .string("Plan populaire"),
                 "get_started_text": .string("Commencez avec notre plan"),
                 "upgrade_plan_text": .string("Passez à notre plan premium"),
-                "feature_text": .string("Fonctionnalité")
+                "feature_text": .string("Fonctionnalité"),
+                "monthly_package_name": .string("Monthly Package FRENCH"),
+                "monthly_package_details": .string("Monthly DETAILS Package"),
+                "annual_package_name": .string("Annua FRENCH"),
+                "annual_package_details": .string("Get now for $19.99/month FRENCH"),
+                "cta": .string("Purchase now FRENCH"),
+                "cta_intro": .string("Claim free trial FRENCH")
             ],
             "es_ES": [
                 "welcome_message": .string("¡Hola, Componentes Paywall!"),
@@ -1393,7 +1498,13 @@ private extension SamplePaywallLoader {
                 "popular_plan_label": .string("Plan popular"),
                 "get_started_text": .string("Empieza con nuestro plan"),
                 "upgrade_plan_text": .string("Actualiza a nuestro plan premium"),
-                "feature_text": .string("Función")
+                "feature_text": .string("Función"),
+                "monthly_package_name": .string("Monthly Package SPANISH"),
+                "monthly_package_details": .string("Monthly DETAILS Package"),
+                "annual_package_name": .string("Annual SPANISH"),
+                "annual_package_details": .string("Get now for $19.99/month SPANISH"),
+                "cta": .string("Purchase now SPANISH"),
+                "cta_intro": .string("Claim free trial SPANISH")
             ]
         ]
     }
