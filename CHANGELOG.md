@@ -1,3 +1,8 @@
+## 4.43.3
+### Other Changes
+* Remove usage of adServicesToken in syncPurchases via Mark Villacampa (@MarkVillacampa)
+* Update RevenueCat-Swift.h for version 4.43.2 via RCGitBot (@RCGitBot)
+* Version bump for 4.43.2 via RCGitBot (@RCGitBot)
 ## 4.43.2
 ### Bugfixes
 * Remove AdClient framework related code (#3993) via Cesar de la Vega (@vegaro)
