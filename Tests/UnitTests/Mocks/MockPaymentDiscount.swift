@@ -18,3 +18,5 @@ class MockPaymentDiscount: SKPaymentDiscount {
         super.init()
     }
 }
+
+extension MockPaymentDiscount: @unchecked Sendable {}

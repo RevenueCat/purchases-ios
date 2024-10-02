@@ -29,3 +29,5 @@ class MockAttributionFetcher: AttributionFetcher {
     }
 
 }
+
+extension MockAttributionFetcher: @unchecked Sendable {}

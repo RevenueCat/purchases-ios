@@ -111,3 +111,5 @@ class MockProductsManager: ProductsManager {
         self.invokedClearCacheCount = 0
     }
 }
+
+extension MockProductsManager: @unchecked Sendable {}

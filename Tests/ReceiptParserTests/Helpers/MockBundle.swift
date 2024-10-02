@@ -49,3 +49,5 @@ final class MockBundle: Bundle {
     private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
 
 }
+
+extension MockBundle: @unchecked Sendable {}

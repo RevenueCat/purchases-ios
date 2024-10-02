@@ -135,3 +135,5 @@ class MockOperationDispatcher: OperationDispatcher {
     }
 
 }
+
+extension MockOperationDispatcher: @unchecked Sendable {}

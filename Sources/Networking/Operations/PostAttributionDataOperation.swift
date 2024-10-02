@@ -60,6 +60,9 @@ class PostAttributionDataOperation: NetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostAttributionDataOperation: @unchecked Sendable {}
+
 private extension PostAttributionDataOperation {
 
     struct Body: HTTPRequestBody {

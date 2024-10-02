@@ -61,3 +61,5 @@ class MockNotificationCenter: NotificationCenter {
         }
     }
 }
+
+extension MockNotificationCenter: @unchecked Sendable {}
