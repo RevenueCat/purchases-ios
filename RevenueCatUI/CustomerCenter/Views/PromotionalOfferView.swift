@@ -35,6 +35,7 @@ struct PromotionalOfferView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
+    @State private var loadingState: Bool = false
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
@@ -60,7 +61,9 @@ struct PromotionalOfferView: View {
 
                     Spacer()
 
-                    PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
+                    PromoOfferButtonView(loadingState: $loadingState,
+                                         viewModel: self.viewModel,
+                                         appearance: self.appearance)
 
                     Button {
                         dismiss()
@@ -117,6 +120,8 @@ struct PromotionalOfferHeaderView: View {
 @available(watchOS, unavailable)
 struct PromoOfferButtonView: View {
 
+    @Binding var loadingState: Bool
+
     @Environment(\.locale)
     private var locale
 
@@ -131,24 +136,35 @@ struct PromoOfferButtonView: View {
             let mainTitle = discount.localizedPricePerPeriodByPaymentMode(.current)
             let localizedProductPricePerPeriod = product.localizedPricePerPeriod(.current)
 
-            Button(action: {
-                Task {
-                    await viewModel.purchasePromo()
+            AsyncButton {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    loadingState = true
                 }
-            }, label: {
-                VStack {
-                    Text(mainTitle)
-                        .font(.headline)
-
-                    let format = Localization.localizedBundle(self.locale)
-                        .localizedString(forKey: "then_price_per_period", value: "then %@", table: nil)
-
-                    Text(String(format: format, localizedProductPricePerPeriod))
-                        .font(.subheadline)
+                await viewModel.purchasePromo()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    loadingState = false
                 }
-            })
+            } label: {
+                if loadingState {
+                    TintedProgressView()
+                } else {
+                    VStack {
+                        Text(mainTitle)
+                            .font(.headline)
+
+                        let format = Localization.localizedBundle(self.locale)
+                            .localizedString(forKey: "then_price_per_period", value: "then %@", table: nil)
+
+                        Text(String(format: format, localizedProductPricePerPeriod))
+                            .font(.subheadline)
+                    }
+                }
+            }
             .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
+            .disabled(loadingState)
+            .opacity(loadingState ? 0.5 : 1)
+            .animation(.easeInOut(duration: 0.3), value: loadingState)
         }
     }
 
