@@ -27,7 +27,7 @@ struct SubscriptionDetailsView: View {
     let iconWidth = 22.0
     let subscriptionInformation: SubscriptionInformation
     let refundRequestStatus: RefundRequestStatus?
-    @Environment(\.localization) 
+    @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
