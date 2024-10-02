@@ -21,14 +21,16 @@ import StoreKit
 
     /// Message shown when there are billing issues in a subscription
     case billingIssue = 0
+
     /// Message shown when there is a price increase in a subscription that requires consent
     case priceIncreaseConsent
+
     /// Generic Store messages
     case generic
+
     /// Message shown when a subscriber is eligible to redeem a win-back offer that you've
     /// configured in App Store Connect. More information can be found
     /// [here](https://developer.apple.com/documentation/storekit/message/reason/4418230-winbackoffer).
-    ///
     case winBackOffer
 }
 
