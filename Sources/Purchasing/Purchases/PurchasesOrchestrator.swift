@@ -1026,7 +1026,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // swiftlint:disable:next function_body_length
     func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
                           isRestore: Bool,
                           initiationSource: ProductRequestData.InitiationSource,
@@ -1034,59 +1033,57 @@ private extension PurchasesOrchestrator {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
 
-        self.attribution.unsyncedAdServicesToken { adServicesToken in
-            // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
-            // https://rev.cat/apple-restoring-purchased-products
-            self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData, receiptURL in
-                guard let receiptData = receiptData,
-                      !receiptData.isEmpty else {
-                    if self.systemInfo.isSandbox {
-                        Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
-                    }
+        // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
+        // https://rev.cat/apple-restoring-purchased-products
+        self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData, receiptURL in
+            guard let receiptData = receiptData,
+                  !receiptData.isEmpty else {
+                if self.systemInfo.isSandbox {
+                    Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
+                }
 
+                if let completion = completion {
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion(.failure(ErrorUtils.missingReceiptFileError(receiptURL)))
+                    }
+                }
+                return
+            }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                let hasTransactions = self.transactionsManager.customerHasTransactions(receiptData: receiptData)
+                let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+
+                if !hasTransactions,
+                    let customerInfo = cachedCustomerInfo,
+                    customerInfo.originalPurchaseDate != nil {
                     if let completion = completion {
                         self.operationDispatcher.dispatchOnMainThread {
-                            completion(.failure(ErrorUtils.missingReceiptFileError(receiptURL)))
+                            completion(.success(customerInfo))
                         }
                     }
+
                     return
                 }
 
-                self.operationDispatcher.dispatchOnWorkerThread {
-                    let hasTransactions = self.transactionsManager.customerHasTransactions(receiptData: receiptData)
-                    let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+                self.createProductRequestData(with: receiptData) { productRequestData in
+                    let transactionData: PurchasedTransactionData = .init(
+                        appUserID: currentAppUserID,
+                        presentedOfferingContext: nil,
+                        unsyncedAttributes: unsyncedAttributes,
+                        storefront: productRequestData?.storefront,
+                        source: .init(isRestore: isRestore, initiationSource: initiationSource)
+                    )
 
-                    if !hasTransactions,
-                        let customerInfo = cachedCustomerInfo,
-                        customerInfo.originalPurchaseDate != nil {
-                        if let completion = completion {
-                            self.operationDispatcher.dispatchOnMainThread {
-                                completion(.success(customerInfo))
-                            }
-                        }
-
-                        return
-                    }
-
-                    self.createProductRequestData(with: receiptData) { productRequestData in
-                        let transactionData: PurchasedTransactionData = .init(
-                            appUserID: currentAppUserID,
-                            presentedOfferingContext: nil,
-                            unsyncedAttributes: unsyncedAttributes,
-                            storefront: productRequestData?.storefront,
-                            source: .init(isRestore: isRestore, initiationSource: initiationSource)
-                        )
-
-                        self.backend.post(receipt: .receipt(receiptData),
-                                          productData: productRequestData,
-                                          transactionData: transactionData,
-                                          observerMode: self.observerMode) { result in
-                            self.handleReceiptPost(result: result,
-                                                   transactionData: transactionData,
-                                                   subscriberAttributes: unsyncedAttributes,
-                                                   adServicesToken: adServicesToken,
-                                                   completion: completion)
-                        }
+                    self.backend.post(receipt: .receipt(receiptData),
+                                      productData: productRequestData,
+                                      transactionData: transactionData,
+                                      observerMode: self.observerMode) { result in
+                        self.handleReceiptPost(result: result,
+                                               transactionData: transactionData,
+                                               subscriberAttributes: unsyncedAttributes,
+                                               adServicesToken: nil,
+                                               completion: completion)
                     }
                 }
             }
@@ -1100,40 +1097,38 @@ private extension PurchasesOrchestrator {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
 
-        self.attribution.unsyncedAdServicesToken { adServicesToken in
-            _ = Task<Void, Never> {
-                let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
-                guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
-                    self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
-                                                          fetchPolicy: .cachedOrFetched) { result in
-                        self.operationDispatcher.dispatchOnMainThread {
-                            completion?(result.mapError(\.asPurchasesError))
-                        }
+        _ = Task<Void, Never> {
+            let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
+            guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
+                self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
+                                                      fetchPolicy: .cachedOrFetched) { result in
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion?(result.mapError(\.asPurchasesError))
                     }
-                    return
                 }
+                return
+            }
 
-                let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+            let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
-                self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
-                    let transactionData: PurchasedTransactionData = .init(
-                        appUserID: currentAppUserID,
-                        presentedOfferingContext: nil,
-                        unsyncedAttributes: unsyncedAttributes,
-                        storefront: transaction.storefront,
-                        source: .init(isRestore: isRestore, initiationSource: initiationSource)
-                    )
+            self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
+                let transactionData: PurchasedTransactionData = .init(
+                    appUserID: currentAppUserID,
+                    presentedOfferingContext: nil,
+                    unsyncedAttributes: unsyncedAttributes,
+                    storefront: transaction.storefront,
+                    source: .init(isRestore: isRestore, initiationSource: initiationSource)
+                )
 
-                    self.backend.post(receipt: receipt,
-                                      productData: productRequestData,
-                                      transactionData: transactionData,
-                                      observerMode: self.observerMode) { result in
-                        self.handleReceiptPost(result: result,
-                                               transactionData: transactionData,
-                                               subscriberAttributes: unsyncedAttributes,
-                                               adServicesToken: adServicesToken,
-                                               completion: completion)
-                    }
+                self.backend.post(receipt: receipt,
+                                  productData: productRequestData,
+                                  transactionData: transactionData,
+                                  observerMode: self.observerMode) { result in
+                    self.handleReceiptPost(result: result,
+                                           transactionData: transactionData,
+                                           subscriberAttributes: unsyncedAttributes,
+                                           adServicesToken: nil,
+                                           completion: completion)
                 }
             }
         }
