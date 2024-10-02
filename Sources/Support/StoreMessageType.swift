@@ -47,9 +47,13 @@ extension Message.Reason {
         case .priceIncreaseConsent: return .priceIncreaseConsent
         case .generic: return .generic
         default:
+            // winBackOffer message reason was added in iOS 18.0, but it's not recognized by xcode versions <16.0.
+            // https://developer.apple.com/documentation/xcode-release-notes/xcode-14_3-release-notes
+            #if swift(>=6.0)
             if #available(iOS 18.0, visionOS 2.0, *), case .winBackOffer = self {
                 return .winBackOffer
             }
+            #endif
 
             // billingIssue message reason was added in iOS 16.4, but it's not recognized by older xcode versions.
             // https://developer.apple.com/documentation/xcode-release-notes/xcode-14_3-release-notes
