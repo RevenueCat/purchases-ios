@@ -85,9 +85,9 @@ class BaseSnapshotTest: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension BaseSnapshotTest {
 
-    static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
+    nonisolated static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
     static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
-    static let purchaseHandler: PurchaseHandler = .mock()
+    nonisolated static let purchaseHandler: PurchaseHandler = .mock()
     static let fonts: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)

@@ -62,7 +62,9 @@ class MockSystemInfo: SystemInfo {
     }
 }
 
-extension OperatingSystemVersion: Comparable {
+extension MockSystemInfo: @unchecked Sendable {}
+
+extension RevenueCat.OperatingSystemVersion: Swift.Comparable {
 
     public static func < (lhs: OperatingSystemVersion, rhs: OperatingSystemVersion) -> Bool {
         if lhs.majorVersion == rhs.majorVersion {

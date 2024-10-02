@@ -113,3 +113,5 @@ class MockETagManager: ETagManager {
     private let lock = Lock()
 
 }
+
+extension MockETagManager: @unchecked Sendable {}

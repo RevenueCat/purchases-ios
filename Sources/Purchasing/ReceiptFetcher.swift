@@ -95,7 +95,7 @@ class ReceiptFetcher {
         }
 
         let timeSinceLastRequest = DispatchTimeInterval(self.systemInfo.clock.now.timeIntervalSince(lastRefresh))
-        return timeSinceLastRequest < ReceiptRefreshPolicy.alwaysRefreshThrottleDuration
+        return timeSinceLastRequest.nanoseconds < ReceiptRefreshPolicy.alwaysRefreshThrottleDuration.nanoseconds
     }
 
 }

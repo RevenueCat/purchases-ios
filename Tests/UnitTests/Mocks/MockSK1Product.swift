@@ -79,3 +79,5 @@ class MockSK1Product: SK1Product {
         return mockSubscriptionPeriod
     }
 }
+
+extension MockSK1Product: @unchecked Sendable {}

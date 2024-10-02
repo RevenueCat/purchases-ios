@@ -44,6 +44,9 @@ final class GetProductEntitlementMappingOperation: CacheableNetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension GetProductEntitlementMappingOperation: @unchecked Sendable {}
+
 private extension GetProductEntitlementMappingOperation {
 
     func getResponse(completion: @escaping () -> Void) {

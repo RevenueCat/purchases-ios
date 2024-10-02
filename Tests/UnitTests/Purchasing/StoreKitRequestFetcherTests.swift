@@ -148,3 +148,5 @@ private extension StoreKitRequestFetcherTests {
     }
 
 }
+
+extension StoreKitRequestFetcherTests.MockRequestsFactory: @unchecked Sendable {}

@@ -29,3 +29,5 @@ class MockAttributionDataMigrator: AttributionDataMigrator {
         return stubbedConvertAttributionDataToSubscriberAttributesResult
     }
 }
+
+extension MockAttributionDataMigrator: @unchecked Sendable {}

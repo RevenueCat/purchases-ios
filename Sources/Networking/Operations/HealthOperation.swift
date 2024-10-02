@@ -86,3 +86,6 @@ final class HealthOperation: CacheableNetworkOperation {
     }
 
 }
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension HealthOperation: @unchecked Sendable {}

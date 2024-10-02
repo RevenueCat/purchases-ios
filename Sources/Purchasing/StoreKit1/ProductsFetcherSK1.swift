@@ -256,3 +256,9 @@ private extension ProductsFetcherSK1 {
 // @unchecked because:
 // - It has mutable state, but it's made thread-safe through `queue`.
 extension ProductsFetcherSK1: @unchecked Sendable {}
+
+#if hasFeature(RetroactiveAttribute)
+// Conformance should be safe since it is only used as dictionary key
+extension SKRequest: @unchecked @retroactive Sendable {}
+extension SKProductsRequest: @unchecked @retroactive Sendable {}
+#endif

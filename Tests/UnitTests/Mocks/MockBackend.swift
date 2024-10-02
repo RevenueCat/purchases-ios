@@ -171,3 +171,5 @@ class MockBackend: Backend {
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
 }
+
+extension MockBackend: @unchecked Sendable {}

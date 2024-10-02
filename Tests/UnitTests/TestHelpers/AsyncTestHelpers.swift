@@ -101,7 +101,7 @@ func asyncWait<T>(
     var foundCorrectValue = false
 
     func timedOut() -> Bool {
-        return DispatchTimeInterval(Date().timeIntervalSince(start)) > timeout
+        return DispatchTimeInterval(Date().timeIntervalSince(start)).nanoseconds > timeout.nanoseconds
     }
 
     repeat {

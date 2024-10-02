@@ -346,3 +346,5 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     }
 
 }
+
+extension MockSubscriberAttributesManager: @unchecked Sendable {}

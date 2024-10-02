@@ -45,3 +45,6 @@ final class PostPaywallEventsOperation: NetworkOperation {
     }
 
 }
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostPaywallEventsOperation: @unchecked Sendable {}

@@ -34,3 +34,5 @@ class MockIntroEligibilityCalculator: IntroEligibilityCalculator {
     }
 
 }
+
+extension MockIntroEligibilityCalculator: @unchecked Sendable {}

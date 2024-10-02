@@ -104,3 +104,5 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     }
 
 }
+
+extension MockOfferingsManager: @unchecked Sendable {}

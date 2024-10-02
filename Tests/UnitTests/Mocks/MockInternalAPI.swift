@@ -51,3 +51,5 @@ class MockInternalAPI: InternalAPI {
     }
 
 }
+
+extension MockInternalAPI: @unchecked Sendable {}
