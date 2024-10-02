@@ -39,10 +39,15 @@ struct PackageGroupComponentView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackagesComponentView_Previews: PreviewProvider {
 
-    static let packages: [PaywallComponent] = [
+    static let paywallState = PaywallState()
+
+    static let packages: [PaywallComponent.PackageComponent] = [
         makePackage(packageID: "weekly",
                     nameTextLid: "weekly_name",
                     detailTextLid: "weekly_detail"),
+        makePackage(packageID: "non_existant_package",
+                    nameTextLid: "non_existant_name",
+                    detailTextLid: "non_existant_detail"),
         makePackage(packageID: "monthly",
                     nameTextLid: "monthly_name",
                     detailTextLid: "monthly_detail")
@@ -50,7 +55,7 @@ struct PackagesComponentView_Previews: PreviewProvider {
 
     static func makePackage(packageID: String,
                             nameTextLid: String,
-                            detailTextLid: String) -> PaywallComponent {
+                            detailTextLid: String) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent = .stack(.init(
             components: [
                 .text(.init(
@@ -70,38 +75,50 @@ struct PackagesComponentView_Previews: PreviewProvider {
             dimension: .vertical(.leading),
             spacing: 0,
             backgroundColor: nil,
-            padding: .init(top: 10,
-                           bottom: 10,
-                           leading: 20,
-                           trailing: 20)
+            padding: PaywallComponent.Padding(top: 10,
+                                              bottom: 10,
+                                              leading: 20,
+                                              trailing: 20)
         ))
 
-        return .package(.init(
-            packageID: "weekly",
+        return PaywallComponent.PackageComponent(
+            packageID: packageID,
             components: [stack]
-        ))
+        )
     }
 
     static var previews: some View {
         // Packages
         PackageGroupComponentView(
             // swiftlint:disable:next force_try
-            viewModel: try! .init(
+            viewModel: try! PackageGroupComponentViewModel(
                 localizedStrings: [
                     "weekly_name": .string("Weekly"),
                     "weekly_detail": .string("Get for $39.99/week"),
+                    "non_existant_name": .string("THIS SHOULDN'T SHOW"),
+                    "non_existant_detail": .string("THIS SHOULDN'T SHOW"),
                     "monthly_name": .string("Monthly"),
                     "monthly_detail": .string("Get for $139.99/month")
                 ],
                 component: PaywallComponent.PackageGroupComponent(
                     defaultSelectedPackageID: "weekly",
-                    components: packages
+                    packages: packages
                 ),
-                offering: Offering(identifier: "",
+                offering: Offering(identifier: "default",
                                    serverDescription: "",
-                                   availablePackages: [])
+                                   availablePackages: [
+                                    Package(identifier: "weekly",
+                                            packageType: .weekly,
+                                            storeProduct: .init(sk1Product: .init()),
+                                            offeringIdentifier: "default"),
+                                    Package(identifier: "monthly",
+                                            packageType: .monthly,
+                                            storeProduct: .init(sk1Product: .init()),
+                                            offeringIdentifier: "default")
+                                   ])
             )
         )
+        .environmentObject(paywallState)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Packages")
     }

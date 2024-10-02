@@ -20,7 +20,7 @@ public extension PaywallComponent {
 
     protocol StackableComponent {
 
-        var components: [PaywallComponent] { get }
+//        var components: [PaywallComponent] { get }
         var width: WidthSize? { get }
         var spacing: CGFloat? { get }
         var backgroundColor: ColorInfo? { get }

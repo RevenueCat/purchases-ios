@@ -33,12 +33,30 @@ class PackageComponentViewModel {
         self.component = component
         self.offering = offering
 
-        self.package = try PackageValidation.findPackage(identifier: component.packageID, offering: offering)
+        self.package = try Self.findPackage(identifier: component.packageID, offering: offering)
 
         self.stackComponentViewModel = try self.component.toStackComponentViewModel(
+            components: self.component.components,
             localizedStrings: localizedStrings,
             offering: offering
         )
+    }
+
+    static func findPackage(identifier: String, offering: Offering) throws -> Package {
+        guard let package = offering.package(identifier: identifier) else {
+            Logger.error(Strings.paywall_could_not_find_package(identifier))
+            throw PackageValidationError.missingPackage(
+                "Missing package from offering: \"\(identifier)\""
+            )
+        }
+
+        return package
+    }
+
+    enum PackageValidationError: Error {
+
+        case missingPackage(String)
+
     }
 
 }

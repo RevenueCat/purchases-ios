@@ -20,12 +20,13 @@ import RevenueCat
 extension PaywallComponent.StackableComponent {
 
     func toStackComponentViewModel(
+        components: [PaywallComponent],
         localizedStrings: PaywallComponent.LocalizationDictionary,
         offering: Offering
     ) throws -> StackComponentViewModel {
         try StackComponentViewModel(
             component: .init(
-                components: self.components,
+                components: components,
                 dimension: self.dimension,
                 width: self.width,
                 spacing: self.spacing,
