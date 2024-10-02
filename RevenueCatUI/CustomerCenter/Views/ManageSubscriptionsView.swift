@@ -13,8 +13,6 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import RevenueCat
 import SwiftUI
 
@@ -84,8 +82,7 @@ struct ManageSubscriptionsView: View {
                         Section {
                             SubscriptionDetailsView(
                                 subscriptionInformation: subscriptionInformation,
-                                localization: self.localization,
-                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                                refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
                     }
 
@@ -214,7 +211,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                 screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                 subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                 customerCenterActionHandler: nil,
-                refundRequestStatusMessage: "Refund granted successfully!")
+                refundRequestStatus: .success)
             ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
                                     customerCenterActionHandler: nil)
                 .previewDisplayName("Monthly renewing")
@@ -236,8 +233,6 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     }
 
 }
-
-#endif
 
 #endif
 

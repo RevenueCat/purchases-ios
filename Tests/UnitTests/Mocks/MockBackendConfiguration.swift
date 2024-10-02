@@ -40,3 +40,5 @@ class MockBackendConfiguration: BackendConfiguration {
     }
 
 }
+
+extension MockBackendConfiguration: @unchecked Sendable {}

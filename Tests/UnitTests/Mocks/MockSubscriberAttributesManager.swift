@@ -177,6 +177,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetCleverTapIDParametersList.append((cleverTapID, appUserID))
     }
 
+    var invokedSetKochavaDeviceID = false
+    var invokedSetKochavaDeviceIDCount = 0
+    var invokedSetKochavaDeviceIDParameters: (KochavaDeviceID: String?, appUserID: String?)?
+    var invokedSetKochavaDeviceIDParametersList = [(KochavaDeviceID: String?, appUserID: String?)]()
+
+    override func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
+        invokedSetKochavaDeviceID = true
+        invokedSetKochavaDeviceIDCount += 1
+        invokedSetKochavaDeviceIDParameters = (kochavaDeviceID, appUserID)
+        invokedSetKochavaDeviceIDParametersList.append((kochavaDeviceID, appUserID))
+    }
+
     var invokedSetMixpanelDistinctID = false
     var invokedSetMixpanelDistinctIDCount = 0
     var invokedSetMixpanelDistinctIDParameters: (mixpanelDistinctID: String?, appUserID: String?)?
@@ -346,3 +358,5 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     }
 
 }
+
+extension MockSubscriberAttributesManager: @unchecked Sendable {}

@@ -45,3 +45,5 @@ final class MockPaymentQueue: SKPaymentQueue {
 #endif
 
 }
+
+extension MockPaymentQueue: @unchecked Sendable {}

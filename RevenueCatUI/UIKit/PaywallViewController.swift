@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  PaywallViewController.swift
-//  
+//
 //  Created by Nacho Soto on 8/1/23.
 
 // swiftlint:disable file_length
@@ -137,10 +137,12 @@ public class PaywallViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public override func loadView() {
-        super.loadView()
+    public override func viewDidLoad() {
+        super.viewDidLoad()
 
-        self.hostingController = self.createHostingController()
+        if self.hostingController == nil {
+            self.hostingController = self.createHostingController()
+        }
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
@@ -209,17 +211,20 @@ public class PaywallViewController: UIViewController {
 
     private var hostingController: UIHostingController<PaywallContainerView>? {
         willSet {
-            guard let oldValue = self.hostingController else { return }
+            guard let oldController = self.hostingController else { return }
 
-            oldValue.willMove(toParent: nil)
-            oldValue.view.removeFromSuperview()
-            oldValue.removeFromParent()
+            oldController.willMove(toParent: nil)
+            oldController.view.removeFromSuperview()
+            oldController.removeFromParent()
         }
 
         didSet {
             guard let newController = self.hostingController else { return }
 
             self.addChild(newController)
+
+            self.view.subviews.forEach { $0.removeFromSuperview() }
+
             self.view.addSubview(newController.view)
             newController.didMove(toParent: self)
 
@@ -406,6 +411,17 @@ extension View {
     @ViewBuilder func applyIf<Content: View>(_ condition: Bool, apply: (Self) -> Content) -> some View {
         if condition {
             apply(self)
+        } else {
+            self
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension View {
+    @ViewBuilder func applyIfLet<T, Content: View>(_ value: T?, apply: (Self, T) -> Content) -> some View {
+        if let value = value {
+            apply(self, value)
         } else {
             self
         }

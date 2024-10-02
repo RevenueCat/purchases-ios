@@ -11,8 +11,6 @@
 //
 //  Created by JayShortway on 09/08/2024.
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Nimble
 @testable import RevenueCatUI
 import XCTest
@@ -71,5 +69,3 @@ class SemanticVersionTests: TestCase {
     }
 
 }
-
-#endif

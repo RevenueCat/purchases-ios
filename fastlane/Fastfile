@@ -163,8 +163,6 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
       fail_build: !generate_snapshots,
-      xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'", # todo: remove once Customer Center is released,
-
       number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
     )
   end
@@ -199,7 +197,7 @@ platform :ios do
 
     scan_with_flaky_test_retries(
       step_name: "scan - watchOS",
-      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 8 (41mm)",
+      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
@@ -237,8 +235,7 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        # todo: remove CUSTOMER_CENTER_ENABLED once Customer Center is released
-        xcargs: "#{generate_snapshots ? '-testPlan CI-Snapshots' : '-testPlan CI-RevenueCatUI'} OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'"
+        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
@@ -309,7 +306,6 @@ platform :ios do
       scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
-      xcargs: "OTHER_SWIFT_FLAGS='-DCUSTOMER_CENTER_ENABLED'" # todo: remove once Customer Center is released
     )
   end
 

@@ -24,3 +24,5 @@ class MockPaymentQueueWrapper: PaymentQueueWrapper {
     }
 
 }
+
+extension MockPaymentQueueWrapper: @unchecked Sendable {}

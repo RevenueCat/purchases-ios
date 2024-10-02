@@ -74,3 +74,5 @@ class MockReceiptParser: PurchasesReceiptParser {
         return stubbedReceiptHasTransactionsResult
     }
 }
+
+extension MockReceiptParser: @unchecked Sendable {}

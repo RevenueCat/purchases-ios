@@ -13,10 +13,9 @@
 //  Created by Cesar de la Vega on 27/5/24.
 //
 
-#if CUSTOMER_CENTER_ENABLED
-
 import Foundation
 import RevenueCat
+import SwiftUI
 
 #if os(iOS)
 
@@ -33,7 +32,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
-
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
     @Published
@@ -54,7 +52,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     private(set) var subscriptionInformation: SubscriptionInformation?
     @Published
-    private(set) var refundRequestStatusMessage: String?
+    private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var purchasesProvider: ManageSubscriptionsPurchaseType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
@@ -75,11 +73,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
     init(screen: CustomerCenterConfigData.Screen,
          subscriptionInformation: SubscriptionInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
-         refundRequestStatusMessage: String? = nil) {
+         refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
-        self.refundRequestStatusMessage = refundRequestStatusMessage
+        self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
         state = .success
@@ -175,19 +173,11 @@ private extension ManageSubscriptionsViewModel {
                 let productId = subscriptionInformation.productIdentifier
                 self.customerCenterActionHandler?(.refundRequestStarted(productId))
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
+                self.refundRequestStatus = status
                 self.customerCenterActionHandler?(.refundRequestCompleted(status))
-                switch status {
-                case .error:
-                    self.refundRequestStatusMessage = String(localized: "Error when requesting refund, try again")
-                case .success:
-                    self.refundRequestStatusMessage = String(localized: "Refund granted successfully!")
-                case .userCancelled:
-                    self.refundRequestStatusMessage = String(localized: "Refund canceled")
-                }
             } catch {
+                self.refundRequestStatus = .error
                 self.customerCenterActionHandler?(.refundRequestCompleted(.error))
-                self.refundRequestStatusMessage =
-                String(localized: "An error occurred while processing the refund request.")
             }
         case .changePlans, .cancel:
             do {
@@ -228,25 +218,5 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
     }
 
 }
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension SubscriptionPeriod {
-
-    var durationTitle: String {
-        switch self.unit {
-        case .day: return "day"
-        case .week: return "week"
-        case .month: return "month"
-        case .year: return "year"
-        default: return "Unknown"
-        }
-    }
-
-}
-
-#endif
 
 #endif

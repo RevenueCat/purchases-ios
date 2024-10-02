@@ -50,7 +50,14 @@ class BasePurchasesTests: TestCase {
         }
         self.requestFetcher = MockRequestFetcher()
         self.purchasedProductsFetcher = .init()
-        self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
+
+        self.mockProductsManager = MockProductsManager(diagnosticsTracker: self.diagnosticsTracker,
+                                                       systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
@@ -65,11 +72,6 @@ class BasePurchasesTests: TestCase {
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.diagnosticsTracker = MockDiagnosticsTracker()
-        } else {
-            self.diagnosticsTracker = nil
-        }
 
         let apiKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: apiKey,
@@ -504,6 +506,9 @@ extension BasePurchasesTests {
         }
     }
 }
+
+extension BasePurchasesTests.MockBackend: @unchecked Sendable {}
+extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 
 private extension BasePurchasesTests {
 

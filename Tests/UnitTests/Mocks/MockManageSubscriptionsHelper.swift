@@ -31,3 +31,5 @@ class MockManageSubscriptionsHelper: ManageSubscriptionsHelper {
 #endif
 
 }
+
+extension MockManageSubscriptionsHelper: @unchecked Sendable {}

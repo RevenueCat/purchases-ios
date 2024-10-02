@@ -47,6 +47,25 @@ extension StoreKitError: PurchasesErrorConvertible {
         }
     }
 
+    var trackingDescription: String {
+        switch self {
+        case .unknown:
+            return "unknown"
+        case .userCancelled:
+            return "user_cancelled"
+        case .networkError(let urlError):
+            return "network_error_\(urlError.code.rawValue)"
+        case .systemError(let error):
+            return "system_error_\(String(describing: error))"
+        case .notAvailableInStorefront:
+            return "not_available_in_storefront"
+        case .notEntitled:
+            return "not_entitled"
+        @unknown default:
+            return "unknown_store_kit_error"
+        }
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -75,6 +94,29 @@ extension Product.PurchaseError: PurchasesErrorConvertible {
 
         @unknown default:
             return ErrorUtils.unknownError(error: self)
+        }
+    }
+
+    var trackingDescription: String {
+        switch self {
+        case .invalidQuantity:
+            return "invalid_quantity"
+        case .productUnavailable:
+            return "product_unavailable"
+        case .purchaseNotAllowed:
+            return "purchase_not_allowed"
+        case .ineligibleForOffer:
+            return "ineligible_for_offer"
+        case .invalidOfferIdentifier:
+            return "invalid_offer_identifier"
+        case .invalidOfferPrice:
+            return "invalid_offer_price"
+        case .invalidOfferSignature:
+            return "invalid_offer_signature"
+        case .missingOfferParameters:
+            return "missing_offer_parameters"
+        @unknown default:
+            return "unknown_store_kit_error"
         }
     }
 

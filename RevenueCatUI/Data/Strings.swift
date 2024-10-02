@@ -58,7 +58,8 @@ enum Strings {
 
     // Customer Center
     case could_not_find_subscription_information
-    case could_not_offer_for_active_subscriptions
+    case could_not_offer_for_any_active_subscriptions
+    case could_not_offer_for_active_subscriptions(String, String)
     case error_fetching_promotional_offer(Error)
     case promo_offer_not_loaded
 
@@ -176,8 +177,11 @@ extension Strings: CustomStringConvertible {
         case .promo_offer_not_loaded:
             return "Promotional offer details not loaded"
 
-        case .could_not_offer_for_active_subscriptions:
-            return "Could not find offer for any active subscription"
+        case .could_not_offer_for_any_active_subscriptions:
+            return "Could not find offer with id for any active subscription"
+
+        case .could_not_offer_for_active_subscriptions(let discount, let subscription):
+            return "Could not find offer with id \(discount) for active subscription \(subscription)"
 
         }
     }

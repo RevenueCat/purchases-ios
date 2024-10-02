@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% छूट";
 "Continue" = "जारी रखना";
 "Default_offer_details_with_intro_offer" = "अपना {{sub_offer_duration }} परीक्षण शुरू करें, फिर {{ total_price_and_per_month }}।";
+"free_trial_period" = "%@ मुफ्त में";
+"pay_as_you_go_period" = "%@ के दौरान %@";
+"pay_up_front_period" = "%@ के लिए %@";
+"then_price_per_period" = "फिर %@";
