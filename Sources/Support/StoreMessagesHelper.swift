@@ -57,20 +57,16 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     }
 
     func showStoreMessages(types: Set<StoreMessageType>) async {
-        var messagesToKeep: [StoreMessage] = []
         for message in self.deferredMessages {
             if let messageType = message.reason.messageType, types.contains(messageType) {
                 do {
                     try await message.display(in: self.systemInfo.currentWindowScene)
                 } catch {
                     Logger.error(Strings.storeKit.error_displaying_store_message(error))
-                    messagesToKeep.append(message)
                 }
-            } else {
-                messagesToKeep.append(message)
             }
         }
-        self.deferredMessages = messagesToKeep
+        self.deferredMessages.removeAll()
     }
 
     #endif
