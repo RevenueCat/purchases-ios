@@ -52,7 +52,9 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
             guard let discount = subscribedProduct.discounts.first(where: {
                 $0.offerIdentifier == promoOfferDetails.iosOfferId
             }) else {
-                Logger.warning(Strings.could_not_offer_for_active_subscriptions(promoOfferDetails.iosOfferId, productIdentifier))
+                let message =
+                Strings.could_not_offer_for_active_subscriptions(promoOfferDetails.iosOfferId, productIdentifier)
+                Logger.debug(message)
                 return .failure(CustomerCenterError.couldNotFindSubscriptionInformation)
             }
 
