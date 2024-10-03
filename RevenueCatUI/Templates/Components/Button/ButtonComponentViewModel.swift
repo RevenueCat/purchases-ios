@@ -23,7 +23,7 @@ class ButtonComponentViewModel {
 
     init(
         component: PaywallComponent.ButtonComponent
-    ) throws {
+    ) {
         self.component = component
     }
 

@@ -32,4 +32,24 @@ struct ButtonComponentView: View {
 
 }
 
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct ButtonComponentView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        VStack {
+            ButtonComponentView(
+                viewModel: .init(
+                    component: .init()
+                )
+            )
+        }
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Default")
+    }
+}
+
+#endif
+
 #endif
