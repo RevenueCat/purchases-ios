@@ -22,7 +22,7 @@ public extension PaywallComponent {
     final class PackageComponent: PaywallComponentBase, StackableComponent {
 
         let type: ComponentType
-        
+
         public let packageID: String
         public let components: [PaywallComponent]
         public let width: WidthSize?

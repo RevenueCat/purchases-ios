@@ -37,63 +37,63 @@ class TextComponentViewModel {
     }
 
     // Updated functions with renamed enum
-    public func text(for state: ComponentViewState) -> String {
+    func text(for state: ComponentViewState) -> String {
         switch state {
         case .normal: return viewModel.text
         case .selected: return selectedViewModel?.text ?? viewModel.text
         }
     }
 
-    public func fontFamily(for state: ComponentViewState) -> String? {
+    func fontFamily(for state: ComponentViewState) -> String? {
         switch state {
         case .normal: return viewModel.fontFamily
         case .selected: return selectedViewModel?.fontFamily ?? viewModel.fontFamily
         }
     }
 
-    public func fontWeight(for state: ComponentViewState) -> Font.Weight {
+    func fontWeight(for state: ComponentViewState) -> Font.Weight {
         switch state {
         case .normal: return viewModel.fontWeight
         case .selected: return selectedViewModel?.fontWeight ?? viewModel.fontWeight
         }
     }
 
-    public func color(for state: ComponentViewState) -> Color {
+    func color(for state: ComponentViewState) -> Color {
         switch state {
         case .normal: return viewModel.color
         case .selected: return selectedViewModel?.color ?? viewModel.color
         }
     }
 
-    public func textStyle(for state: ComponentViewState) -> Font {
+    func textStyle(for state: ComponentViewState) -> Font {
         switch state {
         case .normal: return viewModel.textStyle
         case .selected: return selectedViewModel?.textStyle ?? viewModel.textStyle
         }
     }
 
-    public func horizontalAlignment(for state: ComponentViewState) -> TextAlignment {
+    func horizontalAlignment(for state: ComponentViewState) -> TextAlignment {
         switch state {
         case .normal: return viewModel.horizontalAlignment
         case .selected: return selectedViewModel?.horizontalAlignment ?? viewModel.horizontalAlignment
         }
     }
 
-    public func backgroundColor(for state: ComponentViewState) -> Color {
+    func backgroundColor(for state: ComponentViewState) -> Color {
         switch state {
         case .normal: return viewModel.backgroundColor
         case .selected: return selectedViewModel?.backgroundColor ?? viewModel.backgroundColor
         }
     }
 
-    public func padding(for state: ComponentViewState) -> EdgeInsets {
+    func padding(for state: ComponentViewState) -> EdgeInsets {
         switch state {
         case .normal: return viewModel.padding
         case .selected: return selectedViewModel?.padding ?? viewModel.padding
         }
     }
 
-    public func margin(for state: ComponentViewState) -> EdgeInsets {
+    func margin(for state: ComponentViewState) -> EdgeInsets {
         switch state {
         case .normal: return viewModel.margin
         case .selected: return selectedViewModel?.margin ?? viewModel.margin
@@ -104,42 +104,45 @@ class TextComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentViewModel {
 
-    public class StatelessTextComponentViewModel {
+    class StatelessTextComponentViewModel {
 
         private let component: PaywallComponent.TextComponent
 
         let text: String
 
-        init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
+        init(
+            localizedStrings: PaywallComponent.LocalizationDictionary,
+            component: PaywallComponent.TextComponent
+        ) throws {
             self.component = component
             self.text = try localizedStrings.string(key: component.text)
         }
 
-        public var fontFamily: String? {
+        var fontFamily: String? {
             component.fontFamily
         }
 
-        public var fontWeight: Font.Weight {
+        var fontWeight: Font.Weight {
             component.fontWeight.fontWeight
         }
 
-        public var color: Color {
+        var color: Color {
             component.color.toDyanmicColor()
         }
 
-        public var textStyle: Font {
+        var textStyle: Font {
             component.textStyle.font
         }
 
-        public var horizontalAlignment: TextAlignment {
+        var horizontalAlignment: TextAlignment {
             component.horizontalAlignment.textAlignment
         }
 
-        public var backgroundColor: Color {
+        var backgroundColor: Color {
             component.backgroundColor?.toDyanmicColor() ?? Color.clear
         }
 
-        public var padding: EdgeInsets {
+        var padding: EdgeInsets {
             component.padding.edgeInsets
         }
 

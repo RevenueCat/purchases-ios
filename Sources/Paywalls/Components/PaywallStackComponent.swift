@@ -21,7 +21,7 @@ public extension PaywallComponent {
     final class StackComponent: PaywallComponentBase, StackableComponent {
 
         let type: ComponentType
-        
+
         public let components: [PaywallComponent]
         public let width: WidthSize?
         public let spacing: CGFloat?
@@ -31,7 +31,7 @@ public extension PaywallComponent {
         public let margin: Padding
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
-        
+
         public let selectedState: StackComponent?
 
         public init(components: [PaywallComponent],

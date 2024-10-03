@@ -16,7 +16,7 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-public enum ComponentViewState {
+enum ComponentViewState {
     case normal
     case selected
 }
