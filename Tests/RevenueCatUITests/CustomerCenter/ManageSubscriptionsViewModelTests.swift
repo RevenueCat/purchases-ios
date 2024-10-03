@@ -45,7 +45,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(viewModel.state) == CustomerCenterViewState.notLoaded
         expect(viewModel.subscriptionInformation).to(beNil())
-        expect(viewModel.refundRequestStatusMessage).to(beNil())
+        expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
         expect(viewModel.isLoaded) == false
@@ -865,6 +865,10 @@ private class MockSK1Product: SK1Product {
     }
 
 }
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension MockSK1Product: @unchecked Sendable {}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension SKProductSubscriptionPeriod {

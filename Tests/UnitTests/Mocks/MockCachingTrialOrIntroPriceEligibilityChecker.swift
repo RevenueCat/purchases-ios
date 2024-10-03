@@ -36,3 +36,5 @@ class MockCachingTrialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEl
     }
 
 }
+
+extension MockCachingTrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}

@@ -58,6 +58,8 @@ class MockOfferingsFactory: OfferingsFactory {
     }
 }
 
+extension MockOfferingsFactory: @unchecked Sendable { }
+
 extension OfferingsResponse {
 
     static let mockResponse: Self = .init(

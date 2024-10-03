@@ -47,6 +47,9 @@ final class GetOfferingsOperation: CacheableNetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension GetOfferingsOperation: @unchecked Sendable {}
+
 private extension GetOfferingsOperation {
 
     func getOfferings(completion: @escaping () -> Void) {

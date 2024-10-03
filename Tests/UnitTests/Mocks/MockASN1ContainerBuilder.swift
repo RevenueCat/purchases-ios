@@ -26,3 +26,5 @@ class MockASN1ContainerBuilder: ASN1ContainerBuilder {
         return stubbedBuildResult
     }
 }
+
+extension MockASN1ContainerBuilder: @unchecked Sendable {}

@@ -121,3 +121,5 @@ class MockCustomerInfoManager: CustomerInfoManager {
         self.invokedClearCustomerInfoCacheParametersList.append((appUserID, ()))
     }
 }
+
+extension MockCustomerInfoManager: @unchecked Sendable {}

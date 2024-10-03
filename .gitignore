@@ -56,3 +56,6 @@ Tests/InstallationTests/XcodeDirectInstallation/XcodeDirectInstallation.xcodepro
 # fastlane
 fastlane/.env
 .vscode/settings.json
+
+# Local build settings
+Local.xcconfig

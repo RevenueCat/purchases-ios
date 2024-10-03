@@ -82,8 +82,7 @@ struct ManageSubscriptionsView: View {
                         Section {
                             SubscriptionDetailsView(
                                 subscriptionInformation: subscriptionInformation,
-                                localization: self.localization,
-                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                                refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
                     }
 
@@ -212,7 +211,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                 screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                 subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                 customerCenterActionHandler: nil,
-                refundRequestStatusMessage: "Refund granted successfully!")
+                refundRequestStatus: .success)
             ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
                                     customerCenterActionHandler: nil)
                 .previewDisplayName("Monthly renewing")
