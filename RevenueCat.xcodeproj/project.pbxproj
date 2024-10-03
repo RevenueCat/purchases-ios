@@ -26,6 +26,7 @@
 		2C2AEB4C2CA7339200A50F38 /* PackageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB4B2CA7339200A50F38 /* PackageComponentView.swift */; };
 		2C2AEB4E2CA7339E00A50F38 /* PurchaseButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB4D2CA7339E00A50F38 /* PurchaseButtonComponentView.swift */; };
 		2C4C36132C6FBA8B00AE959B /* CompatibilityTopBarTrailing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4C36122C6FBA8B00AE959B /* CompatibilityTopBarTrailing.swift */; };
+		2C6852AE2CAE275C00DCEDB0 /* ComponentViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6852AD2CAE275C00DCEDB0 /* ComponentViewState.swift */; };
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
@@ -1175,6 +1176,7 @@
 		2C5F71F52C3D6C2600B0FE4B /* header.heic */ = {isa = PBXFileReference; lastKnownFileType = file; path = header.heic; sourceTree = "<group>"; };
 		2C5F71F62C3D6C2600B0FE4B /* background.heic */ = {isa = PBXFileReference; lastKnownFileType = file; path = background.heic; sourceTree = "<group>"; };
 		2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-Snapshots.xctestplan"; sourceTree = "<group>"; };
+		2C6852AD2CAE275C00DCEDB0 /* ComponentViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentViewState.swift; sourceTree = "<group>"; };
 		2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesSyncAttributesAndOfferingsIfNeededTests.swift; sourceTree = "<group>"; };
 		2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiter.swift; sourceTree = "<group>"; };
 		2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterRests.swift; sourceTree = "<group>"; };
@@ -2290,6 +2292,7 @@
 			children = (
 				2C2AEB4B2CA7339200A50F38 /* PackageComponentView.swift */,
 				2C2AEB452CA7302400A50F38 /* PackageComponentViewModel.swift */,
+				2C6852AD2CAE275C00DCEDB0 /* ComponentViewState.swift */,
 			);
 			path = Package;
 			sourceTree = "<group>";
@@ -6092,6 +6095,7 @@
 				C3AD12BA2C6EA61F00A4F86F /* CompatibilityNavigationStack.swift in Sources */,
 				353756682C382C2800A1B8D6 /* CustomerCenterViewModel.swift in Sources */,
 				887A60BD2C1D037000E1A461 /* TemplateViewType.swift in Sources */,
+				2C6852AE2CAE275C00DCEDB0 /* ComponentViewState.swift in Sources */,
 				887A606D2C1D037000E1A461 /* Localization.swift in Sources */,
 				887A60CA2C1D037000E1A461 /* RemoteImage.swift in Sources */,
 				88B1BAF42C813A3C001B7EE5 /* SpacerComponentViewModel.swift in Sources */,
