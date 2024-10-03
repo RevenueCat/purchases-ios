@@ -214,7 +214,7 @@ struct CornerBorder_Previews: PreviewProvider {
             Text("Hello")
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
-                .background(.yellow)
+                .background(.red)
                 .cornerBorder(
                     border: nil,
                     radiuses: .init(topLeft: 8,
@@ -226,7 +226,7 @@ struct CornerBorder_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Equal Radius - No Border")
 
-        // No - Blue Border
+        // No Radius - Blue Border
         VStack {
             Text("Hello")
                 .padding(.vertical, 10)
@@ -239,14 +239,14 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding()
         }
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("No Right - Blue Border")
+        .previewDisplayName("No Radius - Blue Border")
 
         // Top Left and Bottom Right Radius - No Border
         VStack {
             Text("Hello")
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
-                .background(.yellow)
+                .background(.red)
                 .cornerBorder(
                     border: nil,
                     radiuses: .init(topLeft: 8,
