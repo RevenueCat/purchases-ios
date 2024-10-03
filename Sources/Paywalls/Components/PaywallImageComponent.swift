@@ -22,7 +22,7 @@ public extension PaywallComponent {
         public let gradientColors: [ColorHex]?
         public let maxHeight: CGFloat?
         public let fitMode: FitMode
-        
+
         public let selectedState: ImageComponent?
 
         public init(

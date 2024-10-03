@@ -15,7 +15,7 @@ public extension PaywallComponent {
     final class TextComponent: PaywallComponentBase {
 
         let type: ComponentType
-        
+
         public let textLid: LocalizationKey
         public let fontFamily: String?
         public let fontWeight: FontWeight

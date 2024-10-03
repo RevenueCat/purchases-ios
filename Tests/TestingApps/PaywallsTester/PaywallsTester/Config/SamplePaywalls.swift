@@ -136,7 +136,7 @@ private extension SamplePaywallLoader {
         localizedPriceString: "$1.99",
         productIdentifier: "com.revenuecat.product_1",
         productType: .autoRenewableSubscription,
-        localizedDescription: "PRO weekly",,
+        localizedDescription: "PRO weekly",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .week)
     )
