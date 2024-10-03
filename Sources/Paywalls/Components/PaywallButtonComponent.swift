@@ -24,7 +24,7 @@ public extension PaywallComponent {
         let type: ComponentType
 
         public init() {
-            self.type = .linkButton
+            self.type = .button
         }
 
     }
