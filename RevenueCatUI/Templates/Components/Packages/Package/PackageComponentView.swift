@@ -25,12 +25,17 @@ struct PackageComponentView: View {
 
     let viewModel: PackageComponentViewModel
 
+    private var componentViewState: ComponentViewState {
+        return paywallState.selectedPackage?.identifier == viewModel.package.identifier ? .selected : .normal
+    }
+
     var body: some View {
         // WIP: Do something with package id and selection
         Button {
             self.paywallState.select(package: self.viewModel.package)
         } label: {
             StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
+                .environment(\.componentViewState, componentViewState)
         }
     }
 
@@ -64,7 +69,19 @@ struct PackageComponentView_Previews: PreviewProvider {
             padding: .init(top: 10,
                            bottom: 10,
                            leading: 20,
-                           trailing: 20)
+                           trailing: 20),
+            margin: PaywallComponent.Padding(top: 10,
+                                              bottom: 10,
+                                              leading: 10,
+                                              trailing: 10),
+            cornerRadiuses: PaywallComponent.CornerRadiuses(topLeading: 8,
+                                  topTrailing: 8,
+                                  bottomLeading: 8,
+                                  bottomTrailing: 8),
+            border: .init(
+                color: .init(light: "#333333"),
+                width: 1
+            )
         ))
     ]
 

@@ -56,7 +56,8 @@ struct PackagesComponentView_Previews: PreviewProvider {
     static func makePackage(packageID: String,
                             nameTextLid: String,
                             detailTextLid: String) -> PaywallComponent.PackageComponent {
-        let stack: PaywallComponent = .stack(.init(
+        return PaywallComponent.PackageComponent(
+            packageID: packageID,
             components: [
                 .text(.init(
                     text: nameTextLid,
@@ -78,12 +79,19 @@ struct PackagesComponentView_Previews: PreviewProvider {
             padding: PaywallComponent.Padding(top: 10,
                                               bottom: 10,
                                               leading: 20,
-                                              trailing: 20)
-        ))
-
-        return PaywallComponent.PackageComponent(
-            packageID: packageID,
-            components: [stack]
+                                              trailing: 20),
+            margin: PaywallComponent.Padding(top: 10,
+                                              bottom: 10,
+                                              leading: 10,
+                                              trailing: 10),
+            cornerRadiuses: PaywallComponent.CornerRadiuses(topLeading: 8,
+                                  topTrailing: 8,
+                                  bottomLeading: 8,
+                                  bottomTrailing: 8),
+            border: .init(
+                color: .init(light: "#333333"),
+                width: 1
+            )
         )
     }
 

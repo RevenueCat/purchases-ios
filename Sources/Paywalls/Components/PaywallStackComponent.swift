@@ -18,9 +18,10 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct StackComponent: PaywallComponentBase, StackableComponent {
+    final class StackComponent: PaywallComponentBase, StackableComponent {
 
         let type: ComponentType
+        
         public let components: [PaywallComponent]
         public let width: WidthSize?
         public let spacing: CGFloat?
@@ -30,16 +31,19 @@ public extension PaywallComponent {
         public let margin: Padding
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
+        
+        public let selectedState: StackComponent?
 
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
-                    spacing: CGFloat? = 0,
+                    spacing: CGFloat? = nil,
                     backgroundColor: ColorInfo? = nil,
                     padding: Padding = .zero,
                     margin: Padding = .zero,
                     cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil
+                    border: Border? = nil,
+                    selectedState: StackComponent? = nil
         ) {
             self.components = components
             self.width = width
@@ -51,8 +55,36 @@ public extension PaywallComponent {
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
             self.border = border
+            self.selectedState = selectedState
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(components)
+            hasher.combine(width)
+            hasher.combine(spacing)
+            hasher.combine(backgroundColor)
+            hasher.combine(dimension)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(cornerRadiuses)
+            hasher.combine(border)
+            hasher.combine(selectedState)
+        }
+
+        public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
+            lhs.type == rhs.type &&
+            lhs.components == rhs.components &&
+            lhs.width == rhs.width &&
+            lhs.spacing == rhs.spacing &&
+            lhs.backgroundColor == rhs.backgroundColor &&
+            lhs.dimension == rhs.dimension &&
+            lhs.padding == rhs.padding &&
+            lhs.margin == rhs.margin &&
+            lhs.cornerRadiuses == rhs.cornerRadiuses &&
+            lhs.border == rhs.border &&
+            lhs.selectedState == rhs.selectedState
+        }
     }
 }
 

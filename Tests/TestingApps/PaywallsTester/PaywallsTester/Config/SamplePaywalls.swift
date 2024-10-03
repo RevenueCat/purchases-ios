@@ -136,7 +136,7 @@ private extension SamplePaywallLoader {
         localizedPriceString: "$1.99",
         productIdentifier: "com.revenuecat.product_1",
         productType: .autoRenewableSubscription,
-        localizedDescription: "PRO weekly",
+        localizedDescription: "PRO weekly",,
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .week)
     )
@@ -708,7 +708,7 @@ private extension SamplePaywallLoader {
 
     static func makePackage(packageID: String,
                             nameTextLid: String,
-                            detailTextLid: String) -> PaywallComponent {
+                            detailTextLid: String) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent = .stack(.init(
             components: [
                 .text(.init(
@@ -734,7 +734,7 @@ private extension SamplePaywallLoader {
                            trailing: 20)
         ))
 
-        return .package(.init(
+        return .init(
             packageID: packageID,
             components: [stack],
             cornerRadiuses: .init(topLeading: 8,
@@ -742,7 +742,7 @@ private extension SamplePaywallLoader {
                                   bottomLeading: 8,
                                   bottomTrailing: 8),
             border: .init(color: .init(light: "#000000"), width: 1)
-        ))
+        )
     }
 
     static var simpleSixPackages: PaywallComponent = {
@@ -750,7 +750,7 @@ private extension SamplePaywallLoader {
             components: [
                 .packageGroup(.init(
                     defaultSelectedPackageID: Package.string(from: PackageType.monthly)!,
-                    components: [
+                    packages: [
                         makePackage(packageID: Package.string(from: PackageType.monthly)!,
                                     nameTextLid: "monthly_package_name",
                                     detailTextLid: "monthly_package_details"),
@@ -778,8 +778,7 @@ private extension SamplePaywallLoader {
                                           bottomTrailing: 10)
                 ))
             ],
-            width: .init(type: .fill, value: nil),
-            backgroundColor: .init(light: "#ccccccsta")
+            width: .init(type: .fill, value: nil)
         ))
     }()
 

@@ -20,48 +20,135 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
-    private let localizedStrings: PaywallComponent.LocalizationDictionary
-    private let component: PaywallComponent.TextComponent
-
-    let text: String
+    private let viewModel: StatelessTextComponentViewModel
+    private let selectedViewModel: StatelessTextComponentViewModel?
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
-        self.localizedStrings = localizedStrings
-        self.component = component
-        self.text = try localizedStrings.string(key: component.text)
+        self.viewModel = try StatelessTextComponentViewModel(
+            localizedStrings: localizedStrings,
+            component: component
+        )
+        self.selectedViewModel = try component.selectedState.flatMap({ selectedComponent in
+            try StatelessTextComponentViewModel(
+                localizedStrings: localizedStrings,
+                component: selectedComponent
+            )
+        })
     }
 
-    var fontFamily: String? {
-        component.fontFamily
+    // Updated functions with renamed enum
+    public func text(for state: ComponentViewState) -> String {
+        switch state {
+        case .normal: return viewModel.text
+        case .selected: return selectedViewModel?.text ?? viewModel.text
+        }
     }
 
-    var fontWeight: Font.Weight {
-        component.fontWeight.fontWeight
+    public func fontFamily(for state: ComponentViewState) -> String? {
+        switch state {
+        case .normal: return viewModel.fontFamily
+        case .selected: return selectedViewModel?.fontFamily ?? viewModel.fontFamily
+        }
     }
 
-    var color: Color {
-        component.color.toDyanmicColor()
+    public func fontWeight(for state: ComponentViewState) -> Font.Weight {
+        switch state {
+        case .normal: return viewModel.fontWeight
+        case .selected: return selectedViewModel?.fontWeight ?? viewModel.fontWeight
+        }
     }
 
-    var textStyle: Font {
-        component.textStyle.font
+    public func color(for state: ComponentViewState) -> Color {
+        switch state {
+        case .normal: return viewModel.color
+        case .selected: return selectedViewModel?.color ?? viewModel.color
+        }
     }
 
-    var horizontalAlignment: TextAlignment {
-        component.horizontalAlignment.textAlignment
+    public func textStyle(for state: ComponentViewState) -> Font {
+        switch state {
+        case .normal: return viewModel.textStyle
+        case .selected: return selectedViewModel?.textStyle ?? viewModel.textStyle
+        }
     }
 
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
+    public func horizontalAlignment(for state: ComponentViewState) -> TextAlignment {
+        switch state {
+        case .normal: return viewModel.horizontalAlignment
+        case .selected: return selectedViewModel?.horizontalAlignment ?? viewModel.horizontalAlignment
+        }
     }
 
-    var padding: EdgeInsets {
-        component.padding.edgeInsets
+    public func backgroundColor(for state: ComponentViewState) -> Color {
+        switch state {
+        case .normal: return viewModel.backgroundColor
+        case .selected: return selectedViewModel?.backgroundColor ?? viewModel.backgroundColor
+        }
     }
 
-    var margin: EdgeInsets {
-        component.margin.edgeInsets
+    public func padding(for state: ComponentViewState) -> EdgeInsets {
+        switch state {
+        case .normal: return viewModel.padding
+        case .selected: return selectedViewModel?.padding ?? viewModel.padding
+        }
+    }
+
+    public func margin(for state: ComponentViewState) -> EdgeInsets {
+        switch state {
+        case .normal: return viewModel.margin
+        case .selected: return selectedViewModel?.margin ?? viewModel.margin
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextComponentViewModel {
+
+    public class StatelessTextComponentViewModel {
+
+        private let component: PaywallComponent.TextComponent
+
+        let text: String
+
+        init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
+            self.component = component
+            self.text = try localizedStrings.string(key: component.text)
+        }
+
+        public var fontFamily: String? {
+            component.fontFamily
+        }
+
+        public var fontWeight: Font.Weight {
+            component.fontWeight.fontWeight
+        }
+
+        public var color: Color {
+            component.color.toDyanmicColor()
+        }
+
+        public var textStyle: Font {
+            component.textStyle.font
+        }
+
+        public var horizontalAlignment: TextAlignment {
+            component.horizontalAlignment.textAlignment
+        }
+
+        public var backgroundColor: Color {
+            component.backgroundColor?.toDyanmicColor() ?? Color.clear
+        }
+
+        public var padding: EdgeInsets {
+            component.padding.edgeInsets
+        }
+
+        var margin: EdgeInsets {
+            component.margin.edgeInsets
+        }
+
     }
 
 }
+
 #endif

@@ -20,22 +20,25 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
-    private let viewModel: TextComponentViewModel
+    private var viewModel: TextComponentViewModel
+
+    @Environment(\.componentViewState)
+    private var componentViewState
 
     internal init(viewModel: TextComponentViewModel) {
         self.viewModel = viewModel
     }
 
     var body: some View {
-        Text(viewModel.text)
-            .font(viewModel.textStyle)
-            .fontWeight(viewModel.fontWeight)
+        Text(viewModel.text(for: componentViewState))
+            .font(viewModel.textStyle(for: componentViewState))
+            .fontWeight(viewModel.fontWeight(for: componentViewState))
             .fixedSize(horizontal: false, vertical: true)
-            .multilineTextAlignment(viewModel.horizontalAlignment)
-            .foregroundStyle(viewModel.color)
-            .padding(viewModel.padding)
-            .background(viewModel.backgroundColor)
-            .padding(viewModel.margin)
+            .multilineTextAlignment(viewModel.horizontalAlignment(for: componentViewState))
+            .foregroundStyle(viewModel.color(for: componentViewState))
+            .padding(viewModel.padding(for: componentViewState))
+            .background(viewModel.backgroundColor(for: componentViewState))
+            .padding(viewModel.margin(for: componentViewState))
     }
 
 }
@@ -89,6 +92,47 @@ struct TextComponentView_Previews: PreviewProvider {
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
+
+        // State - Normal
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("Normal (should be black)")
+                ],
+                component: .init(
+                    textLid: "id_1",
+                    color: .init(light: "#000000"),
+                    selectedState: .init(
+                        textLid: "id_1",
+                        color: .init(light: "#ff0000")
+                    )
+                )
+            )
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("State - Normal")
+
+        // State - Selected
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("Selected (should be red)")
+                ],
+                component: .init(
+                    textLid: "id_1",
+                    color: .init(light: "#000000"),
+                    selectedState: .init(
+                        textLid: "id_1",
+                        color: .init(light: "#ff0000")
+                    )
+                )
+            )
+        )
+        .environment(\.componentViewState, .selected)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("State - Selected")
     }
 }
 

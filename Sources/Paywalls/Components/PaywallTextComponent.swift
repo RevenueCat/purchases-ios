@@ -15,6 +15,7 @@ public extension PaywallComponent {
     struct TextComponent: PaywallComponentBase {
 
         let type: ComponentType
+
         public let text: LocalizationKey
         public let fontFamily: String?
         public let fontWeight: FontWeight
@@ -25,6 +26,8 @@ public extension PaywallComponent {
         public let padding: Padding
         public let margin: Padding
 
+        public let selectedState: TextComponent?
+
         public init(
             text: String,
             fontFamily: String? = nil,
@@ -34,7 +37,8 @@ public extension PaywallComponent {
             padding: Padding = .default,
             margin: Padding = .default,
             textStyle: TextStyle = .body,
-            horizontalAlignment: HorizontalAlignment = .center
+            horizontalAlignment: HorizontalAlignment = .center,
+            selectedState: TextComponent? = nil
         ) {
             self.type = .text
             self.text = text
@@ -46,6 +50,37 @@ public extension PaywallComponent {
             self.margin = margin
             self.textStyle = textStyle
             self.horizontalAlignment = horizontalAlignment
+            self.selectedState = selectedState
+        }
+
+        // Hashable conformance
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(textLid)
+            hasher.combine(fontFamily)
+            hasher.combine(fontWeight)
+            hasher.combine(color)
+            hasher.combine(textStyle)
+            hasher.combine(horizontalAlignment)
+            hasher.combine(backgroundColor)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(selectedState)
+        }
+
+        // Equatable conformance
+        public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                lhs.textLid == rhs.textLid &&
+                lhs.fontFamily == rhs.fontFamily &&
+                lhs.fontWeight == rhs.fontWeight &&
+                lhs.color == rhs.color &&
+                lhs.textStyle == rhs.textStyle &&
+                lhs.horizontalAlignment == rhs.horizontalAlignment &&
+                lhs.backgroundColor == rhs.backgroundColor &&
+                lhs.padding == rhs.padding &&
+                lhs.margin == rhs.margin &&
+                lhs.selectedState == rhs.selectedState
         }
     }
 
