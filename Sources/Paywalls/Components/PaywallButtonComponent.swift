@@ -21,13 +21,35 @@ public extension PaywallComponent {
 
     struct ButtonComponent: PaywallComponentBase {
 
+        // swiftlint:disable nesting
+        public enum Action: Codable, Sendable, Hashable, Equatable {
+            case restorePurchases
+            case navigateTo(destination: Destination)
+            case navigateBack
+        }
+
+        public enum Destination: Codable, Sendable, Hashable, Equatable {
+            case customerCenter
+            case URL(url: URL, method: URLMethod)
+        }
+
+        public enum URLMethod: Codable, Sendable, Hashable, Equatable {
+            case inAppBrowser
+            case externalBrowser
+            case deepLink
+        }
+        // swiftlint:enable nesting
+
         let type: ComponentType
+        public let action: Action
         public let text: PaywallComponent.TextComponent
 
         public init(
+            action: Action,
             text: PaywallComponent.TextComponent
         ) {
             self.type = .button
+            self.action = action
             self.text = text
         }
 

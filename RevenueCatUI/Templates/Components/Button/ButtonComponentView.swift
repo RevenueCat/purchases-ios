@@ -28,7 +28,10 @@ struct ButtonComponentView: View {
 
     var body: some View {
         EmptyView()
-        TextComponentView(viewModel: viewModel.textViewModel)
+        Button(
+            action: { viewModel.onClick() },
+            label: { TextComponentView(viewModel: viewModel.textViewModel) }
+        )
     }
 
 }
@@ -44,6 +47,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     component: .init(
+                        action: .navigateBack,
                         text: .init(
                             textLid: "buttonText",
                             color: .init(light: "#000000")
