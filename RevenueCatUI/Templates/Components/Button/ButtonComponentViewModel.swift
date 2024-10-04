@@ -20,16 +20,20 @@ import RevenueCat
 class ButtonComponentViewModel {
 
     private let component: PaywallComponent.ButtonComponent
-    let textViewModel: TextComponentViewModel
+    let stackViewModel: StackComponentViewModel
 
     init(
         component: PaywallComponent.ButtonComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary
+        locale: Locale,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
     ) throws {
         self.component = component
-        self.textViewModel = try TextComponentViewModel(
+        self.stackViewModel = try StackComponentViewModel(
+            locale: locale,
+            component: component.stack,
             localizedStrings: localizedStrings,
-            component: component.text
+            offering: offering
         )
     }
 

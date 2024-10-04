@@ -60,7 +60,9 @@ extension PaywallComponent {
             return .button(
                 try ButtonComponentViewModel(
                     component: component,
-                    localizedStrings: localizedStrings
+                    locale: locale,
+                    localizedStrings: localizedStrings,
+                    offering: offering
                 )
             )
         }

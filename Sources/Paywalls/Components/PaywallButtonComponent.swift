@@ -22,13 +22,13 @@ public extension PaywallComponent {
     struct ButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let text: PaywallComponent.TextComponent
+        public let stack: PaywallComponent.StackComponent
 
         public init(
-            text: PaywallComponent.TextComponent
+            stack: PaywallComponent.StackComponent
         ) {
             self.type = .button
-            self.text = text
+            self.stack = stack
         }
 
     }
