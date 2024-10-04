@@ -60,8 +60,8 @@ private enum Template1Preview {
     )
 
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
-        ctaLid: "cta",
-        ctaIntroOfferLid: "cta_intro",
+        cta: "cta",
+        ctaIntroOffer: "cta_intro",
         fontWeight: .bold,
         color: .init(light: "#ffffff"),
         backgroundColor: .init(light: "#e89d89"),
