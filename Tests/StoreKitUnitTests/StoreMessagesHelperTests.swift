@@ -132,7 +132,7 @@ private extension StoreMessagesHelperTests {
                                           storeMessagesProvider: self.storeMessagesProvider)
     }
 
-    private func waitForDeferredMessages(messages: [StoreMessage]) async throws {
+    private func waitForDeferredMessages(messages: [any StoreMessage]) async throws {
         self.storeMessagesProvider.stubbedMessages = messages
 
         try await self.helper.deferMessagesIfNeeded()
@@ -163,18 +163,29 @@ private final class MockStoreMessage: StoreMessage {
         self._displayCallCount.modify { $0 += 1 }
     }
 
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self._reason.value)
+        hasher.combine(self._displayCalled.value)
+        hasher.combine(self._displayCallCount.value)
+    }
+
+    static func == (lhs: MockStoreMessage, rhs: MockStoreMessage) -> Bool {
+        return lhs._reason.value == rhs._reason.value &&
+               lhs._displayCalled.value == rhs._displayCalled.value &&
+               lhs._displayCallCount.value == rhs._displayCallCount.value
+    }
 }
 
 @available(iOS 16.0, *)
 private final class MockStoreMessagesProvider: StoreMessagesProviderType {
 
-    private let _stubbedMessages: Atomic<[StoreMessage]> = .init([])
-    var stubbedMessages: [StoreMessage] {
+    private let _stubbedMessages: Atomic<[any StoreMessage]> = .init([])
+    var stubbedMessages: [any StoreMessage] {
         get { return self._stubbedMessages.value }
         set { self._stubbedMessages.value = newValue }
     }
 
-    var messages: AsyncStream<StoreMessage> {
+    var messages: AsyncStream<any StoreMessage> {
         MockAsyncSequence(with: self.stubbedMessages).toAsyncStream()
     }
 }

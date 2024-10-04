@@ -34,7 +34,7 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     private let showStoreMessagesAutomatically: Bool
     private let storeMessagesProvider: StoreMessagesProviderType
 
-    private var deferredMessages: [StoreMessage] = []
+    private var deferredMessages: [any StoreMessage] = []
 
     init(systemInfo: SystemInfo,
          showStoreMessagesAutomatically: Bool,
@@ -57,7 +57,7 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     }
 
     func showStoreMessages(types: Set<StoreMessageType>) async {
-        var displayedMessages: [StoreMessage] = []
+        var displayedMessages: [any StoreMessage] = []
         for message in self.deferredMessages {
             if let messageType = message.reason.messageType, types.contains(messageType) {
                 do {
@@ -68,10 +68,9 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
                 }
             }
         }
-        self.deferredMessages.removeAll { message in
-            displayedMessages.contains { displayedMessage in
-                displayedMessage.reason == message.reason
-            }
+        
+        for message in displayedMessages {
+            self.deferredMessages.removeAll(where: { $0.hashValue == message.hashValue })
         }
     }
 
@@ -86,13 +85,13 @@ protocol StoreMessagesProviderType: Sendable {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    var messages: AsyncStream<StoreMessage> { get }
+    var messages: AsyncStream<any StoreMessage> { get }
 
     #endif
 }
 
 /// Abstraction over `StoreKit.Message`.
-protocol StoreMessage: Sendable {
+protocol StoreMessage: Sendable, Hashable {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
@@ -118,9 +117,9 @@ private final class StoreMessagesProvider: StoreMessagesProviderType {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    var messages: AsyncStream<StoreMessage> {
+    var messages: AsyncStream<any StoreMessage> {
         return Message.messages
-            .map { $0 as StoreMessage }
+            .map { $0 as any StoreMessage }
             .toAsyncStream()
     }
 
