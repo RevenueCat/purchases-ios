@@ -34,7 +34,7 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     private let showStoreMessagesAutomatically: Bool
     private let storeMessagesProvider: StoreMessagesProviderType
 
-    private var deferredMessages: [StoreMessage] = []
+    private var deferredMessages: [IdentifiableStoreMessage] = []
 
     init(systemInfo: SystemInfo,
          showStoreMessagesAutomatically: Bool,
@@ -52,27 +52,31 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
         }
 
         for try await message in self.storeMessagesProvider.messages {
-            self.deferredMessages.append(message)
+            self.deferredMessages.append(IdentifiableStoreMessage(storeMessage: message))
         }
     }
 
     func showStoreMessages(types: Set<StoreMessageType>) async {
-        var displayedMessages: [StoreMessage] = []
-        for message in self.deferredMessages {
-            if let messageType = message.reason.messageType, types.contains(messageType) {
+        var displayedMessages: [IdentifiableStoreMessage] = []
+        for identifiableMessage in self.deferredMessages {
+            if let messageType = identifiableMessage.storeMessage.reason.messageType, types.contains(messageType) {
                 do {
-                    try await message.display(in: self.systemInfo.currentWindowScene)
-                    displayedMessages.append(message)
+                    try await identifiableMessage.storeMessage.display(in: self.systemInfo.currentWindowScene)
+                    displayedMessages.append(identifiableMessage)
                 } catch {
                     Logger.error(Strings.storeKit.error_displaying_store_message(error))
                 }
             }
         }
-        self.deferredMessages.removeAll { message in
-            displayedMessages.contains { displayedMessage in
-                displayedMessage.reason == message.reason
-            }
+
+        for message in displayedMessages {
+            self.deferredMessages.removeAll(where: { $0.id == message.id })
         }
+    }
+
+    private struct IdentifiableStoreMessage: Identifiable {
+        let id = UUID()
+        let storeMessage: StoreMessage
     }
 
     #endif
@@ -86,7 +90,7 @@ protocol StoreMessagesProviderType: Sendable {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    var messages: AsyncStream<StoreMessage> { get }
+    var messages: AsyncStream<any StoreMessage> { get }
 
     #endif
 }
