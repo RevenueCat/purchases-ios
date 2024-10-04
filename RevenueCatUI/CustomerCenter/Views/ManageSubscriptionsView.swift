@@ -161,7 +161,7 @@ struct ManageSubscriptionsButtonsView: View {
 #if targetEnvironment(macCatalyst)
             return path.type == .refundRequest
 #else
-            return true
+            return path.type != .unknown
 #endif
         }
         ForEach(filteredPaths, id: \.id) { path in
