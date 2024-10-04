@@ -27,7 +27,6 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        EmptyView()
         TextComponentView(viewModel: viewModel.textViewModel)
     }
 
