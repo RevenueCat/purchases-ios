@@ -171,12 +171,6 @@ private final class MockStoreMessage: StoreMessage {
         self._displayCalled.value = true
         self._displayCallCount.modify { $0 += 1 }
     }
-
-    static func == (lhs: MockStoreMessage, rhs: MockStoreMessage) -> Bool {
-        return lhs._reason.value == rhs._reason.value &&
-               lhs._displayCalled.value == rhs._displayCalled.value &&
-               lhs._displayCallCount.value == rhs._displayCallCount.value
-    }
 }
 
 @available(iOS 16.0, *)
