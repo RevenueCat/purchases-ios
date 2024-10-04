@@ -65,7 +65,7 @@ extension PaywallComponent.TextComponent {
         case padding
         case margin
     }
-    
+
 }
 
 #endif
