@@ -40,13 +40,8 @@ struct PurchaseButtonComponentView: View {
                 .padding(viewModel.padding)
                 .background(viewModel.backgroundColor)
                 .shape(viewModel.clipShape)
-                .applyIfLet(viewModel.cornerRadiuses, apply: { view, value in
-                    view
-                    .roundedCorner(value.topLeading, corners: .topLeft)
-                    .roundedCorner(value.topTrailing, corners: .topRight)
-                    .roundedCorner(value.bottomLeading, corners: .bottomLeft)
-                    .roundedCorner(value.bottomTrailing, corners: .bottomRight)
-                })
+                .cornerBorder(border: nil,
+                              radiuses: viewModel.cornerRadiuses)
                 .padding(viewModel.margin)
         }
     }

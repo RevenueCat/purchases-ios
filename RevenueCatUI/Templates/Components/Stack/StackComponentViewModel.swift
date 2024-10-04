@@ -57,12 +57,28 @@ class StackComponentViewModel {
         component.margin.edgeInsets
     }
 
-    var cornerRadiuses: PaywallComponent.CornerRadiuses {
-        component.cornerRadiuses
-    }
-
     var width: PaywallComponent.WidthSize? {
         component.width
+    }
+
+    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
+        component.cornerRadiuses.flatMap { cornerRadiuses in
+            CornerBorderModifier.RaidusInfo(
+                topLeft: cornerRadiuses.topLeading,
+                topRight: cornerRadiuses.topTrailing,
+                bottomLeft: cornerRadiuses.bottomLeading,
+                bottomRight: cornerRadiuses.bottomLeading
+            )
+        }
+    }
+
+    var border: CornerBorderModifier.BorderInfo? {
+        component.border.flatMap { border in
+            CornerBorderModifier.BorderInfo(
+                color: border.color.toDyanmicColor(),
+                width: border.width
+            )
+        }
     }
 
 }

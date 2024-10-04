@@ -56,10 +56,8 @@ struct ImageComponentView: View {
                     endPoint: .bottom
                 )
             )
-            .roundedCorner(viewModel.cornerRadiuses.topLeading, corners: .topLeft)
-            .roundedCorner(viewModel.cornerRadiuses.topTrailing, corners: .topRight)
-            .roundedCorner(viewModel.cornerRadiuses.bottomLeading, corners: .bottomLeft)
-            .roundedCorner(viewModel.cornerRadiuses.bottomTrailing, corners: .bottomRight)
+            .cornerBorder(border: nil,
+                          radiuses: viewModel.cornerRadiuses)
     }
 
 }
@@ -139,7 +137,33 @@ struct ImageComponentView_Previews: PreviewProvider {
             )
         }
         .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Light - Fill")
+        .previewDisplayName("Light - Gradient")
+
+        // Light - Fit with Rounded Corner
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizedStrings: [:],
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        cornerRadiuses: .init(topLeading: 40,
+                                              topTrailing: 40,
+                                              bottomLeading: 40,
+                                              bottomTrailing: 40)
+                    )
+                )
+            )
+        }
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Rounded Corner")
     }
 }
 
