@@ -75,6 +75,8 @@ extension PaywallComponent.PurchaseButtonComponent {
         case backgroundColor
         case padding
         case margin
+        case shape
+        case cornerRadiuses
     }
 
 }
