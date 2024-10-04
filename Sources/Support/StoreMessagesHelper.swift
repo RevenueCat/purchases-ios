@@ -90,7 +90,7 @@ protocol StoreMessagesProviderType: Sendable {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    var messages: AsyncStream<any StoreMessage> { get }
+    var messages: AsyncStream<StoreMessage> { get }
 
     #endif
 }
