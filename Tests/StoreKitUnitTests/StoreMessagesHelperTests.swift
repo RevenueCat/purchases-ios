@@ -147,6 +147,15 @@ private final class MockStoreMessage: StoreMessage {
     var reason: Message.Reason { self._reason.value }
     private let _reason: Box<Message.Reason>
 
+    // swiftlint:disable:next legacy_hashing
+    var hashValue: Int {
+        var hasher = Hasher()
+        hasher.combine(self._reason.value)
+        hasher.combine(self._displayCalled.value)
+        hasher.combine(self._displayCallCount.value)
+        return hasher.finalize()
+    }
+
     init(reason: Message.Reason) {
         self._reason = .init(reason)
     }
@@ -162,7 +171,6 @@ private final class MockStoreMessage: StoreMessage {
         self._displayCalled.value = true
         self._displayCallCount.modify { $0 += 1 }
     }
-
 }
 
 @available(iOS 16.0, *)

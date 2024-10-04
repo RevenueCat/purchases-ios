@@ -68,10 +68,9 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
                 }
             }
         }
-        self.deferredMessages.removeAll { message in
-            displayedMessages.contains { displayedMessage in
-                displayedMessage.reason == message.reason
-            }
+
+        for message in displayedMessages {
+            self.deferredMessages.removeAll(where: { $0.hashValue == message.hashValue })
         }
     }
 
@@ -98,6 +97,10 @@ protocol StoreMessage: Sendable {
 
     @available(iOS 16.0, *)
     var reason: Message.Reason { get }
+
+    @available(iOS 16.0, *)
+    // swiftlint:disable:next legacy_hashing
+    var hashValue: Int { get }
 
     @available(iOS 16.0, *)
     @MainActor
