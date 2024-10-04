@@ -59,10 +59,24 @@ private enum Template1Preview {
         horizontalAlignment: .center
     )
 
+    static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
+        cta: "cta",
+        ctaIntroOffer: "cta_intro",
+        fontWeight: .bold,
+        color: .init(light: "#ffffff"),
+        backgroundColor: .init(light: "#e89d89"),
+        padding: .init(top: 10,
+                       bottom: 10,
+                       leading: 30,
+                       trailing: 30),
+        shape: .pill
+    )
+
     static let contentStack = PaywallComponent.StackComponent(
         components: [
             .text(title),
-            .text(body)
+            .text(body),
+            .purchaseButton(purchaseButton)
         ],
         width: .init(type: .fill, value: nil),
         spacing: 30,
@@ -93,7 +107,9 @@ private enum Template1Preview {
         ),
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),
-            "body": .string("Get access to all of our educational content trusted by thousands of pet parents.")
+            "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
+            "cta": .string("Get Started"),
+            "cta_intro": .string("Claim Free Trial")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"

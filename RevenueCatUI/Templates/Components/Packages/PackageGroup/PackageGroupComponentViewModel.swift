@@ -7,27 +7,35 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchaseButtonComponentViewModel.swift
+//  PackageGroupComponentViewModel.swift
 //
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
 import RevenueCat
 
-// swiftlint:disable missing_docs
-
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class PurchaseButtonComponentViewModel {
+class PackageGroupComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
-    private let component: PaywallComponent.PurchaseButtonComponent
+    private let component: PaywallComponent.PackageGroupComponent
+    private let offering: Offering
+
+    let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
-         component: PaywallComponent.PurchaseButtonComponent) throws {
+         component: PaywallComponent.PackageGroupComponent,
+         offering: Offering) throws {
         self.localizedStrings = localizedStrings
         self.component = component
+        self.offering = offering
+
+        self.stackComponentViewModel = try self.component.toStackComponentViewModel(
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
     }
 
 }
