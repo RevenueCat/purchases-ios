@@ -20,11 +20,17 @@ import RevenueCat
 class ButtonComponentViewModel {
 
     private let component: PaywallComponent.ButtonComponent
+    let textViewModel: TextComponentViewModel
 
     init(
-        component: PaywallComponent.ButtonComponent
-    ) {
+        component: PaywallComponent.ButtonComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws {
         self.component = component
+        self.textViewModel = try TextComponentViewModel(
+            localizedStrings: localizedStrings,
+            component: component.text
+        )
     }
 
 }

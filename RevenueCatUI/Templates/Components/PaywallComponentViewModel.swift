@@ -58,7 +58,10 @@ extension PaywallComponent {
             )
         case .button(let component):
             return .button(
-                try ButtonComponentViewModel(component: component)
+                try ButtonComponentViewModel(
+                    component: component,
+                    localizedStrings: localizedStrings
+                )
             )
         }
     }

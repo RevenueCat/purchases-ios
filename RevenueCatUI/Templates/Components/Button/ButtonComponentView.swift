@@ -28,6 +28,7 @@ struct ButtonComponentView: View {
 
     var body: some View {
         EmptyView()
+        TextComponentView(viewModel: viewModel.textViewModel)
     }
 
 }
@@ -40,8 +41,17 @@ struct ButtonComponentView_Previews: PreviewProvider {
     static var previews: some View {
         VStack {
             ButtonComponentView(
-                viewModel: .init(
-                    component: .init()
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        text: .init(
+                            textLid: "buttonText",
+                            color: .init(light: "#000000")
+                        )
+                    ),
+                    localizedStrings: [
+                        "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                    ]
                 )
             )
         }
