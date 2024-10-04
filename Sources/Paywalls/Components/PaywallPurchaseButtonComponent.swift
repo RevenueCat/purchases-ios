@@ -16,7 +16,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let cta: LocalizationKey
-        public let ctaIntroOffer: LocalizationKey
+        public let ctaIntroOffer: LocalizationKey?
         public let fontFamily: String?
         public let fontWeight: FontWeight
         public let color: ColorInfo
@@ -28,7 +28,7 @@ public extension PaywallComponent {
 
         public init(
             cta: LocalizationKey,
-            ctaIntroOffer: LocalizationKey,
+            ctaIntroOffer: LocalizationKey? = nil,
             fontFamily: String? = nil,
             fontWeight: FontWeight = .regular,
             color: ColorInfo,
