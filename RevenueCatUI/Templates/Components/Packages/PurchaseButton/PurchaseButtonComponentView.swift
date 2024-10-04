@@ -90,8 +90,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                     "id_2": .string("Hello, world intro offer")
                 ],
                 component: .init(
-                    ctaLid: "id_1",
-                    ctaIntroOfferLid: "id_2",
+                    cta: "id_1",
+                    ctaIntroOffer: "id_2",
                     fontWeight: .bold,
                     color: .init(light: "#ffffff"),
                     backgroundColor: .init(light: "#ff0000"),
@@ -115,8 +115,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                     "id_2": .string("Hello, world intro offer")
                 ],
                 component: .init(
-                    ctaLid: "id_1",
-                    ctaIntroOfferLid: "id_2",
+                    cta: "id_1",
+                    ctaIntroOffer: "id_2",
                     fontWeight: .bold,
                     color: .init(light: "#ffffff"),
                     backgroundColor: .init(light: "#ff0000"),

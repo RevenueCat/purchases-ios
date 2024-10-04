@@ -49,14 +49,14 @@ struct PackagesComponentView_Previews: PreviewProvider {
         let stack: PaywallComponent = .stack(.init(
             components: [
                 .text(.init(
-                    textLid: nameTextLid,
+                    text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: "#000000"),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
-                    textLid: detailTextLid,
+                    text: detailTextLid,
                     color: .init(light: "#000000"),
                     padding: .zero,
                     margin: .zero

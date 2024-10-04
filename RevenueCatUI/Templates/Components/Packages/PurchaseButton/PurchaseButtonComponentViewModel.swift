@@ -15,12 +15,10 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-// swiftlint:disable missing_docs
-
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class PurchaseButtonComponentViewModel {
+class PurchaseButtonComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.PurchaseButtonComponent
@@ -33,37 +31,37 @@ public class PurchaseButtonComponentViewModel {
         self.localizedStrings = localizedStrings
         self.component = component
 
-        self.cta = try localizedStrings.string(key: component.ctaLid)
-        self.ctaIntroOffer = try component.ctaIntroOfferLid.flatMap {
+        self.cta = try localizedStrings.string(key: component.cta)
+        self.ctaIntroOffer = try component.ctaIntroOffer.flatMap {
             try localizedStrings.string(key: $0)
         }
     }
 
-    public var fontFamily: String? {
+    var fontFamily: String? {
         component.fontFamily
     }
 
-    public var fontWeight: Font.Weight {
+    var fontWeight: Font.Weight {
         component.fontWeight.fontWeight
     }
 
-    public var color: Color {
+    var color: Color {
         component.color.toDyanmicColor()
     }
 
-    public var textStyle: Font {
+    var textStyle: Font {
         component.textStyle.font
     }
 
-    public var horizontalAlignment: TextAlignment {
+    var horizontalAlignment: TextAlignment {
         component.horizontalAlignment.textAlignment
     }
 
-    public var backgroundColor: Color {
+    var backgroundColor: Color {
         component.backgroundColor?.toDyanmicColor() ?? Color.clear
     }
 
-    public var padding: EdgeInsets {
+    var padding: EdgeInsets {
         component.padding.edgeInsets
     }
 

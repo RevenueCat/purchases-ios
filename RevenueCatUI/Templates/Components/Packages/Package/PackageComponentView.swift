@@ -38,14 +38,14 @@ struct PackageComponentView_Previews: PreviewProvider {
         .stack(.init(
             components: [
                 .text(.init(
-                    textLid: "name",
+                    text: "name",
                     fontWeight: .bold,
                     color: .init(light: "#000000"),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
-                    textLid: "detail",
+                    text: "detail",
                     color: .init(light: "#000000"),
                     padding: .zero,
                     margin: .zero
