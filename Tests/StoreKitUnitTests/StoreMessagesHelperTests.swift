@@ -132,7 +132,7 @@ private extension StoreMessagesHelperTests {
                                           storeMessagesProvider: self.storeMessagesProvider)
     }
 
-    private func waitForDeferredMessages(messages: [any StoreMessage]) async throws {
+    private func waitForDeferredMessages(messages: [StoreMessage]) async throws {
         self.storeMessagesProvider.stubbedMessages = messages
 
         try await self.helper.deferMessagesIfNeeded()
@@ -146,6 +146,15 @@ private final class MockStoreMessage: StoreMessage {
     // The indirection prevents a runtime Swift crash on iOS 15
     var reason: Message.Reason { self._reason.value }
     private let _reason: Box<Message.Reason>
+
+    // swiftlint:disable:next legacy_hashing
+    var hashValue: Int {
+        var hasher = Hasher()
+        hasher.combine(self._reason.value)
+        hasher.combine(self._displayCalled.value)
+        hasher.combine(self._displayCallCount.value)
+        return hasher.finalize()
+    }
 
     init(reason: Message.Reason) {
         self._reason = .init(reason)
@@ -163,12 +172,6 @@ private final class MockStoreMessage: StoreMessage {
         self._displayCallCount.modify { $0 += 1 }
     }
 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self._reason.value)
-        hasher.combine(self._displayCalled.value)
-        hasher.combine(self._displayCallCount.value)
-    }
-
     static func == (lhs: MockStoreMessage, rhs: MockStoreMessage) -> Bool {
         return lhs._reason.value == rhs._reason.value &&
                lhs._displayCalled.value == rhs._displayCalled.value &&
@@ -179,13 +182,13 @@ private final class MockStoreMessage: StoreMessage {
 @available(iOS 16.0, *)
 private final class MockStoreMessagesProvider: StoreMessagesProviderType {
 
-    private let _stubbedMessages: Atomic<[any StoreMessage]> = .init([])
-    var stubbedMessages: [any StoreMessage] {
+    private let _stubbedMessages: Atomic<[StoreMessage]> = .init([])
+    var stubbedMessages: [StoreMessage] {
         get { return self._stubbedMessages.value }
         set { self._stubbedMessages.value = newValue }
     }
 
-    var messages: AsyncStream<any StoreMessage> {
+    var messages: AsyncStream<StoreMessage> {
         MockAsyncSequence(with: self.stubbedMessages).toAsyncStream()
     }
 }
