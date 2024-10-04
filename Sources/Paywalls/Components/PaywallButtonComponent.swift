@@ -42,15 +42,15 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let action: Action
-        public let text: PaywallComponent.TextComponent
+        public let stack: PaywallComponent.StackComponent
 
         public init(
             action: Action,
-            text: PaywallComponent.TextComponent
+            stack: PaywallComponent.StackComponent
         ) {
             self.type = .button
             self.action = action
-            self.text = text
+            self.stack = stack
         }
 
     }

@@ -30,7 +30,7 @@ struct ButtonComponentView: View {
         EmptyView()
         Button(
             action: { viewModel.onClick() },
-            label: { TextComponentView(viewModel: viewModel.textViewModel) }
+            label: { StackComponentView(viewModel: viewModel.stackViewModel) }
         )
     }
 
@@ -48,14 +48,23 @@ struct ButtonComponentView_Previews: PreviewProvider {
                 viewModel: try! .init(
                     component: .init(
                         action: .navigateBack,
-                        text: .init(
-                            textLid: "buttonText",
-                            color: .init(light: "#000000")
+                        stack: .init(
+                            components: [
+                                PaywallComponent.text(
+                                    PaywallComponent.TextComponent(
+                                        textLid: "buttonText",
+                                        color: .init(light: "#000000")
+                                    )
+                                )
+                            ],
+                            backgroundColor: nil
                         )
                     ),
+                    locale: Locale(identifier: "en_US"),
                     localizedStrings: [
                         "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
-                    ]
+                    ],
+                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
                 )
             )
         }
