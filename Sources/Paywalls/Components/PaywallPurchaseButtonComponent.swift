@@ -15,8 +15,8 @@ public extension PaywallComponent {
     struct PurchaseButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let ctaLid: LocalizationKey
-        public let ctaIntroOfferLid: LocalizationKey
+        public let cta: LocalizationKey
+        public let ctaIntroOffer: LocalizationKey
         public let fontFamily: String?
         public let fontWeight: FontWeight
         public let color: ColorInfo
@@ -27,8 +27,8 @@ public extension PaywallComponent {
         public let margin: Padding
 
         public init(
-            ctaLid: LocalizationKey,
-            ctaIntroOfferLid: LocalizationKey,
+            cta: LocalizationKey,
+            ctaIntroOffer: LocalizationKey,
             fontFamily: String? = nil,
             fontWeight: FontWeight = .regular,
             color: ColorInfo,
@@ -39,8 +39,8 @@ public extension PaywallComponent {
             horizontalAlignment: HorizontalAlignment = .center
         ) {
             self.type = .purchaseButton
-            self.ctaLid = ctaLid
-            self.ctaIntroOfferLid = ctaIntroOfferLid
+            self.cta = cta
+            self.ctaIntroOffer = ctaIntroOffer
             self.fontFamily = fontFamily
             self.fontWeight = fontWeight
             self.color = color
@@ -51,6 +51,24 @@ public extension PaywallComponent {
             self.horizontalAlignment = horizontalAlignment
         }
 
+    }
+
+}
+
+extension PaywallComponent.PurchaseButtonComponent {
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case cta = "cta_lid"
+        case ctaIntroOffer = "cta_intro_offer_lid"
+        case fontFamily
+        case fontWeight
+        case color
+        case textStyle
+        case horizontalAlignment
+        case backgroundColor
+        case padding
+        case margin
     }
 
 }
