@@ -21,23 +21,24 @@ public extension PaywallComponent {
 
     struct ButtonComponent: PaywallComponentBase {
 
-        // swiftlint:disable nesting
+        // swiftlint:disable:next nesting
         public enum Action: Codable, Sendable, Hashable, Equatable {
             case restorePurchases
             case navigateTo(destination: Destination)
             case navigateBack
         }
 
+        // swiftlint:disable:next nesting
         public enum Destination: Codable, Sendable, Hashable, Equatable {
             case customerCenter
             case URL(url: URL, method: URLMethod)
         }
 
+        // swiftlint:disable:next nesting
         public enum URLMethod: Codable, Sendable, Hashable, Equatable {
             case inAppBrowser
             case externalBrowser
         }
-        // swiftlint:enable nesting
 
         let type: ComponentType
         public let action: Action
