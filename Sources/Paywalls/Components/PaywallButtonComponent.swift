@@ -31,9 +31,9 @@ public extension PaywallComponent {
         // swiftlint:disable:next nesting
         public enum Destination: Codable, Sendable, Hashable, Equatable {
             case customerCenter
-            case URL(url: URL, method: URLMethod)
-            case privacyPolicy(url: URL, method: URLMethod)
-            case terms(url: URL, method: URLMethod)
+            case URL(urlLid: String, method: URLMethod)
+            case privacyPolicy(urlLid: String, method: URLMethod)
+            case terms(urlLid: String, method: URLMethod)
         }
 
         // swiftlint:disable:next nesting
