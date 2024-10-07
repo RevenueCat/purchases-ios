@@ -27,7 +27,6 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        EmptyView()
         Button(
             action: { viewModel.onClick() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel) }
