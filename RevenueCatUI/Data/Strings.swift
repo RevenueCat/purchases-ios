@@ -55,6 +55,7 @@ enum Strings {
     case paywall_view_model_construction_failed(Error)
     case paywall_contains_no_localization_data
     case paywall_could_not_find_localization(String)
+    case paywall_invalid_url(String)
 
     // Customer Center
     case could_not_find_subscription_information
@@ -164,6 +165,9 @@ extension Strings: CustomStringConvertible {
 
         case .paywall_contains_no_localization_data:
             return "Paywall contains no localization data."
+
+        case .paywall_invalid_url(let urlLid):
+            return "No valid URL is configured for \(urlLid)"
 
         case .invalid_color_string(let colorString):
             return "Invalid hex color string: \(colorString)"
