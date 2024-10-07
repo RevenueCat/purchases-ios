@@ -38,6 +38,7 @@ public extension PaywallComponent {
         public enum URLMethod: Codable, Sendable, Hashable, Equatable {
             case inAppBrowser
             case externalBrowser
+            case deepLink
         }
 
         let type: ComponentType
