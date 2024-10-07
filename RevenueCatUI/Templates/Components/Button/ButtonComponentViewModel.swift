@@ -10,6 +10,8 @@
 //  ButtonComponentViewModel.swift
 //
 //  Created by Jay Shortway on 02/10/2024.
+//
+// swiftlint:disable missing_docs
 
 import Foundation
 import RevenueCat
@@ -17,7 +19,7 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class ButtonComponentViewModel {
+public class ButtonComponentViewModel {
 
     private let component: PaywallComponent.ButtonComponent
     let stackViewModel: StackComponentViewModel
