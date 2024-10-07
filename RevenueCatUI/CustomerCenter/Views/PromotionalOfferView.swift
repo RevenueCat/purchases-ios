@@ -35,7 +35,7 @@ struct PromotionalOfferView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
-    @State private var loadingState: Bool = false
+    @State private var isLoading: Bool = false
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
@@ -61,7 +61,7 @@ struct PromotionalOfferView: View {
 
                     Spacer()
 
-                    PromoOfferButtonView(loadingState: $loadingState,
+                    PromoOfferButtonView(isLoading: $isLoading,
                                          viewModel: self.viewModel,
                                          appearance: self.appearance)
 
@@ -120,7 +120,7 @@ struct PromotionalOfferHeaderView: View {
 @available(watchOS, unavailable)
 struct PromoOfferButtonView: View {
 
-    @Binding var loadingState: Bool
+    @Binding var isLoading: Bool
 
     @Environment(\.locale)
     private var locale
@@ -138,14 +138,14 @@ struct PromoOfferButtonView: View {
 
             AsyncButton {
                 withAnimation(.easeInOut(duration: 0.3)) {
-                    loadingState = true
+                    isLoading = true
                 }
                 await viewModel.purchasePromo()
                 withAnimation(.easeInOut(duration: 0.3)) {
-                    loadingState = false
+                    isLoading = false
                 }
             } label: {
-                if loadingState {
+                if isLoading {
                     TintedProgressView()
                 } else {
                     VStack {
@@ -162,9 +162,9 @@ struct PromoOfferButtonView: View {
             }
             .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
-            .disabled(loadingState)
-            .opacity(loadingState ? 0.5 : 1)
-            .animation(.easeInOut(duration: 0.3), value: loadingState)
+            .disabled(isLoading)
+            .opacity(isLoading ? 0.5 : 1)
+            .animation(.easeInOut(duration: 0.3), value: isLoading)
         }
     }
 
