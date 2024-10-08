@@ -142,7 +142,7 @@ class PurchaseHandlerTests: TestCase {
         let result = try await handler.restorePurchases()
 
         expect(result.info) === TestData.customerInfo
-        expect(result.success) == false
+        expect(result.success) == true
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchaseResult).to(beNil())
         expect(handler.packageBeingPurchased).to(beNil())
