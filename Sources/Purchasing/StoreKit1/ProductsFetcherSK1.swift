@@ -262,3 +262,4 @@ extension ProductsFetcherSK1: @unchecked Sendable {}
 extension SKRequest: @unchecked @retroactive Sendable {}
 extension SKProductsRequest: @unchecked @retroactive Sendable {}
 #endif
+#endif
