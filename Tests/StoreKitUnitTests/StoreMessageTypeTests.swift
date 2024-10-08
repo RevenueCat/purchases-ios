@@ -36,6 +36,12 @@ class StoreMessagesTypeTests: TestCase {
         #endif
         expect(Message.Reason.priceIncreaseConsent.messageType) == .priceIncreaseConsent
         expect(Message.Reason.generic.messageType) == .generic
+
+        #if compiler(>=6.0)
+        if #available(iOS 18.0, visionOS 2.0, *) {
+            expect(Message.Reason.winBackOffer.messageType) == .winBackOffer
+        }
+        #endif
     }
 
 }
