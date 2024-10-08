@@ -13,7 +13,9 @@
 
 import Foundation
 import RevenueCat
+#if canImport(SafariServices)
 import SafariServices
+#endif
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
@@ -75,7 +77,12 @@ struct ButtonComponentView: View {
 
         switch method {
         case .inAppBrowser:
+#if os(tvOS)
+            // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
+            openURL(url)
+#else
             inAppBrowserURL = url
+#endif
         case .externalBrowser,
                 .deepLink:
             openURL(url)
