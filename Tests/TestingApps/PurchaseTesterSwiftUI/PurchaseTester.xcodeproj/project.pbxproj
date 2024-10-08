@@ -162,6 +162,8 @@
 		57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfiguredPurchases.swift; sourceTree = "<group>"; };
 		57ED6A85290893B6009580C6 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		57FA0F7C2908503B00E9EA1B /* PurchaseTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurchaseTester.entitlements; sourceTree = "<group>"; };
+		773C13482CB58A6100219E42 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../../Global.xcconfig; sourceTree = "<group>"; };
+		773C13492CB58A7400219E42 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = ../../../Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,6 +235,8 @@
 		2CD2C4E8278C9B01005D1CC2 = {
 			isa = PBXGroup;
 			children = (
+				773C13482CB58A6100219E42 /* Global.xcconfig */,
+				773C13492CB58A7400219E42 /* Local.xcconfig */,
 				4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */,
 				57FA0F7C2908503B00E9EA1B /* PurchaseTester.entitlements */,
 				2C8C610D27CEBEF200F86F21 /* PurchaseTester-Info.plist */,
