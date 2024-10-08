@@ -12,7 +12,8 @@ let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "tr
 var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
     // SST requires iOS 13 starting from version 1.13.0
-    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
+    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0")),
+    .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", exact: "0.57.0")
 ]
 if shouldIncludeDocCPlugin {
     // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
