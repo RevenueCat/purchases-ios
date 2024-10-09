@@ -21,7 +21,8 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ButtonComponentViewModel {
 
-    private let component: PaywallComponent.ButtonComponent
+    internal let component: PaywallComponent.ButtonComponent
+    internal let localizedStrings: PaywallComponent.LocalizationDictionary
     let stackViewModel: StackComponentViewModel
 
     init(
@@ -31,17 +32,13 @@ public class ButtonComponentViewModel {
         offering: Offering
     ) throws {
         self.component = component
+        self.localizedStrings = localizedStrings
         self.stackViewModel = try StackComponentViewModel(
             locale: locale,
             component: component.stack,
             localizedStrings: localizedStrings,
             offering: offering
         )
-    }
-
-    func onClick() {
-        // swiftlint:disable:next todo
-        // TODO Handle the configured Action.
     }
 
 }
