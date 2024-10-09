@@ -66,6 +66,14 @@ class SystemInfo {
         return self._isSandbox
     }
 
+    var isDebugBuild: Bool {
+#if DEBUG
+        return true
+#else
+        return false
+#endif
+    }
+
     var storefront: StorefrontType? {
         return self.storefrontProvider.currentStorefront
     }
