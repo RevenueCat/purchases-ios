@@ -27,7 +27,10 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        StackComponentView(viewModel: viewModel.stackViewModel)
+        Button(
+            action: { viewModel.onClick() },
+            label: { StackComponentView(viewModel: viewModel.stackViewModel) }
+        )
     }
 
 }
@@ -43,6 +46,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     component: .init(
+                        action: .navigateBack,
                         stack: .init(
                             components: [
                                 PaywallComponent.text(

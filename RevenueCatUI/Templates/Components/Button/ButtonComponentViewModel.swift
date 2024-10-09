@@ -39,6 +39,11 @@ public class ButtonComponentViewModel {
         )
     }
 
+    func onClick() {
+        // swiftlint:disable:next todo
+        // TODO Handle the configured Action.
+    }
+
 }
 
 #endif
