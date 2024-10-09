@@ -186,25 +186,30 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(
+        product: StoreProduct,
+        metadata: [String: String]? = nil,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
         self.unimplemented()
     }
 
-    func purchase(product: StoreProduct) async throws -> PurchaseResultData {
+    func purchase(product: StoreProduct, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         self.unimplemented()
     }
 
-    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(package: Package, metadata: [String: String]? = nil, completion: @escaping PurchaseCompletedBlock) {
         self.unimplemented()
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
+    func purchase(package: Package, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         self.unimplemented()
     }
 
     func purchase(
         product: StoreProduct,
         promotionalOffer: PromotionalOffer,
+        metadata: [String: String]? = nil,
         completion: @escaping PurchaseCompletedBlock
     ) {
         self.unimplemented()
@@ -212,7 +217,8 @@ extension MockPurchases: PurchasesType {
 
     func purchase(
         product: StoreProduct,
-        promotionalOffer: PromotionalOffer
+        promotionalOffer: PromotionalOffer,
+        metadata: [String: String]? = nil
     ) async throws -> PurchaseResultData {
         self.unimplemented()
     }
@@ -220,6 +226,7 @@ extension MockPurchases: PurchasesType {
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer,
+        metadata: [String: String]? = nil,
         completion: @escaping PurchaseCompletedBlock
     ) {
         self.unimplemented()
@@ -227,7 +234,8 @@ extension MockPurchases: PurchasesType {
 
     func purchase(
         package: Package,
-        promotionalOffer: PromotionalOffer
+        promotionalOffer: PromotionalOffer,
+        metadata: [String: String]? = nil
     ) async throws -> PurchaseResultData {
         self.unimplemented()
     }
