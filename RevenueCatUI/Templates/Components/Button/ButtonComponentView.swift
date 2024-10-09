@@ -51,8 +51,7 @@ struct ButtonComponentView: View {
         case .navigateTo(let destination):
             navigateTo(destination: destination)
         case .navigateBack:
-            // swiftlint:disable:next todo
-            // TODO handle navigating back
+            onDismiss()
             break
         }
     }
