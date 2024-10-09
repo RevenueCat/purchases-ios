@@ -397,5 +397,4 @@ private extension EncodedAppleReceipt {
             return "empty"
         }
     }
-
 }

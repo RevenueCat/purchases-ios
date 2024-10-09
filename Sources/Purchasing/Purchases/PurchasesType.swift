@@ -263,7 +263,7 @@ public protocol PurchasesType: AnyObject {
      * Initiates a purchase of a ``StoreProduct``.
      *
      * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
-     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
+     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:metadata:completion:)`` instead.
      *
      * - Important: Call this method when a user has decided to purchase a product.
      * Only call this in direct response to user input.
@@ -290,7 +290,7 @@ public protocol PurchasesType: AnyObject {
      * Initiates a purchase of a ``StoreProduct``.
      *
      * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
-     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
+     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:metadata:completion:)`` instead.
      *
      * - Important: Call this method when a user has decided to purchase a product.
      * Only call this in direct response to user input.
@@ -445,7 +445,8 @@ public protocol PurchasesType: AnyObject {
      *
      * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
      * applied ``PromotionalOffer``.
-     * If you are using the Offerings system, use ``Purchases/purchase(package:promotionalOffer:completion:)`` instead.
+     * If you are using the Offerings system, use
+     * ``Purchases/purchase(package:promotionalOffer:metadata:completion:)`` instead.
      *
      * - Important: Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
@@ -478,7 +479,8 @@ public protocol PurchasesType: AnyObject {
     /**
      * Use this function if you are not using the Offerings system to purchase a ``StoreProduct`` with an
      * applied ``PromotionalOffer``.
-     * If you are using the Offerings system, use ``Purchases/purchase(package:promotionalOffer:completion:)`` instead.
+     * If you are using the Offerings system, use
+     * ``Purchases/purchase(package:promotionalOffer:metadata:completion:)`` instead.
      *
      * Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
@@ -497,7 +499,9 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer, metadata: [String: String]?) async throws -> PurchaseResultData
+    func purchase(product: StoreProduct,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]?) async throws -> PurchaseResultData
 
     /**
      * Purchase the passed ``Package``.
@@ -541,7 +545,9 @@ public protocol PurchasesType: AnyObject {
      * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
-    func purchase(package: Package, promotionalOffer: PromotionalOffer, metadata: [String: String]?) async throws -> PurchaseResultData
+    func purchase(package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]?) async throws -> PurchaseResultData
 
     /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
@@ -646,8 +652,8 @@ public protocol PurchasesType: AnyObject {
 
     /**
      * Use this method to fetch ``PromotionalOffer``
-     *  to use in ``Purchases/purchase(package:promotionalOffer:)``
-     *  or ``Purchases/purchase(product:promotionalOffer:)``.
+     *  to use in ``Purchases/purchase(package:promotionalOffer:metadata:)``
+     *  or ``Purchases/purchase(product:promotionalOffer:metadata:)``.
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
      * use ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``.

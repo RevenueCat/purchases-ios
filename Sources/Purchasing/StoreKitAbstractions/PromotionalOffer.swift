@@ -22,10 +22,10 @@ import StoreKit
 /// - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
 /// - ``StoreProduct/eligiblePromotionalOffers()``
 /// - ``Purchases/eligiblePromotionalOffers(forProduct:)``
-/// - ``Purchases/purchase(package:promotionalOffer:)``
-/// - ``Purchases/purchase(package:promotionalOffer:completion:)``
-/// - ``Purchases/purchase(product:promotionalOffer:)``
-/// - ``Purchases/purchase(product:promotionalOffer:completion:)``
+/// - ``Purchases/purchase(package:promotionalOffer:metadata:)``
+/// - ``Purchases/purchase(package:promotionalOffer:metadata:completion:)``
+/// - ``Purchases/purchase(product:promotionalOffer:metadata:)``
+/// - ``Purchases/purchase(product:promotionalOffer:metadata:completion:)``
 @objc(RCPromotionalOffer)
 public final class PromotionalOffer: NSObject {
 

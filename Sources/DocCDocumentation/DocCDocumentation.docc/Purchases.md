@@ -40,10 +40,10 @@ Most features require configuring the SDK before using it.
 - ``Purchases/getProducts(_:completion:)``
 
 ### Making Purchases
-- ``Purchases/purchase(package:)``
-- ``Purchases/purchase(package:completion:)``
-- ``Purchases/purchase(product:)``
-- ``Purchases/purchase(product:completion:)``
+- ``Purchases/purchase(package:metadata:)``
+- ``Purchases/purchase(package:metadata:completion:)``
+- ``Purchases/purchase(product:metadata:)``
+- ``Purchases/purchase(product:metadata:completion:)``
 - ``Purchases/simulatesAskToBuyInSandbox``
 - ``Purchases/canMakePayments()``
 
@@ -54,10 +54,10 @@ Most features require configuring the SDK before using it.
 - ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
 - ``Purchases/promotionalOffer(forProductDiscount:product:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
-- ``Purchases/purchase(package:promotionalOffer:)``
-- ``Purchases/purchase(package:promotionalOffer:completion:)``
-- ``Purchases/purchase(product:promotionalOffer:)``
-- ``Purchases/purchase(product:promotionalOffer:completion:)``
+- ``Purchases/purchase(package:promotionalOffer:metadata:)``
+- ``Purchases/purchase(package:promotionalOffer:metadata:completion:)``
+- ``Purchases/purchase(product:promotionalOffer:metadata:)``
+- ``Purchases/purchase(product:promotionalOffer:metadata:completion:)``
 - ``Purchases/presentCodeRedemptionSheet()``
 
 ### Subscription Status
