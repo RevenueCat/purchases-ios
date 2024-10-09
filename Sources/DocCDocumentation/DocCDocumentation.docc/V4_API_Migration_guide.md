@@ -243,7 +243,7 @@ These types replace native StoreKit types in all public API methods that used th
 | purchasePackage(_ package:, _ completion:) | ``Purchases/purchase(package:metadata:completion:)`` |
 | restoreTransactions(_ completion:) | ``Purchases/restorePurchases(completion:)`` |
 | syncPurchases(_ completion:) | ``Purchases/syncPurchases(completion:)`` |
-| paymentDiscount(for:product:completion:) | REMOVED - Get eligibility for a discount using ``Purchases/promotionalOffer(forProductDiscount:product:metadata:)``, then pass the offer directly to ``Purchases/purchase(package:promotionalOffer:metadata:)`` or ``Purchases/purchase(product:promotionalOffer:metadata:)`` |
+| paymentDiscount(for:product:completion:) | REMOVED - Get eligibility for a discount using ``Purchases/promotionalOffer(forProductDiscount:product:)``, then pass the offer directly to ``Purchases/purchase(package:promotionalOffer:metadata:)`` or ``Purchases/purchase(product:promotionalOffer:metadata:)`` |
 | purchaseProduct(_:discount:_) | ``Purchases/purchase(product:promotionalOffer:metadata:completion:)`` |
 | purchasePackage(_:discount:_) | ``Purchases/purchase(package:promotionalOffer:metadata:completion:)`` |
 

@@ -87,6 +87,24 @@ extension Purchases {
         }
     }
 
+    func restorePurchasesAsync() async throws -> CustomerInfo {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.restorePurchases { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    func syncPurchasesAsync() async throws -> CustomerInfo {
+        return try await withUnsafeThrowingContinuation { continuation in
+            syncPurchases { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
     func purchaseAsync(product: StoreProduct,
                        promotionalOffer: PromotionalOffer,
                        metadata: [String: String]? = nil) async throws -> PurchaseResultData {
@@ -109,24 +127,6 @@ extension Purchases {
                      metadata: metadata) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(with: Result(customerInfo, error)
                     .map { PurchaseResultData(transaction, $0, userCancelled) })
-            }
-        }
-    }
-
-    func restorePurchasesAsync() async throws -> CustomerInfo {
-        return try await withUnsafeThrowingContinuation { continuation in
-            self.restorePurchases { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
-    func syncPurchasesAsync() async throws -> CustomerInfo {
-        return try await withUnsafeThrowingContinuation { continuation in
-            syncPurchases { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }

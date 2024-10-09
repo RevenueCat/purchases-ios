@@ -950,17 +950,7 @@ public extension Purchases {
         return await productsAsync(productIdentifiers)
     }
 
-    func purchase(product: StoreProduct,
-                  promotionalOffer: PromotionalOffer,
-                  metadata: [String: String]? = nil,
-                  completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product,
-                                       package: nil,
-                                       promotionalOffer: promotionalOffer.signedData,
-                                       metadata: metadata,
-                                       completion: completion)
-    }
-
+    @objc(purchaseProduct:metadata:withCompletion:)
     func purchase(product: StoreProduct,
                   metadata: [String: String]? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -971,34 +961,12 @@ public extension Purchases {
         return try await purchaseAsync(product: product, metadata: metadata)
     }
 
-    func purchase(product: StoreProduct,
-                  promotionalOffer: PromotionalOffer,
-                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
-        return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer, metadata: metadata)
-    }
-
-    func purchase(package: Package,
-                  promotionalOffer: PromotionalOffer,
-                  metadata: [String: String]? = nil,
-                  completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: package.storeProduct,
-                                       package: package,
-                                       promotionalOffer: promotionalOffer.signedData,
-                                       metadata: metadata,
-                                       completion: completion)
-    }
-
+    @objc(purchasePackage:metadata:withCompletion:)
     func purchase(package: Package, metadata: [String: String]? = nil, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct,
                                        package: package,
                                        metadata: metadata,
                                        completion: completion)
-    }
-
-    func purchase(package: Package,
-                  promotionalOffer: PromotionalOffer,
-                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
-        return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer, metadata: metadata)
     }
 
     func purchase(package: Package, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
@@ -1029,6 +997,42 @@ public extension Purchases {
 
     func syncPurchases() async throws -> CustomerInfo {
         return try await syncPurchasesAsync()
+    }
+
+    @objc(purchaseProduct:withPromotionalOffer:metadata:completion:)
+    func purchase(product: StoreProduct,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil,
+                  completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: product,
+                                       package: nil,
+                                       promotionalOffer: promotionalOffer.signedData,
+                                       metadata: metadata,
+                                       completion: completion)
+    }
+
+    func purchase(product: StoreProduct,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+        return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer, metadata: metadata)
+    }
+
+    @objc(purchasePackage:withPromotionalOffer:metadata:completion:)
+    func purchase(package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil,
+                  completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: package.storeProduct,
+                                       package: package,
+                                       promotionalOffer: promotionalOffer.signedData,
+                                       metadata: metadata,
+                                       completion: completion)
+    }
+
+    func purchase(package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+        return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer, metadata: metadata)
     }
 
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
