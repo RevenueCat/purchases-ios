@@ -49,6 +49,7 @@ class MockBackend: Backend {
                        transactionData: PurchasedTransactionData,
                        observerMode: Bool,
                        appTransaction: String? = nil,
+                       metadata: [String: String]? = nil,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
