@@ -5,7 +5,7 @@ import PackageDescription
 import Foundation
 
 // Extract compiler flags from Local.xcconfig, if any.
-func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
+var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
     guard let config = try? String(
         contentsOf: URL(fileURLWithPath: #file)
             .deletingLastPathComponent()
@@ -13,7 +13,7 @@ func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
     ) else {
         return []
     }
-    
+
     // We split the capture group by space and remove any special flags, such as $(inherited).
     return config
         .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
@@ -21,12 +21,9 @@ func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
         .1
         .split(whereSeparator: \.isWhitespace)
         .filter { !$0.isEmpty && !$0.hasPrefix("$") }
-        .map { String($0) }
-        .map { .define($0) }
+        .map { .define(String($0)) }
         ?? []
-}
-
-let additionalCompilerFlags: [PackageDescription.SwiftSetting] = readAdditionalCompilerFlags()
+}()
 
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
