@@ -982,6 +982,40 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
 }
 
+@available(iOS 16.4, tvOS 15.0, macOS 14.4, *)
+extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
+
+    func storeKit2PurchaseIntentListener(
+        _ listener: any StoreKit2PurchaseIntentListenerType,
+        purchaseIntent: StorePurchaseIntent
+    ) async {
+        guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
+        let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)
+        delegate?.readyForPromotedProduct(storeProduct) { completion in
+            if #available(iOS 18.0, macOS 15.0, *) {    // TODO: check for swift compiler version?
+                if let offerType = purchaseIntent.offer?.type {
+                    switch offerType {
+                    case .introductory:
+                        break
+                    case .promotional:
+                        break
+                    case .winBack:
+                        // TODO: Process win-back offer
+                        return
+                    default:
+                        break
+                    }
+                }
+            } else {
+                // PurchaseIntent.offer isn't available, just purchase the product
+                self.purchase(product: storeProduct, package: nil) { StoreTransaction, customerInfo, publicError, userCancelled in
+                    // TODO: pass this back to the developer somehow
+                }
+            }
+        }
+    }
+}
+
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 

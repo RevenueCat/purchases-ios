@@ -61,6 +61,8 @@ enum StoreKitStrings {
 
     case sk2_observing_transaction_updates
 
+    case sk2_observing_purchase_intents
+
     case sk2_unknown_environment(String)
 
     case sk2_error_encoding_receipt(Error)
@@ -167,6 +169,9 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_observing_transaction_updates:
             return "Observing StoreKit.Transaction.updates"
+
+        case .sk2_observing_purchase_intents:
+            return "Observing StoreKit.PurchaseIntent.intents"
 
         case let .sk2_unknown_environment(environment):
             return "Unrecognized StoreKit Environment: \(environment)"
