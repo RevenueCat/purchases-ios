@@ -23,8 +23,7 @@
 // 3. If there's any new build setting you think others can benefit from, please update the
 //    .SAMPLE file and open a pull request.
 //
-// Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects,
-// as well as by Package.swift.
+// Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects.
 // ======
 
 // Uncomment to enable the PAYWALL_COMPONENTS flag.
