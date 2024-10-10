@@ -23,7 +23,7 @@ import StoreKit
 // MARK: Block definitions
 
 /**
- Result for ``Purchases/purchase(product:)``.
+ Result for ``Purchases/purchase(product:metadata:)``.
  Counterpart of `PurchaseCompletedBlock` for `async` APIs.
  Note that `transaction` will be `nil` when ``Purchases/purchasesAreCompletedBy``
  is ``PurchasesAreCompletedBy/myApp``
@@ -33,7 +33,7 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
                                        userCancelled: Bool)
 
 /**
- Completion block for ``Purchases/purchase(product:completion:)``
+ Completion block for ``Purchases/purchase(product:metadata:completion:)``
  */
 public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?,
                                                                 CustomerInfo?,
@@ -53,7 +53,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
  *  framework handle the singleton instance for you.
  */
 @objc(RCPurchases) public final class Purchases: NSObject, PurchasesType, PurchasesSwiftType {
-
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
     /// ``Purchases/configure(withAPIKey:)`` or one of its overloads.
@@ -951,22 +950,27 @@ public extension Purchases {
         return await productsAsync(productIdentifiers)
     }
 
-    @objc(purchaseProduct:withCompletion:)
-    func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product, package: nil, completion: completion)
+    @objc(purchaseProduct:metadata:withCompletion:)
+    func purchase(product: StoreProduct,
+                  metadata: [String: String]? = nil,
+                  completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: product, package: nil, metadata: metadata, completion: completion)
     }
 
-    func purchase(product: StoreProduct) async throws -> PurchaseResultData {
-        return try await purchaseAsync(product: product)
+    func purchase(product: StoreProduct, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+        return try await purchaseAsync(product: product, metadata: metadata)
     }
 
-    @objc(purchasePackage:withCompletion:)
-    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: package.storeProduct, package: package, completion: completion)
+    @objc(purchasePackage:metadata:withCompletion:)
+    func purchase(package: Package, metadata: [String: String]? = nil, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: package.storeProduct,
+                                       package: package,
+                                       metadata: metadata,
+                                       completion: completion)
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
-        return try await purchaseAsync(package: package)
+    func purchase(package: Package, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+        return try await purchaseAsync(package: package, metadata: metadata)
     }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
@@ -995,30 +999,40 @@ public extension Purchases {
         return try await syncPurchasesAsync()
     }
 
-    @objc(purchaseProduct:withPromotionalOffer:completion:)
+    @objc(purchaseProduct:withPromotionalOffer:metadata:completion:)
     func purchase(product: StoreProduct,
                   promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: product,
                                        package: nil,
                                        promotionalOffer: promotionalOffer.signedData,
+                                       metadata: metadata,
                                        completion: completion)
     }
 
-    func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
-        return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer)
+    func purchase(product: StoreProduct,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+        return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer, metadata: metadata)
     }
 
-    @objc(purchasePackage:withPromotionalOffer:completion:)
-    func purchase(package: Package, promotionalOffer: PromotionalOffer, completion: @escaping PurchaseCompletedBlock) {
+    @objc(purchasePackage:withPromotionalOffer:metadata:completion:)
+    func purchase(package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil,
+                  completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct,
                                        package: package,
                                        promotionalOffer: promotionalOffer.signedData,
+                                       metadata: metadata,
                                        completion: completion)
     }
 
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
-        return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
+    func purchase(package: Package,
+                  promotionalOffer: PromotionalOffer,
+                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+        return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer, metadata: metadata)
     }
 
     @objc(checkTrialOrIntroDiscountEligibility:completion:)

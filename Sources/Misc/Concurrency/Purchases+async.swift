@@ -65,21 +65,25 @@ extension Purchases {
         }
     }
 
-    func purchaseAsync(product: StoreProduct) async throws -> PurchaseResultData {
+    func purchaseAsync(product: StoreProduct, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
-            purchase(product: product) { transaction, customerInfo, error, userCancelled in
+            purchase(product: product,
+                     metadata: metadata,
+                     completion: { transaction, customerInfo, error, userCancelled in
                 continuation.resume(with: Result(customerInfo, error)
-                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
-            }
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
+            })
         }
     }
 
-    func purchaseAsync(package: Package) async throws -> PurchaseResultData {
+    func purchaseAsync(package: Package, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
-            purchase(package: package) { transaction, customerInfo, error, userCancelled in
+            purchase(package: package,
+                     metadata: metadata,
+                     completion: { transaction, customerInfo, error, userCancelled in
                 continuation.resume(with: Result(customerInfo, error)
-                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
-            }
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
+            })
         }
     }
 
@@ -101,22 +105,28 @@ extension Purchases {
         }
     }
 
-    func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+    func purchaseAsync(product: StoreProduct,
+                       promotionalOffer: PromotionalOffer,
+                       metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             purchase(product: product,
-                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
+                     promotionalOffer: promotionalOffer,
+                     metadata: metadata) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(with: Result(customerInfo, error)
-                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }
 
-    func purchaseAsync(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+    func purchaseAsync(package: Package,
+                       promotionalOffer: PromotionalOffer,
+                       metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             purchase(package: package,
-                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
+                     promotionalOffer: promotionalOffer,
+                     metadata: metadata) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(with: Result(customerInfo, error)
-                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+                    .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }

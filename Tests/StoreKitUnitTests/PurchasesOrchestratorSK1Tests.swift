@@ -179,7 +179,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk1Product()
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
             orchestrator.purchase(product: StoreProduct(sk1Product: product),
-                                  package: nil) { transaction, customerInfo, error, userCancelled in
+                                  package: nil,
+                                  metadata: nil) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }

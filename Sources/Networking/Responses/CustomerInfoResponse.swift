@@ -61,6 +61,7 @@ extension CustomerInfoResponse {
         @IgnoreDecodeErrors<PurchaseOwnershipType>
         var ownershipType: PurchaseOwnershipType
         var productPlanIdentifier: String?
+        var metadata: [String: String]?
 
     }
 

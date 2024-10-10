@@ -154,7 +154,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         fatalError("Should not be able to purchase")
     }
 
-    func purchase(package: Package) async throws -> PurchaseResultData {
+    func purchase(package: Package, metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         fatalError("Should not be able to purchase")
     }
 
