@@ -93,7 +93,6 @@ final class CustomerAPI {
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
               appTransaction: String?,
-              metadata: [String: String]?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 

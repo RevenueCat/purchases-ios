@@ -113,7 +113,6 @@ final class TransactionPoster: TransactionPosterType {
                                          receipt: encodedReceipt,
                                          product: product,
                                          appTransaction: appTransaction,
-                                         metadata: data.metadata,
                                          completion: completion)
                     }
                 }
@@ -242,7 +241,6 @@ private extension TransactionPoster {
                      receipt: EncodedAppleReceipt,
                      product: StoreProduct?,
                      appTransaction: String?,
-                     metadata: [String: String]?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
@@ -250,8 +248,7 @@ private extension TransactionPoster {
                           productData: productData,
                           transactionData: purchasedTransactionData,
                           observerMode: self.observerMode,
-                          appTransaction: appTransaction,
-                          metadata: metadata) { result in
+                          appTransaction: appTransaction) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
                                    subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
