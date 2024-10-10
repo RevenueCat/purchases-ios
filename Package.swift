@@ -5,10 +5,15 @@ import PackageDescription
 import Foundation
 
 // Extract compiler flags from Local.xcconfig, if any.
-var additionalCompilerFlags: [SwiftSetting] = {
-    guard let configContent = try? String(contentsOfFile: "./Local.xcconfig") else {
+func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
+    let packageURL = URL(fileURLWithPath: #file).deletingLastPathComponent()
+    let fileURL = packageURL.appendingPathComponent("Local.xcconfig")
+    
+    guard let configContent = try? String(contentsOf: fileURL) else {
         return []
     }
+    print("TEST additionalCompilerFlags")
+    
     // We split the capture group by space and remove any special flags, such as $(inherited).
     return configContent
         .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
@@ -17,8 +22,12 @@ var additionalCompilerFlags: [SwiftSetting] = {
         .split(whereSeparator: \.isWhitespace)
         .filter { !$0.isEmpty && !$0.hasPrefix("$") }
         .map { String($0) }
-        .map { .define($0) } ?? []
-}()
+        .map { .define($0) }
+        ?? []
+}
+
+let additionalCompilerFlags: [PackageDescription.SwiftSetting] = readAdditionalCompilerFlags()
+//let additionalCompilerFlags: [PackageDescription.SwiftSetting] = [.define("PAYWALL_COMPONENTS")]
 
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
