@@ -11,10 +11,11 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
+
     struct TextComponent: PaywallComponentBase {
 
         let type: ComponentType
-        public let textLid: LocalizationKey
+        public let text: LocalizationKey
         public let fontFamily: String?
         public let fontWeight: FontWeight
         public let color: ColorInfo
@@ -25,7 +26,7 @@ public extension PaywallComponent {
         public let margin: Padding
 
         public init(
-            textLid: String,
+            text: String,
             fontFamily: String? = nil,
             fontWeight: FontWeight = .regular,
             color: ColorInfo,
@@ -36,7 +37,7 @@ public extension PaywallComponent {
             horizontalAlignment: HorizontalAlignment = .center
         ) {
             self.type = .text
-            self.textLid = textLid
+            self.text = text
             self.fontFamily = fontFamily
             self.fontWeight = fontWeight
             self.color = color
@@ -46,8 +47,25 @@ public extension PaywallComponent {
             self.textStyle = textStyle
             self.horizontalAlignment = horizontalAlignment
         }
-
     }
+
+}
+
+extension PaywallComponent.TextComponent {
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case text = "text_lid"
+        case fontFamily
+        case fontWeight
+        case color
+        case textStyle
+        case horizontalAlignment
+        case backgroundColor
+        case padding
+        case margin
+    }
+
 }
 
 #endif
