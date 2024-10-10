@@ -2,7 +2,24 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
-import class Foundation.ProcessInfo
+import Foundation
+
+// Extract compiler flags from Local.xcconfig, if any.
+var additionalCompilerFlags: [SwiftSetting] = {
+    guard let configContent = try? String(contentsOfFile: "./Local.xcconfig") else {
+        return []
+    }
+    // We split the capture group by space and remove any special flags, such as $(inherited).
+    return configContent
+        .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
+        .output
+        .1
+        .split(whereSeparator: \.isWhitespace)
+        .filter { !$0.isEmpty && !$0.hasPrefix("$") }
+        .map { String($0) }
+        .map { .define($0) } ?? []
+}()
+
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
@@ -52,7 +69,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting]),
+                swiftSettings: [visionOSSetting] + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -62,7 +79,7 @@ let package = Package(
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
-                ]),
+                ] + additionalCompilerFlags),
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
@@ -78,7 +95,7 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: []),
+                swiftSettings: additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
