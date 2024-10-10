@@ -456,7 +456,6 @@ extension BasePurchasesTests {
                            transactionData: PurchasedTransactionData,
                            observerMode: Bool,
                            appTransaction: String? = nil,
-                           metadata: [String: String]? = nil,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receipt
