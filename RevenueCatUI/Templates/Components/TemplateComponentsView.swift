@@ -112,6 +112,8 @@ struct ComponentsView: View {
                 StackComponentView(viewModel: viewModel)
             case .linkButton(let viewModel):
                 LinkButtonComponentView(viewModel: viewModel)
+            case .button(let viewModel):
+                ButtonComponentView(viewModel: viewModel)
             }
         }
     }

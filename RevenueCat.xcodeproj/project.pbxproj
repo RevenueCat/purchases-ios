@@ -670,6 +670,9 @@
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
+		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
+		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
+		7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */; };
 		77372D992C6F8C7B008E59D3 /* AppUpdateWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */; };
 		77791ECF2C6B852000BCEF03 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */; };
 		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
@@ -1820,6 +1823,9 @@
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		7707A93B2CAD8AA2006E0313 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallButtonComponent.swift; sourceTree = "<group>"; };
+		7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModel.swift; sourceTree = "<group>"; };
+		7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentView.swift; sourceTree = "<group>"; };
 		77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateWarningView.swift; sourceTree = "<group>"; };
 		77607FD72CAD87D60066C23C /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Global.xcconfig; sourceTree = "<group>"; };
 		77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
@@ -3914,6 +3920,15 @@
 			path = Security;
 			sourceTree = "<group>";
 		};
+		7707A94A2CAD936A006E0313 /* Button */ = {
+			isa = PBXGroup;
+			children = (
+				7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */,
+				7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */,
+			);
+			path = Button;
+			sourceTree = "<group>";
+		};
 		887A5FBB2C1D036200E1A461 /* RevenueCatUIDev */ = {
 			isa = PBXGroup;
 			children = (
@@ -4270,6 +4285,7 @@
 			isa = PBXGroup;
 			children = (
 				88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */,
+				7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */,
 				88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */,
 				88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
@@ -4284,6 +4300,7 @@
 		88AD01352C74196600AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				7707A94A2CAD936A006E0313 /* Button */,
 				2C2AEB0D2CA64DA900A50F38 /* Previews */,
 				88B1BAE62C813A3C001B7EE5 /* Image */,
 				88B1BAE22C813A3C001B7EE5 /* LinkButton */,
@@ -5512,6 +5529,7 @@
 				B32B74FF26868AEB005647BF /* Package.swift in Sources */,
 				353756522C382BC700A1B8D6 /* PreferredLocalesProvider.swift in Sources */,
 				35D159CF2BC43B89004D8061 /* DiagnosticsSynchronizer.swift in Sources */,
+				7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */,
 				578DAA482948EEAD001700FD /* Clock.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
 				4F4FF3E12A3B731A0028018C /* ETagStrings.swift in Sources */,
@@ -5975,6 +5993,7 @@
 				887A60702C1D037000E1A461 /* PaywallTemplate.swift in Sources */,
 				887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */,
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
+				7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
 				2D2AFE8D2C6A834D00D1B0B4 /* TestData.swift in Sources */,
@@ -6065,6 +6084,7 @@
 				887A60BF2C1D037000E1A461 /* PaywallViewController.swift in Sources */,
 				887A60772C1D037000E1A461 /* TemplateViewConfiguration+Images.swift in Sources */,
 				3537566A2C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift in Sources */,
+				7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */,
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
