@@ -14,7 +14,6 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
     ) else {
         return []
     }
-
     // We split the capture group by space and remove any special flags, such as $(inherited).
     return config
         .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
@@ -25,7 +24,6 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
         .map { .define(String($0)) }
         ?? []
 }()
-
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
