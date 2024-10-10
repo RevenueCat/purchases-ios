@@ -12,7 +12,6 @@ func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
     guard let configContent = try? String(contentsOf: fileURL) else {
         return []
     }
-    print("TEST additionalCompilerFlags")
     
     // We split the capture group by space and remove any special flags, such as $(inherited).
     return configContent
@@ -27,7 +26,6 @@ func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
 }
 
 let additionalCompilerFlags: [PackageDescription.SwiftSetting] = readAdditionalCompilerFlags()
-//let additionalCompilerFlags: [PackageDescription.SwiftSetting] = [.define("PAYWALL_COMPONENTS")]
 
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
