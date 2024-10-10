@@ -18,6 +18,7 @@ struct PaywallViewConfiguration {
     var customerInfo: CustomerInfo?
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
+    var spacing: CGFloat?
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
@@ -28,6 +29,7 @@ struct PaywallViewConfiguration {
         customerInfo: CustomerInfo? = nil,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        spacing: CGFloat? = nil,
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
@@ -37,6 +39,7 @@ struct PaywallViewConfiguration {
         self.customerInfo = customerInfo
         self.mode = mode
         self.fonts = fonts
+        self.spacing = spacing
         self.displayCloseButton = displayCloseButton
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler

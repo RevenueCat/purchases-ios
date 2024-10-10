@@ -81,6 +81,7 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        spacing: CGFloat? = nil,
         myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -97,6 +98,7 @@ extension View {
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
+            spacing: spacing,
             introEligibility: nil,
             purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
@@ -206,6 +208,7 @@ extension View {
         customerInfo: CustomerInfo?,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        spacing: CGFloat? = nil,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
@@ -224,6 +227,7 @@ extension View {
                         customerInfo: customerInfo,
                         mode: condensed ? .condensedFooter : .footer,
                         fonts: fonts,
+                        spacing: spacing,
                         displayCloseButton: false,
                         introEligibility: introEligibility,
                         purchaseHandler: purchaseHandler
@@ -267,7 +271,7 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .safeAreaInset(edge: .bottom) {
+            .safeAreaInset(edge: .bottom, spacing: configuration.spacing) {
                 PaywallView(configuration: self.configuration)
                     .onPurchaseStarted {
                         self.purchaseStarted?($0)
