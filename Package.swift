@@ -2,7 +2,8 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
-import Foundation
+import class Foundation.ProcessInfo
+import struct Foundation.URL
 
 // Extract compiler flags from Local.xcconfig, if any.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
