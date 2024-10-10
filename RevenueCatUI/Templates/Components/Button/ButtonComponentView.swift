@@ -52,7 +52,6 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
-            break
         }
     }
 
