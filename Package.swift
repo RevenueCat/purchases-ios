@@ -6,15 +6,16 @@ import Foundation
 
 // Extract compiler flags from Local.xcconfig, if any.
 func readAdditionalCompilerFlags() -> [PackageDescription.SwiftSetting]  {
-    let packageURL = URL(fileURLWithPath: #file).deletingLastPathComponent()
-    let fileURL = packageURL.appendingPathComponent("Local.xcconfig")
-    
-    guard let configContent = try? String(contentsOf: fileURL) else {
+    guard let config = try? String(
+        contentsOf: URL(fileURLWithPath: #file)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Local.xcconfig")
+    ) else {
         return []
     }
     
     // We split the capture group by space and remove any special flags, such as $(inherited).
-    return configContent
+    return config
         .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
         .output
         .1
