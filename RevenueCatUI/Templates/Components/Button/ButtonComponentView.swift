@@ -55,10 +55,10 @@ struct ButtonComponentView: View {
             onDismiss()
         }
     }
-    
+
     private func restorePurchases() async throws {
         guard !self.purchaseHandler.actionInProgress else { return }
-        
+
         Logger.debug(Strings.restoring_purchases)
 
         let (_, success) = try await self.purchaseHandler.restorePurchases()
