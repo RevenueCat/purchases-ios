@@ -122,7 +122,6 @@ struct SubscriptionDetailsView: View {
 
         }
         .padding(.vertical, 8.0)
-        .background(Color(UIColor.tertiarySystemBackground))
     }
 
     private func refundStatusMessage(for status: RefundRequestStatus) -> String {
