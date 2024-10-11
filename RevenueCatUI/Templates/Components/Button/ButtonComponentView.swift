@@ -25,6 +25,9 @@ struct ButtonComponentView: View {
     @Environment(\.openURL) var openURL
     @State private var inAppBrowserURL: URL?
 
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -34,24 +37,35 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        Button(
-            action: { onClick() },
+        AsyncButton(
+            action: { try await onClick() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
         ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }
     }
 
-    private func onClick() {
+    private func onClick() async throws {
         switch viewModel.component.action {
         case .restorePurchases:
-            // swiftlint:disable:next todo
-            // TODO handle restoring purchases
-            break
+            try await restorePurchases()
         case .navigateTo(let destination):
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        }
+    }
+    
+    private func restorePurchases() async throws {
+        guard !self.purchaseHandler.actionInProgress else { return }
+        
+        Logger.debug(Strings.restoring_purchases)
+
+        let (_, success) = try await self.purchaseHandler.restorePurchases()
+        if success {
+            Logger.debug(Strings.restored_purchases)
+        } else {
+            Logger.debug(Strings.restore_purchases_with_empty_result)
         }
     }
 
