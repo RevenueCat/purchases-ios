@@ -8,7 +8,7 @@ import struct Foundation.URL
 // Extract compiler flags from Local.xcconfig, if any.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
     guard let config = try? String(
-        contentsOf: URL(fileURLWithPath: #file)
+        contentsOf: URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .appendingPathComponent("Local.xcconfig")
     ) else {
