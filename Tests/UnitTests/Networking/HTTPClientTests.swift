@@ -295,6 +295,46 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(header.value) == "false"
     }
 
+    func testAlwaysPassesIsDebugBuildHeaderInReleaseMode() {
+        let headerName = "X-Is-Debug-Build"
+        self.systemInfo.stubbedIsDebugBuild = false // "release" mode
+
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "false"
+    }
+
+    func testAlwaysPassesIsDebugBuildHeaderInDebugMode() {
+        let headerName = "X-Is-Debug-Build"
+        self.systemInfo.stubbedIsDebugBuild = true
+
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "true"
+    }
+
     func testRequestWithStorefrontSendsHeader() {
         let headerName = "X-Storefront"
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
