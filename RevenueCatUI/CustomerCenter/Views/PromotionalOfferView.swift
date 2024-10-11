@@ -49,6 +49,8 @@ struct PromotionalOfferView: View {
         ))
     }
 
+    private let horizontalPadding: CGFloat = 20
+
     var body: some View {
         ZStack {
             if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
@@ -64,6 +66,7 @@ struct PromotionalOfferView: View {
                     PromoOfferButtonView(isLoading: $isLoading,
                                          viewModel: self.viewModel,
                                          appearance: self.appearance)
+                    .padding(.horizontal, horizontalPadding)
 
                     Button {
                         dismiss()
@@ -97,18 +100,26 @@ struct PromotionalOfferHeaderView: View {
     @ObservedObject
     private(set) var viewModel: PromotionalOfferViewModel
 
+    private let spacing: CGFloat = 30
+    private let topPadding: CGFloat = 150
+    private let horizontalPadding: CGFloat = 40
+
     var body: some View {
         let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
         if let details = self.viewModel.promotionalOfferData?.promoOfferDetails {
-            VStack {
+            VStack(spacing: spacing) {
                 Text(details.title)
                     .font(.title)
-                    .padding()
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, topPadding)
 
                 Text(details.subtitle)
-                    .font(.title3)
-                    .padding()
-            }.applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+            }
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+            .padding(.horizontal, horizontalPadding)
         }
     }
 
