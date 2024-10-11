@@ -49,9 +49,7 @@ struct PromotionalOfferView: View {
         ))
     }
 
-    private enum Constants {
-        static let horizontalPadding: CGFloat = 20
-    }
+    private let horizontalPadding: CGFloat = 20
 
     var body: some View {
         ZStack {
@@ -68,7 +66,7 @@ struct PromotionalOfferView: View {
                     PromoOfferButtonView(isLoading: $isLoading,
                                          viewModel: self.viewModel,
                                          appearance: self.appearance)
-                    .padding(.horizontal, Constants.horizontalPadding)
+                    .padding(.horizontal, horizontalPadding)
 
                     Button {
                         dismiss()
@@ -102,28 +100,26 @@ struct PromotionalOfferHeaderView: View {
     @ObservedObject
     private(set) var viewModel: PromotionalOfferViewModel
 
-    private enum Constants {
-        static let spacing: CGFloat = 30
-        static let topPadding: CGFloat = 150
-        static let horizontalPadding: CGFloat = 40
-    }
+    private let spacing: CGFloat = 30
+    private let topPadding: CGFloat = 150
+    private let horizontalPadding: CGFloat = 40
 
     var body: some View {
         let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
         if let details = self.viewModel.promotionalOfferData?.promoOfferDetails {
-            VStack(spacing: Constants.spacing) {
+            VStack(spacing: spacing) {
                 Text(details.title)
                     .font(.title)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
-                    .padding(.top, Constants.topPadding)
+                    .padding(.top, topPadding)
 
                 Text(details.subtitle)
                     .font(.body)
                     .multilineTextAlignment(.center)
             }
             .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
-            .padding(.horizontal, Constants.horizontalPadding)
+            .padding(.horizontal, horizontalPadding)
         }
     }
 
