@@ -212,15 +212,15 @@ class ReceiptParserFetchingTests: XCTestCase { // swiftlint:disable:this type_bo
 
     func testParseSandboxReceipt() throws { // swiftlint:disable:this function_body_length
         self.mockBundle.receiptURLResult = .sandboxReceipt
-        
+
         let receiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
         let data = try DefaultFileReader().contents(of: receiptURL)
         let decodedData = try XCTUnwrap(
             Data(base64Encoded: XCTUnwrap(String(data: data, encoding: .utf8)))
         )
-        
+
         self.mockFileReader.mock(url: receiptURL, with: decodedData)
-        
+
         let receipt = try self.fetchAndParse()
         expect(receipt.environment) == .sandbox
         expect(receipt.bundleId) ==  "com.revenuecat.sampleapp"
@@ -350,18 +350,18 @@ class ReceiptParserFetchingTests: XCTestCase { // swiftlint:disable:this type_bo
                                        promotionalOfferIdentifier: nil)
         ]
     }
-    
+
     func testParseSandboxReceipt2() throws { // swiftlint:disable:this function_body_length
         self.mockBundle.receiptURLResult = .sandboxReceipt2
-        
+
         let receiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
         let data = try DefaultFileReader().contents(of: receiptURL)
         let decodedData = try XCTUnwrap(
             Data(base64Encoded: XCTUnwrap(String(data: data, encoding: .utf8)))
         )
-        
+
         self.mockFileReader.mock(url: receiptURL, with: decodedData)
-        
+
         let receipt = try self.fetchAndParse()
         expect(receipt.environment) == .sandbox
         expect(receipt.bundleId) ==  "com.mbaasy.ios.demo"
@@ -465,18 +465,18 @@ class ReceiptParserFetchingTests: XCTestCase { // swiftlint:disable:this type_bo
                                        promotionalOfferIdentifier: nil)
         ]
     }
-    
+
     func testParseSandboxReceipt3() throws {
         self.mockBundle.receiptURLResult = .sandboxReceipt3
-        
+
         let receiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
         let data = try DefaultFileReader().contents(of: receiptURL)
         let decodedData = try XCTUnwrap(
             Data(base64Encoded: XCTUnwrap(String(data: data, encoding: .utf8)))
         )
-        
+
         self.mockFileReader.mock(url: receiptURL, with: decodedData)
-        
+
         let receipt = try self.fetchAndParse()
         expect(receipt.environment) == .sandbox
         expect(receipt.bundleId) ==  "com.belive.app.ios"
@@ -502,16 +502,16 @@ class ReceiptParserFetchingTests: XCTestCase { // swiftlint:disable:this type_bo
                                        promotionalOfferIdentifier: nil)
         ]
     }
-    
+
     func testParseUnsupportedReceipt1() throws {
         self.mockBundle.receiptURLResult = .unsupportedReceipt1
-        
+
         let receiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
         let data = try DefaultFileReader().contents(of: receiptURL)
         let decodedData = try XCTUnwrap(
             Data(base64Encoded: XCTUnwrap(String(data: data, encoding: .utf8)))
         )
-        
+
         self.mockFileReader.mock(url: receiptURL, with: decodedData)
         do {
             _ = try self.fetchAndParse()
@@ -522,16 +522,16 @@ class ReceiptParserFetchingTests: XCTestCase { // swiftlint:disable:this type_bo
             )
         }
     }
-    
+
     func testParseUnsupportedReceipt2() throws {
         self.mockBundle.receiptURLResult = .unsupportedReceipt2
-        
+
         let receiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
         let data = try DefaultFileReader().contents(of: receiptURL)
         let decodedData = try XCTUnwrap(
             Data(base64Encoded: XCTUnwrap(String(data: data, encoding: .utf8)))
         )
-        
+
         self.mockFileReader.mock(url: receiptURL, with: decodedData)
         do {
             _ = try self.fetchAndParse()

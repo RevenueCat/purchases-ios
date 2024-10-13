@@ -43,7 +43,7 @@ extension ArraySlice where Element == UInt8 {
     }
 
     func toDate() -> Date? {
-        if let fastParsed = toDateTryFastParsing() {
+        if let fastParsed = toDateFastParse() {
             // This approach is around ~60% faster than `ISO8601DateFormatter.default`
             return fastParsed
         }
@@ -59,13 +59,14 @@ extension ArraySlice where Element == UInt8 {
 }
 
 private extension ArraySlice where Element == UInt8 {
+
     static let toDateCalendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         return calendar
     }()
 
-    private func toDateTryFastParsing() -> Date? {
+    func toDateFastParse() -> Date? {
         // expected format 2015-08-10T07:19:32Z
         guard count == 20 else { return nil }
         let asciiZero: UInt8 = 48
@@ -116,7 +117,7 @@ private extension ArraySlice where Element == UInt8 {
         return Self.toDateCalendar.date(from: components)
     }
 
-    private func toDateParseAsciiNumber(from: Int, to: Int) -> Int { // swiftlint:disable:this identifier_name
+    func toDateParseAsciiNumber(from: Int, to: Int) -> Int { // swiftlint:disable:this identifier_name
         let asciiZero: UInt8 = 48
         var index = from + startIndex
         let end = to + startIndex
@@ -128,4 +129,5 @@ private extension ArraySlice where Element == UInt8 {
         }
         return result
     }
+
 }
