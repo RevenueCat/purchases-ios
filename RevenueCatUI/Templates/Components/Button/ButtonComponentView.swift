@@ -13,12 +13,17 @@
 
 import Foundation
 import RevenueCat
+#if canImport(SafariServices)
+import SafariServices
+#endif
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
+    @Environment(\.openURL) private var openURL
+    @State private var inAppBrowserURL: URL?
 
     private let viewModel: ButtonComponentViewModel
 
@@ -28,11 +33,72 @@ struct ButtonComponentView: View {
 
     var body: some View {
         Button(
-            action: { viewModel.onClick() },
+            action: { performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel) }
-        )
+        ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
+            SafariView(url: inAppBrowserURL!)
+        }
     }
 
+    private func performAction() {
+        switch viewModel.action {
+        case .restorePurchases:
+            // swiftlint:disable:next todo
+            // TODO handle restoring purchases
+            break
+        case .navigateTo(let destination):
+            navigateTo(destination: destination)
+        case .navigateBack:
+            // swiftlint:disable:next todo
+            // TODO handle navigating back
+            break
+        }
+    }
+
+    private func navigateTo(destination: ButtonComponentViewModel.Destination) {
+        switch destination {
+        case .customerCenter:
+            // swiftlint:disable:next todo
+            // TODO handle navigating to customer center
+            break
+        case .URL(let url, let method),
+                .privacyPolicy(let url, let method),
+                .terms(let url, let method):
+            navigateToUrl(url: url, method: method)
+        }
+    }
+
+    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+        switch method {
+        case .inAppBrowser:
+#if os(tvOS)
+            // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
+            Logger.warning(Strings.no_in_app_browser_tvos)
+            openURL(url)
+#else
+            inAppBrowserURL = url
+#endif
+        case .externalBrowser,
+                .deepLink:
+            openURL(url)
+        }
+    }
+
+}
+
+private struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+
+    func updateUIViewController(
+        _ uiViewController: SFSafariViewController,
+        context: UIViewControllerRepresentableContext<SafariView>
+    ) {
+        // No updates needed
+    }
 }
 
 #if DEBUG
