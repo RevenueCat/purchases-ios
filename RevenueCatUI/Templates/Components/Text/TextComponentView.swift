@@ -101,10 +101,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     "id_1": .string("Normal (should be black)")
                 ],
                 component: .init(
-                    textLid: "id_1",
+                    text: "id_1",
                     color: .init(light: "#000000"),
                     selectedState: .init(
-                        textLid: "id_1",
+                        text: "id_1",
                         color: .init(light: "#ff0000")
                     )
                 )
@@ -121,10 +121,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     "id_1": .string("Selected (should be red)")
                 ],
                 component: .init(
-                    textLid: "id_1",
+                    text: "id_1",
                     color: .init(light: "#000000"),
                     selectedState: .init(
-                        textLid: "id_1",
+                        text: "id_1",
                         color: .init(light: "#ff0000")
                     )
                 )

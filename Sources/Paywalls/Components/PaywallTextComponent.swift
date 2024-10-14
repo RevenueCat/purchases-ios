@@ -12,7 +12,7 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct TextComponent: PaywallComponentBase {
+    final class TextComponent: PaywallComponentBase {
 
         let type: ComponentType
 
@@ -56,7 +56,7 @@ public extension PaywallComponent {
         // Hashable conformance
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
-            hasher.combine(textLid)
+            hasher.combine(text)
             hasher.combine(fontFamily)
             hasher.combine(fontWeight)
             hasher.combine(color)
@@ -71,7 +71,7 @@ public extension PaywallComponent {
         // Equatable conformance
         public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
             return lhs.type == rhs.type &&
-                lhs.textLid == rhs.textLid &&
+                lhs.text == rhs.text &&
                 lhs.fontFamily == rhs.fontFamily &&
                 lhs.fontWeight == rhs.fontWeight &&
                 lhs.color == rhs.color &&
@@ -99,6 +99,7 @@ extension PaywallComponent.TextComponent {
         case backgroundColor
         case padding
         case margin
+        case selectedState
     }
 
 }
