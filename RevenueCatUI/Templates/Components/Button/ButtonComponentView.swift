@@ -79,6 +79,7 @@ struct ButtonComponentView: View {
         case .inAppBrowser:
 #if os(tvOS)
             // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
+            Logger.warning(Strings.no_in_app_browser_tvos)
             openURL(url)
 #else
             inAppBrowserURL = url
