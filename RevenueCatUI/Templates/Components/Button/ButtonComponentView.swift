@@ -131,7 +131,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             components: [
                                 PaywallComponent.text(
                                     PaywallComponent.TextComponent(
-                                        textLid: "buttonText",
+                                        text: "buttonText",
                                         color: .init(light: "#000000")
                                     )
                                 )
