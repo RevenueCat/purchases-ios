@@ -67,6 +67,7 @@ extension PaywallComponent {
                     localizedStrings: localizedStrings,
                     offering: offering
                 )
+            )
         case .packageGroup(let component):
             return .packageGroup(
                 try PackageGroupComponentViewModel(localizedStrings: localizedStrings,
