@@ -41,7 +41,7 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() {
-        switch viewModel.component.action {
+        switch viewModel.action {
         case .restorePurchases:
             // swiftlint:disable:next todo
             // TODO handle restoring purchases
@@ -55,26 +55,20 @@ struct ButtonComponentView: View {
         }
     }
 
-    private func navigateTo(destination: PaywallComponent.ButtonComponent.Destination) {
+    private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
             // swiftlint:disable:next todo
             // TODO handle navigating to customer center
             break
-        case .URL(let urlLid, let method),
-                .privacyPolicy(let urlLid, let method),
-                .terms(let urlLid, let method):
-            navigateToUrl(urlLid: urlLid, method: method)
+        case .URL(let url, let method),
+                .privacyPolicy(let url, let method),
+                .terms(let url, let method):
+            navigateToUrl(url: url, method: method)
         }
     }
 
-    private func navigateToUrl(urlLid: String, method: PaywallComponent.ButtonComponent.URLMethod) {
-        guard let urlString = try? viewModel.localizedStrings.string(key: urlLid),
-        let url = URL(string: urlString) else {
-            Logger.error(Strings.paywall_invalid_url(urlLid))
-            return
-        }
-
+    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
         switch method {
         case .inAppBrowser:
 #if os(tvOS)
