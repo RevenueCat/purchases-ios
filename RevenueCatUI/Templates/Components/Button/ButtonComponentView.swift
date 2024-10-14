@@ -33,14 +33,14 @@ struct ButtonComponentView: View {
 
     var body: some View {
         Button(
-            action: { onClick() },
+            action: { performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel) }
         ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }
     }
 
-    private func onClick() {
+    private func performAction() {
         switch viewModel.component.action {
         case .restorePurchases:
             // swiftlint:disable:next todo
