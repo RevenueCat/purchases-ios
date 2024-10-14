@@ -96,6 +96,8 @@
 		4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywallsList.swift; sourceTree = "<group>"; };
 		4FFD2A602AA154B4001F4B0C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		773C13462CB5865400219E42 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = ../../../Local.xcconfig; sourceTree = "<group>"; };
+		776D4CFF2CB5848F00A521B2 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../../Global.xcconfig; sourceTree = "<group>"; };
 		880B2AF12BEC2D62006B9393 /* Preprocessor.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Preprocessor.sh; sourceTree = SOURCE_ROOT; };
 		880B2AF32BEC35AA006B9393 /* Postprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Postprocessor.sh; sourceTree = SOURCE_ROOT; };
 		884A4DDD2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityContentUnavailableView.swift; sourceTree = "<group>"; };
@@ -164,6 +166,8 @@
 		4F6BED912A26A64200CD9322 = {
 			isa = PBXGroup;
 			children = (
+				776D4CFF2CB5848F00A521B2 /* Global.xcconfig */,
+				773C13462CB5865400219E42 /* Local.xcconfig */,
 				4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */,
 				4FC046BB2A572E3700A28BCF /* PaywallsTester */,
 				4F6BED9B2A26A64200CD9322 /* Products */,
@@ -496,6 +500,7 @@
 /* Begin XCBuildConfiguration section */
 		4F6BEDA72A26A64300CD9322 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 776D4CFF2CB5848F00A521B2 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -547,13 +552,14 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		4F6BEDA82A26A64300CD9322 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 776D4CFF2CB5848F00A521B2 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
