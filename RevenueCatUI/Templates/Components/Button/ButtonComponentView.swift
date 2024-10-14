@@ -26,15 +26,17 @@ struct ButtonComponentView: View {
     @State private var inAppBrowserURL: URL?
 
     private let viewModel: ButtonComponentViewModel
+    private let onDismiss: () -> Void
 
-    internal init(viewModel: ButtonComponentViewModel) {
+    internal init(viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
         Button(
             action: { performAction() },
-            label: { StackComponentView(viewModel: viewModel.stackViewModel) }
+            label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
         ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }
@@ -49,9 +51,7 @@ struct ButtonComponentView: View {
         case .navigateTo(let destination):
             navigateTo(destination: destination)
         case .navigateBack:
-            // swiftlint:disable:next todo
-            // TODO handle navigating back
-            break
+            onDismiss()
         }
     }
 
@@ -130,7 +130,8 @@ struct ButtonComponentView_Previews: PreviewProvider {
                         "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                     ],
                     offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
-                )
+                ),
+                onDismiss: { }
             )
         }
         .previewLayout(.fixed(width: 400, height: 400))
