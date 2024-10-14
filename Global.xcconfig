@@ -19,7 +19,9 @@
 // ======
 // This file's main purpose is to be able to make Local.xcconfig an optional Configuration Settings file. Otherwise,
 // builds would fail if Local.xcconfig does not exist, which we don't want. Any local build options, such as enabling
-// compiler flags, should be done in Local.xcconfig. See Local.xcconfig.SAMPLE on how to create Local.xcconfig. 
+// compiler flags, should be done in Local.xcconfig. See Local.xcconfig.SAMPLE on how to create Local.xcconfig.
+//
+// Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects.
 // ======
 
 #include? "Local.xcconfig"

@@ -22,7 +22,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
-    @Environment(\.openURL) var openURL
+    @Environment(\.openURL) private var openURL
     @State private var inAppBrowserURL: URL?
 
     @EnvironmentObject
@@ -38,14 +38,14 @@ struct ButtonComponentView: View {
 
     var body: some View {
         AsyncButton(
-            action: { try await onClick() },
+            action: { try await performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
         ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }
     }
 
-    private func onClick() async throws {
+    private func performAction() async throws {
         switch viewModel.component.action {
         case .restorePurchases:
             try await restorePurchases()
@@ -69,30 +69,25 @@ struct ButtonComponentView: View {
         }
     }
 
-    private func navigateTo(destination: PaywallComponent.ButtonComponent.Destination) {
+    private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
             // swiftlint:disable:next todo
             // TODO handle navigating to customer center
             break
-        case .URL(let urlLid, let method),
-                .privacyPolicy(let urlLid, let method),
-                .terms(let urlLid, let method):
-            navigateToUrl(urlLid: urlLid, method: method)
+        case .URL(let url, let method),
+                .privacyPolicy(let url, let method),
+                .terms(let url, let method):
+            navigateToUrl(url: url, method: method)
         }
     }
 
-    private func navigateToUrl(urlLid: String, method: PaywallComponent.ButtonComponent.URLMethod) {
-        guard let urlString = try? viewModel.localizedStrings.string(key: urlLid),
-        let url = URL(string: urlString) else {
-            Logger.error(Strings.paywall_invalid_url(urlLid))
-            return
-        }
-
+    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
         switch method {
         case .inAppBrowser:
 #if os(tvOS)
             // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
+            Logger.warning(Strings.no_in_app_browser_tvos)
             openURL(url)
 #else
             inAppBrowserURL = url
