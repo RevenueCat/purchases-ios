@@ -95,7 +95,7 @@ struct SamplePaywallsList: View {
                 paywallComponentsData: data,
                 offering: Self.loader.offeringWithDefaultPaywall(),
                 onDismiss: { self.display = nil }
-            ).environmentObject(Self.purchaseHandler)
+            )
         #endif
         }
 
@@ -228,7 +228,6 @@ struct SamplePaywallsList: View {
                 }
         )
     }
-    private static let purchaseHandler: PurchaseHandler = .init()
 
 }
 
