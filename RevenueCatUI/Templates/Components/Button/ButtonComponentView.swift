@@ -46,7 +46,7 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
-        switch viewModel.component.action {
+        switch viewModel.action {
         case .restorePurchases:
             try await restorePurchases()
         case .navigateTo(let destination):
