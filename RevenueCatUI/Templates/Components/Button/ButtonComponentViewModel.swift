@@ -20,7 +20,7 @@ import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class ButtonComponentViewModel {
-    
+
     /// A mirror of ButtonComponent.Action, with the sole purpose of being able to change the type of urlLid parameters
     /// of some Destination's to actual URLs.
     internal enum Action {
