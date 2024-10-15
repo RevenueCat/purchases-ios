@@ -179,7 +179,7 @@ class ErrorCodeTests: TestCase {
     }
 
     func testInvalidSubscriptionOfferError() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .signatureVerificationFailed,
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .invalidSubscriptionOfferError,
                                               expectedRawValue: 38)
     }
 
