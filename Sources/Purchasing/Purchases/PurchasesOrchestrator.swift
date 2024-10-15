@@ -73,6 +73,7 @@ final class PurchasesOrchestrator {
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
+    var _storeKit2PurchaseIntentListener: Any?
     var _storeKit2StorefrontListener: Any?
     var _diagnosticsSynchronizer: Any?
     var _diagnosticsTracker: Any?
@@ -83,6 +84,12 @@ final class PurchasesOrchestrator {
     var storeKit2TransactionListener: StoreKit2TransactionListenerType {
         // swiftlint:disable:next force_cast
         return self._storeKit2TransactionListener! as! StoreKit2TransactionListenerType
+    }
+
+    @available(iOS 16.4, macOS 14.4, *)
+    var storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
+        // swiftlint:disable:next force_cast
+        return self._storeKit2PurchaseIntentListener! as! StoreKit2PurchaseIntentListenerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -107,6 +114,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_body_length
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
                      systemInfo: SystemInfo,
@@ -179,6 +187,19 @@ final class PurchasesOrchestrator {
         Task {
             await setSK2DelegateAndStartListening()
         }
+
+        #if os(iOS) || targetEnvironment(macCatalyst) || os(macOS)
+        if #available(iOS 16.4, macOS 14.4, *) {
+            // We can't inject StoreKit2PurchaseIntentListener in the constructor since
+            // it has different availability requirements than the constructor.
+            self._storeKit2PurchaseIntentListener = StoreKit2PurchaseIntentListener()
+            Task {
+                await self.storeKit2PurchaseIntentListener.set(delegate: self)
+                await self.storeKit2PurchaseIntentListener.listenForPurchaseIntents()
+            }
+        }
+
+        #endif
 
         Task {
             await syncDiagnosticsIfNeeded()
@@ -1729,6 +1750,17 @@ extension PurchasesOrchestrator {
     }
 
     private func setSK2DelegateAndStartListening() async {
+        await storeKit2TransactionListener.set(delegate: self)
+        if systemInfo.storeKitVersion == .storeKit2 {
+            await storeKit2TransactionListener.listenForTransactions()
+        }
+    }
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    private func setSK2PurchaseIntentDelegateAndStartListening() async {
         await storeKit2TransactionListener.set(delegate: self)
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()
