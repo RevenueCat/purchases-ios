@@ -284,6 +284,8 @@ extension ErrorCode {
             return "FEATURE_NOT_AVAILABLE_IN_CUSTOM_ENTITLEMENTS_COMPUTATION_MODE_ERROR"
         case .signatureVerificationFailed:
             return "SIGNATURE_VERIFICATION_FAILED"
+        case .invalidSubscriptionOfferError:
+            return "INVALID_SUBSCRIPTION_OFFER"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
