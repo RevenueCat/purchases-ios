@@ -1074,7 +1074,8 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                 if let offer = purchaseIntent.offer {
                     switch offer.type {
 
-                    // The `OfferType.winBack` case was added in iOS 18.0, but it's not recognized by Xcode versions <16.0
+                    // The `OfferType.winBack` case was added in iOS 18.0, but
+                    // it's not recognized by Xcode versions <16.0
                     #if compiler(>=6.0)
                     case .winBack:
                         Task {
