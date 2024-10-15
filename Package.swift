@@ -5,7 +5,9 @@ import PackageDescription
 import class Foundation.ProcessInfo
 import struct Foundation.URL
 
-// Extract compiler flags from Local.xcconfig, if any.
+/// This looks for a file named `Local.xcconfig` in the root of the purchases-ios[-spm] repo, and reads any compiler
+/// flags defined in it. It does nothing if this file does not exist in this exact folder. This file does not exist on
+/// a clean checkout. It has to be created manually by a developer.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
     guard let config = try? String(
         contentsOf: URL(fileURLWithPath: #filePath)
