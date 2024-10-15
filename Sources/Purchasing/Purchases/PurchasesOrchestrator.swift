@@ -1070,7 +1070,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
         delegate?.readyForPromotedProduct(storeProduct) { completion in
 
             var attemptedToPurchaseWithASubscriptionOffer = false
-            if #available(iOS 18.0, macOS 15.0, *) {
+            if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
                 if let offer = purchaseIntent.offer {
                     switch offer.type {
 
