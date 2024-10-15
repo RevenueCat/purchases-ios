@@ -87,6 +87,8 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     var storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
         // swiftlint:disable:next force_cast
         return self._storeKit2PurchaseIntentListener! as! StoreKit2PurchaseIntentListenerType
