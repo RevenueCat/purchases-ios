@@ -486,6 +486,7 @@ final class PurchasesOrchestrator {
         }
     }
 
+    #if compiler(>=6.0)
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func purchase(
         sk2Product: SK2Product,
@@ -560,6 +561,8 @@ final class PurchasesOrchestrator {
 
         return (transaction, customerInfo, userCancelled)
     }
+    #endif
+
 
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -1079,12 +1082,12 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
             var attemptedToPurchaseWithASubscriptionOffer = false
 
             if #available(iOS 18.0, macOS 15.0, *) {
+                #if compiler(>=6.0)
                 if let offer = purchaseIntent.offer {
                     switch offer.type {
 
                     // The `OfferType.winBack` case was added in iOS 18.0, but
                     // it's not recognized by Xcode versions <16.0
-                    #if compiler(>=6.0)
                     case .winBack:
                         Task {
                             do {
@@ -1110,13 +1113,13 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                                 }
                             }
                         }
-                    #endif
                     default:
                         // PurchaseIntents are only supported for promoted purchases on the App Store
                         // and win-back offers, so we don't want to handle any other offers here.
                         break
                     }
                 }
+                #endif
             }
 
             if !attemptedToPurchaseWithASubscriptionOffer {
