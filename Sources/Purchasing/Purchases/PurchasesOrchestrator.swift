@@ -563,7 +563,6 @@ final class PurchasesOrchestrator {
     }
     #endif
 
-
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Product: SK2Product,
@@ -1081,7 +1080,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
 
             var attemptedToPurchaseWithASubscriptionOffer = false
 
-            if #available(iOS 18.0, macOS 15.0, *) {
+            if #available(iOS 18.0, macOS 15.0, visionOS 2.0, *) {
                 #if compiler(>=6.0)
                 if let offer = purchaseIntent.offer {
                     switch offer.type {
