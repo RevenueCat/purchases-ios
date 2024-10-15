@@ -114,5 +114,10 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 struct StorePurchaseIntent: Sendable, Equatable {
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
     let purchaseIntent: PurchaseIntent?
 }
