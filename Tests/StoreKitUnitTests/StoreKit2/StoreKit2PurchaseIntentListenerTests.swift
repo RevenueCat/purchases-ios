@@ -17,7 +17,10 @@ import StoreKit
 import StoreKitTest
 import XCTest
 
-@available(iOS 16.4, tvOS 15.0, macOS 14.4, *)
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 class StoreKit2PurchaseIntentListenerBaseTests: StoreKitConfigTestCase {
 
     fileprivate var listener: StoreKit2PurchaseIntentListener! = nil
@@ -47,7 +50,10 @@ class StoreKit2PurchaseIntentListenerBaseTests: StoreKitConfigTestCase {
 
 }
 
-@available(iOS 16.4, tvOS 15.0, macOS 14.4, *)
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 class StoreKit2PurchaseIntentListenerTests: StoreKit2PurchaseIntentListenerBaseTests {
 
     func testStopsListeningToTransactions() async throws {

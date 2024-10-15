@@ -1057,7 +1057,10 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
 }
 
-@available(iOS 16.4, tvOS 15.0, macOS 14.4, *)
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
 
     func storeKit2PurchaseIntentListener(
