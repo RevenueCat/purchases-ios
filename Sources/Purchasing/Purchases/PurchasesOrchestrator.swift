@@ -1067,13 +1067,18 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
         _ listener: any StoreKit2PurchaseIntentListenerType,
         purchaseIntent: StorePurchaseIntent
     ) async {
+        // Making the extension unavailable on tvOS & watchOS doesn't
+        // stop the compiler from checking availability in the functions
+        #if !os(tvOS) && !os(watchOS)
+
         guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
         let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)
 
         delegate?.readyForPromotedProduct(storeProduct) { completion in
 
             var attemptedToPurchaseWithASubscriptionOffer = false
-            if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+
+            if #available(iOS 18.0, macOS 15.0, *) {
                 if let offer = purchaseIntent.offer {
                     switch offer.type {
 
@@ -1125,6 +1130,8 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                 }
             }
         }
+
+        #endif
     }
 }
 
