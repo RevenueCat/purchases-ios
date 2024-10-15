@@ -14,6 +14,9 @@
 import StoreKit
 
 @available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 protocol StoreKit2PurchaseIntentListenerDelegate: AnyObject, Sendable {
 
     func storeKit2PurchaseIntentListener(
@@ -24,6 +27,9 @@ protocol StoreKit2PurchaseIntentListenerDelegate: AnyObject, Sendable {
 }
 
 @available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 protocol StoreKit2PurchaseIntentListenerType: Sendable {
 
     func listenForPurchaseIntents() async
@@ -35,6 +41,9 @@ protocol StoreKit2PurchaseIntentListenerType: Sendable {
 /// Observes `StoreKit.PurchaseIntent.intents`, which receives purchase intents, which indicate that
 /// subscriber customer initiated a purchase outside of the app, for the app to complete.
 @available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 
     private(set) var taskHandle: Task<Void, Never>?
@@ -101,6 +110,9 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 }
 
 @available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 struct StorePurchaseIntent: Sendable, Equatable {
     let purchaseIntent: PurchaseIntent?
 }
