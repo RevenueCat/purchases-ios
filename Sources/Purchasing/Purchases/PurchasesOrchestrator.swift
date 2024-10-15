@@ -486,6 +486,81 @@ final class PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func purchase(
+        sk2Product: SK2Product,
+        package: Package?,
+        winBackOffer: Product.SubscriptionOffer
+    ) async throws -> PurchaseResultData {
+        guard winBackOffer.type == .winBack else {
+            throw ErrorUtils.invalidSubscriptionOfferError(
+                message: "Expected a win-back offer, but the offer's type was \(winBackOffer.type.localizedDescription)"
+            )
+        }
+
+        let result: Product.PurchaseResult
+
+        do {
+            var options: Set<Product.PurchaseOption> = [
+                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+            ]
+
+            if let uuid = UUID(uuidString: self.appUserID) {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_uuid_option(uuid)
+                )
+                options.insert(.appAccountToken(uuid))
+            }
+
+            options.insert(.winBackOffer(winBackOffer))
+
+            self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
+
+            result = try await self.purchase(sk2Product, options)
+        } catch StoreKitError.userCancelled {
+            guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+                throw ErrorUtils.purchaseCancelledError()
+            }
+
+            return (
+                transaction: nil,
+                customerInfo: try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                              fetchPolicy: .cachedOrFetched),
+                userCancelled: true
+            )
+        } catch {
+            let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: purchasesError.asPublicError)
+            throw error
+        }
+
+        // `userCancelled` above comes from `StoreKitError.userCancelled`.
+        // This detects if `Product.PurchaseResult.userCancelled` is true.
+        let (userCancelled, transaction) = try await self.storeKit2TransactionListener
+            .handle(purchaseResult: result, fromTransactionUpdate: false)
+
+        if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
+            throw ErrorUtils.purchaseCancelledError()
+        }
+
+        let customerInfo: CustomerInfo
+
+        if let transaction = transaction {
+            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase)
+        } else {
+            // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
+            // `Product.PurchaseResult.userCancelled`.
+            customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                           fetchPolicy: .cachedOrFetched)
+        }
+
+        if !userCancelled {
+            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: nil)
+        }
+
+        return (transaction, customerInfo, userCancelled)
+    }
+
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Product: SK2Product,
@@ -991,25 +1066,58 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
     ) async {
         guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
         let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)
+
         delegate?.readyForPromotedProduct(storeProduct) { completion in
-            if #available(iOS 18.0, macOS 15.0, *) {    // TODO: check for swift compiler version?
-                if let offerType = purchaseIntent.offer?.type {
-                    switch offerType {
-                    case .introductory:
-                        break
-                    case .promotional:
-                        break
+
+            var attemptedToPurchaseWithASubscriptionOffer = false
+            if #available(iOS 18.0, macOS 15.0, *) {
+                if let offer = purchaseIntent.offer {
+                    switch offer.type {
+
+                    // The `OfferType.winBack` case was added in iOS 18.0, but it's not recognized by Xcode versions <16.0
+                    #if compiler(>=6.0)
                     case .winBack:
-                        // TODO: Process win-back offer
-                        return
+                        Task {
+                            do {
+                                attemptedToPurchaseWithASubscriptionOffer = true
+
+                                let result = try await self.purchase(
+                                    sk2Product: purchaseIntent.product,
+                                    package: nil,
+                                    winBackOffer: offer
+                                )
+
+                                self.operationDispatcher.dispatchOnMainActor {
+                                    completion(result.transaction, result.customerInfo, nil, result.userCancelled)
+                                }
+                            } catch {
+                                self.operationDispatcher.dispatchOnMainActor {
+                                    completion(
+                                        nil,
+                                        nil,
+                                        ErrorUtils.purchasesError(withUntypedError: error).asPublicError,
+                                        false
+                                    )
+                                }
+                            }
+                        }
+                    #endif
                     default:
+                        // PurchaseIntents are only supported for promoted purchases on the App Store
+                        // and win-back offers, so we don't want to handle any other offers here.
                         break
                     }
                 }
-            } else {
-                // PurchaseIntent.offer isn't available, just purchase the product
-                self.purchase(product: storeProduct, package: nil) { StoreTransaction, customerInfo, publicError, userCancelled in
-                    // TODO: pass this back to the developer somehow
+            }
+
+            if !attemptedToPurchaseWithASubscriptionOffer {
+                self.purchase(
+                    product: storeProduct,
+                    package: nil
+                ) { transaction, customerInfo, publicError, userCancelled in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(transaction, customerInfo, publicError, userCancelled)
+                    }
                 }
             }
         }

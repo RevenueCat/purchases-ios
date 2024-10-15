@@ -83,7 +83,6 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
         self.taskHandle = Task(priority: .utility) { [weak self, updates = self.updates] in
             for await purchaseIntent in updates {
                 guard let self = self else {
-                    print("self is nil")
                     break
                 }
 

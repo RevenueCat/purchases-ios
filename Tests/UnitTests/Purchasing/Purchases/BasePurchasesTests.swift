@@ -32,7 +32,7 @@ class BasePurchasesTests: TestCase {
         self.notificationCenter = MockNotificationCenter()
         self.purchasesDelegate = MockPurchasesDelegate()
 
-        self.mockPaymentQueueWrapper = MockPaymentQueueWrapper()
+        self.mockPaymentQueueWrapper = MockPaymentQueueWrapper(storeKitVersion: .storeKit1)
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.clock = TestClock()
