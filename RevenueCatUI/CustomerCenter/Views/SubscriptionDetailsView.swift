@@ -122,7 +122,6 @@ struct SubscriptionDetailsView: View {
 
         }
         .padding(.vertical, 8.0)
-        .background(Color(UIColor.tertiarySystemBackground))
     }
 
     private func refundStatusMessage(for status: RefundRequestStatus) -> String {
@@ -146,13 +145,15 @@ struct SubscriptionDetailsView: View {
 struct SubscriptionDetailsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        SubscriptionDetailsView(
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-            refundRequestStatus: .success
-        )
-        .previewDisplayName("Subscription Details - Monthly")
-        .padding()
-
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            SubscriptionDetailsView(
+                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                refundRequestStatus: .success
+            )
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Subscription Details - Monthly - \(colorScheme)")
+            .padding()
+        }
     }
 
 }

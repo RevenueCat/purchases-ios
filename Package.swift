@@ -3,6 +3,29 @@
 
 import PackageDescription
 import class Foundation.ProcessInfo
+import struct Foundation.URL
+
+/// This looks for a file named `Local.xcconfig` in the root of the purchases-ios[-spm] repo, and reads any compiler
+/// flags defined in it. It does nothing if this file does not exist in this exact folder. This file does not exist on
+/// a clean checkout. It has to be created manually by a developer.
+var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
+    guard let config = try? String(
+        contentsOf: URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Local.xcconfig")
+    ) else {
+        return []
+    }
+    // We split the capture group by space and remove any special flags, such as $(inherited).
+    return config
+        .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
+        .output
+        .1
+        .split(whereSeparator: \.isWhitespace)
+        .filter { !$0.isEmpty && !$0.hasPrefix("$") }
+        .map { .define(String($0)) }
+        ?? []
+}()
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
@@ -52,7 +75,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting]),
+                swiftSettings: [visionOSSetting] + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -62,7 +85,7 @@ let package = Package(
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
-                ]),
+                ] + additionalCompilerFlags),
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
@@ -78,7 +101,7 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: []),
+                swiftSettings: additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
