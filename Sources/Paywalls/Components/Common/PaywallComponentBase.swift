@@ -75,6 +75,7 @@ extension PaywallComponent: Codable {
             try component.encode(to: encoder)
         case .button(let component):
             try container.encode(ComponentType.button, forKey: .type)
+            try component.encode(to: encoder)
         case .packageGroup(let component):
             try container.encode(ComponentType.packageGroup, forKey: .type)
             try component.encode(to: encoder)

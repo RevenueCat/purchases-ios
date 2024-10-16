@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TextComponentView.swift
+//  PurchaseButtonComponentViewModel.swift
 //
-//  Created by Josh Holtz on 6/11/24.
+//  Created by Josh Holtz on 9/27/24.
 
 import Foundation
 import RevenueCat
@@ -18,17 +18,23 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class TextComponentViewModel {
+class PurchaseButtonComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
-    private let component: PaywallComponent.TextComponent
+    private let component: PaywallComponent.PurchaseButtonComponent
 
-    let text: String
+    let cta: String
+    let ctaIntroOffer: String?
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
+    init(localizedStrings: PaywallComponent.LocalizationDictionary,
+         component: PaywallComponent.PurchaseButtonComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
-        self.text = try localizedStrings.string(key: component.text)
+
+        self.cta = try localizedStrings.string(key: component.cta)
+        self.ctaIntroOffer = try component.ctaIntroOffer.flatMap {
+            try localizedStrings.string(key: $0)
+        }
     }
 
     var fontFamily: String? {
@@ -63,5 +69,14 @@ class TextComponentViewModel {
         component.margin.edgeInsets
     }
 
+    var clipShape: PaywallComponent.Shape {
+        component.shape
+    }
+
+    var cornerRadiuses: PaywallComponent.CornerRadiuses? {
+        component.cornerRadiuses
+    }
+
 }
+
 #endif

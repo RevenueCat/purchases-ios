@@ -41,11 +41,14 @@ struct ButtonComponentView: View {
         AsyncButton(
             action: { try await performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
-        ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
+        )
+        #if canImport(SafariServices)
+        .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }.presentCustomerCenter(isPresented: $showCustomerCenter) {
             showCustomerCenter = false
         }
+        #endif
     }
 
     private func performAction() async throws {
@@ -101,6 +104,7 @@ struct ButtonComponentView: View {
 
 }
 
+#if canImport(SafariServices)
 private struct SafariView: UIViewControllerRepresentable {
     let url: URL
 
@@ -115,6 +119,7 @@ private struct SafariView: UIViewControllerRepresentable {
         // No updates needed
     }
 }
+#endif
 
 #if DEBUG
 
@@ -140,7 +145,6 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             backgroundColor: nil
                         )
                     ),
-                    locale: Locale(identifier: "en_US"),
                     localizedStrings: [
                         "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                     ],

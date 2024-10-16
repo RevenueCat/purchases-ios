@@ -55,6 +55,13 @@ public extension PaywallComponent {
 
     }
 
+    enum Shape: Codable, Sendable, Hashable, Equatable {
+
+        case rectangle
+        case pill
+
+    }
+
     struct Padding: Codable, Sendable, Hashable, Equatable {
 
         public init(top: Double, bottom: Double, leading: Double, trailing: Double) {

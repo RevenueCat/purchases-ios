@@ -14,20 +14,28 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable missing_docs
-
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class PackageComponentViewModel {
+class PackageComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.PackageComponent
+    private let offering: Offering
+
+    let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
-         component: PaywallComponent.PackageComponent) throws {
+         component: PaywallComponent.PackageComponent,
+         offering: Offering) throws {
         self.localizedStrings = localizedStrings
         self.component = component
+        self.offering = offering
+
+        self.stackComponentViewModel = try self.component.toStackComponentViewModel(
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
     }
 
 }

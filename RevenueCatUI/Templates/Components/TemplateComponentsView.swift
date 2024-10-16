@@ -31,7 +31,6 @@ public struct TemplateComponentsView: View {
             do {
                 // STEP 3: Make the view models & validate all components have required localization
                 return try component.toViewModel(offering: offering,
-                                                 locale: localization.locale,
                                                  localizedStrings: localization.localizedStrings)
             } catch {
 
@@ -120,9 +119,9 @@ struct ComponentsView: View {
             case .button(let viewModel):
                 ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .packageGroup(let viewModel):
-                PackageGroupComponentView(viewModel: viewModel)
+                PackageGroupComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .package(let viewModel):
-                PackageComponentView(viewModel: viewModel)
+                PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .purchaseButton(let viewModel):
                 PurchaseButtonComponentView(viewModel: viewModel)
             }
