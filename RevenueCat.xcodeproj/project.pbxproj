@@ -33,6 +33,11 @@
 		2CC790D02CC00C5900FBE120 /* PackageGroupComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790B52CC00C5900FBE120 /* PackageGroupComponentViewModel.swift */; };
 		2CC790D32CC00C5900FBE120 /* PackageGroupComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790B42CC00C5900FBE120 /* PackageGroupComponentView.swift */; };
 		2CC790D82CC00C5900FBE120 /* PurchaseButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790B72CC00C5900FBE120 /* PurchaseButtonComponentView.swift */; };
+		2CC790DF2CC00DF100FBE120 /* StackableComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790DD2CC00DF100FBE120 /* StackableComponent.swift */; };
+		2CC790E02CC00DF100FBE120 /* PaywallComponentBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790DA2CC00DF100FBE120 /* PaywallComponentBase.swift */; };
+		2CC790E12CC00DF100FBE120 /* Dimension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790D92CC00DF100FBE120 /* Dimension.swift */; };
+		2CC790E22CC00DF100FBE120 /* PaywallComponentLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790DB2CC00DF100FBE120 /* PaywallComponentLocalization.swift */; };
+		2CC790E32CC00DF100FBE120 /* PaywallComponentPropertyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790DC2CC00DF100FBE120 /* PaywallComponentPropertyTypes.swift */; };
 		2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72941268A823900BFC976 /* Data+Extensions.swift */; };
 		2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72943268A826F00BFC976 /* Date+Extensions.swift */; };
 		2D00A41D2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D00A41C2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift */; };
@@ -836,12 +841,10 @@
 		88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E22C37A4970039C6A5 /* Template7View.swift */; };
 		88A543E52C37A4AF0039C6A5 /* ConsistentTierContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E42C37A4AF0039C6A5 /* ConsistentTierContentView.swift */; };
 		88A543E72C37A4C40039C6A5 /* TierSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E62C37A4C40039C6A5 /* TierSelectorView.swift */; };
-		88AD010D2C740CF400AA1F2B /* PaywallComponentBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */; };
 		88AD010F2C740CF400AA1F2B /* PaywallImageComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */; };
 		88AD01122C740CF400AA1F2B /* PaywallSpacerComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */; };
 		88AD01132C740CF400AA1F2B /* PaywallTextComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD01072C740CF400AA1F2B /* PaywallTextComponent.swift */; };
 		88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */; };
-		88B1BAD82C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */; };
 		88B1BAEC2C813A3C001B7EE5 /* PaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */; };
 		88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */; };
 		88B1BAF02C813A3C001B7EE5 /* TextComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */; };
@@ -858,7 +861,6 @@
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
 		88EA80ED2C8771A7003E6675 /* TemplateComponentsView+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88EA80EC2C8771A7003E6675 /* TemplateComponentsView+extensions.swift */; };
-		88EA80EF2C87D68F003E6675 /* PaywallComponentLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */; };
 		9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */; };
@@ -1183,6 +1185,11 @@
 		2CC790B52CC00C5900FBE120 /* PackageGroupComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageGroupComponentViewModel.swift; sourceTree = "<group>"; };
 		2CC790B72CC00C5900FBE120 /* PurchaseButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentView.swift; sourceTree = "<group>"; };
 		2CC790B82CC00C5900FBE120 /* PurchaseButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentViewModel.swift; sourceTree = "<group>"; };
+		2CC790D92CC00DF100FBE120 /* Dimension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dimension.swift; sourceTree = "<group>"; };
+		2CC790DA2CC00DF100FBE120 /* PaywallComponentBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentBase.swift; sourceTree = "<group>"; };
+		2CC790DB2CC00DF100FBE120 /* PaywallComponentLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentLocalization.swift; sourceTree = "<group>"; };
+		2CC790DC2CC00DF100FBE120 /* PaywallComponentPropertyTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentPropertyTypes.swift; sourceTree = "<group>"; };
+		2CC790DD2CC00DF100FBE120 /* StackableComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackableComponent.swift; sourceTree = "<group>"; };
 		2CD72941268A823900BFC976 /* Data+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Extensions.swift"; sourceTree = "<group>"; };
 		2CD72943268A826F00BFC976 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		2D00A41C2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsStrings.swift; sourceTree = "<group>"; };
@@ -2019,12 +2026,10 @@
 		88A543E22C37A4970039C6A5 /* Template7View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template7View.swift; sourceTree = "<group>"; };
 		88A543E42C37A4AF0039C6A5 /* ConsistentTierContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsistentTierContentView.swift; sourceTree = "<group>"; };
 		88A543E62C37A4C40039C6A5 /* TierSelectorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TierSelectorView.swift; sourceTree = "<group>"; };
-		88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentBase.swift; sourceTree = "<group>"; };
 		88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallImageComponent.swift; sourceTree = "<group>"; };
 		88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallSpacerComponent.swift; sourceTree = "<group>"; };
 		88AD01072C740CF400AA1F2B /* PaywallTextComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallTextComponent.swift; sourceTree = "<group>"; };
 		88AD4C472C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExternalPurchaseAndRestoreTests.swift; path = Templates/ExternalPurchaseAndRestoreTests.swift; sourceTree = "<group>"; };
-		88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentPropertyTypes.swift; sourceTree = "<group>"; };
 		88B1BAD92C813A3C001B7EE5 /* PaywallComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallComponentViewModel.swift; sourceTree = "<group>"; };
 		88B1BADA2C813A3C001B7EE5 /* TextComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextComponentView.swift; sourceTree = "<group>"; };
 		88B1BADB2C813A3C001B7EE5 /* TextComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextComponentViewModel.swift; sourceTree = "<group>"; };
@@ -2040,7 +2045,6 @@
 		88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentViewModel.swift; sourceTree = "<group>"; };
 		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
 		88EA80EC2C8771A7003E6675 /* TemplateComponentsView+extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TemplateComponentsView+extensions.swift"; sourceTree = "<group>"; };
-		88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentLocalization.swift; sourceTree = "<group>"; };
 		9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogIntent.swift; sourceTree = "<group>"; };
 		9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigureStrings.swift; sourceTree = "<group>"; };
 		9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoStrings.swift; sourceTree = "<group>"; };
@@ -2333,6 +2337,18 @@
 				2CC790B92CC00C5900FBE120 /* PurchaseButton */,
 			);
 			path = Packages;
+			sourceTree = "<group>";
+		};
+		2CC790DE2CC00DF100FBE120 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				2CC790D92CC00DF100FBE120 /* Dimension.swift */,
+				2CC790DA2CC00DF100FBE120 /* PaywallComponentBase.swift */,
+				2CC790DB2CC00DF100FBE120 /* PaywallComponentLocalization.swift */,
+				2CC790DC2CC00DF100FBE120 /* PaywallComponentPropertyTypes.swift */,
+				2CC790DD2CC00DF100FBE120 /* StackableComponent.swift */,
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 		2CD72940268A820E00BFC976 /* FoundationExtensions */ = {
@@ -4355,10 +4371,8 @@
 		88AD010B2C740CF400AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				88AD01012C740CF400AA1F2B /* PaywallComponentBase.swift */,
+				2CC790DE2CC00DF100FBE120 /* Common */,
 				7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */,
-				88EA80EE2C87D68F003E6675 /* PaywallComponentLocalization.swift */,
-				88B1BAD72C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
 				88AD01062C740CF400AA1F2B /* PaywallSpacerComponent.swift */,
 				88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */,
@@ -5415,8 +5429,6 @@
 				57E9CF0F290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
-				88B1BAD82C812D72001B7EE5 /* PaywallComponentPropertyTypes.swift in Sources */,
-				88EA80EF2C87D68F003E6675 /* PaywallComponentLocalization.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
 				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
@@ -5465,7 +5477,6 @@
 				B378156D285A9772000A7B93 /* OfferingsAPI.swift in Sources */,
 				B34605C0279A6E380031CA74 /* CustomerInfoCallback.swift in Sources */,
 				B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */,
-				88AD010D2C740CF400AA1F2B /* PaywallComponentBase.swift in Sources */,
 				4FBBC5682A61E42F0077281F /* NonEmptyStringDecodable.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* PurchasesReceiptParser.swift in Sources */,
 				2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */,
@@ -5551,6 +5562,11 @@
 				4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */,
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,
 				80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */,
+				2CC790DF2CC00DF100FBE120 /* StackableComponent.swift in Sources */,
+				2CC790E02CC00DF100FBE120 /* PaywallComponentBase.swift in Sources */,
+				2CC790E12CC00DF100FBE120 /* Dimension.swift in Sources */,
+				2CC790E22CC00DF100FBE120 /* PaywallComponentLocalization.swift in Sources */,
+				2CC790E32CC00DF100FBE120 /* PaywallComponentPropertyTypes.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
 				57CB2A7829CCC3AA00C91439 /* ProductEntitlementMappingFetcher.swift in Sources */,

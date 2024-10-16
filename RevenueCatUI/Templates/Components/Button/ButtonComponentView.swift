@@ -139,7 +139,6 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             backgroundColor: nil
                         )
                     ),
-                    locale: Locale(identifier: "en_US"),
                     localizedStrings: [
                         "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                     ],

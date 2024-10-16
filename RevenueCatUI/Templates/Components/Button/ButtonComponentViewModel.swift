@@ -46,14 +46,12 @@ public class ButtonComponentViewModel {
 
     init(
         component: PaywallComponent.ButtonComponent,
-        locale: Locale,
         localizedStrings: PaywallComponent.LocalizationDictionary,
         offering: Offering
     ) throws {
         self.component = component
         self.localizedStrings = localizedStrings
         self.stackViewModel = try StackComponentViewModel(
-            locale: locale,
             component: component.stack,
             localizedStrings: localizedStrings,
             offering: offering

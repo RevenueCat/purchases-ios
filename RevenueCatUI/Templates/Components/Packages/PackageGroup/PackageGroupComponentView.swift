@@ -21,10 +21,12 @@ import SwiftUI
 struct PackageGroupComponentView: View {
 
     let viewModel: PackageGroupComponentViewModel
+    let onDismiss: () -> Void
 
     var body: some View {
         // WIP: Do something with default package id and selection
-        StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
+        StackComponentView(viewModel: self.viewModel.stackComponentViewModel,
+                           onDismiss: self.onDismiss)
     }
 
 }
@@ -95,7 +97,7 @@ struct PackagesComponentView_Previews: PreviewProvider {
                 offering: Offering(identifier: "",
                                    serverDescription: "",
                                    availablePackages: [])
-            )
+            ), onDismiss: {}
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Packages")

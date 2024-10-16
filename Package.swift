@@ -14,7 +14,7 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
             .deletingLastPathComponent()
             .appendingPathComponent("Local.xcconfig")
     ) else {
-        return []
+        return [.define("PAYWALL_COMPONENTS")]
     }
     // We split the capture group by space and remove any special flags, such as $(inherited).
     return config
