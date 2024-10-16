@@ -26,8 +26,9 @@ struct SubscriptionDetailsView: View {
 
     let iconWidth = 22.0
     let subscriptionInformation: SubscriptionInformation
-    let localization: CustomerCenterConfigData.Localization
-    let refundRequestStatusMessage: String?
+    let refundRequestStatus: RefundRequestStatus?
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -102,7 +103,7 @@ struct SubscriptionDetailsView: View {
                     }
                 }
 
-                if let refundRequestStatusMessage = refundRequestStatusMessage {
+                if let refundRequestStatus = refundRequestStatus {
                     HStack(alignment: .center) {
                         Image(systemName: "arrowshape.turn.up.backward")
                             .accessibilityHidden(true)
@@ -112,7 +113,7 @@ struct SubscriptionDetailsView: View {
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                                 .textCase(.uppercase)
-                            Text("\(refundRequestStatusMessage)")
+                            Text(refundStatusMessage(for: refundRequestStatus))
                                 .font(.body)
                         }
                     }
@@ -121,9 +122,18 @@ struct SubscriptionDetailsView: View {
 
         }
         .padding(.vertical, 8.0)
-        .background(Color(UIColor.tertiarySystemBackground))
     }
 
+    private func refundStatusMessage(for status: RefundRequestStatus) -> String {
+        switch status {
+        case .error:
+            return localization.commonLocalizedString(for: .refundErrorGeneric)
+        case .success:
+            return localization.commonLocalizedString(for: .refundGranted)
+        case .userCancelled:
+            return localization.commonLocalizedString(for: .refundCanceled)
+        }
+    }
 }
 
 #if DEBUG
@@ -135,14 +145,15 @@ struct SubscriptionDetailsView: View {
 struct SubscriptionDetailsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        SubscriptionDetailsView(
-            subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-            localization: CustomerCenterConfigTestData.customerCenterData.localization,
-            refundRequestStatusMessage: "Success"
-        )
-        .previewDisplayName("Subscription Details - Monthly")
-        .padding()
-
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            SubscriptionDetailsView(
+                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                refundRequestStatus: .success
+            )
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Subscription Details - Monthly - \(colorScheme)")
+            .padding()
+        }
     }
 
 }

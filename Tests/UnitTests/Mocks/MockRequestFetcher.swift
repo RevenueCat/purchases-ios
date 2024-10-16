@@ -22,3 +22,5 @@ class MockRequestFetcher: StoreKitRequestFetcher {
         self.init(operationDispatcher: OperationDispatcher())
     }
 }
+
+extension MockRequestFetcher: @unchecked Sendable {}

@@ -49,6 +49,14 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
         case .caption: return .caption
         case .caption2: return .caption2
 
+        #if compiler(>=6.0) && os(tvOS)
+        case .caption3: if #available(tvOS 18.0, *) {
+            return .system(.caption3)
+        } else {
+            return .caption2
+        }
+        #endif
+
         #if swift(>=5.9) && os(visionOS)
         case .extraLargeTitle: return .extraLargeTitle
         case .extraLargeTitle2: return .extraLargeTitle2
@@ -108,6 +116,10 @@ private extension Font.TextStyle {
         case .footnote: return .footnote
         case .caption: return .caption1
         case .caption2: return .caption2
+
+        #if compiler(>=6.0) && os(tvOS)
+        case .caption3: return .caption2
+        #endif
 
         #if swift(>=5.9) && os(visionOS)
         case .extraLargeTitle: return .extraLargeTitle

@@ -35,6 +35,7 @@ struct PromotionalOfferView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
+    @State private var isLoading: Bool = false
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
@@ -48,6 +49,8 @@ struct PromotionalOfferView: View {
         ))
     }
 
+    private let horizontalPadding: CGFloat = 20
+
     var body: some View {
         ZStack {
             if let background = Color.from(colorInformation: appearance.backgroundColor, for: colorScheme) {
@@ -60,7 +63,10 @@ struct PromotionalOfferView: View {
 
                     Spacer()
 
-                    PromoOfferButtonView(viewModel: self.viewModel, appearance: self.appearance)
+                    PromoOfferButtonView(isLoading: $isLoading,
+                                         viewModel: self.viewModel,
+                                         appearance: self.appearance)
+                    .padding(.horizontal, horizontalPadding)
 
                     Button {
                         dismiss()
@@ -94,18 +100,26 @@ struct PromotionalOfferHeaderView: View {
     @ObservedObject
     private(set) var viewModel: PromotionalOfferViewModel
 
+    private let spacing: CGFloat = 30
+    private let topPadding: CGFloat = 150
+    private let horizontalPadding: CGFloat = 40
+
     var body: some View {
         let textColor = Color.from(colorInformation: appearance.textColor, for: colorScheme)
         if let details = self.viewModel.promotionalOfferData?.promoOfferDetails {
-            VStack {
+            VStack(spacing: spacing) {
                 Text(details.title)
                     .font(.title)
-                    .padding()
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, topPadding)
 
                 Text(details.subtitle)
-                    .font(.title3)
-                    .padding()
-            }.applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+            }
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+            .padding(.horizontal, horizontalPadding)
         }
     }
 
@@ -116,6 +130,8 @@ struct PromotionalOfferHeaderView: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct PromoOfferButtonView: View {
+
+    @Binding var isLoading: Bool
 
     @Environment(\.locale)
     private var locale
@@ -131,24 +147,35 @@ struct PromoOfferButtonView: View {
             let mainTitle = discount.localizedPricePerPeriodByPaymentMode(.current)
             let localizedProductPricePerPeriod = product.localizedPricePerPeriod(.current)
 
-            Button(action: {
-                Task {
-                    await viewModel.purchasePromo()
+            AsyncButton {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isLoading = true
                 }
-            }, label: {
-                VStack {
-                    Text(mainTitle)
-                        .font(.headline)
-
-                    let format = Localization.localizedBundle(self.locale)
-                        .localizedString(forKey: "then_price_per_period", value: "then %@", table: nil)
-
-                    Text(String(format: format, localizedProductPricePerPeriod))
-                        .font(.subheadline)
+                await viewModel.purchasePromo()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isLoading = false
                 }
-            })
+            } label: {
+                if isLoading {
+                    TintedProgressView()
+                } else {
+                    VStack {
+                        Text(mainTitle)
+                            .font(.headline)
+
+                        let format = Localization.localizedBundle(self.locale)
+                            .localizedString(forKey: "then_price_per_period", value: "then %@", table: nil)
+
+                        Text(String(format: format, localizedProductPricePerPeriod))
+                            .font(.subheadline)
+                    }
+                }
+            }
             .buttonStyle(ProminentButtonStyle())
             .padding(.horizontal)
+            .disabled(isLoading)
+            .opacity(isLoading ? 0.5 : 1)
+            .animation(.easeInOut(duration: 0.3), value: isLoading)
         }
     }
 

@@ -52,14 +52,12 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     private(set) var subscriptionInformation: SubscriptionInformation?
     @Published
-    private(set) var refundRequestStatusMessage: String?
+    private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var purchasesProvider: ManageSubscriptionsPurchaseType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
-    @Environment(\.localization)
-    private var localization
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
@@ -75,11 +73,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
     init(screen: CustomerCenterConfigData.Screen,
          subscriptionInformation: SubscriptionInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
-         refundRequestStatusMessage: String? = nil) {
+         refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
-        self.refundRequestStatusMessage = refundRequestStatusMessage
+        self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
         state = .success
@@ -175,18 +173,11 @@ private extension ManageSubscriptionsViewModel {
                 let productId = subscriptionInformation.productIdentifier
                 self.customerCenterActionHandler?(.refundRequestStarted(productId))
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
+                self.refundRequestStatus = status
                 self.customerCenterActionHandler?(.refundRequestCompleted(status))
-                switch status {
-                case .error:
-                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundErrorGeneric)
-                case .success:
-                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundGranted)
-                case .userCancelled:
-                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundCanceled)
-                }
             } catch {
+                self.refundRequestStatus = .error
                 self.customerCenterActionHandler?(.refundRequestCompleted(.error))
-                self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundErrorGeneric)
             }
         case .changePlans, .cancel:
             do {

@@ -20,3 +20,5 @@ class MockDateProvider: DateProvider {
         return stubbedNowResult
     }
 }
+
+extension MockDateProvider: @unchecked Sendable {}

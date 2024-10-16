@@ -32,7 +32,7 @@ class PaywallFooterTests: TestCase {
     func testPresentWithPurchaseStarted() throws {
         var packageBeingPurchased: Package?
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -52,7 +52,7 @@ class PaywallFooterTests: TestCase {
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -72,7 +72,7 @@ class PaywallFooterTests: TestCase {
     func testPresentWithPurchaseFailureHandler() throws {
         var error: NSError?
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -92,7 +92,7 @@ class PaywallFooterTests: TestCase {
     func testPresentWithRestoreStarted() throws {
         var started = false
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -112,7 +112,7 @@ class PaywallFooterTests: TestCase {
     func testPresentWithRestoreHandler() throws {
         var customerInfo: CustomerInfo?
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -134,7 +134,7 @@ class PaywallFooterTests: TestCase {
     func testPresentWithRestoreFailureHandler() throws {
         var error: NSError?
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -161,7 +161,7 @@ class PaywallFooterTests: TestCase {
             return (success: true, error: nil)
         })
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
@@ -185,7 +185,7 @@ class PaywallFooterTests: TestCase {
             return (success: true, error: nil)
         })
 
-        try Text("")
+        _ = try Text("")
             .paywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,

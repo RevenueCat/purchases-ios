@@ -3,17 +3,17 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4E9E1B2E2CAD38EC00B51150 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9E1B2D2CAD38EC00B51150 /* RevenueCat */; };
+		4E9E1B302CAD38EC00B51150 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4E9E1B2F2CAD38EC00B51150 /* RevenueCatUI */; };
 		5539DF1D258806A10073FB19 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF1C258806A10073FB19 /* Errors.swift */; };
 		5539DF2025880AB80073FB19 /* WeatherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF1F25880AB80073FB19 /* WeatherViewController.swift */; };
 		5539DF24258A9AA70073FB19 /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF23258A9AA70073FB19 /* SampleData.swift */; };
-		5539DF2A259283370073FB19 /* PaywallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF29259283370073FB19 /* PaywallViewController.swift */; };
 		5539DF2D2592A07A0073FB19 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5539DF2C2592A0790073FB19 /* SplashScreen.storyboard */; };
 		5539DF302592A0C30073FB19 /* SplashScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF2F2592A0C30073FB19 /* SplashScreenViewController.swift */; };
-		5539DF362593E3210073FB19 /* Paywall.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5539DF352593E3210073FB19 /* Paywall.storyboard */; };
 		5575FD49258801DE001B2F0D /* UserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5575FD48258801DE001B2F0D /* UserViewController.swift */; };
 		5576344325A3C08400C0486A /* PackageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5576344225A3C08400C0486A /* PackageCell.swift */; };
 		5582ECD72587EF8500ACB34B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582ECD62587EF8500ACB34B /* AppDelegate.swift */; };
@@ -22,17 +22,14 @@
 		5582ECE02587EF8800ACB34B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECDF2587EF8800ACB34B /* Assets.xcassets */; };
 		5582ECE32587EF8800ACB34B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECE12587EF8800ACB34B /* LaunchScreen.storyboard */; };
 		5582ECFA2587F29600ACB34B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582ECF92587F29600ACB34B /* Constants.swift */; };
-		8380C26626FE001500922AB1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 8380C26526FE001500922AB1 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5539DF1C258806A10073FB19 /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		5539DF1F25880AB80073FB19 /* WeatherViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViewController.swift; sourceTree = "<group>"; };
 		5539DF23258A9AA70073FB19 /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
-		5539DF29259283370073FB19 /* PaywallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewController.swift; sourceTree = "<group>"; };
 		5539DF2C2592A0790073FB19 /* SplashScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SplashScreen.storyboard; sourceTree = "<group>"; };
 		5539DF2F2592A0C30073FB19 /* SplashScreenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenViewController.swift; sourceTree = "<group>"; };
-		5539DF352593E3210073FB19 /* Paywall.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Paywall.storyboard; sourceTree = "<group>"; };
 		5539DF392593E6D90073FB19 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		5575FD48258801DE001B2F0D /* UserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewController.swift; sourceTree = "<group>"; };
 		5576344225A3C08400C0486A /* PackageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageCell.swift; sourceTree = "<group>"; };
@@ -51,7 +48,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8380C26626FE001500922AB1 /* RevenueCat in Frameworks */,
+				4E9E1B302CAD38EC00B51150 /* RevenueCatUI in Frameworks */,
+				4E9E1B2E2CAD38EC00B51150 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,7 +109,6 @@
 				5539DF2F2592A0C30073FB19 /* SplashScreenViewController.swift */,
 				5575FD48258801DE001B2F0D /* UserViewController.swift */,
 				5539DF1F25880AB80073FB19 /* WeatherViewController.swift */,
-				5539DF29259283370073FB19 /* PaywallViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -141,7 +138,6 @@
 			children = (
 				5582ECDC2587EF8500ACB34B /* Main.storyboard */,
 				5539DF2C2592A0790073FB19 /* SplashScreen.storyboard */,
-				5539DF352593E3210073FB19 /* Paywall.storyboard */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -179,7 +175,8 @@
 			);
 			name = MagicWeather;
 			packageProductDependencies = (
-				8380C26526FE001500922AB1 /* RevenueCat */,
+				4E9E1B2D2CAD38EC00B51150 /* RevenueCat */,
+				4E9E1B2F2CAD38EC00B51150 /* RevenueCatUI */,
 			);
 			productName = "Magic Weather";
 			productReference = 5582ECD32587EF8500ACB34B /* MagicWeather.app */;
@@ -209,7 +206,7 @@
 			);
 			mainGroup = 5582ECCA2587EF8500ACB34B;
 			packageReferences = (
-				5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				4E9E1B2C2CAD38EC00B51150 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			productRefGroup = 5582ECD42587EF8500ACB34B /* Products */;
 			projectDirPath = "";
@@ -225,7 +222,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5539DF362593E3210073FB19 /* Paywall.storyboard in Resources */,
 				5582ECE32587EF8800ACB34B /* LaunchScreen.storyboard in Resources */,
 				5539DF2D2592A07A0073FB19 /* SplashScreen.storyboard in Resources */,
 				5582ECE02587EF8800ACB34B /* Assets.xcassets in Resources */,
@@ -246,7 +242,6 @@
 				5582ECD72587EF8500ACB34B /* AppDelegate.swift in Sources */,
 				5582ECD92587EF8500ACB34B /* SceneDelegate.swift in Sources */,
 				5539DF2025880AB80073FB19 /* WeatherViewController.swift in Sources */,
-				5539DF2A259283370073FB19 /* PaywallViewController.swift in Sources */,
 				5539DF1D258806A10073FB19 /* Errors.swift in Sources */,
 				5539DF302592A0C30073FB19 /* SplashScreenViewController.swift in Sources */,
 				5582ECFA2587F29600ACB34B /* Constants.swift in Sources */,
@@ -326,7 +321,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -381,7 +376,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -399,7 +394,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = MagicWeather/Resources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -419,7 +414,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = MagicWeather/Resources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -455,21 +450,26 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		4E9E1B2C2CAD38EC00B51150 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
+				minimumVersion = 5.5.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8380C26526FE001500922AB1 /* RevenueCat */ = {
+		4E9E1B2D2CAD38EC00B51150 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			package = 4E9E1B2C2CAD38EC00B51150 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
+		};
+		4E9E1B2F2CAD38EC00B51150 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E9E1B2C2CAD38EC00B51150 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

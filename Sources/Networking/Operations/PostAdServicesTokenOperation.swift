@@ -56,6 +56,9 @@ class PostAdServicesTokenOperation: NetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostAdServicesTokenOperation: @unchecked Sendable {}
+
 private extension PostAdServicesTokenOperation {
 
     struct Body: HTTPRequestBody {

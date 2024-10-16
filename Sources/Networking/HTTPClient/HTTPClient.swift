@@ -132,7 +132,8 @@ class HTTPClient {
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.retryCount.rawValue: "0",
-            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
+            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
+            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
         ]
 
         if let storefront = self.systemInfo.storefront {

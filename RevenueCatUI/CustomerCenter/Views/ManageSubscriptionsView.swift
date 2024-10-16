@@ -82,8 +82,7 @@ struct ManageSubscriptionsView: View {
                         Section {
                             SubscriptionDetailsView(
                                 subscriptionInformation: subscriptionInformation,
-                                localization: self.localization,
-                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
+                                refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
                     }
 
@@ -162,7 +161,7 @@ struct ManageSubscriptionsButtonsView: View {
 #if targetEnvironment(macCatalyst)
             return path.type == .refundRequest
 #else
-            return true
+            return path.type != .unknown
 #endif
         }
         ForEach(filteredPaths, id: \.id) { path in
@@ -206,30 +205,31 @@ struct ManageSubscriptionButton: View {
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-
-        CompatibilityNavigationStack {
-            let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-                customerCenterActionHandler: nil,
-                refundRequestStatusMessage: "Refund granted successfully!")
-            ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
-                                    customerCenterActionHandler: nil)
-                .previewDisplayName("Monthly renewing")
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                    customerCenterActionHandler: nil,
+                    refundRequestStatus: .success)
+                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
+                                        customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-        }
+            }.preferredColorScheme(colorScheme)
+            .previewDisplayName("Monthly renewing - \(colorScheme)")
 
-        CompatibilityNavigationStack {
-            let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-                customerCenterActionHandler: nil)
-            ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-                                    customerCenterActionHandler: nil)
-                .previewDisplayName("Yearly expiring")
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    customerCenterActionHandler: nil)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+                                        customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }.preferredColorScheme(colorScheme)
+            .previewDisplayName("Yearly expiring - \(colorScheme)")
         }
     }
 

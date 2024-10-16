@@ -1,0 +1,31 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  Local.xcconfig
+//
+//  Created by Jay Shortway on 02/10/2024.
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+// ======
+// README
+// ======
+// 1. Make a copy of this file in this directory, removing the .SAMPLE extension.
+// 2. Enable any build settings you wish, below. You can either uncomment example settings
+//    or write new ones.
+// 3. If there's any new build setting you think others can benefit from, please update the
+//    .SAMPLE file and open a pull request.
+//
+// Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects,
+// as well as by Package.swift.
+// ======
+
+// Uncomment to enable the PAYWALL_COMPONENTS flag.
+// SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) PAYWALL_COMPONENTS

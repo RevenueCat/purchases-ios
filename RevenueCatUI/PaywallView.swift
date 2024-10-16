@@ -242,7 +242,17 @@ public struct PaywallView: View {
 
         #if PAYWALL_COMPONENTS
         if let componentData = offering.paywallComponentsData {
-            TemplateComponentsView(paywallComponentsData: componentData, offering: offering)
+            TemplateComponentsView(
+                paywallComponentsData: componentData,
+                offering: offering,
+                onDismiss: {
+                    guard let onRequestedDismissal = self.onRequestedDismissal else {
+                        self.dismiss()
+                        return
+                    }
+                    onRequestedDismissal()
+                }
+            )
         } else {
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)

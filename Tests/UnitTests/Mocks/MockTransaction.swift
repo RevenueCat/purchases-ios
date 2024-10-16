@@ -37,3 +37,5 @@ class MockTransaction: SKPaymentTransaction {
         mockTransactionIdentifier
     }
 }
+
+extension MockTransaction: @unchecked Sendable {}
