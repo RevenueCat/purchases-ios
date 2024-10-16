@@ -544,6 +544,19 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
+    /**
+     * Constructs an Error with the ``ErrorCode/invalidSubscriptionOffer`` code.
+     */
+    static func invalidSubscriptionOfferError(
+        error: Error? = nil,
+        message: String? = nil,
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .invalidSubscriptionOfferError,
+                                message: message,
+                                underlyingError: error)
+    }
+
 }
 
 extension ErrorUtils {
@@ -665,7 +678,8 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
                 .featureNotAvailableInCustomEntitlementsComputationMode,
-                .signatureVerificationFailed:
+                .signatureVerificationFailed,
+                .invalidSubscriptionOfferError:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,

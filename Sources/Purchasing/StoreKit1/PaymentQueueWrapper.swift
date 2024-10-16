@@ -58,6 +58,7 @@ typealias EitherPaymentQueueWrapper = Either<StoreKit1Wrapper, PaymentQueueWrapp
 class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
     private let paymentQueue: SKPaymentQueue
+    private let storeKitVersion: StoreKitVersion
 
     weak var delegate: PaymentQueueWrapperDelegate? {
         didSet {
@@ -71,8 +72,12 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
         }
     }
 
-    init(paymentQueue: SKPaymentQueue = .default()) {
+    init(
+        paymentQueue: SKPaymentQueue = .default(),
+        storeKitVersion: StoreKitVersion
+    ) {
         self.paymentQueue = paymentQueue
+        self.storeKitVersion = storeKitVersion
 
         super.init()
     }
@@ -131,9 +136,19 @@ extension PaymentQueueWrapper: SKPaymentTransactionObserver {
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,
                       for product: SK1Product) -> Bool {
-        return self.delegate?.paymentQueueWrapper(self,
-                                                  shouldAddStorePayment: payment,
-                                                  for: product) ?? false
+
+        if #available(iOS 16.4, macOS 14.4, *), storeKitVersion.isStoreKit2EnabledAndAvailable {
+            // This will be handled by the PurchaseIntents API, which was introduced in
+            // iOS 16.4/macOS 14.4 and is not available on tvOS, visionOS, and watchOS.
+
+            // Returns `false` to indicate that the app will defer the purchase and be handled
+            // when the user calls the purchase callback.
+            return false
+        } else {
+            return self.delegate?.paymentQueueWrapper(self,
+                                                      shouldAddStorePayment: payment,
+                                                      for: product) ?? false
+        }
     }
     #endif
 

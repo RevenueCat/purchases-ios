@@ -340,7 +340,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
-            ? .right(.init())
+            ? .right(.init(storeKitVersion: storeKitVersion))
             : .left(.init(
                 operationDispatcher: operationDispatcher,
                 observerMode: observerMode,
