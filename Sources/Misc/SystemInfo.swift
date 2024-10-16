@@ -73,7 +73,7 @@ class SystemInfo {
 #endif
     }
 
-    var storefront: StorefrontType? = nil
+    var storefront: StorefrontType?
 
     var preferredLanguages: [String] {
         return self.preferredLocalesProvider.preferredLanguages
