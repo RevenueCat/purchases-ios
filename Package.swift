@@ -3,6 +3,29 @@
 
 import PackageDescription
 import class Foundation.ProcessInfo
+import struct Foundation.URL
+
+/// This looks for a file named `Local.xcconfig` in the root of the purchases-ios[-spm] repo, and reads any compiler
+/// flags defined in it. It does nothing if this file does not exist in this exact folder. This file does not exist on
+/// a clean checkout. It has to be created manually by a developer.
+var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
+    guard let config = try? String(
+        contentsOf: URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Local.xcconfig")
+    ) else {
+        return []
+    }
+    // We split the capture group by space and remove any special flags, such as $(inherited).
+    return config
+        .firstMatch(of: #/^SWIFT_ACTIVE_COMPILATION_CONDITIONS *= *(.*)$/#.anchorsMatchLineEndings())?
+        .output
+        .1
+        .split(whereSeparator: \.isWhitespace)
+        .filter { !$0.isEmpty && !$0.hasPrefix("$") }
+        .map { .define(String($0)) }
+        ?? []
+}()
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
@@ -15,7 +38,9 @@ var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
 ]
 if shouldIncludeDocCPlugin {
-    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
+    // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
+    // https://github.com/RevenueCat/purchases-ios/pull/4216
+    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", .exact("1.3.0")))
 }
 
 // See https://github.com/RevenueCat/purchases-ios/pull/2989
@@ -50,7 +75,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting]),
+                swiftSettings: [visionOSSetting] + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -60,7 +85,7 @@ let package = Package(
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
-                ]),
+                ] + additionalCompilerFlags),
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
@@ -75,7 +100,8 @@ let package = Package(
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
-                ]),
+                ],
+                swiftSettings: additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
@@ -83,6 +109,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
+                    resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")])
     ]
 )

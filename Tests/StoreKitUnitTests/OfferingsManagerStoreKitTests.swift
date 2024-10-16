@@ -34,7 +34,8 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
         try super.setUpWithError()
         self.mockOfferings = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
-        self.mockProductsManager = MockProductsManager(systemInfo: self.mockSystemInfo,
+        self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
+                                                       systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.offeringsManager = OfferingsManager(deviceCache: self.mockDeviceCache,
                                                  operationDispatcher: self.mockOperationDispatcher,

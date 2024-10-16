@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% indirim";
 "Continue" = "Devam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} denemenizi başlatın, ardından {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ ücretsiz";
+"pay_as_you_go_period" = "%@ boyunca %@";
+"pay_up_front_period" = "%@ için %@";
+"then_price_per_period" = "sonra %@";

@@ -2,9 +2,6 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : false,
-    "color_overrides_by_tier" : {
-
-    },
     "colors" : {
       "dark" : {
         "accent1" : "#F4E971",
@@ -25,8 +22,11 @@
         "text2" : "#2A2A2A"
       }
     },
+    "colors_by_tier" : {
+
+    },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
+    "images_by_tier" : {
 
     },
     "images_heic" : {
@@ -72,6 +72,9 @@
       "offer_details" : "Only {{ price }} per {{ sub_period }}",
       "offer_details_with_intro_offer" : "First {{ sub_offer_duration }} free, then {{ total_price_and_per_month }}",
       "offer_name" : null,
+      "offer_overrides" : {
+
+      },
       "subtitle" : null,
       "tier_name" : null,
       "title" : "How your **free** trial works"
@@ -81,5 +84,10 @@
 
   },
   "revision" : 0,
-  "template_name" : "3"
+  "template_name" : "3",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
 }

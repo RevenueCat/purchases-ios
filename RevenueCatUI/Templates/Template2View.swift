@@ -278,6 +278,7 @@ struct Template2View: TemplateViewType {
 
     private var footer: some View {
         FooterView(configuration: self.configuration,
+                   locale: self.selectedLocalization.locale,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
     }

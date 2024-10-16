@@ -97,7 +97,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
     private func post(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.postData), path: .postReceiptData)
+        let request = HTTPRequest(method: .post(self.postData), path: .postReceiptData, isRetryable: true)
 
         self.httpClient.perform(
             request
@@ -115,6 +115,9 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
     }
 
 }
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostReceiptDataOperation: @unchecked Sendable {}
 
 extension PostReceiptDataOperation {
 

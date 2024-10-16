@@ -250,4 +250,13 @@ class HTTPRequestTests: TestCase {
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
+    func testRequestIsNotRetryableByDefault() {
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        expect(request.isRetryable).to(beFalse())
+    }
+
+    func testRequestIsRetryableIfSet() {
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"), isRetryable: true)
+        expect(request.isRetryable).to(beTrue())
+    }
 }

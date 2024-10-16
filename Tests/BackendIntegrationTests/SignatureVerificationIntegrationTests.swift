@@ -17,7 +17,6 @@ import StoreKit
 import XCTest
 
 // swiftlint:disable type_name
-
 class BaseSignatureVerificationIntegrationTests: BaseStoreKitIntegrationTests {
 
     override var forceSignatureFailures: Bool { return self.invalidSignature }

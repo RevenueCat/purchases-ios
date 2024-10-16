@@ -193,13 +193,13 @@ private extension HTTPEndpoint {
 
     func url(with domain: URL) -> URL {
         let baseURL = self.isInternal
-            ? domain.appending(path: "internal")
+            ? domain.appendingPathComponent("internal")
             : domain
 
         return baseURL
-            .appending(path: "v1")
-            .appending(path: "developers")
-            .appending(path: self.path)
+            .appendingPathComponent("v1")
+            .appendingPathComponent("developers")
+            .appendingPathComponent(self.path)
     }
 
     private static let baseURL = URL(string: "https://api.revenuecat.com/v1/developers/")!

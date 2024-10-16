@@ -17,3 +17,7 @@
 "%d%% off" = "Diskon %d%%";
 "Continue" = "Melanjutkan";
 "Default_offer_details_with_intro_offer" = "Mulai uji coba {{ sub_offer_duration }} Anda, lalu {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ gratis";
+"pay_as_you_go_period" = "%@ selama %@";
+"pay_up_front_period" = "%@ untuk %@";
+"then_price_per_period" = "kemudian %@";

@@ -32,7 +32,7 @@ final class ProductFetcherSK1: NSObject {
     }
 
     func products(with identifiers: Set<String>) async throws -> Set<SK1Product> {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await withUnsafeThrowingContinuation { continuation in
             self.products(with: identifiers) { result in
                 continuation.resume(with: result)
             }

@@ -31,6 +31,7 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
         let systemInfo = MockSystemInfo(finishTransactions: false)
 
         self.mockManager = MockProductsManager(
+            diagnosticsTracker: nil,
             systemInfo: systemInfo,
             requestTimeout: Configuration.storeKitRequestTimeoutDefault
         )

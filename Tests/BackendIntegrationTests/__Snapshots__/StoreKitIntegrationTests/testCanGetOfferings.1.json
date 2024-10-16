@@ -33,9 +33,6 @@
         "asset_base_url" : "https://assets.pawwalls.com",
         "config" : {
           "blurred_background_image" : false,
-          "color_overrides_by_tier" : {
-
-          },
           "colors" : {
             "light" : {
               "accent1" : "#ec64e5",
@@ -46,15 +43,18 @@
               "text1" : "#000000"
             }
           },
-          "default_package" : "$rc_monthly",
-          "display_restore_purchases" : true,
-          "image_overrides_by_tier" : {
+          "colors_by_tier" : {
 
           },
+          "default_package" : "$rc_monthly",
+          "display_restore_purchases" : true,
           "images" : {
             "background" : "300883_1691437592.jpg",
             "header" : null,
             "icon" : "300883_1691437591.jpg"
+          },
+          "images_by_tier" : {
+
           },
           "packages" : [
             "$rc_monthly",
@@ -66,6 +66,7 @@
           ],
           "tos_url" : "https://revenuecat.com/tos"
         },
+        "default_locale" : "en_US",
         "localized_strings" : {
           "en_US" : {
             "call_to_action" : "Purchase for {{ sub_price_per_month }} per month",
@@ -76,6 +77,9 @@
             "offer_details" : "{{ total_price_and_per_month }}",
             "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
             "offer_name" : "{{ sub_period }}",
+            "offer_overrides" : {
+
+            },
             "subtitle" : "Get access to all our educational content trusted by thousands of parents",
             "tier_name" : null,
             "title" : "Ignite your child's curiosity"

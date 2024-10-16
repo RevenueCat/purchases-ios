@@ -7,6 +7,8 @@
 //
 
 import Nimble
+import OHHTTPStubs
+import OHHTTPStubsSwift
 @testable import RevenueCat
 import SnapshotTesting
 import StoreKit
@@ -117,6 +119,11 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    override func tearDown() async throws {
+        HTTPStubs.removeAllStubs()
+        try await super.tearDown()
+    }
 
     func testIsSandbox() throws {
         try expect(self.purchases.isSandbox) == true
@@ -932,6 +939,78 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoActiveSubscription(customerInfo)
     }
 
+    func testVerifyPurchaseGrantsEntitlementsThroughOnRetryAfter429() async throws {
+        // Ensure that the first two times POST /receipt is called, we mock a 429 error
+        // and then proceed normally with the backend on subsequent requests
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        var stubbedRequestCount = 0
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            stubbedRequestCount += 1
+
+            // Fail the first two requests, allow subsequent requests to go through to the backend
+            if stubbedRequestCount < 3 {
+
+                if stubbedRequestCount == 2 {
+                    HTTPStubs.removeAllStubs()
+                }
+                return Self.emptyTooManyRequestsResponse()
+            }
+
+            return .init()
+        }
+
+        let product = try await self.monthlyPackage.storeProduct
+        let customerInfo = try await self.purchases.purchase(product: product).customerInfo
+
+        try await self.verifyEntitlementWentThrough(customerInfo)
+        expect(stubbedRequestCount).to(equal(2))
+        expect(customerInfo.allPurchasedProductIdentifiers) == [
+            product.productIdentifier
+        ]
+    }
+
+    func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
+        // Ensure that the each time POST /receipt is called, we mock a 429 error
+        var stubbedRequestCount = 0
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            stubbedRequestCount += 1
+            return Self.emptyTooManyRequestsResponse()
+        }
+
+        let product = try await self.monthlyPackage.storeProduct
+        do {
+            _ = try await self.purchases.purchase(product: product)
+            fail("Expected purchases.purchase to fail after exhausting retry count with 429 responses")
+        } catch {
+            expect(error).to(matchError(ErrorCode.unknownError))
+        }
+
+        expect(stubbedRequestCount).to(equal(4)) // 1 original request + 3 retries
+    }
+
+    func testVerifyPurchaseDoesntRetryIfIsRetryableHeaderIsFalse() async throws {
+        // Ensure that the each time POST /receipt is called, we mock a 429 error with the 
+        // Is-Retryable header as "false"
+        var stubbedRequestCount = 0
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
+            stubbedRequestCount += 1
+            return Self.emptyTooManyRequestsResponse(
+                headers: [HTTPClient.ResponseHeader.isRetryable.rawValue: "false"]
+            )
+        }
+
+        let product = try await self.monthlyPackage.storeProduct
+        do {
+            _ = try await self.purchases.purchase(product: product)
+            fail("Expected purchases.purchase to fail with no retries when the Is-Retryable response header is false.")
+        } catch {
+            expect(error).to(matchError(ErrorCode.unknownError))
+        }
+
+        expect(stubbedRequestCount).to(equal(1)) // 1 original request + 0 retries
+    }
 }
 
 private extension BaseStoreKitIntegrationTests {
@@ -944,4 +1023,13 @@ private extension BaseStoreKitIntegrationTests {
         }
     }
 
+    static func emptyTooManyRequestsResponse(
+        headers: [String: String]? = nil
+    ) -> HTTPStubsResponse {
+        // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
+        // This creates a new response each time so modifications in one test don't affect others.
+        return .init(data: Data(),
+                     statusCode: 429,
+                     headers: headers)
+    }
 }

@@ -36,6 +36,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockProductsManager = MockProductsManager(
+            diagnosticsTracker: nil,
             systemInfo: mockSystemInfo,
             requestTimeout: Configuration.storeKitRequestTimeoutDefault
         )

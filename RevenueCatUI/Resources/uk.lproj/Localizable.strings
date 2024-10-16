@@ -17,3 +17,7 @@
 "%d%% off" = "Знижка %d%%";
 "Continue" = "Продовжити";
 "Default_offer_details_with_intro_offer" = "Розпочніть {{ sub_offer_duration }} пробний період, а потім {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ безкоштовно";
+"pay_as_you_go_period" = "%@ протягом %@";
+"pay_up_front_period" = "%@ за %@";
+"then_price_per_period" = "потім %@";

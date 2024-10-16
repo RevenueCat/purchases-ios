@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% popusta";
 "Continue" = "Nastaviti";
 "Default_offer_details_with_intro_offer" = "Započnite probno razdoblje od {{ sub_offer_duration }}, a zatim {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ besplatno";
+"pay_as_you_go_period" = "%@ tijekom %@";
+"pay_up_front_period" = "%@ za %@";
+"then_price_per_period" = "zatim %@";

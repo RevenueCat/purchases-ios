@@ -22,6 +22,7 @@ class DiagnosticsTrackerTests: TestCase {
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
     fileprivate var tracker: DiagnosticsTracker!
+    fileprivate var diagnosticsDispatcher: MockOperationDispatcher!
     fileprivate var dateProvider: MockDateProvider!
 
     override func setUpWithError() throws {
@@ -31,8 +32,10 @@ class DiagnosticsTrackerTests: TestCase {
 
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
+        self.diagnosticsDispatcher = MockOperationDispatcher()
         self.dateProvider = .init(stubbedNow: Self.eventTimestamp1)
         self.tracker = .init(diagnosticsFileHandler: self.handler,
+                             diagnosticsDispatcher: self.diagnosticsDispatcher,
                              dateProvider: self.dateProvider)
     }
 
@@ -49,7 +52,7 @@ class DiagnosticsTrackerTests: TestCase {
                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                      timestamp: Self.eventTimestamp1)
 
-        await self.tracker.track(event)
+        self.tracker.track(event)
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
@@ -67,9 +70,9 @@ class DiagnosticsTrackerTests: TestCase {
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp2)
 
-        await self.tracker.track(event1)
+        self.tracker.track(event1)
         self.dateProvider.stubbedNowResult = Self.eventTimestamp2
-        await self.tracker.track(event2)
+        self.tracker.track(event2)
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
@@ -87,7 +90,7 @@ class DiagnosticsTrackerTests: TestCase {
     func testDoesNotTrackWhenVerificationIsNotRequested() async {
         let customerInfo: CustomerInfo = .emptyInfo.copy(with: .notRequested)
 
-        await self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
+        self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
 
         let entries = await self.handler.getEntries()
         expect(entries.count) == 0
@@ -96,7 +99,7 @@ class DiagnosticsTrackerTests: TestCase {
     func testTracksCustomerInfoVerificationFailed() async {
         let customerInfo: CustomerInfo = .emptyInfo.copy(with: .failed)
 
-        await self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
+        self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
@@ -109,12 +112,13 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - http request performed
 
     func testTracksHttpRequestPerformedWithExpectedParameters() async {
-        await self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
-                                                     responseTime: 50,
-                                                     wasSuccessful: true,
-                                                     responseCode: 200,
-                                                     resultOrigin: .cache,
-                                                     verificationResult: .verified)
+        self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                               responseTime: 50,
+                                               wasSuccessful: true,
+                                               responseCode: 200,
+                                               backendErrorCode: 7121,
+                                               resultOrigin: .cache,
+                                               verificationResult: .verified)
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(eventType: .httpRequestPerformed,
@@ -123,8 +127,51 @@ class DiagnosticsTrackerTests: TestCase {
                     .responseTimeMillisKey: AnyEncodable(50000),
                     .successfulKey: AnyEncodable(true),
                     .responseCodeKey: AnyEncodable(200),
+                    .backendErrorCodeKey: AnyEncodable(7121),
                     .eTagHitKey: AnyEncodable(true),
                     .verificationResultKey: AnyEncodable("VERIFIED")],
+                  timestamp: Self.eventTimestamp1)
+        ]
+    }
+
+    // MARK: - product request
+
+    func testTracksProductRequestWithExpectedParameters() async {
+        self.tracker.trackProductsRequest(wasSuccessful: false,
+                                          storeKitVersion: .storeKit2,
+                                          errorMessage: "test error message",
+                                          errorCode: 1234,
+                                          storeKitErrorDescription: "store_kit_error_type",
+                                          responseTime: 50)
+        let emptyErrorMessage: String? = nil
+        let emptyErrorCode: Int? = nil
+        let emptySkErrorDescription: String? = nil
+        self.tracker.trackProductsRequest(wasSuccessful: true,
+                                          storeKitVersion: .storeKit1,
+                                          errorMessage: emptyErrorMessage,
+                                          errorCode: emptyErrorCode,
+                                          storeKitErrorDescription: emptySkErrorDescription,
+                                          responseTime: 20)
+
+        let entries = await self.handler.getEntries()
+        expect(entries) == [
+            .init(eventType: .appleProductsRequest,
+                  properties: [
+                    .responseTimeMillisKey: AnyEncodable(50000),
+                    .storeKitVersion: AnyEncodable("store_kit_2"),
+                    .successfulKey: AnyEncodable(false),
+                    .errorMessageKey: AnyEncodable("test error message"),
+                    .skErrorDescriptionKey: AnyEncodable("store_kit_error_type"),
+                    .errorCodeKey: AnyEncodable(1234)],
+                  timestamp: Self.eventTimestamp1),
+            .init(eventType: .appleProductsRequest,
+                  properties: [
+                    .responseTimeMillisKey: AnyEncodable(20000),
+                    .storeKitVersion: AnyEncodable("store_kit_1"),
+                    .successfulKey: AnyEncodable(true),
+                    .errorMessageKey: AnyEncodable(emptyErrorMessage),
+                    .skErrorDescriptionKey: AnyEncodable(emptySkErrorDescription),
+                    .errorCodeKey: AnyEncodable(emptyErrorCode)],
                   timestamp: Self.eventTimestamp1)
         ]
     }
@@ -145,7 +192,7 @@ class DiagnosticsTrackerTests: TestCase {
                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                      timestamp: Self.eventTimestamp2)
 
-        await self.tracker.track(event)
+        self.tracker.track(event)
 
         let entries2 = await self.handler.getEntries()
         expect(entries2.count) == 2

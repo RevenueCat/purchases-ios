@@ -721,7 +721,7 @@ class CustomerInfoVerificationTrackingTests: BaseCustomerInfoManagerTests {
     func testTracksCustomerInfoVerificationResultIfNeeded() {
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
 
-        expect(self.mockDiagnosticsTracker.trackedCustomerInfo.count).toEventually(equal(1))
+        expect(self.mockDiagnosticsTracker.trackedCustomerInfo.value.count).toEventually(equal(1))
     }
 
     func testDoesNotTrackCustomerInfoResultIfCustomerInfoDoesNotChange() {
@@ -729,7 +729,7 @@ class CustomerInfoVerificationTrackingTests: BaseCustomerInfoManagerTests {
         expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
 
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
-        expect(self.mockDiagnosticsTracker.trackedCustomerInfo.count).toEventually(equal(0))
+        expect(self.mockDiagnosticsTracker.trackedCustomerInfo.value.count).toEventually(equal(0))
     }
 
 }

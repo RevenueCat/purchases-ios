@@ -2,6 +2,8 @@
 
 ## StoreKit 2
 
+> Warning: When upgrading to v5, you **must** configure your [In-App Purchase Key](/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
+
 Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 We have been testing StoreKit 2 support in parallel to StoreKit 1 in our backend for a while and we believe it is ready for widespread use.
@@ -14,8 +16,6 @@ Here's some of the benefits you get with StoreKit 2:
 - Future proofing: StoreKit 1 APIs are being progressively deprecated by Apple, and new features are being added to StoreKit 2.
 - Faster processing time: More efficient and performant implementation of receipts validation. We have found that receipts validation can be ~200ms faster comparing to SK1 implementation for p95 of the requests.
 
-In order to use StoreKit 2, you will need to configure your [In-App Purchase Key](https://www.revenuecat.com/docs/in-app-purchase-key-configuration) in the RevenueCat dashboard.
-
 The previously deprecated configuration option `.with(usesStoreKit2IfAvailable: true)` has been removed. Remove it from your configuration option to continue using StoreKit 2.
 
 The SDK will automatically use StoreKit 1 in the following versions where StoreKit 2 is not supported: on macOS 12 or earlier, iOS 15 or earlier, iPadOS 15 or earlier, tvOS 15 or earlier, or watchOS 8 or earlier.
@@ -24,6 +24,7 @@ If for any reason you need to always use StoreKit 1, it is possible to switch ba
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
+  // Not recommended. Remove to use StoreKit 2 by default.
   .with(storeKitVersion: .storeKit1)
   .build()
 ```
@@ -39,16 +40,15 @@ If you're using the Firebase SDK, you'll need to follow [these instructions](htt
 Version 5.0 of the SDK  deprecates the term "Observer Mode" (and the APIs where this term was used), and replaces it
 with `PurchasesAreCompletedBy` (either RevenueCat or your app).
 
-Version 5.0 of the SDK also introduces support for recording purchases made directly by your app calling StoreKit 2. 
+Version 5.0 of the SDK also introduces support for tracking purchases made directly by your app calling StoreKit 2.
 
-You can enable it when configuring the SDK:
+If you're using RevenueCat only to track purchases, and you have your own implementation of StoreKit to make purchases, you will need to explicitly provide your StoreKit version when you configure the SDK.
+
+Add this configuration only if you previously had `observerMode: true` in your SDK initialization or your app has its own implementation of StoreKit to make purchases.
 
 | Version 4 | Version 5 |
 |------------|------------|
-| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)<br>  .build()</code></pre> |
-
-
-
+| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  // Set only if your app has its own implementation of StoreKit to make purchases.<br>   Select the version of StoreKit you're using.<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: /* Select .storeKit1 or .storeKit2 */)<br>  .build()</code></pre> |
 
 #### ⚠️ Observing Purchases Completed by Your App on macOS
 
@@ -59,16 +59,6 @@ let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
 let result = try await product?.purchase()
 
 _ = try await Purchases.shared.recordPurchase(result)
-```
-
-#### Observing Purchases Completed by Your App with StoreKit 1
-
-If purchases are completed by your app using StoreKit 1, you will need to explicitly configure the SDK to use StoreKit 1:
-
-```swift
-Purchases.configure(with: .builder(withAPIKey: apiKey)
-  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit1)
-  .build()
 ```
 
 ## Trusted Entitlements

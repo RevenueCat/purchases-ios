@@ -69,7 +69,8 @@ class MockHTTPClient: HTTPClient {
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
-                   requestTimeout: requestTimeout)
+                   requestTimeout: requestTimeout,
+                   operationDispatcher: MockOperationDispatcher())
     }
 
     private let sourceTestFile: StaticString
@@ -146,9 +147,11 @@ class MockHTTPClient: HTTPClient {
 
 }
 
+extension MockHTTPClient: @unchecked Sendable {}
+
 // MARK: - MockHTTPClient.Call Encodable
 
-extension HTTPRequest: Encodable {
+extension RevenueCat.HTTPRequest: Swift.Encodable {
 
     enum CodingKeys: String, CodingKey {
 

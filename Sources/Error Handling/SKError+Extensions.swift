@@ -91,6 +91,59 @@ extension SKError: PurchasesErrorConvertible {
 
 }
 
+extension SKError.Code {
+
+    var trackingDescription: String {
+        switch self {
+        case .unknown:
+            return "unknown"
+        case .clientInvalid:
+            return "client_invalid"
+        case .paymentCancelled:
+            return "payment_cancelled"
+        case .paymentInvalid:
+            return "payment_invalid"
+        case .paymentNotAllowed:
+            return "payment_not_allowed"
+        case .storeProductNotAvailable:
+            return "store_product_not_available"
+        case .cloudServicePermissionDenied:
+            return "cloud_service_permission_denied"
+        case .cloudServiceNetworkConnectionFailed:
+            return "cloud_service_network_connection_failed"
+        case .cloudServiceRevoked:
+            return "cloud_service_revoked"
+        case .privacyAcknowledgementRequired:
+            return "privacy_acknowledgement_required"
+        case .unauthorizedRequestData:
+            return "unauthorized_request_data"
+        case .invalidOfferIdentifier:
+            return "invalid_offer_identifier"
+        case .invalidSignature:
+            return "invalid_signature"
+        case .missingOfferParams:
+            return "missing_offer_parameters"
+        case .invalidOfferPrice:
+            return "invalid_offer_price"
+        case .overlayCancelled:
+            return "overlay_cancelled"
+        case .overlayInvalidConfiguration:
+            return "overlay_invalid_configuration"
+        case .overlayTimeout:
+            return "overlay_timeout"
+        case .ineligibleForOffer:
+            return "ineligible_for_offer"
+        case .unsupportedPlatform:
+            return "unsupported_platform"
+        case .overlayPresentedInBackgroundScene:
+            return "overlay_presented_in_background_scene"
+        @unknown default:
+            return "unknown_store_kit_error"
+        }
+    }
+
+}
+
 private extension SKError {
 
     enum UndocumentedCode: Int {

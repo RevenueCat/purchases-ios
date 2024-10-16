@@ -86,7 +86,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../PaywallsTester/Products.storekit">
+         identifier = "../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

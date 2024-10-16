@@ -14,7 +14,9 @@ var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", from: "1.11.0")
 ]
 if shouldIncludeDocCPlugin {
-    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
+    // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
+    // https://github.com/RevenueCat/purchases-ios/pull/4216
+    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", .exact("1.3.0")))
 }
 
 let package = Package(
@@ -72,6 +74,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
+                    resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")])
     ]
 )

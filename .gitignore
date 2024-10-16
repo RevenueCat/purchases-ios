@@ -49,11 +49,16 @@ Tests/purchases-ios-snapshots
 
 Examples/**/Package.resolved
 
-Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 Tests/InstallationTests/XcodeDirectInstallation/XcodeDirectInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # fastlane
 fastlane/.env
+.vscode/settings.json
+
+# Local build settings
+Local.xcconfig
+
+# Gets created when Cursor is used with the sswg Swift extension
+/.index-build/

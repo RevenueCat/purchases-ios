@@ -80,7 +80,7 @@ internal enum Async {
     static func call<Value, Error: Swift.Error>(
         method: (@escaping @Sendable (Result<Value, Error>) -> Void) -> Void
     ) async throws -> Value {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await withUnsafeThrowingContinuation { continuation in
             @Sendable
             func complete(_ result: Result<Value, Error>) {
                 continuation.resume(with: result)
@@ -101,7 +101,10 @@ internal enum Async {
     static func call<Value>(
         method: (@escaping @Sendable (Value) -> Void) -> Void
     ) async -> Value {
-        return await withCheckedContinuation { continuation in
+        // Note: We're using UnsafeContinuation instead of Checked because
+        // of a crash in iOS 18.0 devices when CheckedContinuations are used.
+        // See: https://github.com/RevenueCat/purchases-ios/issues/4177
+        return await withUnsafeContinuation { continuation in
             @Sendable
             func complete(_ value: Value) {
                 continuation.resume(with: .success(value))

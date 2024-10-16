@@ -9,8 +9,8 @@ import SwiftUI
 
 struct LoginWall<ContentView: View>: View {
 
-    @Environment(ApplicationData.self) private var application
-    
+    @EnvironmentObject private var application: ApplicationData
+
     @State
     private var error: Error?
 
@@ -21,8 +21,12 @@ struct LoginWall<ContentView: View>: View {
         case .unknown:
             ProgressView()
                 .displayError(self.$error)
-                .task { @MainActor in
-                    await reload()
+                .onAppear {
+                    // note we are using .onAppear and not .task because .task causes an error dialog to
+                    // briefly show when run on iOS 15.
+                    Task {
+                        await reload()
+                    }
                 }
         case let .signedIn(developer):
             content(developer)
@@ -52,4 +56,5 @@ struct LoginWall<ContentView: View>: View {
             Text("Developer \(developer.name) is now signed in.")
         }
     }
+    .environmentObject(ApplicationData())
 }

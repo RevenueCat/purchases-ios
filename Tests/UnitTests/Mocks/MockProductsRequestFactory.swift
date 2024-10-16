@@ -25,3 +25,5 @@ class MockProductsRequestFactory: ProductsRequestFactory {
                                                            responseTime: requestResponseTime)
     }
 }
+
+extension MockProductsRequestFactory: @unchecked Sendable {}

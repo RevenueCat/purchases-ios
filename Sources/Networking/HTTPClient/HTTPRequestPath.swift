@@ -70,6 +70,7 @@ extension HTTPRequest {
         case postAdServicesToken(appUserID: String)
         case health
         case getProductEntitlementMapping
+        case getCustomerCenterConfig(appUserID: String)
 
     }
 
@@ -102,7 +103,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .postSubscriberAttributes,
                 .postAdServicesToken,
-                .getProductEntitlementMapping:
+                .getProductEntitlementMapping,
+                .getCustomerCenterConfig:
             return true
 
         case .health:
@@ -121,7 +123,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .postSubscriberAttributes,
                 .postAdServicesToken,
-                .getProductEntitlementMapping:
+                .getProductEntitlementMapping,
+                .getCustomerCenterConfig:
             return true
         case .health:
             return false
@@ -141,7 +144,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
-                .postOfferForSigning:
+                .postOfferForSigning,
+                .getCustomerCenterConfig:
             return false
         }
     }
@@ -159,7 +163,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .getProductEntitlementMapping:
+                .getProductEntitlementMapping,
+                .getCustomerCenterConfig:
             return false
         }
     }
@@ -199,6 +204,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getProductEntitlementMapping:
             return "product_entitlement_mapping"
 
+        case let .getCustomerCenterConfig(appUserID):
+            return "customercenter/\(Self.escape(appUserID))"
+
         }
     }
 
@@ -236,6 +244,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getProductEntitlementMapping:
             return "get_product_entitlement_mapping"
+
+        case .getCustomerCenterConfig:
+            return "customer_center"
 
         }
     }

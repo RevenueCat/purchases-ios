@@ -102,6 +102,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure
@@ -192,7 +193,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
-            restoreStarted: nil,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure

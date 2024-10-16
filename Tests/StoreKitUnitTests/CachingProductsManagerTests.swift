@@ -132,6 +132,7 @@ private extension CachingProductsManagerIntegrationTests {
         return CachingProductsManager(
             manager:
                 ProductsManager(
+                    diagnosticsTracker: nil,
                     systemInfo: MockSystemInfo(
                         finishTransactions: true,
                         storeKitVersion: storeKitVersion

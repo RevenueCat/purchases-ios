@@ -17,3 +17,7 @@
 "%d%% off" = "%d%%オフ";
 "Continue" = "続く";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} トライアルを開始してから、{{ total_price_and_per_month }} を開始してください。";
+"free_trial_period" = "%@ 無料";
+"pay_as_you_go_period" = "%@ の期間 %@";
+"pay_up_front_period" = "%@ で %@";
+"then_price_per_period" = "次に %@";

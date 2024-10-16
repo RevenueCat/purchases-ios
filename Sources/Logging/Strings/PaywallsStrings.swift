@@ -29,6 +29,7 @@ enum PaywallsStrings {
     case empty_localization
     case looking_up_localization(preferred: [Locale], search: [Locale])
     case found_localization(Locale)
+    case default_localization(localeIdentifier: String)
     case fallback_localization(localeIdentifier: String)
 
     // MARK: - Events
@@ -72,6 +73,9 @@ extension PaywallsStrings: LogMessage {
 
         case let .found_localization(locale):
             return "Found localized configuration for '\(locale.identifier)'"
+
+        case let .default_localization(localeIdentifier):
+            return "No localized configuration found, using default: \(localeIdentifier)"
 
         case let .fallback_localization(localeIdentifier):
             return "Failed looking up localization, using fallback: \(localeIdentifier)"

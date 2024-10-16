@@ -62,8 +62,10 @@ private extension DiagnosticsEvent.EventType {
     var name: String {
         switch self {
         case .httpRequestPerformed: return "http_request_performed"
+        case .appleProductsRequest: return "apple_products_request"
         case .customerInfoVerificationResult: return "customer_info_verification_result"
         case .maxEventsStoredLimitReached: return "max_events_stored_limit_reached"
+        case .applePurchaseAttempt: return "apple_purchase_attempt"
         }
 
     }
@@ -80,10 +82,20 @@ private extension DiagnosticsEvent.DiagnosticsPropertyKey {
             return "endpoint_name"
         case .responseTimeMillisKey:
             return "response_time_millis"
+        case .storeKitVersion:
+            return "store_kit_version"
         case .successfulKey:
             return "successful"
         case .responseCodeKey:
             return "response_code"
+        case .backendErrorCodeKey:
+            return "backend_error_code"
+        case .errorMessageKey:
+            return "error_message"
+        case .errorCodeKey:
+            return "error_code"
+        case .skErrorDescriptionKey:
+            return "sk_error_description"
         case .eTagHitKey:
             return "etag_hit"
         }

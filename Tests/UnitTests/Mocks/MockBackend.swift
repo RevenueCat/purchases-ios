@@ -33,13 +33,15 @@ class MockBackend: Backend {
         let offlineEntitlements = MockOfflineEntitlementsAPI()
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
+        let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   offeringsAPI: offerings,
                   offlineEntitlements: offlineEntitlements,
-                  internalAPI: internalAPI)
+                  internalAPI: internalAPI,
+                  customerCenterConfig: customerCenterConfig)
     }
 
     override func post(receipt: EncodedAppleReceipt,
@@ -175,3 +177,5 @@ class MockBackend: Backend {
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
 }
+
+extension MockBackend: @unchecked Sendable {}

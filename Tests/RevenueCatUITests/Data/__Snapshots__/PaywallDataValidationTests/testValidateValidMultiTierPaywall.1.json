@@ -2,49 +2,69 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : false,
-    "color_overrides_by_tier" : {
+    "colors" : {
+      "dark" : {
+
+      },
+      "light" : {
+
+      }
+    },
+    "colors_by_tier" : {
       "basic" : {
         "light" : {
           "accent1" : "#2D7FC1",
-          "accent3" : "#100031",
-          "call_to_action_background" : "#42C1F7"
+          "accent2" : "#100031",
+          "accent3" : "#7676801F",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#42C1F7",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
         }
       },
       "premium" : {
         "light" : {
           "accent1" : "#77C344",
+          "accent2" : "#7676801F",
           "accent3" : "#213711",
-          "call_to_action_background" : "#95D26B"
+          "background" : "#ffffff",
+          "call_to_action_background" : "#95D26B",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
         }
       },
       "standard" : {
         "light" : {
           "accent1" : "#CE0755",
+          "accent2" : "#7676801F",
           "accent3" : "#310217",
-          "call_to_action_background" : "#DA407A"
+          "background" : "#ffffff",
+          "call_to_action_background" : "#DA407A",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
         }
       }
     },
-    "colors" : {
-      "dark" : {
-        "accent2" : "#CE0755",
-        "background" : "#000000",
-        "call_to_action_foreground" : "#88FF6A",
-        "text1" : "#FFFFFF",
-        "text2" : "#CDCDCD",
-        "text3" : "#000000"
-      },
-      "light" : {
-        "accent2" : "#7676801F",
-        "background" : "#ffffff",
-        "call_to_action_foreground" : "#ffffff",
-        "text1" : "#000000",
-        "text2" : "#adf5c5",
-        "text3" : "#b15d5d"
-      }
-    },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
+    "images_by_tier" : {
       "basic" : {
         "background" : null,
         "header" : "954459_1703109702.png",
@@ -70,8 +90,8 @@
         "default_package" : "$rc_three_month",
         "id" : "basic",
         "packages" : [
-          "$rc_three_month",
-          "$rc_lifetime"
+          "$rc_annual",
+          "$rc_monthly"
         ]
       },
       {
@@ -79,7 +99,7 @@
         "id" : "standard",
         "packages" : [
           "$rc_weekly",
-          "$rc_monthly"
+          "$rc_three_month"
         ]
       },
       {
@@ -87,7 +107,7 @@
         "id" : "premium",
         "packages" : [
           "$rc_six_month",
-          "$rc_annual"
+          "$rc_lifetime"
         ]
       }
     ],
@@ -118,6 +138,16 @@
         "offer_details" : "{{ total_price_and_per_month }}",
         "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
         "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_lifetime" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Lifetime"
+          },
+          "$rc_three_month" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Three Month"
+          }
+        },
         "subtitle" : null,
         "tier_name" : "Basic",
         "title" : "Get started with our Basic plan"
@@ -142,6 +172,17 @@
         "offer_details" : "{{ total_price_and_per_month }}",
         "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
         "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_annual" : {
+            "offer_details" : "Details",
+            "offer_details_with_intro_offer" : "",
+            "offer_name" : "OVERRIDE Annual"
+          },
+          "$rc_six_month" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Six Month"
+          }
+        },
         "subtitle" : null,
         "tier_name" : "Premium",
         "title" : "Master the art of video editing"
@@ -166,6 +207,16 @@
         "offer_details" : "{{ total_price_and_per_month }}",
         "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
         "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_monthly" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Month"
+          },
+          "$rc_weekly" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Week"
+          }
+        },
         "subtitle" : null,
         "tier_name" : "Standard",
         "title" : "Get started with our Standard plan"
@@ -173,5 +224,10 @@
     }
   },
   "revision" : 0,
-  "template_name" : "7_disabled"
+  "template_name" : "7",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
 }

@@ -14,7 +14,7 @@ Whether you are building a new app or already have millions of customers, you ca
   * Fetch products, make purchases, and check subscription status with our [native SDKs](https://docs.revenuecat.com/docs/installation). 
   * Host and [configure products](https://docs.revenuecat.com/docs/entitlements) remotely from our dashboard. 
   * Analyze the most important metrics for your app business [in one place](https://docs.revenuecat.com/docs/charts).
-  * See customer transaction histories, chart lifetime value, and [grant promotional subscriptions](https://docs.revenuecat.com/docs/customers).
+  * See customer transaction histories, chart lifetime value, and [grant promotional subscriptions](https://www.revenuecat.com/docs/dashboard-and-metrics/customer-history/promotionals).
   * Get notified of real-time events through [webhooks](https://docs.revenuecat.com/docs/webhooks).
   * Send enriched purchase events to analytics and attribution tools with our easy integrations.
 
@@ -48,7 +48,7 @@ For more detailed information, you can view our complete documentation at [docs.
 
 Please follow the [Quickstart Guide](https://docs.revenuecat.com/docs/) for more information on how to install the SDK.
 
-**Note:** When integrating SPM, it is recommended to add the SPM mirror repository for faster download/integration times: https://github.com/RevenueCat/purchases-ios-spm
+**Note:** When integrating with SPM, it is recommended to add the SPM mirror repository for faster download/integration times: https://github.com/RevenueCat/purchases-ios-spm
 
 Or view our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)

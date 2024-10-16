@@ -144,6 +144,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseSK2CancelledWithSimulatedError() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
@@ -576,6 +578,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.unsyncedAttributes).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext).to(beNil())
         expect(customerInfo) == mockCustomerInfo
     }
 
@@ -756,4 +760,135 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             expect(error).to(matchError(expectedError.asPurchasesError))
         }
     }
+
+    // MARK: - Purchase tracks
+
+    func testPurchaseSK2TracksCorrectly() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let diagnosticsTracker = MockDiagnosticsTracker()
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               diagnosticsSynchronizer: diagnosticsSynchronizer,
+                               diagnosticsTracker: diagnosticsTracker)
+
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+        let mockTransaction = try await self.simulateAnyPurchase()
+        mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
+
+        let product = try await self.fetchSk2Product()
+        let (transaction, _, _) = try await orchestrator.purchase(sk2Product: product,
+                                                                  package: nil,
+                                                                  promotionalOffer: nil)
+
+        expect(transaction).toNot(beNil())
+        try await asyncWait(
+            description: "Diagnostics tracker should have been called",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        ) { [diagnosticsTracker = diagnosticsTracker] in
+            diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+        }
+
+        let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
+        expect(params.wasSuccessful).to(beTrue())
+        expect(params.storeKitVersion) == .storeKit2
+        expect(params.errorMessage).to(beNil())
+        expect(params.errorCode).to(beNil())
+        expect(params.storeKitErrorDescription).to(beNil())
+    }
+
+    func testPurchaseWithInvalidPromotionalOfferSignatureTracksError() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let diagnosticsTracker = MockDiagnosticsTracker()
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               diagnosticsSynchronizer: diagnosticsSynchronizer,
+                               diagnosticsTracker: diagnosticsTracker)
+
+        let product = try await self.fetchSk2Product()
+        let offer = PromotionalOffer.SignedData(
+            identifier: "identifier \(Int.random(in: 0..<1000))",
+            keyIdentifier: "key identifier \(Int.random(in: 0..<1000))",
+            nonce: .init(),
+            // This should be base64
+            signature: "signature \(Int.random(in: 0..<1000))",
+            timestamp: Int.random(in: 0..<1000)
+        )
+        do {
+            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
+            XCTFail("Expected error")
+        } catch {
+            try await asyncWait(
+                description: "Diagnostics tracker should have been called",
+                timeout: .seconds(4),
+                pollInterval: .milliseconds(100)
+            ) { [diagnosticsTracker = diagnosticsTracker] in
+                diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+            }
+
+            let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
+            expect(params.wasSuccessful).to(beFalse())
+            expect(params.storeKitVersion) == .storeKit2
+            expect(params.errorMessage)
+                .to(contain("The signature generated by RevenueCat could not be decoded: \(offer.signature)"))
+            expect(params.errorCode) == ErrorCode.invalidPromotionalOfferError.rawValue
+            expect(params.storeKitErrorDescription).to(beNil())
+        }
+    }
+
+    #if swift(>=5.9)
+    @available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *)
+    func testPurchaseWithSimulatedErrorTracksError() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+        try await self.testSession.setSimulatedError(.generic(.unknown), forAPI: .purchase)
+
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let diagnosticsTracker = MockDiagnosticsTracker()
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               diagnosticsSynchronizer: diagnosticsSynchronizer,
+                               diagnosticsTracker: diagnosticsTracker)
+
+        let product = try await self.fetchSk2Product()
+
+        do {
+            let (transaction, _, _) = try await orchestrator.purchase(sk2Product: product,
+                                                                      package: nil,
+                                                                      promotionalOffer: nil)
+            XCTFail("Expected error")
+        } catch {
+            try await asyncWait(
+                description: "Diagnostics tracker should have been called",
+                timeout: .seconds(4),
+                pollInterval: .milliseconds(100)
+            ) { [diagnosticsTracker = diagnosticsTracker] in
+                diagnosticsTracker.trackedPurchaseRequestParams.value.count == 1
+            }
+
+            let params = try XCTUnwrap(diagnosticsTracker.trackedPurchaseRequestParams.value.first)
+            expect(params.wasSuccessful).to(beFalse())
+            expect(params.storeKitVersion) == .storeKit2
+            expect(params.errorMessage) == "Unable to Complete Request"
+            expect(params.errorCode) == ErrorCode.storeProblemError.rawValue
+            expect(params.storeKitErrorDescription) == StoreKitError.unknown.trackingDescription
+        }
+    }
+    #endif
+
 }

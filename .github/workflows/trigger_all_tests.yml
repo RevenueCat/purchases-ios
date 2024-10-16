@@ -1,0 +1,60 @@
+name: Trigger All Tests
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger-circleci:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.body == '@RCGitBot please test' &&
+      github.repository == 'RevenueCat/purchases-ios'
+
+    steps:
+      - name: Check membership in RevenueCat Org
+        env:
+          READ_ORG_GITHUB_TOKEN: ${{ secrets.READ_ORG_GITHUB_TOKEN }}
+        id: verify
+        # ensure that only RevenueCat members can trigger this. According to Github docs, only 204
+        # response codes correspond to members of the organization.
+        run: |
+          RESPONSE=$(curl -s -o /dev/null \
+            --head \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer $READ_ORG_GITHUB_TOKEN" \
+            https://api.github.com/orgs/RevenueCat/members/${{ github.event.comment.user.login }})
+          if [[ "$RESPONSE" != "204" ]]; then
+            echo "User is not a member of the organization"
+            exit 1
+          fi
+          echo "User is a member of the organization"
+
+      # Note: actions based on issue comments always trigger from the main branch. So we need to tell CircleCI to use a specific branch. 
+      # We can do that by passing in the target-branch. 
+      # This solution is based on this comment: https://github.com/CircleCI-Public/trigger-circleci-pipeline-action/issues/61#issuecomment-1662021882
+      # But we can also see that the following code reads from this parameter: https://github.com/CircleCI-Public/trigger-circleci-pipeline-action/blob/a81cd720792a6088debd7f182b552845abb86f1b/src/lib/CircleCIPipelineTrigger.ts#L66
+      # Even though it seems to be undocumented as of writing. 
+      # 
+      # Note 2: this assumes that the github client is installed
+      # As of writing, this is installed in ubuntu-latest
+      # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cli-tools
+      
+      - id: 'get-branch' # the id here is important since it gets reused in the next step
+        run: echo "branch=$(gh pr view "$PR_NO" --repo "$REPO" --json headRefName --jq '.headRefName')" >> "$GITHUB_OUTPUT"
+        env:
+          REPO: ${{ github.repository }}
+          PR_NO: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger CircleCI workflow
+        id: trigger_circleci_workflow
+        if: success()
+
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
+        with:
+          target-branch: ${{ steps.get-branch.outputs.branch }}
+          GHA_Meta: "run-from-github-comments"
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}

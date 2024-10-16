@@ -116,7 +116,7 @@ class VariablesTests: TestCase {
 
     func testIntroPrice() {
         self.provider.introductoryOfferPrice = "$4.99"
-        expect(self.process("{{ sub_offer_price }}")) == self.provider.localizedIntroductoryOfferPrice
+        expect(self.process("{{ sub_offer_price }}")) == self.provider.localizedIntroductoryOfferPrice()
     }
 
     func testRelativeDiscount() {
@@ -233,7 +233,7 @@ class VariablesTests: TestCase {
                 offeringIdentifier: ""
             )
         )
-        expect(result) == "$53.99/yr ($4.49/mo)"
+        expect(result) == "$53.99/yr ($4.50/mo)"
     }
 
     func testRelativeDiscountWithNoDiscount() {
@@ -291,9 +291,10 @@ private extension VariablesTests {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct MockVariableProvider: VariableDataProvider {
-
     var applicationName: String = ""
+    var packageIdentifier: String = ""
     var localizedPrice: String = ""
     var localizedPricePerWeek: String = ""
     var localizedPricePerMonth: String = ""
@@ -310,6 +311,34 @@ private struct MockVariableProvider: VariableDataProvider {
     var introductoryOfferDuration: String?
     var introductoryOfferPrice: String = ""
     var relativeDiscount: String?
+
+    func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPricePerWeek
+    }
+
+    func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPricePerMonth
+    }
+
+    func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPrice
+    }
+
+    func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPricePerPeriod
+    }
+
+    func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPricePerPeriodFull
+    }
+
+    func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPriceAndPerMonth
+    }
+
+    func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String {
+        self.localizedPriceAndPerMonthFull
+    }
 
     func periodNameOrIdentifier(_ locale: Locale) -> String {
         return self.periodNameOrIdentifier
@@ -351,7 +380,7 @@ private struct MockVariableProvider: VariableDataProvider {
         return self.localizedPriceAndPerMonthFull
     }
 
-    var localizedIntroductoryOfferPrice: String? {
+    func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool = false) -> String? {
         return self.introductoryOfferPrice
     }
 

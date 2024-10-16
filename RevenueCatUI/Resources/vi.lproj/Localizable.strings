@@ -17,3 +17,7 @@
 "%d%% off" = "giảm giá %d%%";
 "Continue" = "Tiếp tục";
 "Default_offer_details_with_intro_offer" = "Bắt đầu dùng thử {{ sub_offer_duration }}, sau đó là {{ Total_price_and_per_month }}.";
+"free_trial_period" = "%@ miễn phí";
+"pay_as_you_go_period" = "%@ trong %@";
+"pay_up_front_period" = "%@ cho %@";
+"then_price_per_period" = "sau %@";

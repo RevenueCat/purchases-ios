@@ -64,23 +64,24 @@ enum Localization {
 
     static func localized(
         packageType: PackageType,
-        locale: Locale = .current
+        locale: Locale,
+        fallbackLocale: Locale = Self.fallbackLocale
     ) -> String? {
         guard let key = packageType.localizationKey else { return nil }
 
-        func value(locale: Locale, default: String?) -> String {
+        func value(locale: Locale, fallback: String?) -> String {
             Self
                 .localizedBundle(locale)
                 .localizedString(forKey: key,
-                                 value: `default`,
+                                 value: fallback,
                                  table: nil)
         }
 
         // Returns the localized string
         return value(
             locale: locale,
-            // Or defaults to english
-            default: value(locale: Self.defaultLocale, default: nil)
+            // Or falls back to first localization, and if unavailable, english
+            fallback: value(locale: fallbackLocale, fallback: nil)
         )
     }
 
@@ -194,9 +195,9 @@ private extension Localization {
     static let unitAbbreviationLengthPriorities = [ 2, 3 ]
 
     /// For falling back in case language isn't localized.
-    static let defaultLocale: Locale = .init(identifier: Self.defaultLocaleIdentifier)
+    static let fallbackLocale: Locale = .init(identifier: Self.fallbackLocaleIdentifier)
 
-    private static let defaultLocaleIdentifier: String = Locale.preferredLanguages.first ?? "en_US"
+    private static let fallbackLocaleIdentifier: String = Locale.preferredLanguages.first ?? "en_US"
 
 }
 

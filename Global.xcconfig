@@ -1,0 +1,27 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  Global.xcconfig
+//
+//  Created by Jay Shortway on 02/10/2024.
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+// ======
+// README
+// ======
+// This file's main purpose is to be able to make Local.xcconfig an optional Configuration Settings file. Otherwise,
+// builds would fail if Local.xcconfig does not exist, which we don't want. Any local build options, such as enabling
+// compiler flags, should be done in Local.xcconfig. See Local.xcconfig.SAMPLE on how to create Local.xcconfig.
+//
+// Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects.
+// ======
+
+#include? "Local.xcconfig"

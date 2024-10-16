@@ -203,6 +203,10 @@ enum DefaultDecodable {
             static var defaultValue: Int { 0 }
         }
 
+        enum ZeroDouble: DefaultValueProvider {
+            static var defaultValue: Double { 0 }
+        }
+
         enum EmptyArray<T: List>: DefaultValueProvider {
             static var defaultValue: T { [] }
         }
@@ -231,6 +235,7 @@ enum DefaultDecodable {
  *   @DefaultDecodable.EmptyDictionary var dictionary: [String: Int]
  *   @DefaultDecodable.Now var date: Date
  *   @DefaultDecodable.Zero var number: Int
+ *   @DefaultDecodable.Zero var number: Double
  * }
  * ```
  */
@@ -243,5 +248,6 @@ extension DefaultDecodable {
     typealias EmptyDictionary<T: Map> = DefaultValue<Sources.EmptyDictionary<T>>
     typealias Now = DefaultValue<Sources.Now>
     typealias Zero = DefaultValue<Sources.Zero>
+    typealias ZeroDouble = DefaultValue<Sources.ZeroDouble>
 
 }

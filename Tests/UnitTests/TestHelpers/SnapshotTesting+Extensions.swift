@@ -154,7 +154,7 @@ private let traits: UITraitCollection = .init(displayScale: 1)
 
 #endif
 
-private let perceptualPrecision: Float = 0.94
+private let perceptualPrecision: Float = 0.93
 private let timeout: DispatchTimeInterval = .seconds(3)
 private let pollInterval: DispatchTimeInterval = .milliseconds(100)
 
@@ -163,8 +163,15 @@ private let pollInterval: DispatchTimeInterval = .milliseconds(100)
 private extension Encodable {
 
     func asFormattedString(backwardsCompatible: Bool) throws -> String {
-        return String(decoding: try self.asFormattedData(backwardsCompatible: backwardsCompatible),
-                      as: UTF8.self)
+        let data = try self.asFormattedData(backwardsCompatible: backwardsCompatible)
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw NSError(
+                domain: "EncodingError",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Provided data is not a valid UTF-8 string."]
+            )
+        }
+        return string
     }
 
     func asFormattedData(backwardsCompatible: Bool) throws -> Data {

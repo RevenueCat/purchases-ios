@@ -38,19 +38,22 @@ verify_no_included_apikeys() {
     "${SCRIPT_DIR}/../Examples/MagicWeather/MagicWeather/Constants.swift"
     "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/Shared/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTesterSwiftUI/Core/Constants.swift"
-    "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTester/PurchaseTester/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PaywallsTester/PaywallsTester/Config/LocalConfigItems.swift"
   )
+  FILES_STAGED=$(git diff --cached --name-only)
   PATTERN="\"REVENUECAT_API_KEY\""
 
-  for i in "${FILES_TO_CHECK[@]}" 
+  for staged_file in $FILES_STAGED
   do
-    grep -q $PATTERN $i
-    FOUND=$?
-    if [ $FOUND -ne 0 ]; then
-      echo "Leftover API Key found in '$(basename $i)'. Please remove."
-      exit $FOUND
-    fi
+    absolute_staged_file=$(realpath "$staged_file")
+    for api_file in "${FILES_TO_CHECK[@]}"
+    do
+      absolute_api_file=$(realpath "$api_file")
+      if [ $absolute_staged_file = $absolute_api_file ] && ! grep -q $PATTERN $absolute_staged_file; then
+        echo "Leftover API Key found in '$(basename $absolute_staged_file)'. Please remove."
+        exit 1
+      fi
+    done
   done
 }
 

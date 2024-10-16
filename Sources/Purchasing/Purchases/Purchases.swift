@@ -235,6 +235,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.systemInfo.finishTransactions = newValue.finishTransactions }
     }
 
+    /// The three-letter code representing the country or region
+    /// associated with the App Store storefront.
+    /// - Note: This property uses the ISO 3166-1 Alpha-3 country code representation.
+    @objc public var storeFrontCountryCode: String? {
+        systemInfo.storefront?.countryCode
+    }
+
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let backend: Backend
@@ -347,6 +354,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let productsRequestFactory = ProductsRequestFactory()
         let productsManager = CachingProductsManager(
             manager: ProductsManager(productsRequestFactory: productsRequestFactory,
+                                     diagnosticsTracker: diagnosticsTracker,
                                      systemInfo: systemInfo,
                                      requestTimeout: storeKitTimeout)
         )
@@ -493,7 +501,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
-                    diagnosticsSynchronizer: diagnosticsSynchronizer
+                    diagnosticsSynchronizer: diagnosticsSynchronizer,
+                    diagnosticsTracker: diagnosticsTracker
                 )
             } else {
                 return .init(
@@ -1189,6 +1198,18 @@ public extension Purchases {
         await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
     }
 
+    /// Used by `RevenueCatUI` to download customer center data
+    func loadCustomerCenter() async throws -> CustomerCenterConfigData {
+        let response = try await Async.call { completion in
+            self.backend.customerCenterConfig.getCustomerCenterConfig(appUserID: self.appUserID,
+                                                                      isAppBackgrounded: false) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        return CustomerCenterConfigData(from: response)
+    }
+
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
@@ -1525,7 +1546,12 @@ public extension Purchases {
     /**
      * Deprecated
      */
-    @available(*, deprecated, message: "Configure behavior through the RevenueCat dashboard instead")
+    @available(*, deprecated, message: """
+    Configure behavior through the RevenueCat dashboard instead. If you have configured the \"Legacy\" restore
+    behavior in the [RevenueCat Dashboard](app.revenuecat.com) and are currently setting this to `true`, keep
+    this setting active.
+    """
+    )
     @objc var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
@@ -1709,7 +1735,7 @@ internal extension Purchases {
     }
 
     var offlineCustomerInfoEnabled: Bool {
-        return self.backend.offlineCustomerInfoEnabled
+        return self.backend.offlineCustomerInfoEnabled && self.systemInfo.supportsOfflineEntitlements
     }
 
     var publicKey: Signing.PublicKey? {
@@ -1891,7 +1917,7 @@ private extension Purchases {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.paywallEventsManager else { return }
 
-        self.operationDispatcher.dispatchOnWorkerThread(delay: .long) {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
             _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
         }
     }

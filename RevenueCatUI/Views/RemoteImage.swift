@@ -14,16 +14,13 @@
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct RemoteImage: View {
+struct RemoteImage<Content: View>: View {
 
     let url: URL
     let lowResUrl: URL?
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
-
-    var fetchLowRes: Bool {
-        lowResUrl != nil
-    }
+    let content: (Image, CGSize) -> Content
 
     @StateObject
     private var highResLoader: ImageLoader = .init()
@@ -31,19 +28,58 @@ struct RemoteImage: View {
     @StateObject
     private var lowResLoader: ImageLoader = .init()
 
-    init(url: URL, lowResUrl: URL? = nil, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
+    var fetchLowRes: Bool {
+        lowResUrl != nil
+    }
+
+    private let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
+
+    init(
+        url: URL,
+        lowResUrl: URL? = nil,
+        @ViewBuilder content: @escaping (Image, CGSize) -> Content
+    ) {
         self.url = url
-        self.aspectRatio = aspectRatio
-        self.maxWidth = maxWidth
         self.lowResUrl = lowResUrl
+        self.content = content
+        self.aspectRatio = nil
+        self.maxWidth = nil
+    }
+
+    init(
+        url: URL,
+        lowResUrl: URL? = nil,
+        aspectRatio: CGFloat? = nil,
+        maxWidth: CGFloat? = nil
+    ) where Content == AnyView {
+        self.url = url
+        self.lowResUrl = lowResUrl
+        self.maxWidth = maxWidth
+        self.aspectRatio = aspectRatio
+        self.content = { (image, _) in
+            if let aspectRatio {
+                return AnyView(
+                    image
+                        .fitToAspect(aspectRatio, contentMode: .fill)
+                        .frame(maxWidth: maxWidth)
+                        .accessibilityHidden(true)
+                )
+            } else {
+                return AnyView(
+                    image
+                        .resizable()
+                        .accessibilityHidden(true)
+                )
+            }
+        }
     }
 
     var body: some View {
         Group {
-            if case let .success(image) = highResLoader.result {
-                displayImage(image)
-            } else if case let .success(image) = lowResLoader.result {
-                displayImage(image)
+            if case let .success(result) = highResLoader.result {
+                content(result.image, result.size)
+            } else if case let .success(result) = lowResLoader.result {
+                content(result.image, result.size)
             } else if case let .failure(highResError) = highResLoader.result {
                 if !fetchLowRes {
                     emptyView(error: highResError)
@@ -56,26 +92,9 @@ struct RemoteImage: View {
                 emptyView(error: nil)
             }
         }
-        .transition(Self.transition)
+        .transition(self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
             await loadImages()
-        }
-    }
-
-    private func displayImage(_ image: Image) -> some View {
-        if let aspectRatio {
-            return AnyView(
-                image
-                    .fitToAspect(aspectRatio, contentMode: .fill)
-                    .frame(maxWidth: self.maxWidth)
-                    .accessibilityHidden(true)
-            )
-        } else {
-            return AnyView(
-                image
-                    .resizable()
-                    .accessibilityHidden(true)
-            )
         }
     }
 
@@ -84,7 +103,6 @@ struct RemoteImage: View {
             async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
             async let highResLoad: Void = highResLoader.load(url: url)
             _ = await (lowResLoad, highResLoad)
-
         } else {
             await highResLoader.load(url: url)
         }
@@ -114,7 +132,5 @@ struct RemoteImage: View {
             }
         }
     }
-
-    private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
 }

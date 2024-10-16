@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RevenueCat
 
 public extension Sequence {
 

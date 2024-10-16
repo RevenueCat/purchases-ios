@@ -232,7 +232,7 @@ struct Template5View: TemplateViewType {
 
                 Spacer(minLength: 0)
 
-                self.packageDiscountLabel(package, selected: selected)
+                self.packageBadgeLabel(package, selected: selected)
             }
 
             self.offerDetails(package: package, selected: selected)
@@ -255,19 +255,20 @@ struct Template5View: TemplateViewType {
 
     private var footerView: some View {
         FooterView(configuration: self.configuration,
+                   locale: self.selectedLocalization.locale,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
     }
 
     @ViewBuilder
-    private func packageDiscountLabel(
+    private func packageBadgeLabel(
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
-        if let discount = package.discountRelativeToMostExpensivePerMonth {
+        if let badge = package.localization.offerBadge, !badge.isEmpty {
             let colors = self.configuration.colors
 
-            Text(Localization.localized(discount: discount, locale: self.locale))
+            Text(badge)
                 .textCase(.uppercase)
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)

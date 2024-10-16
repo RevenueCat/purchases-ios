@@ -27,6 +27,7 @@ struct TemplateViewConfiguration {
     let colorsByTier: [PaywallData.Tier: PaywallData.Configuration.Colors]
     let fonts: PaywallFontProvider
     let assetBaseURL: URL
+    let showZeroDecimalPlacePrices: Bool
 
 }
 
@@ -162,7 +163,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         localizationByTier: [String: PaywallData.LocalizedConfiguration]?,
         tiers: [PaywallData.Tier],
         setting: TemplatePackageSetting,
-        locale: Locale = .current
+        locale: Locale = .current,
+        showZeroDecimalPlacePrices: Bool = false
     ) throws -> Self {
         let parameters: Parameters
 
@@ -189,7 +191,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
             with: packages,
             activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
             parameters: parameters,
-            locale: locale
+            locale: locale,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
     }
 
@@ -200,7 +203,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         with packages: [RevenueCat.Package],
         activelySubscribedProductIdentifiers: Set<String>,
         parameters: Parameters,
-        locale: Locale
+        locale: Locale,
+        showZeroDecimalPlacePrices: Bool
     ) throws -> Self {
         switch parameters {
         case let .singleTier(filter, `default`, localization, multiPackage):
@@ -209,7 +213,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 filter: filter,
                 activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 localization: localization,
-                locale: locale
+                locale: locale,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
 
             guard let firstPackage = filteredPackages.first else {
@@ -231,60 +236,69 @@ extension TemplateViewConfiguration.PackageConfiguration {
             }
 
         case let .multiTier(tiers, localization):
-            let allTiers: [PaywallData.Tier: (package: MultiPackage, tierName: String)] = try Dictionary(
-                tiers.map { tier in
-                    guard let localization = localization[tier.id] else {
-                        throw TemplateError.missingLocalization(tier)
-                    }
+            let filteredTiers: [(PaywallData.Tier, (package: MultiPackage, tierName: String))] =
+            try tiers.compactMap { tier in
+                guard let localization = localization[tier.id] else {
+                    throw TemplateError.missingLocalization(tier)
+                }
 
-                    let filteredPackages = Self.processPackages(
-                        from: packages,
-                        filter: tier.packages,
-                        activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                        localization: localization,
-                        locale: locale
+                let tierName = localization.tierName ?? ""
+
+                let filteredPackages = Self.processPackages(
+                    from: packages,
+                    filter: tier.packages,
+                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                    localization: localization,
+                    locale: locale,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+
+                guard let firstPackage = filteredPackages.first else {
+                    Logger.error(Strings.tier_has_no_available_products_for_paywall(tierName))
+                    return nil
+                }
+                let defaultPackage = filteredPackages
+                    .first { $0.content.identifier == tier.defaultPackage }
+                ?? firstPackage
+
+                return (
+                    tier,
+                    (
+                        MultiPackage(
+                            first: firstPackage,
+                            default: defaultPackage,
+                            all: filteredPackages
+                        ),
+                        tierName
                     )
+                )
+            }
 
-                    guard let firstPackage = filteredPackages.first else {
-                        throw TemplateError.couldNotFindAnyPackages(expectedTypes: tier.packages)
-                    }
-                    let defaultPackage = filteredPackages
-                        .first { $0.content.identifier == tier.defaultPackage }
-                    ?? firstPackage
-
-                    return (
-                        tier,
-                        (
-                            MultiPackage(
-                                first: firstPackage,
-                                default: defaultPackage,
-                                all: filteredPackages
-                            ),
-                            localization.tierName ?? ""
-                        )
-                    )
-                },
-                uniquingKeysWith: { _, new in new }
-            )
-
-            guard let firstTier = tiers.first else {
+            guard let (firstTier, _) = filteredTiers.first else {
                 throw TemplateError.noTiers
             }
 
+            let packagesAndTierNamesByTier: [PaywallData.Tier: (package: MultiPackage, tierName: String)] = Dictionary(
+                filteredTiers,
+                uniquingKeysWith: { _, new in new }
+            )
+
             return .multiTier(
                 firstTier: firstTier,
-                all: allTiers.mapValues { $0.package },
-                tierNames: allTiers.mapValues { $0.tierName }
+                all: packagesAndTierNamesByTier.mapValues { $0.package },
+                tierNames: packagesAndTierNamesByTier.mapValues { $0.tierName }
             )
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func processPackages(
         from packages: [RevenueCat.Package],
         filter: [String],
         activelySubscribedProductIdentifiers: Set<String>,
         localization: PaywallData.LocalizedConfiguration,
-        locale: Locale
+        locale: Locale,
+        showZeroDecimalPlacePrices: Bool
     ) -> [TemplateViewConfiguration.Package] {
         let filtered = TemplateViewConfiguration.filter(packages: packages, with: filter)
         let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: filtered)
@@ -300,7 +314,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     content: package,
                     localization: localization.processVariables(
                         with: package,
-                        context: .init(discountRelativeToMostExpensivePerMonth: discount),
+                        context: .init(discountRelativeToMostExpensivePerMonth: discount,
+                                       showZeroDecimalPlacePrices: showZeroDecimalPlacePrices),
                         locale: locale
                     ),
                     currentlySubscribed: activelySubscribedProductIdentifiers.contains(

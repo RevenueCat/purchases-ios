@@ -37,6 +37,7 @@ final class Configuration: ObservableObject {
         Purchases.configure(
             with: .init(withAPIKey: ConfigItem.apiKey)
                 .with(entitlementVerificationMode: .informational)
+                .with(diagnosticsEnabled: true)
                 .with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: .storeKit2)
         )
     }

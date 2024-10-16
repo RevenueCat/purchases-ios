@@ -37,6 +37,16 @@ public struct PaywallData {
         set { self._revision = newValue }
     }
 
+    /// The storefront country codes that should not display cents in prices.
+    public var zeroDecimalPlaceCountries: [String] {
+        _zeroDecimalPlaceCountries?.apple ?? []
+    }
+
+    internal private(set) var _zeroDecimalPlaceCountries: ZeroDecimalPlaceCountries?
+
+    /// The default locale identifier for this paywall.
+    public var defaultLocale: String?
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -75,6 +85,21 @@ public protocol PaywallLocalizedConfiguration {
 }
 
 extension PaywallData {
+    /// Represents countries where currencies typically have zero decimal places
+    public struct ZeroDecimalPlaceCountries: Codable, Sendable, Hashable, Equatable {
+
+        /// Storefront country codes that should typically display zero decimal places
+        public var apple: [String] = []
+
+        /// Storefront country codes that should typically display zero decimal places.
+        public init(apple: [String]) {
+            self.apple = apple
+        }
+
+    }
+}
+
+extension PaywallData {
 
     /// Defines the necessary localized information for a paywall.
     public struct LocalizedConfiguration: PaywallLocalizedConfiguration {
@@ -99,6 +124,8 @@ extension PaywallData {
         var _features: [Feature]
         @NonEmptyStringDecodable
         var _tierName: String?
+        @DefaultDecodable.EmptyDictionary
+        var _offerOverrides: [String: OfferOverride]
 
         public var subtitle: String? {
             get { return self._subtitle }
@@ -120,6 +147,10 @@ extension PaywallData {
             get { return self._offerName }
             set { self._offerName = newValue }
         }
+        public var offerOverrides: [String: OfferOverride] {
+            get { return self._offerOverrides }
+            set { self._offerOverrides = newValue }
+        }
         public var features: [Feature] {
             get { return self._features }
             set { self._features = newValue }
@@ -137,6 +168,7 @@ extension PaywallData {
             offerDetails: String? = nil,
             offerDetailsWithIntroOffer: String? = nil,
             offerName: String? = nil,
+            offerOverrides: [String: OfferOverride] = [:],
             features: [Feature] = [],
             tierName: String? = nil
         ) {
@@ -147,6 +179,7 @@ extension PaywallData {
             self._offerDetails = offerDetails
             self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
             self._offerName = offerName
+            self._offerOverrides = offerOverrides
             self.features = features
             self._tierName = tierName
         }
@@ -203,6 +236,38 @@ extension PaywallData.LocalizedConfiguration {
 
 }
 
+extension PaywallData.LocalizedConfiguration {
+
+    /// Custom displayable overrides for a package 
+    public struct OfferOverride {
+
+        /// Description for the offer to be purchased.
+        public var offerDetails: String?
+        /// Description for the offer to be purchased when an intro offer is available.
+        /// If `nil`, no information regarding trial eligibility will be displayed.
+        public var offerDetailsWithIntroOffer: String?
+        /// The name representing each of the packages, most commonly a variable.
+        public var offerName: String?
+        /// An optional string to put in a badge on the package.
+        public var offerBadge: String?
+
+        // swiftlint:disable:next missing_docs
+        public init(
+            offerDetails: String? = nil,
+            offerDetailsWithIntroOffer: String? = nil,
+            offerName: String? = nil,
+            offerBadge: String? = nil
+        ) {
+            self.offerDetails = offerDetails
+            self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
+            self.offerName = offerName
+            self.offerBadge = offerBadge
+        }
+
+    }
+
+}
+
 // MARK: - Configuration
 
 extension PaywallData {
@@ -239,23 +304,8 @@ extension PaywallData {
 
         /// The images for each of the tiers.
         public internal(set) var imagesByTier: [String: Images] {
-            get {
-                let images = self.images
-
-                return Set(self.tiers.map(\.id))
-                    .dictionaryWithValues { tier in
-                        return Self.merge(
-                            source: self._imageOverridesByTier[tier],
-                            fallback: images
-                        )
-                    }
-            }
-
-            /// Internal `set`ter because it doesn't fully match the semantics of the getter.
-            /// Only meant for testing.
-            set {
-                self._imageOverridesByTier = newValue
-            }
+            get { self._imagesByTier }
+            set { self._imagesByTier = newValue }
         }
 
         /// Low resolution images for this template.
@@ -293,13 +343,8 @@ extension PaywallData {
 
         /// The set of colors for each of the tiers.
         public var colorsByTier: [String: ColorInformation] {
-            let colors = self.colors
-            let overrides = self._colorOverridesByTier
-
-            return Set(self.tiers.map(\.id))
-                .dictionaryWithValues { tier in
-                    return Self.merge(source: colors, override: overrides[tier])
-                }
+            get { self._colorsByTier }
+            set { self._colorsByTier = newValue }
         }
 
         /// Creates a single-tier ``PaywallData/Configuration``.
@@ -328,9 +373,9 @@ extension PaywallData {
         /// Creates a multi-tier ``PaywallData/Configuration``.
         public init(
             images: Images,
-            imageOverridesByTier: [String: Images] = [:],
+            imagesByTier: [String: Images] = [:],
             colors: ColorInformation,
-            colorOverridesByTier: [String: ColorInformation] = [:],
+            colorsByTier: [String: ColorInformation] = [:],
             tiers: [Tier],
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
@@ -340,9 +385,9 @@ extension PaywallData {
             self._packages = []
             self.defaultPackage = nil
             self._imagesHeic = images
-            self._imageOverridesByTier = imageOverridesByTier
+            self._imagesByTier = imagesByTier
             self.colors = colors
-            self._colorOverridesByTier = colorOverridesByTier
+            self._colorsByTier = colorsByTier
             self._tiers = tiers
             self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
@@ -373,10 +418,10 @@ extension PaywallData {
         var _privacyURL: URL?
 
         @DefaultDecodable.EmptyDictionary
-        var _colorOverridesByTier: [String: ColorInformation]
+        var _colorsByTier: [String: ColorInformation]
 
         @DefaultDecodable.EmptyDictionary
-        var _imageOverridesByTier: [String: Images]
+        var _imagesByTier: [String: Images]
 
     }
 
@@ -496,6 +541,14 @@ extension PaywallData.Configuration {
         public var accent3: PaywallColor?
         /// Color for the close button of the paywall.
         public var closeButton: PaywallColor?
+        /// Color for the tier selector background color.
+        public var tierControlBackground: PaywallColor?
+        /// Color for the tier selector foreground color.
+        public var tierControlForeground: PaywallColor?
+        /// Color for the tier selector background color for selected tier.
+        public var tierControlSelectedBackground: PaywallColor?
+        /// Color for the tier selector foreground color for selected tier.
+        public var tierControlSelectedForeground: PaywallColor?
 
         // swiftlint:disable:next missing_docs
         public init(
@@ -509,7 +562,11 @@ extension PaywallData.Configuration {
             accent1: PaywallColor? = nil,
             accent2: PaywallColor? = nil,
             accent3: PaywallColor? = nil,
-            closeButton: PaywallColor? = nil
+            closeButton: PaywallColor? = nil,
+            tierControlBackground: PaywallColor? = nil,
+            tierControlForeground: PaywallColor? = nil,
+            tierControlSelectedBackground: PaywallColor? = nil,
+            tierControlSelectedForeground: PaywallColor? = nil
         ) {
             self.background = background
             self.text1 = text1
@@ -522,6 +579,10 @@ extension PaywallData.Configuration {
             self.accent2 = accent2
             self.accent3 = accent3
             self.closeButton = closeButton
+            self.tierControlBackground = tierControlBackground
+            self.tierControlForeground = tierControlForeground
+            self.tierControlSelectedBackground = tierControlSelectedBackground
+            self.tierControlSelectedForeground = tierControlSelectedForeground
         }
     }
 
@@ -557,14 +618,14 @@ extension PaywallData {
 // MARK: - Constructors
 
 extension PaywallData {
-
     init(
         templateName: String,
         config: Configuration,
         localization: [String: LocalizedConfiguration],
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
-        revision: Int = 0
+        revision: Int = 0,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.templateName = templateName
         self.config = config
@@ -572,6 +633,7 @@ extension PaywallData {
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
         self.revision = revision
+        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
     }
 
     /// Creates a test ``PaywallData`` with one localization.
@@ -581,7 +643,8 @@ extension PaywallData {
         localization: LocalizedConfiguration,
         assetBaseURL: URL,
         revision: Int = 0,
-        locale: Locale = .current
+        locale: Locale = .current,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.init(
             templateName: templateName,
@@ -589,7 +652,8 @@ extension PaywallData {
             localization: [locale.identifier: localization],
             localizationByTier: [:],
             assetBaseURL: assetBaseURL,
-            revision: revision
+            revision: revision,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
     }
 
@@ -600,7 +664,8 @@ extension PaywallData {
         localizationByTier: [String: LocalizedConfiguration],
         assetBaseURL: URL,
         revision: Int = 0,
-        locale: Locale = .current
+        locale: Locale = .current,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.init(
             templateName: templateName,
@@ -608,7 +673,8 @@ extension PaywallData {
             localization: [:],
             localizationByTier: [locale.identifier: localizationByTier],
             assetBaseURL: assetBaseURL,
-            revision: revision
+            revision: revision,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
     }
 
@@ -645,6 +711,8 @@ extension PaywallData.LocalizedConfiguration.Feature: Codable {
 
 }
 
+extension PaywallData.LocalizedConfiguration.OfferOverride: Codable {}
+
 extension PaywallData.LocalizedConfiguration: Codable {
 
     private enum CodingKeys: String, CodingKey {
@@ -657,6 +725,7 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case _offerName = "offerName"
         case _features = "features"
         case _tierName = "tierName"
+        case _offerOverrides = "offerOverrides"
     }
 
 }
@@ -690,8 +759,8 @@ extension PaywallData.Configuration: Codable {
         case _termsOfServiceURL = "tosUrl"
         case _privacyURL = "privacyUrl"
         case colors
-        case _colorOverridesByTier = "colorOverridesByTier"
-        case _imageOverridesByTier = "imageOverridesByTier"
+        case _colorsByTier = "colorsByTier"
+        case _imagesByTier = "imagesByTier"
     }
 
 }
@@ -706,6 +775,8 @@ extension PaywallData: Codable {
         case localizationByTier = "localizedStringsByTier"
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+        case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
+        case defaultLocale = "defaultLocale"
     }
 
 }
@@ -714,6 +785,7 @@ extension PaywallData: Codable {
 
 extension PaywallData.Tier: Hashable {}
 extension PaywallData.LocalizedConfiguration.Feature: Hashable {}
+extension PaywallData.LocalizedConfiguration.OfferOverride: Hashable {}
 extension PaywallData.LocalizedConfiguration: Hashable {}
 extension PaywallData.Configuration.ColorInformation: Hashable {}
 extension PaywallData.Configuration.Colors: Hashable {}
@@ -724,6 +796,7 @@ extension PaywallData: Hashable {}
 // MARK: - Sendable
 
 extension PaywallData.LocalizedConfiguration.Feature: Sendable {}
+extension PaywallData.LocalizedConfiguration.OfferOverride: Sendable {}
 extension PaywallData.LocalizedConfiguration: Sendable {}
 extension PaywallData.Tier: Sendable {}
 extension PaywallData.Configuration.ColorInformation: Sendable {}

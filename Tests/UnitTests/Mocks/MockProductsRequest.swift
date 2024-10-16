@@ -22,6 +22,8 @@ class MockProductResponse: SKProductsResponse {
     }
 }
 
+extension MockProductResponse: @unchecked Sendable {}
+
 class MockProductsRequest: SKProductsRequest {
 
     enum Error: Swift.Error {
@@ -57,3 +59,5 @@ class MockProductsRequest: SKProductsRequest {
     }
 
 }
+
+extension MockProductsRequest: @unchecked Sendable {}

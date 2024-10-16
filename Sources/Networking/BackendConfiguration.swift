@@ -53,10 +53,10 @@ extension BackendConfiguration {
     /// Adds the `operation` to the `OperationQueue` (based on `CallbackCacheStatus`) potentially adding a random delay.
     func addCacheableOperation<T: CacheableNetworkOperation>(
         with factory: CacheableNetworkOperationFactory<T>,
-        delay: Delay,
+        delay: JitterableDelay,
         cacheStatus: CallbackCacheStatus
     ) {
-        self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             self.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         }
     }
@@ -64,9 +64,9 @@ extension BackendConfiguration {
     /// Adds the `operation` to the diagnostics `OperationQueue` potentially adding a random delay.
     func addDiagnosticsOperation(
         _ operation: NetworkOperation,
-        delay: Delay = .long
+        delay: JitterableDelay = .long
     ) {
-        self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             self.diagnosticsQueue.addOperation(operation)
         }
     }

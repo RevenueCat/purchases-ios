@@ -58,7 +58,8 @@ class BaseSnapshotTest: TestCase {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker = BaseSnapshotTest.eligibleChecker,
-        purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler
+        purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler,
+        locale: Locale = .current
     ) -> some View {
         return PaywallView(
             configuration: .init(
@@ -67,7 +68,8 @@ class BaseSnapshotTest: TestCase {
                 mode: mode,
                 fonts: fonts,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                locale: locale
             )
         )
             .environment(\.isRunningSnapshots, true)
@@ -85,9 +87,9 @@ class BaseSnapshotTest: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension BaseSnapshotTest {
 
-    static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
+    nonisolated static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
     static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
-    static let purchaseHandler: PurchaseHandler = .mock()
+    nonisolated static let purchaseHandler: PurchaseHandler = .mock()
     static let fonts: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)

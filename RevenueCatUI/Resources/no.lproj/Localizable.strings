@@ -17,3 +17,7 @@
 "%d%% off" = "%d %% rabatt";
 "Continue" = "Fortsette";
 "Default_offer_details_with_intro_offer" = "Start prøveperioden på {{ sub_offer_duration }}, og deretter {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ gratis";
+"pay_as_you_go_period" = "%@ i løpet av %@";
+"pay_up_front_period" = "%@ for %@";
+"then_price_per_period" = "deretter %@";

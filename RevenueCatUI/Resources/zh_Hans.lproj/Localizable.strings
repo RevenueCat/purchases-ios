@@ -17,3 +17,7 @@
 "%d%% off" = "优惠%d%%";
 "Continue" = "继续";
 "Default_offer_details_with_intro_offer" = "试用期{{ sub_offer_duration }}，届满后{{ total_price_and_per_month }}。";
+"free_trial_period" = "%@ 免费";
+"pay_as_you_go_period" = "%@ 在 %@";
+"pay_up_front_period" = "%@ 为 %@";
+"then_price_per_period" = "然后 %@";

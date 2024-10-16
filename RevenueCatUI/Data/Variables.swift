@@ -27,14 +27,13 @@ extension PaywallData.LocalizedConfiguration {
 }
 
 /// A type that can provide necessary information for `VariableHandler` to replace variable content in strings.
+@available(iOS 15.0, *)
 protocol VariableDataProvider {
 
     var applicationName: String { get }
 
-    var localizedPrice: String { get }
-    var localizedPricePerWeek: String { get }
-    var localizedPricePerMonth: String { get }
-    var localizedIntroductoryOfferPrice: String? { get }
+    var packageIdentifier: String { get }
+
     var productName: String { get }
 
     func periodNameOrIdentifier(_ locale: Locale) -> String
@@ -44,10 +43,14 @@ protocol VariableDataProvider {
     func normalizedSubscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
-    func localizedPricePerPeriod(_ locale: Locale) -> String
-    func localizedPricePerPeriodFull(_ locale: Locale) -> String
-    func localizedPriceAndPerMonth(_ locale: Locale) -> String
-    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String
+    func localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: Bool) -> String?
+    func localizedPricePerWeek(showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPricePerMonth(showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPrice(showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPricePerPeriod(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPricePerPeriodFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPriceAndPerMonth(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
+    func localizedPriceAndPerMonthFull(_ locale: Locale, showZeroDecimalPlacePrices: Bool) -> String
     func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
 
 }
@@ -60,6 +63,7 @@ enum VariableHandler {
     struct Context {
 
         var discountRelativeToMostExpensivePerMonth: Double?
+        var showZeroDecimalPlacePrices: Bool = false
 
     }
 
@@ -98,25 +102,40 @@ enum VariableHandler {
     fileprivate static func provider(for variableName: String) -> ValueProvider? {
         switch variableName {
         case "app_name": return { (provider, _, _) in provider.applicationName }
-        case "price": return { (provider, _, _) in provider.localizedPrice }
-        case "price_per_period": return { (provider, _, locale) in provider.localizedPricePerPeriod(locale) }
-        case "price_per_period_full": return { (provider, _, locale) in provider.localizedPricePerPeriodFull(locale) }
-        case "total_price_and_per_month": return { (provider, _, locale) in provider.localizedPriceAndPerMonth(locale) }
-        case "total_price_and_per_month_full": return { (provider, _, locale) in
-            provider.localizedPriceAndPerMonthFull(locale)
+        case "price": return { (provider, context, _) in
+            provider.localizedPrice(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
+        case "price_per_period": return { (provider, context, locale) in
+            provider.localizedPricePerPeriod(locale, showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
+        case "price_per_period_full": return { (provider, context, locale) in
+            provider.localizedPricePerPeriodFull(locale, showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
+        case "total_price_and_per_month": return { (provider, context, locale) in
+            provider.localizedPriceAndPerMonth(locale, showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
+        case "total_price_and_per_month_full": return { (provider, context, locale) in
+            provider
+                .localizedPriceAndPerMonthFull(locale, showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
         }
         case "product_name": return { (provider, _, _) in provider.productName }
         case "sub_period": return { (provider, _, locale) in provider.periodNameOrIdentifier(locale) }
         case "sub_period_length": return { (provider, _, locale) in provider.periodLength(locale) }
         case "sub_period_abbreviated": return { (provider, _, locale) in provider.periodNameAbbreviation(locale) }
-        case "sub_price_per_month": return { (provider, _, _) in provider.localizedPricePerMonth }
-        case "sub_price_per_week": return { (provider, _, _) in provider.localizedPricePerWeek }
+        case "sub_price_per_month": return { (provider, context, _) in
+            provider.localizedPricePerMonth(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
+        case "sub_price_per_week": return { (provider, context, _) in
+            provider.localizedPricePerWeek(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
         case "sub_duration": return { (provider, _, locale) in provider.subscriptionDuration(locale) }
         case "sub_duration_in_months": return { (provider, _, locale) in
             provider.normalizedSubscriptionDuration(locale)
         }
         case "sub_offer_duration": return { (provider, _, locale) in provider.introductoryOfferDuration(locale) }
-        case "sub_offer_price": return { (provider, _, _) in provider.localizedIntroductoryOfferPrice }
+        case "sub_offer_price": return { (provider, context, _) in
+            provider.localizedIntroductoryOfferPrice(showZeroDecimalPlacePrices: context.showZeroDecimalPlacePrices)
+        }
         case "sub_relative_discount": return { $0.localizedRelativeDiscount($1.discountRelativeToMostExpensivePerMonth,
                                                                             $2) }
 

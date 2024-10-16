@@ -32,3 +32,5 @@ class MockTransactionsManager: TransactionsManager {
     }
 
 }
+
+extension MockTransactionsManager: @unchecked Sendable {}

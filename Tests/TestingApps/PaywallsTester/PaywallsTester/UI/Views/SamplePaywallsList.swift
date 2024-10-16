@@ -16,6 +16,9 @@ struct SamplePaywallsList: View {
     @State
     private var display: Display?
 
+    @State
+    private var presentingCustomerCenter: Bool = false
+
     var body: some View {
         NavigationView {
             self.list(with: Self.loader)
@@ -84,11 +87,52 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
+        case .customerCenter:
+            CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
+        #if PAYWALL_COMPONENTS
+        case .componentPaywall(let data):
+            TemplateComponentsView(
+                paywallComponentsData: data,
+                offering: Self.loader.offeringWithDefaultPaywall(),
+                onDismiss: { self.display = nil }
+            )
+        #endif
         }
+
     }
 
     private func list(with loader: SamplePaywallLoader) -> some View {
         List {
+
+            #if PAYWALL_COMPONENTS
+            Section("Components") {
+                Button {
+                    let data = SamplePaywallLoader.template1Components
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Curiosity Components", icon: "iphone")
+                }
+                Button {
+                    let data = SamplePaywallLoader.fitnessComponents
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Fitness Components", icon: "iphone")
+                }
+                Button {
+                    let data = SamplePaywallLoader.simpleSampleComponents
+                    data.componentsConfig.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Simple Sample Components", icon: "iphone")
+                }
+            }
+            #endif
+
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
                     ForEach(PaywallViewMode.allCases, id: \.self) { mode in
@@ -137,9 +181,30 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
             }
+
+            #if os(iOS)
+            Section("Customer Center") {
+                Button {
+                    self.display = .customerCenter
+                } label: {
+                    TemplateLabel(name: "SwiftUI", icon: "person.fill.questionmark")
+                }
+
+                Button {
+                    self.presentingCustomerCenter = true
+                } label: {
+                    TemplateLabel(name: "Sheet", icon: "person.fill")
+                }
+            }
+            #endif
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
+        #if os(iOS)
+        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
+            self.presentingCustomerCenter = false
+        }
+        #endif
     }
 
     #if os(watchOS)
@@ -181,6 +246,32 @@ private struct TemplateLabel: View {
 
 // MARK: -
 
+#if os(iOS)
+
+extension SamplePaywallsList {
+
+    func handleCustomerCenterAction(action: CustomerCenterAction) {
+        switch action {
+        case .restoreCompleted(_):
+            print("CustomerCenter: restoreCompleted")
+        case .restoreStarted:
+            print("CustomerCenter: restoreStarted")
+        case .restoreFailed(_):
+            print("CustomerCenter: restoreFailed")
+        case .showingManageSubscriptions:
+            print("CustomerCenter: showingManageSubscriptions")
+        case .refundRequestStarted(let productId):
+            print("CustomerCenter: refundRequestStarted. ProductId: \(productId)")
+        case .refundRequestCompleted(let status):
+            print("CustomerCenter: refundRequestCompleted. Result: \(status)")
+        case .feedbackSurveyCompleted(let surveyOptionID):
+            print("CustomerCenter: feedbackSurveyCompleted. Result: \(surveyOptionID)")
+        }
+    }
+}
+
+#endif
+
 private extension SamplePaywallsList {
 
     enum Display {
@@ -191,6 +282,10 @@ private extension SamplePaywallsList {
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
+        case customerCenter
+        #if PAYWALL_COMPONENTS
+        case componentPaywall(PaywallComponentsData)
+        #endif
 
     }
 
@@ -214,6 +309,13 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .unrecognizedPaywall:
             return "unrecognized"
+
+        case .customerCenter:
+            return "customer-center"
+        #if PAYWALL_COMPONENTS
+        case .componentPaywall:
+            return "component-paywall"
+        #endif
         }
     }
 

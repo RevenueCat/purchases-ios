@@ -17,3 +17,7 @@
 "%d%% off" = "ลด %d%%";
 "Continue" = "ดำเนินการต่อ";
 "Default_offer_details_with_intro_offer" = "เริ่มทดลองใช้ {{ sub_offer_duration }} จากนั้นจ่ายเป็น {{ Total_price_and_per_month }}";
+"free_trial_period" = "%@ ฟรี";
+"pay_as_you_go_period" = "%@ ในช่วง %@";
+"pay_up_front_period" = "%@ สำหรับ %@";
+"then_price_per_period" = "จากนั้น %@";

@@ -110,6 +110,7 @@ struct Template4View: TemplateViewType {
                 .padding(.bottom, Self.verticalPadding / -2)
 
             FooterView(configuration: self.configuration,
+                       locale: self.selectedPackage.localization.locale,
                        bold: false,
                        purchaseHandler: self.purchaseHandler,
                        displayingAllPlans: self.$displayingAllPlans)
@@ -283,11 +284,11 @@ private struct PackageButton: View {
                     .padding(Self.borderWidth)
                     .frame(maxHeight: .infinity)
             }
-            .background { // Discount overlay
-                if let discount = self.package.discountRelativeToMostExpensivePerMonth {
-                    self.discountOverlay(discount)
+            .background { // Badge overlay
+                if let badge = self.package.localization.offerBadge, !badge.isEmpty {
+                    self.badgeOverlay(badge)
                 } else {
-                    self.discountOverlay(0)
+                    self.badgeOverlay(Localization.localized(discount: 0, locale: self.locale))
                         .hidden()
                 }
             }
@@ -312,7 +313,8 @@ private struct PackageButton: View {
         VStack(spacing: Self.labelVerticalSeparation) {
             self.offerName
 
-            Text(self.package.content.localizedPrice)
+            Text(self.package.content
+                .localizedPrice(showZeroDecimalPlacePrices: configuration.showZeroDecimalPlacePrices))
                 .font(self.font(for: .title2).weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -365,7 +367,7 @@ private struct PackageButton: View {
         }
     }
 
-    private func discountOverlay(_ discount: Double) -> some View {
+    private func badgeOverlay(_ badge: String) -> some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: Template4View.cornerRadius)
                 .foregroundStyle(
@@ -374,7 +376,7 @@ private struct PackageButton: View {
                     : self.configuration.colors.accent2Color
                 )
 
-            Text(Localization.localized(discount: discount, locale: self.locale))
+            Text(badge)
                 .textCase(.uppercase)
                 .foregroundColor(
                     self.selected

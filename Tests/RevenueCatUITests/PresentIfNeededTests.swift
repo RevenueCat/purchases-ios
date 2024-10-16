@@ -62,7 +62,7 @@ class PresentIfNeededTests: TestCase {
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 
-        try Text("")
+        _ = try Text("")
             .presentPaywallIfNeeded(offering: Self.offering,
                                     introEligibility: .producing(eligibility: .eligible),
                                     purchaseHandler: Self.purchaseHandler) { _ in
@@ -84,7 +84,7 @@ class PresentIfNeededTests: TestCase {
     func testPresentWithPurchaseFailureHandler() throws {
         var error: NSError?
 
-        try Text("")
+        _ = try Text("")
             .presentPaywallIfNeeded(offering: Self.offering,
                                     introEligibility: .producing(eligibility: .eligible),
                                     purchaseHandler: Self.failingHandler) { _ in
@@ -136,7 +136,7 @@ class PresentIfNeededTests: TestCase {
     func testPresentWithRestoreHandler() throws {
         var customerInfo: CustomerInfo?
 
-        try Text("")
+        _ = try Text("")
             .presentPaywallIfNeeded(offering: Self.offering,
                                     introEligibility: .producing(eligibility: .eligible),
                                     purchaseHandler: Self.purchaseHandler) { _ in
@@ -160,7 +160,7 @@ class PresentIfNeededTests: TestCase {
     func testPresentWithRestoreFailureHandler() throws {
         var error: NSError?
 
-        try Text("")
+        _ = try Text("")
             .presentPaywallIfNeeded(offering: Self.offering,
                                     introEligibility: .producing(eligibility: .eligible),
                                     purchaseHandler: Self.failingHandler) { _ in

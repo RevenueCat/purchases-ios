@@ -40,10 +40,13 @@ extension View {
         perform action: @escaping (_ newValue: V) -> Void
     ) -> some View where V: Equatable {
         #if swift(>=5.9)
+        // wrapping with AnyView to type erase is needed because when archiving an xcframework,
+        // the compiler gets confused between the types returned
+        // by the different implementations of self.onChange(of:value).
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            self.onChange(of: value) { _, newValue in action(newValue) }
+            AnyView(self.onChange(of: value) { _, newValue in action(newValue) })
         } else {
-            self.onChange(of: value) { newValue in action(newValue) }
+            AnyView(self.onChange(of: value) { newValue in action(newValue) })
         }
         #else
         self.onChange(of: value) { newValue in action(newValue) }
@@ -294,24 +297,28 @@ extension View {
         corners: UIRectCorner,
         edgesIgnoringSafeArea edges: Edge.Set = []
     ) -> some View {
-        #if swift(>=5.9)
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            self.mask(
-                UnevenRoundedRectangle(radius: radius, corners: corners),
-                edgesIgnoringSafeArea: edges
-            )
-        } else {
+        if radius > 0 {
+            #if swift(>=5.9)
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                self.mask(
+                    UnevenRoundedRectangle(radius: radius, corners: corners),
+                    edgesIgnoringSafeArea: edges
+                )
+            } else {
+                self.mask(
+                    RoundedCorner(radius: radius, corners: corners),
+                    edgesIgnoringSafeArea: edges
+                )
+            }
+            #else
             self.mask(
                 RoundedCorner(radius: radius, corners: corners),
                 edgesIgnoringSafeArea: edges
             )
+            #endif
+        } else {
+            self
         }
-        #else
-        self.mask(
-            RoundedCorner(radius: radius, corners: corners),
-            edgesIgnoringSafeArea: edges
-        )
-        #endif
     }
 
     private func mask(_ shape: some Shape, edgesIgnoringSafeArea edges: Edge.Set) -> some View {

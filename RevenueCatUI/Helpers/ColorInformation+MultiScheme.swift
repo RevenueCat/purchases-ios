@@ -48,7 +48,15 @@ extension PaywallData.Configuration.Colors {
             accent1: .init(light: light.accent1, dark: dark.accent1),
             accent2: .init(light: light.accent2, dark: dark.accent2),
             accent3: .init(light: light.accent3, dark: dark.accent3),
-            closeButton: .init(light: light.closeButton, dark: dark.closeButton)
+            closeButton: .init(light: light.closeButton, dark: dark.closeButton),
+            tierControlBackground: .init(light: light.tierControlBackground,
+                                         dark: dark.tierControlBackground),
+            tierControlForeground: .init(light: light.tierControlForeground,
+                                         dark: dark.tierControlForeground),
+            tierControlSelectedBackground: .init(light: light.tierControlSelectedBackground,
+                                                 dark: dark.tierControlSelectedBackground),
+            tierControlSelectedForeground: .init(light: light.tierControlSelectedForeground,
+                                                 dark: dark.tierControlSelectedForeground)
         )
     }
 
@@ -141,6 +149,10 @@ extension PaywallData.Configuration.Colors {
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
     var accent3Color: Color { self.accent3?.underlyingColor ?? self.accent2Color }
     var closeButtonColor: Color? { self.closeButton?.underlyingColor }
+    var tierControlBackgroundColor: Color? { self.tierControlBackground?.underlyingColor }
+    var tierControlForegroundColor: Color? { self.tierControlForeground?.underlyingColor }
+    var tierControlSelectedBackgroundColor: Color? { self.tierControlSelectedBackground?.underlyingColor }
+    var tierControlSelectedForegroundColor: Color? { self.tierControlSelectedForeground?.underlyingColor }
 
     #if os(watchOS)
     private static let defaultBackgroundColor: Color = .black

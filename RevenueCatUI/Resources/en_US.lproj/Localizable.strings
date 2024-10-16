@@ -17,3 +17,8 @@
 "%d%% off" = "%d%% off";
 "Continue" = "Continue";
 "Default_offer_details_with_intro_offer" = "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.";
+"then_price_per_period" = "then %@";
+"free_trial_period" = "%@ for free";
+"pay_as_you_go_period" = "%@ during %@";
+"pay_up_front_period" = "%@ for %@";
+"then_price_per_period" = "then %@";

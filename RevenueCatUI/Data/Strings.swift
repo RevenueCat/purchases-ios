@@ -28,6 +28,7 @@ enum Strings {
     case displaying_paywall
     case not_displaying_paywall
     case dismissing_paywall
+    case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
 
@@ -43,6 +44,26 @@ enum Strings {
     case executing_external_purchase_logic
     case executing_restore_logic
     case executing_external_restore_logic
+
+    case no_price_format_price_formatter_unavailable
+    case no_price_format_price_string_incompatible
+    case no_price_round_price_formatter_nil
+    case no_price_round_price_string_incompatible
+    case no_price_round_formatter_failed
+
+    case invalid_color_string(String)
+    case paywall_view_model_construction_failed(Error)
+    case paywall_contains_no_localization_data
+    case paywall_could_not_find_localization(String)
+    case paywall_invalid_url(String)
+    case no_in_app_browser_tvos
+
+    // Customer Center
+    case could_not_find_subscription_information
+    case could_not_offer_for_any_active_subscriptions
+    case could_not_offer_for_active_subscriptions(String, String)
+    case error_fetching_promotional_offer(Error)
+    case promo_offer_not_loaded
 
 }
 
@@ -75,6 +96,9 @@ extension Strings: CustomStringConvertible {
 
         case .dismissing_paywall:
             return "Dismissing PaywallView"
+
+        case let .tier_has_no_available_products_for_paywall(tierName):
+            return "Tier '\(tierName)' has no available products and will be removed from the paywall."
 
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
@@ -117,6 +141,56 @@ extension Strings: CustomStringConvertible {
             return "Will execute custom StoreKit restore purchases logic provided by your app. " +
             "No StoreKit restore purchases logic will be performed by RevenueCat. " +
             "You must have initialized your `PaywallView` appropriately."
+
+        case .no_price_format_price_formatter_unavailable:
+            return "Could not determine price format because price formatter is unavailable."
+
+        case .no_price_format_price_string_incompatible:
+            return "Could not determine price format because price string is incompatible."
+
+        case .no_price_round_price_formatter_nil:
+            return "Could not round price because price formatter is nil."
+
+        case .no_price_round_price_string_incompatible:
+            return "Could not round price because price string is incompatible."
+
+        case .no_price_round_formatter_failed:
+            return "Could not round price because formatter failed to round price."
+
+        case .paywall_view_model_construction_failed(let error):
+            return "Paywall view model construction failed: \(error)\n" +
+            "Will use fallback paywall."
+
+        case .paywall_could_not_find_localization(let string):
+            return "Could not find paywall localization data for \(string)"
+
+        case .paywall_contains_no_localization_data:
+            return "Paywall contains no localization data."
+
+        case .paywall_invalid_url(let urlLid):
+            return "No valid URL is configured for \(urlLid)"
+
+        case .no_in_app_browser_tvos:
+            return "Opening URL in external browser, as tvOS does not support in-app browsers."
+
+        case .invalid_color_string(let colorString):
+            return "Invalid hex color string: \(colorString)"
+
+        case .could_not_find_subscription_information:
+            return "Could not find information for an active subscription"
+
+        case let .error_fetching_promotional_offer(error):
+            return "Error fetching promotional offer for active product: \(error)"
+
+        case .promo_offer_not_loaded:
+            return "Promotional offer details not loaded"
+
+        case .could_not_offer_for_any_active_subscriptions:
+            return "Could not find offer with id for any active subscription"
+
+        case .could_not_offer_for_active_subscriptions(let discount, let subscription):
+            return "Could not find offer with id \(discount) for active subscription \(subscription)"
+
         }
     }
 

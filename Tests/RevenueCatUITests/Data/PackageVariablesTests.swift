@@ -16,6 +16,8 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
+// swiftlint:disable type_body_length file_length
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageVariablesTests: TestCase {
 
@@ -31,21 +33,21 @@ class PackageVariablesTests: TestCase {
     }
 
     func testLocalizedPricePerWeek() {
-        expect(TestData.weeklyPackage.localizedPricePerWeek) == "$1.99"
-        expect(TestData.monthlyPackage.localizedPricePerWeek) == "$1.60"
-        expect(TestData.threeMonthPackage.localizedPricePerWeek) == "$0.38"
-        expect(TestData.sixMonthPackage.localizedPricePerWeek) == "$0.30"
-        expect(TestData.annualPackage.localizedPricePerWeek) == "$1.03"
-        expect(TestData.lifetimePackage.localizedPricePerWeek) == "$119.49"
+        expect(TestData.weeklyPackage.localizedPricePerWeek()) == "$1.99"
+        expect(TestData.monthlyPackage.localizedPricePerWeek()) == "$1.61"
+        expect(TestData.threeMonthPackage.localizedPricePerWeek()) == "$0.38"
+        expect(TestData.sixMonthPackage.localizedPricePerWeek()) == "$0.31"
+        expect(TestData.annualPackage.localizedPricePerWeek()) == "$1.04"
+        expect(TestData.lifetimePackage.localizedPricePerWeek()) == "$119.49"
     }
 
     func testLocalizedPricePerMonth() {
-        expect(TestData.weeklyPackage.localizedPricePerMonth) == "$8.64"
-        expect(TestData.monthlyPackage.localizedPricePerMonth) == "$6.99"
-        expect(TestData.threeMonthPackage.localizedPricePerMonth) == "$1.66"
-        expect(TestData.sixMonthPackage.localizedPricePerMonth) == "$1.33"
-        expect(TestData.annualPackage.localizedPricePerMonth) == "$4.49"
-        expect(TestData.lifetimePackage.localizedPricePerMonth) == "$119.49"
+        expect(TestData.weeklyPackage.localizedPricePerMonth()) == "$8.65"
+        expect(TestData.monthlyPackage.localizedPricePerMonth()) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth()) == "$1.66"
+        expect(TestData.sixMonthPackage.localizedPricePerMonth()) == "$1.33"
+        expect(TestData.annualPackage.localizedPricePerMonth()) == "$4.50"
+        expect(TestData.lifetimePackage.localizedPricePerMonth()) == "$119.49"
     }
 
     func testEnglishLocalizedPricePerPeriod() {
@@ -102,20 +104,20 @@ class PackageVariablesTests: TestCase {
     }
 
     func testEnglishLocalizedPriceAndPerMonth() {
-        expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.english)) == "$1.99/wk ($8.64/mo)"
+        expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.english)) == "$1.99/wk ($8.65/mo)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.english)) == "$6.99/mo"
         expect(TestData.threeMonthPackage.localizedPriceAndPerMonth(Self.english)) == "$4.99/3mo ($1.66/mo)"
         expect(TestData.sixMonthPackage.localizedPriceAndPerMonth(Self.english)) == "$7.99/6mo ($1.33/mo)"
-        expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.english)) == "$53.99/yr ($4.49/mo)"
+        expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.english)) == "$53.99/yr ($4.50/mo)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonth(Self.english)) == "$119.49"
     }
 
     func testSpanishLocalizedPriceAndPerMonth() {
-        expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$1.99/sem ($8.64/m.)"
+        expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$1.99/sem ($8.65/m.)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$6.99/m."
         expect(TestData.threeMonthPackage.localizedPriceAndPerMonth(Self.spanish)) == "$4.99/3m ($1.66/m.)"
         expect(TestData.sixMonthPackage.localizedPriceAndPerMonth(Self.spanish)) == "$7.99/6m ($1.33/m.)"
-        expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.spanish)) == "$53.99/año ($4.49/m.)"
+        expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.spanish)) == "$53.99/año ($4.50/m.)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonth(Self.spanish)) == "$119.49"
     }
 
@@ -123,7 +125,7 @@ class PackageVariablesTests: TestCase {
         let arabicPrice = "٣.٩٩ درهم"
 
         expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-            .to(equalIgnoringRTL("٣.٩٩ درهم/أسبوع (‏8.64 ‏د.إ.‏/شهر)"))
+            .to(equalIgnoringRTL("٣.٩٩ درهم/أسبوع (‏8.65 ‏د.إ.‏/شهر)"))
         expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/شهر"))
         expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
@@ -131,26 +133,26 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
             .to(equalIgnoringRTL("٣.٩٩ درهم/6شهر (‏1.33 ‏د.إ.‏/شهر)"))
         expect(TestData.annualPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-            .to(equalIgnoringRTL("٣.٩٩ درهم/سنة (‏4.49 ‏د.إ.‏/شهر)"))
+            .to(equalIgnoringRTL("٣.٩٩ درهم/سنة (‏4.50 ‏د.إ.‏/شهر)"))
         expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
         == arabicPrice
     }
 
     func testEnglishLocalizedPriceAndPerMonthFull() {
-        expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.english)) == "$1.99/week ($8.64/month)"
+        expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.english)) == "$1.99/week ($8.65/month)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonthFull(Self.english)) == "$6.99/month"
         expect(TestData.threeMonthPackage.localizedPriceAndPerMonthFull(Self.english)) == "$4.99/3months ($1.66/month)"
         expect(TestData.sixMonthPackage.localizedPriceAndPerMonthFull(Self.english)) == "$7.99/6months ($1.33/month)"
-        expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.english)) == "$53.99/year ($4.49/month)"
+        expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.english)) == "$53.99/year ($4.50/month)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonthFull(Self.english)) == "$119.49"
     }
 
     func testSpanishLocalizedPriceAndPerMonthFull() {
-        expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$1.99/semana ($8.64/mes)"
+        expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$1.99/semana ($8.65/mes)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$6.99/mes"
         expect(TestData.threeMonthPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$4.99/3meses ($1.66/mes)"
         expect(TestData.sixMonthPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$7.99/6meses ($1.33/mes)"
-        expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$53.99/año ($4.49/mes)"
+        expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$53.99/año ($4.50/mes)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$119.49"
     }
 
@@ -170,8 +172,8 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.periodNameOrIdentifier(Self.english)) == "6 Month"
         expect(TestData.annualPackage.periodNameOrIdentifier(Self.english)) == "Annual"
         expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.english)) == "Lifetime"
-        expect(TestData.customPackage.periodNameOrIdentifier(Self.english)) == "Custom"
-        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.english)) == "Unknown"
+        expect(TestData.customPackage.periodNameOrIdentifier(Self.english)) == "Annual"
+        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.english)) == "Annual"
     }
 
     func testSpanishPeriodName() {
@@ -181,8 +183,8 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.periodNameOrIdentifier(Self.spanish)) == "6 meses"
         expect(TestData.annualPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
         expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.spanish)) == "Toda la vida"
-        expect(TestData.customPackage.periodNameOrIdentifier(Self.spanish)) == "Custom"
-        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.spanish)) == "Unknown"
+        expect(TestData.customPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
+        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
     }
 
     func testEnglishPeriodAbbreviation() {
@@ -244,10 +246,10 @@ class PackageVariablesTests: TestCase {
     }
 
     func testIntroductoryOfferPrice() {
-        expect(TestData.weeklyPackage.localizedIntroductoryOfferPrice).to(beNil())
-        expect(TestData.monthlyPackage.localizedIntroductoryOfferPrice) == "$0.00"
-        expect(TestData.annualPackage.localizedIntroductoryOfferPrice) == "$1.99"
-        expect(TestData.lifetimePackage.localizedIntroductoryOfferPrice).to(beNil())
+        expect(TestData.weeklyPackage.localizedIntroductoryOfferPrice()).to(beNil())
+        expect(TestData.monthlyPackage.localizedIntroductoryOfferPrice()) == "$0.00"
+        expect(TestData.annualPackage.localizedIntroductoryOfferPrice()) == "$1.99"
+        expect(TestData.lifetimePackage.localizedIntroductoryOfferPrice()).to(beNil())
     }
 
     func testEnglishRelativeDiscount() {
@@ -294,6 +296,64 @@ class PackageVariablesTests: TestCase {
         expect(TestData.sixMonthPackage.normalizedSubscriptionDuration(Self.spanish)) == "6 meses"
         expect(TestData.annualPackage.normalizedSubscriptionDuration(Self.spanish)) == "12 meses"
         expect(TestData.lifetimePackage.normalizedSubscriptionDuration(Self.spanish)) == "Toda la vida"
+    }
+
+    func testPriceRounding() {
+
+        // test rounding on
+        expect(TestData.monthlyPackage
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: true)) == "$6.99/month"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(showZeroDecimalPlacePrices: true)) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth(showZeroDecimalPlacePrices: true)) == "$1.66"
+        expect(TestData.annualPackage60.localizedPricePerMonth(showZeroDecimalPlacePrices: true)) == "$5"
+        expect(TestData
+            .annualPackage60
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: true)) == "$60/year ($5/month)"
+        expect(TestData
+            .annualPackage
+            .localizedPriceAndPerMonthFull(Self.english,
+                                           showZeroDecimalPlacePrices: true)) == "$53.99/year ($4.50/month)"
+
+        expect(TestData
+            .annualPackage60Taiwan
+            .localizedPriceAndPerMonthFull(Locale.taiwan,
+                                           showZeroDecimalPlacePrices: true)) == "$60/年 ($5/個月)"
+
+        expect(TestData
+            .threeMonthPackageThailand
+            .localizedPriceAndPerMonthFull(Locale.taiwan,
+                                           showZeroDecimalPlacePrices: true)) == "฿5/3個月 (฿1.67/個月)"
+
+        expect(TestData
+            .threeMonthPackageThailand
+            .localizedPriceAndPerMonthFull(Locale.thailand,
+                                           showZeroDecimalPlacePrices: true)) == "฿5/3เดือน (฿1.67/เดือน)"
+
+        // test rounding off
+        expect(TestData
+            .monthlyPackage
+            .localizedPriceAndPerMonthFull(Self.english, showZeroDecimalPlacePrices: false)) == "$6.99/month"
+        expect(TestData.monthlyPackage.localizedPricePerMonth(showZeroDecimalPlacePrices: false)) == "$6.99"
+        expect(TestData.annualPackage60.localizedPricePerMonth(showZeroDecimalPlacePrices: false)) == "$5.00"
+        expect(TestData
+            .annualPackage60
+            .localizedPriceAndPerMonthFull(Self.english,
+                                           showZeroDecimalPlacePrices: false)) == "$60.00/year ($5.00/month)"
+        expect(TestData
+            .annualPackage
+            .localizedPriceAndPerMonthFull(Self.english,
+                                           showZeroDecimalPlacePrices: false)) == "$53.99/year ($4.50/month)"
+
+        expect(TestData
+            .annualPackage60Taiwan
+            .localizedPriceAndPerMonthFull(Locale.taiwan,
+                                           showZeroDecimalPlacePrices: false)) == "$60.00/年 ($5.00/個月)"
+
+        expect(TestData
+            .threeMonthPackageThailand
+            .localizedPriceAndPerMonthFull(Locale.thailand,
+                                           showZeroDecimalPlacePrices: false)) == "฿5.00/3เดือน (฿1.67/เดือน)"
+
     }
 
 }

@@ -22,9 +22,7 @@ enum PaywallTemplate: String {
     case template3 = "3"
     case template4 = "4"
     case template5 = "5"
-
-    // Fix-me: change when template 7 is fully ready.
-    case template7 = "7_disabled"
+    case template7 = "7"
 
 }
 

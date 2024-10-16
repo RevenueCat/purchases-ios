@@ -17,3 +17,7 @@
 "%d%% off" = "Έκπτωση %d%%";
 "Continue" = "Να συνεχίσει";
 "Default_offer_details_with_intro_offer" = "Ξεκινήστε τη δοκιμή {{ sub_offer_duration }} και μετά {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ δωρεάν";
+"pay_as_you_go_period" = "%@ κατά τη διάρκεια %@";
+"pay_up_front_period" = "%@ για %@";
+"then_price_per_period" = "μετά %@";

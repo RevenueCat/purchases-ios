@@ -32,6 +32,7 @@ class BaseBackendTests: TestCase {
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
     private(set) var internalAPI: InternalAPI!
+    private(set) var customerCenterConfig: CustomerCenterConfigAPI!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -82,13 +83,15 @@ class BaseBackendTests: TestCase {
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         self.internalAPI = InternalAPI(backendConfig: backendConfig)
+        self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
                                offeringsAPI: self.offerings,
                                offlineEntitlements: self.offlineEntitlements,
-                               internalAPI: self.internalAPI)
+                               internalAPI: self.internalAPI,
+                               customerCenterConfig: self.customerCenterConfig)
     }
 
     var verificationMode: Configuration.EntitlementVerificationMode {

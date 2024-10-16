@@ -21,8 +21,7 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     }
 
     func testDefaultSpanishPaywall() {
-        Self.createPaywall(offering: TestData.offeringWithNoPaywall)
-            .environment(\.locale, .init(identifier: "es_ES"))
+        Self.createPaywall(offering: TestData.offeringWithNoPaywall, locale: .init(identifier: "es_ES"))
             .snapshot(size: Self.fullScreenSize)
     }
 

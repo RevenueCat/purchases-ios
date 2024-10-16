@@ -22,26 +22,49 @@ struct HTTPRequest {
     var path: HTTPRequestPath
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
     var nonce: Data?
+    /// Whether or not this request should be retried by the HTTPClient for certain status codes.
+    var isRetryable: Bool
 
-    init(method: Method, path: HTTPRequest.Path, nonce: Data? = nil) {
-        self.init(method: method, requestPath: path, nonce: nonce)
+    init(
+        method: Method,
+        path: HTTPRequest.Path,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
-    init(method: Method, path: HTTPRequest.PaywallPath, nonce: Data? = nil) {
-        self.init(method: method, requestPath: path, nonce: nonce)
+    init(
+        method: Method,
+        path: HTTPRequest.PaywallPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
-    init(method: Method, path: HTTPRequest.DiagnosticsPath, nonce: Data? = nil) {
-        self.init(method: method, requestPath: path, nonce: nonce)
+    init(
+        method: Method,
+        path: HTTPRequest.DiagnosticsPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
-    private init(method: Method, requestPath: HTTPRequestPath, nonce: Data? = nil) {
+    private init(
+        method: Method,
+        requestPath: HTTPRequestPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
         assert(nonce == nil || nonce?.count == Data.nonceLength,
                "Invalid nonce: \(nonce?.description ?? "")")
 
         self.method = method
         self.path = requestPath
         self.nonce = nonce
+        self.isRetryable = isRetryable
     }
 
 }

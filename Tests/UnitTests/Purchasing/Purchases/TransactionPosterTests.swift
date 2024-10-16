@@ -359,7 +359,7 @@ private extension TransactionPosterTests {
     func setUp(observerMode: Bool, storeKitVersion: StoreKitVersion = .default) {
         self.operationDispatcher = .init()
         self.systemInfo = .init(finishTransactions: !observerMode, storeKitVersion: storeKitVersion)
-        self.productsManager = .init(systemInfo: self.systemInfo, requestTimeout: 0)
+        self.productsManager = .init(diagnosticsTracker: nil, systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
         self.transactionFetcher = .init()

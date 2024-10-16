@@ -35,8 +35,6 @@ struct Template7View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
-    @Environment(\.locale)
-    var locale
 
     #if swift(>=5.9) || (!os(macOS) && !os(watchOS) && !os(tvOS))
     @Environment(\.verticalSizeClass)
@@ -50,6 +48,18 @@ struct Template7View: TemplateViewType {
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
+
+    private var showTierSelector: Bool {
+        return self.tiers.count > 1
+    }
+
+    private var displayableTiers: [PaywallData.Tier] {
+        // Filter out to display tiers only
+        // Tiers may not exist in self.tiers if there are no products available
+        return self.configuration.configuration.tiers.filter({ tier in
+            return self.tiers[tier] != nil
+        })
+    }
 
     init(_ configuration: TemplateViewConfiguration) {
         guard let (firstTier, allTiers, tierNames) = configuration.packages.multiTier else {
@@ -74,6 +84,7 @@ struct Template7View: TemplateViewType {
             }
         }
             .foregroundColor(self.currentColors.text1Color)
+            .background(self.currentColors.backgroundColor)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(Constants.fastAnimation, value: self.selectedPackage)
             .notify(
@@ -93,6 +104,8 @@ struct Template7View: TemplateViewType {
                         .frame(maxWidth: .infinity, alignment: .center)
 
                     self.features
+
+                    Spacer()
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
                 .scrollableIfNecessaryWhenAvailable()
@@ -100,6 +113,8 @@ struct Template7View: TemplateViewType {
                 VStack {
                     self.tierSelectorView
                     self.packages
+
+                    Spacer()
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
                 .scrollableIfNecessaryWhenAvailable()
@@ -170,8 +185,6 @@ struct Template7View: TemplateViewType {
 
                 self.tierSelectorView
 
-                Spacer()
-
                 self.featuresAndPackages
 
                 Spacer()
@@ -190,15 +203,20 @@ struct Template7View: TemplateViewType {
     }
 
     private var tierSelectorView: some View {
-        TierSelectorView(
-            tiers: self.configuration.configuration.tiers,
-            tierNames: self.tierNames,
-            selectedTier: self.$selectedTier,
-            fonts: self.configuration.fonts,
-            backgroundColor: self.currentColors.unselectedOutline,
-            textColor: self.currentColors.text1Color,
-            accentColor: self.currentColors.selectedTier
-        )
+        Group {
+            if self.showTierSelector {
+                TierSelectorView(
+                    tiers: self.displayableTiers,
+                    tierNames: self.tierNames,
+                    selectedTier: self.$selectedTier,
+                    fonts: self.configuration.fonts,
+                    backgroundColor: self.currentColors.tierControlBackground,
+                    textColor: self.currentColors.tierControlForeground,
+                    selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
+                    selectedTextColor: self.currentColors.tierControlSelectedForeground
+                )
+            }
+        }
         .onChangeOf(self.selectedTier) { tier in
             withAnimation(Constants.tierChangeAnimation) {
                 self.selectedPackage = self.tiers[tier]!.default
@@ -211,9 +229,10 @@ struct Template7View: TemplateViewType {
             tier: self.selectedTier,
             name: self.tierNames[self.selectedTier]!,
             fonts: self.configuration.fonts,
-            backgroundColor: self.currentColors.unselectedOutline,
-            textColor: self.currentColors.text1Color,
-            accentColor: self.currentColors.selectedTier
+            backgroundColor: self.currentColors.tierControlBackground,
+            textColor: self.currentColors.tierControlForeground,
+            selectedBackgroundColor: self.currentColors.tierControlSelectedBackground,
+            selectedTextColor: self.currentColors.tierControlSelectedForeground
         )
     }
 
@@ -228,7 +247,7 @@ struct Template7View: TemplateViewType {
     }
 
     private func title(package: TemplateViewConfiguration.Package) -> some View {
-        Text(.init(package.localization.title))
+        Text(.init(self.selectedPackage.localization.title))
             .font(self.font(for: .title).weight(.semibold))
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -241,8 +260,14 @@ struct Template7View: TemplateViewType {
         ) { tier, packages in
             VStack {
                 self.features(package: self.selectedPackage)
+                    // Only bottom padding if the tier selector is being hidden
+                    .padding(self.showTierSelector ? .vertical : .bottom, self.defaultVerticalPaddingLength)
 
                 self.packages(for: tier, packages: packages.all)
+
+                // Needed if there are tiers that have
+                // different number of packages than other tiers
+                Spacer()
             }
         }
         .defaultHorizontalPadding()
@@ -331,7 +356,7 @@ struct Template7View: TemplateViewType {
 
                 Spacer(minLength: 0)
 
-                self.packageDiscountLabel(package, selected: selected)
+                self.packageBadgeLabel(package, selected: selected)
             }
 
             self.offerDetails(package: package, selected: selected)
@@ -354,19 +379,20 @@ struct Template7View: TemplateViewType {
 
     private var footerView: some View {
         FooterView(configuration: self.configuration,
+                   locale: self.selectedPackage.localization.locale,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
     }
 
     @ViewBuilder
-    private func packageDiscountLabel(
+    private func packageBadgeLabel(
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
-        if let discount = package.discountRelativeToMostExpensivePerMonth {
+        if let badge = package.localization.offerBadge, !badge.isEmpty {
             let colors = self.currentColors
 
-            Text(Localization.localized(discount: discount, locale: self.locale))
+            Text(badge)
                 .textCase(.uppercase)
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)
@@ -462,13 +488,18 @@ struct Template7View: TemplateViewType {
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension PaywallData.Configuration.Colors {
 
-    var featureIcon: Color { self.accent3Color }
-    var selectedOutline: Color { self.accent3Color }
-    var unselectedOutline: Color { self.accent2Color }
+    var featureIcon: Color { self.accent1Color }
+    var selectedOutline: Color { self.accent2Color }
+    var unselectedOutline: Color { self.accent3Color }
     var selectedDiscountText: Color { self.text2Color }
     var unselectedDiscountText: Color { self.text3Color }
     var selectedTier: Color { self.accent1Color }
     var callToAction: Color { self.selectedTier }
+
+    var tierControlBackground: Color { self.tierControlBackgroundColor ?? self.accent1Color }
+    var tierControlForeground: Color { self.tierControlForegroundColor ?? self.text1Color }
+    var tierControlSelectedBackground: Color { self.tierControlSelectedBackgroundColor ?? self.unselectedDiscountText }
+    var tierControlSelectedForeground: Color { self.tierControlSelectedForegroundColor ?? self.text1Color }
 
 }
 

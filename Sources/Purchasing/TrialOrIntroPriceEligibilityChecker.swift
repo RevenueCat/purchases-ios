@@ -60,9 +60,18 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             return
         }
 
+        // Extracting and wrapping the completion block from the async call
+        // to avoid having to mark ReceiveIntroEligibilityBlock as @Sendable
+        // up to the public API thus making a breaking change.
+        let completionBlock: ReceiveIntroEligibilityBlock = { result in
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(result)
+            }
+        }
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
-            Async.call(with: completion) {
+            Async.call(with: completionBlock) {
                 do {
                     return try await self.sk2CheckEligibility(productIdentifiers)
                 } catch {
@@ -74,7 +83,11 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 }
             }
         } else {
-            self.sk1CheckEligibility(productIdentifiers, completion: completion)
+            self.sk1CheckEligibility(productIdentifiers) { result in
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(result)
+                }
+            }
         }
     }
 
@@ -85,12 +98,18 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.receiptFetcher.receiptData(refreshPolicy: .never) { data, _ in
             if let data = data {
                 self.sk1CheckEligibility(with: data,
-                                         productIdentifiers: productIdentifiers,
-                                         completion: completion)
+                                         productIdentifiers: productIdentifiers) { eligibility in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(eligibility)
+                    }
+                }
             } else {
                 self.getIntroEligibility(with: data ?? Data(),
-                                         productIdentifiers: productIdentifiers,
-                                         completion: completion)
+                                         productIdentifiers: productIdentifiers) { eligibility in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(eligibility)
+                    }
+                }
             }
         }
     }

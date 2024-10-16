@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% reducere";
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Începeți perioada de încercare de {{ sub_offer_duration }}, apoi {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ gratuit";
+"pay_as_you_go_period" = "%@ pe durata %@";
+"pay_up_front_period" = "%@ pentru %@";
+"then_price_per_period" = "apoi %@";

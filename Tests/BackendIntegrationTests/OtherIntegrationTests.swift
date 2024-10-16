@@ -12,6 +12,8 @@
 //  Created by Nacho Soto on 10/10/22.
 
 import Nimble
+import OHHTTPStubs
+import OHHTTPStubsSwift
 @testable import RevenueCat
 import StoreKitTest
 import XCTest
@@ -23,6 +25,12 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         super.initializeLogger()
 
         try await super.setUp()
+    }
+
+    override func tearDown() async throws {
+        HTTPStubs.removeAllStubs()
+
+        try await super.tearDown()
     }
 
     func testGetCustomerInfo() async throws {
@@ -173,7 +181,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let result = try await self.purchases.productEntitlementMapping().entitlementsByProduct
-        expect(result).to(haveCount(18))
+        expect(result).to(haveCount(21))
         expect(result["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
         expect(result["lifetime"]) == ["premium"]
         expect(result["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
@@ -221,4 +229,35 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         }
     }
 
+    func testDoesntRetryUnsupportedURLPaths() async throws {
+        // Ensure that the each time POST /receipt is called, we mock a 429 error
+        var stubbedRequestCount = 0
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host) && isPath("/v1/subscribers/identify")) { _ in
+            stubbedRequestCount += 1
+            return Self.emptyTooManyRequestsResponse()
+        }
+
+        do {
+            _ = try await self.purchases.logIn(UUID().uuidString)
+            fail("Expected purchases.login to fail after not retrying a 429 response")
+        } catch {
+            expect(error).to(matchError(ErrorCode.unknownError))
+        }
+
+        expect(stubbedRequestCount).to(equal(1)) // Just the original request
+    }
+
+}
+
+private extension OtherIntegrationTests {
+    static func emptyTooManyRequestsResponse(
+        headers: [String: String]? = nil
+    ) -> HTTPStubsResponse {
+        // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
+        // This creates a new response each time so modifications in one test don't affect others.
+        return .init(data: Data(),
+                     statusCode: 429,
+                     headers: headers)
+    }
 }

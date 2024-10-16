@@ -62,16 +62,19 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         return self.createClient(self.systemInfo)
     }
 
-    fileprivate final func createClient(_ systemInfo: SystemInfo) -> HTTPClient {
+    fileprivate final func createClient(
+        _ systemInfo: SystemInfo,
+        operationDispatcher: OperationDispatcher = MockOperationDispatcher()
+    ) -> HTTPClient {
         return HTTPClient(apiKey: self.apiKey,
                           systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultTimeout.seconds)
+                          requestTimeout: defaultTimeout.seconds,
+                          operationDispatcher: operationDispatcher)
     }
-
 }
 
 final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
@@ -290,6 +293,46 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         expect(header.value) == "false"
+    }
+
+    func testAlwaysPassesIsDebugBuildHeaderInReleaseMode() {
+        let headerName = "X-Is-Debug-Build"
+        self.systemInfo.stubbedIsDebugBuild = false // "release" mode
+
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "false"
+    }
+
+    func testAlwaysPassesIsDebugBuildHeaderInDebugMode() {
+        let headerName = "X-Is-Debug-Build"
+        self.systemInfo.stubbedIsDebugBuild = true
+
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "true"
     }
 
     func testRequestWithStorefrontSendsHeader() {
@@ -631,6 +674,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
         expect(result?.value?.body) == responseData
+        self.logger.verifyMessageWasNotLogged("Queued request GET /v1/subscribers/identify for retry in 0.0 seconds.")
     }
 
     func testServerSide200WithETagInRequest() {
@@ -910,6 +954,23 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                                     finishTransactions: true)
 
         self.client = self.createClient(systemInfo)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
+    func testPassesPlatformDeviceHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        stub(condition: hasHeaderNamed("X-Platform-Device", value: SystemInfo.deviceVersion)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1620,8 +1681,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
-        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.count).toEventually(equal(1))
-        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.first else {
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
             fail("Should have at least one call to tracked diagnostics")
             return
         }
@@ -1630,6 +1691,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             -1, // Any
             true,
             200,
+            nil,
             .backend,
             .notRequested
         )))
@@ -1647,8 +1709,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
-        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.count).toEventually(equal(1))
-        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.first else {
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
             fail("Should have at least one call to tracked diagnostics")
             return
         }
@@ -1657,6 +1719,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             -1, // Any
             false,
             401,
+            7225,
             nil,
             .notRequested
         )))
@@ -1664,11 +1727,593 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
 }
 
+// MARK: - HttpClient.Request Tests
+extension HTTPClientTests {
+    func testNewRequestHasNoRetries() {
+        let request = buildEmptyRequest(isRetryable: true)
+
+        expect(request.retried).to(beFalse())
+        expect(request.retryCount).to(equal(0))
+    }
+
+    func testRetryingRequestIncrementsRetryCount() {
+        let request = buildEmptyRequest(isRetryable: true)
+
+        let retriedRequest = request.retriedRequest()
+        let secondRetriedRequest = retriedRequest.retriedRequest()
+
+        expect(retriedRequest.retried).to(beTrue())
+        expect(retriedRequest.retryCount).to(equal(1))
+
+        expect(secondRetriedRequest.retried).to(beTrue())
+        expect(secondRetriedRequest.retryCount).to(equal(2))
+    }
+
+    private func buildEmptyRequest(
+        isRetryable: Bool
+    ) -> HTTPClient.Request {
+        let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
+
+        let request: HTTPClient.Request = .init(
+            httpRequest: .init(method: .get, path: .getCustomerInfo(appUserID: "abc123"), isRetryable: isRetryable),
+            authHeaders: .init(),
+            defaultHeaders: .init(),
+            verificationMode: .default,
+            internalSettings: DangerousSettings.Internal.default,
+            completionHandler: completionHandler
+        )
+
+        return request
+    }
+}
+
+// MARK: - HttpClient Retry Tests
+extension HTTPClientTests {
+
+    func testOnlyRetriesProvidedHTTPStatusCodesIfIsRetryableHeaderMissing() {
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )).to(beTrue())
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.invalidRequest.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )).to(beFalse())
+    }
+
+    func testWontRetryIfIsRetryableHeaderFalse() {
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "false"
+                ]
+            )!
+        )).to(beFalse())
+
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "False"
+                ]
+            )!
+        )).to(beFalse())
+
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "FALSE"
+                ]
+            )!
+        )).to(beFalse())
+    }
+
+    func testWillRetryIfIsRetryableHeaderTrue() {
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "true"
+                ]
+            )!
+        )).to(beTrue())
+
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "True"
+                ]
+            )!
+        )).to(beTrue())
+
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "TRUE"
+                ]
+            )!
+        )).to(beTrue())
+    }
+
+    func testWillNotRetryIfIsRetryableHeaderTrueButStatusCodeIsNotRetryable() {
+        expect(self.client.isResponseRetryable(
+            HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.success.rawValue,
+                httpVersion: nil,
+                headerFields: [
+                    HTTPClient.ResponseHeader.isRetryable.rawValue: "true"
+                ]
+            )!
+        )).to(beFalse())
+    }
+
+    // Backoff Time Tests
+    func testUsesNoBackoffIfFirstRetryAndNoETagPresent() {
+        var httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [HTTPClient.ResponseHeader.eTag.rawValue: ""]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+    }
+
+    func testUsesBackoffIfFirstRetryAndETagPresent() {
+        var httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [HTTPClient.ResponseHeader.eTag.rawValue: "some-etag-value"]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 1)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+    }
+
+    func testUsesServerProvidedBackoffIfPresent() {
+        let retryAfterSeconds = 100
+
+        var httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterSeconds)"
+            ]
+        )!
+
+        var backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSeconds)))
+
+        let retryAfterSecondsDecimal = 10.5
+        httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(retryAfterSecondsDecimal)"
+            ]
+        )!
+
+        backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(retryAfterSecondsDecimal)))
+    }
+
+    func testUses0msBackoffIfServerProvidedBackoffIsNegative() {
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "-1"
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0)))
+    }
+
+    func testUses1hourBackoffIfServerProvidedBackoffIsGreaterThan1hour() {
+        let oneHourInSeconds = 3_600
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: "\(oneHourInSeconds * 2)"
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(Double(oneHourInSeconds))))
+    }
+
+    func testUsesDefaultBackoffIfServerProvidedBackoffIsEmptyString() {
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [
+                HTTPClient.ResponseHeader.retryAfter.rawValue: ""
+            ]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0.75)))
+    }
+
+    func testUsesDefaultBackoffIfServerProvidedBackoffMissing() {
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+
+        let backoffPeriod = self.client.calculateRetryBackoffTime(forResponse: httpURLResponse, retryCount: 2)
+        expect(backoffPeriod).to(equal(TimeInterval(0.75)))
+    }
+
+    func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
+        var requestCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(requestCount).to(equal(4)) // 1 original request + 3 retries
+
+        expect(result).toNot(beNil())
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(result?.error)
+        expect(error) == .errorResponse(
+            .init(code: .unknownError,
+                  originalCode: 0,
+                  message: nil),
+            .tooManyRequests
+        )
+        expect(error.isServerDown) == false
+    }
+
+    func testCorrectDelaysAreSentToOperationDispatcherForRetries() throws {
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        _ = waitUntilValue { completion in
+            client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalCount).to(equal(3))
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalParams).to(equal([
+            TimeInterval(0),
+            TimeInterval(0.75),
+            TimeInterval(3)
+        ]))
+    }
+
+    func testRetryMessagesAreLoggedWhenRetriesExhausted() throws {
+        var requestCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/receipts for retry number 1 in 0.0 seconds."
+        )
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/receipts for retry number 2 in 0.75 seconds."
+        )
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/receipts for retry number 3 in 3.0 seconds."
+        )
+        self.logger.verifyMessageWasLogged("Request GET /v1/receipts failed all 3 retries.")
+    }
+
+    func testRetryMessagesAreNotLoggedWhenNoRetriesOccur() throws {
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 1 in 0.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 2 in 0.75 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/subscribers/identify for retry number 3 in 3.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged("Request GET /v1/subscribers/identify failed all 3 retries.")
+    }
+
+    func testRetryCountHeaderIsAccurateWithNoRetries() throws {
+        var retryCountHeaderValues: [String?] = []
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { urlRequest in
+            let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
+            retryCountHeaderValues.append(retryCountHeaderValue)
+
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(retryCountHeaderValues).to(equal(["0"]))
+    }
+
+    func testDoesNotRetryUnsupportedURLPaths() throws {
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        var requestCount = 0
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath) // This is the logIn path
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(requestCount).to(equal(1))
+    }
+
+    func testRetryCountHeaderIsAccurateWithOnlyOneRetry() throws {
+        var retryCountHeaderValues: [String?] = []
+        var retryCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { urlRequest in
+            let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
+            retryCountHeaderValues.append(retryCountHeaderValue)
+
+            if retryCount == 0 {
+                retryCount += 1
+                return .emptyTooManyRequestsResponse()
+            } else {
+                retryCount += 1
+                return .emptySuccessResponse()
+            }
+        }
+
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(retryCountHeaderValues).to(equal(["0", "1"]))
+    }
+
+    func testRetryCountHeaderIsAccurateWhenAllRetriesAreExhausted() throws {
+        var retryCountHeaderValues: [String?] = []
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { urlRequest in
+            let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
+            retryCountHeaderValues.append(retryCountHeaderValue)
+
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(retryCountHeaderValues).to(equal(["0", "1", "2", "3"]))
+    }
+
+    func testSucceedsIfAlwaysGetsSuccessAfterOneRetry() throws {
+        var requestCount = 0
+
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(host)) { _ in
+            requestCount += 1
+
+            if requestCount >= 2 {
+                return .emptySuccessResponse()
+            } else {
+                return .emptyTooManyRequestsResponse()
+            }
+        }
+
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+        expect(requestCount).to(equal(2)) // 1 original request + 1 retries
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+
+        self.logger.verifyMessageWasLogged(
+            "Queued request GET /v1/receipts for retry number 1 in 0.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/receipts for retry number 2 in 0.75 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Queued request GET /v1/receipts for retry number 3 in 3.0 seconds."
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Request GET /v1/receipts failed all 3 retries."
+        )
+
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRetryRequestIfNeededDoesntRetryRequestWithNilHTTPURLResponse() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: buildEmptyRequest(isRetryable: true),
+            httpURLResponse: nil
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testRetryRequestIfNeededDoesntRetryRequestWithNonRetryableHTTPStatusCode() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: buildEmptyRequest(isRetryable: true),
+            httpURLResponse: HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.success.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testRetryRequestIfNeededDoesntRetryRequestWithTooManyExistingRetries() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let requestThatHasBeenRetriedManyTimes = buildEmptyRequest(isRetryable: true)
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+            .retriedRequest()
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: requestThatHasBeenRetriedManyTimes,
+            httpURLResponse: HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testRetryRequestIfNeededRetriesEligibleRequest() {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let requestThatHasBeenRetriedManyTimes = buildEmptyRequest(isRetryable: true)
+
+        let didRetry = client.retryRequestIfNeeded(
+            request: requestThatHasBeenRetriedManyTimes,
+            httpURLResponse: HTTPURLResponse(
+                url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+                statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+                httpVersion: nil,
+                headerFields: nil
+            )
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeInterval).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalCount).to(equal(1))
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalParam).to(equal(0))
+    }
+}
+
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
-    _ data: (String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)
-) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)> {
+    _ data: (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
+) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.1 ?? -1
@@ -1677,7 +2322,8 @@ private func matchTrackParams(
                        other?.2 == data.2 &&
                        other?.3 == data.3 &&
                        other?.4 == data.4 &&
-                       other?.5 == data.5)
+                       other?.5 == data.5 &&
+                       other?.6 == data.6)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }
@@ -1696,6 +2342,14 @@ extension HTTPStubsResponse {
         // This creates a new response each time so modifications in one test don't affect others.
         return .init(data: Data(),
                      statusCode: .success,
+                     headers: nil)
+    }
+
+    static func emptyTooManyRequestsResponse() -> HTTPStubsResponse {
+        // `HTTPStubsResponse` doesn't have value semantics, it's a mutable class!
+        // This creates a new response each time so modifications in one test don't affect others.
+        return .init(data: Data(),
+                     statusCode: .tooManyRequests,
                      headers: nil)
     }
 
@@ -1762,6 +2416,7 @@ extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
+    static let receiptPath: Self = .postReceiptData
 
 }
 

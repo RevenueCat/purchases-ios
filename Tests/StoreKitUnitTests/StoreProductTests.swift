@@ -446,9 +446,28 @@ class StoreProductTests: StoreKitConfigTestCase {
         let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
         let storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
-        expect(storeProduct.localizedPricePerWeek) == "$1.14"
+        expect(storeProduct.localizedPricePerWeek) == "$1.15"
         expect(storeProduct.localizedPricePerMonth) == "$4.99"
         expect(storeProduct.localizedPricePerYear) == "$59.88"
+    }
+
+    func testPricePerPeriodRounding() async throws {
+        let locale: Locale = .init(identifier: "en_US")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.98999999999,
+            localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .week),
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.localizedPricePerWeek) == "$3.99"
+        expect(storeProduct.localizedPricePerMonth) == "$17.34"
+        expect(storeProduct.localizedPricePerYear) == "$208.05"
     }
 
 }

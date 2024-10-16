@@ -51,6 +51,8 @@ extension CurrentTestCaseTracker {
     static var osVersionAndTestName: String {
         #if os(macOS)
         return "macOS/\(Self.sanitizedTestName)"
+        #elseif os(watchOS)
+        return "watchOS/\(Self.sanitizedTestName)"
         #else
         let osVersionEquivalent = OSVersionEquivalent.current
         return "iOS\(osVersionEquivalent.rawValue)/\(Self.sanitizedTestName)"

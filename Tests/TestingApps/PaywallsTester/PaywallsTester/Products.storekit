@@ -1,15 +1,54 @@
 {
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
   "identifier" : "882C6E98",
   "nonRenewingSubscriptions" : [
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "531C0472",
+      "localizations" : [
+        {
+          "description" : "Lifetime",
+          "displayName" : "Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.simpleapp.lifetime",
+      "referenceName" : "Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "AE159122",
+      "localizations" : [
+        {
+          "description" : "Liftime",
+          "displayName" : "Lifetime Lite",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.revenuecat.simpleapp.lifetimelite",
+      "referenceName" : "Lifetime Lite",
+      "type" : "NonConsumable"
+    }
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "es_ES",
-    "_storefront" : "ESP",
+    "_locale" : "en_US",
+    "_storefront" : "USA",
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -68,7 +107,21 @@
       "subscriptions" : [
         {
           "adHocOffers" : [
-
+            {
+              "internalID" : "35E3C9F3",
+              "offerID" : "rc-cancel-offer",
+              "paymentMode" : "free",
+              "referenceName" : "rc-cancel-offer",
+              "subscriptionPeriod" : "P1M"
+            },
+            {
+              "displayPrice" : "0.99",
+              "internalID" : "75357B47",
+              "offerID" : "rc-refund-offer",
+              "paymentMode" : "payUpFront",
+              "referenceName" : "rc-refund-offer",
+              "subscriptionPeriod" : "P1M"
+            }
           ],
           "codeOffers" : [
 
@@ -103,7 +156,10 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly",
           "subscriptionGroupID" : "CEEF018E",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
@@ -138,7 +194,10 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Yearly",
           "subscriptionGroupID" : "CEEF018E",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
@@ -163,13 +222,16 @@
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "Weekly",
           "subscriptionGroupID" : "CEEF018E",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     }
   ],
   "version" : {
-    "major" : 2,
+    "major" : 4,
     "minor" : 0
   }
 }

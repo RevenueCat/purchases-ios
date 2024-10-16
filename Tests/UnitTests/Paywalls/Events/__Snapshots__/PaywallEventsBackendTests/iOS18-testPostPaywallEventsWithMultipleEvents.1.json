@@ -1,0 +1,57 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Is-Debug-Build" : "true",
+    "X-Is-Sandbox" : "true",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Preferred-Locales" : "en_EN",
+    "X-Retry-Count" : "0",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
+  },
+  "request" : {
+    "body" : {
+      "events" : [
+        {
+          "app_user_id" : "user",
+          "dark_mode" : true,
+          "display_mode" : "full_screen",
+          "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
+          "locale" : "es_ES",
+          "offering_id" : "offering_1",
+          "paywall_revision" : 5,
+          "session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
+          "timestamp" : 1694029328000,
+          "type" : "paywall_impression",
+          "version" : 1
+        },
+        {
+          "app_user_id" : "user",
+          "dark_mode" : false,
+          "display_mode" : "full_screen",
+          "id" : "25B68D80-68D8-461C-8C68-1A8591190A88",
+          "locale" : "en_US",
+          "offering_id" : "offering_2",
+          "paywall_revision" : 3,
+          "session_id" : "10CC0F1D-7665-4093-9624-1D7308FFF4DB",
+          "timestamp" : 1694022321000,
+          "type" : "paywall_close",
+          "version" : 1
+        }
+      ]
+    },
+    "method" : "POST",
+    "url" : "https://api-paywalls.revenuecat.com/v1/events"
+  }
+}

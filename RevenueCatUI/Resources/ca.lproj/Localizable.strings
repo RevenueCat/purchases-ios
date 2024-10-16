@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% de descompte";
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Inicieu la vostra prova de {{ sub_offer_duration }} i després {{ total_price_and_per_month }}.";
+"free_trial_period" = "%@ gratis";
+"pay_as_you_go_period" = "%@ durant %@";
+"pay_up_front_period" = "%@ per %@";
+"then_price_per_period" = "després %@";

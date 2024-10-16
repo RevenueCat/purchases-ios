@@ -28,13 +28,13 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     }
 
     func testConfiguration() throws {
-        expect(self.paywall.templateName) == "7_disabled"
+        expect(self.paywall.templateName) == "7"
         expect(self.paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(self.paywall.revision) == 7
         expect(self.paywall.config.packages).to(beEmpty())
         expect(self.paywall.config.defaultPackage).to(beNil())
         expect(self.paywall.config.images) == .init(
-            header: "954459_1703109702.png",
+            header: nil,
             background: nil,
             icon: nil
         )
@@ -218,7 +218,7 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     }
 
     func testEnglishLocalizedConfiguration() throws {
-        let localization = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
+        let (_, localization) = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
             .init(identifier: "en_UK"),
             .init(identifier: "es_ES")
         ]))
@@ -229,7 +229,7 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     }
 
     func testSpanishLocalizedConfiguration() throws {
-        let localization = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
+        let (_, localization) = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
             .init(identifier: "es_ES"),
             .init(identifier: "en_UK")
         ]))

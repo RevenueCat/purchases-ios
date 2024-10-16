@@ -94,7 +94,7 @@ platform :ios do
       repo_name: repo_name,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: changelog_latest_path,
-      upload_assets: ['RevenueCat.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
     )
   end
 
@@ -150,7 +150,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan(
+    scan_with_flaky_test_retries(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -161,43 +161,56 @@ platform :ios do
       testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
-      number_of_retries: generate_snapshots ? 0 : 5,
-      fail_build: !generate_snapshots
+      number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots,
+      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
     )
   end
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    scan(
+    scan_with_flaky_test_retries(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
+      number_of_retries: 5, # Number of retries in an xcodebuild run
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/tvos"
+      output_directory: "fastlane/test_output/xctest/tvos",
+
+      number_of_flaky_retries: 5 # Number of xcodebuild runs to retry
     )
   end
 
   desc "Runs all the watchOS tests"
   lane :test_watchos do |options|
-    scan(
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    if generate_snapshots
+       test_plan = "CI-RevenueCat-Snapshots"
+    else
+      test_plan = "CI-RevenueCat"
+    end
+
+    scan_with_flaky_test_retries(
       step_name: "scan - watchOS",
-      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 8 (41mm)",
+      device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
       result_bundle: true,
       # Host app isn't available on watchOS
-      testplan: "CI-RevenueCat",
+      testplan: test_plan,
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/watchos"
+      output_directory: "fastlane/test_output/xctest/watchos",
+      number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots,
+
+      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
     )
   end
 
@@ -235,13 +248,12 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    export_xcframework
+    export_xcframeworks
     check_no_github_release_exists(version_number)
   end
 
   desc "build tvOS, watchOS, macOS"
   lane :build_tv_watch_mac do |options|
-    check_pods
     load_spm_dependencies
     build_release(platform: 'watchOS')
     build_release(platform: 'tvOS')
@@ -250,7 +262,6 @@ platform :ios do
 
   desc "macOS build"
   lane :build_mac do |options|
-    check_pods
     load_spm_dependencies
     build_release(platform: 'macOS')
   end
@@ -287,44 +298,14 @@ platform :ios do
     end
   end
 
-  desc "build Swift API tester"
-  lane :build_swift_api_tester do
+  desc "run API Tests"
+  lane :run_api_tests do
+    # note: it's called "run" tests but these tests only need to build to run
     xcodebuild(
       workspace: 'RevenueCat.xcworkspace',
-      scheme: 'SwiftAPITester',
+      scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
-    )
-  end
-
-  desc "build ObjC API tester"
-  lane :build_objc_api_tester do
-    xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
-      scheme: 'ObjCAPITester',
-      destination: 'generic/platform=iOS Simulator',
-      configuration: 'release',
-    )
-  end
-
-  desc "build CustomEntitlementComputation API tester"
-  lane :build_custom_entitlement_computation_api_tester do
-    xcodebuild(
-      project: 'Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj',
-      scheme: 'SwiftAPITester',
-      destination: 'generic/platform=iOS',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
-      configuration: 'release',
-    )
-  end
-
-  desc "build RevenueCatUI API tester"
-  lane :build_revenuecatui_api_tester do
-    xcodebuild(
-      project: 'Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj',
-      scheme: 'SwiftAPITester',
-      destination: 'generic/platform=iOS',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     )
   end
 
@@ -370,7 +351,7 @@ platform :ios do
   desc "Create XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    export_xcframework
+    export_xcframeworks
     github_release(version: version_number)
   end
 
@@ -556,22 +537,39 @@ platform :ios do
     }
   end
 
-  desc "Export XCFramework"
-  lane :export_xcframework do |options|
-    output_directory = 'build/xcframeworks'
-    platforms = [
-        'iOS',
-        'macOS',
-        'maccatalyst',
-        'tvOS',
-        'watchOS',
-        'visionOS'
-      ]
+  lane :export_xcframeworks do |options|
+    create_and_sign_xcframework(
+      scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
+      platforms: [
+      'iOS',
+      'macOS',
+      'maccatalyst',
+      'tvOS',
+      'watchOS',
+      'visionOS'
+    ])
+    create_and_sign_xcframework(
+      scheme: 'RevenueCatUIDev',
+      product_name: 'RevenueCatUI',
+      platforms: [
+      'iOS',
+      'maccatalyst',
+      'watchOS',
+    ])
+  end
+
+  private_lane :create_and_sign_xcframework do |options|
+    scheme = options[:scheme]
+    product_name = options[:product_name]
+    platforms = options[:platforms]
+
+    output_directory = "build/xcframeworks/#{product_name}"
 
     create_xcframework(
       destinations: platforms,
-      scheme: 'RevenueCat',
-      product_name: 'RevenueCat',
+      scheme: scheme,
+      product_name: product_name,
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
@@ -586,18 +584,14 @@ platform :ios do
 
     # Sign XCFramework for Xcode 15
     sign_xcframework(
-      file: "#{output_directory_for_sh}/RevenueCat.xcframework"
+      file: "#{output_directory_for_sh}/#{product_name}.xcframework"
     )
 
-    xcframeworks_zip_path_for_sh = "../RevenueCat.xcframework.zip"
+    xcframeworks_zip_path_for_sh = "../#{product_name}.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
       output_directory_for_sh,
       xcframeworks_zip_path_for_sh)
 
-  end
-
-  private_lane :test_artifact_path do
-    File.absolute_path('./test_output/xctest/ios')
   end
 
   desc "Run BackendIntegrationTests"
@@ -607,66 +601,19 @@ platform :ios do
     fetch_snapshots
     replace_api_key_integration_tests
 
-    begin
-      scan(
-        scheme: "BackendIntegrationTests",
-        ensure_devices_found: true,
-        derived_data_path: "scan_derived_data",
-        output_types: 'junit',
-        output_style: 'raw',
-        result_bundle: true,
-        testplan: options[:test_plan],
-        configuration: 'Debug',
-        output_directory: test_artifact_path,
+    scan_with_flaky_test_retries(
+      scheme: "BackendIntegrationTests",
+      ensure_devices_found: true,
+      derived_data_path: "scan_derived_data",
+      output_types: 'junit',
+      output_style: 'raw',
+      result_bundle: true,
+      testplan: options[:test_plan],
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/ios",
 
-        fail_build: !!fail_build
-      )
-    rescue => ex
-        UI.error("Tests failed: #{ex}")
-    end
-
-    retry_scan_save_failed_tests(
-      junit_report_path: File.join(test_artifact_path, 'report.junit'),
-      copy_path: File.join(test_artifact_path, 'report.junit.original')
+      number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
     )
-  end
-
-  private_lane :failed_tests_path do
-    File.join(test_artifact_path, 'failed_tests.txt')
-  end
-
-  lane :retry_failed_tests do |options|
-    fail_build = options[:fail_build]
-    retry_attempt = options[:retry_attempt]
-    
-    failed_tests = File.read(failed_tests_path).split("\n")
-    
-    if failed_tests.empty?
-      UI.message('No failed tests to retry')
-    else
-      report_dir = "./test_output_retry_#{retry_attempt}/xctest/ios"
-      report_path = File.absolute_path(File.join(report_dir, "report.junit"))
-
-      scan(
-        scheme: "BackendIntegrationTests",
-        ensure_devices_found: true,
-        derived_data_path: "scan_derived_data",
-        output_types: 'junit',
-        output_style: 'raw',
-        result_bundle: true,
-        configuration: 'Debug',
-        output_directory: File.join('fastlane', report_dir),
-
-        only_testing: failed_tests,
-        fail_build: !!fail_build
-      )
-
-      retry_scan_save_failed_tests(
-        junit_report_path: report_path,
-        copy_path: File.join(test_artifact_path, "report.junit.retry.#{retry_attempt}"),
-        merge_path: File.join(test_artifact_path, "report.junit")
-      )
-    end
   end
 
   desc "Run LoadShedder tests"
@@ -692,9 +639,6 @@ platform :ios do
       './Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
-      './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
-      './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
-      './Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
@@ -828,82 +772,116 @@ platform :ios do
 
     hosting_base_path = File.join(docs_repo_name, version_number)
 
-    docs_path = Dir.mktmpdir do |docs_generation_folder|
-      # swift package must be run from the dir that contains the Package.swift
-      # output is generated in docs_generation_folder
-      Dir.chdir("..") do
-        build_symbols_for_docs
+    docs_generation_folder = Dir.mktmpdir
 
-        sh("swift",
-           "package",
-           "--disable-sandbox",
-           "--allow-writing-to-directory",
-           docs_generation_folder,
-           "generate-documentation",
-           "--target",
-           "RevenueCat",
-           "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
-           "--platform",
-           "name=iOS,version=#{ios_version}",
-           "--output-path",
-           docs_generation_folder,
-           "--hosting-base-path",
-           hosting_base_path,
-           "--transform-for-static-hosting",
-           "--enable-inherited-docs",
-           "--additional-symbol-graph-dir", ".build")
-      end
+    # swift package must be run from the dir that contains the Package.swift
+    # output is generated in docs_generation_folder
+    Dir.chdir("..") do
+      build_symbols_for_docs
 
-      docs_generation_folder # returning path from block
+      sh("swift",
+          "package",
+          "--disable-sandbox",
+          "--allow-writing-to-directory",
+          docs_generation_folder,
+          "generate-documentation",
+          "--target",
+          "RevenueCat",
+          "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
+          "--platform",
+          "name=iOS,version=#{ios_version}",
+          "--output-path",
+          docs_generation_folder,
+          "--hosting-base-path",
+          hosting_base_path,
+          "--transform-for-static-hosting",
+          "--enable-inherited-docs",
+          "--additional-symbol-graph-dir", ".build")
     end
 
-    docs_path # returning path from lane
+    docs_generation_folder # returning path from lane
   end
 
   desc "Build and deploy PurchaseTesterSwiftUI"
-  lane :deploy_purchase_tester do
-    latest_changelog = File.read("#{File.dirname(__FILE__)}/../#{changelog_latest_path}")
+  lane :deploy_purchase_tester do |options|
+    dry_run = options[:dry_run] || false
+
+    project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
+
+    latest_changelog = File.read("#{project_root}/#{changelog_latest_path}")
     changelog = "Release #{current_version_number}:\n\n#{latest_changelog}"
 
-    def ios_build(changelog)
+    purchase_tester_root = "#{project_root}/Tests/TestingApps/PurchaseTesterSwiftUI"
+    xcodeproj_path = "#{purchase_tester_root}/PurchaseTester.xcodeproj"
+
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # like the Matchfile. So we move to that project's directory to run them.
+    Dir.chdir("#{purchase_tester_root}/fastlane") do
+      match(readonly: true, platform: "ios")
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'ios') + 1,
-        xcodeproj: 'PurchaseTester.xcodeproj'
-      )
-
-      match(readonly: true)
-      build_ios_app(
-        workspace: "PurchaseTester.xcworkspace",
-        scheme: "PurchaseTester",
-        destination: "generic/platform=ios",
-        xcodebuild_formatter: ''
-      )
-      upload_to_testflight(
-        changelog: changelog
+        xcodeproj: xcodeproj_path,
       )
     end
+    
+    build_ios_app(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: "PurchaseTester",
+      destination: "generic/platform=ios",
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      export_options: {
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp",
+          "com.revenuecat.sampleapp.watchkitapp" => "match AppStore com.revenuecat.sampleapp.watchkitapp"
+        }
+      }
+    )
 
-    def macos_build(changelog)
+    if not dry_run
+      upload_to_testflight(
+      changelog: changelog,
+      app_identifier: "com.revenuecat.sampleapp",
+    )
+    else
+      UI.message("Dry run mode enabled. Skipping upload to TestFlight")
+    end
+
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # like the Matchfile. So we move to that project's directory to run them.
+    Dir.chdir("#{purchase_tester_root}/fastlane") do
+      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
       increment_build_number(
         build_number: latest_testflight_build_number(platform: 'osx') + 1,
-        xcodeproj: 'PurchaseTester.xcodeproj'
-      )
-
-      match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
-      build_mac_app(
-        workspace: "PurchaseTester.xcworkspace",
-        scheme: "PurchaseTester",
-        destination: 'generic/platform=macOS',
-        xcodebuild_formatter: ''
-      )
-      upload_to_testflight(
-        changelog: changelog,
-        app_platform: 'osx'
+        xcodeproj: xcodeproj_path,
       )
     end
 
-    ios_build(changelog)
-    macos_build(changelog)
+    build_mac_app(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: "PurchaseTester",
+      destination: 'generic/platform=macOS',
+      xcodebuild_formatter: '',
+      export_method: 'app-store',
+      export_options: {
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          "com.revenuecat.sampleapp" => "match AppStore com.revenuecat.sampleapp macos",
+        }
+      }
+    )
+
+    if not dry_run
+      upload_to_testflight(
+        changelog: changelog,
+        app_platform: 'osx',
+        app_identifier: "com.revenuecat.sampleapp",
+      )
+    else
+        UI.message("Dry run mode enabled. Skipping upload to TestFlight")
+    end
+    
   end
 
   desc "Clones or updates snapshots repo"
@@ -967,6 +945,27 @@ platform :ios do
       sandbox_testers_create(email_pattern: email_pattern)
     elsif option == options[1]
       sandbox_testers_delete(email_pattern: email_pattern)
+    end
+  end
+
+  desc "Enable customer center development by cherry-picking a specific commit"
+  lane :enable_customer_center do |options|
+    commit_hash = options[:commit_hash] || "517ad0bf5"
+
+    UI.message("Applying changes from commit to enable customer center: #{commit_hash}")
+
+    begin
+      sh("git", "cherry-pick", "--no-commit", commit_hash)
+      UI.success("Successfully applied changes for customer center development from commit #{commit_hash}")
+      UI.important("Changes are now in your working directory. Review and stage/commit as needed.")
+    rescue => ex
+      UI.error("Failed to enable customer center. Error while applying changes from commit #{commit_hash}")
+      UI.error(ex.message)
+      
+      if UI.confirm("Do you want to abort the customer center enablement?")
+        sh("git", "cherry-pick", "--abort")
+        UI.message("Customer center enablement aborted")
+      end
     end
   end
 

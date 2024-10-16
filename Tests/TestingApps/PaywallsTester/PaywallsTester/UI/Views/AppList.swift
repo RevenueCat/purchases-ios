@@ -10,8 +10,7 @@ import RevenueCat
 
 struct AppList: View {
 
-    @Environment(ApplicationData.self)
-    private var application
+    @EnvironmentObject private var application: ApplicationData
 
     @AppStorage(UserDefaults.introEligibilityStatus) 
     private var introEligibility: IntroEligibilityStatus = .eligible
@@ -49,4 +48,5 @@ struct AppList: View {
 
 #Preview {
     AppList()
+    .environmentObject(ApplicationData())
 }

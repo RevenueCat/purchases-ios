@@ -2,9 +2,6 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : true,
-    "color_overrides_by_tier" : {
-
-    },
     "colors" : {
       "light" : {
         "background" : "#FFFFFF",
@@ -13,8 +10,11 @@
         "text1" : "#FFFFFF"
       }
     },
+    "colors_by_tier" : {
+
+    },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
+    "images_by_tier" : {
 
     },
     "images_heic" : {
@@ -47,6 +47,9 @@
       "offer_details" : "{{ total_price_and_per_month }}",
       "offer_details_with_intro_offer" : "{{ sub_offer_duration }} gratis y luego {{ total_price_and_per_month }}.",
       "offer_name" : null,
+      "offer_overrides" : {
+
+      },
       "subtitle" : null,
       "tier_name" : null,
       "title" : "{{ app_name }}"
@@ -56,5 +59,10 @@
 
   },
   "revision" : -1,
-  "template_name" : "2"
+  "template_name" : "2",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
 }

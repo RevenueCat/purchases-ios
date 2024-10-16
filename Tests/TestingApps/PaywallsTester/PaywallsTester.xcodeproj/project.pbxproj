@@ -20,6 +20,8 @@
 		4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */; };
 		4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */; };
 		880B2AF22BEC2D62006B9393 /* Preprocessor.sh in Resources */ = {isa = PBXBuildFile; fileRef = 880B2AF12BEC2D62006B9393 /* Preprocessor.sh */; };
+		884A4DDE2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 884A4DDD2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift */; };
+		88A52D132C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A52D122C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift */; };
 		88A543E92C387DB00039C6A5 /* APIKeyDashboardList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A543E82C387DB00039C6A5 /* APIKeyDashboardList.swift */; };
 		88B2F9882BE1943C00B43E0B /* ManagePaywallButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B2F9872BE1943C00B43E0B /* ManagePaywallButton.swift */; };
 		88B2F98B2BE19B1200B43E0B /* OfferingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B2F98A2BE19B1200B43E0B /* OfferingButton.swift */; };
@@ -94,8 +96,12 @@
 		4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywallsList.swift; sourceTree = "<group>"; };
 		4FFD2A602AA154B4001F4B0C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		773C13462CB5865400219E42 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = ../../../Local.xcconfig; sourceTree = "<group>"; };
+		776D4CFF2CB5848F00A521B2 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../../Global.xcconfig; sourceTree = "<group>"; };
 		880B2AF12BEC2D62006B9393 /* Preprocessor.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Preprocessor.sh; sourceTree = SOURCE_ROOT; };
 		880B2AF32BEC35AA006B9393 /* Postprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Postprocessor.sh; sourceTree = SOURCE_ROOT; };
+		884A4DDD2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityContentUnavailableView.swift; sourceTree = "<group>"; };
+		88A52D122C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentCollectionExtensions.swift; sourceTree = "<group>"; };
 		88A543E82C387DB00039C6A5 /* APIKeyDashboardList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIKeyDashboardList.swift; sourceTree = "<group>"; };
 		88B2F9872BE1943C00B43E0B /* ManagePaywallButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagePaywallButton.swift; sourceTree = "<group>"; };
 		88B2F98A2BE19B1200B43E0B /* OfferingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingButton.swift; sourceTree = "<group>"; };
@@ -160,6 +166,8 @@
 		4F6BED912A26A64200CD9322 = {
 			isa = PBXGroup;
 			children = (
+				776D4CFF2CB5848F00A521B2 /* Global.xcconfig */,
+				773C13462CB5865400219E42 /* Local.xcconfig */,
 				4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */,
 				4FC046BB2A572E3700A28BCF /* PaywallsTester */,
 				4F6BED9B2A26A64200CD9322 /* Products */,
@@ -255,6 +263,7 @@
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				88B2F9892BE1944200B43E0B /* OfferingList */,
 				88B4380B2BDB0FCB000AF27C /* PaywallPresenter.swift */,
+				884A4DDD2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift */,
 				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
 				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
@@ -303,6 +312,7 @@
 			isa = PBXGroup;
 			children = (
 				88DFC1432BC743EE00273B6D /* ArrayExtensions.swift */,
+				88A52D122C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift */,
 				88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */,
 				88DFC1492BC7463A00273B6D /* StringExtensions.swift */,
 				88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */,
@@ -420,11 +430,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				884A4DDE2C701F4100BD6B90 /* CompatibilityContentUnavailableView.swift in Sources */,
 				88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */,
 				88BEB9282BF537F200A3D05F /* SamplePaywalls.swift in Sources */,
 				88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */,
 				88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */,
 				88BEB9292BF537F200A3D05F /* LocalConfigItems.swift in Sources */,
+				88A52D132C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift in Sources */,
 				88DFC1882BCF3AB700273B6D /* LoginScreen.swift in Sources */,
 				88DFC1892BCF3AB700273B6D /* LoginWall.swift in Sources */,
 				88A543E92C387DB00039C6A5 /* APIKeyDashboardList.swift in Sources */,
@@ -488,6 +500,7 @@
 /* Begin XCBuildConfiguration section */
 		4F6BEDA72A26A64300CD9322 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 776D4CFF2CB5848F00A521B2 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -539,13 +552,14 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		4F6BEDA82A26A64300CD9322 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 776D4CFF2CB5848F00A521B2 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -624,7 +638,7 @@
 				INFOPLIST_KEY_WKWatchOnly = NO;
 				"INFOPLIST_KEY_WKWatchOnly[sdk=watchos*]" = YES;
 				"INFOPLIST_KEY_WKWatchOnly[sdk=watchsimulator*]" = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
@@ -674,7 +688,7 @@
 				INFOPLIST_KEY_WKWatchOnly = NO;
 				"INFOPLIST_KEY_WKWatchOnly[sdk=watchos*]" = YES;
 				"INFOPLIST_KEY_WKWatchOnly[sdk=watchsimulator*]" = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
