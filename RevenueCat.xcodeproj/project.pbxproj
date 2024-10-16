@@ -23,8 +23,6 @@
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
-		2CAB87ED2CA78ED800247013 /* StackableComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAB87EC2CA78ED800247013 /* StackableComponent.swift */; };
-		2CAB87EF2CA78EF600247013 /* Dimension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAB87EE2CA78EF600247013 /* Dimension.swift */; };
 		2CAB87F12CAA3B7800247013 /* Stackable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAB87F02CAA3B7800247013 /* Stackable+Extensions.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
 		2CC790CA2CC00C5900FBE120 /* PackageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC790B12CC00C5900FBE120 /* PackageComponentView.swift */; };
@@ -5557,7 +5555,6 @@
 				4F6ABC782A81595900250E63 /* PaywallCacheWarming.swift in Sources */,
 				F5714EAA26D7A85D00635477 /* PeriodType+Extensions.swift in Sources */,
 				3592E88A2C2ED54A00D7F91D /* CustomerCenterConfigData.swift in Sources */,
-				2CAB87ED2CA78ED800247013 /* StackableComponent.swift in Sources */,
 				57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */,
 				4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */,
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,
@@ -5630,7 +5627,6 @@
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
 				4F4FF3E12A3B731A0028018C /* ETagStrings.swift in Sources */,
 				57D5414227F656D9004CC35C /* NetworkError.swift in Sources */,
-				2CAB87EF2CA78EF600247013 /* Dimension.swift in Sources */,
 				B3781568285A79FC000A7B93 /* IdentityAPI.swift in Sources */,
 				B325543C2825C81800DA62EA /* Configuration.swift in Sources */,
 				4F89A55D2A6ABADF008A411E /* PaywallViewMode.swift in Sources */,
