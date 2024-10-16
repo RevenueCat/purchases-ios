@@ -40,9 +40,12 @@ struct ButtonComponentView: View {
         AsyncButton(
             action: { try await performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
-        ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
+        )
+        #if canImport(SafariServices)
+        .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }
+        #endif
     }
 
     private func performAction() async throws {
@@ -100,6 +103,7 @@ struct ButtonComponentView: View {
 
 }
 
+#if canImport(SafariServices)
 private struct SafariView: UIViewControllerRepresentable {
     let url: URL
 
@@ -114,6 +118,7 @@ private struct SafariView: UIViewControllerRepresentable {
         // No updates needed
     }
 }
+#endif
 
 #if DEBUG
 
