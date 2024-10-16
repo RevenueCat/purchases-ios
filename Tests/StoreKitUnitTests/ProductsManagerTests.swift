@@ -113,8 +113,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.currencyCode) == "EUR"
     }
 
-    func createManager(storeKitVersion: StoreKitVersion,
-                       diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
+    fileprivate func createManager(storeKitVersion: StoreKitVersion,
+                                   diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(
             diagnosticsTracker: diagnosticsTracker,
@@ -129,8 +129,9 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
 }
 
+// swiftlint:disable type_name
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
+class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
 
     private var mockDiagnosticsTracker: MockDiagnosticsTracker!
 
@@ -159,6 +160,25 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         expect(params?.storeKitVersion) == .storeKit1
         expect(params?.errorMessage).to(beNil())
         expect(params?.errorCode).to(beNil())
+    }
+
+}
+// swiftlint:enable type_name
+
+// swiftlint:disable type_name
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
+
+    private var mockDiagnosticsTracker: MockDiagnosticsTracker!
+
+    private var productsManager: ProductsManager!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        self.mockDiagnosticsTracker = MockDiagnosticsTracker()
     }
 
     func testFetchProductsWithIdentifiersSK2TracksCorrectly() throws {
@@ -206,3 +226,4 @@ class ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
     #endif
 
 }
+// swiftlint:enable type_name

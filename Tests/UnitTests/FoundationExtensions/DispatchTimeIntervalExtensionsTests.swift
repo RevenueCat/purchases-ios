@@ -42,14 +42,14 @@ class DispatchTimeIntervalExtensionsTests: TestCase {
         let a: DispatchTimeInterval = .seconds(1)
         let b: DispatchTimeInterval = .seconds(2)
 
-        expect(a) < b
+        expect(a.nanoseconds) < b.nanoseconds
     }
 
     func testIsGreaterThan() {
         let a: DispatchTimeInterval = .seconds(2)
         let b: DispatchTimeInterval = .seconds(1)
 
-        expect(a) > b
+        expect(a.nanoseconds) > b.nanoseconds
     }
 
     func testSecondsToMilliseconds() {

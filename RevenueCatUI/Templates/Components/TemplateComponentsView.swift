@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Josh Holtz on 6/11/24.
 //
@@ -26,12 +26,14 @@ public struct TemplateComponentsView: View {
 
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
+    private let onDismiss: () -> Void
 
     @StateObject
     var paywwallState = PaywallState()
 
-    public init(paywallComponentsData: PaywallComponentsData, offering: Offering) {
+    public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
+        self.onDismiss = onDismiss
 
         // Step 1: Get localization
         let localization = Self.chooseLocalization(for: paywallComponentsData)
@@ -55,7 +57,8 @@ public struct TemplateComponentsView: View {
     public var body: some View {
         VStack(spacing: 0) {
             ComponentsView(
-                componentViewModels: self.componentViewModels
+                componentViewModels: self.componentViewModels,
+                onDismiss: onDismiss
             )
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
@@ -99,10 +102,12 @@ public struct TemplateComponentsView: View {
 struct ComponentsView: View {
 
     let componentViewModels: [PaywallComponentViewModel]
+    private let onDismiss: () -> Void
 
     // @PublicForExternalTesting
-    init(componentViewModels: [PaywallComponentViewModel]) {
+    init(componentViewModels: [PaywallComponentViewModel], onDismiss: @escaping () -> Void) {
         self.componentViewModels = componentViewModels
+        self.onDismiss = onDismiss
     }
 
     // @PublicForExternalTesting
@@ -121,13 +126,15 @@ struct ComponentsView: View {
             case .spacer(let viewModel):
                 SpacerComponentView(viewModel: viewModel)
             case .stack(let viewModel):
-                StackComponentView(viewModel: viewModel)
+                StackComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .linkButton(let viewModel):
                 LinkButtonComponentView(viewModel: viewModel)
+            case .button(let viewModel):
+                ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .packageGroup(let viewModel):
-                PackageGroupComponentView(viewModel: viewModel)
+                PackageGroupComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .package(let viewModel):
-                PackageComponentView(viewModel: viewModel)
+                PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .purchaseButton(let viewModel):
                 PurchaseButtonComponentView(viewModel: viewModel)
             }

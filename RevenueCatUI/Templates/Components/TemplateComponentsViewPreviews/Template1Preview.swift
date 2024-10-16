@@ -127,7 +127,8 @@ struct Template1Preview_Previews: PreviewProvider {
             paywallComponentsData: Template1Preview.data,
             offering: .init(identifier: "",
                             serverDescription: "",
-                            availablePackages: [])
+                            availablePackages: []),
+            onDismiss: { }
         )
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")

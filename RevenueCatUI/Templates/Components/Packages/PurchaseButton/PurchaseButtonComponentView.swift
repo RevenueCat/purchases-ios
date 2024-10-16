@@ -45,7 +45,6 @@ struct PurchaseButtonComponentView: View {
             }
 
             _ = try await self.purchaseHandler.purchase(package: selectedPackage)
-
         } label: {
             // WIP: Need to add logic for intro offer
             Text(viewModel.cta)

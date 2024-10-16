@@ -24,14 +24,12 @@ struct PackageComponentView: View {
     private var paywallState: PaywallState
 
     let viewModel: PackageComponentViewModel
+    let onDismiss: () -> Void
 
     var body: some View {
         // WIP: Do something with package id and selection
-        Button {
-            self.paywallState.select(package: self.viewModel.package)
-        } label: {
-            StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
-        }
+        StackComponentView(viewModel: self.viewModel.stackComponentViewModel,
+                           onDismiss: self.onDismiss)
     }
 
 }
@@ -88,7 +86,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                           packageType: .weekly,
                                           storeProduct: .init(sk1Product: .init()),
                                           offeringIdentifier: "default")])
-            )
+            ), onDismiss: {}
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package")

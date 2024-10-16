@@ -24,7 +24,6 @@ class PackageGroupComponentViewModel {
     private let offering: Offering
 
     let defaultPackage: Package
-
     let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,

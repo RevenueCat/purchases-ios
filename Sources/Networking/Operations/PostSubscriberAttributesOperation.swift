@@ -64,6 +64,9 @@ class PostSubscriberAttributesOperation: NetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostSubscriberAttributesOperation: @unchecked Sendable {}
+
 private extension PostSubscriberAttributesOperation {
 
     struct Body: HTTPRequestBody {

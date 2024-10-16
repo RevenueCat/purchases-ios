@@ -1,0 +1,42 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer the api key",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Is-Debug-Build" : "true",
+    "X-Is-Sandbox" : "true",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
+    "X-Platform-Flavor" : "Unity",
+    "X-Platform-Flavor-Version" : "2.3.3",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Preferred-Locales" : "en_US",
+    "X-Retry-Count" : "0",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
+  },
+  "request" : {
+    "body" : {
+      "aad_attribution_token" : "token",
+      "app_user_id" : "abc123",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        }
+      },
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "initiation_source" : "restore",
+      "is_restore" : false,
+      "observer_mode" : false
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

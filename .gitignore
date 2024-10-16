@@ -56,3 +56,9 @@ Tests/InstallationTests/XcodeDirectInstallation/XcodeDirectInstallation.xcodepro
 # fastlane
 fastlane/.env
 .vscode/settings.json
+
+# Local build settings
+Local.xcconfig
+
+# Gets created when Cursor is used with the sswg Swift extension
+/.index-build/

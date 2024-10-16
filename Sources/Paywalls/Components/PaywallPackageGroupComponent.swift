@@ -28,7 +28,6 @@ public extension PaywallComponent {
         // Package group specifically accepts `PackageComponent` for
         // validation that packages exist
         public let packages: [PaywallComponent.PackageComponent]
-
         public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?

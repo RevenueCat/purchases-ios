@@ -16,6 +16,8 @@ import SwiftUI
 
 #if os(iOS)
 
+/// Warning: This is currently in beta and subject to change.
+///
 /// Presentation options to use with the [presentCustomerCenter](x-source-tag://presentCustomerCenter) View modifiers.
 public enum CustomerCenterPresentationMode {
 
@@ -43,6 +45,8 @@ extension CustomerCenterPresentationMode {
 #endif
 extension View {
 
+    /// Warning: This is currently in beta and subject to change.
+    ///
     /// Presents the ``CustomerCenter``.
     /// Example:
     /// ```swift

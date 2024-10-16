@@ -195,8 +195,9 @@ import Foundation
         }
 
         /// Set `showStoreMessagesAutomatically`. Enabled by default.
-        /// If enabled, if the user has billing issues, has yet to accept a price increase consent or
-        /// there are other messages from StoreKit, they will be displayed automatically when the app is initialized.
+        /// If enabled, if the user has billing issues, has yet to accept a price increase consent, is eligible for a
+        /// win-back offer, or there are other messages from StoreKit, they will be displayed automatically when
+        /// the app is initialized.
         ///
         /// If you want to disable this behavior so that you can customize when these messages are shown, make sure
         /// you configure the SDK as early as possible in the app's lifetime, otherwise messages will be displayed

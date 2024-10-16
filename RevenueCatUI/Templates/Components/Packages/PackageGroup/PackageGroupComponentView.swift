@@ -24,12 +24,15 @@ struct PackageGroupComponentView: View {
     private var paywallState: PaywallState
 
     let viewModel: PackageGroupComponentViewModel
+    let onDismiss: () -> Void
 
     var body: some View {
-        StackComponentView(viewModel: self.viewModel.stackComponentViewModel)
-            .onAppear {
-                self.paywallState.select(package: self.viewModel.defaultPackage)
-            }
+        // WIP: Do something with default package id and selection
+        StackComponentView(viewModel: self.viewModel.stackComponentViewModel,
+                           onDismiss: self.onDismiss)
+        .onAppear {
+            self.paywallState.select(package: self.viewModel.defaultPackage)
+        }
     }
 
 }
@@ -95,10 +98,11 @@ struct PackagesComponentView_Previews: PreviewProvider {
                 localizedStrings: [
                     "weekly_name": .string("Weekly"),
                     "weekly_detail": .string("Get for $39.99/week"),
-                    "non_existant_name": .string("THIS SHOULDN'T SHOW"),
-                    "non_existant_detail": .string("THIS SHOULDN'T SHOW"),
                     "monthly_name": .string("Monthly"),
-                    "monthly_detail": .string("Get for $139.99/month")
+                    "monthly_detail": .string("Get for $139.99/month"),
+                    "non_existant_name": .string("THIS SHOULDN'T SHOW"),
+                    "non_existant_detail": .string("THIS SHOULDN'T SHOW")
+
                 ],
                 component: PaywallComponent.PackageGroupComponent(
                     defaultSelectedPackageID: "weekly",
@@ -116,7 +120,7 @@ struct PackagesComponentView_Previews: PreviewProvider {
                                             storeProduct: .init(sk1Product: .init()),
                                             offeringIdentifier: "default")
                                    ])
-            )
+            ), onDismiss: {}
         )
         .environmentObject(paywallState)
         .previewLayout(.sizeThatFits)

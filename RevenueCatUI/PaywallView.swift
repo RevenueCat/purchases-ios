@@ -242,9 +242,19 @@ public struct PaywallView: View {
 
         #if PAYWALL_COMPONENTS
         if let componentData = offering.paywallComponentsData {
-            TemplateComponentsView(paywallComponentsData: componentData, offering: offering)
-                .environmentObject(self.introEligibility)
-                .environmentObject(self.purchaseHandler)
+            TemplateComponentsView(
+                paywallComponentsData: componentData,
+                offering: offering,
+                onDismiss: {
+                    guard let onRequestedDismissal = self.onRequestedDismissal else {
+                        self.dismiss()
+                        return
+                    }
+                    onRequestedDismissal()
+                }
+            )
+            .environmentObject(self.introEligibility)
+            .environmentObject(self.purchaseHandler)
         } else {
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)

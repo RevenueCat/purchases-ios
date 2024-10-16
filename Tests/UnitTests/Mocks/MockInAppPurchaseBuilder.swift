@@ -26,3 +26,5 @@ class MockInAppPurchaseBuilder: InAppPurchaseBuilder {
         return stubbedBuildResult
     }
 }
+
+extension MockInAppPurchaseBuilder: @unchecked Sendable {}

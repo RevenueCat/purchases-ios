@@ -51,3 +51,5 @@ class MockStoreKit1Wrapper: StoreKit1Wrapper {
         }
     }
 }
+
+extension MockStoreKit1Wrapper: @unchecked Sendable {}

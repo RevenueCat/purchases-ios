@@ -57,16 +57,21 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     }
 
     func showStoreMessages(types: Set<StoreMessageType>) async {
+        var displayedMessages: [StoreMessage] = []
         for message in self.deferredMessages {
             if let messageType = message.reason.messageType, types.contains(messageType) {
                 do {
                     try await message.display(in: self.systemInfo.currentWindowScene)
+                    displayedMessages.append(message)
                 } catch {
                     Logger.error(Strings.storeKit.error_displaying_store_message(error))
                 }
             }
         }
-        self.deferredMessages.removeAll()
+
+        for message in displayedMessages {
+            self.deferredMessages.removeAll(where: { $0.hashValue == message.hashValue })
+        }
     }
 
     #endif
@@ -92,6 +97,10 @@ protocol StoreMessage: Sendable {
 
     @available(iOS 16.0, *)
     var reason: Message.Reason { get }
+
+    @available(iOS 16.0, *)
+    // swiftlint:disable:next legacy_hashing
+    var hashValue: Int { get }
 
     @available(iOS 16.0, *)
     @MainActor

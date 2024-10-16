@@ -20,6 +20,7 @@ import SwiftUI
 struct StackComponentView: View {
 
     let viewModel: StackComponentViewModel
+    let onDismiss: () -> Void
 
     var body: some View {
         Group {
@@ -27,16 +28,16 @@ struct StackComponentView: View {
             case .vertical(let horizontalAlignment):
                 // LazyVStack needed for performance when loading
                 LazyVStack(spacing: viewModel.spacing) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels)
+                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
                     .frame(maxWidth: .infinity, alignment: horizontalAlignment.stackAlignment)
                 }
             case .horizontal(let verticalAlignment):
                 HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels)
+                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
                 }
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels)
+                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
                 }
             }
         }

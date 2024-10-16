@@ -18,6 +18,8 @@ import SwiftUI
 
 #if os(iOS)
 
+/// Warning: This is currently in beta and ubject to change.
+///
 /// A SwiftUI view for displaying a customer support common tasks
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
@@ -30,9 +32,6 @@ public struct CustomerCenterView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
-    private var localization: CustomerCenterConfigData.Localization
-    private var appearance: CustomerCenterConfigData.Appearance
-    private var supportInformation: CustomerCenterConfigData.Support?
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
@@ -41,16 +40,10 @@ public struct CustomerCenterView: View {
     public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
-        self.localization = .default
-        self.appearance = .default
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel,
-                     localization: CustomerCenterConfigData.Localization = .default,
-                     appearance: CustomerCenterConfigData.Appearance = .default) {
+    fileprivate init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
-        self.localization = localization
-        self.appearance = appearance
     }
 
     // swiftlint:disable:next missing_docs
@@ -116,7 +109,8 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationView(configuration: CustomerCenterConfigData) -> some View {
-        let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
+        let accentColor = Color.from(colorInformation: configuration.appearance.accentColor,
+                                     for: self.colorScheme)
 
         CompatibilityNavigationStack {
             destinationContent(configuration: configuration)

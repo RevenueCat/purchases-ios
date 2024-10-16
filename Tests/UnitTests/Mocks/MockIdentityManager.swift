@@ -88,3 +88,5 @@ class MockIdentityManager: IdentityManager {
     }
 
 }
+
+extension MockIdentityManager: @unchecked Sendable {}

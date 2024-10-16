@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="boz-gG-qsD">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="boz-gG-qsD">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -19,25 +20,25 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Current User Identifier" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EQ0-mN-I8X">
-                                <rect key="frame" x="118" y="120" width="178.5" height="21"/>
+                                <rect key="frame" x="118" y="124" width="178.5" height="21"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CCd-Sv-7vb">
-                                <rect key="frame" x="32" y="149" width="350" height="18"/>
+                                <rect key="frame" x="32" y="153" width="350" height="18"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subscription Status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="stZ-Gu-zdh">
-                                <rect key="frame" x="128.5" y="199" width="157" height="21"/>
+                                <rect key="frame" x="128.5" y="203" width="157" height="20.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CZO-Cg-VYS">
-                                <rect key="frame" x="32" y="228" width="350" height="18"/>
+                                <rect key="frame" x="32" y="231.5" width="350" height="18"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -56,6 +57,14 @@
                                     <action selector="restorePurchases" destination="nV9-Ad-mnG" eventType="touchUpInside" id="Qcn-Sx-aJL"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iwO-dc-Awr">
+                                <rect key="frame" x="169.5" y="203" width="75" height="46.5"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain"/>
+                                <connections>
+                                    <action selector="subscriptionTapped:" destination="nV9-Ad-mnG" eventType="touchUpInside" id="wwD-09-ijm"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="48Y-3Y-V2J"/>
                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
@@ -64,13 +73,17 @@
                             <constraint firstItem="Ggc-Ts-yqy" firstAttribute="leading" secondItem="48Y-3Y-V2J" secondAttribute="leading" constant="20" id="CgW-Tn-3qx"/>
                             <constraint firstItem="CZO-Cg-VYS" firstAttribute="top" secondItem="stZ-Gu-zdh" secondAttribute="bottom" constant="8" symbolic="YES" id="DF7-1U-E8E"/>
                             <constraint firstItem="CZO-Cg-VYS" firstAttribute="leading" secondItem="48Y-3Y-V2J" secondAttribute="leading" constant="32" id="DwG-Kd-pNt"/>
+                            <constraint firstItem="CZO-Cg-VYS" firstAttribute="bottom" secondItem="iwO-dc-Awr" secondAttribute="bottom" id="I0J-pB-4eQ"/>
                             <constraint firstItem="Ggc-Ts-yqy" firstAttribute="bottom" secondItem="48Y-3Y-V2J" secondAttribute="bottom" constant="-20" id="J33-8b-lRh"/>
                             <constraint firstItem="48Y-3Y-V2J" firstAttribute="trailing" secondItem="CCd-Sv-7vb" secondAttribute="trailing" constant="32" id="Odc-gO-JkV"/>
+                            <constraint firstItem="iwO-dc-Awr" firstAttribute="centerX" secondItem="48Y-3Y-V2J" secondAttribute="centerX" id="PQc-5f-OkA"/>
                             <constraint firstItem="stZ-Gu-zdh" firstAttribute="top" secondItem="CCd-Sv-7vb" secondAttribute="bottom" constant="32" id="Sx2-XJ-z5X"/>
                             <constraint firstItem="EQ0-mN-I8X" firstAttribute="centerX" secondItem="VrE-Rr-eGX" secondAttribute="centerX" id="VqY-7N-Sol"/>
+                            <constraint firstItem="iwO-dc-Awr" firstAttribute="top" secondItem="stZ-Gu-zdh" secondAttribute="top" id="cjZ-3I-FJl"/>
                             <constraint firstItem="CCd-Sv-7vb" firstAttribute="leading" secondItem="48Y-3Y-V2J" secondAttribute="leading" constant="32" id="eH2-y4-y35"/>
                             <constraint firstItem="EQ0-mN-I8X" firstAttribute="top" secondItem="48Y-3Y-V2J" secondAttribute="top" constant="32" id="edo-2D-cpB"/>
                             <constraint firstItem="stZ-Gu-zdh" firstAttribute="centerX" secondItem="VrE-Rr-eGX" secondAttribute="centerX" id="fZ4-BT-ATa"/>
+                            <constraint firstItem="iwO-dc-Awr" firstAttribute="width" secondItem="stZ-Gu-zdh" secondAttribute="width" multiplier="0.477707" id="s9o-g3-CHQ"/>
                             <constraint firstItem="48Y-3Y-V2J" firstAttribute="trailing" secondItem="CZO-Cg-VYS" secondAttribute="trailing" constant="32" id="swe-Hz-vlj"/>
                             <constraint firstItem="CCd-Sv-7vb" firstAttribute="top" secondItem="EQ0-mN-I8X" secondAttribute="bottom" constant="8" symbolic="YES" id="yo7-wv-w3T"/>
                         </constraints>
@@ -78,12 +91,13 @@
                     <navigationItem key="navigationItem" title="User" id="8we-4U-Owp"/>
                     <connections>
                         <outlet property="statusLabel" destination="CZO-Cg-VYS" id="30O-QW-S3N"/>
+                        <outlet property="subscriptionButton" destination="iwO-dc-Awr" id="BrY-wG-IHt"/>
                         <outlet property="userIdLabel" destination="CCd-Sv-7vb" id="r6O-yt-i49"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="e3I-oG-Mxq" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1222" y="88"/>
+            <point key="canvasLocation" x="1221.7391304347827" y="87.723214285714278"/>
         </scene>
         <!--User-->
         <scene sceneID="Zf1-jw-sbg">
@@ -91,7 +105,7 @@
                 <navigationController id="XCO-1e-njl" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="User" image="person.circle" catalog="system" selectedImage="person.circle.fill" id="HVg-Vg-W2U"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Lb0-41-l8k">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -108,7 +122,7 @@
                 <navigationController id="w30-rc-ciO" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Weather" image="sun.max" catalog="system" selectedImage="sun.max.fill" id="feW-aF-sfE"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="UDQ-eq-bab">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -128,13 +142,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="14°F" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pvN-Ah-FWQ">
-                                <rect key="frame" x="20" y="120" width="374" height="111.5"/>
+                                <rect key="frame" x="20" y="124" width="374" height="111.5"/>
                                 <fontDescription key="fontDescription" name="ArialRoundedMTBold" family="Arial Rounded MT Bold" pointSize="96"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="joW-vf-PyY">
-                                <rect key="frame" x="20" y="247.5" width="374" height="44"/>
+                                <rect key="frame" x="20" y="251.5" width="374" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="OuB-mO-Djh"/>
                                 </constraints>
@@ -189,7 +203,7 @@
         <!--Tab Bar Controller-->
         <scene sceneID="HYF-dK-xjl">
             <objects>
-                <tabBarController interfaceStyle="dark" id="boz-gG-qsD" sceneMemberID="viewController">
+                <tabBarController id="boz-gG-qsD" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="8VJ-qB-xja">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -206,12 +220,12 @@
         </scene>
     </scenes>
     <resources>
-        <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
-        <image name="location.fill" catalog="system" width="128" height="121"/>
-        <image name="person.circle" catalog="system" width="128" height="121"/>
-        <image name="person.circle.fill" catalog="system" width="128" height="121"/>
-        <image name="sun.max" catalog="system" width="128" height="124"/>
-        <image name="sun.max.fill" catalog="system" width="128" height="124"/>
+        <image name="arrow.clockwise" catalog="system" width="113" height="128"/>
+        <image name="location.fill" catalog="system" width="128" height="119"/>
+        <image name="person.circle" catalog="system" width="128" height="123"/>
+        <image name="person.circle.fill" catalog="system" width="128" height="123"/>
+        <image name="sun.max" catalog="system" width="128" height="125"/>
+        <image name="sun.max.fill" catalog="system" width="128" height="125"/>
         <namedColor name="AccentColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>

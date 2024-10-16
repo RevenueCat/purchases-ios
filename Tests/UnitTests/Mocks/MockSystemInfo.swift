@@ -15,6 +15,7 @@ class MockSystemInfo: SystemInfo {
 
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
+    var stubbedIsDebugBuild: Bool?
     var stubbedStorefront: StorefrontType?
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
@@ -55,12 +56,18 @@ class MockSystemInfo: SystemInfo {
         return self.stubbedIsSandbox ?? super.isSandbox
     }
 
+    override var isDebugBuild: Bool {
+        return self.stubbedIsDebugBuild ?? super.isDebugBuild
+    }
+
     override var storefront: StorefrontType? {
         return self.stubbedStorefront
     }
 }
 
-extension OperatingSystemVersion: Comparable {
+extension MockSystemInfo: @unchecked Sendable {}
+
+extension RevenueCat.OperatingSystemVersion: Swift.Comparable {
 
     public static func < (lhs: OperatingSystemVersion, rhs: OperatingSystemVersion) -> Bool {
         if lhs.majorVersion == rhs.majorVersion {

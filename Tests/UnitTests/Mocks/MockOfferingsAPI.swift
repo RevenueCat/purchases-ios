@@ -90,3 +90,5 @@ class MockOfferingsAPI: OfferingsAPI {
     }
 
 }
+
+extension MockOfferingsAPI: @unchecked Sendable {}
