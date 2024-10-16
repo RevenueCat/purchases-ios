@@ -73,8 +73,15 @@ class PurchaseButtonComponentViewModel {
         component.shape
     }
 
-    var cornerRadiuses: PaywallComponent.CornerRadiuses? {
-        component.cornerRadiuses
+    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
+        component.cornerRadiuses.flatMap { cornerRadiuses in
+            CornerBorderModifier.RaidusInfo(
+                topLeft: cornerRadiuses.topLeading,
+                topRight: cornerRadiuses.topTrailing,
+                bottomLeft: cornerRadiuses.bottomLeading,
+                bottomRight: cornerRadiuses.bottomLeading
+            )
+        }
     }
 
 }

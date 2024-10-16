@@ -17,7 +17,7 @@ public extension PaywallComponent {
         let type: ComponentType
         public let source: ThemeImageUrls
         public let overrideSourceLid: LocalizationKey?
-        public let cornerRadiuses: CornerRadiuses
+        public let cornerRadiuses: CornerRadiuses?
         public let gradientColors: [ColorHex]?
         public let maxHeight: CGFloat?
         public let fitMode: FitMode
@@ -27,7 +27,7 @@ public extension PaywallComponent {
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode = .fit,
             maxHeight: CGFloat? = nil,
-            cornerRadiuses: CornerRadiuses = .zero,
+            cornerRadiuses: CornerRadiuses? = nil,
             gradientColors: [ColorHex]? = []
         ) {
             self.type = .image

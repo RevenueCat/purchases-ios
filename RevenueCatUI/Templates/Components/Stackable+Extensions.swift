@@ -32,7 +32,8 @@ extension PaywallComponent.StackableComponent {
                 backgroundColor: self.backgroundColor,
                 padding: self.padding,
                 margin: self.margin,
-                cornerRadiuses: self.cornerRadiuses
+                cornerRadiuses: self.cornerRadiuses,
+                border: self.border
             ),
             localizedStrings: localizedStrings,
             offering: offering

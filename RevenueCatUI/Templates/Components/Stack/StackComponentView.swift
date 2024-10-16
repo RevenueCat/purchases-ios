@@ -46,10 +46,8 @@ struct StackComponentView: View {
         .padding(viewModel.padding)
         .width(viewModel.width)
         .background(viewModel.backgroundColor)
-        .roundedCorner(viewModel.cornerRadiuses.topLeading, corners: .topLeft)
-        .roundedCorner(viewModel.cornerRadiuses.topTrailing, corners: .topRight)
-        .roundedCorner(viewModel.cornerRadiuses.bottomLeading, corners: .bottomLeft)
-        .roundedCorner(viewModel.cornerRadiuses.bottomTrailing, corners: .bottomRight)
+        .cornerBorder(border: viewModel.border,
+                      radiuses: viewModel.cornerRadiuses)
         .padding(viewModel.margin)
     }
 
