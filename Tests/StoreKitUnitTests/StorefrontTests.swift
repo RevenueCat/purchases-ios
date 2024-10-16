@@ -50,9 +50,15 @@ class StorefrontTests: StoreKitConfigTestCase {
         try await self.changeStorefront(expected)
 
         let systemInfo = SystemInfo(platformInfo: nil, finishTransactions: false)
-        let storefront = try XCTUnwrap(systemInfo.storefront)
 
-        expect(storefront.countryCode) == expected
+        try await asyncWait(
+            description: "Storefront change not detected",
+            timeout: .seconds(1),
+            pollInterval: .milliseconds(100)
+        ) {
+            return systemInfo.storefront?.countryCode == expected
+        }
+
     }
 
 }
