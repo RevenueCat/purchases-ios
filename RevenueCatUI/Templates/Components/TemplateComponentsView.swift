@@ -98,19 +98,16 @@ public struct TemplateComponentsView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
 struct ComponentsView: View {
 
     let componentViewModels: [PaywallComponentViewModel]
     private let onDismiss: () -> Void
 
-    // @PublicForExternalTesting
     init(componentViewModels: [PaywallComponentViewModel], onDismiss: @escaping () -> Void) {
         self.componentViewModels = componentViewModels
         self.onDismiss = onDismiss
     }
 
-    // @PublicForExternalTesting
     var body: some View {
         self.layoutComponents(self.componentViewModels)
     }

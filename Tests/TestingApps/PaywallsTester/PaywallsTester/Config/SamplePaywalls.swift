@@ -779,7 +779,7 @@ private extension SamplePaywallLoader {
                 ))
             ],
             width: .init(type: .fill, value: nil),
-            backgroundColor: .init(light: "#ccccccsta")
+            backgroundColor: .init(light: "#cccccc")
         ))
     }()
 
