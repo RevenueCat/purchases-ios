@@ -24,6 +24,7 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @State private var inAppBrowserURL: URL?
+    @State private var showCustomerCenter = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -42,6 +43,8 @@ struct ButtonComponentView: View {
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
         ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
+        }.presentCustomerCenter(isPresented: $showCustomerCenter) {
+            showCustomerCenter = false
         }
     }
 
@@ -72,9 +75,7 @@ struct ButtonComponentView: View {
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
-            // swiftlint:disable:next todo
-            // TODO handle navigating to customer center
-            break
+            showCustomerCenter = true
         case .URL(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
