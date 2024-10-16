@@ -73,7 +73,10 @@ class SystemInfo {
 #endif
     }
 
-    var storefront: StorefrontType?
+    private var _storefront: StorefrontType?
+    var storefront: StorefrontType? {
+        return self._storefront
+    }
 
     var preferredLanguages: [String] {
         return self.preferredLocalesProvider.preferredLanguages
@@ -173,7 +176,7 @@ class SystemInfo {
 
     func setStorefront() {
         Task { [weak self] in
-            self?.storefront = await Storefront.currentStorefront
+            self?._storefront = await Storefront.currentStorefront
         }
     }
 
