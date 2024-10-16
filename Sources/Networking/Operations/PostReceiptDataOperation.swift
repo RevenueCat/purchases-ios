@@ -141,6 +141,8 @@ extension PostReceiptDataOperation {
         /// The [AppTransaction](https://developer.apple.com/documentation/storekit/apptransaction) JWS token
         /// retrieved from StoreKit 2.
         let appTransaction: String?
+
+        let metadata: [String: String]?
     }
 
     struct Paywall {
@@ -188,7 +190,8 @@ extension PostReceiptDataOperation.PostData {
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier,
-            appTransaction: appTransaction
+            appTransaction: appTransaction,
+            metadata: data.metadata
         )
     }
 
@@ -271,6 +274,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
+        case metadata = "metadata"
 
     }
 
@@ -288,6 +292,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.fetchToken, forKey: .fetchToken)
         try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
+        try container.encodeIfPresent(self.metadata, forKey: .metadata)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
@@ -392,5 +397,4 @@ private extension EncodedAppleReceipt {
             return "empty"
         }
     }
-
 }

@@ -79,10 +79,10 @@ Or browse our iOS sample apps:
 ### Making Purchases
 - ``StoreTransaction``
 
-- ``Purchases/purchase(package:)``
-- ``Purchases/purchase(package:completion:)``
-- ``Purchases/purchase(product:)``
-- ``Purchases/purchase(product:completion:)``
+- ``Purchases/purchase(package:metadata:)``
+- ``Purchases/purchase(package:metadata:completion:)``
+- ``Purchases/purchase(product:metadata:)``
+- ``Purchases/purchase(product:metadata:completion:)``
 
 ### Making Purchases with Subscription Offers
 - ``IntroEligibility``
@@ -95,10 +95,10 @@ Or browse our iOS sample apps:
 - ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
 - ``Purchases/promotionalOffer(forProductDiscount:product:)``
 - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
-- ``Purchases/purchase(package:promotionalOffer:)``
-- ``Purchases/purchase(package:promotionalOffer:completion:)``
-- ``Purchases/purchase(product:promotionalOffer:)``
-- ``Purchases/purchase(product:promotionalOffer:completion:)``
+- ``Purchases/purchase(package:promotionalOffer:metadata:)``
+- ``Purchases/purchase(package:promotionalOffer:metadata:completion:)``
+- ``Purchases/purchase(product:promotionalOffer:metadata:)``
+- ``Purchases/purchase(product:promotionalOffer:metadata:completion:)``
 
 ### Subscription Status
 - ``CustomerInfo``

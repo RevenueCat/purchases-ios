@@ -137,9 +137,12 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
     let offer: PromotionalOffer! = nil
+    let meta: [String: String] = ["sample": "data"]
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(product: storeProduct, metadata: meta) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack, metadata: meta) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.restorePurchases { (_: CustomerInfo?, _: Error?) in }
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
@@ -153,8 +156,14 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     ) { (_: PromotionalOffer?, _: Error?) in }
     purchases.purchase(product: storeProduct,
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(product: storeProduct,
+                       promotionalOffer: offer,
+                       metadata: meta) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack,
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack,
+                       promotionalOffer: offer,
+                       metadata: meta) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     purchases.invalidateCustomerInfoCache()
 
@@ -230,6 +239,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let stp: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let offer: PromotionalOffer! = nil
+    let meta: [String: String] = ["sample": "data"]
 
     do {
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
@@ -251,10 +261,20 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [StoreProduct] = await purchases.products([])
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
+                                                                                      metadata: meta)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
                                                                                       promotionalOffer: offer)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
+                                                                                      promotionalOffer: offer,
+                                                                                      metadata: meta)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
+                                                                                      metadata: meta)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
+                                                                                      promotionalOffer: offer,
+                                                                                      metadata: meta)
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()
