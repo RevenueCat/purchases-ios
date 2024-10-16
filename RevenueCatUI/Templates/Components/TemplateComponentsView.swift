@@ -119,6 +119,12 @@ struct ComponentsView: View {
                 LinkButtonComponentView(viewModel: viewModel)
             case .button(let viewModel):
                 ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            case .packageGroup(let viewModel):
+                PackageGroupComponentView(viewModel: viewModel)
+            case .package(let viewModel):
+                PackageComponentView(viewModel: viewModel)
+            case .purchaseButton(let viewModel):
+                PurchaseButtonComponentView(viewModel: viewModel)
             }
         }
     }

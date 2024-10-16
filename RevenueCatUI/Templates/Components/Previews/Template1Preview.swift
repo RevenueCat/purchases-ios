@@ -36,7 +36,7 @@ private enum Template1Preview {
     )
 
     static let title = PaywallComponent.TextComponent(
-        textLid: "title",
+        text: "title",
         fontFamily: nil,
         fontWeight: .heavy,
         color: .init(light: "#000000"),
@@ -48,7 +48,7 @@ private enum Template1Preview {
     )
 
     static let body = PaywallComponent.TextComponent(
-        textLid: "body",
+        text: "body",
         fontFamily: nil,
         fontWeight: .regular,
         color: .init(light: "#000000"),
