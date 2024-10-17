@@ -13,15 +13,15 @@
 
 import Foundation
 
-protocol PaywallEventStoreType: Sendable {
+protocol FeatureEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func store(_ storedEvent: PaywallStoredEvent) async
+    func store<T: FeatureEvent>(_ storedEvent: StoredFeatureEvent<T>) async
 
     /// - Returns: the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetch(_ count: Int) async -> [PaywallStoredEvent]
+    func fetch(_ count: Int) async -> [AnyStoredFeatureEventType]
 
     /// Removes the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -30,7 +30,7 @@ protocol PaywallEventStoreType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-internal actor PaywallEventStore: PaywallEventStoreType {
+internal actor FeatureEventStore: FeatureEventStoreType {
 
     private let handler: FileHandlerType
 
@@ -38,23 +38,25 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         self.handler = handler
     }
 
-    func store(_ storedEvent: PaywallStoredEvent) async {
+    func store<T: FeatureEvent>(_ storedEvent: StoredFeatureEvent<T>) async {
         do {
             Logger.verbose(PaywallEventStoreStrings.storing_event(storedEvent.event))
 
-            await self.handler.append(line: try PaywallEventSerializer.encode(storedEvent))
+            await self.handler.append(line: try FeatureEventSerializer.encode(storedEvent))
         } catch {
             Logger.error(PaywallEventStoreStrings.error_storing_event(error))
         }
     }
 
-    func fetch(_ count: Int) async -> [PaywallStoredEvent] {
+    func fetch(_ count: Int) async -> [AnyStoredFeatureEventType] {
         assert(count > 0, "Invalid count: \(count)")
 
         do {
             return try await self.handler.readLines()
                 .prefix(count)
-                .compactMap { try? PaywallEventSerializer.decode($0) }
+                .compactMap {
+                    try? FeatureEventSerializer.decode($0)
+                }
                 .extractValues()
         } catch {
             Logger.error(PaywallEventStoreStrings.error_fetching_events(error))
@@ -62,8 +64,6 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         }
     }
 
-    // - Note: If removing these `count` events fails, it will attempt to
-    // remove the entire file. This ensures that the same events again aren't sent again.
     func clear(_ count: Int) async {
         assert(count > 0, "Invalid count: \(count)")
 
@@ -79,16 +79,15 @@ internal actor PaywallEventStore: PaywallEventStoreType {
             }
         }
     }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension PaywallEventStore {
+extension FeatureEventStore {
 
     static func createDefault(
         applicationSupportDirectory: URL?,
         documentsDirectory: URL? = nil
-    ) throws -> PaywallEventStore {
+    ) throws -> FeatureEventStore {
         let url = Self.url(in: try applicationSupportDirectory ?? Self.applicationSupportDirectory)
         Logger.verbose(PaywallEventStoreStrings.initializing(url))
 
@@ -152,7 +151,9 @@ extension PaywallEventStore {
         }
     }
 
-    private static let fileManager: FileManager = .default
+    private static var fileManager: FileManager {
+        return .default
+    }
 
 }
 
@@ -167,7 +168,7 @@ private enum PaywallEventStoreStrings {
     case removing_old_documents_store(URL)
     case error_removing_old_documents_store(Error)
 
-    case storing_event(PaywallEvent)
+    case storing_event(any FeatureEvent)
 
     case error_storing_event(Error)
     case error_fetching_events(Error)
@@ -213,7 +214,7 @@ extension PaywallEventStoreStrings: LogMessage {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallEvent {
+private extension FeatureEvent {
 
     var debugDescription: String {
         return "\(self)"

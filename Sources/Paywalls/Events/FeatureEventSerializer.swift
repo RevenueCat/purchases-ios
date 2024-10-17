@@ -14,20 +14,20 @@
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum PaywallEventSerializer {
+enum FeatureEventSerializer {
 
     private struct FailedEncodingEventError: Error {}
 
-    /// Encodes a `PaywallEvent` in a format suitable to be stored by `PaywallEventStore`.
-    static func encode(_ event: PaywallStoredEvent) throws -> String {
+    /// Encodes a `FeatureEvent` in a format suitable to be stored by `FeatureEventStore`.
+    static func encode<T: FeatureEvent>(_ event: StoredFeatureEvent<T>) throws -> String {
         let data = try JSONEncoder.default.encode(value: event)
 
         return try String(data: data, encoding: .utf8)
             .orThrow(FailedEncodingEventError())
     }
 
-    /// Decodes a `PaywallEvent`.
-    static func decode(_ event: String) throws -> PaywallStoredEvent {
+    /// Decodes a `FeatureEvent`.
+    static func decode<T: FeatureEvent>(_ event: String) throws -> StoredFeatureEvent<T> {
         return try JSONDecoder.default.decode(jsonData: event.asData)
     }
 

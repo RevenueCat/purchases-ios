@@ -14,17 +14,17 @@
 import Foundation
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum PaywallEvent {
+public enum PaywallEvent: FeatureEvent {
 
     // swiftlint:disable type_name
 
     /// An identifier that represents a paywall event.
-    public typealias ID = UUID
+    public typealias ID = FeatureEvent.ID
 
     // swiftlint:enable type_name
 
     /// An identifier that represents a paywall session.
-    public typealias SessionID = UUID
+    public typealias SessionID = FeatureEvent.SessionID
 
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
@@ -34,6 +34,12 @@ public enum PaywallEvent {
 
     /// A `PaywallView` was closed.
     case close(CreationData, Data)
+
+}
+
+public enum CustomerCenterEvent: FeatureEvent {
+
+    case impression(CreationData, Data)
 
 }
 
@@ -57,6 +63,27 @@ extension PaywallEvent {
     }
 
 }
+
+extension CustomerCenterEvent {
+
+    /// The creation data of a ``PaywallEvent``.
+    public struct CreationData {
+
+        // swiftlint:disable missing_docs
+        public var id: ID
+        public var date: Date
+
+        public init(
+            id: ID = .init(),
+            date: Date = .init()
+        ) {
+            self.id = id
+            self.date = date
+        }
+
+    }
+
+}   
 
 extension PaywallEvent {
 
@@ -111,6 +138,30 @@ extension PaywallEvent {
 
 }
 
+extension CustomerCenterEvent {
+
+    /// The content of a ``PaywallEvent``.
+    public struct Data {
+
+        // swiftlint:disable missing_docs
+        public var sessionIdentifier: SessionID
+        public var localeIdentifier: String
+        public var darkMode: Bool
+
+        public init(
+            sessionID: SessionID,
+            locale: Locale,
+            darkMode: Bool
+        ) {
+            self.sessionIdentifier = sessionID
+            self.localeIdentifier = locale.identifier
+            self.darkMode = darkMode
+        }
+
+    }
+
+}
+
 extension PaywallEvent {
 
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
@@ -133,8 +184,30 @@ extension PaywallEvent {
 
 }
 
+extension CustomerCenterEvent {
+
+    /// - Returns: the underlying ``CustomerCenterEvent/CreationData-swift.struct`` for this event.
+    public var creationData: CreationData {
+        switch self {
+        case let .impression(creationData, _): return creationData
+        }
+    }
+
+    /// - Returns: the underlying ``CustomerCenterEvent/Data-swift.struct`` for this event.
+    public var data: Data {
+        switch self {
+        case let .impression(_, data): return data
+        }
+    }
+
+}
+
 // MARK: - 
 
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}
+
+extension CustomerCenterEvent.CreationData: Equatable, Codable, Sendable {}
+extension CustomerCenterEvent.Data: Equatable, Codable, Sendable {}
+extension CustomerCenterEvent: Equatable, Codable, Sendable {}
