@@ -22,14 +22,14 @@ class PaywallState: ObservableObject {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct TemplateComponentsView: View {
+struct TemplateComponentsView: View {
 
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
     private let onDismiss: () -> Void
 
     @StateObject
-    var paywwallState = PaywallState()
+    private var paywwallState = PaywallState()
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
