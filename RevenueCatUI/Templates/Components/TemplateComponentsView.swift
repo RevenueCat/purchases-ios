@@ -29,7 +29,7 @@ struct TemplateComponentsView: View {
     private let onDismiss: () -> Void
 
     @StateObject
-    private var paywwallState = PaywallState()
+    private var paywallState = PaywallState()
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -63,7 +63,7 @@ struct TemplateComponentsView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
-        .environmentObject(self.paywwallState)
+        .environmentObject(self.paywallState)
     }
 
     static func chooseLocalization(
