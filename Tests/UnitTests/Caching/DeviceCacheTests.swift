@@ -457,7 +457,7 @@ class DeviceCacheTests: TestCase {
 
         self.deviceCache.cache(storefront: expectedStorefront)
         let cachedStorefront = self.deviceCache.cachedStorefront()
-        
+
         expect(cachedStorefront).toNot(beNil())
         expect(cachedStorefront?.countryCode).to(equal(expectedStorefront.countryCode))
         expect(cachedStorefront?.identifier).to(equal(expectedStorefront.identifier))

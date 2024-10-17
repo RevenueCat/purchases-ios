@@ -1010,7 +1010,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: true, deviceCache: self.deviceCache))
+        self.client = self.createClient(
+            SystemInfo(platformInfo: nil, finishTransactions: true, deviceCache: self.deviceCache)
+        )
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }

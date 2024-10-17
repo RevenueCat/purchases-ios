@@ -49,7 +49,6 @@ class StorefrontTests: StoreKitConfigTestCase {
         let expected = "ESP"
         try await self.changeStorefront(expected)
 
-        // TODO: Set storefront here
         let deviceCache = MockDeviceCache()
         let systemInfo = SystemInfo(platformInfo: nil, finishTransactions: false, deviceCache: deviceCache)
 
