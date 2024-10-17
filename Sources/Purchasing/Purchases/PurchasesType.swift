@@ -746,11 +746,13 @@ public protocol PurchasesType: AnyObject {
      * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
      */
     @available(iOS 14.0, *)
+    @available(iOSApplicationExtension, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst, unavailable)
-    func presentCodeRedemptionSheet()
+    @available(macCatalyst 16.0, *)
+    @available(macCatalystApplicationExtension, unavailable)
+    func presentCodeRedemptionSheet(uiWindowScene: UIWindowScene?)
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     /**
