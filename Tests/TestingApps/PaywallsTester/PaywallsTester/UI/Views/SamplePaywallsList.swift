@@ -91,11 +91,12 @@ struct SamplePaywallsList: View {
             CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
-            TemplateComponentsView(
-                paywallComponentsData: data,
-                offering: Self.loader.offeringWithDefaultPaywall(),
-                onDismiss: { self.display = nil }
-            )
+            PaywallView(configuration: .init(
+                offering: Self.loader.offering(with: data),
+                customerInfo: Self.loader.customerInfo,
+                displayCloseButton: Self.displayCloseButton,
+                introEligibility: Self.introEligibility
+            ))
         #endif
         }
 

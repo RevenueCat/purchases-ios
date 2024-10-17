@@ -20,6 +20,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchaseButtonComponentView: View {
 
+    @EnvironmentObject
+    private var paywallState: PaywallState
+
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     private let viewModel: PurchaseButtonComponentViewModel
 
     internal init(viewModel: PurchaseButtonComponentViewModel) {
@@ -27,8 +33,18 @@ struct PurchaseButtonComponentView: View {
     }
 
     var body: some View {
-        Button {
-            // WIP: Need to perform purchase logic
+        AsyncButton {
+            guard !self.purchaseHandler.actionInProgress else { return }
+
+            // WIP: Need to log warning if currently subscribed
+            guard let selectedPackage = self.paywallState.selectedPackage
+//                    , selectedPackage.currentlySubscribed
+            else {
+                Logger.warning(Strings.product_already_subscribed)
+                return
+            }
+
+            _ = try await self.purchaseHandler.purchase(package: selectedPackage)
         } label: {
             // WIP: Need to add logic for intro offer
             Text(viewModel.cta)
@@ -41,7 +57,8 @@ struct PurchaseButtonComponentView: View {
                 .background(viewModel.backgroundColor)
                 .shape(viewModel.clipShape)
                 .cornerBorder(border: nil,
-                              radiuses: viewModel.cornerRadiuses)                .padding(viewModel.margin)
+                              radiuses: viewModel.cornerRadiuses)
+                .padding(viewModel.margin)
         }
     }
 

@@ -55,6 +55,9 @@ enum Strings {
     case paywall_view_model_construction_failed(Error)
     case paywall_contains_no_localization_data
     case paywall_could_not_find_localization(String)
+    case paywall_could_not_find_package(String)
+    case paywall_could_not_find_default_package(String)
+    case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
 
@@ -166,6 +169,19 @@ extension Strings: CustomStringConvertible {
 
         case .paywall_contains_no_localization_data:
             return "Paywall contains no localization data."
+
+        case .paywall_could_not_find_package(let identifier):
+            return "Could not find package \(identifier) for paywall. This package will not show in the paywall. " +
+            "This could be caused by a package that doesn't have a product on this platform or the product might not " +
+            " be available for this region."
+
+        case .paywall_could_not_find_default_package(let identifier):
+            return "Could not find default package \(identifier) for paywall. Using first package instead. " +
+            "This package will not show in the paywall. This could be caused by a package that doesn't have a " +
+            "product on this platform or the product might not be available for this region."
+
+        case .paywall_could_not_find_any_packages:
+            return "Could not find any packages for the paywall"
 
         case .paywall_invalid_url(let urlLid):
             return "No valid URL is configured for \(urlLid)"

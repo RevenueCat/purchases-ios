@@ -24,7 +24,10 @@ public extension PaywallComponent {
         let type: ComponentType
         public let defaultSelectedPackageID: String
 
-        public let components: [PaywallComponent]
+        // Most containers will accept an array of `PaywallComponent`s
+        // Package group specifically accepts `PackageComponent` for
+        // validation that packages exist
+        public let packages: [PaywallComponent.PackageComponent]
         public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
@@ -35,7 +38,7 @@ public extension PaywallComponent {
         public let border: Border?
 
         public init(defaultSelectedPackageID: String,
-                    components: [PaywallComponent],
+                    packages: [PaywallComponent.PackageComponent],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
                     spacing: CGFloat? = 0,
@@ -47,7 +50,7 @@ public extension PaywallComponent {
         ) {
             self.type = .packageGroup
             self.defaultSelectedPackageID = defaultSelectedPackageID
-            self.components = components
+            self.packages = packages
             self.width = width
             self.spacing = spacing
             self.backgroundColor = backgroundColor

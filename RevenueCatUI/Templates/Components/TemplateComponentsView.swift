@@ -4,18 +4,32 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable missing_docs todo
+// swiftlint:disable missing_docs
 
 import RevenueCat
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
+
+class PaywallState: ObservableObject {
+
+    @Published var selectedPackage: Package?
+
+    func select(package: Package) {
+        self.selectedPackage = package
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct TemplateComponentsView: View {
+struct TemplateComponentsView: View {
 
     let paywallComponentsData: PaywallComponentsData
     let componentViewModels: [PaywallComponentViewModel]
     private let onDismiss: () -> Void
+
+    @StateObject
+    private var paywallState = PaywallState()
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -26,15 +40,13 @@ public struct TemplateComponentsView: View {
 
         self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
 
-            // TODO: STEP 2: Validate all packages needed exist (????)
-
             do {
-                // STEP 3: Make the view models & validate all components have required localization
+                // STEP 2: Make the view models & validate all components have required localization and packages
                 return try component.toViewModel(offering: offering,
                                                  localizedStrings: localization.localizedStrings)
             } catch {
 
-                // STEP 3.5: Use fallback paywall if viewmodel construction fails
+                // STEP 2.5: Use fallback paywall if viewmodel construction fails
                 Logger.error(Strings.paywall_view_model_construction_failed(error))
 
                 return Self.fallbackPaywallViewModels()
@@ -51,6 +63,7 @@ public struct TemplateComponentsView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
+        .environmentObject(self.paywallState)
     }
 
     static func chooseLocalization(
@@ -85,19 +98,16 @@ public struct TemplateComponentsView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
 struct ComponentsView: View {
 
     let componentViewModels: [PaywallComponentViewModel]
     private let onDismiss: () -> Void
 
-    // @PublicForExternalTesting
     init(componentViewModels: [PaywallComponentViewModel], onDismiss: @escaping () -> Void) {
         self.componentViewModels = componentViewModels
         self.onDismiss = onDismiss
     }
 
-    // @PublicForExternalTesting
     var body: some View {
         self.layoutComponents(self.componentViewModels)
     }

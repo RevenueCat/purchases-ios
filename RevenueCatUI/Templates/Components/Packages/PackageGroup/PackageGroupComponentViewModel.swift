@@ -23,6 +23,7 @@ class PackageGroupComponentViewModel {
     private let component: PaywallComponent.PackageGroupComponent
     private let offering: Offering
 
+    let defaultPackage: Package
     let stackComponentViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
@@ -32,10 +33,55 @@ class PackageGroupComponentViewModel {
         self.component = component
         self.offering = offering
 
+        let info = try Self.getPackages(component: component, offering: offering)
+        self.defaultPackage = info.defaultPackage
+
         self.stackComponentViewModel = try self.component.toStackComponentViewModel(
+            components: info.availablePackageComponents.map { .package($0) },
             localizedStrings: localizedStrings,
             offering: offering
         )
+    }
+
+    static func getPackages(
+        component: PaywallComponent.PackageGroupComponent,
+        offering: Offering
+    ) throws -> (defaultPackage: Package, availablePackageComponents: [PaywallComponent.PackageComponent]) {
+
+        // Get list of available package components and their packages
+        let availablePackageInfos = component.packages.compactMap { packageComponent in
+            let pkg = offering.availablePackages.first(where: { $0.packageIdentifier == packageComponent.packageID })
+            if let pkg {
+                return (component: packageComponent, package: pkg)
+            } else {
+                return nil
+            }
+        }
+
+        // We need packages
+        guard let firstPackage = availablePackageInfos.first else {
+            Logger.error(Strings.paywall_could_not_find_any_packages)
+            throw PackageGroupValidationError.noAvailablePackages("No available packages found")
+        }
+
+        // Attempt to get default package
+        let defaultPackage = availablePackageInfos.first { packageInfo in
+            return packageInfo.package.id == component.defaultSelectedPackageID
+        }
+
+        let availablePackageComponents = availablePackageInfos.map { $0.component }
+        if let defaultPackage {
+            return (defaultPackage.package, availablePackageComponents)
+        } else {
+            Logger.warning(Strings.paywall_could_not_find_default_package(component.defaultSelectedPackageID))
+            return (firstPackage.package, availablePackageComponents)
+        }
+    }
+
+    enum PackageGroupValidationError: Error {
+
+        case noAvailablePackages(String)
+
     }
 
 }

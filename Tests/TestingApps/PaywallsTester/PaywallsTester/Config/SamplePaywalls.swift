@@ -38,6 +38,16 @@ final class SamplePaywallLoader {
         )
     }
 
+    func offering(with components: PaywallComponentsData) -> Offering {
+        return .init(
+            identifier: Self.offeringIdentifier,
+            serverDescription: Self.offeringIdentifier,
+            metadata: [:],
+            paywallComponentsData: components,
+            availablePackages: self.packages
+        )
+    }
+
     func offeringWithDefaultPaywall() -> Offering {
         return .init(
             identifier: Self.offeringIdentifier,
@@ -696,10 +706,93 @@ private extension SamplePaywallLoader {
         return components
     }()
 
+    static func makePackage(packageID: String,
+                            nameTextLid: String,
+                            detailTextLid: String) -> PaywallComponent.PackageComponent {
+        let stack: PaywallComponent = .stack(.init(
+            components: [
+                .text(.init(
+                    text: nameTextLid,
+                    fontWeight: .bold,
+                    color: .init(light: "#000000"),
+                    padding: .zero,
+                    margin: .zero
+                )),
+                .text(.init(
+                    text: detailTextLid,
+                    color: .init(light: "#000000"),
+                    padding: .zero,
+                    margin: .zero
+                ))
+            ],
+            dimension: .vertical(.leading),
+            spacing: 0,
+            backgroundColor: nil,
+            padding: .init(top: 10,
+                           bottom: 10,
+                           leading: 20,
+                           trailing: 20)
+        ))
+
+        return .init(
+            packageID: packageID,
+            components: [stack],
+            cornerRadiuses: .init(topLeading: 8,
+                                  topTrailing: 8,
+                                  bottomLeading: 8,
+                                  bottomTrailing: 8),
+            border: .init(color: .init(light: "#000000"), width: 1)
+        )
+    }
+
+    static var simpleSixPackages: PaywallComponent = {
+        return .stack(.init(
+            components: [
+                .packageGroup(.init(
+                    defaultSelectedPackageID: Package.string(from: PackageType.monthly)!,
+                    packages: [
+                        makePackage(packageID: Package.string(from: PackageType.monthly)!,
+                                    nameTextLid: "monthly_package_name",
+                                    detailTextLid: "monthly_package_details"),
+                        makePackage(packageID: Package.string(from: PackageType.annual)!,
+                                    nameTextLid: "annual_package_name",
+                                    detailTextLid: "annual_package_details")
+                    ],
+                    spacing: 20,
+                    margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
+                )),
+                .purchaseButton(.init(
+                    cta: "cta",
+                    ctaIntroOffer: "cta_intro",
+                    fontWeight: .bold,
+                    color: .init(light: "#ffffff"),
+                    backgroundColor: .init(light: "#ff0000"),
+                    padding: .init(top: 10,
+                                   bottom: 10,
+                                   leading: 30,
+                                   trailing: 30),
+                    shape: .rectangle,
+                    cornerRadiuses: .init(topLeading: 10,
+                                          topTrailing: 10,
+                                          bottomLeading: 10,
+                                          bottomTrailing: 10)
+                ))
+            ],
+            width: .init(type: .fill, value: nil),
+            backgroundColor: .init(light: "#cccccc")
+        ))
+    }()
+
     static var simpleSix: [PaywallComponent] = {
         let components: [PaywallComponent] = [
             .stack(.init(components:
-                            [fuzzyCat, spacer, simpleFeatureStack(text: featureText), spacer, purchaseSimpleButton],
+                            [
+                                fuzzyCat,
+                                spacer,
+                                simpleFeatureStack(text: featureText),
+                                spacer,
+                                simpleSixPackages
+                            ],
                          dimension: .vertical(.center),
                          spacing: nil,
                          backgroundColor: .init(light: "#FFFFFF"),
@@ -753,7 +846,7 @@ private extension SamplePaywallLoader {
 
     static var featureText: PaywallComponent = {
         .text(.init(
-            textLid: "feature_text",
+            text: "feature_text",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -764,7 +857,7 @@ private extension SamplePaywallLoader {
 
     static var helloWorld: PaywallComponent = {
         .text(.init(
-            textLid: "welcome_message",
+            text: "welcome_message",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -780,7 +873,7 @@ private extension SamplePaywallLoader {
 
     static var purchaseSimpleNowText: PaywallComponent.TextComponent = {
         .init(
-            textLid: "purchase_button_text",
+            text: "purchase_button_text",
             fontWeight: .regular,
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#9EE5FF"),
@@ -880,7 +973,7 @@ private extension SamplePaywallLoader {
 
     static var headlineText: PaywallComponent = {
         .text(.init(
-            textLid: "fitness_coach_title",
+            text: "fitness_coach_title",
             fontFamily: "",
             fontWeight: .black,
             color: .init(light: "#EE4444"),
@@ -892,7 +985,7 @@ private extension SamplePaywallLoader {
 
     static var treadmillText: PaywallComponent = {
         .text(.init(
-            textLid: "fitness_new_workouts",
+            text: "fitness_new_workouts",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -903,7 +996,7 @@ private extension SamplePaywallLoader {
 
     static var cycleText: PaywallComponent = {
         .text(.init(
-            textLid: "fitness_challenge_text",
+            text: "fitness_challenge_text",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -914,7 +1007,7 @@ private extension SamplePaywallLoader {
 
     static var weightsText: PaywallComponent = {
         .text(.init(
-            textLid: "fitness_conquer_goals",
+            text: "fitness_conquer_goals",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
@@ -955,7 +1048,7 @@ private extension SamplePaywallLoader {
 
     static var purchaseFitnessNowText: PaywallComponent.TextComponent = {
         .init(
-            textLid: "fitness_start_today",
+            text: "fitness_start_today",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
             backgroundColor: .init(light: "#DD4444"),
@@ -975,7 +1068,7 @@ private extension SamplePaywallLoader {
 
     static var restoreFitnessPurchases: PaywallComponent = {
         .text(.init(
-            textLid: "restore_purchases",
+            text: "restore_purchases",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#FFFFFF"),
@@ -986,7 +1079,7 @@ private extension SamplePaywallLoader {
 
     static var bulletFitness: PaywallComponent = {
         .text(.init(
-            textLid: "bullet_point",
+            text: "bullet_point",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#FFFFFF"),
@@ -997,7 +1090,7 @@ private extension SamplePaywallLoader {
 
     static var termsAndConditionsFitness: PaywallComponent = {
         .text(.init(
-            textLid: "terms_and_conditions",
+            text: "terms_and_conditions",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#FFFFFF"),
@@ -1047,7 +1140,7 @@ private extension SamplePaywallLoader {
 
     static var myGreatAppText: PaywallComponent = {
         .text(.init(
-            textLid: "explore_button_text",
+            text: "explore_button_text",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#f7d216"),
@@ -1058,7 +1151,7 @@ private extension SamplePaywallLoader {
 
     static var myGreatAppTextOffset: PaywallComponent = {
         .text(.init(
-            textLid: "explore_button_text",
+            text: "explore_button_text",
             fontFamily: "",
             fontWeight: .semibold,
             color: .init(light: "#633306"),
@@ -1078,7 +1171,7 @@ private extension SamplePaywallLoader {
 
     static var headingText: PaywallComponent = {
         .text(.init(
-            textLid: "curiosity_headline",
+            text: "curiosity_headline",
             fontWeight: .heavy,
             color: .init(light: "#000000"),
             textStyle: .extraLargeTitle
@@ -1087,7 +1180,7 @@ private extension SamplePaywallLoader {
 
     static var subHeadingText: PaywallComponent = {
         .text(.init(
-            textLid: "curiosity_subheadline",
+            text: "curiosity_subheadline",
             color: .init(light: "#000000"),
             textStyle: .headline
         ))
@@ -1106,7 +1199,7 @@ private extension SamplePaywallLoader {
 
     static var feature1Text: PaywallComponent = {
         .text(.init(
-            textLid: "feature_valuable",
+            text: "feature_valuable",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline,
@@ -1116,7 +1209,7 @@ private extension SamplePaywallLoader {
 
     static var feature2Text: PaywallComponent = {
         .text(.init(
-            textLid: "feature_great_price",
+            text: "feature_great_price",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline,
@@ -1126,7 +1219,7 @@ private extension SamplePaywallLoader {
 
     static var feature3Text: PaywallComponent = {
         .text(.init(
-            textLid: "feature_support",
+            text: "feature_support",
             color: .init(light: "#000000"),
             padding: .zero,
             textStyle: .headline,
@@ -1136,7 +1229,7 @@ private extension SamplePaywallLoader {
 
     static var costText: PaywallComponent = {
         .text(.init(
-            textLid: "subscription_price",
+            text: "subscription_price",
             color: .init(light: "#000000"),
             textStyle: .subheadline
         ))
@@ -1149,7 +1242,7 @@ private extension SamplePaywallLoader {
 
     static var purchaseNowText: PaywallComponent.TextComponent = {
         .init(
-            textLid: "purchase_for_price",
+            text: "purchase_for_price",
             fontWeight: .semibold,
             color: .init(light: "#FFFFFF"),
             backgroundColor: .init(light: "#00AA00"),
@@ -1160,7 +1253,7 @@ private extension SamplePaywallLoader {
 
     static var restorePurchases: PaywallComponent = {
         .text(.init(
-            textLid: "restore_purchases",
+            text: "restore_purchases",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -1171,7 +1264,7 @@ private extension SamplePaywallLoader {
 
     static var termsAndConditions: PaywallComponent = {
         .text(.init(
-            textLid: "terms_and_conditions",
+            text: "terms_and_conditions",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -1182,7 +1275,7 @@ private extension SamplePaywallLoader {
 
     static var bullet: PaywallComponent = {
         .text(.init(
-            textLid: "bullet_point",
+            text: "bullet_point",
             fontFamily: "",
             fontWeight: .regular,
             color: .init(light: "#000000"),
@@ -1234,7 +1327,7 @@ private extension SamplePaywallLoader {
 
     static var middleText: PaywallComponent = {
         .text(.init(
-            textLid: "popular_plan_label",
+            text: "popular_plan_label",
             color: .init(light: "#000000"),
             textStyle: .body
         ))
@@ -1242,7 +1335,7 @@ private extension SamplePaywallLoader {
 
     static var getStartedText: PaywallComponent = {
         .text(.init(
-            textLid: "get_started_text",
+            text: "get_started_text",
             color: .init(light: "#FF0000"),
             backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body
@@ -1251,7 +1344,7 @@ private extension SamplePaywallLoader {
 
     static var upgradeText: PaywallComponent = {
         .text(.init(
-            textLid: "upgrade_plan_text",
+            text: "upgrade_plan_text",
             color: .init(light: "#000000"),
             backgroundColor: .init(light: "#FF00FF"),
             textStyle: .body
@@ -1375,7 +1468,13 @@ private extension SamplePaywallLoader {
                 "popular_plan_label": .string("Popular Plan"),
                 "get_started_text": .string("Get started with our plan"),
                 "upgrade_plan_text": .string("Upgrade to our premium plan"),
-                "feature_text": .string("Feature")
+                "feature_text": .string("Feature"),
+                "monthly_package_name": .string("Monthly"),
+                "monthly_package_details": .string("Get now for $2.99/month"),
+                "annual_package_name": .string("Annual"),
+                "annual_package_details": .string("Get now for $19.99/month"),
+                "cta": .string("Purchase now"),
+                "cta_intro": .string("Claim free trial")
             ],
             "fr_FR": [
                 "welcome_message": .string("Bonjour, Composants Paywall!"),
@@ -1384,7 +1483,13 @@ private extension SamplePaywallLoader {
                 "popular_plan_label": .string("Plan populaire"),
                 "get_started_text": .string("Commencez avec notre plan"),
                 "upgrade_plan_text": .string("Passez à notre plan premium"),
-                "feature_text": .string("Fonctionnalité")
+                "feature_text": .string("Fonctionnalité"),
+                "monthly_package_name": .string("Monthly Package FRENCH"),
+                "monthly_package_details": .string("Monthly DETAILS Package"),
+                "annual_package_name": .string("Annua FRENCH"),
+                "annual_package_details": .string("Get now for $19.99/month FRENCH"),
+                "cta": .string("Purchase now FRENCH"),
+                "cta_intro": .string("Claim free trial FRENCH")
             ],
             "es_ES": [
                 "welcome_message": .string("¡Hola, Componentes Paywall!"),
@@ -1393,7 +1498,13 @@ private extension SamplePaywallLoader {
                 "popular_plan_label": .string("Plan popular"),
                 "get_started_text": .string("Empieza con nuestro plan"),
                 "upgrade_plan_text": .string("Actualiza a nuestro plan premium"),
-                "feature_text": .string("Función")
+                "feature_text": .string("Función"),
+                "monthly_package_name": .string("Monthly Package SPANISH"),
+                "monthly_package_details": .string("Monthly DETAILS Package"),
+                "annual_package_name": .string("Annual SPANISH"),
+                "annual_package_details": .string("Get now for $19.99/month SPANISH"),
+                "cta": .string("Purchase now SPANISH"),
+                "cta_intro": .string("Claim free trial SPANISH")
             ]
         ]
     }

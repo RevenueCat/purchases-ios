@@ -253,6 +253,8 @@ public struct PaywallView: View {
                     onRequestedDismissal()
                 }
             )
+            .environmentObject(self.introEligibility)
+            .environmentObject(self.purchaseHandler)
         } else {
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
