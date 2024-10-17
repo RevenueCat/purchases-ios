@@ -184,9 +184,9 @@ class SystemInfo {
         Task { [weak self] in
             let storefront = await Storefront.currentStorefront
 
-            self?._storefront = storefront
 
             if let storefront {
+                self?._storefront = storefront
                 deviceCache.cache(
                     storefront: CodableStorefront(storefront: storefront)
                 )
