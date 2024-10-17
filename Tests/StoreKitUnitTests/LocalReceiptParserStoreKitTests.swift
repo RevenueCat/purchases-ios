@@ -26,6 +26,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
     private var systemInfo: SystemInfo!
     private var receiptFetcher: ReceiptFetcher!
     private var parser: PurchasesReceiptParser!
+    private var deviceCache = MockDeviceCache()
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -35,7 +36,8 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         self.systemInfo = SystemInfo(platformInfo: Purchases.platformInfo,
                                      finishTransactions: true,
                                      operationDispatcher: operationDispatcher,
-                                     storeKitVersion: .storeKit1)
+                                     storeKitVersion: .storeKit1,
+                                     deviceCache: deviceCache)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
         self.parser = .default
     }

@@ -75,15 +75,18 @@ class StoreKitWorkaroundsReceiptURLTests: TestCase {
     private var mockRequestFetcher: MockRequestFetcher!
     private var mockBundle: MockBundle!
     private var mockSystemInfo: MockSystemInfo!
+    private var deviceCache: MockDeviceCache!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        self.deviceCache = MockDeviceCache()
         self.mockBundle = MockBundle()
         self.mockRequestFetcher = MockRequestFetcher()
         self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
-                                             bundle: self.mockBundle)
+                                             bundle: self.mockBundle,
+                                             deviceCache: self.deviceCache)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher, systemInfo: self.mockSystemInfo)
     }
 

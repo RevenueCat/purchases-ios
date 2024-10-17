@@ -157,7 +157,8 @@ class SystemInfo {
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
          clock: ClockType = Clock.default,
-         preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
+         preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default,
+         deviceCache: DeviceCache) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
@@ -171,12 +172,25 @@ class SystemInfo {
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 
-        self.setStorefront()
+        self.setStorefront(deviceCache: deviceCache)
     }
 
-    func setStorefront() {
+    func setStorefront(deviceCache: DeviceCache) {
+
+        if let cachedStorefront = deviceCache.cachedStorefront() {
+            self._storefront = cachedStorefront
+        }
+
         Task { [weak self] in
-            self?._storefront = await Storefront.currentStorefront
+            let storefront = await Storefront.currentStorefront
+
+            self?._storefront = storefront
+
+            if let storefront {
+                deviceCache.cache(
+                    storefront: CodableStorefront(storefront: storefront)
+                )
+            }
         }
     }
 

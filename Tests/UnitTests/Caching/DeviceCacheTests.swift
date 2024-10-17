@@ -452,6 +452,17 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isProductEntitlementMappingCacheStale) == true
     }
 
+    func testSK2StorefrontIsProperlyCached() throws {
+        let expectedStorefront = CodableStorefront(countryCode: "mock_country", identifier: "mock_id")
+
+        self.deviceCache.cache(storefront: expectedStorefront)
+        let cachedStorefront = self.deviceCache.cachedStorefront()
+        
+        expect(cachedStorefront).toNot(beNil())
+        expect(cachedStorefront?.countryCode).to(equal(expectedStorefront.countryCode))
+        expect(cachedStorefront?.identifier).to(equal(expectedStorefront.identifier))
+    }
+
 }
 
 private extension DeviceCacheTests {

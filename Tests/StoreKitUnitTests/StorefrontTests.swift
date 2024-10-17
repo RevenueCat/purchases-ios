@@ -49,7 +49,9 @@ class StorefrontTests: StoreKitConfigTestCase {
         let expected = "ESP"
         try await self.changeStorefront(expected)
 
-        let systemInfo = SystemInfo(platformInfo: nil, finishTransactions: false)
+        // TODO: Set storefront here
+        let deviceCache = MockDeviceCache()
+        let systemInfo = SystemInfo(platformInfo: nil, finishTransactions: false, deviceCache: deviceCache)
 
         try await asyncWait(
             description: "Storefront change not detected",

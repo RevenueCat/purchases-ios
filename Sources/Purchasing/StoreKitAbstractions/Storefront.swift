@@ -149,3 +149,47 @@ extension Storefront {
     }
 
 }
+
+// MARK: - CodableStorefront
+
+/// A structure representing a codable version of an  App Store Storefront, for use with caching the storefront
+/// to the disk.
+///
+/// This structure includes both a country code, represented as a three-letter ISO 3166-1 Alpha-3 country code,
+/// and a storefront identifier, which uniquely identifies an App Store storefront.
+internal struct CodableStorefront: StorefrontType, Codable {
+
+    /// The three-letter code representing the country or region associated with the App Store storefront.
+    ///
+    /// This property uses the ISO 3166-1 Alpha-3 country code representation, which corresponds to a
+    /// specific country or region.
+    var countryCode: String
+
+    /// A unique identifier for the App Store storefront.
+    ///
+    /// This identifier is assigned by Apple and is used to uniquely identify an App Store storefront.
+    var identifier: String
+
+    /// Creates a new instance of `CodableStorefront` with the provided country code and storefront identifier.
+    ///
+    /// - Parameters:
+    ///   - countryCode: A three-letter ISO 3166-1 Alpha-3 code representing the country or region.
+    ///   - identifier: A unique string identifier for the App Store storefront.
+    init(countryCode: String, identifier: String) {
+        self.countryCode = countryCode
+        self.identifier = identifier
+    }
+
+    init(storefront: StorefrontType) {
+        self.init(countryCode: storefront.countryCode, identifier: storefront.identifier)
+    }
+
+    init(sk1Storefront: SKStorefront) {
+        self.init(countryCode: sk1Storefront.countryCode, identifier: sk1Storefront.identifier)
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    init(sk2Storefront: StoreKit.Storefront) {
+        self.init(countryCode: sk2Storefront.countryCode, identifier: sk2Storefront.id)
+    }
+}

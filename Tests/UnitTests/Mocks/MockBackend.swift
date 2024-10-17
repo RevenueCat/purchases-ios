@@ -22,8 +22,10 @@ class MockBackend: Backend {
     var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
     var onPostReceipt: (() -> Void)?
 
-    public convenience init() {
-        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
+    public convenience init(
+        deviceCache: DeviceCache = MockDeviceCache()
+    ) {
+        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil, deviceCache: deviceCache)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
 

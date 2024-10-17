@@ -27,6 +27,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     var eTagManager: ETag!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var operationDispatcher: OperationDispatcher!
+    var deviceCache: DeviceCache = MockDeviceCache()
 
     fileprivate let apiKey = "MockAPIKey"
 
@@ -951,7 +952,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
-                                    finishTransactions: true)
+                                    finishTransactions: true,
+                                    deviceCache: self.deviceCache)
 
         self.client = self.createClient(systemInfo)
 
@@ -989,7 +991,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: true)
+        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: true, deviceCache: self.deviceCache)
         self.client = self.createClient(systemInfo)
 
         waitUntil { completion in
@@ -1008,7 +1010,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: true))
+        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: true, deviceCache: self.deviceCache))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1067,7 +1069,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: false))
+        self.client = self.createClient(
+            SystemInfo(platformInfo: nil, finishTransactions: false, deviceCache: self.deviceCache)
+        )
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1565,7 +1569,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrors: true)
-                )
+                ),
+                deviceCache: self.deviceCache
             )
         )
 

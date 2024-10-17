@@ -50,7 +50,8 @@ class BackendSubscriberAttributesTests: TestCase {
     private let systemInfo = SystemInfo(
         platformInfo: .init(flavor: "Unity", version: "2.3.3"),
         finishTransactions: true,
-        storeKitVersion: .versionForTests
+        storeKitVersion: .versionForTests,
+        deviceCache: MockDeviceCache()
     )
 
     override func setUpWithError() throws {

@@ -33,6 +33,7 @@ class BaseBackendTests: TestCase {
     private(set) var identity: IdentityAPI!
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
+    private(set) var deviceCache: MockDeviceCache!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -45,6 +46,9 @@ class BaseBackendTests: TestCase {
 
     final func createDependencies(dangerousSettings: DangerousSettings? = nil,
                                   localesProvider: PreferredLocalesProviderType = MockPreferredLocalesProvider()) {
+        self.deviceCache = MockDeviceCache()
+        self.deviceCache.cache(storefront: CodableStorefront(countryCode: "USA", identifier: "USA"))
+
         // Need to force StoreKit 1 because we use iOS 13 snapshots
         // for watchOS tests which contain StoreKit 1 headers
         #if os(watchOS)
@@ -58,7 +62,8 @@ class BaseBackendTests: TestCase {
             storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
-            preferredLocalesProvider: localesProvider
+            preferredLocalesProvider: localesProvider,
+            deviceCache: self.deviceCache
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
