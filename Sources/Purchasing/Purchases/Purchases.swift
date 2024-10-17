@@ -265,6 +265,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
+    private let offerCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
 
@@ -307,6 +308,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
         let transactionFetcher = StoreKit2TransactionFetcher()
+        let offerCodeRedemptionSheetPresenter = OfferCodeRedemptionSheetPresenter()
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
@@ -570,7 +572,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
-                  storeMessagesHelper: storeMessagesHelper
+                  storeMessagesHelper: storeMessagesHelper,
+                  offerCodeRedemptionSheetPresenter: offerCodeRedemptionSheetPresenter
         )
     }
 
@@ -599,7 +602,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
-         storeMessagesHelper: StoreMessagesHelperType?
+         storeMessagesHelper: StoreMessagesHelperType?,
+         offerCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -647,6 +651,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
+        self.offerCodeRedemptionSheetPresenter = offerCodeRedemptionSheetPresenter
 
         super.init()
 
@@ -1068,13 +1073,33 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst, unavailable)
-    @objc func presentCodeRedemptionSheet() {
-        self.paymentQueueWrapper.paymentQueueWrapperType.presentCodeRedemptionSheet()
+    @available(macCatalyst 16.0, *)
+    @available(iOSApplicationExtension, unavailable)
+    @available(macCatalystApplicationExtension, unavailable)
+    @objc func presentCodeRedemptionSheet(
+        uiWindowScene: UIWindowScene? = nil
+    ) {
+        let windowScene: UIWindowScene?
+
+        if let uiWindowScene {
+            windowScene = uiWindowScene
+        } else {
+            // Can't DI this since it's unavailable for iOS & macCatalyst app extensions
+            let uiWindowSceneFinder = UIWindowSceneFinder()
+            windowScene = uiWindowSceneFinder.attemptToGetActiveWindowScene()
+        }
+
+        if let windowScene {
+            self.offerCodeRedemptionSheetPresenter.presentCodeRedemptionSheet(
+                windowScene: windowScene
+            )
+        } else {
+            // TODO: Log message
+        }
     }
 #endif
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
