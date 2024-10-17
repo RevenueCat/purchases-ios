@@ -25,7 +25,7 @@ class PaywallState: ObservableObject {
 struct TemplateComponentsView: View {
 
     let paywallComponentsData: PaywallComponentsData
-    let componentViewModels: [PaywallComponentViewModel]
+    let componentViewModel: PaywallComponentViewModel
     private let onDismiss: () -> Void
 
     @StateObject
@@ -35,29 +35,28 @@ struct TemplateComponentsView: View {
         self.paywallComponentsData = paywallComponentsData
         self.onDismiss = onDismiss
 
+        // Step 0: Decide which ComponentsConfig to use (base is default)
+        let componentsConfig = paywallComponentsData.componentsConfigs.base
+
         // Step 1: Get localization
         let localization = Self.chooseLocalization(for: paywallComponentsData)
 
-        self.componentViewModels = paywallComponentsData.componentsConfig.components.map { component in
+        do {
+            // STEP 2: Make the view models & validate all components have required localization and packages
+            self.componentViewModel = try PaywallComponent.stack(componentsConfig.stack)
+                .toViewModel(offering: offering, localizedStrings: localization.localizedStrings)
+        } catch {
+            // STEP 2.5: Use fallback paywall if viewmodel construction fails
+            Logger.error(Strings.paywall_view_model_construction_failed(error))
 
-            do {
-                // STEP 2: Make the view models & validate all components have required localization and packages
-                return try component.toViewModel(offering: offering,
-                                                 localizedStrings: localization.localizedStrings)
-            } catch {
-
-                // STEP 2.5: Use fallback paywall if viewmodel construction fails
-                Logger.error(Strings.paywall_view_model_construction_failed(error))
-
-                return Self.fallbackPaywallViewModels()
-            }
+            self.componentViewModel = Self.fallbackPaywallViewModels()
         }
     }
 
     public var body: some View {
         VStack(spacing: 0) {
             ComponentsView(
-                componentViewModels: self.componentViewModels,
+                componentViewModels: [self.componentViewModel],
                 onDismiss: onDismiss
             )
         }
