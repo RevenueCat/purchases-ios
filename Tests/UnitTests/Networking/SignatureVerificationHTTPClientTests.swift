@@ -856,6 +856,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
         forceSignatureFailures: Bool = false,
         disableHeaderSignatureVerification: Bool = false
     ) {
+        let deviceCache = MockDeviceCache()
         self.systemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
@@ -866,7 +867,8 @@ private extension BaseSignatureVerificationHTTPClientTests {
                     forceSignatureFailures: forceSignatureFailures,
                     disableHeaderSignatureVerification: disableHeaderSignatureVerification
                 )
-            )
+            ),
+            deviceCache: deviceCache
         )
         self.client = self.createClient()
     }

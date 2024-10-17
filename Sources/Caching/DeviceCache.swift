@@ -339,6 +339,19 @@ class DeviceCache {
     }
 
     // MARK: - StoreKit 2
+    func cachedStorefront() -> StorefrontType? {
+        return self.userDefaults.read {
+            let cachedStorefront: CodableStorefront? = $0.value<CodableStorefront>(forKey: CacheKey.storefront)
+            return cachedStorefront
+        }
+    }
+
+    func cache(storefront: CodableStorefront) {
+        self.userDefaults.write { userDefaults in
+            userDefaults.set(codable: storefront, forKey: CacheKey.storefront)
+        }
+    }
+
     private let cachedSyncedSK2ObserverModeTransactionIDsLock = Lock(.nonRecursive)
 
     func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
@@ -391,6 +404,7 @@ class DeviceCache {
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
+        case storefront
 
         var rawValue: String {
             switch self {
@@ -401,6 +415,7 @@ class DeviceCache {
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:
                 return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
+            case .storefront: return "\(Self.base)storefront"
             }
         }
 

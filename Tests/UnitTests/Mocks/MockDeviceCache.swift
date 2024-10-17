@@ -317,6 +317,20 @@ class MockDeviceCache: DeviceCache {
         cachedSyncedSK2TransactionIDs.append(contentsOf: ids)
     }
 
+    // MARK: - SK2Storefront
+    private var _cachedStorefront: StorefrontType?
+
+    var invokedReadCachedStorefront = false
+    override func cachedStorefront() -> StorefrontType? {
+        invokedReadCachedStorefront = true
+        return _cachedStorefront
+    }
+
+    var invokedCacheStorefront = false
+    override func cache(storefront: CodableStorefront) {
+        invokedCacheStorefront = true
+        self._cachedStorefront = storefront
+    }
 }
 
 extension MockDeviceCache: @unchecked Sendable {}

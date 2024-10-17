@@ -24,11 +24,13 @@ class BaseReceiptFetcherTests: TestCase {
     fileprivate var mockBundle: MockBundle!
     fileprivate var mockSystemInfo: MockSystemInfo!
     fileprivate var mockReceiptParser: MockReceiptParser!
+    fileprivate var mockDeviceCache: MockDeviceCache!
     fileprivate var clock: TestClock!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        self.mockDeviceCache = MockDeviceCache()
         self.mockBundle = MockBundle()
         self.mockRequestFetcher = MockRequestFetcher()
         self.mockReceiptParser = MockReceiptParser()
@@ -37,7 +39,8 @@ class BaseReceiptFetcherTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
                                              bundle: self.mockBundle,
-                                             clock: self.clock)
+                                             clock: self.clock,
+                                             deviceCache: self.mockDeviceCache)
 
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher,
                                              systemInfo: self.mockSystemInfo,
