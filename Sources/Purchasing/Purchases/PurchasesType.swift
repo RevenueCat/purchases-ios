@@ -779,12 +779,10 @@ public protocol PurchasesType: AnyObject {
      * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
      */
     @available(iOS 14.0, *)
-    @available(iOSApplicationExtension, unavailable)
+    @available(macCatalyst 16.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst 16.0, *)
-    @available(macCatalystApplicationExtension, unavailable)
     func presentCodeRedemptionSheet(uiWindowScene: UIWindowScene?) async throws
     #endif
 

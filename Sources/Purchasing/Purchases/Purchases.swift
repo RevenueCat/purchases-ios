@@ -1067,7 +1067,7 @@ public extension Purchases {
     }
 #endif
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || VISION_OS || targetEnvironment(macCatalyst)
 
     @available(iOS 14.0, *)
     @available(watchOS, unavailable)
