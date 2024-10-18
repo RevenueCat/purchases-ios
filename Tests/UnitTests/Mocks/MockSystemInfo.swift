@@ -22,7 +22,8 @@ class MockSystemInfo: SystemInfo {
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
-                     clock: ClockType = TestClock()) {
+                     clock: ClockType = TestClock(),
+                     deviceCache: DeviceCache = MockDeviceCache()) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
             customEntitlementComputation: customEntitlementsComputation
@@ -31,7 +32,8 @@ class MockSystemInfo: SystemInfo {
                   finishTransactions: finishTransactions,
                   storeKitVersion: storeKitVersion,
                   dangerousSettings: dangerousSettings,
-                  clock: clock)
+                  clock: clock,
+                  deviceCache: deviceCache)
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

@@ -51,7 +51,6 @@ class SystemInfo {
     var observerMode: Bool { return !self.finishTransactions }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
-    private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
 
@@ -74,8 +73,9 @@ class SystemInfo {
 #endif
     }
 
+    private var _storefront: StorefrontType?
     var storefront: StorefrontType? {
-        return self.storefrontProvider.currentStorefront
+        return self._storefront
     }
 
     var preferredLanguages: [String] {
@@ -153,12 +153,12 @@ class SystemInfo {
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
-         storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
          clock: ClockType = Clock.default,
-         preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
+         preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default,
+         deviceCache: DeviceCache) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
@@ -167,11 +167,31 @@ class SystemInfo {
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
-        self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
+
+        self.setStorefront(deviceCache: deviceCache)
+    }
+
+    func setStorefront(deviceCache: DeviceCache) {
+
+        if let cachedStorefront = deviceCache.cachedStorefront() {
+            self._storefront = cachedStorefront
+        }
+
+        Task { [weak self] in
+            let storefront = await Storefront.currentStorefront
+
+
+            if let storefront {
+                self?._storefront = storefront
+                deviceCache.cache(
+                    storefront: CodableStorefront(storefront: storefront)
+                )
+            }
+        }
     }
 
     var supportsOfflineEntitlements: Bool {
