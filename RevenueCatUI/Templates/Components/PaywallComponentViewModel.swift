@@ -20,7 +20,7 @@ enum PaywallComponentViewModel {
     case linkButton(LinkButtonComponentViewModel)
     case button(ButtonComponentViewModel)
     case packageGroup(PackageGroupComponentViewModel)
-//    case package(PackageComponentViewModel)
+    // Purposely leaving out a `case package` since `PackageGroupComponentViewModel` creates this model
     case purchaseButton(PurchaseButtonComponentViewModel)
 
 }
@@ -70,9 +70,9 @@ extension PaywallComponent {
                                                    component: component,
                                                    offering: offering)
             )
-        case .package(let component):
-            // PackageGroup makes the PackageViewModel
-            fatalError("We should not get there")
+        case .package:
+            // PackageGroupViewModel makes the PackageViewModel since it needs a Package
+            throw PaywallComponentViewModelError.invalidAttemptToCreatePackage
         case .purchaseButton(let component):
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
@@ -81,16 +81,10 @@ extension PaywallComponent {
         }
     }
 
-}
+    enum PaywallComponentViewModelError: Error {
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallComponent.PackageComponent {
+        case invalidAttemptToCreatePackage
 
-    func toViewModel(
-        offering: Offering,
-        localizedStrings: PaywallComponent.LocalizationDictionary
-    ) throws -> PaywallComponentViewModel {
-        fatalError("We should not get there")
     }
 
 }
