@@ -44,6 +44,8 @@ struct CustomerCenterConfigResponse {
         let id: String
         let title: String
         let type: PathType
+        let url: String?
+        let openMethod: OpenMethod?
         let promotionalOffer: PromotionalOffer?
         let feedbackSurvey: FeedbackSurvey?
 
@@ -53,6 +55,15 @@ struct CustomerCenterConfigResponse {
             case refundRequest = "REFUND_REQUEST"
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
+            case customUrl = "CUSTOM_URL"
+            case unknown
+
+        }
+
+        enum OpenMethod: String {
+
+            case inApp = "IN_APP"
+            case external = "EXTERNAL"
             case unknown
 
         }
@@ -130,6 +141,7 @@ extension CustomerCenterConfigResponse.CustomerCenter: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Localization: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PathType: Equatable {}
+extension CustomerCenterConfigResponse.HelpPath.OpenMethod: Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, Equatable {}
@@ -162,6 +174,12 @@ extension CustomerCenterConfigResponse.Screen.ScreenType: CodableEnumWithUnknown
 }
 
 extension CustomerCenterConfigResponse.HelpPath.PathType: CodableEnumWithUnknownCase {
+
+    static var unknownCase: Self { .unknown }
+
+}
+
+extension CustomerCenterConfigResponse.HelpPath.OpenMethod: CodableEnumWithUnknownCase {
 
     static var unknownCase: Self { .unknown }
 
