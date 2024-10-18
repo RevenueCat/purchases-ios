@@ -47,6 +47,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path1",
                                 title: "Path 1",
                                 type: .missingPurchase,
+                                url: nil,
+                                openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: nil
                             ),
@@ -54,6 +56,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path2",
                                 title: "Path 2",
                                 type: .cancel,
+                                url: nil,
+                                openMethod: nil,
                                 promotionalOffer: .init(iosOfferId: "offer_id",
                                                         eligible: true,
                                                         title: "Wait!",
@@ -64,6 +68,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path3",
                                 title: "Path 3",
                                 type: .changePlans,
+                                url: nil,
+                                openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: .init(title: "survey title",
                                                       options: [

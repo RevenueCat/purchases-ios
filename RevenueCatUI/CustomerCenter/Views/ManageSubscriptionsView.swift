@@ -124,7 +124,7 @@ struct ManageSubscriptionsView: View {
                onDismiss: {
             self.viewModel.handleInAppBrowserDismiss()
         }, content: { inAppBrowserURL in
-            SafariView(url: inAppBrowserURL)
+            SafariView(url: inAppBrowserURL.url)
         })
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
