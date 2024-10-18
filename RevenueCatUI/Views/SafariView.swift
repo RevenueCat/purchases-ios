@@ -11,6 +11,8 @@
 //
 //  Created by Antonio Rico Diez on 2024-10-18.
 
+#if os(iOS)
+
 import SafariServices
 import SwiftUI
 
@@ -26,3 +28,5 @@ struct SafariView: UIViewControllerRepresentable {
         // No need to update the controller, as it's static in this case
     }
 }
+
+#endif
