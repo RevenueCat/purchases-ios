@@ -37,7 +37,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var promotionalOfferData: PromotionalOfferData?
     @Published
-    var inAppBrowserURL: URL?
+    var inAppBrowserURL: IdentifiableURL?
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -162,13 +162,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
 }
 
-extension URL: Identifiable {
-
-    // swiftlint:disable:next missing_docs
-    public var id: String {
-        return self.absoluteString
+struct IdentifiableURL: Identifiable {
+    var id: String {
+        return url.absoluteString
     }
-
+    let url: URL
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -212,7 +210,7 @@ private extension ManageSubscriptionsViewModel {
             case .external:
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
             case .inApp:
-                self.inAppBrowserURL = url
+                self.inAppBrowserURL = .init(url: url)
             }
         default:
             break
