@@ -20,7 +20,7 @@ enum PaywallComponentViewModel {
     case linkButton(LinkButtonComponentViewModel)
     case button(ButtonComponentViewModel)
     case packageGroup(PackageGroupComponentViewModel)
-    case package(PackageComponentViewModel)
+    // Purposely leaving out a `case package` since `PackageGroupComponentViewModel` creates this model
     case purchaseButton(PurchaseButtonComponentViewModel)
 
 }
@@ -70,18 +70,21 @@ extension PaywallComponent {
                                                    component: component,
                                                    offering: offering)
             )
-        case .package(let component):
-            return .package(
-                try PackageComponentViewModel(localizedStrings: localizedStrings,
-                                              component: component,
-                                              offering: offering)
-            )
+        case .package:
+            // PackageGroupViewModel makes the PackageViewModel since it needs a Package
+            throw PaywallComponentViewModelError.invalidAttemptToCreatePackage
         case .purchaseButton(let component):
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
                                                      component: component)
             )
         }
+    }
+
+    enum PaywallComponentViewModelError: Error {
+
+        case invalidAttemptToCreatePackage
+
     }
 
 }

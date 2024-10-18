@@ -28,7 +28,7 @@ struct PackageComponentView: View {
 
     var body: some View {
         // WIP: Do something with package id and selection
-        StackComponentView(viewModel: self.viewModel.stackComponentViewModel,
+        StackComponentView(viewModel: self.viewModel.stackViewModel,
                            onDismiss: self.onDismiss)
     }
 
@@ -39,8 +39,8 @@ struct PackageComponentView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageComponentView_Previews: PreviewProvider {
 
-    static var components: [PaywallComponent] = [
-        .stack(.init(
+    static var stack: PaywallComponent.StackComponent {
+        return .init(
             components: [
                 .text(.init(
                     text: "name",
@@ -63,8 +63,15 @@ struct PackageComponentView_Previews: PreviewProvider {
                            bottom: 10,
                            leading: 20,
                            trailing: 20)
-        ))
-    ]
+        )
+    }
+
+    static var package: Package {
+        return .init(identifier: "weekly",
+                     packageType: .weekly,
+                     storeProduct: .init(sk1Product: .init()),
+                     offeringIdentifier: "default")
+    }
 
     static var previews: some View {
         // Package
@@ -77,15 +84,12 @@ struct PackageComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     packageID: "weekly",
-                    components: components
+                    stack: stack
                 ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [
-                                    .init(identifier: "weekly",
-                                          packageType: .weekly,
-                                          storeProduct: .init(sk1Product: .init()),
-                                          offeringIdentifier: "default")])
+                                availablePackages: [package]),
+                package: package
             ), onDismiss: {}
         )
         .previewLayout(.sizeThatFits)

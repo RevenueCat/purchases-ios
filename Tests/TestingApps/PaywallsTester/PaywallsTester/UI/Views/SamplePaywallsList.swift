@@ -109,7 +109,7 @@ struct SamplePaywallsList: View {
             Section("Components") {
                 Button {
                     let data = SamplePaywallLoader.template1Components
-                    data.componentsConfig.components.printAsJSON()
+                    data.componentsConfigs.base.stack.components.printAsJSON()
                     data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
@@ -117,7 +117,7 @@ struct SamplePaywallsList: View {
                 }
                 Button {
                     let data = SamplePaywallLoader.fitnessComponents
-                    data.componentsConfig.components.printAsJSON()
+                    data.componentsConfigs.base.stack.components.printAsJSON()
                     data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
@@ -125,7 +125,7 @@ struct SamplePaywallsList: View {
                 }
                 Button {
                     let data = SamplePaywallLoader.simpleSampleComponents
-                    data.componentsConfig.components.printAsJSON()
+                    data.componentsConfigs.base.stack.components.printAsJSON()
                     data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {

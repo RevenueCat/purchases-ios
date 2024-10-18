@@ -23,14 +23,25 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
 
-    init(component: PaywallComponent.StackComponent,
-         localizedStrings: PaywallComponent.LocalizationDictionary,
-         offering: Offering
+    convenience init(
+        component: PaywallComponent.StackComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
     ) throws {
+        self.init(
+            component: component,
+            viewModels: try component.components.map {
+                try $0.toViewModel(offering: offering, localizedStrings: localizedStrings)
+            }
+        )
+    }
+
+    init(
+        component: PaywallComponent.StackComponent,
+        viewModels: [PaywallComponentViewModel]
+    ) {
         self.component = component
-        self.viewModels = try component.components.map {
-            try $0.toViewModel(offering: offering, localizedStrings: localizedStrings)
-        }
+        self.viewModels = viewModels
     }
 
     var dimension: PaywallComponent.Dimension {

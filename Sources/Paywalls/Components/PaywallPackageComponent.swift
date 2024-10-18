@@ -19,43 +19,18 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct PackageComponent: PaywallComponentBase, StackableComponent {
+    struct PackageComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let packageID: String
-
-        public let components: [PaywallComponent]
-        public let width: WidthSize?
-        public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
-        public let dimension: Dimension
-        public let padding: Padding
-        public let margin: Padding
-        public let cornerRadiuses: CornerRadiuses?
-        public let border: Border?
+        public let stack: PaywallComponent.StackComponent
 
         public init(packageID: String,
-                    components: [PaywallComponent],
-                    dimension: Dimension = .vertical(.center),
-                    width: WidthSize? = nil,
-                    spacing: CGFloat? = 0,
-                    backgroundColor: ColorInfo? = nil,
-                    padding: Padding = .zero,
-                    margin: Padding = .zero,
-                    cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil
+                    stack: PaywallComponent.StackComponent
         ) {
             self.type = .package
             self.packageID = packageID
-            self.components = components
-            self.width = width
-            self.spacing = spacing
-            self.backgroundColor = backgroundColor
-            self.dimension = dimension
-            self.padding = padding
-            self.margin = margin
-            self.cornerRadiuses = cornerRadiuses
-            self.border = border
+            self.stack = stack
         }
     }
 
