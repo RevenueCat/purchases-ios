@@ -24,7 +24,7 @@ class PackageGroupComponentViewModel {
     private let offering: Offering
 
     let defaultPackage: Package
-    let stackComponentViewModel: StackComponentViewModel
+    let stackViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
          component: PaywallComponent.PackageGroupComponent,
@@ -36,20 +36,42 @@ class PackageGroupComponentViewModel {
         let info = try Self.getPackages(component: component, offering: offering)
         self.defaultPackage = info.defaultPackage
 
-        self.stackComponentViewModel = try self.component.toStackComponentViewModel(
-            components: info.availablePackageComponents.map { .package($0) },
-            localizedStrings: localizedStrings,
-            offering: offering
+        let componentViewModels = try info.availablePackageComponents.map { info in
+            try PackageComponentViewModel(
+                localizedStrings: localizedStrings,
+                component: info.component,
+                offering: offering,
+                package: info.package
+            ).stackViewModel
+        }.map(PaywallComponentViewModel.stack)
+
+        self.stackViewModel = StackComponentViewModel(
+            component: .init(
+                components: [], // Empty on purpose because we are feeding this view models already
+                dimension: component.stack.dimension,
+                width: component.stack.width,
+                spacing: component.stack.spacing,
+                backgroundColor: component.stack.backgroundColor,
+                padding: component.stack.padding,
+                margin: component.stack.margin,
+                cornerRadiuses: component.stack.cornerRadiuses,
+                border: component.stack.border
+            ),
+            viewModels: componentViewModels
         )
     }
 
     static func getPackages(
         component: PaywallComponent.PackageGroupComponent,
         offering: Offering
-    ) throws -> (defaultPackage: Package, availablePackageComponents: [PaywallComponent.PackageComponent]) {
+    ) throws -> (defaultPackage: Package,
+                 availablePackageComponents: [(component: PaywallComponent.PackageComponent, package: Package)]) {
+
+        // Stack of packages
+        let packages = component.stack.components
 
         // Get list of available package components and their packages
-        let availablePackageInfos = component.packages.compactMap { packageComponent in
+        let availablePackageInfos = packages.compactMap { packageComponent in
             let pkg = offering.availablePackages.first(where: { $0.packageIdentifier == packageComponent.packageID })
             if let pkg {
                 return (component: packageComponent, package: pkg)
@@ -69,12 +91,11 @@ class PackageGroupComponentViewModel {
             return packageInfo.package.id == component.defaultSelectedPackageID
         }
 
-        let availablePackageComponents = availablePackageInfos.map { $0.component }
         if let defaultPackage {
-            return (defaultPackage.package, availablePackageComponents)
+            return (defaultPackage.package, availablePackageInfos)
         } else {
             Logger.warning(Strings.paywall_could_not_find_default_package(component.defaultSelectedPackageID))
-            return (firstPackage.package, availablePackageComponents)
+            return (firstPackage.package, availablePackageInfos)
         }
     }
 

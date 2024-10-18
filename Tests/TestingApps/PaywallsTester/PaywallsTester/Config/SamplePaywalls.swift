@@ -643,11 +643,11 @@ private extension SamplePaywallLoader {
 
     static func createFakePaywallComponentsData(components: [PaywallComponent], localization: [LocaleID: LocalizationDictionary]) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
-                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
-                               componentsConfig: PaywallComponentsData.ComponentsConfig(components: components),
+                              assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
+                              componentsConfigs: .init(base: .init(stack: .init(components: components))),
                               componentsLocalizations: localization,
-                               revision: 0,
-                               defaultLocaleIdentifier: "en_US")
+                              revision: 0,
+                              defaultLocaleIdentifier: "en_US")
     }
 
     internal static var fitnessComponents: PaywallComponentsData {
@@ -709,7 +709,7 @@ private extension SamplePaywallLoader {
     static func makePackage(packageID: String,
                             nameTextLid: String,
                             detailTextLid: String) -> PaywallComponent.PackageComponent {
-        let stack: PaywallComponent = .stack(.init(
+        let stack: PaywallComponent.StackComponent = .init(
             components: [
                 .text(.init(
                     text: nameTextLid,
@@ -731,17 +731,17 @@ private extension SamplePaywallLoader {
             padding: .init(top: 10,
                            bottom: 10,
                            leading: 20,
-                           trailing: 20)
-        ))
-
-        return .init(
-            packageID: packageID,
-            components: [stack],
+                           trailing: 20),
             cornerRadiuses: .init(topLeading: 8,
                                   topTrailing: 8,
                                   bottomLeading: 8,
                                   bottomTrailing: 8),
             border: .init(color: .init(light: "#000000"), width: 1)
+        )
+
+        return .init(
+            packageID: packageID,
+            stack: stack
         )
     }
 
@@ -750,16 +750,18 @@ private extension SamplePaywallLoader {
             components: [
                 .packageGroup(.init(
                     defaultSelectedPackageID: Package.string(from: PackageType.monthly)!,
-                    packages: [
-                        makePackage(packageID: Package.string(from: PackageType.monthly)!,
-                                    nameTextLid: "monthly_package_name",
-                                    detailTextLid: "monthly_package_details"),
-                        makePackage(packageID: Package.string(from: PackageType.annual)!,
-                                    nameTextLid: "annual_package_name",
-                                    detailTextLid: "annual_package_details")
-                    ],
-                    spacing: 20,
-                    margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
+                    stack: .init(
+                        components: [
+                            makePackage(packageID: Package.string(from: PackageType.monthly)!,
+                                        nameTextLid: "monthly_package_name",
+                                        detailTextLid: "monthly_package_details"),
+                            makePackage(packageID: Package.string(from: PackageType.annual)!,
+                                        nameTextLid: "annual_package_name",
+                                        detailTextLid: "annual_package_details")
+                        ],
+                        spacing: 20,
+                        margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
+                    )
                 )),
                 .purchaseButton(.init(
                     cta: "cta",
@@ -779,7 +781,8 @@ private extension SamplePaywallLoader {
                 ))
             ],
             width: .init(type: .fill, value: nil),
-            backgroundColor: .init(light: "#cccccc")
+            backgroundColor: .init(light: "#cccccc"),
+            margin: .init(top: 0, bottom: 0, leading: 20, trailing: 20)
         ))
     }()
 

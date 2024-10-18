@@ -18,10 +18,16 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct StackComponent: PaywallComponentBase, StackableComponent {
+    // The most common type of stack that can contain any type of PaywallComponent
+    typealias StackComponent = GenericStackComponent<PaywallComponent>
+
+    // A specialized stack that can only hold PaywallComponent.PackageComponent
+    typealias PackagesStackComponent = GenericStackComponent<PaywallComponent.PackageComponent>
+
+    struct GenericStackComponent<T: StackableComponent>: PaywallComponentBase {
 
         let type: ComponentType
-        public let components: [PaywallComponent]
+        public let components: [T]
         public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
@@ -31,7 +37,7 @@ public extension PaywallComponent {
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
 
-        public init(components: [PaywallComponent],
+        public init(components: [T],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
                     spacing: CGFloat? = 0,
@@ -54,6 +60,17 @@ public extension PaywallComponent {
         }
 
     }
+
 }
+
+public extension PaywallComponent {
+
+    // Components that can be contained in a stack
+    protocol StackableComponent: PaywallComponentBase {}
+
+}
+
+extension PaywallComponent: PaywallComponent.StackableComponent {}
+extension PaywallComponent.PackageComponent: PaywallComponent.StackableComponent {}
 
 #endif

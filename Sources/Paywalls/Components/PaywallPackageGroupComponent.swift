@@ -19,46 +19,18 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct PackageGroupComponent: PaywallComponentBase, StackableComponent {
+    struct PackageGroupComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let defaultSelectedPackageID: String
-
-        // Most containers will accept an array of `PaywallComponent`s
-        // Package group specifically accepts `PackageComponent` for
-        // validation that packages exist
-        public let packages: [PaywallComponent.PackageComponent]
-        public let width: WidthSize?
-        public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
-        public let dimension: Dimension
-        public let padding: Padding
-        public let margin: Padding
-        public let cornerRadiuses: CornerRadiuses?
-        public let border: Border?
+        public let stack: PaywallComponent.PackagesStackComponent
 
         public init(defaultSelectedPackageID: String,
-                    packages: [PaywallComponent.PackageComponent],
-                    dimension: Dimension = .vertical(.center),
-                    width: WidthSize? = nil,
-                    spacing: CGFloat? = 0,
-                    backgroundColor: ColorInfo? = nil,
-                    padding: Padding = .zero,
-                    margin: Padding = .zero,
-                    cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil
+                    stack: PaywallComponent.PackagesStackComponent
         ) {
             self.type = .packageGroup
             self.defaultSelectedPackageID = defaultSelectedPackageID
-            self.packages = packages
-            self.width = width
-            self.spacing = spacing
-            self.backgroundColor = backgroundColor
-            self.dimension = dimension
-            self.padding = padding
-            self.margin = margin
-            self.cornerRadiuses = cornerRadiuses
-            self.border = border
+            self.stack = stack
         }
     }
 

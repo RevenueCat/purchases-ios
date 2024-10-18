@@ -20,7 +20,7 @@ enum PaywallComponentViewModel {
     case linkButton(LinkButtonComponentViewModel)
     case button(ButtonComponentViewModel)
     case packageGroup(PackageGroupComponentViewModel)
-    case package(PackageComponentViewModel)
+//    case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
 
 }
@@ -71,17 +71,26 @@ extension PaywallComponent {
                                                    offering: offering)
             )
         case .package(let component):
-            return .package(
-                try PackageComponentViewModel(localizedStrings: localizedStrings,
-                                              component: component,
-                                              offering: offering)
-            )
+            // PackageGroup makes the PackageViewModel
+            fatalError("We should not get there")
         case .purchaseButton(let component):
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
                                                      component: component)
             )
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.PackageComponent {
+
+    func toViewModel(
+        offering: Offering,
+        localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws -> PaywallComponentViewModel {
+        fatalError("We should not get there")
     }
 
 }

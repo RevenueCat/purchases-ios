@@ -24,39 +24,22 @@ class PackageComponentViewModel {
     private let offering: Offering
 
     let package: Package
-    let stackComponentViewModel: StackComponentViewModel
+    let stackViewModel: StackComponentViewModel
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary,
          component: PaywallComponent.PackageComponent,
-         offering: Offering) throws {
+         offering: Offering,
+         package: Package) throws {
         self.localizedStrings = localizedStrings
         self.component = component
         self.offering = offering
+        self.package = package
 
-        self.package = try Self.findPackage(identifier: component.packageID, offering: offering)
-
-        self.stackComponentViewModel = try self.component.toStackComponentViewModel(
-            components: self.component.components,
+        self.stackViewModel = try StackComponentViewModel(
+            component: component.stack,
             localizedStrings: localizedStrings,
             offering: offering
         )
-    }
-
-    static func findPackage(identifier: String, offering: Offering) throws -> Package {
-        guard let package = offering.package(identifier: identifier) else {
-            Logger.error(Strings.paywall_could_not_find_package(identifier))
-            throw PackageValidationError.missingPackage(
-                "Missing package from offering: \"\(identifier)\""
-            )
-        }
-
-        return package
-    }
-
-    enum PackageValidationError: Error {
-
-        case missingPackage(String)
-
     }
 
 }

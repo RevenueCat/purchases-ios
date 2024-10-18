@@ -28,8 +28,7 @@ struct PackageGroupComponentView: View {
 
     var body: some View {
         // WIP: Do something with default package id and selection
-        StackComponentView(viewModel: self.viewModel.stackComponentViewModel,
-                           onDismiss: self.onDismiss)
+        StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss)
         .onAppear {
             self.paywallState.select(package: self.viewModel.defaultPackage)
         }
@@ -59,7 +58,7 @@ struct PackagesComponentView_Previews: PreviewProvider {
     static func makePackage(packageID: String,
                             nameTextLid: String,
                             detailTextLid: String) -> PaywallComponent.PackageComponent {
-        let stack: PaywallComponent = .stack(.init(
+        let stack: PaywallComponent.StackComponent = .init(
             components: [
                 .text(.init(
                     text: nameTextLid,
@@ -82,11 +81,11 @@ struct PackagesComponentView_Previews: PreviewProvider {
                                               bottom: 10,
                                               leading: 20,
                                               trailing: 20)
-        ))
+        )
 
         return PaywallComponent.PackageComponent(
             packageID: packageID,
-            components: [stack]
+            stack: stack
         )
     }
 
@@ -106,7 +105,7 @@ struct PackagesComponentView_Previews: PreviewProvider {
                 ],
                 component: PaywallComponent.PackageGroupComponent(
                     defaultSelectedPackageID: "weekly",
-                    packages: packages
+                    stack: .init(components: packages)
                 ),
                 offering: Offering(identifier: "default",
                                    serverDescription: "",
