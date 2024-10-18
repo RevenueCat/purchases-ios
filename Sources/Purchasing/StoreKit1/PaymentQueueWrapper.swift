@@ -38,8 +38,6 @@ protocol PaymentQueueWrapperType: AnyObject {
     func showPriceConsentIfNeeded()
     #endif
 
-    var currentStorefront: Storefront? { get }
-
 }
 
 /// The choice between SK1's `StoreKit1Wrapper` or `PaymentQueueWrapper` when SK2 is enabled.
@@ -87,12 +85,6 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
     }
     #endif
 
-    var currentStorefront: Storefront? {
-        return self.paymentQueue.storefront
-            .map(SK1Storefront.init)
-            .map(Storefront.from(storefront:))
-    }
-
 }
 
 extension PaymentQueueWrapper: SKPaymentQueueDelegate {
@@ -139,8 +131,6 @@ extension EitherPaymentQueueWrapper {
         case let .right(paymentQueueWrapper): return paymentQueueWrapper
         }
     }
-
-    var currentStorefront: StorefrontType? { self.paymentQueueWrapperType.currentStorefront }
 
     var sk1Wrapper: StoreKit1Wrapper? { return self.left }
     var sk2Wrapper: PaymentQueueWrapper? { return self.right }
