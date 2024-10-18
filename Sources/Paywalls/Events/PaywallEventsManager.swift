@@ -30,14 +30,14 @@ actor PaywallEventsManager: PaywallEventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
-    private let store: PaywallEventStoreType
+    private let store: FeatureEventStoreType
 
     private var flushInProgress = false
 
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
-        store: PaywallEventStoreType
+        store: FeatureEventStoreType
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
