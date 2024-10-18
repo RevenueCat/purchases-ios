@@ -44,10 +44,12 @@ final class MockPaymentQueue: SKPaymentQueue {
     }
 #endif
 
+    #if os(iOS) || VISION_OS
     var presentCodeRedemptionSheetCalled = false
     override func presentCodeRedemptionSheet() {
         presentCodeRedemptionSheetCalled = true
     }
+    #endif
 
 }
 
