@@ -69,6 +69,8 @@ final class PurchasesOrchestrator {
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
+    private let deepLinkHandler: DeepLinkHandler
+    private let rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -129,7 +131,9 @@ final class PurchasesOrchestrator {
                      storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
-                     diagnosticsTracker: DiagnosticsTrackerType?
+                     diagnosticsTracker: DiagnosticsTrackerType?,
+                     deepLinkHandler: DeepLinkHandler,
+                     rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
     ) {
         self.init(
             productsManager: productsManager,
@@ -149,7 +153,9 @@ final class PurchasesOrchestrator {
             offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
-            storeMessagesHelper: storeMessagesHelper
+            storeMessagesHelper: storeMessagesHelper,
+            deepLinkHandler: deepLinkHandler,
+            rcBillingPurchaseRedemptionHelper: rcBillingPurchaseRedemptionHelper
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -202,7 +208,9 @@ final class PurchasesOrchestrator {
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
-         storeMessagesHelper: StoreMessagesHelperType?
+         storeMessagesHelper: StoreMessagesHelperType?,
+         deepLinkHandler: DeepLinkHandler,
+         rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -222,12 +230,24 @@ final class PurchasesOrchestrator {
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
         self.storeMessagesHelper = storeMessagesHelper
+        self.deepLinkHandler = deepLinkHandler
+        self.rcBillingPurchaseRedemptionHelper = rcBillingPurchaseRedemptionHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
     deinit {
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
+    }
+
+    func handleDeepLink(_ url: URL) -> Bool {
+        switch self.deepLinkHandler.parse(url) {
+        case let .redeemRCBPurchase(redemptionToken):
+            self.rcBillingPurchaseRedemptionHelper.handleRedeemRCBPurchase(redemptionToken: redemptionToken)
+            return true
+        case nil:
+            return false
+        }
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
