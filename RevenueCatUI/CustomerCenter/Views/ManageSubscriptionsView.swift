@@ -122,7 +122,7 @@ struct ManageSubscriptionsView: View {
         })
         .sheet(item: self.$viewModel.inAppBrowserURL,
                onDismiss: {
-            self.viewModel.handleInAppBrowserDismiss()
+            self.viewModel.dismissInAppBrowser()
         }, content: { inAppBrowserURL in
             SafariView(url: inAppBrowserURL.url)
         })

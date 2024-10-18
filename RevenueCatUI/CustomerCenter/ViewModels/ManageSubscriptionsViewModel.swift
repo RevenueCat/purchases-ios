@@ -155,7 +155,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    func handleInAppBrowserDismiss() {
+    func dismissInAppBrowser() {
         self.inAppBrowserURL = nil
     }
 #endif
