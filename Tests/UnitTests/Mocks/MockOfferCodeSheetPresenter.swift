@@ -19,5 +19,5 @@ import StoreKit
 final class MockOfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType {
 
     func presentCodeRedemptionSheet(windowScene: UIWindowScene) async throws {}
-    
+
 }
