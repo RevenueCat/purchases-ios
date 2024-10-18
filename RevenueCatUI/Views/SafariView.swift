@@ -11,7 +11,7 @@
 //
 //  Created by Antonio Rico Diez on 2024-10-18.
 
-#if os(iOS)
+#if canImport(SafariServices)
 
 import SafariServices
 import SwiftUI

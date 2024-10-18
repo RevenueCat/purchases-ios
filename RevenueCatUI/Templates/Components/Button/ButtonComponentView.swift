@@ -13,9 +13,6 @@
 
 import Foundation
 import RevenueCat
-#if canImport(SafariServices)
-import SafariServices
-#endif
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
@@ -103,23 +100,6 @@ struct ButtonComponentView: View {
     }
 
 }
-
-#if canImport(SafariServices)
-private struct SafariView: UIViewControllerRepresentable {
-    let url: URL
-
-    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
-        SFSafariViewController(url: url)
-    }
-
-    func updateUIViewController(
-        _ uiViewController: SFSafariViewController,
-        context: UIViewControllerRepresentableContext<SafariView>
-    ) {
-        // No updates needed
-    }
-}
-#endif
 
 #if DEBUG
 
