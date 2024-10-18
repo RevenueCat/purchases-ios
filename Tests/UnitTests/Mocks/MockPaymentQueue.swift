@@ -44,6 +44,11 @@ final class MockPaymentQueue: SKPaymentQueue {
     }
 #endif
 
+    var presentCodeRedemptionSheetCalled = false
+    override func presentCodeRedemptionSheet() {
+        presentCodeRedemptionSheetCalled = true
+    }
+
 }
 
 extension MockPaymentQueue: @unchecked Sendable {}

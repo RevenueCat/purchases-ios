@@ -315,6 +315,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func presentCodeRedemptionSheet(uiWindowScene: UIWindowScene?) async throws {
+        self.unimplemented()
+    }
+
     #endif
 
     func showPriceConsentIfNeeded() {

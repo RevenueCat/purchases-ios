@@ -28,11 +28,34 @@ import StoreKit
 final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType, Sendable {
 
     private let paymentQueue: SKPaymentQueue
+    private let offerCodePresenter: OfferCodePresenterType?
+    private let isiOSAppOnMac: Bool
+    private let osMajorVersion: Int
 
     init(
-        paymentQueue: SKPaymentQueue = .default()
+        offerCodePresenter: OfferCodePresenterType? = {
+            if #available(iOS 16.0, iOSApplicationExtension 16.0, *) {
+                return OfferCodePresenter()
+            } else {
+                return nil
+            }
+        }(),
+        paymentQueue: SKPaymentQueue = .default(),
+        isiOSAppOnMac: Bool = {
+            if #available(iOS 14.0, iOSApplicationExtension 14.0, *) {
+                return ProcessInfo().isiOSAppOnMac
+            } else {
+                return false
+            }
+        }(),
+        osMajorVersion: Int = {
+            return ProcessInfo().operatingSystemVersion.majorVersion
+        }()
     ) {
         self.paymentQueue = paymentQueue
+        self.isiOSAppOnMac = isiOSAppOnMac
+        self.osMajorVersion = osMajorVersion
+        self.offerCodePresenter = offerCodePresenter
     }
 
     #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
@@ -43,12 +66,10 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
     func presentCodeRedemptionSheet(
         windowScene: UIWindowScene
     ) async throws {
-        let processInfo = ProcessInfo()
-
-        if processInfo.isiOSAppOnMac {
+        if isiOSAppOnMac {
             Logger.warn(Strings.storeKit.not_displaying_offer_code_redemption_sheet_because_ios_app_on_macos)
             return
-        } else if processInfo.operatingSystemVersion.majorVersion < 16 {
+        } else if osMajorVersion < 16 {
             // .presentOfferCodeRedeemSheet(in: windowScene) isn't available in iOS <16, so fall back
             // to the SK1 implementation
             self.sk1PresentCodeRedemptionSheet()
@@ -56,7 +77,7 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
         }
 
         if #available(iOS 16.0, iOSApplicationExtension 16.0, *) {
-            try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
+            try await offerCodePresenter?.presentOfferCodeRedeemSheet(windowScene: windowScene)
         } else {
             // This case should be covered by the above OS check, but we'll include here
             // since it's a possible code case
@@ -80,4 +101,15 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
         self.paymentQueue.presentCodeRedemptionSheet()
     }
     #endif
+}
+
+protocol OfferCodePresenterType: Sendable {
+    func presentOfferCodeRedeemSheet(windowScene: UIWindowScene) async throws
+}
+
+@available(iOS 16.0, iOSApplicationExtension 16.0, *)
+struct OfferCodePresenter: OfferCodePresenterType {
+    func presentOfferCodeRedeemSheet(windowScene: UIWindowScene) async throws {
+        try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
+    }
 }
