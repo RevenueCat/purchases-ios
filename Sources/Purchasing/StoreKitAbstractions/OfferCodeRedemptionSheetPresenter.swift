@@ -21,7 +21,10 @@ import StoreKit
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
-    func presentCodeRedemptionSheet(windowScene: UIWindowScene) async throws
+    func presentCodeRedemptionSheet(
+        windowScene: UIWindowScene,
+        storeKitVersion: StoreKitVersion
+    ) async throws
     #endif
 }
 
@@ -62,29 +65,41 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet(
-        windowScene: UIWindowScene
+        windowScene: UIWindowScene,
+        storeKitVersion: StoreKitVersion
     ) async throws {
+
+        // Presenting the Offer Code Redemption sheet throws/crashes when running an iOS app
+        // as "Designed for iPad" on macOS, so we don't want to call it when the app is running on macOS
+        // as a "Designed for iPad" app.
         if isiOSAppOnMac {
             Logger.warn(Strings.storeKit.not_displaying_offer_code_redemption_sheet_because_ios_app_on_macos)
             return
-        } else if osMajorVersion < 16 {
-            // .presentOfferCodeRedeemSheet(in: windowScene) isn't available in iOS <16, so fall back
-            // to the SK1 implementation
-            self.sk1PresentCodeRedemptionSheet()
-            return
         }
 
-        if #available(iOS 16.0, iOSApplicationExtension 16.0, *) {
-            try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
+        if storeKitVersion.isStoreKit2EnabledAndAvailable {
+            if osMajorVersion < 16 {
+                // .presentOfferCodeRedeemSheet(in: windowScene) isn't available in iOS <16, so fall back
+                // to the SK1 implementation
+                self.sk1PresentCodeRedemptionSheet()
+                return
+            }
+
+            if #available(iOS 16.0, iOSApplicationExtension 16.0, *) {
+                try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
+            } else {
+                // This case should be covered by the above OS check, but we'll include here
+                // since it's a possible code case
+                #if !targetEnvironment(macCatalyst)
+                self.sk1PresentCodeRedemptionSheet()
+                #else
+                Logger.warn(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension)
+                #endif
+            }
         } else {
-            // This case should be covered by the above OS check, but we'll include here
-            // since it's a possible code case
-            #if !targetEnvironment(macCatalyst)
             self.sk1PresentCodeRedemptionSheet()
-            #else
-            Logger.warn(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension)
-            #endif
         }
+
     }
     #endif
 

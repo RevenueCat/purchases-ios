@@ -1098,7 +1098,8 @@ public extension Purchases {
 
         do {
             try await self.offerCodeRedemptionSheetPresenter.presentCodeRedemptionSheet(
-                windowScene: windowScene
+                windowScene: windowScene,
+                storeKitVersion: self.systemInfo.storeKitVersion
             )
         } catch {
             Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet(error))

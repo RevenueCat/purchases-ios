@@ -19,7 +19,10 @@ import StoreKit
 final class MockOfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType {
 
     #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
-    func presentCodeRedemptionSheet(windowScene: UIWindowScene) async throws {}
+    func presentCodeRedemptionSheet(
+        windowScene: UIWindowScene,
+        storeKitVersion: StoreKitVersion
+    ) async throws {}
     #endif
 
 }
