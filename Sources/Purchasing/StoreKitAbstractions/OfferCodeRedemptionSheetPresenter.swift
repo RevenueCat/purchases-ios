@@ -60,7 +60,7 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
             #if !targetEnvironment(macCatalyst)
             self.sk1PresentCodeRedemptionSheet()
             #else
-            Logger.warn(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_iOS_app_extension)
+            Logger.warn(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension)
             #endif
         }
     }

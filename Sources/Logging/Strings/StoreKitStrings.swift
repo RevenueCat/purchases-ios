@@ -89,7 +89,7 @@ enum StoreKitStrings {
 
     case error_displaying_offer_code_redemption_sheet_no_window_scene
 
-    case error_displaying_offer_code_redemption_sheet_unavailable_in_iOS_app_extension
+    case error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension
 
 }
 
@@ -215,7 +215,7 @@ extension StoreKitStrings: LogMessage {
             "determine the UIWindowScene to present the sheet over. Please try " +
             "passing in the UIWindowScene that you'd like to present the sheet over."
 
-        case .error_displaying_offer_code_redemption_sheet_unavailable_in_iOS_app_extension:
+        case .error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension:
             return "Could not display the Offer Code redemption sheet: unavailable in iOS and Mac Catalyst" +
             "App Extensions below iOS/Mac Catalyst 16."
         }
