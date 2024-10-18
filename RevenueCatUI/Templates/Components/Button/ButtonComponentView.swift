@@ -39,7 +39,7 @@ struct ButtonComponentView: View {
             action: { try await performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
         )
-        #if canImport(SafariServices)
+        #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }.presentCustomerCenter(isPresented: $showCustomerCenter) {

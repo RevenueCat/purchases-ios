@@ -11,7 +11,7 @@
 //
 //  Created by Antonio Rico Diez on 2024-10-18.
 
-#if canImport(SafariServices)
+#if canImport(SafariServices) && canImport(UIKit)
 
 import SafariServices
 import SwiftUI
