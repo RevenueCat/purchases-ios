@@ -71,6 +71,8 @@ final class PurchasesOrchestrator {
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
     private let paywallEventsManager: PaywallEventsManagerType?
+    private let deepLinkHandler: DeepLinkHandler
+    private let rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -133,7 +135,9 @@ final class PurchasesOrchestrator {
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-                     paywallEventsManager: PaywallEventsManagerType?
+                     paywallEventsManager: PaywallEventsManagerType?,
+                     deepLinkHandler: DeepLinkHandler,
+                     rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
     ) {
         self.init(
             productsManager: productsManager,
@@ -155,7 +159,9 @@ final class PurchasesOrchestrator {
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-            paywallEventsManager: paywallEventsManager
+            paywallEventsManager: paywallEventsManager,
+            deepLinkHandler: deepLinkHandler,
+            rcBillingPurchaseRedemptionHelper: rcBillingPurchaseRedemptionHelper
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -210,7 +216,9 @@ final class PurchasesOrchestrator {
          beginRefundRequestHelper: BeginRefundRequestHelper,
          storeMessagesHelper: StoreMessagesHelperType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-         paywallEventsManager: PaywallEventsManagerType?
+         paywallEventsManager: PaywallEventsManagerType?,
+         deepLinkHandler: DeepLinkHandler,
+         rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -232,12 +240,24 @@ final class PurchasesOrchestrator {
         self.storeMessagesHelper = storeMessagesHelper
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.paywallEventsManager = paywallEventsManager
+        self.deepLinkHandler = deepLinkHandler
+        self.rcBillingPurchaseRedemptionHelper = rcBillingPurchaseRedemptionHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
     deinit {
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
+    }
+
+    func handleDeepLink(_ url: URL) -> Bool {
+        switch self.deepLinkHandler.parse(url) {
+        case let .redeemRCBPurchase(redemptionToken):
+            self.rcBillingPurchaseRedemptionHelper.handleRedeemRCBPurchase(redemptionToken: redemptionToken)
+            return true
+        case nil:
+            return false
+        }
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {

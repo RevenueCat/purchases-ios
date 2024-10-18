@@ -511,7 +511,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager
+                    paywallEventsManager: paywallEventsManager,
+                    deepLinkHandler: .init(),
+                    rcBillingPurchaseRedemptionHelper: .init(backend: backend, identityManager: identityManager)
                 )
             } else {
                 return .init(
@@ -534,7 +536,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager
+                    paywallEventsManager: paywallEventsManager,
+                    deepLinkHandler: .init(),
+                    rcBillingPurchaseRedemptionHelper: .init(backend: backend, identityManager: identityManager)
                 )
             }
         }()
@@ -877,6 +881,10 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings? {
         return try await syncAttributesAndOfferingsIfNeededAsync()
+    }
+
+    func handleDeepLink(_ url: URL) -> Bool {
+        return self.purchasesOrchestrator.handleDeepLink(url)
     }
 
 }
