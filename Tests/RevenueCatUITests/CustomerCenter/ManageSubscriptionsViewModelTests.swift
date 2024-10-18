@@ -777,6 +777,8 @@ private class Fixtures {
             .init(
                 id: "1",
                 title: "Didn't receive purchase",
+                url: nil,
+                openMethod: nil,
                 type: .missingPurchase,
                 detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
                     iosOfferId: "offer_id",
