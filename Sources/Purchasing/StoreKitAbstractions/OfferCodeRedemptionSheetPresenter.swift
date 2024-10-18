@@ -55,19 +55,26 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
         if #available(iOSApplicationExtension 16.0, *) {
             try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
         } else {
-            // Offer code sheets don't exist in app extensions below iOS 16.0, but we'll log a message here just in case
-            Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_iOS_app_extension)
+            // This case should be covered by the above OS check, but we'll include here
+            // since it's a possible code case
+            #if !targetEnvironment(macCatalyst)
+            self.sk1PresentCodeRedemptionSheet()
+            #else
+            Logger.warn(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_iOS_app_extension)
+            #endif
         }
     }
     #endif
 
-    @available(iOS 14.0, *)
+    #if os(iOS) || VISION_OS
+    @available(iOS 14.0, iOSApplicationExtension 14.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     @available(macCatalystApplicationExtension, unavailable)
-    private func sk1PresentCodeRedemptionSheet() {
+    func sk1PresentCodeRedemptionSheet() {
         self.paymentQueue.presentCodeRedemptionSheet()
     }
+    #endif
 }
