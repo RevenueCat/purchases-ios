@@ -177,15 +177,21 @@ public struct CustomerCenterConfigData {
 
         public let id: String
         public let title: String
+        public let url: URL?
+        public let openMethod: OpenMethod?
         public let type: PathType
         public let detail: PathDetail?
 
         public init(id: String,
                     title: String,
+                    url: URL?,
+                    openMethod: OpenMethod?,
                     type: PathType,
                     detail: PathDetail?) {
             self.id = id
             self.title = title
+            self.url = url
+            self.openMethod = openMethod
             self.type = type
             self.detail = detail
         }
@@ -203,6 +209,7 @@ public struct CustomerCenterConfigData {
             case refundRequest = "REFUND_REQUEST"
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
+            case customUrl = "CUSTOM_URL"
             case unknown
 
             init(from rawValue: String) {
@@ -215,8 +222,28 @@ public struct CustomerCenterConfigData {
                     self = .changePlans
                 case "CANCEL":
                     self = .cancel
+                case "CUSTOM_URL":
+                    self = .customUrl
                 default:
                     self = .unknown
+                }
+            }
+
+        }
+
+        public enum OpenMethod: String {
+
+            case inApp = "IN_APP"
+            case external = "EXTERNAL"
+
+            init?(from rawValue: String?) {
+                switch rawValue {
+                case "IN_APP":
+                    self = .inApp
+                case "EXTERNAL":
+                    self = .external
+                default:
+                    return nil
                 }
             }
 
@@ -389,7 +416,7 @@ extension CustomerCenterConfigData.Screen {
         self.type = ScreenType(from: response.type.rawValue)
         self.title = response.title
         self.subtitle = response.subtitle
-        self.paths = response.paths.map { CustomerCenterConfigData.HelpPath(from: $0) }
+        self.paths = response.paths.compactMap { CustomerCenterConfigData.HelpPath(from: $0) }
     }
 
 }
@@ -425,10 +452,23 @@ extension CustomerCenterConfigData.Localization {
 
 extension CustomerCenterConfigData.HelpPath {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath) {
+    init?(from response: CustomerCenterConfigResponse.HelpPath) {
         self.id = response.id
         self.title = response.title
         self.type = CustomerCenterConfigData.HelpPath.PathType(from: response.type.rawValue)
+        if self.type == .customUrl {
+            if let responseUrl = response.url,
+               let url = URL(string: responseUrl),
+               let openMethod = CustomerCenterConfigData.HelpPath.OpenMethod(from: response.openMethod?.rawValue) {
+                self.url = url
+                self.openMethod = openMethod
+            } else {
+                return nil
+            }
+        } else {
+            self.url = nil
+            self.openMethod = nil
+        }
         if let promotionalOfferResponse = response.promotionalOffer {
             self.detail = .promotionalOffer(PromotionalOffer(from: promotionalOfferResponse))
         } else if let feedbackSurveyResponse = response.feedbackSurvey {
