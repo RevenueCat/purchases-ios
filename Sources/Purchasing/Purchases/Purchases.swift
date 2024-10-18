@@ -1107,7 +1107,7 @@ public extension Purchases {
     }
 #endif
 
-#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
