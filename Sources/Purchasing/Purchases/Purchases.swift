@@ -1067,7 +1067,7 @@ public extension Purchases {
     }
 #endif
 
-#if os(iOS) || VISION_OS || targetEnvironment(macCatalyst)
+    #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
 
     @available(iOS 14.0, *)
     @available(watchOS, unavailable)
@@ -1081,7 +1081,7 @@ public extension Purchases {
     }
 
     @available(iOS 14.0, *)
-    @available(macCatalyst 16.0, *)
+    @available(macCatalyst, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)

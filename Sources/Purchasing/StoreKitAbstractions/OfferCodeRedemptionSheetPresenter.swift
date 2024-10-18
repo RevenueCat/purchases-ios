@@ -16,11 +16,11 @@ import StoreKit
 
 @objc protocol OfferCodeRedemptionSheetPresenterType: Sendable {
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+    #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
     @available(iOS 14.0, *)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst 16.0, *)
+    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet(windowScene: UIWindowScene) async throws
     #endif
 }
@@ -35,24 +35,27 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
         self.paymentQueue = paymentQueue
     }
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+    #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
     @available(iOS 14.0, *)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst 16.0, *)
+    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet(
         windowScene: UIWindowScene
     ) async throws {
-        #if os(iOS) && !targetEnvironment(macCatalyst)
-        if ProcessInfo().operatingSystemVersion.majorVersion < 16 {
+        let processInfo = ProcessInfo()
+
+        if processInfo.isiOSAppOnMac {
+            Logger.warn(Strings.storeKit.not_displaying_offer_code_redemption_sheet_because_ios_app_on_macos)
+            return
+        } else if processInfo.operatingSystemVersion.majorVersion < 16 {
             // .presentOfferCodeRedeemSheet(in: windowScene) isn't available in iOS <16, so fall back
             // to the SK1 implementation
             self.sk1PresentCodeRedemptionSheet()
             return
         }
-        #endif
 
-        if #available(iOSApplicationExtension 16.0, *) {
+        if #available(iOS 16.0, iOSApplicationExtension 16.0, *) {
             try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
         } else {
             // This case should be covered by the above OS check, but we'll include here

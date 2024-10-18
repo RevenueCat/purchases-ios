@@ -781,14 +781,16 @@ public protocol PurchasesType: AnyObject {
     /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      *
-     * - Important: Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
-     * say that it's available on Catalyst 14.0, there is a note:
-     * "`This function doesn’t affect Mac apps built with Mac Catalyst.`"
-     * when, in fact, it crashes when called both from Catalyst and also when running as "Designed for iPad".
-     * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
+     * - Important: Even though the docs in `AppStore.presentOfferCodeRedeemSheet(in:)`
+     * say that it's available on Catalyst 16.0+, there is a note:
+     * "`In Mac apps built with Mac Catalyst, this method throws a StoreKitError.unknown error.`".
+     * The function also throws a StoreKitError.unknown error when running as "Designed for iPad" on macOS.
+     *
+     * For these reasons, RevenueCat's SDK makes this function unavailable on Mac Catalyst, and it no-ops
+     * for iOS apps running as a "Designed for iPad" app on macOS.
      */
     @available(iOS 14.0, *)
-    @available(macCatalyst 16.0, *)
+    @available(macCatalyst, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
