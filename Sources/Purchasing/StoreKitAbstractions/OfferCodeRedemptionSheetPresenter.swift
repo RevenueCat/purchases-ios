@@ -14,18 +14,18 @@
 import Foundation
 import StoreKit
 
-@objc protocol OfferCodeRedemptionSheetPresenterType {
+@objc protocol OfferCodeRedemptionSheetPresenterType: Sendable {
 
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 14.0, *)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst 16.0, *)
-    func presentCodeRedemptionSheet(windowScene: UIWindowScene)
+    func presentCodeRedemptionSheet(windowScene: UIWindowScene) async throws
+    #endif
 }
 
-final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType {
-
-    private var presentSheetTask: Task<Void, Never>?
+final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType, Sendable {
 
     private let paymentQueue: SKPaymentQueue
 
@@ -35,13 +35,14 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
         self.paymentQueue = paymentQueue
     }
 
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 14.0, *)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst 16.0, *)
     func presentCodeRedemptionSheet(
         windowScene: UIWindowScene
-    ) {
+    ) async throws {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         if ProcessInfo().operatingSystemVersion.majorVersion < 16 {
             // .presentOfferCodeRedeemSheet(in: windowScene) isn't available in iOS <16, so fall back
@@ -51,14 +52,14 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
         }
         #endif
 
-        self.presentSheetTask = Task.detached { @MainActor in
-            if #available(iOSApplicationExtension 16.0, *), #available(iOS 16.0, *) {
-                try? await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
-            } else {
-                // TODO: Log failure
-            }
+        if #available(iOSApplicationExtension 16.0, *) {
+            try await AppStore.presentOfferCodeRedeemSheet(in: windowScene)
+        } else {
+            // Offer code sheets don't exist in app extensions below iOS 16.0, but we'll log a message here just in case
+            Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet_unavailable_in_iOS_app_extension)
         }
     }
+    #endif
 
     @available(iOS 14.0, *)
     @available(watchOS, unavailable)
@@ -68,20 +69,5 @@ final internal class OfferCodeRedemptionSheetPresenter: OfferCodeRedemptionSheet
     @available(macCatalystApplicationExtension, unavailable)
     private func sk1PresentCodeRedemptionSheet() {
         self.paymentQueue.presentCodeRedemptionSheet()
-    }
-}
-
-@available(iOSApplicationExtension, unavailable)
-@available(macCatalystApplicationExtension, unavailable)
-protocol UIWindowSceneFinderType {
-    func attemptToGetActiveWindowScene() -> UIWindowScene?
-}
-
-@available(iOSApplicationExtension, unavailable)
-@available(macCatalystApplicationExtension, unavailable)
-struct UIWindowSceneFinder: UIWindowSceneFinderType {
-    func attemptToGetActiveWindowScene() -> UIWindowScene? {
-            UIApplication.shared.connectedScenes
-                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
     }
 }

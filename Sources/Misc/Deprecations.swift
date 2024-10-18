@@ -261,6 +261,25 @@ public extension Purchases {
 
 }
 
+extension Purchases {
+    #if os(iOS) || VISION_OS
+    @available(iOS, deprecated, renamed: "presentCodeRedemptionSheet(_:)", message: "Use async/throwing version instead")
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
+    @available(macCatalyst, unavailable)
+    @objc public func presentCodeRedemptionSheet() {
+        Task {
+            if #available(iOSApplicationExtension 14.0, *), #available(macCatalystApplicationExtension 16.0, *) {
+                try await self.presentOfferCodeRedemptionSheet(uiWindowScene: nil)
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+    }
+    #endif
+}
+
 public extension StoreProduct {
 
     @available(iOS, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers()")

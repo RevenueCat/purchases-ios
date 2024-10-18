@@ -680,6 +680,19 @@ public protocol PurchasesType: AnyObject {
     #if os(iOS) || VISION_OS
 
     /**
+     * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
+     *
+     * - Important: Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
+     * say that it's available on Catalyst 14.0, there is a note:
+     * "`This function doesn’t affect Mac apps built with Mac Catalyst.`"
+     * when, in fact, it crashes when called both from Catalyst and also when running as "Designed for iPad".
+     * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
+     */
+    @available(*, deprecated)
+    @available(macCatalyst, unavailable)
+    func presentCodeRedemptionSheet()
+
+    /**
      * Presents a refund request sheet in the current window scene for
      * the latest transaction associated with the `productID`
      *
@@ -736,24 +749,6 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
-    /**
-     * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
-     *
-     * - Important: Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
-     * say that it's available on Catalyst 14.0, there is a note:
-     * "`This function doesn’t affect Mac apps built with Mac Catalyst.`"
-     * when, in fact, it crashes when called both from Catalyst and also when running as "Designed for iPad".
-     * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
-     */
-    @available(iOS 14.0, *)
-    @available(iOSApplicationExtension, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(macOS, unavailable)
-    @available(macCatalyst 16.0, *)
-    @available(macCatalystApplicationExtension, unavailable)
-    func presentCodeRedemptionSheet(uiWindowScene: UIWindowScene?)
-
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     /**
      * Displays price consent sheet if needed. You only need to call this manually if you implement
@@ -773,6 +768,24 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.4, macCatalyst 13.4, *)
     @objc func showPriceConsentIfNeeded()
+
+    /**
+     * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
+     *
+     * - Important: Even though the docs in `SKPaymentQueue.presentCodeRedemptionSheet`
+     * say that it's available on Catalyst 14.0, there is a note:
+     * "`This function doesn’t affect Mac apps built with Mac Catalyst.`"
+     * when, in fact, it crashes when called both from Catalyst and also when running as "Designed for iPad".
+     * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
+     */
+    @available(iOS 14.0, *)
+    @available(iOSApplicationExtension, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
+    @available(macCatalyst 16.0, *)
+    @available(macCatalystApplicationExtension, unavailable)
+    func presentCodeRedemptionSheet(uiWindowScene: UIWindowScene?) async throws
     #endif
 
     #if os(iOS) || os(macOS) || VISION_OS

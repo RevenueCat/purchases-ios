@@ -1074,27 +1074,35 @@ public extension Purchases {
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst 16.0, *)
-    @available(iOSApplicationExtension, unavailable)
-    @available(macCatalystApplicationExtension, unavailable)
     @objc func presentCodeRedemptionSheet(
         uiWindowScene: UIWindowScene? = nil
-    ) {
-        let windowScene: UIWindowScene?
+    ) async throws {
+        try await self.presentOfferCodeRedemptionSheet(uiWindowScene: uiWindowScene)
+    }
 
-        if let uiWindowScene {
-            windowScene = uiWindowScene
-        } else {
-            // Can't DI this since it's unavailable for iOS & macCatalyst app extensions
-            let uiWindowSceneFinder = UIWindowSceneFinder()
-            windowScene = uiWindowSceneFinder.attemptToGetActiveWindowScene()
+    @available(iOS 14.0, *)
+    @available(macCatalyst 16.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
+    internal func presentOfferCodeRedemptionSheet(uiWindowScene: UIWindowScene?) async throws {
+        var windowScene = uiWindowScene
+        if windowScene == nil {
+            windowScene = try await systemInfo.currentWindowScene
         }
 
-        if let windowScene {
-            self.offerCodeRedemptionSheetPresenter.presentCodeRedemptionSheet(
+        guard let windowScene else {
+            Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet_no_window_scene)
+            return
+        }
+
+        do {
+            try await self.offerCodeRedemptionSheetPresenter.presentCodeRedemptionSheet(
                 windowScene: windowScene
             )
-        } else {
-            // TODO: Log message
+        } catch {
+            Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet(error))
+            throw error
         }
     }
 #endif
