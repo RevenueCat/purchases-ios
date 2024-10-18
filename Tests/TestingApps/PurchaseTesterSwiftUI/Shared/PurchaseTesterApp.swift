@@ -62,6 +62,16 @@ struct PurchaseTesterApp: App {
             .navigationViewStyle(.automatic)
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
+            .onOpenURL { url in
+                if Purchases.isConfigured {
+                    let handled = Purchases.shared.handleDeepLink(url)
+                    if handled {
+                        print("RevenueCat handled deep link: \(url.absoluteString)")
+                    } else {
+                        print("RevenueCat ignored deep link: \(url.absoluteString)")
+                    }
+                }
+            }
         }
 
         WindowGroup(id: Windows.logs.rawValue) {

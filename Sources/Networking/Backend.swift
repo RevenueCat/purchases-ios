@@ -21,6 +21,7 @@ class Backend {
     let customer: CustomerAPI
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
+    let redeemRCBillingPurchaseAPI: RedeemRCBillingPurchaseAPI
 
     private let config: BackendConfiguration
 
@@ -59,6 +60,7 @@ class Backend {
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
+        let redeemRCBillingPurchaseAPI = RedeemRCBillingPurchaseAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -66,7 +68,8 @@ class Backend {
                   offeringsAPI: offerings,
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
-                  customerCenterConfig: customerCenterConfig)
+                  customerCenterConfig: customerCenterConfig,
+                  redeemRCBillingPurchaseAPI: redeemRCBillingPurchaseAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -75,7 +78,8 @@ class Backend {
                   offeringsAPI: OfferingsAPI,
                   offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI,
-                  customerCenterConfig: CustomerCenterConfigAPI) {
+                  customerCenterConfig: CustomerCenterConfigAPI,
+                  redeemRCBillingPurchaseAPI: RedeemRCBillingPurchaseAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -84,6 +88,7 @@ class Backend {
         self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
+        self.redeemRCBillingPurchaseAPI = redeemRCBillingPurchaseAPI
     }
 
     func clearHTTPClientCaches() {
