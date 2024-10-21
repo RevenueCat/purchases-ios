@@ -1621,14 +1621,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPackageType, "PackageType", open) {
 };
 
 @class SKPaymentTransaction;
-@class RCStorefront;
 
 /// A wrapper for <code>SKPaymentQueue</code>
 SWIFT_PROTOCOL("_TtP10RevenueCat23PaymentQueueWrapperType_")
 @protocol PaymentQueueWrapperType
 - (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction completion:(void (^ _Nonnull)(void))completion;
 - (void)presentCodeRedemptionSheet SWIFT_AVAILABILITY(maccatalyst,unavailable) SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(macos,unavailable) SWIFT_AVAILABILITY(ios,introduced=14.0);
-@property (nonatomic, readonly, strong) RCStorefront * _Nullable currentStorefront;
 @end
 
 
@@ -1636,7 +1634,6 @@ SWIFT_PROTOCOL("_TtP10RevenueCat23PaymentQueueWrapperType_")
 SWIFT_CLASS("_TtC10RevenueCat19PaymentQueueWrapper")
 @interface PaymentQueueWrapper : NSObject <PaymentQueueWrapperType>
 - (void)finishTransaction:(SKPaymentTransaction * _Nonnull)transaction completion:(void (^ _Nonnull)(void))completion;
-@property (nonatomic, readonly, strong) RCStorefront * _Nullable currentStorefront;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3324,7 +3321,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 
 SWIFT_CLASS("_TtC10RevenueCat16StoreKit1Wrapper")
 @interface StoreKit1Wrapper : NSObject
-@property (nonatomic, readonly, strong) RCStorefront * _Nullable currentStorefront;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3622,6 +3618,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
 @property (nonatomic, readonly, strong) SKProductDiscount * _Nullable sk1Discount;
 @end
 
+@class RCStorefront;
 
 /// Abstract class that provides access to properties of a transaction.
 /// <code>StoreTransaction</code>s can represent transactions from StoreKit 1, StoreKit 2 or
