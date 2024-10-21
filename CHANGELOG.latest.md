@@ -1,27 +1,35 @@
 ## RevenueCat SDK
-### 🐞 Bugfixes
-* Fix `hasFeature(RetroactiveAttribute)` check in iOS 14 (#4359) via Cesar de la Vega (@vegaro)
-* Only Treat Deferred StoreKit Messages as Shown When They are Shown (#4344) via Will Taylor (@fire-at-will)
 ### 📦 Dependency Updates
-* Bump fastlane from 2.223.1 to 2.224.0 (#4354) via dependabot[bot] (@dependabot[bot])
-* Bump fastlane-plugin-revenuecat_internal from `5b2e35c` to `3b1e7cf` (#4347) via dependabot[bot] (@dependabot[bot])
-### Win-back Offers
-#### ✨ New Features
-* CAT-1726: Support Deferring Win-Back StoreKit Messages (#4343) via Will Taylor (@fire-at-will)
+* Bump danger from 9.5.0 to 9.5.1 (#4388) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane from 2.224.0 to 2.225.0 (#4387) via dependabot[bot] (@dependabot[bot])
 
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fixes double callbacks when using `PaywallViewController` (#4333) via Cesar de la Vega (@vegaro)
 ### Customer Center
+#### ✨ New Features
+* Support custom URL paths in `ManageSubscriptionsView` (#4382) via Toni Rico (@tonidero)
 #### 🐞 Bugfixes
-* Fix setting accent color in Customer Center (#4358) via Cesar de la Vega (@vegaro)
-* Improve promotional offer button when pressed (#4342) via Cesar de la Vega (@vegaro)
-* [CustomerCenter] Hide unknown paths (#4350) via Toni Rico (@tonidero)
-* Remove access to Localization env variable in ManageSubscriptionsViewModel (#4339) via Cesar de la Vega (@vegaro)
+* Add default values to enums in Customer Center config response (#4386) via Cesar de la Vega (@vegaro)
+* Fixes `SubscriptionDetailsView` background color in dark mode (#4371) via JayShortway (@JayShortway)
+* Better spacing in `PromotionalOfferView` (#4369) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Update MagicWeather sample app (#4337) via nyeu (@nyeu)
-* Allows enabling PAYWALL_COMPONENTS using a Local.xcconfig file. (#4341) via JayShortway (@JayShortway)
-* Better logs for promotional offer view (#4336) via Cesar de la Vega (@vegaro)
-* Fix Xcode 16 warnings (#4334) via Mark Villacampa (@MarkVillacampa)
-* Run CI tests on iOS18/watchOS11 & Use Xcode 16 (#4295) via Will Taylor (@fire-at-will)
+* Fixes broken references in project.pbxproj. (#4385) via JayShortway (@JayShortway)
+* Fix `PaywallsTester` compilation (#4389) via Cesar de la Vega (@vegaro)
+* Fixes macOS snapshots for X-Is-Debug-Build header (#4383) via JayShortway (@JayShortway)
+* Paywall component containers are all stacks (#4380) via Josh Holtz (@joshdholtz)
+* Remove Storefront from PaymentWrapperQueue (#4377) via Will Taylor (@fire-at-will)
+* Select package and purchase (#4332) via Josh Holtz (@joshdholtz)
+* Added new individual corner radius and border modifier (#4328) via Josh Holtz (@joshdholtz)
+* Render packages, package, and purchase button views for paywall components (#4324) via Josh Holtz (@joshdholtz)
+* ButtonComponent can show the Customer Center (#4373) via JayShortway (@JayShortway)
+* Added scaffolding for paywall components, view models, and views (#4321) via Josh Holtz (@joshdholtz)
+* Adds actionlint to lint GitHub Actions workflows (#4326) via JayShortway (@JayShortway)
+* Local.xcconfig is read by Package.swift (#4368) via JayShortway (@JayShortway)
+* ButtonComponent can restore purchases (#4372) via JayShortway (@JayShortway)
+* ButtonComponent can dismiss the paywall (#4365) via JayShortway (@JayShortway)
+* ButtonComponent can handle URL destinations (#4360) via JayShortway (@JayShortway)
+* Models the Action for the ButtonComponent (#4353) via JayShortway (@JayShortway)
+* Adds scaffolding for the ButtonComponent. (#4348) via JayShortway (@JayShortway)
+* Local.xcconfig is read by PurchaseTester and PaywallsTester (#4367) via JayShortway (@JayShortway)
+* Adds X-Is-Debug-Build header (#4364) via JayShortway (@JayShortway)
+* Adds `.index-build` to `.gitignore`. (#4366) via JayShortway (@JayShortway)
