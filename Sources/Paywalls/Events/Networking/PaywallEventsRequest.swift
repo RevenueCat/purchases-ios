@@ -31,6 +31,7 @@ struct PaywallEventsRequest {
                     return nil
                 }
                 return AnyEncodable(event)
+            }
         })
     }
 
