@@ -31,6 +31,12 @@ struct PaywallEventsRequest {
                     return nil
                 }
                 return AnyEncodable(event)
+            case .customerCenter:
+                guard let event = CustomerCenterEventRequest.Event(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
+            }
         })
     }
 

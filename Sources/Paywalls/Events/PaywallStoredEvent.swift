@@ -25,6 +25,7 @@ struct PaywallStoredEvent {
 enum Feature: String, Codable {
 
     case paywalls
+    case customerCenter
 
 }
 
