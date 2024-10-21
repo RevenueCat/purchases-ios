@@ -38,6 +38,7 @@ final class SamplePaywallLoader {
         )
     }
 
+    #if PAYWALL_COMPONENTS
     func offering(with components: PaywallComponentsData) -> Offering {
         return .init(
             identifier: Self.offeringIdentifier,
@@ -47,6 +48,7 @@ final class SamplePaywallLoader {
             availablePackages: self.packages
         )
     }
+    #endif
 
     func offeringWithDefaultPaywall() -> Offering {
         return .init(
