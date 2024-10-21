@@ -44,6 +44,7 @@ struct AppContentView: View {
             }
             #endif
         }
+        .handleRevenueCatDeeplinks()
     }
 
     private var background: some View {
