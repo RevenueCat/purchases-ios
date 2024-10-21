@@ -31,12 +31,16 @@ enum CustomerCenterConfigTestData {
                             .init(
                                 id: "1",
                                 title: "Didn't receive purchase",
+                                url: nil,
+                                openMethod: nil,
                                 type: .missingPurchase,
                                 detail: nil
                             ),
                             .init(
                                 id: "2",
                                 title: "Request a refund",
+                                url: nil,
+                                openMethod: nil,
                                 type: .refundRequest,
                                 detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
                                     iosOfferId: "offer_id",
@@ -48,12 +52,16 @@ enum CustomerCenterConfigTestData {
                             .init(
                                 id: "3",
                                 title: "Change plans",
+                                url: nil,
+                                openMethod: nil,
                                 type: .changePlans,
                                 detail: nil
                             ),
                             .init(
                                 id: "4",
                                 title: "Cancel subscription",
+                                url: nil,
+                                openMethod: nil,
                                 type: .cancel,
                                 detail: .feedbackSurvey(.init(
                                     title: "Why are you cancelling?",
@@ -86,6 +94,8 @@ enum CustomerCenterConfigTestData {
                             .init(
                                 id: "9q9719171o",
                                 title: "Check purchases",
+                                url: nil,
+                                openMethod: nil,
                                 type: .missingPurchase,
                                 detail: nil
                             )
