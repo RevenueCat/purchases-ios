@@ -129,14 +129,42 @@ extension CustomerCenterConfigResponse: Codable, Equatable {}
 extension CustomerCenterConfigResponse.CustomerCenter: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Localization: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath: Codable, Equatable {}
-extension CustomerCenterConfigResponse.HelpPath.PathType: Codable, Equatable {}
+extension CustomerCenterConfigResponse.HelpPath.PathType: Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
-extension CustomerCenterConfigResponse.Screen.ScreenType: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Screen.ScreenType: Equatable {}
 extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
+
+protocol CodableEnumWithUnknownCase: Codable {
+
+    static var unknownCase: Self { get }
+
+}
+
+extension CodableEnumWithUnknownCase where Self: RawRepresentable, Self.RawValue == String {
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        self = Self(rawValue: value) ?? Self.unknownCase
+    }
+
+}
+
+extension CustomerCenterConfigResponse.Screen.ScreenType: CodableEnumWithUnknownCase {
+
+    static var unknownCase: Self { .unknown }
+
+}
+
+extension CustomerCenterConfigResponse.HelpPath.PathType: CodableEnumWithUnknownCase {
+
+    static var unknownCase: Self { .unknown }
+
+}
 
 extension CustomerCenterConfigResponse: HTTPResponseBody {}
