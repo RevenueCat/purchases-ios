@@ -27,10 +27,18 @@ func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
 func checkHelpPath(_ path: CustomerCenterConfigData.HelpPath) {
     let id: String = path.id
     let title: String = path.title
+    let url: URL? = path.url
+    let openMethod: CustomerCenterConfigData.HelpPath.OpenMethod? = path.openMethod
     let type: CustomerCenterConfigData.HelpPath.PathType = path.type
     let detail: CustomerCenterConfigData.HelpPath.PathDetail? = path.detail
 
     let _: CustomerCenterConfigData.HelpPath = .init(id: id, title: title, type: type, detail: detail)
+    let _: CustomerCenterConfigData.HelpPath = .init(id: id,
+                                                     title: title,
+                                                     url: url,
+                                                     openMethod: openMethod,
+                                                     type: type,
+                                                     detail: detail)
 }
 
 func checkHelpPathDetail(_ detail: CustomerCenterConfigData.HelpPath.PathDetail) {
