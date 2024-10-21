@@ -26,7 +26,7 @@ enum PaywallEventSerializer {
             .orThrow(FailedEncodingEventError())
     }
 
-    /// Decodes a `PaywallEvent`.
+    /// Decodes a `PaywallStoredEvent`.
     static func decode(_ event: String) throws -> PaywallStoredEvent {
         return try JSONDecoder.default.decode(jsonData: event.asData)
     }
