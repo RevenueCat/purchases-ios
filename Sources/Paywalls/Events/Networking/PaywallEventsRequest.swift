@@ -16,20 +16,36 @@ import Foundation
 /// The content of a request to the events endpoints.
 struct PaywallEventsRequest {
 
-    var events: [Event]
+    var events: [AnyEncodable]
 
-    init(events: [Event]) {
+    init(events: [AnyEncodable]) {
         self.events = events
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init(events: [PaywallStoredEvent]) {
-        self.init(events: events.map { .init(storedEvent: $0) })
+        self.init(events: events.map { storedEvent in
+            switch(storedEvent.feature) {
+            case .paywalls:
+                return AnyEncodable(PaywallEventRequest.Event(storedEvent: storedEvent))
+            case .customerCenter:
+                return AnyEncodable(CustomerCenterEventRequest.Event(storedEvent: storedEvent))
+            }
+        })
     }
 
 }
 
-extension PaywallEventsRequest {
+protocol EventProtocol: Encodable {
+
+    var id: String? { get }
+    var version: Int { get }
+    var appUserID: String { get }
+    var sessionID: String { get }
+
+}
+
+struct PaywallEventRequest {
 
     enum EventType: String {
 
@@ -39,7 +55,7 @@ extension PaywallEventsRequest {
 
     }
 
-    struct Event {
+    struct Event: EventProtocol {
 
         let id: String?
         let version: Int
@@ -57,17 +73,40 @@ extension PaywallEventsRequest {
 
 }
 
-extension PaywallEventsRequest.Event {
+struct CustomerCenterEventRequest {
+
+    enum EventType: String {
+
+        case impression = "customer_center_impression"
+
+    }
+
+    struct Event: EventProtocol {
+
+        let id: String?
+        let version: Int
+        var type: EventType
+        var appUserID: String
+        var sessionID: String
+
+    }
+
+}
+
+extension PaywallEventRequest.Event {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init(storedEvent: PaywallStoredEvent) {
-        let creationData = storedEvent.event.creationData
-        let data = storedEvent.event.data
+        let eventData = storedEvent.event.value as! [String: Any]
+
+        let paywallEvent: PaywallEvent = try! JSONDecoder.default.decode(dictionary: eventData)
+        let creationData = paywallEvent.creationData
+        let data = paywallEvent.data
 
         self.init(
             id: creationData.id.uuidString,
             version: Self.version,
-            type: storedEvent.event.eventType,
+            type: paywallEvent.eventType,
             appUserID: storedEvent.userID,
             sessionID: data.sessionIdentifier.uuidString,
             offeringID: data.offeringIdentifier,
@@ -83,10 +122,33 @@ extension PaywallEventsRequest.Event {
 
 }
 
+extension CustomerCenterEventRequest.Event {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    init(storedEvent: PaywallStoredEvent) {
+        let eventData = storedEvent.event.value as! [String: Any]
+
+        let paywallEvent: CustomerCenterEvent = try! JSONDecoder.default.decode(dictionary: eventData)
+        let creationData = paywallEvent.creationData
+        let data = paywallEvent.data
+
+        self.init(
+            id: creationData.id.uuidString,
+            version: Self.version,
+            type: paywallEvent.eventType,
+            appUserID: storedEvent.userID,
+            sessionID: data.sessionIdentifier.uuidString
+        )
+    }
+
+    private static let version: Int = 1
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEvent {
 
-    var eventType: PaywallEventsRequest.EventType {
+    var eventType: PaywallEventRequest.EventType {
         switch self {
         case .impression: return .impression
         case .cancel: return .cancel
@@ -97,11 +159,25 @@ private extension PaywallEvent {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CustomerCenterEvent {
+
+    var eventType: CustomerCenterEventRequest.EventType {
+        switch self {
+        case .impression: return .impression
+        }
+
+    }
+
+}
+
+
+
 // MARK: - Codable
 
-extension PaywallEventsRequest.EventType: Encodable {}
-
-extension PaywallEventsRequest.Event: Encodable {
+extension PaywallEventRequest: Encodable {}
+extension PaywallEventRequest.EventType: Encodable {}
+extension PaywallEventRequest.Event: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -121,4 +197,53 @@ extension PaywallEventsRequest.Event: Encodable {
 
 }
 
+extension CustomerCenterEventRequest: Encodable {}
+extension CustomerCenterEventRequest.EventType: Encodable {}
+extension CustomerCenterEventRequest.Event: Encodable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case id
+        case version
+        case type
+        case appUserID = "appUserId"
+        case sessionID = "sessionId"
+
+    }
+
+}
+
+
 extension PaywallEventsRequest: HTTPRequestBody {}
+
+//extension PaywallEventsRequest {
+//
+//    struct Event {
+//
+//        let storedEvent: PaywallStoredEvent
+//
+//        private static let version: Int = 1
+//
+//    }
+//
+//}
+//
+//extension PaywallEventsRequest.Event: Encodable {
+//
+//    private enum CodingKeys: String, CodingKey {
+//
+//        case version
+//
+//    }
+//
+//    func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self)
+//        try container.encode(Self.version, forKey: .version)
+//        
+//        // Encode the PaywallStoredEvent directly into the root
+//        try storedEvent.encode(to: encoder)
+//    }
+//
+//}
+//
+//extension PaywallEventsRequest: HTTPRequestBody {}

@@ -13,11 +13,19 @@
 
 import Foundation
 
-/// Contains the necessary information for `PaywallEventStore`.
+/// Contains the necessary information for storing and sending events.
 struct PaywallStoredEvent {
 
-    var event: PaywallEvent
+    var event: AnyEncodable
     var userID: String
+    var feature: Feature
+
+}
+
+enum Feature: String, Codable {
+    
+    case paywalls
+    case customerCenter
 
 }
 
@@ -31,7 +39,16 @@ extension PaywallStoredEvent: Codable {
 
         case event
         case userID = "userId"
+        case feature
 
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        self.event = try container.decode(AnyEncodable.self, forKey: .event)
+        self.userID = try container.decode(String.self, forKey: .userID)
+        self.feature = try container.decodeIfPresent(Feature.self, forKey: .feature) ?? .paywalls
     }
 
 }

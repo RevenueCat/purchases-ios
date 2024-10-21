@@ -133,8 +133,47 @@ extension PaywallEvent {
 
 }
 
+//extension PaywallEvent: Encodable {
+//    private enum CodingKeys: String, CodingKey {
+//        case id
+//        case type
+//        case sessionIdentifier
+//        case offeringIdentifier
+//        case paywallRevision
+//        case timestamp
+//        case displayMode
+//        case darkMode
+//        case localeIdentifier
+//    }
+//    
+//    public func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self)
+//        
+//        try container.encode(self.eventType, forKey: .type)
+//        try container.encode(self.creationData.id.uuidString, forKey: .id)
+//        try container.encode(self.creationData.date.millisecondsSince1970, forKey: .timestamp)
+//        
+//        // Encode data fields directly in the root
+//        try container.encode(self.data.offeringIdentifier, forKey: .offeringIdentifier)
+//        try container.encode(self.data.paywallRevision, forKey: .paywallRevision)
+//        try container.encode(self.data.sessionIdentifier.uuidString, forKey: .sessionIdentifier)
+//        try container.encode(String(describing: self.data.displayMode), forKey: .displayMode)
+//        try container.encode(self.data.localeIdentifier, forKey: .localeIdentifier)
+//        try container.encode(self.data.darkMode, forKey: .darkMode)
+//    }
+//    
+//    private var eventType: String {
+//        switch self {
+//        case .impression: return "paywall_impression"
+//        case .cancel: return "paywall_cancel"
+//        case .close: return "paywall_close"
+//        }
+//    }
+//}
+
 // MARK: - 
 
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}
+//extension PaywallEvent: Equatable, Sendable {}
