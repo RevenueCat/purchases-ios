@@ -16,20 +16,39 @@ import Foundation
 /// The content of a request to the events endpoints.
 struct PaywallEventsRequest {
 
-    var events: [Event]
+    var events: [AnyEncodable]
 
-    init(events: [Event]) {
+    init(events: [AnyEncodable]) {
         self.events = events
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init(events: [PaywallStoredEvent]) {
-        self.init(events: events.map { .init(storedEvent: $0) })
+        self.init(events: events.compactMap { storedEvent in
+            switch storedEvent.feature {
+            case .paywalls:
+                guard let event = PaywallEventRequest.Event(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
+        })
     }
 
 }
 
-extension PaywallEventsRequest {
+protocol FeatureEvent: Encodable {
+
+    var id: String? { get }
+    var version: Int { get }
+    var appUserID: String { get }
+    var sessionID: String { get }
+
+}
+
+// This is a `struct` instead of `enum` so that
+// we can use make it conform to Encodable
+// swiftlint:disable:next convenience_type
+struct PaywallEventRequest {
 
     enum EventType: String {
 
@@ -39,7 +58,7 @@ extension PaywallEventsRequest {
 
     }
 
-    struct Event {
+    struct Event: FeatureEvent {
 
         let id: String?
         let version: Int
@@ -57,17 +76,22 @@ extension PaywallEventsRequest {
 
 }
 
-extension PaywallEventsRequest.Event {
+extension PaywallEventRequest.Event {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init(storedEvent: PaywallStoredEvent) {
-        let creationData = storedEvent.event.creationData
-        let data = storedEvent.event.data
+    init?(storedEvent: PaywallStoredEvent) {
+        guard let eventData = storedEvent.event.value as? [String: Any],
+              let paywallEvent: PaywallEvent = try? JSONDecoder.default.decode(dictionary: eventData) else {
+            return nil
+        }
+
+        let creationData = paywallEvent.creationData
+        let data = paywallEvent.data
 
         self.init(
             id: creationData.id.uuidString,
             version: Self.version,
-            type: storedEvent.event.eventType,
+            type: paywallEvent.eventType,
             appUserID: storedEvent.userID,
             sessionID: data.sessionIdentifier.uuidString,
             offeringID: data.offeringIdentifier,
@@ -86,7 +110,7 @@ extension PaywallEventsRequest.Event {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEvent {
 
-    var eventType: PaywallEventsRequest.EventType {
+    var eventType: PaywallEventRequest.EventType {
         switch self {
         case .impression: return .impression
         case .cancel: return .cancel
@@ -99,9 +123,9 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
-extension PaywallEventsRequest.EventType: Encodable {}
-
-extension PaywallEventsRequest.Event: Encodable {
+extension PaywallEventRequest: Encodable {}
+extension PaywallEventRequest.EventType: Encodable {}
+extension PaywallEventRequest.Event: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
