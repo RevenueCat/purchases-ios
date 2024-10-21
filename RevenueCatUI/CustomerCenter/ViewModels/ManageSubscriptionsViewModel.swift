@@ -163,10 +163,13 @@ class ManageSubscriptionsViewModel: ObservableObject {
 }
 
 struct IdentifiableURL: Identifiable {
+
     var id: String {
         return url.absoluteString
     }
+
     let url: URL
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
