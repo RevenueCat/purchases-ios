@@ -141,4 +141,69 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.productId) == 123
     }
 
+    func testUnknownValuesHandling() throws {
+        let jsonString = """
+        {
+            "customerCenter": {
+                "appearance": {
+                    "light": {
+                        "accentColor": "#000000",
+                        "textColor": "#000000",
+                        "backgroundColor": "#000000",
+                        "buttonTextColor": "#000000",
+                        "buttonBackgroundColor": "#000000"
+                    },
+                    "dark": {
+                        "accentColor": "#FFFFFF",
+                        "textColor": "#FFFFFF",
+                        "backgroundColor": "#FFFFFF",
+                        "buttonTextColor": "#FFFFFF",
+                        "buttonBackgroundColor": "#FFFFFF"
+                    }
+                },
+                "screens": {
+                    "UNKNOWN_SCREEN": {
+                        "title": "Unknown Screen",
+                        "type": "UNKNOWN_SCREEN_TYPE",
+                        "subtitle": "This is an unknown screen type",
+                        "paths": [
+                            {
+                                "id": "unknown_path",
+                                "title": "Unknown Path",
+                                "type": "UNKNOWN_PATH_TYPE"
+                            }
+                        ]
+                    }
+                },
+                "localization": {
+                    "locale": "en_US",
+                    "localizedStrings": {}
+                },
+                "support": {
+                    "email": "support@example.com"
+                }
+            },
+            "lastPublishedAppVersion": "1.0.0",
+            "itunesTrackId": 123
+        }
+        """
+
+        let jsonData = jsonString.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(CustomerCenterConfigResponse.self, from: jsonData)
+
+        let configData = CustomerCenterConfigData(from: response)
+
+        expect(configData.screens.count) == 1
+        let unknownScreen = configData.screens.first?.value
+        expect(unknownScreen?.type) == .unknown
+        expect(unknownScreen?.title) == "Unknown Screen"
+        expect(unknownScreen?.subtitle) == "This is an unknown screen type"
+
+        expect(unknownScreen?.paths.count) == 1
+        let unknownPath = unknownScreen?.paths.first
+        expect(unknownPath?.type) == .unknown
+        expect(unknownPath?.id) == "unknown_path"
+        expect(unknownPath?.title) == "Unknown Path"
+    }
 }
