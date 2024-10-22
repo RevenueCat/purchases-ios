@@ -222,8 +222,7 @@ extension StoreKitStrings: LogMessage {
             "App Extensions below iOS/Mac Catalyst 16."
 
         case .not_displaying_offer_code_redemption_sheet_because_ios_app_on_macos:
-            return "Not displaying the Offer Code redemption sheet because this is an iOS app running on macOS," +
-            "and displaying an Offer Code redemption sheet as a 'Designed for iPad' app on macOS throws an error."
+            return "Could not display the Offer Code redemption sheet: not supported in iOS apps running on macOS."
         }
     }
 
