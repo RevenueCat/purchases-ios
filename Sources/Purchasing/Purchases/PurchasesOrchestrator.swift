@@ -510,6 +510,9 @@ final class PurchasesOrchestrator {
         }
     }
 
+    // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with version 6.0 of the Swift
+    // compiler. The win-back symbols won't be found if compiled on Xcode < 16.0, so we need to ensure that
+    // the Swift compiler 6.0 or higher is available.
     #if compiler(>=6.0)
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func purchase(

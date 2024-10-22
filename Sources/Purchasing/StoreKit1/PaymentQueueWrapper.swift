@@ -78,7 +78,11 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
                 self.paymentQueue.delegate = self
 
                 if !purchaseIntentsAPIAvailable {
-                    // If the PurchaseIntents API is unavailable, observe the PaymentQueue
+                    // The PurchaseIntent documentation states that we shouldn't use both the PurchaseIntents API and
+                    // `SKPaymentTransactionObserver/paymentQueue(queue:shouldAddStorePayment:for:) -> Bool` at the same
+                    // time. So, we only observe the payment queue when using StoreKit 2 if the PurchaseIntents API
+                    // is unavailable. See https://developer.apple.com/documentation/storekit/purchaseintent
+                    // for more info.
                     self.paymentQueue.add(self)
                 }
             } else if self.delegate == nil, self.paymentQueue.delegate === self {

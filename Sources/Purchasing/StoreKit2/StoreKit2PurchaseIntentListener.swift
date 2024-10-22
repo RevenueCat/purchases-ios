@@ -125,7 +125,7 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 struct StorePurchaseIntent: Sendable, Equatable {
 
     // PurchaseIntents became available on macOS starting in macOS 14.4, which isn't available
-    // until Xcode 15.3
+    // until Xcode 15.3, which shipped with version 5.10 of the Swift compiler
     #if compiler(>=5.10)
     @available(iOS 16.4, macOS 14.4, *)
     @available(tvOS, unavailable)
