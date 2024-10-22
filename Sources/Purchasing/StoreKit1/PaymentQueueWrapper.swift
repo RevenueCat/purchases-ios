@@ -58,26 +58,36 @@ typealias EitherPaymentQueueWrapper = Either<StoreKit1Wrapper, PaymentQueueWrapp
 class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
     private let paymentQueue: SKPaymentQueue
-    private let storeKitVersion: StoreKitVersion
+
+    private lazy var purchaseIntentsAPIAvailable: Bool = {
+        if #available(iOS 16.4, macOS 14.4, *) {
+            return true
+        } else {
+            return false
+        }
+    }()
 
     weak var delegate: PaymentQueueWrapperDelegate? {
         didSet {
             if self.delegate != nil {
                 self.paymentQueue.delegate = self
-                self.paymentQueue.add(self)
+
+                if !purchaseIntentsAPIAvailable {
+                    // If the PurchaseIntents API is unavailable, observe the PaymentQueue
+                    self.paymentQueue.add(self)
+                }
             } else if self.delegate == nil, self.paymentQueue.delegate === self {
                 self.paymentQueue.delegate = nil
-                self.paymentQueue.remove(self)
+
+                if !purchaseIntentsAPIAvailable {
+                    self.paymentQueue.remove(self)
+                }
             }
         }
     }
 
-    init(
-        paymentQueue: SKPaymentQueue = .default(),
-        storeKitVersion: StoreKitVersion
-    ) {
+    init(paymentQueue: SKPaymentQueue = .default()) {
         self.paymentQueue = paymentQueue
-        self.storeKitVersion = storeKitVersion
 
         super.init()
     }
@@ -136,19 +146,9 @@ extension PaymentQueueWrapper: SKPaymentTransactionObserver {
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,
                       for product: SK1Product) -> Bool {
-
-        if #available(iOS 16.4, macOS 14.4, *), storeKitVersion.isStoreKit2EnabledAndAvailable {
-            // This will be handled by the PurchaseIntents API, which was introduced in
-            // iOS 16.4/macOS 14.4 and is not available on tvOS, visionOS, and watchOS.
-
-            // Returns `false` to indicate that the app will defer the purchase and be handled
-            // when the user calls the purchase callback.
-            return false
-        } else {
-            return self.delegate?.paymentQueueWrapper(self,
-                                                      shouldAddStorePayment: payment,
-                                                      for: product) ?? false
-        }
+        return self.delegate?.paymentQueueWrapper(self,
+                                                  shouldAddStorePayment: payment,
+                                                  for: product) ?? false
     }
     #endif
 
