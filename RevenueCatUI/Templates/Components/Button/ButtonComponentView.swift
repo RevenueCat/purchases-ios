@@ -13,9 +13,6 @@
 
 import Foundation
 import RevenueCat
-#if canImport(SafariServices)
-import SafariServices
-#endif
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
@@ -24,6 +21,7 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @State private var inAppBrowserURL: URL?
+    @State private var showCustomerCenter = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -40,9 +38,14 @@ struct ButtonComponentView: View {
         AsyncButton(
             action: { try await performAction() },
             label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
-        ).sheet(isPresented: .isNotNil($inAppBrowserURL)) {
+        )
+        #if canImport(SafariServices) && canImport(UIKit)
+        .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
+        }.presentCustomerCenter(isPresented: $showCustomerCenter) {
+            showCustomerCenter = false
         }
+        #endif
     }
 
     private func performAction() async throws {
@@ -72,9 +75,7 @@ struct ButtonComponentView: View {
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
-            // swiftlint:disable:next todo
-            // TODO handle navigating to customer center
-            break
+            showCustomerCenter = true
         case .URL(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
@@ -100,21 +101,6 @@ struct ButtonComponentView: View {
 
 }
 
-private struct SafariView: UIViewControllerRepresentable {
-    let url: URL
-
-    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
-        SFSafariViewController(url: url)
-    }
-
-    func updateUIViewController(
-        _ uiViewController: SFSafariViewController,
-        context: UIViewControllerRepresentableContext<SafariView>
-    ) {
-        // No updates needed
-    }
-}
-
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -131,7 +117,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             components: [
                                 PaywallComponent.text(
                                     PaywallComponent.TextComponent(
-                                        textLid: "buttonText",
+                                        text: "buttonText",
                                         color: .init(light: "#000000")
                                     )
                                 )
@@ -139,7 +125,6 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             backgroundColor: nil
                         )
                     ),
-                    locale: Locale(identifier: "en_US"),
                     localizedStrings: [
                         "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                     ],

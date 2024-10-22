@@ -47,6 +47,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path1",
                                 title: "Path 1",
                                 type: .missingPurchase,
+                                url: nil,
+                                openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: nil
                             ),
@@ -54,6 +56,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path2",
                                 title: "Path 2",
                                 type: .cancel,
+                                url: nil,
+                                openMethod: nil,
                                 promotionalOffer: .init(iosOfferId: "offer_id",
                                                         eligible: true,
                                                         title: "Wait!",
@@ -64,6 +68,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 id: "path3",
                                 title: "Path 3",
                                 type: .changePlans,
+                                url: nil,
+                                openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: .init(title: "survey title",
                                                       options: [
@@ -74,6 +80,18 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                       title: "Wait!",
                                                                                       subtitle: "Before you go"))
                                                       ])
+                            ),
+                            .init(
+                                id: "path4",
+                                title: "Path 4",
+                                type: .customUrl,
+                                url: "https://revenuecat.com",
+                                openMethod: .external,
+                                promotionalOffer: .init(iosOfferId: "offer_id",
+                                                        eligible: true,
+                                                        title: "Wait!",
+                                                        subtitle: "Before you go"),
+                                feedbackSurvey: nil
                             )
                         ]
                     )
@@ -106,18 +124,22 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(managementScreen.type.rawValue) == "MANAGEMENT"
         expect(managementScreen.title) == "Management Screen"
         expect(managementScreen.subtitle) == "Manage your account"
-        expect(managementScreen.paths.count) == 3
+        expect(managementScreen.paths.count) == 4
 
         let paths = try XCTUnwrap(managementScreen.paths)
 
         expect(paths[0].id) == "path1"
         expect(paths[0].title) == "Path 1"
         expect(paths[0].type.rawValue) == "MISSING_PURCHASE"
+        expect(paths[0].url).to(beNil())
+        expect(paths[0].openMethod).to(beNil())
         expect(paths[0].detail).to(beNil())
 
         expect(paths[1].id) == "path2"
         expect(paths[1].title) == "Path 2"
         expect(paths[1].type.rawValue) == "CANCEL"
+        expect(paths[1].url).to(beNil())
+        expect(paths[1].openMethod).to(beNil())
         if case let .promotionalOffer(promotionalOffer) = paths[1].detail {
             expect(promotionalOffer.iosOfferId) == "offer_id"
             expect(promotionalOffer.eligible).to(beTrue())
@@ -128,6 +150,8 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(paths[2].id) == "path3"
         expect(paths[2].title) == "Path 3"
         expect(paths[2].type.rawValue) == "CHANGE_PLANS"
+        expect(paths[2].url).to(beNil())
+        expect(paths[2].openMethod).to(beNil())
         if case let .feedbackSurvey(feedbackSurvey) = paths[2].detail {
             expect(feedbackSurvey.title) == "survey title"
             expect(feedbackSurvey.options.count) == 1
@@ -137,8 +161,79 @@ class CustomerCenterConfigDataTests: TestCase {
             fail("Expected feedbackSurvey detail")
         }
 
+        expect(paths[3].id) == "path4"
+        expect(paths[3].title) == "Path 4"
+        expect(paths[3].type.rawValue) == "CUSTOM_URL"
+        expect(paths[3].url?.absoluteString) == "https://revenuecat.com"
+        expect(paths[3].openMethod) == .external
+
         expect(configData.lastPublishedAppVersion) == "1.2.3"
         expect(configData.productId) == 123
     }
 
+    func testUnknownValuesHandling() throws {
+        let jsonString = """
+        {
+            "customerCenter": {
+                "appearance": {
+                    "light": {
+                        "accentColor": "#000000",
+                        "textColor": "#000000",
+                        "backgroundColor": "#000000",
+                        "buttonTextColor": "#000000",
+                        "buttonBackgroundColor": "#000000"
+                    },
+                    "dark": {
+                        "accentColor": "#FFFFFF",
+                        "textColor": "#FFFFFF",
+                        "backgroundColor": "#FFFFFF",
+                        "buttonTextColor": "#FFFFFF",
+                        "buttonBackgroundColor": "#FFFFFF"
+                    }
+                },
+                "screens": {
+                    "UNKNOWN_SCREEN": {
+                        "title": "Unknown Screen",
+                        "type": "UNKNOWN_SCREEN_TYPE",
+                        "subtitle": "This is an unknown screen type",
+                        "paths": [
+                            {
+                                "id": "unknown_path",
+                                "title": "Unknown Path",
+                                "type": "UNKNOWN_PATH_TYPE"
+                            }
+                        ]
+                    }
+                },
+                "localization": {
+                    "locale": "en_US",
+                    "localizedStrings": {}
+                },
+                "support": {
+                    "email": "support@example.com"
+                }
+            },
+            "lastPublishedAppVersion": "1.0.0",
+            "itunesTrackId": 123
+        }
+        """
+
+        let jsonData = jsonString.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(CustomerCenterConfigResponse.self, from: jsonData)
+
+        let configData = CustomerCenterConfigData(from: response)
+
+        expect(configData.screens.count) == 1
+        let unknownScreen = configData.screens.first?.value
+        expect(unknownScreen?.type) == .unknown
+        expect(unknownScreen?.title) == "Unknown Screen"
+        expect(unknownScreen?.subtitle) == "This is an unknown screen type"
+
+        expect(unknownScreen?.paths.count) == 1
+        let unknownPath = unknownScreen?.paths.first
+        expect(unknownPath?.type) == .unknown
+        expect(unknownPath?.id) == "unknown_path"
+        expect(unknownPath?.title) == "Unknown Path"
+    }
 }

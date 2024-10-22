@@ -10,7 +10,6 @@
 //  ImageComponentView.swift
 //
 //  Created by Josh Holtz on 6/11/24.
-// swiftlint:disable missing_docs
 
 import Foundation
 import RevenueCat
@@ -19,7 +18,7 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class ImageComponentViewModel {
+class ImageComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.ImageComponent
@@ -37,19 +36,30 @@ public class ImageComponentViewModel {
         }
     }
 
-    public var url: URL {
+    var url: URL {
         self.imageInfo.light.heic
     }
-    public var cornerRadiuses: PaywallComponent.CornerRadiuses {
-        component.cornerRadiuses
+
+    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
+        component.cornerRadiuses.flatMap { cornerRadiuses in
+            CornerBorderModifier.RaidusInfo(
+                topLeft: cornerRadiuses.topLeading,
+                topRight: cornerRadiuses.topTrailing,
+                bottomLeft: cornerRadiuses.bottomLeading,
+                bottomRight: cornerRadiuses.bottomLeading
+            )
+        }
     }
-    public var gradientColors: [Color] {
+
+    var gradientColors: [Color] {
         component.gradientColors?.compactMap { $0.toColor(fallback: Color.clear) } ?? []
     }
-    public var contentMode: ContentMode {
+
+    var contentMode: ContentMode {
         component.fitMode.contentMode
     }
-    public var maxHeight: CGFloat? {
+
+    var maxHeight: CGFloat? {
         component.maxHeight
     }
 

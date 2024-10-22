@@ -91,11 +91,12 @@ struct SamplePaywallsList: View {
             CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
-            TemplateComponentsView(
-                paywallComponentsData: data,
-                offering: Self.loader.offeringWithDefaultPaywall(),
-                onDismiss: { self.display = nil }
-            )
+            PaywallView(configuration: .init(
+                offering: Self.loader.offering(with: data),
+                customerInfo: Self.loader.customerInfo,
+                displayCloseButton: Self.displayCloseButton,
+                introEligibility: Self.introEligibility
+            ))
         #endif
         }
 
@@ -108,7 +109,7 @@ struct SamplePaywallsList: View {
             Section("Components") {
                 Button {
                     let data = SamplePaywallLoader.template1Components
-                    data.componentsConfig.components.printAsJSON()
+                    data.componentsConfigs.base.stack.components.printAsJSON()
                     data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
@@ -116,7 +117,7 @@ struct SamplePaywallsList: View {
                 }
                 Button {
                     let data = SamplePaywallLoader.fitnessComponents
-                    data.componentsConfig.components.printAsJSON()
+                    data.componentsConfigs.base.stack.components.printAsJSON()
                     data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {
@@ -124,7 +125,7 @@ struct SamplePaywallsList: View {
                 }
                 Button {
                     let data = SamplePaywallLoader.simpleSampleComponents
-                    data.componentsConfig.components.printAsJSON()
+                    data.componentsConfigs.base.stack.components.printAsJSON()
                     data.componentsLocalizations.printAsJSON()
                     self.display = .componentPaywall(data)
                 } label: {

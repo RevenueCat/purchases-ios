@@ -11,7 +11,7 @@ let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "tr
 
 var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
-    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", from: "1.11.0")
+    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
 ]
 if shouldIncludeDocCPlugin {
     // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now

@@ -36,7 +36,7 @@ private enum Template1Preview {
     )
 
     static let title = PaywallComponent.TextComponent(
-        textLid: "title",
+        text: "title",
         fontFamily: nil,
         fontWeight: .heavy,
         color: .init(light: "#000000"),
@@ -48,7 +48,7 @@ private enum Template1Preview {
     )
 
     static let body = PaywallComponent.TextComponent(
-        textLid: "body",
+        text: "body",
         fontFamily: nil,
         fontWeight: .regular,
         color: .init(light: "#000000"),
@@ -59,10 +59,24 @@ private enum Template1Preview {
         horizontalAlignment: .center
     )
 
+    static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
+        cta: "cta",
+        ctaIntroOffer: "cta_intro",
+        fontWeight: .bold,
+        color: .init(light: "#ffffff"),
+        backgroundColor: .init(light: "#e89d89"),
+        padding: .init(top: 10,
+                       bottom: 10,
+                       leading: 30,
+                       trailing: 30),
+        shape: .pill
+    )
+
     static let contentStack = PaywallComponent.StackComponent(
         components: [
             .text(title),
-            .text(body)
+            .text(body),
+            .purchaseButton(purchaseButton)
         ],
         width: .init(type: .fill, value: nil),
         spacing: 30,
@@ -86,14 +100,18 @@ private enum Template1Preview {
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
-        componentsConfig: .init(
-            components: [
-                .stack(stack)
-            ]
+        componentsConfigs: .init(
+            base: .init(stack: .init(
+                components: [
+                    .stack(stack)
+                ]
+            ))
         ),
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),
-            "body": .string("Get access to all of our educational content trusted by thousands of pet parents.")
+            "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
+            "cta": .string("Get Started"),
+            "cta_intro": .string("Claim Free Trial")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"

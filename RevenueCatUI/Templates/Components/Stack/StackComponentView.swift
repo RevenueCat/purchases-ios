@@ -28,9 +28,7 @@ struct StackComponentView: View {
             case .vertical(let horizontalAlignment):
                 // LazyVStack needed for performance when loading
                 LazyVStack(spacing: viewModel.spacing) {
-                    Group {
-                        ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
-                    }
+                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
                     .frame(maxWidth: .infinity, alignment: horizontalAlignment.stackAlignment)
                 }
             case .horizontal(let verticalAlignment):
@@ -46,10 +44,8 @@ struct StackComponentView: View {
         .padding(viewModel.padding)
         .width(viewModel.width)
         .background(viewModel.backgroundColor)
-        .roundedCorner(viewModel.cornerRadiuses.topLeading, corners: .topLeft)
-        .roundedCorner(viewModel.cornerRadiuses.topTrailing, corners: .topRight)
-        .roundedCorner(viewModel.cornerRadiuses.bottomLeading, corners: .bottomLeft)
-        .roundedCorner(viewModel.cornerRadiuses.bottomTrailing, corners: .bottomRight)
+        .cornerBorder(border: viewModel.border,
+                      radiuses: viewModel.cornerRadiuses)
         .padding(viewModel.margin)
     }
 

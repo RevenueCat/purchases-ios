@@ -1550,7 +1550,7 @@ private extension PurchasesOrchestrator {
     ) {
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
-                ProductRequestData(with: $0, storefront: self.paymentQueueWrapper.currentStorefront)
+                ProductRequestData(with: $0, storefront: self.systemInfo.storefront)
             }
 
             completion(result)

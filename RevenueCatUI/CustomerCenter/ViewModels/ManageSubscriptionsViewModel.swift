@@ -37,6 +37,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var promotionalOfferData: PromotionalOfferData?
     @Published
+    var inAppBrowserURL: IdentifiableURL?
+    @Published
     var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
@@ -152,7 +154,21 @@ class ManageSubscriptionsViewModel: ObservableObject {
             self.loadingPath = nil
         }
     }
+
+    func onDismissInAppBrowser() {
+        self.inAppBrowserURL = nil
+    }
 #endif
+
+}
+
+struct IdentifiableURL: Identifiable {
+
+    var id: String {
+        return url.absoluteString
+    }
+
+    let url: URL
 
 }
 
@@ -163,6 +179,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
 private extension ManageSubscriptionsViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
+    // swiftlint:disable:next cyclomatic_complexity
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
@@ -185,6 +202,18 @@ private extension ManageSubscriptionsViewModel {
                 try await purchasesProvider.showManageSubscriptions()
             } catch {
                 self.state = .error(error)
+            }
+        case .customUrl:
+            guard let url = path.url,
+                let openMethod = path.openMethod else {
+                Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
+                return
+            }
+            switch openMethod {
+            case .external:
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            case .inApp:
+                self.inAppBrowserURL = .init(url: url)
             }
         default:
             break

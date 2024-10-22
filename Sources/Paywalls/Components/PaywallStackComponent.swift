@@ -10,33 +10,42 @@
 //  StackComponent.swift
 //
 //  Created by James Borthwick on 2024-08-20.
-// swiftlint:disable missing_docs nesting
+// swiftlint:disable missing_docs
+
 import Foundation
 
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
 
-    struct StackComponent: PaywallComponentBase {
+    // The most common type of stack that can contain any type of PaywallComponent
+    typealias StackComponent = GenericStackComponent<PaywallComponent>
+
+    // A specialized stack that can only hold PaywallComponent.PackageComponent
+    typealias PackagesStackComponent = GenericStackComponent<PaywallComponent.PackageComponent>
+
+    struct GenericStackComponent<T: StackableComponent>: PaywallComponentBase {
 
         let type: ComponentType
-        public let components: [PaywallComponent]
+        public let components: [T]
         public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
         public let dimension: Dimension
         public let padding: Padding
         public let margin: Padding
-        public let cornerRadiuses: CornerRadiuses
+        public let cornerRadiuses: CornerRadiuses?
+        public let border: Border?
 
-        public init(components: [PaywallComponent],
+        public init(components: [T],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
                     spacing: CGFloat? = 0,
-                    backgroundColor: ColorInfo?,
+                    backgroundColor: ColorInfo? = nil,
                     padding: Padding = .zero,
                     margin: Padding = .zero,
-                    cornerRadiuses: CornerRadiuses = .zero
+                    cornerRadiuses: CornerRadiuses? = nil,
+                    border: Border? = nil
         ) {
             self.components = components
             self.width = width
@@ -47,73 +56,21 @@ public extension PaywallComponent {
             self.padding = padding
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
-        }
-
-        public enum Dimension: Codable, Sendable, Hashable {
-
-            case vertical(HorizontalAlignment)
-            case horizontal(VerticalAlignment)
-            case zlayer(TwoDimensionAlignment)
-
-            public func encode(to encoder: any Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-
-                switch self {
-                case .vertical(let alignment):
-                    try container.encode(DimensionType.vertical.rawValue, forKey: .type)
-                    try container.encode(alignment, forKey: .alignment)
-                case .horizontal(let alignment):
-                    try container.encode(DimensionType.horizontal.rawValue, forKey: .type)
-                    try container.encode(alignment, forKey: .alignment)
-                case .zlayer(let alignment):
-                    try container.encode(DimensionType.zlayer.rawValue, forKey: .type)
-                    try container.encode(alignment.rawValue, forKey: .alignment)
-                }
-            }
-
-            public init(from decoder: Decoder) throws {
-                let container = try decoder.container(keyedBy: CodingKeys.self)
-                let type = try container.decode(DimensionType.self, forKey: .type)
-
-                switch type {
-                case .vertical:
-                    let alignment = try container.decode(HorizontalAlignment.self, forKey: .alignment)
-                    self = .vertical(alignment)
-                case .horizontal:
-                    let alignment = try container.decode(VerticalAlignment.self, forKey: .alignment)
-                    self = .horizontal(alignment)
-                case .zlayer:
-                    let alignment = try container.decode(TwoDimensionAlignment.self, forKey: .alignment)
-                    self = .zlayer(alignment)
-                }
-            }
-
-            public static func horizontal() -> Dimension {
-                return .horizontal(.center)
-            }
-
-            public static func vertical() -> Dimension {
-                return .vertical(.center)
-            }
-
-            private enum CodingKeys: String, CodingKey {
-
-                case type
-                case alignment
-
-            }
-
-            private enum DimensionType: String, Decodable {
-
-                case vertical
-                case horizontal
-                case zlayer
-
-            }
-
+            self.border = border
         }
 
     }
+
 }
+
+public extension PaywallComponent {
+
+    // Components that can be contained in a stack
+    protocol StackableComponent: PaywallComponentBase {}
+
+}
+
+extension PaywallComponent: PaywallComponent.StackableComponent {}
+extension PaywallComponent.PackageComponent: PaywallComponent.StackableComponent {}
 
 #endif

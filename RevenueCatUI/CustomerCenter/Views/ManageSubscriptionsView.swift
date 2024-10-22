@@ -120,6 +120,12 @@ struct ManageSubscriptionsView: View {
                                  product: promotionalOfferData.product,
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
+        .sheet(item: self.$viewModel.inAppBrowserURL,
+               onDismiss: {
+            self.viewModel.onDismissInAppBrowser()
+        }, content: { inAppBrowserURL in
+            SafariView(url: inAppBrowserURL.url)
+        })
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
     }
