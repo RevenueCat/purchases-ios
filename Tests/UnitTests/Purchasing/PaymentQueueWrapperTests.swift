@@ -28,7 +28,7 @@ class PaymentQueueWrapperTests: TestCase {
         try super.setUpWithError()
 
         self.paymentQueue = MockPaymentQueue()
-        self.wrapper = .init(paymentQueue: self.paymentQueue, storeKitVersion: .storeKit1)
+        self.wrapper = .init(paymentQueue: self.paymentQueue)
         self.delegate = WrapperDelegate()
     }
 

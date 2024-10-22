@@ -364,7 +364,7 @@ private extension TransactionPosterTests {
                                     systemInfo: self.systemInfo)
         self.transactionFetcher = .init()
         self.backend = .init()
-        self.paymentQueueWrapper = .init(storeKitVersion: .storeKit1)
+        self.paymentQueueWrapper = .init()
 
         self.poster = .init(
             productsManager: self.productsManager,

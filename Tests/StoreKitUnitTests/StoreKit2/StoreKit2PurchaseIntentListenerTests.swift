@@ -85,7 +85,12 @@ class StoreKit2PurchaseIntentListenerTests: StoreKit2PurchaseIntentListenerBaseT
         expect(delegate.storeKit2PurchaseIntentListenerInvoked).to(beFalse())
         expect(delegate.storeKit2PurchaseIntentListenerPurchaseIntent).to(beNil())
 
+        #if compiler(>=5.10)
         let purchaseIntent = StorePurchaseIntent(purchaseIntent: nil)
+        #else
+        let purchaseIntent = StorePurchaseIntent()
+        #endif
+
         self.updatesContinuation?.yield(purchaseIntent)
 
         // Wait for the delegate to be invoked and the StorePurchaseIntent to be received
