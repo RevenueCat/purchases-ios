@@ -35,7 +35,6 @@ protocol StoreKit2PurchaseIntentListenerType: Sendable {
     func listenForPurchaseIntents() async
 
     func set(delegate: StoreKit2PurchaseIntentListenerDelegate) async
-
 }
 
 /// Observes `StoreKit.PurchaseIntent.intents`, which receives purchase intents, which indicate that
@@ -53,17 +52,21 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
     // We can't directly store instances of `AsyncStream`, since that causes runtime crashes when
     // loading this type in iOS <= 15, even with @available checks correctly in place.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://github.com/apple/swift/issues/58099
-    private let _updates: Box<AsyncStream<StorePurchaseIntent>>
+    private let _updates: Box<AsyncStream<StorePurchaseIntent>>?
 
-    var updates: AsyncStream<StorePurchaseIntent> {
-        return self._updates.value
+    var updates: AsyncStream<StorePurchaseIntent>? {
+        return self._updates?.value
     }
 
     init(delegate: StoreKit2PurchaseIntentListenerDelegate? = nil) {
 
+        #if compiler(>=5.10)
         let storePurchaseIntentSequence = StoreKit.PurchaseIntent.intents.map { purchaseIntent in
             return StorePurchaseIntent(purchaseIntent: purchaseIntent)
         }.toAsyncStream()
+        #else
+        let storePurchaseIntentSequence: AsyncStream<StorePurchaseIntent>? = nil
+        #endif
 
         self.init(
             delegate: delegate,
@@ -75,10 +78,14 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
     /// By default `StoreKit.Transaction.updates` is used, but a custom one can be passed for testing.
     init<S: AsyncSequence>(
         delegate: StoreKit2PurchaseIntentListenerDelegate? = nil,
-        updates: S
+        updates: S?
     ) where S.Element == StorePurchaseIntent {
         self.delegate = delegate
-        self._updates = .init(updates.toAsyncStream())
+        if let updates {
+            self._updates = .init(updates.toAsyncStream())
+        } else {
+            self._updates = nil
+        }
     }
 
     func set(delegate: any StoreKit2PurchaseIntentListenerDelegate) async {
@@ -90,14 +97,16 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 
         self.taskHandle?.cancel()
         self.taskHandle = Task(priority: .utility) { [weak self, updates = self.updates] in
-            for await purchaseIntent in updates {
-                guard let self = self else {
-                    break
-                }
+            if let updates {
+                for await purchaseIntent in updates {
+                    guard let self = self else {
+                        break
+                    }
 
-                // Important that handling purchase intents doesn't block the thread
-                Task.detached {
-                    await self.delegate?.storeKit2PurchaseIntentListener(self, purchaseIntent: purchaseIntent)
+                    // Important that handling purchase intents doesn't block the thread
+                    Task.detached {
+                        await self.delegate?.storeKit2PurchaseIntentListener(self, purchaseIntent: purchaseIntent)
+                    }
                 }
             }
         }
@@ -115,9 +124,13 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 @available(visionOS, unavailable)
 struct StorePurchaseIntent: Sendable, Equatable {
 
+    // PurchaseIntents became available on macOS starting in macOS 14.4, which isn't available
+    // until Xcode 15.3
+    #if compiler(>=5.10)
     @available(iOS 16.4, macOS 14.4, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     let purchaseIntent: PurchaseIntent?
+    #endif
 }

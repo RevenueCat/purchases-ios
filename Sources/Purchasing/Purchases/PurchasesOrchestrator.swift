@@ -1094,8 +1094,10 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
         purchaseIntent: StorePurchaseIntent
     ) async {
         // Making the extension unavailable on tvOS & watchOS doesn't
-        // stop the compiler from checking availability in the functions
-        #if !os(tvOS) && !os(watchOS)
+        // stop the compiler from checking availability in the functions.
+        // We also need to ensure that we're on Xcode >= 15.3, since that is when
+        // PurchaseIntents were first made available on macOS.
+        #if !os(tvOS) && !os(watchOS) && compiler(>=5.10)
 
         guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
         let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)

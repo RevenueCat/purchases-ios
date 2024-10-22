@@ -58,11 +58,18 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
     private let paymentQueue: SKPaymentQueue
 
     private lazy var purchaseIntentsAPIAvailable: Bool = {
+        // PurchaseIntents was introduced in macOS with macOS 14.4, which was first shipped with Xcode 15.3,
+        // which shipped with version 5.10 of the Swift compiler. We need to check for the Swift compiler version
+        // because the PurchaseIntents framework isn't available on Xcode versions <15.3.
+        #if compiler(>=5.10)
         if #available(iOS 16.4, macOS 14.4, *) {
             return true
         } else {
             return false
         }
+        #else
+        return false
+        #endif
     }()
 
     weak var delegate: PaymentQueueWrapperDelegate? {
