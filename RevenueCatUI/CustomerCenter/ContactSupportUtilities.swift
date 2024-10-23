@@ -11,6 +11,7 @@
 //
 //  Created by Antonio Rico Diez on 2024-10-23.
 
+import Foundation
 import RevenueCat
 #if canImport(UIKit)
 import UIKit
