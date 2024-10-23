@@ -27,7 +27,6 @@ class ContactSupportUtilitiesTest: TestCase {
         Please describe your issue or question.
 
         ---------------------------
-        Extra information:
         """
 
         expect(body).to(contain(initialBody))
@@ -46,7 +45,6 @@ class ContactSupportUtilitiesTest: TestCase {
         Please describe your issue or question.
 
         ---------------------------
-        Extra information:
         - test1: test2
         - test3: test4
         """

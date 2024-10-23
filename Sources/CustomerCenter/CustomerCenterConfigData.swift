@@ -72,7 +72,6 @@ public struct CustomerCenterConfigData {
             case subExpired = "sub_expired"
             case contactSupport = "contact_support"
             case defaultBody = "default_body"
-            case defaultExtraInformation = "default_extra_information"
             case defaultSubject = "default_subject"
             case dismiss = "dismiss"
             case unknown = "unknown"
@@ -142,8 +141,6 @@ public struct CustomerCenterConfigData {
                     return "Contact support"
                 case .defaultBody:
                     return "Please describe your issue or question."
-                case .defaultExtraInformation:
-                    return "Extra information:"
                 case .defaultSubject:
                     return "Support Request"
                 case .dismiss:

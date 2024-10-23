@@ -32,7 +32,6 @@ extension CustomerCenterConfigData.Support {
             \(localization.commonLocalizedString(for: .defaultBody))
 
             ---------------------------
-            \(localization.commonLocalizedString(for: .defaultExtraInformation))
             \(infoToInclude.map { (key, value) in
                 "- \(key): \(value)"
             }.joined(separator: "\n"))
