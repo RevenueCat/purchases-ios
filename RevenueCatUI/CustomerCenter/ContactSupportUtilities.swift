@@ -29,7 +29,7 @@ extension CustomerCenterConfigData.Support {
         let defaultBody =
             """
             \(localization.commonLocalizedString(for: .defaultBody))
-            
+
             ---------------------------
             \(localization.commonLocalizedString(for: .defaultExtraInformation))
             \(infoToInclude.map { (key, value) in

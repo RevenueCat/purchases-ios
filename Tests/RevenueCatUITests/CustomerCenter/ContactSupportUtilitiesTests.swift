@@ -25,7 +25,7 @@ class ContactSupportUtilitiesTest: TestCase {
         let body = support.calculateBody(localization)
         let expectedBody = """
         Please describe your issue or question.
-        
+
         ---------------------------
         Extra information:
         - RCUserID: Unknown
@@ -42,7 +42,7 @@ class ContactSupportUtilitiesTest: TestCase {
         let body = support.calculateBody(localization, dataToInclude: givenData)
         let expectedBody = """
         Please describe your issue or question.
-        
+
         ---------------------------
         Extra information:
         - test1: test2
