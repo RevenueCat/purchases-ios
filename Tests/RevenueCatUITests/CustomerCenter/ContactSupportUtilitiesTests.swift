@@ -23,18 +23,20 @@ class ContactSupportUtilitiesTest: TestCase {
 
     func testSupportEmailBodyWithDefaultDataIsCorrect() {
         let body = support.calculateBody(localization)
-        let expectedBody = """
+        let initialBody = """
         Please describe your issue or question.
 
         ---------------------------
         Extra information:
-        - RCUserID: Unknown
-        - StoreFront Country Code: Unknown
-        - App Version: 16.0
-        - iOS Version: 18.0
         """
 
-        expect(body).to(equal(expectedBody))
+        expect(body).to(contain(initialBody))
+        expect(body).to(contain("- RC User ID: Unknown"))
+        expect(body).to(contain("- App Version:"))
+        expect(body).to(contain("- StoreFront Country Code: Unknown"))
+        expect(body).to(contain("- Device:"))
+        expect(body).to(contain("- OS Version:"))
+
     }
 
     func testSupportEmailBodyWithGivenDataIsCorrect() {

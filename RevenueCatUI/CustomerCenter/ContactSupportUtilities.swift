@@ -42,18 +42,21 @@ extension CustomerCenterConfigData.Support {
 
     private static func defaultData(_ localization: CustomerCenterConfigData.Localization) -> [(String, String)] {
         let unknown = localization.commonLocalizedString(for: .unknown)
-        var iOSVersion = unknown
-        #if canImport(UIKit)
-        iOSVersion = UIDevice.current.systemVersion
+        var osVersion = unknown
+        var deviceModel = unknown
+        #if canImport(UIKit) && !os(watchOS)
+        osVersion = UIDevice.current.systemVersion
+        deviceModel = UIDevice.current.model
         #endif
         let userID = Purchases.isConfigured ? Purchases.shared.appUserID : unknown
         let storeFrontCountryCode = Purchases.isConfigured ? Purchases.shared.storeFrontCountryCode ?? unknown : unknown
 
         return [
-            ("RCUserID", userID),
-            ("StoreFront Country Code", storeFrontCountryCode),
+            ("RC User ID", userID),
             ("App Version", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? unknown),
-            ("iOS Version", iOSVersion)
+            ("Device", deviceModel),
+            ("OS Version", osVersion),
+            ("StoreFront Country Code", storeFrontCountryCode)
         ]
     }
 }
