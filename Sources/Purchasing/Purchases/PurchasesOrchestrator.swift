@@ -192,7 +192,7 @@ final class PurchasesOrchestrator {
         }
 
         #if os(iOS) || targetEnvironment(macCatalyst) || os(macOS)
-        if #available(iOS 16.4, macOS 14.4, *) {
+        if #available(iOS 16.4, macOS 14.4, *), systemInfo.storeKitVersion == .storeKit2 {
             // We can't inject StoreKit2PurchaseIntentListener in the constructor since
             // it has different availability requirements than the constructor.
             self._storeKit2PurchaseIntentListener = StoreKit2PurchaseIntentListener()
@@ -201,7 +201,6 @@ final class PurchasesOrchestrator {
                 await self.storeKit2PurchaseIntentListener.listenForPurchaseIntents()
             }
         }
-
         #endif
 
         Task {
