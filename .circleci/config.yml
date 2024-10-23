@@ -1301,6 +1301,178 @@ jobs:
 
 workflows:
   version: 2
-  daily-loadshedder-integration-tests:
+  generate-snapshot:
+    when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - run-test-ios-18
+      - run-test-ios-17
+      - run-test-ios-16
+      - run-test-ios-15
+      - run-test-ios-14
+      - run-test-ios-13
+      - run-test-macos
+      - run-test-watchos
+
+  generate_revenuecatui_snapshots:
+    when: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    jobs:
+      - spm-revenuecat-ui-ios-15
+      - spm-revenuecat-ui-ios-16
+      - run-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-18
+
+  build-test:
+    when:
+      and:
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - not: << pipeline.parameters.generate_snapshots >>
+        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    jobs:
+      - lint
+      - run-test-ios-17
+      - run-test-ios-18
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-18
+
+  create-tag:
+    when:
+      and:
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - matches: 
+            pattern: "^release/.*$"
+            value: << pipeline.git.branch >>
+    jobs:
+      - release-checks
+      - hold:
+          type: approval
+          requires:
+            - release-checks
+      - tag-release-branch:
+          requires:
+            - hold
+
+  deploy-tag:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    jobs:
+      - make-release:
+          <<: *release-tags
+      - push-revenuecat-pod:
+          requires:
+            - make-release
+          <<: *release-tags
+      - push-revenuecatui-pod:
+          requires:
+            - push-revenuecat-pod
+          <<: *release-tags
+      - deploy-to-spm:
+          requires:
+            - make-release
+          <<: *release-tags
+      - docs-deploy:
+          requires:
+            - make-release
+          <<: *release-tags
+      - deploy-purchase-tester:
+          dry_run: false
+          requires:
+            - make-release
+          <<: *release-tags
+
+  snapshot-bump:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    jobs:
+      - prepare-next-version:
+          <<: *only-main-branch
+
+  danger:
+    jobs:
+      - danger
+
+  weekly-run-workflow:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["release-train", << pipeline.schedule.name >>]
+    jobs:
+      - release-train
+
+  daily-loadshedder-integration-tests:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal:
+            ["load_shedder_integration_tests", << pipeline.schedule.name >>]
+    jobs:
+      - loadshedder-integration-tests-v3
       - integration-tests-all
+
+  manual-trigger-bump:
+    when:
+      equal: [bump, << pipeline.parameters.action >>]
+    jobs:
+      - release-train
+
+  manual-trigger-docs-deploy:
+    when:
+      equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
+    jobs:
+      - docs-deploy
+
+  # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
+  # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields 
+  # and click "Trigger Pipeline" to begin the pipeline:
+  #   - Parameter Type: string
+  #   - Name: action
+  #   - Value: run-manual-tests
+  all-tests:
+    when:
+      or:
+        - matches: 
+            pattern: "^release/.*$"
+            value: << pipeline.git.branch >>
+        - equal:
+            - "run-manual-tests"
+            - << pipeline.parameters.action >>
+        - equal: 
+            - "run-from-github-comments"
+            - << pipeline.parameters.GHA_Meta >>
+    jobs:
+      - backend-integration-tests-SK1
+      - backend-integration-tests-SK2
+      - backend-integration-tests-custom-entitlements
+      - backend-integration-tests-other
+      - build-tv-watch-and-macos
+      - build-visionos
+      - docs-build
+      - run-test-ios-14
+      - run-test-ios-15
+      - run-test-ios-16
+      - run-test-macos
+      - run-test-tvos
+      - run-test-watchos
+      - spm-receipt-parser
+      - spm-release-build
+      - spm-release-build-xcode-14
+      - spm-release-build-xcode-15
+      - spm-revenuecat-ui-ios-15
+      - spm-revenuecat-ui-ios-16
+      - run-revenuecat-ui-ios-17
+      - run-revenuecat-ui-ios-18
+      - spm-revenuecat-ui-watchos
+      - installation-tests-cocoapods
+      - installation-tests-swift-package-manager
+      - installation-tests-custom-entitlement-computation-swift-package-manager
+      - installation-tests-carthage
+      - installation-tests-xcode-direct-integration
+      - installation-tests-receipt-parser
+      - api-tests
+      - deploy-purchase-tester:
+          dry_run: true
+      
