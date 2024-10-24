@@ -27,7 +27,7 @@ struct EventsRequest {
         self.init(events: events.compactMap { storedEvent in
             switch storedEvent.feature {
             case .paywalls:
-                guard let event = PaywallEventRequest(storedEvent: storedEvent) else {
+                guard let event = PaywallEvent(storedEvent: storedEvent) else {
                     return nil
                 }
                 return AnyEncodable(event)
@@ -46,34 +46,35 @@ protocol FeatureEvent: Encodable {
 
 }
 
-// This is a `struct` instead of `enum` so that
-// we can use make it conform to Encodable
-// swiftlint:disable:next convenience_type
-struct PaywallEventRequest: FeatureEvent {
+extension EventsRequest {
 
-    enum EventType: String {
+    struct PaywallEvent: FeatureEvent {
 
-        case impression = "paywall_impression"
-        case cancel = "paywall_cancel"
-        case close = "paywall_close"
+        enum EventType: String {
+
+            case impression = "paywall_impression"
+            case cancel = "paywall_cancel"
+            case close = "paywall_close"
+
+        }
+
+        let id: String?
+        let version: Int
+        var type: EventType
+        var appUserID: String
+        var sessionID: String
+        var offeringID: String
+        var paywallRevision: Int
+        var timestamp: UInt64
+        var displayMode: PaywallViewMode
+        var darkMode: Bool
+        var localeIdentifier: String
 
     }
 
-    let id: String?
-    let version: Int
-    var type: EventType
-    var appUserID: String
-    var sessionID: String
-    var offeringID: String
-    var paywallRevision: Int
-    var timestamp: UInt64
-    var displayMode: PaywallViewMode
-    var darkMode: Bool
-    var localeIdentifier: String
-
 }
 
-extension PaywallEventRequest {
+extension EventsRequest.PaywallEvent {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: PaywallStoredEvent) {
@@ -107,7 +108,7 @@ extension PaywallEventRequest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEvent {
 
-    var eventType: PaywallEventRequest.EventType {
+    var eventType: EventsRequest.PaywallEvent.EventType {
         switch self {
         case .impression: return .impression
         case .cancel: return .cancel
@@ -120,8 +121,8 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
-extension PaywallEventRequest.EventType: Encodable {}
-extension PaywallEventRequest: Encodable {
+extension EventsRequest.PaywallEvent.EventType: Encodable {}
+extension EventsRequest.PaywallEvent: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
