@@ -27,7 +27,7 @@ struct EventsRequest {
         self.init(events: events.compactMap { storedEvent in
             switch storedEvent.feature {
             case .paywalls:
-                guard let event = PaywallEventRequest.Event(storedEvent: storedEvent) else {
+                guard let event = PaywallEventRequest(storedEvent: storedEvent) else {
                     return nil
                 }
                 return AnyEncodable(event)
@@ -49,7 +49,7 @@ protocol FeatureEvent: Encodable {
 // This is a `struct` instead of `enum` so that
 // we can use make it conform to Encodable
 // swiftlint:disable:next convenience_type
-struct PaywallEventRequest {
+struct PaywallEventRequest: FeatureEvent {
 
     enum EventType: String {
 
@@ -59,25 +59,21 @@ struct PaywallEventRequest {
 
     }
 
-    struct Event: FeatureEvent {
-
-        let id: String?
-        let version: Int
-        var type: EventType
-        var appUserID: String
-        var sessionID: String
-        var offeringID: String
-        var paywallRevision: Int
-        var timestamp: UInt64
-        var displayMode: PaywallViewMode
-        var darkMode: Bool
-        var localeIdentifier: String
-
-    }
+    let id: String?
+    let version: Int
+    var type: EventType
+    var appUserID: String
+    var sessionID: String
+    var offeringID: String
+    var paywallRevision: Int
+    var timestamp: UInt64
+    var displayMode: PaywallViewMode
+    var darkMode: Bool
+    var localeIdentifier: String
 
 }
 
-extension PaywallEventRequest.Event {
+extension PaywallEventRequest {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: PaywallStoredEvent) {
@@ -124,9 +120,8 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
-extension PaywallEventRequest: Encodable {}
 extension PaywallEventRequest.EventType: Encodable {}
-extension PaywallEventRequest.Event: Encodable {
+extension PaywallEventRequest: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
