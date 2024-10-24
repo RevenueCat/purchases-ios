@@ -1478,7 +1478,7 @@ private extension PurchasesOrchestrator {
                             package: Package?,
                             offer: PromotionalOffer.SignedData? = nil,
                             metadata: [String: String]? = nil) {
-        let string: PurchaseStrings = .purchasing_product_params(product, package, offer, metadata)
+        let string: PurchaseStrings = .purchasing_product(product, package, offer, metadata)
         Logger.purchase(string)
     }
 
