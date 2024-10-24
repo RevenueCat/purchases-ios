@@ -83,12 +83,14 @@ public struct CustomerCenterConfigData {
             case appleSubscriptionManage = "apple_subscription_manage"
             case googleSubscriptionManage = "google_subscription_manage"
             case amazonSubscriptionManage = "amazon_subscription_manage"
+            case webSubscriptionManage = "web_subscription_manage"
             case platformMismatch = "platform_mismatch"
             case goingToCheckPurchases = "going_to_check_purchases"
             case checkPastPurchases = "check_past_purchases"
             case purchasesRecovered = "purchases_recovered"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
             case purchasesNotRecovered = "purchases_not_recovered"
+            case manageSubscription = "manage_subscription"
 
             var defaultValue: String {
                 switch self {
@@ -165,6 +167,11 @@ public struct CustomerCenterConfigData {
                     return "You can manage your subscription by using the Play Store app on an Android device"
                 case .amazonSubscriptionManage:
                     return "You can manage your subscription in the Amazon Appstore app on an Amazon device."
+                case .webSubscriptionManage:
+                    return "You are subscribed to a web subscription." +
+                    " You can manage your subscription by visiting your account."
+                case .manageSubscription:
+                    return "Manage your subscription"
                 }
             }
 

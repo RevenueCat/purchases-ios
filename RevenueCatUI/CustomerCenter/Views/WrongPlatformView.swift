@@ -27,6 +27,8 @@ struct WrongPlatformView: View {
 
     @State
     private var store: Store?
+    @State
+    private var managementURL: URL?
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -51,8 +53,10 @@ struct WrongPlatformView: View {
     init() {
     }
 
-    fileprivate init(store: Store) {
+    fileprivate init(store: Store,
+                     managementURL: URL?) {
         self._store = State(initialValue: store)
+        self._managementURL = State(initialValue: managementURL)
     }
 
     var body: some View {
@@ -65,6 +69,15 @@ struct WrongPlatformView: View {
                     systemImage: "exclamationmark.triangle.fill",
                     description: Text(platformInstructions)
                 )
+            }
+            if let managementURL = self.managementURL {
+                Section {
+                    AsyncButton {
+                        openURL(managementURL)
+                    } label: {
+                        Text(localization.commonLocalizedString(for: .manageSubscription))
+                    }
+                }
             }
             if let url = supportURL {
                 Section {
@@ -87,6 +100,7 @@ struct WrongPlatformView: View {
                 if let customerInfo = try? await Purchases.shared.customerInfo(),
                    let firstEntitlement = customerInfo.entitlements.active.first {
                     self.store = firstEntitlement.value.store
+                    self.managementURL = customerInfo.managementURL
                 }
             }
         }
@@ -101,10 +115,14 @@ struct WrongPlatformView: View {
                 return localization.commonLocalizedString(for: .appleSubscriptionManage)
             case .playStore:
                 return localization.commonLocalizedString(for: .googleSubscriptionManage)
-            case .stripe, .rcBilling, .external, .promotional, .unknownStore:
+            case .stripe, .rcBilling:
+                return localization.commonLocalizedString(for: .webSubscriptionManage)
+            case .external, .promotional, .unknownStore:
                 return defaultContactSupport
             case .amazon:
                 return localization.commonLocalizedString(for: .amazonSubscriptionManage)
+            @unknown default:
+                return defaultContactSupport
             }
         } else {
             return defaultContactSupport
@@ -123,14 +141,38 @@ struct WrongPlatformView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            WrongPlatformView(store: .appStore)
+            WrongPlatformView(store: .appStore,
+                              managementURL: URL(string: "https://apps.apple.com/account/subscriptions"))
                 .previewDisplayName("App Store")
 
-            WrongPlatformView(store: .amazon)
+            WrongPlatformView(store: .macAppStore,
+                              managementURL: URL(string: "https://apps.apple.com/account/subscriptions"))
+                .previewDisplayName("Mac AppStore")
+
+            WrongPlatformView(store: .playStore,
+                              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"))
+                .previewDisplayName("Play Store")
+
+            WrongPlatformView(store: .rcBilling,
+                              managementURL:
+                                URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"))
+                .previewDisplayName("RCBilling")
+
+            WrongPlatformView(store: .stripe, managementURL: nil)
+                .previewDisplayName("Stripe")
+
+            WrongPlatformView(store: .external, managementURL: nil)
+                .previewDisplayName("External")
+
+            WrongPlatformView(store: .promotional, managementURL: nil)
+                .previewDisplayName("Promotional")
+
+            WrongPlatformView(store: .amazon, managementURL: nil)
                 .previewDisplayName("Amazon")
 
-            WrongPlatformView(store: .rcBilling)
-                .previewDisplayName("RCBilling")
+            WrongPlatformView(store: .unknownStore, managementURL: nil)
+                .previewDisplayName("Unknown")
+
         }
 
     }
