@@ -85,6 +85,14 @@ enum StoreKitStrings {
 
     case error_displaying_store_message(Error)
 
+    case error_displaying_offer_code_redemption_sheet(Error)
+
+    case not_displaying_offer_code_redemption_sheet_because_ios_app_on_macos
+
+    case error_displaying_offer_code_redemption_sheet_no_window_scene
+
+    case error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension
+
 }
 
 extension StoreKitStrings: LogMessage {
@@ -200,6 +208,20 @@ extension StoreKitStrings: LogMessage {
 
         case let .error_displaying_store_message(error):
             return "Error displaying StoreKit message: '\(error)'"
+
+        case let .error_displaying_offer_code_redemption_sheet(error):
+            return "Error displaying Offer Code redemption sheet: '\(error)'"
+
+        case .error_displaying_offer_code_redemption_sheet_no_window_scene:
+            return "Could not display the Offer Code redemption sheet: could not " +
+            "determine the UIWindowScene to present the sheet over. Please try " +
+            "passing in the UIWindowScene that you'd like to present the sheet over."
+
+        case .error_displaying_offer_code_redemption_sheet_unavailable_in_app_extension:
+            return "Could not display the Offer Code redemption sheet: only available on iOS 16+"
+
+        case .not_displaying_offer_code_redemption_sheet_because_ios_app_on_macos:
+            return "Could not display the Offer Code redemption sheet: not supported in iOS apps running on macOS."
         }
     }
 

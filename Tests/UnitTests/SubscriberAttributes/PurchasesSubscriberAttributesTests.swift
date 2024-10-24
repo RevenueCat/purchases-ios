@@ -42,6 +42,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var transactionPoster: TransactionPoster!
+    var mockOfferCodeSheetPresenter: MockOfferCodeRedemptionSheetPresenter!
 
     // swiftlint:disable:next weak_delegate
     var purchasesDelegate = MockPurchasesDelegate()
@@ -153,6 +154,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                                          currentUserProvider: mockIdentityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
+        self.mockOfferCodeSheetPresenter = .init()
     }
 
     override func tearDown() {
@@ -221,7 +223,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               trialOrIntroPriceEligibilityChecker: .create(
                                 with: trialOrIntroductoryPriceEligibilityChecker
                               ),
-                              storeMessagesHelper: self.mockStoreMessagesHelper)
+                              storeMessagesHelper: self.mockStoreMessagesHelper,
+                              offerCodeRedemptionSheetPresenter: self.mockOfferCodeSheetPresenter)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
