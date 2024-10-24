@@ -141,8 +141,11 @@ struct OfferingDetailView: View {
             } else {
                 result = try await Purchases.shared.purchase(package: self.package)
             }
-            self.completedPurchase(result)
+            #else
+            let result = try await Purchases.shared.purchase(package: self.package)
             #endif
+            self.completedPurchase(result)
+
         }
         
         private func purchaseAsProduct() async throws {
@@ -156,8 +159,10 @@ struct OfferingDetailView: View {
             } else {
                 result = try await Purchases.shared.purchase(product: self.package.storeProduct)
             }
-            self.completedPurchase(result)
+            #else
+            let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
             #endif
+            self.completedPurchase(result)
         }
 
         private func purchaseAsSK1Product() async throws {
