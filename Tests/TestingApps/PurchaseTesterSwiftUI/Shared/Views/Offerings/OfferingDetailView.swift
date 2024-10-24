@@ -32,6 +32,7 @@ struct OfferingDetailView: View {
         @Binding var isPurchasing: Bool
 
         @EnvironmentObject private var observerModeManager: ObserverModeManager
+        @EnvironmentObject private var customerData: RevenueCatCustomerData
         @State private var eligibility: IntroEligibilityStatus? = nil
         
         @State private var error: Error?
@@ -133,15 +134,34 @@ struct OfferingDetailView: View {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
+            #if ENABLE_PURCHASE_PARAMS
+            let result: PurchaseResultData
+            if let metadata = customerData.metadata {
+                result = try await Purchases.shared.purchase(package: self.package, params: PurchaseParams.Builder().with(metadata: metadata).build())
+            } else {
+                result = try await Purchases.shared.purchase(package: self.package)
+            }
+            #else
             let result = try await Purchases.shared.purchase(package: self.package)
+            #endif
             self.completedPurchase(result)
+
         }
         
         private func purchaseAsProduct() async throws {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
+            #if ENABLE_PURCHASE_PARAMS
+            let result: PurchaseResultData
+            if let metadata = customerData.metadata {
+                result = try await Purchases.shared.purchase(product: self.package.storeProduct, params: PurchaseParams.Builder().with(metadata: metadata).build())
+            } else {
+                result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+            }
+            #else
             let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+            #endif
             self.completedPurchase(result)
         }
 
