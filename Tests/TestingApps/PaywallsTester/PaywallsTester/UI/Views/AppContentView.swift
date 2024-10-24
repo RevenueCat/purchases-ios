@@ -90,6 +90,7 @@ struct AppContentView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
             AppContentView()
+              .environmentObject(ApplicationData())
         }
     }
 
