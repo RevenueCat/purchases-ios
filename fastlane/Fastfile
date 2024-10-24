@@ -130,6 +130,16 @@ platform :ios do
     end
   end
 
+  desc "Builds the Paywalls Test app"
+  lane :build_paywalls_test do |options|
+    scan(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      build_for_testing: true,
+    )
+    emerge
+  end
+
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
