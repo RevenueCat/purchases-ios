@@ -13,6 +13,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
 
+    case root(RootComponentViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
     case spacer(SpacerComponentViewModel)
@@ -22,17 +23,31 @@ enum PaywallComponentViewModel {
     case packageGroup(PackageGroupComponentViewModel)
     // Purposely leaving out a `case package` since `PackageGroupComponentViewModel` creates this model
     case purchaseButton(PurchaseButtonComponentViewModel)
+    case stickyFooter(StickyFooterComponentViewModel)
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func toViewModel(
         offering: Offering,
         localizedStrings: LocalizationDictionary
     ) throws -> PaywallComponentViewModel {
         switch self {
+        case .root(let component):
+            return .root(
+                try RootComponentViewModel(
+                    component: component,
+                    stackViewModel: StackComponentViewModel(
+                        component: component.stack,
+                        localizedStrings: localizedStrings,
+                        offering: offering
+                    ),
+                    stickyFooterViewModel: component.stickyFooter.map { StickyFooterComponentViewModel(component: $0) }
+                )
+            )
         case .text(let component):
             return .text(
                 try TextComponentViewModel(localizedStrings: localizedStrings, component: component)
@@ -77,6 +92,10 @@ extension PaywallComponent {
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
                                                      component: component)
+            )
+        case .stickyFooter(let component):
+            return .stickyFooter(
+                try StickyFooterComponentViewModel(component: component)
             )
         }
     }

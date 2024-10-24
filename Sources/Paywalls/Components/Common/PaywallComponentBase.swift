@@ -13,6 +13,7 @@ public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 public enum PaywallComponent: PaywallComponentBase {
 
+    case root(RootComponent)
     case text(TextComponent)
     case image(ImageComponent)
     case spacer(SpacerComponent)
@@ -22,9 +23,11 @@ public enum PaywallComponent: PaywallComponentBase {
     case packageGroup(PackageGroupComponent)
     case package(PackageComponent)
     case purchaseButton(PurchaseButtonComponent)
+    case stickyFooter(StickyFooterComponent)
 
     public enum ComponentType: String, Codable, Sendable {
 
+        case root
         case text
         case image
         case spacer
@@ -34,6 +37,7 @@ public enum PaywallComponent: PaywallComponentBase {
         case packageGroup
         case package
         case purchaseButton
+        case stickyFooter
 
     }
 
@@ -54,10 +58,14 @@ extension PaywallComponent: Codable {
 
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
+        case .root(let component):
+            try container.encode(ComponentType.root, forKey: .type)
+            try component.encode(to: encoder)
         case .text(let component):
             try container.encode(ComponentType.text, forKey: .type)
             try component.encode(to: encoder)
@@ -85,14 +93,20 @@ extension PaywallComponent: Codable {
         case .purchaseButton(let component):
             try container.encode(ComponentType.purchaseButton, forKey: .type)
             try component.encode(to: encoder)
+        case .stickyFooter(let component):
+            try container.encode(ComponentType.stickyFooter, forKey: .type)
+            try component.encode(to: encoder)
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(ComponentType.self, forKey: .type)
 
         switch type {
+        case .root:
+            self = .root(try RootComponent(from: decoder))
         case .text:
             self = .text(try TextComponent(from: decoder))
         case .image:
@@ -111,6 +125,8 @@ extension PaywallComponent: Codable {
             self = .package(try PackageComponent(from: decoder))
         case .purchaseButton:
             self = .purchaseButton(try PurchaseButtonComponent(from: decoder))
+        case .stickyFooter:
+            self = .stickyFooter(try StickyFooterComponent(from: decoder))
         }
     }
 
