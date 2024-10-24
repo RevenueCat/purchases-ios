@@ -191,18 +191,6 @@ final class PurchasesOrchestrator {
             await setSK2DelegateAndStartListening()
         }
 
-        #if os(iOS) || targetEnvironment(macCatalyst) || os(macOS)
-        if #available(iOS 16.4, macOS 14.4, *), systemInfo.storeKitVersion == .storeKit2 {
-            // We can't inject StoreKit2PurchaseIntentListener in the constructor since
-            // it has different availability requirements than the constructor.
-            self._storeKit2PurchaseIntentListener = StoreKit2PurchaseIntentListener()
-            Task {
-                await self.storeKit2PurchaseIntentListener.set(delegate: self)
-                await self.storeKit2PurchaseIntentListener.listenForPurchaseIntents()
-            }
-        }
-        #endif
-
         Task {
             await syncDiagnosticsIfNeeded()
         }
@@ -753,6 +741,25 @@ final class PurchasesOrchestrator {
     }
 
 #endif
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    internal func setSK2PurchaseIntentListener(
+        _ storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType
+    ) {
+        // We can't inject StoreKit2PurchaseIntentListener in the constructor since
+        // it has different availability requirements than the constructor.
+
+        if systemInfo.storeKitVersion == .storeKit2 {
+            self._storeKit2PurchaseIntentListener = storeKit2PurchaseIntentListener
+            Task {
+                await self.storeKit2PurchaseIntentListener.set(delegate: self)
+                await self.storeKit2PurchaseIntentListener.listenForPurchaseIntents()
+            }
+        }
+    }
 
 }
 
