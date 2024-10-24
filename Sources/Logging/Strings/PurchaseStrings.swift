@@ -46,7 +46,7 @@ enum PurchaseStrings {
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
-    case purchasing_product_params(StoreProduct, Package?, PromotionalOffer.SignedData?, [String: String]?)
+    case purchasing_product(StoreProduct, Package?, PromotionalOffer.SignedData?, [String: String]?)
 
     case purchased_product(productIdentifier: String)
     case product_purchase_failed(productIdentifier: String, error: Error)
@@ -200,7 +200,7 @@ extension PurchaseStrings: LogMessage {
         case .purchases_synced:
             return "Purchases synced."
 
-        case let .purchasing_product_params(product, package, discount, metadata):
+        case let .purchasing_product(product, package, discount, metadata):
             var message = "Purchasing Product '\(product.productIdentifier)'"
             if let package = package {
                 message += " from package in Offering " +
