@@ -17,12 +17,12 @@ import Foundation
 final class PostPaywallEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
-    private let request: PaywallEventsRequest
+    private let request: FeatureEventsRequest
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
-        request: PaywallEventsRequest,
+        request: FeatureEventsRequest,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request
