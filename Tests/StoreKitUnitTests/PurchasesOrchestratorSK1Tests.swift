@@ -221,7 +221,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             finishTransactions: false,
             storeKitVersion: .storeKit1,
             dangerousSettings: .init(autoSyncPurchases: true,
-                                     internalSettings: DangerousSettings.Internal(enableReceiptFetchRetry: true))
+                                     internalSettings: DangerousSettings.Internal(enableReceiptFetchRetry: true)),
+            deviceCache: self.deviceCache
         )
         self.setUpStoreKit1Wrapper()
         self.setUpOrchestrator()

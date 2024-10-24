@@ -33,6 +33,7 @@ class BaseBackendTests: TestCase {
     private(set) var identity: IdentityAPI!
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
+    private(set) var deviceCache: MockDeviceCache!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -45,6 +46,9 @@ class BaseBackendTests: TestCase {
 
     final func createDependencies(dangerousSettings: DangerousSettings? = nil,
                                   localesProvider: PreferredLocalesProviderType = MockPreferredLocalesProvider()) {
+        self.deviceCache = MockDeviceCache()
+        self.deviceCache.cache(storefront: CodableStorefront(countryCode: "USA", identifier: "USA"))
+
         // Need to force StoreKit 1 because we use iOS 13 snapshots
         // for watchOS tests which contain StoreKit 1 headers
         #if os(watchOS)
@@ -55,11 +59,11 @@ class BaseBackendTests: TestCase {
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
-            preferredLocalesProvider: localesProvider
+            preferredLocalesProvider: localesProvider,
+            deviceCache: self.deviceCache
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
@@ -153,19 +157,6 @@ extension BaseBackendTests {
             ]
         ] as [String: Any]
     ]
-
-}
-
-final class MockStorefrontProvider: StorefrontProviderType {
-
-    var currentStorefront: StorefrontType? {
-        // Simulate `DefaultStorefrontProvider` availability.
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            return MockStorefront(countryCode: "USA")
-        } else {
-            return nil
-        }
-    }
 
 }
 

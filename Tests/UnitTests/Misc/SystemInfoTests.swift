@@ -15,27 +15,30 @@ class SystemInfoTests: TestCase {
 
     func testPlatformFlavor() {
         let flavor = "flavor"
+        let deviceCache = MockDeviceCache()
         let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false, deviceCache: deviceCache)
         expect(systemInfo.platformFlavor) == flavor
     }
 
     func testPlatformFlavorVersion() {
         let flavorVersion = "flavorVersion"
         let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
+        let deviceCache = MockDeviceCache()
+        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false, deviceCache: deviceCache)
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
     func testFinishTransactions() {
         var finishTransactions = false
-        var systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
+        let deviceCache = MockDeviceCache()
+        var systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions, deviceCache: deviceCache)
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
 
         finishTransactions = true
 
-        systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
+        systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions, deviceCache: deviceCache)
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
     }
@@ -89,20 +92,24 @@ class SystemInfoTests: TestCase {
     #elseif os(macOS) || targetEnvironment(macCatalyst)
 
     func testIdentifierForVendorInSandbox() {
+        let deviceCache = MockDeviceCache()
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            deviceCache: deviceCache
         )
 
         expect(info.identifierForVendor) == MacDevice.identifierForVendor?.uuidString
     }
 
     func testIdentifierForVendorNotSandbox() {
+        let deviceCache = MockDeviceCache()
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false),
+            deviceCache: deviceCache
         )
 
         expect(info.identifierForVendor).to(beNil())
@@ -116,6 +123,65 @@ class SystemInfoTests: TestCase {
 
     #endif
 
+    // MARK: - Storefront Cache Tests
+    func testUsesStorefrontFromCache() {
+        let expectedStorefront = CodableStorefront(countryCode: "mock_country_code", identifier: "mock_id")
+        let deviceCache = MockDeviceCache()
+        deviceCache.cache(storefront: expectedStorefront)
+
+        let info = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            deviceCache: deviceCache
+        )
+
+        expect(deviceCache.invokedReadCachedStorefront).to(beTrue())
+        expect(info.storefront).toNot(beNil())
+        expect(info.storefront?.countryCode).to(equal(expectedStorefront.countryCode))
+        expect(info.storefront?.identifier).to(equal(expectedStorefront.identifier))
+    }
+
+    func testUsesStorefrontFromStoreKitIfNotCached() {
+        let deviceCache = MockDeviceCache()
+        expect(deviceCache.cachedStorefront()).to(beNil())
+
+        let info = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            deviceCache: deviceCache
+        )
+
+        expect(deviceCache.invokedReadCachedStorefront).to(beTrue())
+
+        expect(info.storefront).toEventuallyNot(beNil())
+        expect(info.storefront?.countryCode).toEventuallyNot(beNil())
+        expect(info.storefront?.countryCode).toEventuallyNot(beEmpty())
+        expect(info.storefront?.identifier).toEventuallyNot(beNil())
+        expect(info.storefront?.identifier).toEventuallyNot(beEmpty())
+    }
+
+    func testInitializingSystemInfoCachesStorefront() {
+        let deviceCache = MockDeviceCache()
+
+        _ = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            deviceCache: deviceCache
+        )
+
+        expect(deviceCache.invokedReadCachedStorefront).to(beTrue())
+
+        expect(deviceCache.invokedCacheStorefront).toEventually(beTrue())
+        expect(deviceCache.cachedStorefront()).toEventuallyNot(beNil())
+        expect(deviceCache.cachedStorefront()?.countryCode).toEventuallyNot(beNil())
+        expect(deviceCache.cachedStorefront()?.countryCode).toEventuallyNot(beEmpty())
+        expect(deviceCache.cachedStorefront()?.identifier).toEventuallyNot(beNil())
+        expect(deviceCache.cachedStorefront()?.identifier).toEventuallyNot(beEmpty())
+
+    }
 }
 
 private extension SystemInfo {
@@ -129,14 +195,16 @@ private extension SystemInfo {
 
         let sandboxDetector = sandboxEnvironmentDetector ?? BundleSandboxEnvironmentDetector(bundle: bundle)
 
+        let deviceCache = MockDeviceCache()
         return SystemInfo(platformInfo: nil,
                           finishTransactions: false,
                           bundle: bundle,
-                          sandboxEnvironmentDetector: sandboxDetector)
+                          sandboxEnvironmentDetector: sandboxDetector,
+                          deviceCache: deviceCache)
     }
 
     static var `default`: SystemInfo {
-        return .init(platformInfo: nil, finishTransactions: true)
+        return .init(platformInfo: nil, finishTransactions: true, deviceCache: MockDeviceCache())
     }
 
 }
