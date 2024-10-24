@@ -953,7 +953,11 @@ public extension Purchases {
 
     @objc(purchaseProduct:withCompletion:)
     func purchase(product: StoreProduct, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product, package: nil, completion: completion)
+        purchasesOrchestrator.purchase(product: product,
+                                       package: nil,
+                                       promotionalOffer: nil,
+                                       metadata: nil,
+                                       completion: completion)
     }
 
     func purchase(product: StoreProduct) async throws -> PurchaseResultData {
@@ -962,12 +966,46 @@ public extension Purchases {
 
     @objc(purchasePackage:withCompletion:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: package.storeProduct, package: package, completion: completion)
+        purchasesOrchestrator.purchase(product: package.storeProduct,
+                                       package: package,
+                                       promotionalOffer: nil,
+                                       metadata: nil,
+                                       completion: completion)
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
     }
+
+    #if ENABLE_PURCHASE_PARAMS
+
+    @objc(purchaseProduct:params:withCompletion:)
+    func purchase(product: StoreProduct, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: product,
+                                       package: nil,
+                                       promotionalOffer: params.promotionalOffer?.signedData,
+                                       metadata: params.metadata,
+                                       completion: completion)
+    }
+
+    func purchase(product: StoreProduct, params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await purchaseAsync(product: product, params: params)
+    }
+
+    @objc(purchasePackage:params:withCompletion:)
+    func purchase(package: Package, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(product: package.storeProduct,
+                                       package: package,
+                                       promotionalOffer: params.promotionalOffer?.signedData,
+                                       metadata: params.metadata,
+                                       completion: completion)
+    }
+
+    func purchase(package: Package, params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await purchaseAsync(package: package, params: params)
+    }
+
+    #endif
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         self.purchasesOrchestrator.restorePurchases { @Sendable in
@@ -1002,6 +1040,7 @@ public extension Purchases {
         purchasesOrchestrator.purchase(product: product,
                                        package: nil,
                                        promotionalOffer: promotionalOffer.signedData,
+                                       metadata: nil,
                                        completion: completion)
     }
 
@@ -1014,6 +1053,7 @@ public extension Purchases {
         purchasesOrchestrator.purchase(product: package.storeProduct,
                                        package: package,
                                        promotionalOffer: promotionalOffer.signedData,
+                                       metadata: nil,
                                        completion: completion)
     }
 

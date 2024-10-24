@@ -83,6 +83,32 @@ extension Purchases {
         }
     }
 
+    #if ENABLE_PURCHASE_PARAMS
+
+    func purchaseAsync(product: StoreProduct, params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            purchase(product: product,
+                     params: params,
+                     completion: { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+            })
+        }
+    }
+
+    func purchaseAsync(package: Package, params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            purchase(package: package,
+                     params: params,
+                     completion: { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+            })
+        }
+    }
+
+    #endif
+
     func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in
             self.restorePurchases { customerInfo, error in

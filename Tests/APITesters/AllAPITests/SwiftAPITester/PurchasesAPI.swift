@@ -156,6 +156,14 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack,
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
+    #if ENABLE_PURCHASE_PARAMS
+    let params = PurchaseParams.Builder().with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
+    purchases.purchase(product: storeProduct,
+                       params: params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack,
+                       params: params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    #endif
+
     purchases.invalidateCustomerInfoCache()
 
 #if os(iOS) || VISION_OS
@@ -255,6 +263,13 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
+
+        #if ENABLE_STORE_PARAMS
+        let params = PurchaseParams.Builder().with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack, params: params)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp, params: params)
+        #endif
+
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()

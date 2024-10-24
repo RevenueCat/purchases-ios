@@ -351,6 +351,108 @@ public protocol PurchasesType: AnyObject {
      */
     func purchase(package: Package) async throws -> PurchaseResultData
 
+    #if ENABLE_PURCHASE_PARAMS
+
+    /**
+     * Initiates a purchase of a ``StoreProduct``.
+     *
+     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
+     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     * - Parameter params: The ``PurchaseParams`` instance with extra configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @objc(purchaseProduct:params:withCompletion:)
+    func purchase(product: StoreProduct, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock)
+
+    /**
+     * Initiates a purchase of a ``StoreProduct``.
+     *
+     * Use this function if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
+     * If you are using the ``Offerings`` system, use ``Purchases/purchase(package:completion:)`` instead.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
+     *
+     * - Note: You do not need to finish the transaction yourself after this, ``Purchases`` will
+     * handle this for you.
+     *
+     * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     * - Parameter params: The ``PurchaseParams`` instance with extra configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
+     *
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
+     */
+    func purchase(product: StoreProduct, params: PurchaseParams) async throws -> PurchaseResultData
+
+    /**
+     * Initiates a purchase of a ``Package``.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
+     *
+     * - Note: You do not need to finish the transaction yourself after this, Purchases will
+     * handle this for you.
+     *
+     * - Parameter package: The ``Package`` the user intends to purchase
+     * - Parameter params: The ``PurchaseParams`` instance with extra configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
+     *
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
+     */
+    @objc(purchasePackage:params:withCompletion:)
+    func purchase(package: Package, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock)
+
+    /**
+     * Initiates a purchase of a ``Package``.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter package: The ``Package`` the user intends to purchase
+     * - Parameter params: The ``PurchaseParams`` instance with extra configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    func purchase(package: Package, params: PurchaseParams) async throws -> PurchaseResultData
+
+    #endif
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
