@@ -25,6 +25,8 @@ struct HomeView: View {
     @State private var newPlacementID: String = ""
     @State private var placementOffering: Offering? = nil
     @State private var cacheFetchPolicy: CacheFetchPolicy = .default
+    @State private var showMetadataPrompt = false
+    @State private var metadataJSON: String = ""
 
     @State private var error: Error?
     private var content: some View {
@@ -42,6 +44,7 @@ struct HomeView: View {
                         NavigationLink(
                             destination: OfferingDetailView(offering: offering)
                                 .environmentObject(self.observerModeManager)
+                                .environmentObject(self.revenueCatCustomerData)
                         ) {
                             OfferingItemView(offering: offering)
                         }
@@ -154,6 +157,12 @@ struct HomeView: View {
                     } label: {
                         Text("Sync Attributes and Fetch Offerings")
                     }
+
+                    Button {
+                        self.showMetadataPrompt = true
+                    } label: {
+                        Text("Manage Purchase Metadata")
+                    }
                 }
             }
             .task {
@@ -200,6 +209,20 @@ struct HomeView: View {
 
                 } catch {
                     
+                    self.error = error
+                }
+            }
+        }
+        .textFieldAlert(isShowing: self.$showMetadataPrompt, title: "Metadata", fields: [("JSON Metadata", "{ \"foo\": \"bar\" }", self.$metadataJSON)]) {
+            guard !self.metadataJSON.isEmpty else {
+                return
+            }
+
+            if let jsonData = self.metadataJSON.data(using: .utf8) {
+                do {
+                    let metadata = try JSONDecoder().decode([String: String].self, from: jsonData)
+                    self.revenueCatCustomerData.metadata = metadata
+                } catch {
                     self.error = error
                 }
             }

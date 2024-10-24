@@ -130,9 +130,13 @@ NSString *storeFrontCountryCode;
     [p getOfferingsWithCompletion:^(RCOfferings *info, NSError *error) {}];
     RCOfferings * _Nullable __unused offerings = p.cachedOfferings;
 
+    RCPurchaseParams *params = [[[[[RCPurchaseParamsBuilder alloc] init] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
+
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<RCStoreProduct *> *products) { }];
     [p purchaseProduct:storeProduct withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchaseProduct:storeProduct params:params withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack params:params withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p restorePurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     
