@@ -7,44 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EventsRequest.swift
+//  EventsRequest+Paywall.swift
 //
-//  Created by Nacho Soto on 9/6/23.
+//  Created by Cesar de la Vega on 24/10/24.
 
-import Foundation
-
-/// The content of a request to the events endpoints.
-struct EventsRequest {
-
-    var events: [AnyEncodable]
-
-    init(events: [AnyEncodable]) {
-        self.events = events
-    }
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init(events: [PaywallStoredEvent]) {
-        self.init(events: events.compactMap { storedEvent in
-            switch storedEvent.feature {
-            case .paywalls:
-                guard let event = PaywallEvent(storedEvent: storedEvent) else {
-                    return nil
-                }
-                return AnyEncodable(event)
-            }
-        })
-    }
-
-}
-
-protocol FeatureEvent: Encodable {
-
-    var id: String? { get }
-    var version: Int { get }
-    var appUserID: String { get }
-    var sessionID: String { get }
-
-}
 
 extension EventsRequest {
 
@@ -80,6 +46,7 @@ extension EventsRequest.PaywallEvent {
     init?(storedEvent: PaywallStoredEvent) {
         guard let eventData = storedEvent.event.value as? [String: Any],
               let paywallEvent: PaywallEvent = try? JSONDecoder.default.decode(dictionary: eventData) else {
+            Logger.error(Strings.paywalls.event_cannot_deserialize)
             return nil
         }
 
@@ -141,5 +108,3 @@ extension EventsRequest.PaywallEvent: Encodable {
     }
 
 }
-
-extension EventsRequest: HTTPRequestBody {}

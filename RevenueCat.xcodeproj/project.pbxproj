@@ -216,6 +216,7 @@
 		3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */; };
 		353756712C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756622C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift */; };
 		353756722C382C2800A1B8D6 /* URLUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756632C382C2800A1B8D6 /* URLUtilities.swift */; };
+		353DE0072CCA506100A8F632 /* EventsRequest+Paywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */; };
 		353FDAEC2CA1866A0055F328 /* StoreKitErrorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */; };
 		353FDC0D2CA41CB20055F328 /* SubscriptionPeriod+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDC0C2CA41CA60055F328 /* SubscriptionPeriod+Extensions.swift */; };
 		353FDC0F2CA446FA0055F328 /* StoreProductDiscount+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDC0E2CA446F50055F328 /* StoreProductDiscount+Extensions.swift */; };
@@ -1421,6 +1422,7 @@
 		3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WrongPlatformView.swift; sourceTree = "<group>"; };
 		353756622C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsPurchaseType.swift; sourceTree = "<group>"; };
 		353756632C382C2800A1B8D6 /* URLUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLUtilities.swift; sourceTree = "<group>"; };
+		353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+Paywall.swift"; sourceTree = "<group>"; };
 		353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitErrorHelper.swift; sourceTree = "<group>"; };
 		353FDC0C2CA41CA60055F328 /* SubscriptionPeriod+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubscriptionPeriod+Extensions.swift"; sourceTree = "<group>"; };
 		353FDC0E2CA446F50055F328 /* StoreProductDiscount+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreProductDiscount+Extensions.swift"; sourceTree = "<group>"; };
@@ -2526,6 +2528,7 @@
 		2DC5621724EC63420031F69B /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				353DE0042CCA4EA600A8F632 /* Events */,
 				3592E8892C2ED54A00D7F91D /* CustomerCenter */,
 				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
@@ -3324,6 +3327,22 @@
 			path = CustomerCenter;
 			sourceTree = "<group>";
 		};
+		353DE0042CCA4EA600A8F632 /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				353DE0052CCA4EAE00A8F632 /* Networking */,
+			);
+			path = Events;
+			sourceTree = "<group>";
+		};
+		353DE0052CCA4EAE00A8F632 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				4FFCED852AA941D200118EF4 /* EventsRequest.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
@@ -3752,7 +3771,7 @@
 		4FFCED842AA941D200118EF4 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				4FFCED852AA941D200118EF4 /* EventsRequest.swift */,
+				353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */,
 				4FFCED862AA941D200118EF4 /* PaywallHTTPRequestPath.swift */,
 				4FFCED872AA941D200118EF4 /* PostPaywallEventsOperation.swift */,
 			);
@@ -5649,6 +5668,7 @@
 				B35042C626CDD3B100905B95 /* PurchasesDelegate.swift in Sources */,
 				0313FD41268A506400168386 /* DateProvider.swift in Sources */,
 				57FDAABA284937A0009A48F1 /* SandboxEnvironmentDetector.swift in Sources */,
+				353DE0072CCA506100A8F632 /* EventsRequest+Paywall.swift in Sources */,
 				2CC791622CC0493600FBE120 /* PaywallComponentPropertyTypes.swift in Sources */,
 				2CC791632CC0493600FBE120 /* PaywallComponentLocalization.swift in Sources */,
 				2CC791642CC0493600FBE120 /* Border.swift in Sources */,
