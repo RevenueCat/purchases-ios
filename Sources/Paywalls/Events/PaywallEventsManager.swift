@@ -45,7 +45,9 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     }
 
     func track(paywallEvent: PaywallEvent) async {
-        await self.store.store(.init(event: paywallEvent, userID: self.userProvider.currentAppUserID))
+        await self.store.store(.init(event: AnyEncodable(paywallEvent),
+                                     userID: self.userProvider.currentAppUserID,
+                                     feature: .paywalls))
     }
 
     func flushEvents(count: Int) async throws -> Int {

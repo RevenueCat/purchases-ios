@@ -7,39 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsRequest.swift
+//  EventsRequest+Paywall.swift
 //
-//  Created by Nacho Soto on 9/6/23.
+//  Created by Cesar de la Vega on 24/10/24.
 
-import Foundation
+extension EventsRequest {
 
-/// The content of a request to the events endpoints.
-struct PaywallEventsRequest {
-
-    var events: [Event]
-
-    init(events: [Event]) {
-        self.events = events
-    }
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init(events: [PaywallStoredEvent]) {
-        self.init(events: events.map { .init(storedEvent: $0) })
-    }
-
-}
-
-extension PaywallEventsRequest {
-
-    enum EventType: String {
-
-        case impression = "paywall_impression"
-        case cancel = "paywall_cancel"
-        case close = "paywall_close"
-
-    }
-
-    struct Event {
+    struct PaywallEvent: FeatureEvent {
 
         let id: String?
         let version: Int
@@ -57,17 +31,31 @@ extension PaywallEventsRequest {
 
 }
 
-extension PaywallEventsRequest.Event {
+extension EventsRequest.PaywallEvent {
+
+    enum EventType: String {
+
+        case impression = "paywall_impression"
+        case cancel = "paywall_cancel"
+        case close = "paywall_close"
+
+    }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init(storedEvent: PaywallStoredEvent) {
-        let creationData = storedEvent.event.creationData
-        let data = storedEvent.event.data
+    init?(storedEvent: PaywallStoredEvent) {
+        guard let eventData = storedEvent.event.value as? [String: Any],
+              let paywallEvent: PaywallEvent = try? JSONDecoder.default.decode(dictionary: eventData) else {
+            Logger.error(Strings.paywalls.event_cannot_deserialize)
+            return nil
+        }
+
+        let creationData = paywallEvent.creationData
+        let data = paywallEvent.data
 
         self.init(
             id: creationData.id.uuidString,
             version: Self.version,
-            type: storedEvent.event.eventType,
+            type: paywallEvent.eventType,
             appUserID: storedEvent.userID,
             sessionID: data.sessionIdentifier.uuidString,
             offeringID: data.offeringIdentifier,
@@ -86,7 +74,7 @@ extension PaywallEventsRequest.Event {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEvent {
 
-    var eventType: PaywallEventsRequest.EventType {
+    var eventType: EventsRequest.PaywallEvent.EventType {
         switch self {
         case .impression: return .impression
         case .cancel: return .cancel
@@ -99,9 +87,8 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
-extension PaywallEventsRequest.EventType: Encodable {}
-
-extension PaywallEventsRequest.Event: Encodable {
+extension EventsRequest.PaywallEvent.EventType: Encodable {}
+extension EventsRequest.PaywallEvent: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -120,5 +107,3 @@ extension PaywallEventsRequest.Event: Encodable {
     }
 
 }
-
-extension PaywallEventsRequest: HTTPRequestBody {}

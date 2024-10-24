@@ -42,6 +42,7 @@ enum PaywallsStrings {
     case event_flush_with_empty_store
     case event_flush_starting(count: Int)
     case event_sync_failed(Error)
+    case event_cannot_deserialize
 
 }
 
@@ -103,6 +104,9 @@ extension PaywallsStrings: LogMessage {
 
         case let .event_sync_failed(error):
             return "Paywall event flushing failed, will retry. Error: \((error as NSError).localizedDescription)"
+
+        case .event_cannot_deserialize:
+            return "Couldn't deserialize PaywallEvent from storage."
         }
     }
 
