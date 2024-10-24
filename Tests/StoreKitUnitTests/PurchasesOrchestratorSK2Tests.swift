@@ -891,4 +891,51 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
     #endif
 
+    #if os(iOS) || targetEnvironment(macCatalyst) || os(macOS)
+    @available(iOS 16.4, macOS 14.4, *)
+    func testSetSK2PurchaseIntentListenerDoesNothingInSK1Mode() {
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let diagnosticsTracker = MockDiagnosticsTracker()
+
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            storeKitVersion: .storeKit1
+        )
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               diagnosticsSynchronizer: diagnosticsSynchronizer,
+                               diagnosticsTracker: diagnosticsTracker)
+
+        let purchaseIntentListener = MockStoreKit2PurchaseIntentListener()
+
+        self.orchestrator.setSK2PurchaseIntentListener(purchaseIntentListener)
+        expect(purchaseIntentListener.listenForPurchaseIntentsCalled).to(beFalse())
+        expect(purchaseIntentListener.lastProvidedDelegate).to(beNil())
+        expect(purchaseIntentListener.setDelegateCalled).to(beFalse())
+    }
+
+    @available(iOS 16.4, macOS 14.4, *)
+    func testSetSK2PurchaseIntentListenerStartsListeningAndSetsDelegateInSK2Mode() {
+        let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let diagnosticsTracker = MockDiagnosticsTracker()
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               diagnosticsSynchronizer: diagnosticsSynchronizer,
+                               diagnosticsTracker: diagnosticsTracker)
+
+        let purchaseIntentListener = MockStoreKit2PurchaseIntentListener()
+
+        self.orchestrator.setSK2PurchaseIntentListener(purchaseIntentListener)
+        expect(purchaseIntentListener.listenForPurchaseIntentsCalled).toEventually(beTrue())
+        expect(purchaseIntentListener.lastProvidedDelegate).toEventuallyNot(beNil())
+        expect(purchaseIntentListener.setDelegateCalled).toEventually(beTrue())
+    }
+    #endif
 }

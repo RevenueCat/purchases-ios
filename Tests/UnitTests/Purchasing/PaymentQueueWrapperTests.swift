@@ -24,6 +24,21 @@ class PaymentQueueWrapperTests: TestCase {
     private var wrapper: PaymentQueueWrapper!
     private var delegate: WrapperDelegate!
 
+    private lazy var purchaseIntentsAPIAvailable: Bool = {
+        // PurchaseIntents was introduced in macOS with macOS 14.4, which was first shipped with Xcode 15.3,
+        // which shipped with version 5.10 of the Swift compiler. We need to check for the Swift compiler version
+        // because the PurchaseIntents framework isn't available on Xcode versions <15.3.
+        #if compiler(>=5.10)
+        if #available(iOS 16.4, macOS 14.4, *) {
+            return true
+        } else {
+            return false
+        }
+        #else
+        return false
+        #endif
+    }()
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -49,8 +64,13 @@ class PaymentQueueWrapperTests: TestCase {
     func testSettingDelegateAddsTransactionObserver() {
         self.wrapper.delegate = self.delegate
 
-        expect(self.paymentQueue.observers).to(haveCount(1))
-        expect(self.paymentQueue.observers.onlyElement) === self.wrapper
+        if purchaseIntentsAPIAvailable {
+            expect(self.paymentQueue.observers).to(haveCount(0))
+            expect(self.paymentQueue.observers.onlyElement).to(beNil())
+        } else {
+            expect(self.paymentQueue.observers).to(haveCount(1))
+            expect(self.paymentQueue.observers.onlyElement) === self.wrapper
+        }
     }
 
     func testResettingDelegateClearsPaymentQueueDelegate() {
