@@ -187,8 +187,8 @@ public struct CustomerCenterConfigData {
 
         public init(id: String,
                     title: String,
-                    url: URL?,
-                    openMethod: OpenMethod?,
+                    url: URL? = nil,
+                    openMethod: OpenMethod? = nil,
                     type: PathType,
                     detail: PathDetail?) {
             self.id = id
