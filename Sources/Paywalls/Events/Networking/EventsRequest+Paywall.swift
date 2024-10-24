@@ -11,18 +11,9 @@
 //
 //  Created by Cesar de la Vega on 24/10/24.
 
-
 extension EventsRequest {
 
     struct PaywallEvent: FeatureEvent {
-
-        enum EventType: String {
-
-            case impression = "paywall_impression"
-            case cancel = "paywall_cancel"
-            case close = "paywall_close"
-
-        }
 
         let id: String?
         let version: Int
@@ -41,6 +32,14 @@ extension EventsRequest {
 }
 
 extension EventsRequest.PaywallEvent {
+
+    enum EventType: String {
+
+        case impression = "paywall_impression"
+        case cancel = "paywall_cancel"
+        case close = "paywall_close"
+
+    }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: PaywallStoredEvent) {
