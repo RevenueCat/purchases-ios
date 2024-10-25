@@ -34,7 +34,7 @@ public extension PaywallComponent {
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
-                    spacing: CGFloat? = 0,
+                    spacing: CGFloat? = nil,
                     backgroundColor: ColorInfo? = nil,
                     padding: Padding = .zero,
                     margin: Padding = .zero,

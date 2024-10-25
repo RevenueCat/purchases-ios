@@ -25,6 +25,7 @@
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
+		2C8EC6AF2CCBD34100D6CCF8 /* ButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponent.swift */; };
 		2CAB87F72CAAB13200247013 /* CornerBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAB87F62CAAB13200247013 /* CornerBorder.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
 		2CC791552CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC791522CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift */; };
@@ -1177,6 +1178,7 @@
 		2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesSyncAttributesAndOfferingsIfNeededTests.swift; sourceTree = "<group>"; };
 		2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiter.swift; sourceTree = "<group>"; };
 		2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterRests.swift; sourceTree = "<group>"; };
+		2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponent.swift; sourceTree = "<group>"; };
 		2CAB87F62CAAB13200247013 /* CornerBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerBorder.swift; sourceTree = "<group>"; };
 		2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformInfo.swift; sourceTree = "<group>"; };
 		2CC7914B2CC0452100FBE120 /* PackageComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentView.swift; sourceTree = "<group>"; };
@@ -2291,6 +2293,14 @@
 				2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */,
 			);
 			path = TemplateComponentsViewPreviews;
+			sourceTree = "<group>";
+		};
+		2C8EC6AD2CCBD33800D6CCF8 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponent.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		2CC7913E2CC0450900FBE120 /* Recovered References */ = {
@@ -3681,6 +3691,7 @@
 		4FBBD4E22A620516001CBA21 /* Paywalls */ = {
 			isa = PBXGroup;
 			children = (
+				2C8EC6AD2CCBD33800D6CCF8 /* Components */,
 				4FE6FEE62AA940E300780B45 /* Events */,
 				4F6ABC7B2A81673F00250E63 /* PaywallCacheWarmingTests.swift */,
 				4F05876E2A5DE03F00E9A834 /* PaywallDataTests.swift */,
@@ -5907,6 +5918,7 @@
 				5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */,
 				57554CC1282AE1E3009A7E58 /* TestCase.swift in Sources */,
 				57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */,
+				2C8EC6AF2CCBD34100D6CCF8 /* ButtonComponent.swift in Sources */,
 				351B515A26D44B6200BD2BD7 /* MockAttributionFetcher.swift in Sources */,
 				5796A38C27D6BA1600653165 /* BackendLoginTests.swift in Sources */,
 				351B51BD26D450E800BD2BD7 /* EntitlementInfosTests.swift in Sources */,

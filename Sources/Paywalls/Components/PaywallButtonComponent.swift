@@ -49,6 +49,7 @@ public extension PaywallComponent.ButtonComponent {
         private enum CodingKeys: String, CodingKey {
             case type
             case destination
+            case url
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -61,7 +62,7 @@ public extension PaywallComponent.ButtonComponent {
                 try container.encode("navigate_back", forKey: .type)
             case .navigateTo(let destination):
                 try container.encode("navigate_to", forKey: .type)
-                try container.encode(destination, forKey: .destination)
+                try destination.encode(to: encoder) // Encode destination directly under action
             }
         }
 
@@ -75,22 +76,19 @@ public extension PaywallComponent.ButtonComponent {
             case "navigate_back":
                 self = .navigateBack
             case "navigate_to":
-                let destination = try container.decode(Destination.self, forKey: .destination)
+                let destination = try Destination(from: decoder) // Decode destination directly under action
                 self = .navigateTo(destination: destination)
             default:
-                throw DecodingError.dataCorruptedError(
-                    forKey: .type,
-                    in: container,
-                    debugDescription: "Invalid action type"
-                )
+                throw DecodingError.dataCorruptedError(forKey: .type,
+                                                       in: container, debugDescription: "Invalid action type")
             }
         }
     }
 
     enum Destination: Codable, Sendable, Hashable, Equatable {
         case customerCenter
-        case terms(urlLid: String, method: URLMethod)
         case privacyPolicy(urlLid: String, method: URLMethod)
+        case terms(urlLid: String, method: URLMethod)
         case url(urlLid: String, method: URLMethod)
 
         // swiftlint:disable:next nesting
@@ -127,23 +125,23 @@ public extension PaywallComponent.ButtonComponent {
             case "terms":
                 let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                 self = .terms(urlLid: urlPayload.urlLid, method: urlPayload.method)
+            case "privacy_policy":
+                let urlPayload = try container.decode(URLPayload.self, forKey: .url)
+                self = .privacyPolicy(urlLid: urlPayload.urlLid, method: urlPayload.method)
             case "url":
                 let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                 self = .url(urlLid: urlPayload.urlLid, method: urlPayload.method)
             default:
-                throw DecodingError.dataCorruptedError(
-                    forKey: .destination,
-                    in: container,
-                    debugDescription: "Invalid destination type"
-                )
+                throw DecodingError.dataCorruptedError(forKey: .destination,
+                                                       in: container, debugDescription: "Invalid destination type")
             }
         }
     }
 
     enum URLMethod: String, Codable, Sendable, Hashable, Equatable {
-        case inAppBrowser
-        case externalBrowser
-        case deepLink
+        case inAppBrowser = "in_app_browser"
+        case externalBrowser = "external_browser"
+        case deepLink = "deep_link"
     }
 
     private struct URLPayload: Codable, Hashable, Sendable {
