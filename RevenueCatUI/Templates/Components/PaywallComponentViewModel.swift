@@ -13,7 +13,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
 
-    case root(RootComponentViewModel)
+    case root(RootViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
     case spacer(SpacerComponentViewModel)
@@ -30,24 +30,11 @@ enum PaywallComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func toViewModel(
         offering: Offering,
         localizedStrings: LocalizationDictionary
     ) throws -> PaywallComponentViewModel {
         switch self {
-        case .root(let component):
-            return .root(
-                try RootComponentViewModel(
-                    component: component,
-                    stackViewModel: StackComponentViewModel(
-                        component: component.stack,
-                        localizedStrings: localizedStrings,
-                        offering: offering
-                    ),
-                    stickyFooterViewModel: component.stickyFooter.map { StickyFooterComponentViewModel(component: $0) }
-                )
-            )
         case .text(let component):
             return .text(
                 try TextComponentViewModel(localizedStrings: localizedStrings, component: component)

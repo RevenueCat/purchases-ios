@@ -648,10 +648,8 @@ private extension SamplePaywallLoader {
                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
                               componentsConfigs: .init(
                                 base: .init(
-                                    root: .init(
-                                        stack: .init(components: components),
-                                        stickyFooter: nil
-                                    )
+                                    stack: .init(components: components),
+                                    stickyFooter: nil
                                 )
                               ),
                               componentsLocalizations: localization,

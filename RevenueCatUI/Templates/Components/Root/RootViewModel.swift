@@ -17,18 +17,15 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class RootComponentViewModel {
+class RootViewModel {
 
-    private let component: PaywallComponent.RootComponent
     private let stackViewModel: StackComponentViewModel
     private let stickyFooterViewModel: StickyFooterComponentViewModel?
 
     init(
-        component: PaywallComponent.RootComponent,
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?
     ) {
-        self.component = component
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
     }

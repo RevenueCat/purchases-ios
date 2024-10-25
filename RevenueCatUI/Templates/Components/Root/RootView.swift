@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RootComponentView.swift
+//  RootView.swift
 //
 //  Created by Jay Shortway on 24/10/2024.
 
@@ -18,10 +18,10 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct RootComponentView: View {
-    private let viewModel: RootComponentViewModel
+struct RootView: View {
+    private let viewModel: RootViewModel
 
-    internal init(viewModel: RootComponentViewModel) {
+    internal init(viewModel: RootViewModel) {
         self.viewModel = viewModel
     }
 

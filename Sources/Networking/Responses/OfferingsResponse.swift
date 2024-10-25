@@ -30,10 +30,15 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct ComponentsConfig: Codable, Equatable, Sendable {
 
-        public let root: PaywallComponent.RootComponent
+        public var stack: PaywallComponent.StackComponent
+        public let stickyFooter: PaywallComponent.StickyFooterComponent?
 
-        public init(root: PaywallComponent.RootComponent) {
-            self.root = root
+        public init(
+            stack: PaywallComponent.StackComponent,
+            stickyFooter: PaywallComponent.StickyFooterComponent?
+        ) {
+            self.stack = stack
+            self.stickyFooter = stickyFooter
         }
 
     }

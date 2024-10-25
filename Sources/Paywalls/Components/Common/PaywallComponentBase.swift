@@ -13,7 +13,6 @@ public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 
 public enum PaywallComponent: PaywallComponentBase {
 
-    case root(RootComponent)
     case text(TextComponent)
     case image(ImageComponent)
     case spacer(SpacerComponent)
@@ -27,7 +26,6 @@ public enum PaywallComponent: PaywallComponentBase {
 
     public enum ComponentType: String, Codable, Sendable {
 
-        case root
         case text
         case image
         case spacer
@@ -58,14 +56,10 @@ extension PaywallComponent: Codable {
 
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
-        case .root(let component):
-            try container.encode(ComponentType.root, forKey: .type)
-            try component.encode(to: encoder)
         case .text(let component):
             try container.encode(ComponentType.text, forKey: .type)
             try component.encode(to: encoder)
@@ -99,14 +93,11 @@ extension PaywallComponent: Codable {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(ComponentType.self, forKey: .type)
 
         switch type {
-        case .root:
-            self = .root(try RootComponent(from: decoder))
         case .text:
             self = .text(try TextComponent(from: decoder))
         case .image:
