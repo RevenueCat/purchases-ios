@@ -20,13 +20,15 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RootView: View {
     private let viewModel: RootViewModel
+    private let onDismiss: () -> Void
 
-    internal init(viewModel: RootViewModel) {
+    internal init(viewModel: RootViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
-        EmptyView()
+        StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: onDismiss)
     }
 
 }

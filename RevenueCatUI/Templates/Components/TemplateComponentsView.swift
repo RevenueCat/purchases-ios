@@ -126,7 +126,7 @@ struct ComponentsView: View {
         ForEach(Array(componentViewModels.enumerated()), id: \.offset) { _, item in
             switch item {
             case .root(let viewModel):
-                RootView(viewModel: viewModel)
+                RootView(viewModel: viewModel, onDismiss: onDismiss)
             case .text(let viewModel):
                 TextComponentView(viewModel: viewModel)
             case .image(let viewModel):
