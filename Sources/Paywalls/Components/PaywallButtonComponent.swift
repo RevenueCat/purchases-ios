@@ -45,7 +45,7 @@ public extension PaywallComponent.ButtonComponent {
         case navigateBack
         case navigateTo(destination: Destination)
 
-        // swiftline:disable:next nesting
+        // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case type
             case destination
