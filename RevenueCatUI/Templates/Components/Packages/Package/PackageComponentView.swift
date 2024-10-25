@@ -78,18 +78,19 @@ struct PackageComponentView_Previews: PreviewProvider {
         PackageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
+                packageCollector: PackageCollector(),
                 localizedStrings: [
                     "name": .string("Weekly"),
                     "detail": .string("Get for $39.99/wk")
                 ],
                 component: .init(
                     packageID: "weekly",
+                    isDefaultSelected: false,
                     stack: stack
                 ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [package]),
-                package: package
+                                availablePackages: [package])
             ), onDismiss: {}
         )
         .previewLayout(.sizeThatFits)

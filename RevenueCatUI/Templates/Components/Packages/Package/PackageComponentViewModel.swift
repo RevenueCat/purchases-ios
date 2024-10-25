@@ -23,19 +23,26 @@ class PackageComponentViewModel {
     private let component: PaywallComponent.PackageComponent
     private let offering: Offering
 
-    let package: Package
+    let isDefaultSelected: Bool
+    let package: Package?
     let stackViewModel: StackComponentViewModel
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary,
+    init(packageCollector: PackageCollector,
+         localizedStrings: PaywallComponent.LocalizationDictionary,
          component: PaywallComponent.PackageComponent,
-         offering: Offering,
-         package: Package) throws {
+         offering: Offering) throws {
         self.localizedStrings = localizedStrings
         self.component = component
         self.offering = offering
-        self.package = package
+
+        self.isDefaultSelected = component.isDefaultSelected
+        self.package = offering.package(identifier: component.packageID)
+        if package == nil {
+            Logger.warning(Strings.paywall_could_not_find_package(component.packageID))
+        }        
 
         self.stackViewModel = try StackComponentViewModel(
+            packageCollector: packageCollector,
             component: component.stack,
             localizedStrings: localizedStrings,
             offering: offering

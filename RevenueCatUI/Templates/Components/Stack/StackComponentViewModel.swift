@@ -24,6 +24,7 @@ class StackComponentViewModel {
     let viewModels: [PaywallComponentViewModel]
 
     convenience init(
+        packageCollector: PackageCollector,
         component: PaywallComponent.StackComponent,
         localizedStrings: PaywallComponent.LocalizationDictionary,
         offering: Offering
@@ -31,7 +32,9 @@ class StackComponentViewModel {
         self.init(
             component: component,
             viewModels: try component.components.map {
-                try $0.toViewModel(offering: offering, localizedStrings: localizedStrings)
+                try $0.toViewModel(packageCollector: packageCollector,
+                                   offering: offering,
+                                   localizedStrings: localizedStrings)
             }
         )
     }
