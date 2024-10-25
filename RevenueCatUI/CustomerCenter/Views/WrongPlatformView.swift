@@ -29,6 +29,8 @@ struct WrongPlatformView: View {
     private var store: Store?
     @State
     private var managementURL: URL?
+    @State
+    private var subscriptionInformation: SubscriptionInformation?
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -54,21 +56,20 @@ struct WrongPlatformView: View {
     }
 
     fileprivate init(store: Store,
-                     managementURL: URL?) {
+                     managementURL: URL?,
+                     subscriptionInformation: SubscriptionInformation) {
         self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
+        self._subscriptionInformation = State(initialValue: subscriptionInformation)
     }
 
     var body: some View {
         List {
-            Section {
-                let platformInstructions = self.humanReadableInstructions(for: store)
-
-                CompatibilityContentUnavailableView(
-                    localization.commonLocalizedString(for: .platformMismatch),
-                    systemImage: "exclamationmark.triangle.fill",
-                    description: Text(platformInstructions)
-                )
+            if let subscriptionInformation = self.subscriptionInformation {
+                Section {
+                    SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                                            refundRequestStatus: nil)
+                }
             }
             if let managementURL = self.managementURL {
                 Section {
@@ -95,12 +96,15 @@ struct WrongPlatformView: View {
                 DismissCircleButton()
             }
         }
+        .navigationTitle("How can we help?")
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             if store == nil {
                 if let customerInfo = try? await Purchases.shared.customerInfo(),
-                   let firstEntitlement = customerInfo.entitlements.active.first {
-                    self.store = firstEntitlement.value.store
+                   let entitlement = customerInfo.entitlements.active.first?.value {
+                    self.store = entitlement.store
                     self.managementURL = customerInfo.managementURL
+                    self.subscriptionInformation = SubscriptionInformation(entitlement: entitlement)
                 }
             }
         }
@@ -141,36 +145,45 @@ struct WrongPlatformView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            WrongPlatformView(store: .appStore,
-                              managementURL: URL(string: "https://apps.apple.com/account/subscriptions"))
-                .previewDisplayName("App Store")
-
             WrongPlatformView(store: .macAppStore,
-                              managementURL: URL(string: "https://apps.apple.com/account/subscriptions"))
+                              managementURL: URL(string: "https://apps.apple.com/account/subscriptions"),
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("Mac AppStore")
 
             WrongPlatformView(store: .playStore,
-                              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"))
+                              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("Play Store")
 
             WrongPlatformView(store: .rcBilling,
                               managementURL:
-                                URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"))
+                                URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("RCBilling")
 
-            WrongPlatformView(store: .stripe, managementURL: nil)
+            WrongPlatformView(store: .stripe,
+                              managementURL: nil,
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("Stripe")
 
-            WrongPlatformView(store: .external, managementURL: nil)
+            WrongPlatformView(store: .external,
+                              managementURL: nil,
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("External")
 
-            WrongPlatformView(store: .promotional, managementURL: nil)
-                .previewDisplayName("Promotional")
+            WrongPlatformView(store: .promotional,
+                              managementURL: nil,
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                .previewDisplayName("Promotional Lifetime")
 
-            WrongPlatformView(store: .amazon, managementURL: nil)
+            WrongPlatformView(store: .amazon,
+                              managementURL: nil,
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("Amazon")
 
-            WrongPlatformView(store: .unknownStore, managementURL: nil)
+            WrongPlatformView(store: .unknownStore,
+                              managementURL: nil,
+                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
                 .previewDisplayName("Unknown")
 
         }

@@ -26,7 +26,11 @@ class SubscriptionInformationFixtures {
         let id: String
         let json: String
 
-        init(id: String, store: String, purchaseDate: String, expirationDate: String) {
+        init(id: String,
+             store: String,
+             purchaseDate: String,
+             expirationDate: String,
+             unsubscribeDetectedAt: String? = nil) {
             self.id = id
             self.json = """
             {
@@ -38,7 +42,7 @@ class SubscriptionInformationFixtures {
                 "period_type": "intro",
                 "purchase_date": "\(purchaseDate)",
                 "store": "\(store)",
-                "unsubscribe_detected_at": null
+                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null")
             }
             """
         }
@@ -149,6 +153,56 @@ class SubscriptionInformationFixtures {
         )
     }()
 
+    static let customerInfoWithExpiredAppleSubscriptions: CustomerInfo = {
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "1999-04-12T00:03:28Z"
+        let expirationDate = "2000-04-12T00:03:35Z"
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithNonRenewingAppleSubscriptions: CustomerInfo = {
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+        let unsubscribeDetectedAt = "2023-04-12T00:03:35Z"
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate,
+                    unsubscribeDetectedAt: unsubscribeDetectedAt
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
     static let customerInfoWithGoogleSubscriptions: CustomerInfo = {
         let productId = "com.revenuecat.product"
         let purchaseDate = "2022-04-12T00:03:28Z"
@@ -173,15 +227,167 @@ class SubscriptionInformationFixtures {
         )
     }()
 
-    static let customerInfoWithoutSubscriptions: CustomerInfo = {
+    static let customerInfoWithNonRenewingGoogleSubscriptions: CustomerInfo = {
         let productId = "com.revenuecat.product"
-        let purchaseDate = "1999-04-12T00:03:28Z"
-        let expirationDate = "2000-04-12T00:03:35Z"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+        let unsubscribeDetectedAt = "2023-04-12T00:03:35Z"
+
         return customerInfo(
             subscriptions: [
                 Subscription(
                     id: productId,
                     store: "play_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate,
+                    unsubscribeDetectedAt: unsubscribeDetectedAt
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithExpiredGoogleSubscriptions: CustomerInfo = {
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "1999-04-12T00:03:28Z"
+        let expirationDate = "2000-04-12T00:03:35Z"
+
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "play_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithStripeSubscriptions: CustomerInfo = {
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "stripe",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithNonRenewingStripeSubscriptions: CustomerInfo = {
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+        let unsubscribeDetectedAt = "2023-04-12T00:03:35Z"
+
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "stripe",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate,
+                    unsubscribeDetectedAt: unsubscribeDetectedAt
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithExpiredStripeSubscriptions: CustomerInfo = {
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "1999-04-12T00:03:28Z"
+        let expirationDate = "2000-04-12T00:03:35Z"
+
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "stripe",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithPromotional: CustomerInfo = {
+        let productId = "rc_promo_pro_cat_yearly"
+        let purchaseDate = "2051-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "promotional",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+                Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+    }()
+
+    static let customerInfoWithLifetimePromotional: CustomerInfo = {
+        let productId = "rc_promo_pro_cat_lifetime"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2600-04-12T00:03:35Z"
+        return customerInfo(
+            subscriptions: [
+                Subscription(
+                    id: productId,
+                    store: "promotional",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDate
                 )

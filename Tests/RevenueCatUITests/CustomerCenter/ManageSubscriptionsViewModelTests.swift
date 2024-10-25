@@ -81,7 +81,10 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let productId = "com.revenuecat.product"
         let purchaseDate = "2022-04-12T00:03:28Z"
         let expirationDate = "2062-04-12T00:03:35Z"
-        let products = [SubscriptionInformationFixtures.product(id: productId, title: "title", duration: .month, price: 2.99)]
+        let products = [SubscriptionInformationFixtures.product(id: productId,
+                                                                title: "title",
+                                                                duration: .month,
+                                                                price: 2.99)]
         let customerInfo = SubscriptionInformationFixtures.customerInfo(
             subscriptions: [
                 SubscriptionInformationFixtures.Subscription(
@@ -119,8 +122,13 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         expect(subscriptionInformation.title) == "title"
         expect(subscriptionInformation.durationTitle) == "1 month"
-        expect(subscriptionInformation.price) == "$2.99"
-        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDate)
+
+        expect(subscriptionInformation.price) == .paid("$2.99")
+
+        let expirationOrRenewal = try XCTUnwrap(subscriptionInformation.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDate))
+
         expect(subscriptionInformation.productIdentifier) == productId
     }
 
@@ -178,8 +186,13 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         expect(subscriptionInformation.title) == "yearly"
         expect(subscriptionInformation.durationTitle) == "1 year"
-        expect(subscriptionInformation.price) == "$29.99"
-        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateFirst)
+
+        expect(subscriptionInformation.price) == .paid("$29.99")
+
+        let expirationOrRenewal = try XCTUnwrap(subscriptionInformation.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDateFirst))
+
         expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
@@ -243,8 +256,12 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
         expect(subscriptionInformation.title) == "yearly"
         expect(subscriptionInformation.durationTitle) == "1 year"
-        expect(subscriptionInformation.price) == "$29.99"
-        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateFirst)
+        expect(subscriptionInformation.price) == .paid("$29.99")
+
+        let expirationOrRenewal = try XCTUnwrap(subscriptionInformation.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDateFirst))
+
         expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
@@ -309,13 +326,19 @@ class ManageSubscriptionsViewModelTests: TestCase {
         // We expect to see the monthly one, because the yearly one is a Google subscription.
         expect(subscriptionInformation.title) == "monthly"
         expect(subscriptionInformation.durationTitle) == "1 month"
-        expect(subscriptionInformation.price) == "$2.99"
-        expect(subscriptionInformation.expirationDateString) == reformat(ISO8601Date: expirationDateSecond)
+
+        expect(subscriptionInformation.price) == .paid("$2.99")
+
+        let expirationOrRenewal = try XCTUnwrap(subscriptionInformation.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDateSecond))
+
         expect(subscriptionInformation.productIdentifier) == productIdTwo
     }
 
     func testLoadScreenNoActiveSubscription() async {
-        let mockPurchases = MockManageSubscriptionsPurchases(customerInfo: SubscriptionInformationFixtures.customerInfoWithoutSubscriptions)
+        let customerInfo = SubscriptionInformationFixtures.customerInfoWithExpiredAppleSubscriptions
+        let mockPurchases = MockManageSubscriptionsPurchases(customerInfo: customerInfo)
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      customerCenterActionHandler: nil,
                                                      purchasesProvider: mockPurchases,
@@ -348,10 +371,10 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let expirationDateSecond = "2062-05-12T00:03:35Z"
         let offerIdentifier = "offer_id"
         let product = SubscriptionInformationFixtures.product(id: productIdOne,
-                                       title: "yearly",
-                                       duration: .year,
-                                       price: 29.99,
-                                       offerIdentifier: offerIdentifier)
+                                                              title: "yearly",
+                                                              duration: .year,
+                                                              price: 29.99,
+                                                              offerIdentifier: offerIdentifier)
         let products = [
             product,
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
@@ -442,10 +465,10 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let expirationDateSecond = "2062-05-12T00:03:35Z"
         let offerIdentifier = "offer_id"
         let product = SubscriptionInformationFixtures.product(id: productIdOne,
-                                       title: "yearly",
-                                       duration: .year,
-                                       price: 29.99,
-                                       offerIdentifier: offerIdentifier)
+                                                              title: "yearly",
+                                                              duration: .year,
+                                                              price: 29.99,
+                                                              offerIdentifier: offerIdentifier)
         let products = [
             product,
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
@@ -547,7 +570,10 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
         customerInfo: CustomerInfo = SubscriptionInformationFixtures.customerInfoWithAppleSubscriptions,
         customerInfoError: Error? = nil,
         products: [RevenueCat.StoreProduct] =
-            [SubscriptionInformationFixtures.product(id: "com.revenuecat.product", title: "title", duration: .month, price: 2.99)],
+            [SubscriptionInformationFixtures.product(id: "com.revenuecat.product",
+                                                     title: "title",
+                                                     duration: .month,
+                                                     price: 2.99)],
         showManageSubscriptionsError: Error? = nil,
         beginRefundShouldFail: Bool = false
     ) {

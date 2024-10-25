@@ -130,21 +130,27 @@ enum CustomerCenterConfigTestData {
     static let subscriptionInformationMonthlyRenewing: SubscriptionInformation = .init(
         title: "Basic",
         durationTitle: "Monthly",
-        price: "$4.99",
-        expirationDateString: "June 1st, 2024",
+        explanation: .earliestRenewal,
+        price: .paid("$4.99"),
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
         willRenew: true,
         productIdentifier: "product_id",
-        active: true
+        active: true,
+        store: .appStore
     )
 
     static let subscriptionInformationYearlyExpiring: SubscriptionInformation = .init(
         title: "Basic",
         durationTitle: "Yearly",
-        price: "$49.99",
-        expirationDateString: "June 1st, 2024",
+        explanation: .earliestRenewal,
+        price: .paid("$49.99"),
+        expirationOrRenewal: .init(label: .expires,
+                                   date: .date("June 1st, 2024")),
         willRenew: false,
         productIdentifier: "product_id",
-        active: true
+        active: true,
+        store: .appStore
     )
 
 }
