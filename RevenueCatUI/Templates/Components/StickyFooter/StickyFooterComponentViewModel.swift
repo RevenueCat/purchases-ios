@@ -19,12 +19,15 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StickyFooterComponentViewModel {
 
-    private let component: PaywallComponent.StickyFooterComponent
+    let component: PaywallComponent.StickyFooterComponent
+    let stackViewModel: StackComponentViewModel
 
     init(
-        component: PaywallComponent.StickyFooterComponent
+        component: PaywallComponent.StickyFooterComponent,
+        stackViewModel: StackComponentViewModel
     ) {
         self.component = component
+        self.stackViewModel = stackViewModel
     }
 
 }
