@@ -76,7 +76,7 @@ struct ButtonComponentView: View {
         switch destination {
         case .customerCenter:
             showCustomerCenter = true
-        case .URL(let url, let method),
+        case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
             navigateToUrl(url: url, method: method)
