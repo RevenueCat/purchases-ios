@@ -59,6 +59,39 @@ private enum Template1Preview {
         horizontalAlignment: .center
     )
 
+    static var packageStack: PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .text(.init(
+                    text: "package_name",
+                    fontWeight: .bold,
+                    color: .init(light: "#000000"),
+                    padding: .zero,
+                    margin: .zero
+                )),
+                .text(.init(
+                    text: "package_detail",
+                    color: .init(light: "#000000"),
+                    padding: .zero,
+                    margin: .zero
+                ))
+            ],
+            dimension: .vertical(.center),
+            spacing: 0,
+            backgroundColor: nil,
+            padding: .init(top: 0,
+                           bottom: 0,
+                           leading: 0,
+                           trailing: 0)
+        )
+    }
+
+    static let package = PaywallComponent.PackageComponent(
+        packageID: "weekly",
+        isDefaultSelected: false,
+        stack: packageStack
+    )
+
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
         cta: "cta",
         ctaIntroOffer: "cta_intro",
@@ -76,6 +109,7 @@ private enum Template1Preview {
         components: [
             .text(title),
             .text(body),
+            .package(package),
             .purchaseButton(purchaseButton)
         ],
         width: .init(type: .fill, value: nil),
@@ -110,6 +144,8 @@ private enum Template1Preview {
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
+            "package_name": .string("Monthly"),
+            "package_detail": .string("Some price into"),
             "cta": .string("Get Started"),
             "cta_intro": .string("Claim Free Trial")
         ]],
@@ -121,15 +157,22 @@ private enum Template1Preview {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Template1Preview_Previews: PreviewProvider {
 
+    static var package: Package {
+        return .init(identifier: "weekly",
+                     packageType: .weekly,
+                     storeProduct: .init(sk1Product: .init()),
+                     offeringIdentifier: "default")
+    }
+
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
 
         // Template 1
         TemplateComponentsView(
             paywallComponentsData: Template1Preview.data,
-            offering: .init(identifier: "",
+            offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: []),
+                            availablePackages: [package]),
             onDismiss: { }
         )
         .previewLayout(.fixed(width: 400, height: 800))

@@ -27,9 +27,13 @@ struct PackageComponentView: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        // WIP: Do something with package id and selection
-        StackComponentView(viewModel: self.viewModel.stackViewModel,
-                           onDismiss: self.onDismiss)
+        if let _ = self.viewModel.package {
+            // WIP: Do something with package id and selection
+            StackComponentView(viewModel: self.viewModel.stackViewModel,
+                               onDismiss: self.onDismiss)
+        } else {
+            EmptyView()
+        }
     }
 
 }

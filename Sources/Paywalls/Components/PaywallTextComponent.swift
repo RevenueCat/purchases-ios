@@ -31,8 +31,8 @@ public extension PaywallComponent {
             fontWeight: FontWeight = .regular,
             color: ColorInfo,
             backgroundColor: ColorInfo? = nil,
-            padding: Padding = .default,
-            margin: Padding = .default,
+            padding: Padding = .zero,
+            margin: Padding = .zero,
             textStyle: TextStyle = .body,
             horizontalAlignment: HorizontalAlignment = .center
         ) {
