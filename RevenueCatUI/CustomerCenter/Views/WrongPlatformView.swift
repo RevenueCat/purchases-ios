@@ -42,7 +42,7 @@ struct WrongPlatformView: View {
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
         let subject = self.localization.commonLocalizedString(for: .defaultSubject)
-        let body = self.localization.commonLocalizedString(for: .defaultBody)
+        let body = supportInformation.calculateBody(self.localization)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
                                                     body: body)
