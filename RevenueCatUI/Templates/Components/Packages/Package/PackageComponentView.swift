@@ -27,7 +27,7 @@ struct PackageComponentView: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        if let _ = self.viewModel.package {
+        if self.viewModel.package != nil {
             // WIP: Do something with package id and selection
             StackComponentView(viewModel: self.viewModel.stackViewModel,
                                onDismiss: self.onDismiss)
@@ -82,7 +82,7 @@ struct PackageComponentView_Previews: PreviewProvider {
         PackageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                packageCollector: PackageCollector(),
+                packageValidator: PackageValidator(),
                 localizedStrings: [
                     "name": .string("Weekly"),
                     "detail": .string("Get for $39.99/wk")

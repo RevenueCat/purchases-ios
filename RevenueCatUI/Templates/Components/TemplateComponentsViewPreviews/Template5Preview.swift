@@ -121,15 +121,15 @@ private enum Template5Preview {
     static let packagesStack = PaywallComponent.StackComponent(
         components: [
             .package(makePackage(packageID: "weekly",
-                        nameTextLid: "weekly_name",
-                        detailTextLid: "weekly_detail")),
+                                 nameTextLid: "weekly_name",
+                                 detailTextLid: "weekly_detail")),
             .package(makePackage(packageID: "non_existant_package",
-                        nameTextLid: "non_existant_name",
-                        detailTextLid: "non_existant_detail")),
+                                 nameTextLid: "non_existant_name",
+                                 detailTextLid: "non_existant_detail")),
             .package(makePackage(packageID: "monthly",
-                        nameTextLid: "monthly_name",
-                        detailTextLid: "monthly_detail",
-                        isDefaultSelected: true)),
+                                 nameTextLid: "monthly_name",
+                                 detailTextLid: "monthly_detail",
+                                 isDefaultSelected: true)),
             .text(.init(
                 text: "package_terms",
                 color: .init(light: "#999999"),
@@ -140,9 +140,9 @@ private enum Template5Preview {
         spacing: 10,
         backgroundColor: nil,
         margin: .init(top: 20,
-                       bottom: 0,
-                       leading: 0,
-                       trailing: 0)
+                      bottom: 0,
+                      leading: 0,
+                      trailing: 0)
     )
 
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
@@ -173,7 +173,7 @@ private enum Template5Preview {
             .text(title),
             .text(body),
             .stack(packagesStack),
-            .stack(purchaseButtonStack),
+            .stack(purchaseButtonStack)
         ],
         dimension: .vertical(.leading),
         width: .init(type: .fill, value: nil),

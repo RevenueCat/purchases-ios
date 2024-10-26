@@ -37,7 +37,7 @@ struct TemplateComponentsView: View {
     @StateObject
     private var paywallState = PaywallState()
 
-    private var packageCollector = PackageCollector()
+    private var packageValidator = PackageValidator()
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -52,38 +52,19 @@ struct TemplateComponentsView: View {
         do {
             // STEP 2: Make the view models & validate all components have required localization
             let componentViewModel = try PaywallComponent.stack(componentsConfig.stack)
-                .toViewModel(packageCollector: packageCollector,
+                .toViewModel(packageValidator: packageValidator,
                              offering: offering,
                              localizedStrings: localization.localizedStrings)
 
-            // STETP 2.25: Collect all the PackageViewModels for validation
-            let packageInfos: [(Package, Bool)] = self.packageCollector.packageViewModels.compactMap { packageViewModel in
-                guard let package = packageViewModel.package else {
-                    return nil
-                }
-                return (package: package, isDefaultSelected: packageViewModel.isDefaultSelected)
-            }
-
-            // Validate at least 1 package exists
-            if packageInfos.isEmpty {
+            guard packageValidator.isValid else {
                 Logger.error(Strings.paywall_could_not_find_any_packages)
                 throw PackageGroupValidationError.noAvailablePackages("No available packages found")
             }
 
             self.componentViewModel = componentViewModel
 
-            let defaultSelectedPackage = packageInfos.first(where: { pkg in
-                return pkg.1
-            })
-
-            // Set selected package
-            if let defaultSelectedPackage {
-                self.paywallState.select(package: defaultSelectedPackage.0)
-            } else {
-                Logger.warning(Strings.paywall_could_not_find_default_package)
-                if let firstPackage = packageInfos.first {
-                    self.paywallState.select(package: firstPackage.0)
-                }
+            if let defaultPackage = packageValidator.defaultSelectedPackage {
+                self.paywallState.select(package: defaultPackage)
             }
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails

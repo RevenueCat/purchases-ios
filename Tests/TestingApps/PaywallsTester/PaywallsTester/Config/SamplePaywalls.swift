@@ -710,7 +710,8 @@ private extension SamplePaywallLoader {
 
     static func makePackage(packageID: String,
                             nameTextLid: String,
-                            detailTextLid: String) -> PaywallComponent.PackageComponent {
+                            detailTextLid: String,
+                            isDefaultSelected: Bool = false) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent.StackComponent = .init(
             components: [
                 .text(.init(
@@ -743,6 +744,7 @@ private extension SamplePaywallLoader {
 
         return .init(
             packageID: packageID,
+            isDefaultSelected: isDefaultSelected,
             stack: stack
         )
     }
@@ -750,20 +752,18 @@ private extension SamplePaywallLoader {
     static var simpleSixPackages: PaywallComponent = {
         return .stack(.init(
             components: [
-                .packageGroup(.init(
-                    defaultSelectedPackageID: Package.string(from: PackageType.monthly)!,
-                    stack: .init(
-                        components: [
-                            makePackage(packageID: Package.string(from: PackageType.monthly)!,
-                                        nameTextLid: "monthly_package_name",
-                                        detailTextLid: "monthly_package_details"),
-                            makePackage(packageID: Package.string(from: PackageType.annual)!,
-                                        nameTextLid: "annual_package_name",
-                                        detailTextLid: "annual_package_details")
-                        ],
-                        spacing: 20,
-                        margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
-                    )
+                .stack(.init(
+                    components: [
+                        .package(makePackage(packageID: Package.string(from: PackageType.monthly)!,
+                                    nameTextLid: "monthly_package_name",
+                                    detailTextLid: "monthly_package_details")),
+                        .package(makePackage(packageID: Package.string(from: PackageType.annual)!,
+                                    nameTextLid: "annual_package_name",
+                                    detailTextLid: "annual_package_details",
+                                    isDefaultSelected: true))
+                    ],
+                    spacing: 20,
+                    margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
                 )),
                 .purchaseButton(.init(
                     cta: "cta",
@@ -783,7 +783,7 @@ private extension SamplePaywallLoader {
                 ))
             ],
             width: .init(type: .fill, value: nil),
-            backgroundColor: .init(light: "#cccccc"),
+            backgroundColor: nil,
             margin: .init(top: 0, bottom: 0, leading: 20, trailing: 20)
         ))
     }()

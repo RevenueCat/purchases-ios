@@ -25,15 +25,10 @@ enum PaywallComponentViewModel {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class PackageCollector {
-    var packageViewModels: [PackageComponentViewModel] = []
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
     func toViewModel(
-        packageCollector: PackageCollector,
+        packageValidator: PackageValidator,
         offering: Offering,
         localizedStrings: LocalizationDictionary
     ) throws -> PaywallComponentViewModel {
@@ -52,7 +47,7 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                try StackComponentViewModel(packageCollector: packageCollector,
+                try StackComponentViewModel(packageValidator: packageValidator,
                                             component: component,
                                             localizedStrings: localizedStrings,
                                             offering: offering)
@@ -65,18 +60,18 @@ extension PaywallComponent {
         case .button(let component):
             return .button(
                 try ButtonComponentViewModel(
-                    packageCollector: packageCollector,
+                    packageValidator: packageValidator,
                     component: component,
                     localizedStrings: localizedStrings,
                     offering: offering
                 )
             )
         case .package(let component):
-            let viewModel = try PackageComponentViewModel(packageCollector: packageCollector,
+            let viewModel = try PackageComponentViewModel(packageValidator: packageValidator,
                                                           localizedStrings: localizedStrings,
                                                           component: component,
                                                           offering: offering)
-            packageCollector.packageViewModels.append(viewModel)
+            packageValidator.add(viewModel)
 
             return .package(viewModel)
         case .purchaseButton(let component):

@@ -27,7 +27,7 @@ class PackageComponentViewModel {
     let package: Package?
     let stackViewModel: StackComponentViewModel
 
-    init(packageCollector: PackageCollector,
+    init(packageValidator: PackageValidator,
          localizedStrings: PaywallComponent.LocalizationDictionary,
          component: PaywallComponent.PackageComponent,
          offering: Offering) throws {
@@ -39,10 +39,10 @@ class PackageComponentViewModel {
         self.package = offering.package(identifier: component.packageID)
         if package == nil {
             Logger.warning(Strings.paywall_could_not_find_package(component.packageID))
-        }        
+        }
 
         self.stackViewModel = try StackComponentViewModel(
-            packageCollector: packageCollector,
+            packageValidator: packageValidator,
             component: component.stack,
             localizedStrings: localizedStrings,
             offering: offering
