@@ -24,7 +24,7 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
         .split(whereSeparator: \.isWhitespace)
         .filter { !$0.isEmpty && !$0.hasPrefix("$") }
         .map { .define(String($0)) }
-    ?? [.define("PAYWALL_COMPONENTS")]
+        ?? []
 }()
 
 // Only add DocC Plugin when building docs, so that clients of this library won't

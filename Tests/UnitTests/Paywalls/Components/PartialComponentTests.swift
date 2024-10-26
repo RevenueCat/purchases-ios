@@ -20,7 +20,7 @@ import XCTest
 final class PartialComponentTests: TestCase {
 
     // Properties of full components that partials can't have
-    static let ignoredProperties = ["type", "state", "conditions"]
+    static let ignoredProperties = ["type", "components", "state", "conditions"]
 
     static let sampleURL = URL(string: "https://revenuecat.com")!
 
@@ -45,9 +45,10 @@ final class PartialComponentTests: TestCase {
             light: .init(original: sampleURL,
                          heic: sampleURL,
                          heicLowRes: sampleURL))
-        ), PaywallComponent.PartialImageComponent())
+        ), PaywallComponent.PartialImageComponent()),
 
         // StackComponent
+        (PaywallComponent.StackComponent(components: []), PaywallComponent.PartialStackComponent())
     ]
 
     func testPartialTextComponentPropertiesMatchTextComponent() {
