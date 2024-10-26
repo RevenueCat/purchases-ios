@@ -21,7 +21,7 @@ import SwiftUI
 
 private enum Template5Preview {
 
-    static let paywallState = PaywallState()
+    static let paywallState = PaywallState(selectedPackage: nil)
 
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
 

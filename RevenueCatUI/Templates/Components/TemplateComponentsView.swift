@@ -15,6 +15,10 @@ class PaywallState: ObservableObject {
 
     @Published var selectedPackage: Package?
 
+    init(selectedPackage: Package?) {
+        self.selectedPackage = selectedPackage
+    }
+
     func select(package: Package) {
         self.selectedPackage = package
     }
@@ -35,9 +39,7 @@ struct TemplateComponentsView: View {
     private let onDismiss: () -> Void
 
     @StateObject
-    private var paywallState = PaywallState()
-
-    private var packageValidator = PackageValidator()
+    private var paywallState: PaywallState
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -51,6 +53,7 @@ struct TemplateComponentsView: View {
 
         do {
             // STEP 2: Make the view models & validate all components have required localization
+            let packageValidator = PackageValidator()
             let componentViewModel = try PaywallComponent.stack(componentsConfig.stack)
                 .toViewModel(packageValidator: packageValidator,
                              offering: offering,
@@ -62,15 +65,16 @@ struct TemplateComponentsView: View {
             }
 
             self.componentViewModel = componentViewModel
-
-            if let defaultPackage = packageValidator.defaultSelectedPackage {
-                self.paywallState.select(package: defaultPackage)
-            }
+            self._paywallState = .init(wrappedValue: PaywallState(
+                selectedPackage: packageValidator.defaultSelectedPackage
+            ))
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
             Logger.error(Strings.paywall_view_model_construction_failed(error))
 
+            // WIP: Need to select default package in fallback view model
             self.componentViewModel = Self.fallbackPaywallViewModels()
+            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
         }
     }
 

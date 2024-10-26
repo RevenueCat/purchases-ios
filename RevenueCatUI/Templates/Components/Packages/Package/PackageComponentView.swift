@@ -27,10 +27,15 @@ struct PackageComponentView: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        if self.viewModel.package != nil {
-            // WIP: Do something with package id and selection
-            StackComponentView(viewModel: self.viewModel.stackViewModel,
-                               onDismiss: self.onDismiss)
+        if let package = self.viewModel.package {
+            Button {
+                self.paywallState.select(package: package)
+            } label: {
+                StackComponentView(
+                    viewModel: self.viewModel.stackViewModel,
+                    onDismiss: self.onDismiss
+                )
+            }
         } else {
             EmptyView()
         }
