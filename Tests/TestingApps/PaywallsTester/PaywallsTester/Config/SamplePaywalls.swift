@@ -811,14 +811,25 @@ private extension SamplePaywallLoader {
         ))
     }()
 
-    static var conditionsText: PaywallComponent = PaywallComponent.text(
+    static var conditionsText1: PaywallComponent = PaywallComponent.text(
         .init(
             text: "condition_1_default",
             color: .init(light: "#000000"),
             conditions: .init(
                 mobileLandscape: .init(
-                    visible: false,
                     text: "condition_1_landscape"
+                )
+            )
+        )
+    )
+
+    static var conditionsText2: PaywallComponent = PaywallComponent.text(
+        .init(
+            text: "condition_2_default",
+            color: .init(light: "#000000"),
+            conditions: .init(
+                mobileLandscape: .init(
+                    visible: false
                 )
             )
         )
@@ -830,7 +841,8 @@ private extension SamplePaywallLoader {
                             [
                                 fuzzyCat,
                                 spacer,
-                                conditionsText,
+                                conditionsText1,
+                                conditionsText2,
                                 simpleFeatureStack(text: featureText),
                                 spacer,
                                 simpleSixPackages
@@ -1520,6 +1532,7 @@ private extension SamplePaywallLoader {
 
                 "condition_1_default": .string("Showing in portrait"),
                 "condition_1_landscape": .string("Showing in landscape"),
+                "condition_2_default": .string("Should only show in portrait")
             ],
             "fr_FR": [
                 "welcome_message": .string("Bonjour, Composants Paywall!"),
@@ -1538,6 +1551,7 @@ private extension SamplePaywallLoader {
 
                 "condition_1_default": .string("Showing in portrait IN FRENCH"),
                 "condition_1_landscape": .string("Showing in landscape IN FRENCH"),
+                "condition_2_default": .string("Should only show in portrait IN FRENCH")
             ],
             "es_ES": [
                 "welcome_message": .string("¡Hola, Componentes Paywall!"),
@@ -1556,6 +1570,7 @@ private extension SamplePaywallLoader {
 
                 "condition_1_default": .string("Showing in portrait IN SPANISH"),
                 "condition_1_landscape": .string("Showing in landscape IN SPANISH"),
+                "condition_2_default": .string("Should only show in portrait IN SPANISH")
             ]
         ]
     }

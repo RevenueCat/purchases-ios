@@ -246,7 +246,7 @@ class TextComponentViewModel {
 
 extension PaywallComponent.PartialTextComponent {
     var isEmpty: Bool {
-        return text == nil && fontFamily == nil && fontWeight == nil && color == nil &&
+        return visible == nil && text == nil && fontFamily == nil && fontWeight == nil && color == nil &&
                backgroundColor == nil && padding == nil && margin == nil &&
                textStyle == nil && horizontalAlignment == nil
     }

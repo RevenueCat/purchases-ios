@@ -146,7 +146,7 @@ struct TextComponentView_Previews: PreviewProvider {
             // swiftlint:disable:next force_try
             viewModel: try! .init(
                 localizedStrings: [
-                    "id_1": .string("THIS SHOULDN'T SHOW"),
+                    "id_1": .string("THIS TEXT SHOULDN'T SHOW"),
                     "id_2": .string("Showing landscape condition")
                 ],
                 component: .init(
