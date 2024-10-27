@@ -23,8 +23,8 @@ struct TextComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.componentConditionType)
-    private var componentConditionType
+    @Environment(\.screenCondition)
+    private var screenCondition
 
     private let viewModel: TextComponentViewModel
 
@@ -35,17 +35,23 @@ struct TextComponentView: View {
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
-            condition: self.componentConditionType
+            condition: self.screenCondition
         ) { style in
-            Text(style.text)
-                .font(style.textStyle)
-                .fontWeight(style.fontWeight)
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(style.horizontalAlignment)
-                .foregroundStyle(style.color)
-                .padding(style.padding)
-                .background(style.backgroundColor)
-                .padding(style.margin)
+            Group {
+                if style.visible {
+                    Text(style.text)
+                        .font(style.textStyle)
+                        .fontWeight(style.fontWeight)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(style.horizontalAlignment)
+                        .foregroundStyle(style.color)
+                        .padding(style.padding)
+                        .background(style.backgroundColor)
+                        .padding(style.margin)
+                } else {
+                    EmptyView()
+                }
+            }
         }
     }
 
@@ -154,7 +160,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environment(\.componentConditionType, .mobileLandscape)
+        .environment(\.screenCondition, .mobileLandscape)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Landscape")
 
@@ -177,7 +183,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environment(\.componentConditionType, .mobileLandscape)
+        .environment(\.screenCondition, .mobileLandscape)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has tablet but not tablet")
     }

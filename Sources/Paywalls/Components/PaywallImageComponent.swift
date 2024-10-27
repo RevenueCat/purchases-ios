@@ -50,6 +50,7 @@ public extension PaywallComponent {
 
     struct PartialImageComponent: PartialComponent {
 
+        public let visible: Bool?
         public let source: ThemeImageUrls?
         public let overrideSourceLid: LocalizationKey?
         public let cornerRadiuses: CornerRadiuses?
@@ -58,6 +59,7 @@ public extension PaywallComponent {
         public let fitMode: FitMode?
 
         public init(
+            visible: Bool? = true,
             source: ThemeImageUrls? = nil,
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode? = nil,
@@ -65,6 +67,7 @@ public extension PaywallComponent {
             cornerRadiuses: CornerRadiuses? = nil,
             gradientColors: [ColorHex]? = nil
         ) {
+            self.visible = visible
             self.source = source
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode

@@ -58,6 +58,7 @@ public extension PaywallComponent {
 
     struct PartialTextComponent: PartialComponent {
 
+        public let visible: Bool?
         public let text: LocalizationKey?
         public let fontFamily: String?
         public let fontWeight: FontWeight?
@@ -69,6 +70,7 @@ public extension PaywallComponent {
         public let margin: Padding?
 
         public init(
+            visible: Bool? = true,
             text: LocalizationKey? = nil,
             fontFamily: String? = nil,
             fontWeight: FontWeight? = nil,
@@ -79,6 +81,7 @@ public extension PaywallComponent {
             textStyle: TextStyle? = nil,
             horizontalAlignment: HorizontalAlignment? = nil
         ) {
+            self.visible = visible
             self.text = text
             self.fontFamily = fontFamily
             self.fontWeight = fontWeight
@@ -116,6 +119,7 @@ extension PaywallComponent.TextComponent {
 extension PaywallComponent.PartialTextComponent {
 
     enum CodingKeys: String, CodingKey {
+        case visible
         case text = "text_lid"
         case fontFamily
         case fontWeight

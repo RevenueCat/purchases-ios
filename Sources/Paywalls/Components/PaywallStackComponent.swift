@@ -64,6 +64,7 @@ public extension PaywallComponent {
 
     struct PartialStackComponent: PartialComponent {
 
+        public let visible: Bool?
         public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
@@ -73,15 +74,18 @@ public extension PaywallComponent {
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
 
-        public init(dimension: Dimension? = nil,
-                    width: WidthSize? = nil,
-                    spacing: CGFloat? = nil,
-                    backgroundColor: ColorInfo? = nil,
-                    padding: Padding? = nil,
-                    margin: Padding? = nil,
-                    cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil
+        public init(
+            visible: Bool? = true,
+            dimension: Dimension? = nil,
+            width: WidthSize? = nil,
+            spacing: CGFloat? = nil,
+            backgroundColor: ColorInfo? = nil,
+            padding: Padding? = nil,
+            margin: Padding? = nil,
+            cornerRadiuses: CornerRadiuses? = nil,
+            border: Border? = nil
         ) {
+            self.visible = visible
             self.width = width
             self.spacing = spacing
             self.backgroundColor = backgroundColor

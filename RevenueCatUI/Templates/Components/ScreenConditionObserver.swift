@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  OrientationObserver.swift
+//  ScreenConditionObserver.swift
 //
 //  Created by Josh Holtz on 10/27/24.
 
@@ -16,17 +16,17 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-class ComponentConditionObserver: ObservableObject {
+enum ScreenCondition {
+    case `default`, mobileLandscape, tablet, tabletLandscape, desktop
+}
 
-    enum ComponentConditionsType {
-        case `default`, mobileLandscape, tablet, tabletLandscape, desktop
-    }
+class ScreenConditionObserver: ObservableObject {
 
     private enum Device {
         case phone, tablet, desktop
     }
 
-    @Published var conditionType: ComponentConditionsType = .default
+    @Published var conditionType: ScreenCondition = .default
 
     private let deviceType: Device
     private var cancellable: AnyCancellable?
@@ -71,15 +71,15 @@ class ComponentConditionObserver: ObservableObject {
 
 }
 
-struct ComponentConditionObserverKey: EnvironmentKey {
-    static let defaultValue = ComponentConditionObserver.ComponentConditionsType.default
+struct ScreenConditionObserverKey: EnvironmentKey {
+    static let defaultValue = ScreenCondition.default
 }
 
 extension EnvironmentValues {
 
-    var componentConditionType: ComponentConditionObserver.ComponentConditionsType {
-        get { self[ComponentConditionObserverKey.self] }
-        set { self[ComponentConditionObserverKey.self] = newValue }
+    var screenCondition: ScreenCondition {
+        get { self[ScreenConditionObserverKey.self] }
+        set { self[ScreenConditionObserverKey.self] = newValue }
     }
 
 }

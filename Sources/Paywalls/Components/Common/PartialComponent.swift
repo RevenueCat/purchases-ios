@@ -19,7 +19,11 @@ import Foundation
 
 public extension PaywallComponent {
 
-    protocol PartialComponent: PaywallComponentBase {}
+    protocol PartialComponent: PaywallComponentBase {
+
+        var visible: Bool? { get }
+
+    }
 
     struct ComponentState<T: PartialComponent>: PaywallComponentBase {
 

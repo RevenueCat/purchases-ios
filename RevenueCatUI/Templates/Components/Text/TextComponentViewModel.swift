@@ -100,13 +100,14 @@ class TextComponentViewModel {
     @ViewBuilder
     func styles(
         state: ComponentViewState,
-        condition: ComponentConditionObserver.ComponentConditionsType,
+        condition: ScreenCondition,
         application: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localalizedPartial = self.buildPartial(state: state, condition: condition)
         let partial = localalizedPartial?.partial
 
         let style = TextComponentStyle(
+            visible: partial?.visible ?? true,
             text: localalizedPartial?.text ?? self.text,
             fontFamily: partial?.fontFamily ?? self.component.fontFamily,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
@@ -123,7 +124,7 @@ class TextComponentViewModel {
 
     func buildPartial(
         state: ComponentViewState,
-        condition: ComponentConditionObserver.ComponentConditionsType
+        condition: ScreenCondition
     ) -> LocalizedTextPartial? {
         // CONDITIONS
         // Bigger devices overwrite
@@ -132,10 +133,17 @@ class TextComponentViewModel {
         // Selected overwrite condidions
         // Intro offer overwrite selecte
 
-        let partialFromConditions = self.buildConditionPartial(for: condition)
+        var partial = self.buildConditionPartial(for: condition)
+
+        switch state {
+        case .normal:
+            break
+        case .selected:
+            partial = self.combine(partial, with: self.localizedStates?.selected)
+        }
 
         // WIP: Get partial for intro offer
-        return self.combine(partialFromConditions, with: self.localizedStates?.selected)
+        return partial
     }
 
     private func getCurrentCondition() -> PaywallComponent.ComponentConditionsType? {
@@ -163,7 +171,7 @@ class TextComponentViewModel {
     }
 
     private func buildConditionPartial(
-        for conditionType: ComponentConditionObserver.ComponentConditionsType
+        for conditionType: ScreenCondition
     ) -> LocalizedTextPartial? {
 
         let conditionTypesToApply: [PaywallComponent.ComponentConditionsType]
@@ -220,6 +228,7 @@ class TextComponentViewModel {
         return LocalizedTextPartial(
             text: other?.text ?? base?.text,
             partial: PaywallComponent.PartialTextComponent(
+                visible: otherPartial?.visible ?? basePartial?.visible,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontFamily: otherPartial?.fontFamily ?? basePartial?.fontFamily,
                 fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
@@ -246,6 +255,7 @@ extension PaywallComponent.PartialTextComponent {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentStyle {
 
+    let visible: Bool
     let text: String
     let fontFamily: String?
     let fontWeight: Font.Weight
@@ -257,6 +267,7 @@ struct TextComponentStyle {
     let margin: EdgeInsets
 
     init(
+        visible: Bool,
         text: PaywallComponent.LocalizationKey,
         fontFamily: String?,
         fontWeight: PaywallComponent.FontWeight,
@@ -267,6 +278,7 @@ struct TextComponentStyle {
         textStyle: PaywallComponent.TextStyle,
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
+        self.visible = visible
         self.text = text
         self.fontFamily = fontFamily
         self.fontWeight = fontWeight.fontWeight

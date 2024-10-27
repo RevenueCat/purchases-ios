@@ -38,7 +38,7 @@ struct TemplateComponentsView: View {
     private var userInterfaceIdiom
 
     @StateObject
-    private var componentConditionObserver = ComponentConditionObserver()
+    private var screenConditionObserver = ScreenConditionObserver()
 
     @StateObject
     private var paywallState: PaywallState
@@ -94,7 +94,7 @@ struct TemplateComponentsView: View {
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
         .environmentObject(self.paywallState)
-        .environment(\.componentConditionType, self.componentConditionObserver.conditionType)
+        .environment(\.screenCondition, self.screenConditionObserver.conditionType)
     }
 
     static func chooseLocalization(
