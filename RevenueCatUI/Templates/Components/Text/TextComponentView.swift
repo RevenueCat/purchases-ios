@@ -20,6 +20,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.componentConditionType)
+    private var componentConditionType
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -27,15 +33,20 @@ struct TextComponentView: View {
     }
 
     var body: some View {
-        Text(viewModel.text)
-            .font(viewModel.textStyle)
-            .fontWeight(viewModel.fontWeight)
-            .fixedSize(horizontal: false, vertical: true)
-            .multilineTextAlignment(viewModel.horizontalAlignment)
-            .foregroundStyle(viewModel.color)
-            .padding(viewModel.padding)
-            .background(viewModel.backgroundColor)
-            .padding(viewModel.margin)
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.componentConditionType
+        ) { style in
+            Text(style.text)
+                .font(style.textStyle)
+                .fontWeight(style.fontWeight)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(style.horizontalAlignment)
+                .foregroundStyle(style.color)
+                .padding(style.padding)
+                .background(style.backgroundColor)
+                .padding(style.margin)
+        }
     }
 
 }
@@ -89,6 +100,86 @@ struct TextComponentView_Previews: PreviewProvider {
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
+
+        // State - Selected
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("Hello, world")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: "#000000"),
+                    state: .init(
+                        selected: .init(
+                            fontWeight: .black,
+                            color: .init(light: "#ff0000"),
+                            backgroundColor: .init(light: "#0000ff"),
+                            padding: .init(top: 10,
+                                           bottom: 10,
+                                           leading: 10,
+                                           trailing: 10),
+                            margin: .init(top: 10,
+                                          bottom: 10,
+                                          leading: 10,
+                                          trailing: 10),
+                            textStyle: .title
+                        ),
+                        introOffer: .init()
+                    )
+                )
+            )
+        )
+        .environment(\.componentViewState, .selected)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("State - Selected")
+
+        // Condition - Landscape
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("THIS SHOULDN'T SHOW"),
+                    "id_2": .string("Showing landscape condition")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: "#000000"),
+                    conditions: .init(
+                        mobileLandscape: .init(
+                            text: "id_2"
+                        )
+                    )
+                )
+            )
+        )
+        .environment(\.componentConditionType, .mobileLandscape)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Condition - Landscape")
+
+        // Condition - Has tablet but not tablet
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("Showing mobile condition"),
+                    "id_2": .string("SHOULDN'T SHOW TABLET")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: "#000000"),
+                    conditions: .init(
+                        tablet: .init(
+                            text: "id_2"
+                        )
+                    )
+                )
+            )
+        )
+        .environment(\.componentConditionType, .mobileLandscape)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Condition - Has tablet but not tablet")
     }
 }
 

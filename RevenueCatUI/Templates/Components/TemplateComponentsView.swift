@@ -34,12 +34,18 @@ enum PackageGroupValidationError: Error {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
-    let paywallComponentsData: PaywallComponentsData
-    let componentViewModel: PaywallComponentViewModel
-    private let onDismiss: () -> Void
+    @Environment(\.userInterfaceIdiom)
+    private var userInterfaceIdiom
+
+    @StateObject
+    private var componentConditionObserver = ComponentConditionObserver()
 
     @StateObject
     private var paywallState: PaywallState
+
+    private let paywallComponentsData: PaywallComponentsData
+    private let componentViewModel: PaywallComponentViewModel
+    private let onDismiss: () -> Void
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -88,6 +94,7 @@ struct TemplateComponentsView: View {
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
         .environmentObject(self.paywallState)
+        .environment(\.componentConditionType, self.componentConditionObserver.conditionType)
     }
 
     static func chooseLocalization(

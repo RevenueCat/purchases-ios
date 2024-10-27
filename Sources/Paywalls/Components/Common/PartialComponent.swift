@@ -23,17 +23,38 @@ public extension PaywallComponent {
 
     struct ComponentState<T: PartialComponent>: PaywallComponentBase {
 
-        let selected: T?
-        let introOffer: T?
+        public init(selected: T?, introOffer: T?) {
+            self.selected = selected
+            self.introOffer = introOffer
+        }
 
+        public let selected: T?
+        public let introOffer: T?
+
+    }
+
+    enum ComponentConditionsType {
+        case mobileLandscape, tablet, tabletLandscape, desktop
     }
 
     struct ComponentConditions<T: PartialComponent>: PaywallComponentBase {
 
-        let mobileLandscape: T?
-        let tablet: T?
-        let tabletLandscape: T?
-        let desktop: T?
+        public init(
+            mobileLandscape: T? = nil,
+            tablet: T? = nil,
+            tabletLandscape: T? = nil,
+            desktop: T? = nil
+        ) {
+            self.mobileLandscape = mobileLandscape
+            self.tablet = tablet
+            self.tabletLandscape = tabletLandscape
+            self.desktop = desktop
+        }
+
+        public let mobileLandscape: T?
+        public let tablet: T?
+        public let tabletLandscape: T?
+        public let desktop: T?
 
     }
 
