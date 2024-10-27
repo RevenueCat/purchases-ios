@@ -35,10 +35,12 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        AsyncButton(
-            action: { try await performAction() },
-            label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
-        )
+        AsyncButton {
+            try await performAction()
+        } label: {
+            // Not passing an onDismiss - nothing in this stack should be able to dismiss
+            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: {})
+        }
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)

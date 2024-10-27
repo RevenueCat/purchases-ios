@@ -46,19 +46,8 @@ struct PurchaseButtonComponentView: View {
 
             _ = try await self.purchaseHandler.purchase(package: selectedPackage)
         } label: {
-            // WIP: Need to add logic for intro offer
-            Text(viewModel.cta)
-                .font(viewModel.textStyle)
-                .fontWeight(viewModel.fontWeight)
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(viewModel.horizontalAlignment)
-                .foregroundStyle(viewModel.color)
-                .padding(viewModel.padding)
-                .background(viewModel.backgroundColor)
-                .shape(viewModel.clipShape)
-                .cornerBorder(border: nil,
-                              radiuses: viewModel.cornerRadiuses)
-                .padding(viewModel.margin)
+            // Not passing an onDismiss - nothing in this stack should be able to dismiss
+            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: {})
         }
     }
 
@@ -96,22 +85,29 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
         PurchaseButtonComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
+                packageValidator: PackageValidator(),
                 localizedStrings: [
                     "id_1": .string("Hello, world"),
                     "id_2": .string("Hello, world intro offer")
                 ],
                 component: .init(
-                    cta: "id_1",
-                    ctaIntroOffer: "id_2",
-                    fontWeight: .bold,
-                    color: .init(light: "#ffffff"),
-                    backgroundColor: .init(light: "#ff0000"),
-                    padding: .init(top: 10,
-                                   bottom: 10,
-                                   leading: 30,
-                                   trailing: 30),
-                    shape: .pill
-                )
+                    stack: .init(components: [
+                        // WIP: Intro offer state with "id_2",
+                        .text(.init(
+                            text: "id_1",
+                            fontWeight: .bold,
+                            color: .init(light: "#ffffff"),
+                            backgroundColor: .init(light: "#ff0000"),
+                            padding: .init(top: 10,
+                                           bottom: 10,
+                                           leading: 30,
+                                           trailing: 30)
+                        ))
+                    ])
+                ),
+                offering: Offering(identifier: "",
+                                   serverDescription: "",
+                                   availablePackages: [])
             )
         )
         .previewLayout(.sizeThatFits)
@@ -121,26 +117,37 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
         PurchaseButtonComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
+                packageValidator: PackageValidator(),
                 localizedStrings: [
                     "id_1": .string("Hello, world"),
                     "id_2": .string("Hello, world intro offer")
                 ],
                 component: .init(
-                    cta: "id_1",
-                    ctaIntroOffer: "id_2",
-                    fontWeight: .bold,
-                    color: .init(light: "#ffffff"),
-                    backgroundColor: .init(light: "#ff0000"),
-                    padding: .init(top: 10,
-                                   bottom: 10,
-                                   leading: 30,
-                                   trailing: 30),
-                    shape: .rectangle,
-                    cornerRadiuses: .init(topLeading: 8,
-                                          topTrailing: 8,
-                                          bottomLeading: 8,
-                                          bottomTrailing: 8)
-                )
+                    stack: .init(
+                        components: [
+                            // WIP: Intro offer state with "id_2",
+                            .text(.init(
+                                text: "id_1",
+                                fontWeight: .bold,
+                                color: .init(light: "#ffffff")
+                            ))
+                        ],
+                        backgroundColor: .init(light: "#ff0000"),
+                        padding: .init(top: 8,
+                                       bottom: 8,
+                                       leading: 8,
+                                       trailing: 8),
+                        cornerRadiuses: PaywallComponent.CornerRadiuses(
+                            topLeading: 8,
+                            topTrailing: 8,
+                            bottomLeading: 8,
+                            bottomTrailing: 8
+                        )
+                    )
+                ),
+                offering: Offering(identifier: "",
+                                   serverDescription: "",
+                                   availablePackages: [])
             )
         )
         .previewLayout(.sizeThatFits)

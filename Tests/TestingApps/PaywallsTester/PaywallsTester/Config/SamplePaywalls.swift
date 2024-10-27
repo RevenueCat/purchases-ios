@@ -766,20 +766,25 @@ private extension SamplePaywallLoader {
                     margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
                 )),
                 .purchaseButton(.init(
-                    cta: "cta",
-                    ctaIntroOffer: "cta_intro",
-                    fontWeight: .bold,
-                    color: .init(light: "#ffffff"),
-                    backgroundColor: .init(light: "#ff0000"),
-                    padding: .init(top: 10,
-                                   bottom: 10,
-                                   leading: 30,
-                                   trailing: 30),
-                    shape: .rectangle,
-                    cornerRadiuses: .init(topLeading: 10,
-                                          topTrailing: 10,
-                                          bottomLeading: 10,
-                                          bottomTrailing: 10)
+                    stack: .init(
+                        components: [
+                            // WIP: Intro offer state with "cta_intro",
+                            .text(.init(
+                                text: "cta",
+                                fontWeight: .bold,
+                                color: .init(light: "#ffffff")
+                            ))
+                        ],
+                        backgroundColor: .init(light: "#ff0000"),
+                        padding: .init(top: 15,
+                                       bottom: 15,
+                                       leading: 30,
+                                       trailing: 30),
+                        cornerRadiuses: .init(topLeading: 16,
+                                              topTrailing: 16,
+                                              bottomLeading: 16,
+                                              bottomTrailing: 16)
+                    )
                 ))
             ],
             width: .init(type: .fill, value: nil),

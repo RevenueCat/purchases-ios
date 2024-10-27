@@ -76,8 +76,10 @@ extension PaywallComponent {
             return .package(viewModel)
         case .purchaseButton(let component):
             return .purchaseButton(
-                try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
-                                                     component: component)
+                try PurchaseButtonComponentViewModel(packageValidator: packageValidator,
+                                                     localizedStrings: localizedStrings,
+                                                     component: component,
+                                                     offering: offering)
             )
         }
     }

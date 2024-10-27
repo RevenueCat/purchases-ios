@@ -146,16 +146,25 @@ private enum Template5Preview {
     )
 
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
-        cta: "cta",
-        ctaIntroOffer: "cta_intro",
-        fontWeight: .bold,
-        color: .init(light: "#ffffff"),
-        backgroundColor: .init(light: "#e89d89"),
-        padding: .init(top: 15,
-                       bottom: 15,
-                       leading: 50,
-                       trailing: 50),
-        shape: .pill
+        stack: .init(
+            components: [
+                // WIP: Intro offer state with "cta_intro",
+                .text(.init(
+                    text: "cta",
+                    fontWeight: .bold,
+                    color: .init(light: "#ffffff")
+                ))
+            ],
+            backgroundColor: .init(light: "#e89d89"),
+            padding: .init(top: 15,
+                           bottom: 15,
+                           leading: 30,
+                           trailing: 30),
+            cornerRadiuses: .init(topLeading: 16,
+                                  topTrailing: 16,
+                                  bottomLeading: 16,
+                                  bottomTrailing: 16)
+        )
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
