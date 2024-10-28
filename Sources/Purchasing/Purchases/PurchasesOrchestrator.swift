@@ -466,7 +466,8 @@ final class PurchasesOrchestrator {
             do {
                 let result: PurchaseResultData = try await self.purchase(sk2Product: product,
                                                                          package: package,
-                                                                         promotionalOffer: promotionalOffer)
+                                                                         promotionalOffer: promotionalOffer,
+                                                                         winBackOffer: nil)
 
                 if !result.userCancelled {
                     Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
@@ -496,91 +497,12 @@ final class PurchasesOrchestrator {
         }
     }
 
-    // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with version 6.0 of the Swift
-    // compiler. The win-back symbols won't be found if compiled on Xcode < 16.0, so we need to ensure that
-    // the Swift compiler 6.0 or higher is available.
-    #if compiler(>=6.0)
-    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-    func purchase(
-        sk2Product: SK2Product,
-        package: Package?,
-        winBackOffer: Product.SubscriptionOffer
-    ) async throws -> PurchaseResultData {
-        guard winBackOffer.type == .winBack else {
-            throw ErrorUtils.invalidSubscriptionOfferError(
-                message: "Expected a win-back offer, but the offer's type was \(winBackOffer.type.localizedDescription)"
-            )
-        }
-
-        let result: Product.PurchaseResult
-
-        do {
-            var options: Set<Product.PurchaseOption> = [
-                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
-            ]
-
-            if let uuid = UUID(uuidString: self.appUserID) {
-                Logger.debug(
-                    Strings.storeKit.sk2_purchasing_added_uuid_option(uuid)
-                )
-                options.insert(.appAccountToken(uuid))
-            }
-
-            options.insert(.winBackOffer(winBackOffer))
-
-            self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
-
-            result = try await self.purchase(sk2Product, options)
-        } catch StoreKitError.userCancelled {
-            guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-                throw ErrorUtils.purchaseCancelledError()
-            }
-
-            return (
-                transaction: nil,
-                customerInfo: try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                              fetchPolicy: .cachedOrFetched),
-                userCancelled: true
-            )
-        } catch {
-            let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
-            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: purchasesError.asPublicError)
-            throw error
-        }
-
-        // `userCancelled` above comes from `StoreKitError.userCancelled`.
-        // This detects if `Product.PurchaseResult.userCancelled` is true.
-        let (userCancelled, transaction) = try await self.storeKit2TransactionListener
-            .handle(purchaseResult: result, fromTransactionUpdate: false)
-
-        if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
-            throw ErrorUtils.purchaseCancelledError()
-        }
-
-        let customerInfo: CustomerInfo
-
-        if let transaction = transaction {
-            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase)
-        } else {
-            // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
-            // `Product.PurchaseResult.userCancelled`.
-            customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                           fetchPolicy: .cachedOrFetched)
-        }
-
-        if !userCancelled {
-            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: nil)
-        }
-
-        return (transaction, customerInfo, userCancelled)
-    }
-    #endif
-
     // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(sk2Product: SK2Product,
                   package: Package?,
-                  promotionalOffer: PromotionalOffer.SignedData?) async throws -> PurchaseResultData {
+                  promotionalOffer: PromotionalOffer.SignedData?,
+                  winBackOffer: Product.SubscriptionOffer?) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
         do {
@@ -600,6 +522,18 @@ final class PurchasesOrchestrator {
                     Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
                 )
                 options.insert(try signedData.sk2PurchaseOption)
+            }
+
+            if let winBackOffer, #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+                // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with
+                // version 6.0 of the Swift compiler. The win-back symbols won't be found if compiled on
+                // Xcode < 16.0, so we need to ensure that the Swift compiler 6.0 or higher is available.
+                #if compiler(>=6.0)
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_winback_offer_option(winBackOffer.id ?? "unknown ID")
+                )
+                options.insert(.winBackOffer(winBackOffer))
+                #endif
             }
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
@@ -1129,6 +1063,7 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                                 let result = try await self.purchase(
                                     sk2Product: purchaseIntent.product,
                                     package: nil,
+                                    promotionalOffer: nil,
                                     winBackOffer: offer
                                 )
 
