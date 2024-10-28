@@ -34,7 +34,7 @@ public class ButtonComponentViewModel {
     /// This way the view layer doesn't need to handle this error scenario.
     internal enum Destination {
         case customerCenter
-        case URL(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
+        case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
     }
@@ -66,9 +66,9 @@ public class ButtonComponentViewModel {
             switch destination {
             case .customerCenter:
                 self.action = .navigateTo(destination: .customerCenter)
-            case .URL(let urlLid, let method):
+            case .url(let urlLid, let method):
                 self.action = .navigateTo(
-                    destination: .URL(url: try localizedStrings.urlFromLid(urlLid), method: method)
+                    destination: .url(url: try localizedStrings.urlFromLid(urlLid), method: method)
                 )
             case .privacyPolicy(let urlLid, let method):
                 self.action = .navigateTo(
