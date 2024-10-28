@@ -83,6 +83,9 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
                     // time. So, we only observe the payment queue when using StoreKit 2 if the PurchaseIntents API
                     // is unavailable. See https://developer.apple.com/documentation/storekit/purchaseintent
                     // for more info.
+                    //
+                    // We don't need to check that SK2 is available and used since PaymentQueueWrapper itself
+                    // is only used in SK2 mode. When running in SK1 mode, the StoreKit1Wrapper is used instead.
                     self.paymentQueue.add(self)
                 }
             } else if self.delegate == nil, self.paymentQueue.delegate === self {
