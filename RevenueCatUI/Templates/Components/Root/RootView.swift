@@ -28,7 +28,14 @@ struct RootView: View {
     }
 
     var body: some View {
-        StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: onDismiss)
+        ScrollView {
+            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: onDismiss)
+        }.applyIfLet(viewModel.stickyFooterViewModel) { stackView, stickyFooterViewModel in
+            stackView.safeAreaInset(edge: .bottom) {
+                StackComponentView(viewModel: stickyFooterViewModel.stackViewModel, onDismiss: onDismiss)
+            }
+
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 //
 //  PaywallComponentViewModel.swift
-//  
+//
 //
 //  Created by James Borthwick on 2024-08-29.
 //
@@ -30,6 +30,7 @@ enum PaywallComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
+    // swiftlint:disable:next function_body_length
     func toViewModel(
         offering: Offering,
         localizedStrings: LocalizationDictionary
@@ -82,7 +83,14 @@ extension PaywallComponent {
             )
         case .stickyFooter(let component):
             return .stickyFooter(
-                try StickyFooterComponentViewModel(component: component)
+                try StickyFooterComponentViewModel(
+                    component: component,
+                    stackViewModel: StackComponentViewModel(
+                        component: component.stack,
+                        localizedStrings: localizedStrings,
+                        offering: offering
+                    )
+                )
             )
         }
     }

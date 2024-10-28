@@ -51,7 +51,14 @@ struct TemplateComponentsView: View {
                         offering: offering
                     ),
                     stickyFooterViewModel: componentsConfig.stickyFooter.map {
-                        StickyFooterComponentViewModel(component: $0)
+                        StickyFooterComponentViewModel(
+                            component: $0,
+                            stackViewModel: try StackComponentViewModel(
+                                component: $0.stack,
+                                localizedStrings: localization.localizedStrings,
+                                offering: offering
+                            )
+                        )
                     }
                 )
             )
