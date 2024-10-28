@@ -646,7 +646,12 @@ private extension SamplePaywallLoader {
     static func createFakePaywallComponentsData(components: [PaywallComponent], localization: [LocaleID: LocalizationDictionary]) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
-                              componentsConfigs: .init(base: .init(stack: .init(components: components))),
+                              componentsConfigs: .init(
+                                base: .init(
+                                    stack: .init(components: components),
+                                    stickyFooter: nil
+                                )
+                              ),
                               componentsLocalizations: localization,
                               revision: 0,
                               defaultLocaleIdentifier: "en_US")

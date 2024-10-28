@@ -13,6 +13,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
 
+    case root(RootViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
     case spacer(SpacerComponentViewModel)
@@ -22,6 +23,7 @@ enum PaywallComponentViewModel {
     case packageGroup(PackageGroupComponentViewModel)
     // Purposely leaving out a `case package` since `PackageGroupComponentViewModel` creates this model
     case purchaseButton(PurchaseButtonComponentViewModel)
+    case stickyFooter(StickyFooterComponentViewModel)
 
 }
 
@@ -77,6 +79,10 @@ extension PaywallComponent {
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
                                                      component: component)
+            )
+        case .stickyFooter(let component):
+            return .stickyFooter(
+                try StickyFooterComponentViewModel(component: component)
             )
         }
     }
