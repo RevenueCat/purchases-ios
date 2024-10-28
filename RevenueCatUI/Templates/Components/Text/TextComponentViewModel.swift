@@ -17,28 +17,10 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-protocol LocalizedPartial {}
-
 struct LocalizedTextPartial: LocalizedPartial {
 
     let text: String?
     let partial: PaywallComponent.PartialTextComponent
-
-}
-
-struct LocalizedStates<T: LocalizedPartial> {
-
-    let selected: T?
-    let introOffer: T?
-
-}
-
-struct LocalizedConditions<T: LocalizedPartial> {
-
-    let mobileLandscape: T?
-    let tablet: T?
-    let tabletLandscape: T?
-    let desktop: T?
 
 }
 
@@ -61,20 +43,10 @@ class TextComponentViewModel {
         self.localizedStates = try self.component.state.flatMap({ state in
             LocalizedStates(
                 selected: try state.selected.flatMap({ partial in
-                    LocalizedTextPartial(
-                        text: try partial.text.flatMap({ key in
-                            try localizedStrings.string(key: key)
-                        }),
-                        partial: partial
-                    )
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 }),
                 introOffer: try state.introOffer.flatMap({ partial in
-                    LocalizedTextPartial(
-                        text: try partial.text.flatMap({ key in
-                            try localizedStrings.string(key: key)
-                        }),
-                        partial: partial
-                    )
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 })
             )
         })
@@ -82,16 +54,17 @@ class TextComponentViewModel {
         self.localizedConditions = try self.component.conditions.flatMap({ condition in
             LocalizedConditions(
                 mobileLandscape: try condition.mobileLandscape.flatMap({ partial in
-                    LocalizedTextPartial(
-                        text: try partial.text.flatMap({ key in
-                            try localizedStrings.string(key: key)
-                        }),
-                        partial: partial
-                    )
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 }),
-                tablet: nil,
-                tabletLandscape: nil,
-                desktop: nil
+                tablet: try condition.tablet.flatMap({ partial in
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                }),
+                tabletLandscape: try condition.tabletLandscape.flatMap({ partial in
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                }),
+                desktop: try condition.desktop.flatMap({ partial in
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                })
             )
         })
 
@@ -126,13 +99,6 @@ class TextComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition
     ) -> LocalizedTextPartial? {
-        // CONDITIONS
-        // Bigger devices overwrite
-
-        // STATE
-        // Selected overwrite condidions
-        // Intro offer overwrite selecte
-
         var partial = self.buildConditionPartial(for: condition)
 
         switch state {
@@ -146,34 +112,11 @@ class TextComponentViewModel {
         return partial
     }
 
-    private func getCurrentCondition() -> PaywallComponent.ComponentConditionsType? {
-        #if os(iOS)
-        let device = UIDevice.current
-        let orientation = UIDevice.current.orientation
-
-        switch (device.userInterfaceIdiom, orientation.isLandscape) {
-        case (.pad, true):
-            return .tabletLandscape
-        case (.pad, false):
-            return .tablet
-        case (.phone, true):
-            return .mobileLandscape
-        case (.phone, false):
-            return nil
-        default:
-            return nil
-        }
-        #elseif os(macOS)
-        return .desktop
-        #else
-        return .mobile
-        #endif
-    }
-
     private func buildConditionPartial(
         for conditionType: ScreenCondition
     ) -> LocalizedTextPartial? {
 
+        // Get all conditions to include
         let conditionTypesToApply: [PaywallComponent.ComponentConditionsType]
         switch conditionType {
         case .default:
@@ -193,25 +136,25 @@ class TextComponentViewModel {
             partial: PaywallComponent.PartialTextComponent()
         )
 
-        // Apply mobile landscape
+        // Apply mobile landscape on top of base
         if let mobileLandscape = self.localizedConditions?.mobileLandscape,
            conditionTypesToApply.contains(.mobileLandscape) {
             combinedPartial = combine(combinedPartial, with: mobileLandscape)
         }
 
-        // Apply tablet
+        // Apply tablet on top of existing partial
         if let tablet = self.localizedConditions?.tablet,
            conditionTypesToApply.contains(.tablet) {
             combinedPartial = combine(combinedPartial, with: tablet)
         }
 
-        // Apply tablet landscape
+        // Apply tablet landscape on top of existin partial
         if let tabletLandscape = self.localizedConditions?.tabletLandscape,
            conditionTypesToApply.contains(.tabletLandscape) {
             combinedPartial = combine(combinedPartial, with: tabletLandscape)
         }
 
-        // Apply desktop
+        // Apply desktop on top of existing partial
         if let desktop = self.localizedConditions?.desktop,
            conditionTypesToApply.contains(.desktop) {
             combinedPartial = combine(combinedPartial, with: desktop)
@@ -244,12 +187,30 @@ class TextComponentViewModel {
 
 }
 
+extension LocalizedTextPartial {
+
+    static func create(
+        from partial: PaywallComponent.PartialTextComponent,
+        using localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws -> LocalizedTextPartial {
+        return LocalizedTextPartial(
+            text: try partial.text.flatMap { key in
+                try localizedStrings.string(key: key)
+            },
+            partial: partial
+        )
+    }
+
+}
+
 extension PaywallComponent.PartialTextComponent {
+
     var isEmpty: Bool {
         return visible == nil && text == nil && fontFamily == nil && fontWeight == nil && color == nil &&
                backgroundColor == nil && padding == nil && margin == nil &&
                textStyle == nil && horizontalAlignment == nil
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

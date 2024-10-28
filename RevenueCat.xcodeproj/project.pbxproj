@@ -32,6 +32,7 @@
 		2C8EC6E12CCD7BA700D6CCF8 /* PartialComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6E02CCD7BA300D6CCF8 /* PartialComponent.swift */; };
 		2C8EC71B2CCDD43900D6CCF8 /* ComponentViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC71A2CCDD43500D6CCF8 /* ComponentViewState.swift */; };
 		2C8EC71D2CCE8A5400D6CCF8 /* ScreenConditionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC71C2CCE8A5100D6CCF8 /* ScreenConditionObserver.swift */; };
+		2C8EC7202CCF276100D6CCF8 /* LocalizedPartials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC71F2CCF275E00D6CCF8 /* LocalizedPartials.swift */; };
 		2CAB87F72CAAB13200247013 /* CornerBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAB87F62CAAB13200247013 /* CornerBorder.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
 		2CC791552CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC791522CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift */; };
@@ -1189,6 +1190,7 @@
 		2C8EC6E02CCD7BA300D6CCF8 /* PartialComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialComponent.swift; sourceTree = "<group>"; };
 		2C8EC71A2CCDD43500D6CCF8 /* ComponentViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentViewState.swift; sourceTree = "<group>"; };
 		2C8EC71C2CCE8A5100D6CCF8 /* ScreenConditionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenConditionObserver.swift; sourceTree = "<group>"; };
+		2C8EC71F2CCF275E00D6CCF8 /* LocalizedPartials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedPartials.swift; sourceTree = "<group>"; };
 		2CAB87F62CAAB13200247013 /* CornerBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerBorder.swift; sourceTree = "<group>"; };
 		2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformInfo.swift; sourceTree = "<group>"; };
 		2CC7914B2CC0452100FBE120 /* PackageComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentView.swift; sourceTree = "<group>"; };
@@ -4401,6 +4403,7 @@
 		88AD01352C74196600AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				2C8EC71F2CCF275E00D6CCF8 /* LocalizedPartials.swift */,
 				2C8EC71C2CCE8A5100D6CCF8 /* ScreenConditionObserver.swift */,
 				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
 				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
@@ -6108,6 +6111,7 @@
 				2C8EC71D2CCE8A5400D6CCF8 /* ScreenConditionObserver.swift in Sources */,
 				887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */,
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
+				2C8EC7202CCF276100D6CCF8 /* LocalizedPartials.swift in Sources */,
 				7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
