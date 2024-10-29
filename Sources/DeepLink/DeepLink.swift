@@ -20,9 +20,10 @@ import Foundation
 
         private override init() {}
 
+        // swiftlint:disable nesting
+
         /// Class representing a web redemption deep link that can be redeemed by the SDK.
         /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
-        // swiftlint:disable:next nesting
         @objc public final class WebPurchaseRedemption: DeepLink {
 
             internal let redemptionToken: String
@@ -32,6 +33,8 @@ import Foundation
             }
 
         }
+
+        // swiftlint:enable nesting
 
     }
 
