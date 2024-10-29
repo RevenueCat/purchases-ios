@@ -69,8 +69,7 @@ final class PurchasesOrchestrator {
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
-    private let deepLinkHandler: DeepLinkHandler
-    private let rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
+    private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -132,8 +131,7 @@ final class PurchasesOrchestrator {
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
-                     deepLinkHandler: DeepLinkHandler,
-                     rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
+                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper
     ) {
         self.init(
             productsManager: productsManager,
@@ -154,8 +152,7 @@ final class PurchasesOrchestrator {
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper,
-            deepLinkHandler: deepLinkHandler,
-            rcBillingPurchaseRedemptionHelper: rcBillingPurchaseRedemptionHelper
+            webPurchaseRedemptionHelper: webPurchaseRedemptionHelper
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -209,8 +206,7 @@ final class PurchasesOrchestrator {
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
          storeMessagesHelper: StoreMessagesHelperType?,
-         deepLinkHandler: DeepLinkHandler,
-         rcBillingPurchaseRedemptionHelper: RCBillingPurchaseRedemptionHelper
+         webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -230,8 +226,7 @@ final class PurchasesOrchestrator {
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
         self.storeMessagesHelper = storeMessagesHelper
-        self.deepLinkHandler = deepLinkHandler
-        self.rcBillingPurchaseRedemptionHelper = rcBillingPurchaseRedemptionHelper
+        self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
@@ -240,14 +235,10 @@ final class PurchasesOrchestrator {
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
     }
 
-    func handleDeepLink(_ url: URL) -> Bool {
-        switch self.deepLinkHandler.parse(url) {
-        case let .redeemRCBPurchase(redemptionToken):
-            self.rcBillingPurchaseRedemptionHelper.handleRedeemRCBPurchase(redemptionToken: redemptionToken)
-            return true
-        case nil:
-            return false
-        }
+    func redeemWebPurchase(_ deepLink: Purchases.DeepLink.WebPurchaseRedemption,
+                           completion: @escaping (@Sendable (WebPurchaseRedemptionResult) -> Void)) {
+        self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(redemptionToken: deepLink.redemptionToken,
+                                                                 completion: completion)
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {

@@ -11,7 +11,7 @@
 			<string>RevenueCat</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>revenuecatbilling</string>
+				<string>rc-39976e83d0</string>
 			</array>
 		</dict>
 	</array>

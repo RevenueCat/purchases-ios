@@ -63,12 +63,18 @@ struct PurchaseTesterApp: App {
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
             .onOpenURL { url in
-                if Purchases.isConfigured {
-                    let handled = Purchases.shared.handleDeepLink(url)
-                    if handled {
-                        print("RevenueCat handled deep link: \(url.absoluteString)")
-                    } else {
-                        print("RevenueCat ignored deep link: \(url.absoluteString)")
+                let deepLink = Purchases.parseAsDeepLink(url)
+                if let webRedemption = deepLink as? Purchases.DeepLink.WebPurchaseRedemption,
+                    Purchases.isConfigured {
+                    print("Redeeming web purchase.")
+                    Purchases.shared.redeemWebPurchase(webRedemption) { result in
+                        if let success = result as? WebPurchaseRedemptionResult.Success {
+                            print("RevenueCat redeemed deep link: \(success.customerInfo)")
+                        } else if let error = result as? WebPurchaseRedemptionResult.Error {
+                            print("RevenueCat errored redeeming deep link: \(error.error.localizedDescription)")
+                        } else {
+                            print("Unrecognized web redemption result: \(result)")
+                        }
                     }
                 }
             }

@@ -13,6 +13,26 @@
 
 import Foundation
 
-enum DeepLink {
-    case redeemRCBPurchase(_ redemptionToken: String)
+@objc public extension Purchases {
+
+    /// Class representing a RevenueCat deep link that can be processed by the SDK.
+    class DeepLink: NSObject {
+
+        private override init() {}
+
+        /// Class representing a web redemption deep link that can be redeemed by the SDK.
+        /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
+        // swiftlint:disable:next nesting
+        @objc public final class WebPurchaseRedemption: DeepLink {
+
+            internal let redemptionToken: String
+
+            internal init(redemptionToken: String) {
+                self.redemptionToken = redemptionToken
+            }
+
+        }
+
+    }
+
 }
