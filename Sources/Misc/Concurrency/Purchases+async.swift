@@ -47,6 +47,15 @@ extension Purchases {
         }
     }
 
+    func redeemWebPurchaseAsync(_ deepLink: Purchases.DeepLink.WebPurchaseRedemption) async throws
+    -> WebPurchaseRedemptionResult {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.redeemWebPurchase(deepLink) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
     #endif
 
     func offeringsAsync(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {

@@ -907,6 +907,24 @@ public protocol PurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
 
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``
+     *
+     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
+     * - Parameter completion: A completion block called with the result of the redemption.
+     */
+    func redeemWebPurchase(_ deepLink: Purchases.DeepLink.WebPurchaseRedemption,
+                           completion: @escaping @Sendable (WebPurchaseRedemptionResult) -> Void)
+
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``
+     *
+     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
+     */
+    func redeemWebPurchase(
+        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption
+    ) async throws -> WebPurchaseRedemptionResult
+
     // MARK: - Deprecated
 
     // swiftlint:disable missing_docs

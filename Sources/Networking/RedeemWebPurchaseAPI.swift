@@ -7,40 +7,40 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RedeemRCBillingPurchaseAPI.swift
+//  RedeemWebPurchaseAPI.swift
 //
 //  Created by Antonio Rico Diez on 2024-10-17.
 
 import Foundation
 
-class RedeemRCBillingPurchaseAPI {
+class RedeemWebPurchaseAPI {
 
-    typealias RedeemRCBillingPurchaseResponseHandler = Backend.ResponseHandler<CustomerInfo>
+    typealias RedeemWebPurchaseResponseHandler = Backend.ResponseHandler<CustomerInfo>
 
-    private let redeemRCBillingPurchaseResponseCallbacksCache: CallbackCache<CustomerInfoCallback>
+    private let redeemWebPurchaseResponseCallbacksCache: CallbackCache<CustomerInfoCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
-        self.redeemRCBillingPurchaseResponseCallbacksCache = .init()
+        self.redeemWebPurchaseResponseCallbacksCache = .init()
     }
 
-    func postRedeemRCBillingPurchase(appUserID: String,
-                                     redemptionToken: String,
-                                     completion: @escaping RedeemRCBillingPurchaseResponseHandler) {
+    func postRedeemWebPurchase(appUserID: String,
+                               redemptionToken: String,
+                               completion: @escaping RedeemWebPurchaseResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
-        let factory = PostRedeemRCBillingPurchaseOperation.createFactory(
+        let factory = PostRedeemWebPurchaseOperation.createFactory(
             configuration: config,
             postData: .init(appUserID: appUserID, redemptionToken: redemptionToken),
-            customerInfoCallbackCache: self.redeemRCBillingPurchaseResponseCallbacksCache
+            customerInfoCallbackCache: self.redeemWebPurchaseResponseCallbacksCache
         )
 
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
-                                            source: PostRedeemRCBillingPurchaseOperation.self,
+                                            source: PostRedeemWebPurchaseOperation.self,
                                             completion: completion)
-        let cacheStatus = self.redeemRCBillingPurchaseResponseCallbacksCache.add(callback)
+        let cacheStatus = self.redeemWebPurchaseResponseCallbacksCache.add(callback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,

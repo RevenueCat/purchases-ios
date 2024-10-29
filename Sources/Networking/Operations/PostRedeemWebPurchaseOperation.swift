@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class PostRedeemRCBillingPurchaseOperation: CacheableNetworkOperation {
+final class PostRedeemWebPurchaseOperation: CacheableNetworkOperation {
 
     private let postData: PostData
     private let configuration: AppUserConfiguration
@@ -24,7 +24,7 @@ final class PostRedeemRCBillingPurchaseOperation: CacheableNetworkOperation {
         configuration: UserSpecificConfiguration,
         postData: PostData,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
-    ) -> CacheableNetworkOperationFactory<PostRedeemRCBillingPurchaseOperation> {
+    ) -> CacheableNetworkOperationFactory<PostRedeemWebPurchaseOperation> {
         return Self.createFactory(
             configuration: configuration,
             postData: postData,
@@ -42,7 +42,7 @@ final class PostRedeemRCBillingPurchaseOperation: CacheableNetworkOperation {
         postData: PostData,
         customerInfoResponseHandler: CustomerInfoResponseHandler,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
-    ) -> CacheableNetworkOperationFactory<PostRedeemRCBillingPurchaseOperation> {
+    ) -> CacheableNetworkOperationFactory<PostRedeemWebPurchaseOperation> {
         /// Cache key comprises of the following:
         /// - `appUserID`
         /// - `redemptionToken`
@@ -78,8 +78,7 @@ final class PostRedeemRCBillingPurchaseOperation: CacheableNetworkOperation {
 
     override func begin(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .post(self.postData),
-                                  // WIP: Pass user ID instead.
-                                  path: .postRedeemRCBillingPurchase(appUserID: postData.redemptionToken),
+                                  path: .postRedeemWebPurchase(appUserID: postData.appUserID),
                                   isRetryable: true)
 
         self.httpClient.perform(
@@ -100,9 +99,9 @@ final class PostRedeemRCBillingPurchaseOperation: CacheableNetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostRedeemRCBillingPurchaseOperation: @unchecked Sendable {}
+extension PostRedeemWebPurchaseOperation: @unchecked Sendable {}
 
-extension PostRedeemRCBillingPurchaseOperation {
+extension PostRedeemWebPurchaseOperation {
 
     struct PostData {
 
@@ -115,12 +114,12 @@ extension PostRedeemRCBillingPurchaseOperation {
 // MARK: - Private
 // MARK: - Codable
 
-extension PostRedeemRCBillingPurchaseOperation.PostData: Encodable {
+extension PostRedeemWebPurchaseOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
         case appUserID = "app_user_id"
-        case redemptionToken = "new_app_user_id" // WIP: Change with actual value
+        case redemptionToken = "redemption_token"
 
     }
 
@@ -135,7 +134,7 @@ extension PostRedeemRCBillingPurchaseOperation.PostData: Encodable {
 
 // MARK: - HTTPRequestBody
 
-extension PostRedeemRCBillingPurchaseOperation.PostData: HTTPRequestBody {
+extension PostRedeemWebPurchaseOperation.PostData: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
         return [

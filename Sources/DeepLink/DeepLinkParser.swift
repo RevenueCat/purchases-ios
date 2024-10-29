@@ -13,15 +13,15 @@
 
 import Foundation
 
-class DeepLinkHandler {
+enum DeepLinkParser {
 
-    private static let redeemRCBPurchaseHost = "redeem_rcb_purchase"
+    private static let redeemRCBPurchaseHost = "redeem_web_purchase"
 
-    func parse(_ url: URL) -> DeepLink? {
+    static func parse(_ url: URL) -> Purchases.DeepLink? {
         if url.host == Self.redeemRCBPurchaseHost,
            let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
            let redemptionToken = queryItems.first(where: { queryItem in queryItem.name == "redemption_token" })?.value {
-                return .redeemRCBPurchase(redemptionToken)
+            return Purchases.DeepLink.WebPurchaseRedemption(redemptionToken: redemptionToken)
         }
         return nil
     }
