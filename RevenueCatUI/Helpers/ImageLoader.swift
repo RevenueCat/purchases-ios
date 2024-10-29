@@ -68,7 +68,7 @@ final class ImageLoader: ObservableObject {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func load(url: URL) async {
-        // Only reload if URL is different from current
+        // Only reload if the new URL is different from the current one.
         if case let .success((_, _, currentUrl))? = resultWithURL,
            currentUrl == url {
             return
