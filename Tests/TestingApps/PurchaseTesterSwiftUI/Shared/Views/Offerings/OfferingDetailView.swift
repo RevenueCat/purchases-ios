@@ -137,7 +137,8 @@ struct OfferingDetailView: View {
             #if ENABLE_PURCHASE_PARAMS
             let result: PurchaseResultData
             if let metadata = customerData.metadata {
-                result = try await Purchases.shared.purchase(package: self.package, params: PurchaseParams.Builder().with(metadata: metadata).build())
+                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                result = try await Purchases.shared.purchase(params)
             } else {
                 result = try await Purchases.shared.purchase(package: self.package)
             }
@@ -155,7 +156,8 @@ struct OfferingDetailView: View {
             #if ENABLE_PURCHASE_PARAMS
             let result: PurchaseResultData
             if let metadata = customerData.metadata {
-                result = try await Purchases.shared.purchase(product: self.package.storeProduct, params: PurchaseParams.Builder().with(metadata: metadata).build())
+                let params = PurchaseParams.Builder(product: self.package.storeProduct).with(metadata: metadata).build()
+                result = try await Purchases.shared.purchase(params)
             } else {
                 result = try await Purchases.shared.purchase(product: self.package.storeProduct)
             }
