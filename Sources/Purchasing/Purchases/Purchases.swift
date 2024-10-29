@@ -979,30 +979,13 @@ public extension Purchases {
 
     #if ENABLE_PURCHASE_PARAMS
 
-    @objc(purchaseProduct:params:withCompletion:)
-    func purchase(product: StoreProduct, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product,
-                                       package: nil,
-                                       promotionalOffer: params.promotionalOffer?.signedData,
-                                       metadata: params.metadata,
-                                       completion: completion)
+    @objc(params:withCompletion:)
+    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(params: params, completion: completion)
     }
 
-    func purchase(product: StoreProduct, params: PurchaseParams) async throws -> PurchaseResultData {
-        return try await purchaseAsync(product: product, params: params)
-    }
-
-    @objc(purchasePackage:params:withCompletion:)
-    func purchase(package: Package, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: package.storeProduct,
-                                       package: package,
-                                       promotionalOffer: params.promotionalOffer?.signedData,
-                                       metadata: params.metadata,
-                                       completion: completion)
-    }
-
-    func purchase(package: Package, params: PurchaseParams) async throws -> PurchaseResultData {
-        return try await purchaseAsync(package: package, params: params)
+    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await purchaseAsync(params)
     }
 
     #endif

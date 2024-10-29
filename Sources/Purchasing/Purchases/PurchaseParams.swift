@@ -31,18 +31,45 @@ import Foundation
  */
 @objc(RCPurchaseParams) public final class PurchaseParams: NSObject {
 
+    let package: Package?
+    let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
     let metadata: [String: String]?
 
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
         self.metadata = builder.metadata
+        self.product = builder.product
+        self.package = builder.package
     }
 
-    /// The Builder for ```Configuration```.
+    /// The Builder for ```PurchaseParams```.
     @objc(RCPurchaseParamsBuilder) public class Builder: NSObject {
         private(set) var promotionalOffer: PromotionalOffer?
         private(set) var metadata: [String: String]?
+        private(set) var package: Package?
+        private(set) var product: StoreProduct?
+
+        /**
+         * Create a new builder with a ``Package``.
+         * 
+         * - Parameter package: The ``Package`` the user intends to purchase.
+         */
+        @objc public init(package: Package) {
+            self.package = package
+        }
+
+        /**
+         * Create a new builder with a ``StoreProduct``.
+         *
+         * Use this initializer if you are not using the ``Offerings`` system to purchase a ``StoreProduct``.
+         * If you are using the ``Offerings`` system, use ``PurchaseParams/Builder/init(package:)`` instead.
+         *
+         * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+         */
+        @objc public init(product: StoreProduct) {
+            self.product = product
+        }
 
         /**
          * Set `promotionalOffer`.

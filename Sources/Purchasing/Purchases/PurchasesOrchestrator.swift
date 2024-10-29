@@ -313,6 +313,23 @@ final class PurchasesOrchestrator {
         }
     }
 
+    func purchase(params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        var product = params.product
+        if product == nil {
+            product = params.package?.storeProduct
+        }
+        guard let product = product else {
+            // Should never happen since PurchaseParams.Builder initializer requires a product or a package
+            fatalError("Missing product in PurchaseParams")
+        }
+
+        purchase(product: product,
+                 package: params.package,
+                 promotionalOffer: params.promotionalOffer?.signedData,
+                 metadata: params.metadata,
+                 completion: completion)
+    }
+
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
