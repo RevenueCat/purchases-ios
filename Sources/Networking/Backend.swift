@@ -21,7 +21,7 @@ class Backend {
     let customer: CustomerAPI
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
-    let redeemRCBillingPurchaseAPI: RedeemRCBillingPurchaseAPI
+    let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
 
     private let config: BackendConfiguration
 
@@ -60,7 +60,7 @@ class Backend {
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
-        let redeemRCBillingPurchaseAPI = RedeemRCBillingPurchaseAPI(backendConfig: backendConfig)
+        let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -69,7 +69,7 @@ class Backend {
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
-                  redeemRCBillingPurchaseAPI: redeemRCBillingPurchaseAPI)
+                  redeemWebPurchaseAPI: redeemWebPurchaseAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -79,7 +79,7 @@ class Backend {
                   offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
-                  redeemRCBillingPurchaseAPI: RedeemRCBillingPurchaseAPI) {
+                  redeemWebPurchaseAPI: RedeemWebPurchaseAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -88,7 +88,7 @@ class Backend {
         self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
-        self.redeemRCBillingPurchaseAPI = redeemRCBillingPurchaseAPI
+        self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
     }
 
     func clearHTTPClientCaches() {

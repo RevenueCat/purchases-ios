@@ -71,7 +71,7 @@ extension HTTPRequest {
         case health
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
-        case postRedeemRCBillingPurchase(appUserID: String)
+        case postRedeemWebPurchase(appUserID: String)
 
     }
 
@@ -104,7 +104,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .postSubscriberAttributes,
                 .postAdServicesToken,
-                .postRedeemRCBillingPurchase,
+                .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig:
             return true
@@ -125,7 +125,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .postSubscriberAttributes,
                 .postAdServicesToken,
-                .postRedeemRCBillingPurchase,
+                .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig:
             return true
@@ -148,7 +148,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .postRedeemRCBillingPurchase,
+                .postRedeemWebPurchase,
                 .getCustomerCenterConfig:
             return false
         }
@@ -167,7 +167,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .postRedeemRCBillingPurchase,
+                .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig:
             return false
@@ -212,8 +212,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getCustomerCenterConfig(appUserID):
             return "customercenter/\(Self.escape(appUserID))"
 
-        case let .postRedeemRCBillingPurchase(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/alias" // WIP: Change to actual endpoint
+        case let .postRedeemWebPurchase(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/redeem_web_purchase"
 
         }
     }
@@ -256,8 +256,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerCenterConfig:
             return "customer_center"
 
-        case .postRedeemRCBillingPurchase:
-            return "post_redeem_rc_billing_purchase"
+        case .postRedeemWebPurchase:
+            return "post_redeem_web_purchase"
 
         }
     }

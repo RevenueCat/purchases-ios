@@ -513,7 +513,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     paywallEventsManager: paywallEventsManager,
                     deepLinkHandler: .init(),
-                    rcBillingPurchaseRedemptionHelper: .init(backend: backend, identityManager: identityManager)
+                    webPurchaseRedemptionHelper: .init(backend: backend,
+                                                       identityManager: identityManager,
+                                                       customerInfoManager: customerInfoManager)
                 )
             } else {
                 return .init(
@@ -538,7 +540,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     paywallEventsManager: paywallEventsManager,
                     deepLinkHandler: .init(),
-                    rcBillingPurchaseRedemptionHelper: .init(backend: backend, identityManager: identityManager)
+                    webPurchaseRedemptionHelper: .init(backend: backend,
+                                                       identityManager: identityManager,
+                                                       customerInfoManager: customerInfoManager)
                 )
             }
         }()
@@ -751,6 +755,13 @@ extension Purchases {
 
 public extension Purchases {
 
+    /// Parses a deep link URL to verify it's a RevenueCat supported DeepLink
+    /// and returns the RevenueCat deep link for that URL.
+    /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
+    static func parseAsDeepLink(_ url: URL) -> DeepLink? {
+        return DeepLinkParser.parse(url)
+    }
+
     @objc var appUserID: String { self.identityManager.currentAppUserID }
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
@@ -883,8 +894,13 @@ public extension Purchases {
         return try await syncAttributesAndOfferingsIfNeededAsync()
     }
 
-    func handleDeepLink(_ url: URL) -> Bool {
-        return self.purchasesOrchestrator.handleDeepLink(url)
+    func redeemWebPurchase(_ deepLink: DeepLink.WebPurchaseRedemption,
+                           completion: @escaping @Sendable (WebPurchaseRedemptionResult) -> Void) {
+        self.purchasesOrchestrator.redeemWebPurchase(deepLink, completion: completion)
+    }
+
+    func redeemWebPurchase(_ deepLink: DeepLink.WebPurchaseRedemption) async throws -> WebPurchaseRedemptionResult {
+        return try await redeemWebPurchaseAsync(deepLink)
     }
 
 }
