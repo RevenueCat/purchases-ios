@@ -1261,8 +1261,7 @@ private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                     storefront: StorefrontType?,
-                                    restored: Bool
-    ) {
+                                    restored: Bool) {
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes

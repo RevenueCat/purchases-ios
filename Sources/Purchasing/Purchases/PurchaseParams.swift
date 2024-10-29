@@ -22,7 +22,7 @@ import Foundation
  * Example making a purchase using ``PurchaseParams``:
  *
  * ```swift
- * let params = PurchaseParams.Builder()
+ * let params = PurchaseParams.Builder(package: package)
  *                            .with(metadata: ["key": "value"])
  *                            .with(promotionalOffer: promotionalOffer)
  *                            .build()
