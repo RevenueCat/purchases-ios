@@ -160,8 +160,10 @@ extension BaseStoreKitIntegrationTests {
 
         #if ENABLE_PURCHASE_PARAMS
         if let metadata = metadata {
-            var params = PurchaseParams.Builder().with(metadata: metadata).build()
-            let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct, params: params)
+            var params = PurchaseParams.Builder(product: self.monthlyPackage.storeProduct)
+                .with(metadata: metadata)
+                .build()
+            let data = try await self.purchases.purchase(params: params)
         } else {
             let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
         }

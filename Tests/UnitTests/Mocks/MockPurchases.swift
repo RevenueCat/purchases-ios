@@ -233,19 +233,11 @@ extension MockPurchases: PurchasesType {
     }
 
     #if ENABLE_PURCHASE_PARAMS
-    func purchase(product: StoreProduct, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         self.unimplemented()
     }
 
-    func purchase(product: StoreProduct, params: PurchaseParams) async throws -> PurchaseResultData {
-        self.unimplemented()
-    }
-
-    func purchase(package: Package, params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
-        self.unimplemented()
-    }
-
-    func purchase(package: Package, params: PurchaseParams) async throws -> PurchaseResultData {
+    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         self.unimplemented()
     }
     #endif

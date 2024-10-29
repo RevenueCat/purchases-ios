@@ -157,11 +157,15 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     #if ENABLE_PURCHASE_PARAMS
-    let params = PurchaseParams.Builder().with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
-    purchases.purchase(product: storeProduct,
-                       params: params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
-    purchases.purchase(package: pack,
-                       params: params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    let packageParams = PurchaseParams.Builder(package: pack)
+        .with(metadata: ["foo":"bar"])
+        .with(promotionalOffer: offer)
+        .build()
+    let productParams = PurchaseParams.Builder(product: storeProduct)
+        .with(metadata: ["foo":"bar"])
+        .with(promotionalOffer: offer)
+        .build()
+    purchases.purchase(params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     #endif
 
     purchases.invalidateCustomerInfoCache()
@@ -265,9 +269,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
                                                                                       promotionalOffer: offer)
 
         #if ENABLE_STORE_PARAMS
-        let params = PurchaseParams.Builder().with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack, params: params)
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp, params: params)
+        let params = PurchaseParams.Builder(package: pack).with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
         #endif
 
         let _: CustomerInfo = try await purchases.customerInfo()
