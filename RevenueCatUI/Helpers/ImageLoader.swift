@@ -36,6 +36,16 @@ final class ImageLoader: ObservableObject {
 
     typealias Value = Result<(image: Image, size: CGSize), Error>
 
+    // We want to remember the URL used for a successful load, so we can avoid loading it again if we get asked for
+    // the same URL.
+    private var resultWithURL: ValueWithURL? {
+        didSet {
+            self.result = resultWithURL.map { result in
+                result.map { (image: $0.image, size: $0.size) }
+            }
+        }
+    }
+
     @Published
     private(set) var result: Value? {
         didSet {
@@ -58,16 +68,21 @@ final class ImageLoader: ObservableObject {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func load(url: URL) async {
+        // Only reload if URL is different from current
+        if case let .success((_, _, currentUrl))? = resultWithURL,
+           currentUrl == url {
+            return
+        }
         Logger.verbose(Strings.image_starting_request(url))
 
         // Reset previous image before loading new one
-        self.result = nil
-        self.result = await self.loadImage(url)
+        self.resultWithURL = nil
+        self.resultWithURL = await self.loadImage(url)
     }
 
     /// - Returns: `nil` if the Task was cancelled.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    private func loadImage(_ url: URL) async -> Value? {
+    private func loadImage(_ url: URL) async -> ValueWithURL? {
         do {
             let (data, response) = try await self
                 .urlSession
@@ -84,8 +99,8 @@ final class ImageLoader: ObservableObject {
             }
 
             // Load images in a background thread
-            return await Task<Value, Never>
-                .detached(priority: .medium) { data.toImage() }
+            return await Task<ValueWithURL, Never>
+                .detached(priority: .medium) { data.toImage(url: url) }
                 .value
         } catch let error {
             return .failure(.responseError(error as NSError))
@@ -96,18 +111,20 @@ final class ImageLoader: ObservableObject {
 
 extension URLSession: URLSessionType {}
 
+private typealias ValueWithURL = Result<(image: Image, size: CGSize, url: URL), ImageLoader.Error>
+
 private extension Data {
 
-    func toImage() -> ImageLoader.Value {
+    func toImage(url: URL) -> ValueWithURL {
         #if os(macOS)
         if let image = NSImage(data: self) {
-            return .success((.init(nsImage: image), image.size))
+            return .success((.init(nsImage: image), image.size, url))
         } else {
             return .failure(.invalidImage)
         }
         #else
         if let image = UIImage(data: self) {
-            return .success((.init(uiImage: image), image.size))
+            return .success((.init(uiImage: image), image.size, url))
         } else {
             return .failure(.invalidImage)
         }
