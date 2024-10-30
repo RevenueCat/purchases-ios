@@ -67,13 +67,15 @@ struct PurchaseTesterApp: App {
                 if let webRedemption = deepLink as? Purchases.DeepLink.WebPurchaseRedemption,
                     Purchases.isConfigured {
                     print("Redeeming web purchase.")
-                    Purchases.shared.redeemWebPurchase(webRedemption) { result in
-                        if let success = result as? WebPurchaseRedemptionResult.Success {
-                            print("RevenueCat redeemed deep link: \(success.customerInfo)")
-                        } else if let error = result as? WebPurchaseRedemptionResult.Error {
-                            print("RevenueCat errored redeeming deep link: \(error.error.localizedDescription)")
-                        } else {
-                            print("Unrecognized web redemption result: \(result)")
+                    Task {
+                        let result = await Purchases.shared.redeemWebPurchase(webRedemption)
+                        switch result {
+                        case let .success(customerInfo):
+                            print("RevenueCat redeemed deep link: \(customerInfo)")
+                        case let .error(error):
+                            print("RevenueCat errored redeeming deep link: \(error.localizedDescription)")
+                        @unknown default:
+                            print("Unknown web purchase redemption result: \(result)")
                         }
                     }
                 }
