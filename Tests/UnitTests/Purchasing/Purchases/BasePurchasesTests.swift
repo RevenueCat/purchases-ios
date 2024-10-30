@@ -124,6 +124,9 @@ class BasePurchasesTests: TestCase {
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
+        self.webPurchaseRedemptionHelper = .init(backend: self.backend,
+                                                 identityManager: self.identityManager,
+                                                 customerInfoManager: self.customerInfoManager)
 
         self.addTeardownBlock {
             weak var purchases = self.purchases
@@ -186,6 +189,7 @@ class BasePurchasesTests: TestCase {
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
 
     // swiftlint:disable:next weak_delegate
@@ -261,7 +265,8 @@ class BasePurchasesTests: TestCase {
             offeringsManager: self.mockOfferingsManager,
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
-            storeMessagesHelper: self.mockStoreMessagesHelper
+            storeMessagesHelper: self.mockStoreMessagesHelper,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,

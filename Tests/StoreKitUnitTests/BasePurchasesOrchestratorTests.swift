@@ -43,6 +43,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockOfferingsManager: MockOfferingsManager!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
+    var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
 
     var orchestrator: PurchasesOrchestrator!
 
@@ -103,6 +104,11 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockStoreMessagesHelper = .init()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.notificationCenter = MockNotificationCenter()
+        let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
+                                                  mockDeviceCache: self.deviceCache)
+        self.webPurchaseRedemptionHelper = .init(backend: self.backend,
+                                                 identityManager: identityManager,
+                                                 customerInfoManager: self.customerInfoManager)
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
@@ -171,7 +177,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   offeringsManager: self.mockOfferingsManager,
                                                   manageSubscriptionsHelper: self.mockManageSubsHelper,
                                                   beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
-                                                  storeMessagesHelper: self.mockStoreMessagesHelper)
+                                                  storeMessagesHelper: self.mockStoreMessagesHelper,
+                                                  webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
@@ -206,7 +213,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsSynchronizer: diagnosticsSynchronizer,
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }

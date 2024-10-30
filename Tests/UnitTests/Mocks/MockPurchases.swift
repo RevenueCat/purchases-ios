@@ -428,15 +428,9 @@ extension MockPurchases: PurchasesType {
     }
 
     func redeemWebPurchase(
-        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption,
-        completion: @escaping (WebPurchaseRedemptionResult) -> Void
+        deepLink: Purchases.DeepLink.WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
     ) {
-        self.unimplemented()
-    }
-
-    func redeemWebPurchase(
-        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption
-    ) async throws -> WebPurchaseRedemptionResult {
         self.unimplemented()
     }
 
@@ -483,4 +477,10 @@ extension MockPurchases: PurchasesSwiftType {
     }
 
     #endif
+
+    func redeemWebPurchase(
+        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult {
+        self.unimplemented()
+    }
 }
