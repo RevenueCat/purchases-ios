@@ -908,10 +908,10 @@ public protocol PurchasesType: AnyObject {
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
 
     /**
-     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``.
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink(_:)``.
      * We recommend using ``Purchases/redeemWebPurchase(_:)`` for a nicer API unless you're using ObjC.
      *
-     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
+     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purchases/parseAsDeepLink(_:)``
      * - Parameter completion: The completion block to be called with the updated CustomerInfo
      * on a successful redemption, or the error if not.
      */
