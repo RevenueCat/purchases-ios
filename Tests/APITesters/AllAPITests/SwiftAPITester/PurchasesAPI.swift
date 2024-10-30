@@ -242,6 +242,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let stp: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let offer: PromotionalOffer! = nil
+    let deepLink: Purchases.DeepLink.WebPurchaseRedemption! = nil
 
     do {
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
@@ -296,10 +297,15 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
+
+        let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(deepLink)
     } catch {}
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
+    let deepLink: Purchases.DeepLink.WebPurchaseRedemption! = nil
+    let redemptionCompletion: ((CustomerInfo?, PublicError?) -> Void)! = nil
+
     #if os(iOS) || VISION_OS
     if #available(iOS 15.0, *) {
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
@@ -313,6 +319,7 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.showStoreMessages(for: [StoreMessageType.generic]) { }
     }
     #endif
+    purchases.redeemWebPurchase(deepLink: deepLink, completion: redemptionCompletion)
 }
 
 private func checkConfigure() -> Purchases! {

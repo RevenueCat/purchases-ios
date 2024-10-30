@@ -16,7 +16,7 @@ import Foundation
 @objc public extension Purchases {
 
     /// Class representing a RevenueCat deep link that can be processed by the SDK.
-    class DeepLink: NSObject {
+    @objc(RCDeepLink) class DeepLink: NSObject {
 
         private override init() {}
 

@@ -29,6 +29,7 @@ id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
 NSString *storeFrontCountryCode;
+WebPurchaseRedemption *webPurchaseRedemptionLink;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
@@ -150,6 +151,8 @@ NSString *storeFrontCountryCode;
 
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
+
+    [p redeemWebPurchaseWithDeepLink:webPurchaseRedemptionLink completion:^(RCCustomerInfo * _Nullable ci, NSError * _Nullable e) { }];
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
