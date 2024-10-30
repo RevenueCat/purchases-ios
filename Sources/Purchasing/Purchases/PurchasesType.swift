@@ -908,22 +908,17 @@ public protocol PurchasesType: AnyObject {
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
 
     /**
-     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``.
+     * We recommend using ``Purchases/redeemWebPurchase(_:)`` for a nicer API unless you're using ObjC.
      *
      * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
-     * - Parameter completion: A completion block called with the result of the redemption.
-     */
-    func redeemWebPurchase(_ deepLink: Purchases.DeepLink.WebPurchaseRedemption,
-                           completion: @escaping @Sendable (WebPurchaseRedemptionResult) -> Void)
-
-    /**
-     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``
-     *
-     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
+     * - Parameter completion: The completion block to be called with the updated CustomerInfo
+     * on a successful redemption, or the error if not.
      */
     func redeemWebPurchase(
-        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption
-    ) async throws -> WebPurchaseRedemptionResult
+        deepLink: Purchases.DeepLink.WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    )
 
     // MARK: - Deprecated
 
@@ -1142,6 +1137,16 @@ public protocol PurchasesSwiftType: AnyObject {
     func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
+
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``
+     *
+     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
+     */
+    func redeemWebPurchase(
+        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult
+
 }
 
 // MARK: -

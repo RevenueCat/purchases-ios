@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */; };
+		1EB697C02CD2610B003000FC /* DeepLinkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697BF2CD2610B003000FC /* DeepLinkAPI.swift */; };
+		1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */; };
+		1EB697C52CD262FD003000FC /* RCDeepLinkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C42CD262FD003000FC /* RCDeepLinkAPI.m */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
 		2D4C60E62C5AD1BC00A29FD2 /* AllAPITestsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C60E52C5AD1BC00A29FD2 /* AllAPITestsTests.swift */; };
 		2D4C60E72C5AD1BC00A29FD2 /* AllAPITests.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -208,6 +211,10 @@
 
 /* Begin PBXFileReference section */
 		1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
+		1EB697BF2CD2610B003000FC /* DeepLinkAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkAPI.swift; sourceTree = "<group>"; };
+		1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResultAPI.swift; sourceTree = "<group>"; };
+		1EB697C32CD262FD003000FC /* RCDeepLinkAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCDeepLinkAPI.h; sourceTree = "<group>"; };
+		1EB697C42CD262FD003000FC /* RCDeepLinkAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCDeepLinkAPI.m; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AllAPITests.h; sourceTree = "<group>"; };
 		2D4C60E02C5AD1BC00A29FD2 /* AllAPITestsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AllAPITestsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -471,6 +478,8 @@
 				2D4C61462C5AD31400A29FD2 /* RCEntitlementInfosAPI.m */,
 				2D4C616D2C5AD31900A29FD2 /* RCIntroEligibilityAPI.h */,
 				2D4C61442C5AD31400A29FD2 /* RCIntroEligibilityAPI.m */,
+				1EB697C32CD262FD003000FC /* RCDeepLinkAPI.h */,
+				1EB697C42CD262FD003000FC /* RCDeepLinkAPI.m */,
 				2D4C61452C5AD31400A29FD2 /* RCNonSubscriptionTransactionAPI.h */,
 				2D4C61702C5AD31900A29FD2 /* RCNonSubscriptionTransactionAPI.m */,
 				2D4C61762C5AD31A00A29FD2 /* RCOfferingAPI.h */,
@@ -538,6 +547,8 @@
 				2D4C61C12C5AD62800A29FD2 /* EntitlementInfosAPI.swift */,
 				2D4C61D52C5AD62900A29FD2 /* ErrorCodesAPI.swift */,
 				2D4C61C02C5AD62800A29FD2 /* IntroEligibilityAPI.swift */,
+				1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */,
+				1EB697BF2CD2610B003000FC /* DeepLinkAPI.swift */,
 				2D4C61C42C5AD62800A29FD2 /* main.swift */,
 				2D4C61D22C5AD62900A29FD2 /* NonSubscriptionTransactionAPI.swift */,
 				2D4C61CF2C5AD62900A29FD2 /* OfferingAPI.swift */,
@@ -968,6 +979,7 @@
 				2D4C617A2C5AD31A00A29FD2 /* RCOfferingsAPI.m in Sources */,
 				2D4C618D2C5AD31A00A29FD2 /* RCNonSubscriptionTransactionAPI.m in Sources */,
 				2D4C618A2C5AD31A00A29FD2 /* RCStoreProductDiscountAPI.m in Sources */,
+				1EB697C52CD262FD003000FC /* RCDeepLinkAPI.m in Sources */,
 				2D4C617B2C5AD31A00A29FD2 /* RCOfferingAPI.m in Sources */,
 				2D4C618F2C5AD31A00A29FD2 /* RCStoreTransactionAPI.m in Sources */,
 				2D4C61862C5AD31A00A29FD2 /* RCPresentedOfferingContextAPI.m in Sources */,
@@ -986,6 +998,7 @@
 				2D4C61E12C5AD62A00A29FD2 /* StoreKitVersionAPI.swift in Sources */,
 				2D4C61F72C5AD62A00A29FD2 /* OfferingsAPI.swift in Sources */,
 				2D4C61E82C5AD62A00A29FD2 /* IntroEligibilityAPI.swift in Sources */,
+				1EB697C02CD2610B003000FC /* DeepLinkAPI.swift in Sources */,
 				2D4C61DA2C5AD62A00A29FD2 /* RefundRequestStatusAPI.swift in Sources */,
 				2D4C61F52C5AD62A00A29FD2 /* PromotionalOfferAPI.swift in Sources */,
 				2D4C61E92C5AD62A00A29FD2 /* StoreProductAPI.swift in Sources */,
@@ -1004,6 +1017,7 @@
 				2D4C61F22C5AD62A00A29FD2 /* PurchasesAPI.swift in Sources */,
 				2D4C61F12C5AD62A00A29FD2 /* PresentedOfferingContextAPI.swift in Sources */,
 				2D4C61D92C5AD62A00A29FD2 /* TestStoreProductAPI.swift in Sources */,
+				1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */,
 				2D4C61F32C5AD62A00A29FD2 /* VerificationResultAPI.swift in Sources */,
 				2D4C61E72C5AD62A00A29FD2 /* SubscriptionPeriodAPI.swift in Sources */,
 				2D4C61DB2C5AD62A00A29FD2 /* PurchasesReceiptParserAPI.swift in Sources */,
