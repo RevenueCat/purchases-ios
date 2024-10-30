@@ -300,6 +300,84 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(error).to(matchError(ErrorCode.missingReceiptFileError))
     }
 
+    // MARK: - PurchaseParams
+
+    #if ENABLE_PURCHASE_PARAMS
+    func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: .from(product: storeProduct),
+                              offeringIdentifier: "offering")
+
+        let params = PurchaseParams.Builder(package: package)
+            .with(metadata: ["key": "value"])
+            .build()
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) ==
+            .receipt(self.receiptFetcher.mockReceiptData)
+        // Metadata is not supported in SK1
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+    }
+
+    func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws {
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+        let discount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                currencyCode: product.priceLocale.currencyCode,
+                                                price: 11.1,
+                                                localizedPriceString: "$11.10",
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: .init(value: 1, unit: .month),
+                                                numberOfPeriods: 2,
+                                                type: .promotional)
+        let offer = PromotionalOffer.SignedData(identifier: "",
+                                                keyIdentifier: "",
+                                                nonce: UUID(),
+                                                signature: "",
+                                                timestamp: 0)
+        let promoOffer = PromotionalOffer(discount: discount, signedData: offer)
+        let params = PurchaseParams.Builder(product: storeProduct)
+                .with(promotionalOffer: promoOffer)
+                .build()
+
+        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction?.sk1Transaction?.payment.paymentDiscount).toNot(beNil())
+        expect(transaction?.sk1Transaction?.productIdentifier) == product.productIdentifier
+        expect(userCancelled) == false
+        expect(error).to(beNil())
+
+        let expectedCustomerInfo: CustomerInfo = .emptyInfo
+        expect(customerInfo) == expectedCustomerInfo
+    }
+    #endif
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws {
