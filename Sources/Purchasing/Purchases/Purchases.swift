@@ -881,15 +881,6 @@ public extension Purchases {
         return try await syncAttributesAndOfferingsIfNeededAsync()
     }
 
-    func redeemWebPurchase(_ deepLink: DeepLink.WebPurchaseRedemption,
-                           completion: @escaping @Sendable (WebPurchaseRedemptionResult) -> Void) {
-        self.purchasesOrchestrator.redeemWebPurchase(deepLink, completion: completion)
-    }
-
-    func redeemWebPurchase(_ deepLink: DeepLink.WebPurchaseRedemption) async throws -> WebPurchaseRedemptionResult {
-        return try await redeemWebPurchaseAsync(deepLink)
-    }
-
 }
 
 #endif
@@ -1204,6 +1195,17 @@ public extension Purchases {
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
         }
+    }
+
+    func redeemWebPurchase(
+        deepLink: DeepLink.WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
+        self.purchasesOrchestrator.redeemWebPurchase(deepLink: deepLink, completion: completion)
+    }
+
+    func redeemWebPurchase(_ deepLink: DeepLink.WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
+        return await self.purchasesOrchestrator.redeemWebPurchase(deepLink)
     }
 }
 

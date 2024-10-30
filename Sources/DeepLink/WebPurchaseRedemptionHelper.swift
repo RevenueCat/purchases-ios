@@ -13,7 +13,7 @@
 
 import Foundation
 
-class WebPurchaseRedemptionHelper {
+actor WebPurchaseRedemptionHelper {
 
     private let backend: Backend
     private let identityManager: IdentityManager
@@ -27,20 +27,21 @@ class WebPurchaseRedemptionHelper {
         self.customerInfoManager = customerInfoManager
     }
 
-    func handleRedeemWebPurchase(redemptionToken: String,
-                                 completion: @escaping (@Sendable (WebPurchaseRedemptionResult) -> Void)) {
+    func handleRedeemWebPurchase(redemptionToken: String) async -> WebPurchaseRedemptionResult {
         Logger.verbose(Strings.webRedemption.redeeming_web_purchase)
-        self.backend.redeemWebPurchaseAPI.postRedeemWebPurchase(appUserID: identityManager.currentAppUserID,
-                                                                redemptionToken: redemptionToken) { result in
-            switch result {
-            case let .success(customerInfo):
-                Logger.debug(Strings.webRedemption.redeemed_web_purchase)
-                self.customerInfoManager.cache(customerInfo: customerInfo,
-                                               appUserID: self.identityManager.currentAppUserID)
-                completion(WebPurchaseRedemptionResult.Success(customerInfo: customerInfo))
-            case let .failure(error):
-                Logger.error(Strings.webRedemption.error_redeeming_web_purchase(error))
-                completion(WebPurchaseRedemptionResult.Error(error: error.asPublicError))
+        return await withCheckedContinuation { continuation in
+            self.backend.redeemWebPurchaseAPI.postRedeemWebPurchase(appUserID: identityManager.currentAppUserID,
+                                                                    redemptionToken: redemptionToken) { result in
+                switch result {
+                case let .success(customerInfo):
+                    Logger.debug(Strings.webRedemption.redeemed_web_purchase)
+                    self.customerInfoManager.cache(customerInfo: customerInfo,
+                                                   appUserID: self.identityManager.currentAppUserID)
+                    continuation.resume(returning: WebPurchaseRedemptionResult.success(customerInfo))
+                case let .failure(error):
+                    Logger.error(Strings.webRedemption.error_redeeming_web_purchase(error))
+                    continuation.resume(returning: WebPurchaseRedemptionResult.error(error.asPublicError))
+                }
             }
         }
     }

@@ -235,10 +235,24 @@ final class PurchasesOrchestrator {
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
     }
 
-    func redeemWebPurchase(_ deepLink: Purchases.DeepLink.WebPurchaseRedemption,
-                           completion: @escaping (@Sendable (WebPurchaseRedemptionResult) -> Void)) {
-        self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(redemptionToken: deepLink.redemptionToken,
-                                                                 completion: completion)
+    func redeemWebPurchase(_ deepLink: Purchases.DeepLink.WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
+        return await self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(redemptionToken: deepLink.redemptionToken)
+    }
+
+    func redeemWebPurchase(
+        deepLink: Purchases.DeepLink.WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
+        Task {
+            let result = await self.redeemWebPurchase(deepLink)
+            switch result {
+
+            case let .success(customerInfo):
+                completion(customerInfo, nil)
+            case let .error(error):
+                completion(nil, error)
+            }
+        }
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {

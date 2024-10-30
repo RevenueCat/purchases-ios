@@ -15,32 +15,11 @@ import Foundation
 
 /// Represents the result of a web purchase redemption
 /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
-@objc public class WebPurchaseRedemptionResult: NSObject {
-
-    private override init() {}
+public enum WebPurchaseRedemptionResult: Sendable {
 
     /// Represents that the web purchase was redeemed successfully
-    public final class Success: WebPurchaseRedemptionResult {
-
-        /// ``CustomerInfo`` after the successful redemption.
-        public let customerInfo: CustomerInfo
-
-        internal init(customerInfo: CustomerInfo) {
-            self.customerInfo = customerInfo
-        }
-
-    }
-
+    case success(_ customerInfo: CustomerInfo)
     /// Represents that the web purchase failed to redeem
-    public final class Error: WebPurchaseRedemptionResult {
-
-        /// Error causing the redemption to fail
-        public let error: PublicError
-
-        internal init(error: PublicError) {
-            self.error = error
-        }
-
-    }
+    case error(_ error: PublicError)
 
 }
