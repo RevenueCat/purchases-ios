@@ -131,6 +131,14 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Simple Sample Components", icon: "iphone")
                 }
+                Button {
+                    let data = SamplePaywallLoader.longWithStickyFooter
+                    data.componentsConfigs.base.stack.components.printAsJSON()
+                    data.componentsLocalizations.printAsJSON()
+                    self.display = .componentPaywall(data)
+                } label: {
+                    TemplateLabel(name: "Long, with sticky footer", icon: "iphone")
+                }
             }
             #endif
 
