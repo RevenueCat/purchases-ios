@@ -38,7 +38,7 @@ class PaywallEventsRequestTests: TestCase {
     func testCancelEvent() throws {
         let event: StoredEvent =
             .init(event: AnyEncodable(PaywallEvent.cancel(Self.eventCreationData,
-                                                             Self.eventData)),
+                                                          Self.eventData)),
                   userID: Self.userID,
                   feature: .paywalls)
         let requestEvent: EventsRequest.PaywallEvent? = .init(storedEvent: event)
@@ -49,7 +49,7 @@ class PaywallEventsRequestTests: TestCase {
     func testCloseEvent() throws {
         let event: StoredEvent =
             .init(event: AnyEncodable(PaywallEvent.close(Self.eventCreationData,
-                                                            Self.eventData)),
+                                                         Self.eventData)),
                   userID: Self.userID,
                   feature: .paywalls)
         let requestEvent: EventsRequest.PaywallEvent? = .init(storedEvent: event)

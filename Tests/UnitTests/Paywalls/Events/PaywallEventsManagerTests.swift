@@ -81,7 +81,9 @@ class PaywallEventsManagerTests: TestCase {
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: AnyEncodable(event),
+                                                                       userID: Self.userID,
+                                                                       feature: .paywalls)]]
 
         await self.verifyEmptyStore()
     }

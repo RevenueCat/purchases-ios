@@ -80,7 +80,7 @@ class PaywallEventSerializerTests: TestCase {
 
         let eventData = try XCTUnwrap(decoded.event.value as? [String: Any])
         let paywallEvent: PaywallEvent = try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: eventData))
-        
+
         let originalEvent = try XCTUnwrap(original.event.value as? PaywallEvent)
         expect(file: file, line: line, paywallEvent) == originalEvent
     }
