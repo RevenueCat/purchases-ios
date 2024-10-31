@@ -1087,7 +1087,21 @@ public protocol PurchasesSwiftType: AnyObject {
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func eligibleWinBackOffers(
         forProduct product: StoreProduct
-    ) async -> [WinBackOffer]
+    ) async throws -> [WinBackOffer]
+
+    /**
+     * Returns the win-back offers that the subscriber is eliglble for on the provided product.
+     *
+     * - Parameter product: The product to check for eliglble win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct,
+        completion: @escaping (Result<[WinBackOffer], PublicError>) -> Void
+    )
 }
 
 // MARK: -

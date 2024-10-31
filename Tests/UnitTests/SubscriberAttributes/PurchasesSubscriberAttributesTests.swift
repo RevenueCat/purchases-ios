@@ -64,6 +64,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
 
     var purchases: Purchases!
 
@@ -153,6 +154,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                                          currentUserProvider: mockIdentityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
+        self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
     }
 
     override func tearDown() {
@@ -168,24 +170,27 @@ class PurchasesSubscriberAttributesTests: TestCase {
     func setupPurchases() {
         self.mockIdentityManager.mockIsAnonymous = false
 
-        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: self.mockProductsManager,
-                                                          paymentQueueWrapper: self.paymentQueueWrapper,
-                                                          systemInfo: self.systemInfo,
-                                                          subscriberAttributes: self.attribution,
-                                                          operationDispatcher: self.mockOperationDispatcher,
-                                                          receiptFetcher: self.mockReceiptFetcher,
-                                                          receiptParser: self.mockReceiptParser,
-                                                          transactionFetcher: self.mockTransactionFetcher,
-                                                          customerInfoManager: self.customerInfoManager,
-                                                          backend: self.mockBackend,
-                                                          transactionPoster: self.transactionPoster,
-                                                          currentUserProvider: self.mockIdentityManager,
-                                                          transactionsManager: self.mockTransactionsManager,
-                                                          deviceCache: self.mockDeviceCache,
-                                                          offeringsManager: self.mockOfferingsManager,
-                                                          manageSubscriptionsHelper: self.mockManageSubsHelper,
-                                                          beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
-                                                          storeMessagesHelper: self.mockStoreMessagesHelper)
+        let purchasesOrchestrator = PurchasesOrchestrator(
+            productsManager: self.mockProductsManager,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            subscriberAttributes: self.attribution,
+            operationDispatcher: self.mockOperationDispatcher,
+            receiptFetcher: self.mockReceiptFetcher,
+            receiptParser: self.mockReceiptParser,
+            transactionFetcher: self.mockTransactionFetcher,
+            customerInfoManager: self.customerInfoManager,
+            backend: self.mockBackend,
+            transactionPoster: self.transactionPoster,
+            currentUserProvider: self.mockIdentityManager,
+            transactionsManager: self.mockTransactionsManager,
+            deviceCache: self.mockDeviceCache,
+            offeringsManager: self.mockOfferingsManager,
+            manageSubscriptionsHelper: self.mockManageSubsHelper,
+            beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
+            storeMessagesHelper: self.mockStoreMessagesHelper,
+            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator
+        )
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
             receiptFetcher: mockReceiptFetcher,

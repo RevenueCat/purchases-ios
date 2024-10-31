@@ -69,6 +69,7 @@ final class PurchasesOrchestrator {
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
+    private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -129,7 +130,8 @@ final class PurchasesOrchestrator {
                      storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
-                     diagnosticsTracker: DiagnosticsTrackerType?
+                     diagnosticsTracker: DiagnosticsTrackerType?,
+                     winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -149,7 +151,8 @@ final class PurchasesOrchestrator {
             offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
-            storeMessagesHelper: storeMessagesHelper
+            storeMessagesHelper: storeMessagesHelper,
+            winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -202,7 +205,8 @@ final class PurchasesOrchestrator {
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
-         storeMessagesHelper: StoreMessagesHelperType?
+         storeMessagesHelper: StoreMessagesHelperType?,
+         winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -222,6 +226,7 @@ final class PurchasesOrchestrator {
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
         self.storeMessagesHelper = storeMessagesHelper
+        self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
@@ -1578,6 +1583,24 @@ extension PurchasesOrchestrator {
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()
         }
+    }
+}
+
+// MARK: - Win-Back Offer Fetching
+@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+extension PurchasesOrchestrator {
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct
+    ) async throws -> [WinBackOffer] {
+
+        // winBackOfferEligibilityCalculator is only nil when running in SK1 mode
+        guard let winBackOfferEligibilityCalculator = self.winBackOfferEligibilityCalculator,
+                self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
+        else {
+            throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
+        }
+
+        return try await winBackOfferEligibilityCalculator.eligibleWinBackOffers(forProduct: product)
     }
 }
 

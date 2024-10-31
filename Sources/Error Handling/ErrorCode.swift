@@ -60,6 +60,7 @@ import Foundation
     @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode)
     case featureNotAvailableInCustomEntitlementsComputationMode = 36
     @objc(RCSignatureVerificationFailed) case signatureVerificationFailed = 37
+    @objc(RCFeatureNotSupportedWithStoreKit1) case featureNotSupportedWithStoreKit1 = 38
 
     // swiftlint:enable missing_docs
 
