@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PaywallEventStoreTests: TestCase {
@@ -89,13 +90,12 @@ class PaywallEventStoreTests: TestCase {
         expect(events).to(beEmpty())
     }
 
-    func testStoreOneEvent() async {
-        let event: StoredEvent = .randomImpressionEvent()
-
-        await self.store.store(event)
+    func testStoreOneEvent() async throws {
+        let eventToStore: StoredEvent = .randomImpressionEvent()
+        await self.store.store(eventToStore)
 
         let events = await self.store.fetch(1)
-        expect(events) == [event]
+        try verifyEvents(events, equalTo: [eventToStore])
     }
 
     func testFetchEventsDoesNotRemoveEvents() async {
@@ -108,18 +108,18 @@ class PaywallEventStoreTests: TestCase {
         expect(eventsAfterFetching).toNot(beEmpty())
     }
 
-    func testStoreMultipleEvents() async {
-        let event1: StoredEvent = .randomImpressionEvent()
-        let event2: StoredEvent = .randomImpressionEvent()
+    func testStoreMultipleEvents() async throws {
+        let eventToStore1: StoredEvent = .randomImpressionEvent()
+        let eventToStore2: StoredEvent = .randomImpressionEvent()
 
-        await self.store.store(event1)
-        await self.store.store(event2)
+        await self.store.store(eventToStore1)
+        await self.store.store(eventToStore2)
 
         let events = await self.store.fetch(2)
-        expect(events) == [event1, event2]
+        try verifyEvents(events, equalTo: [eventToStore1, eventToStore2])
     }
 
-    func testFetchOnlySomeEvents() async {
+    func testFetchOnlySomeEvents() async throws {
         let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
@@ -127,10 +127,10 @@ class PaywallEventStoreTests: TestCase {
         await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(1)
-        expect(events) == [event]
+        try verifyEvents(events, equalTo: [event])
     }
 
-    func testFetchEventsWithUnrecognizedLines() async {
+    func testFetchEventsWithUnrecognizedLines() async throws {
         let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
@@ -138,7 +138,7 @@ class PaywallEventStoreTests: TestCase {
         await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(2)
-        expect(events) == [event]
+        try verifyEvents(events, equalTo: [event])
     }
 
     // - MARK: clear events
@@ -160,7 +160,7 @@ class PaywallEventStoreTests: TestCase {
         expect(events).to(beEmpty())
     }
 
-    func testClearOnlyOneEvent() async {
+    func testClearOnlyOneEvent() async throws {
         let storedEvents: [StoredEvent] = [
             .randomImpressionEvent(),
             .randomImpressionEvent(),
@@ -174,7 +174,8 @@ class PaywallEventStoreTests: TestCase {
         await self.store.clear(1)
 
         let events = await self.store.fetch(storedEvents.count)
-        expect(events) == Array(storedEvents.dropFirst())
+        let expectedStoredEvents = Array(storedEvents.dropFirst())
+        try verifyEvents(events, equalTo: expectedStoredEvents)
     }
 
     func testClearAllEvents() async {
@@ -236,6 +237,29 @@ private extension PaywallEventStoreTests {
             line: line,
             events
         ).to(haveCount(expectedCount))
+    }
+
+    func verifyEvents(
+        _ actual: [StoredEvent],
+        equalTo expected: [StoredEvent],
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        expect(file: file, line: line, actual.count) == expected.count
+
+        for (actualEvent, expectedEvent) in zip(actual, expected) {
+            expect(file: file, line: line, actualEvent.userID) == expectedEvent.userID
+            expect(file: file, line: line, actualEvent.feature) == expectedEvent.feature
+
+            let actualEventData = try XCTUnwrap(actualEvent.event.value as? [String: Any])
+            let actualPaywallEvent: PaywallEvent = try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: actualEventData))
+            
+            expect(
+                file: file,
+                line: line,
+                expectedEvent.event.value as? PaywallEvent
+            ) == actualPaywallEvent
+        }
     }
 
 }
