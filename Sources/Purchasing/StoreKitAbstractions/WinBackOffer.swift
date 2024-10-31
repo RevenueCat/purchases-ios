@@ -14,17 +14,8 @@
 import Foundation
 import StoreKit
 
-/// Represents a ``StoreProductDiscount``
+/// Represents an Apple win-back offer.
 ///
-/// #### Related Symbols
-/// - ``Purchases/promotionalOffer(forProductDiscount:product:)``
-/// - ``Purchases/getPromotionalOffer(forProductDiscount:product:completion:)``
-/// - ``StoreProduct/eligiblePromotionalOffers()``
-/// - ``Purchases/eligiblePromotionalOffers(forProduct:)``
-/// - ``Purchases/purchase(package:promotionalOffer:)``
-/// - ``Purchases/purchase(package:promotionalOffer:completion:)``
-/// - ``Purchases/purchase(product:promotionalOffer:)``
-/// - ``Purchases/purchase(product:promotionalOffer:completion:)``
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 @objc(RCWinBackOffer)
 internal final class WinBackOffer: NSObject {
