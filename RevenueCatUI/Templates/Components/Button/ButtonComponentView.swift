@@ -111,6 +111,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
             ButtonComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
+                    packageValidator: PackageValidator(),
                     component: .init(
                         action: .navigateBack,
                         stack: .init(

@@ -23,13 +23,16 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let packageID: String
+        public let isSelectedByDefault: Bool
         public let stack: PaywallComponent.StackComponent
 
         public init(packageID: String,
+                    isSelectedByDefault: Bool,
                     stack: PaywallComponent.StackComponent
         ) {
             self.type = .package
             self.packageID = packageID
+            self.isSelectedByDefault = isSelectedByDefault
             self.stack = stack
         }
     }

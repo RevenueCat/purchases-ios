@@ -27,9 +27,18 @@ struct PackageComponentView: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        // WIP: Do something with package id and selection
-        StackComponentView(viewModel: self.viewModel.stackViewModel,
-                           onDismiss: self.onDismiss)
+        if let package = self.viewModel.package {
+            Button {
+                self.paywallState.select(package: package)
+            } label: {
+                StackComponentView(
+                    viewModel: self.viewModel.stackViewModel,
+                    onDismiss: self.onDismiss
+                )
+            }
+        } else {
+            EmptyView()
+        }
     }
 
 }
@@ -78,18 +87,19 @@ struct PackageComponentView_Previews: PreviewProvider {
         PackageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
+                packageValidator: PackageValidator(),
                 localizedStrings: [
                     "name": .string("Weekly"),
                     "detail": .string("Get for $39.99/wk")
                 ],
                 component: .init(
                     packageID: "weekly",
+                    isSelectedByDefault: false,
                     stack: stack
                 ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
-                                availablePackages: [package]),
-                package: package
+                                availablePackages: [package])
             ), onDismiss: {}
         )
         .previewLayout(.sizeThatFits)

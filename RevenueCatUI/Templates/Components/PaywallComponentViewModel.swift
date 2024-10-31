@@ -20,8 +20,7 @@ enum PaywallComponentViewModel {
     case stack(StackComponentViewModel)
     case linkButton(LinkButtonComponentViewModel)
     case button(ButtonComponentViewModel)
-    case packageGroup(PackageGroupComponentViewModel)
-    // Purposely leaving out a `case package` since `PackageGroupComponentViewModel` creates this model
+    case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
     case stickyFooter(StickyFooterComponentViewModel)
 
@@ -32,6 +31,7 @@ extension PaywallComponent {
 
     // swiftlint:disable:next function_body_length
     func toViewModel(
+        packageValidator: PackageValidator,
         offering: Offering,
         localizedStrings: LocalizationDictionary
     ) throws -> PaywallComponentViewModel {
@@ -50,7 +50,8 @@ extension PaywallComponent {
             )
         case .stack(let component):
             return .stack(
-                try StackComponentViewModel(component: component,
+                try StackComponentViewModel(packageValidator: packageValidator,
+                                            component: component,
                                             localizedStrings: localizedStrings,
                                             offering: offering)
             )
@@ -62,20 +63,23 @@ extension PaywallComponent {
         case .button(let component):
             return .button(
                 try ButtonComponentViewModel(
+                    packageValidator: packageValidator,
                     component: component,
                     localizedStrings: localizedStrings,
                     offering: offering
                 )
             )
-        case .packageGroup(let component):
-            return .packageGroup(
-                try PackageGroupComponentViewModel(localizedStrings: localizedStrings,
-                                                   component: component,
-                                                   offering: offering)
-            )
-        case .package:
-            // PackageGroupViewModel makes the PackageViewModel since it needs a Package
-            throw PaywallComponentViewModelError.invalidAttemptToCreatePackage
+        case .package(let component):
+            let viewModel = try PackageComponentViewModel(packageValidator: packageValidator,
+                                                          localizedStrings: localizedStrings,
+                                                          component: component,
+                                                          offering: offering)
+
+            if let package = viewModel.package {
+                packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
+            }
+
+            return .package(viewModel)
         case .purchaseButton(let component):
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,

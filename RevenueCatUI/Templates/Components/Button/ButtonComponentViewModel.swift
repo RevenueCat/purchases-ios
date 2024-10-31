@@ -45,6 +45,7 @@ public class ButtonComponentViewModel {
     let stackViewModel: StackComponentViewModel
 
     init(
+        packageValidator: PackageValidator,
         component: PaywallComponent.ButtonComponent,
         localizedStrings: PaywallComponent.LocalizationDictionary,
         offering: Offering
@@ -52,6 +53,7 @@ public class ButtonComponentViewModel {
         self.component = component
         self.localizedStrings = localizedStrings
         self.stackViewModel = try StackComponentViewModel(
+            packageValidator: packageValidator,
             component: component.stack,
             localizedStrings: localizedStrings,
             offering: offering
