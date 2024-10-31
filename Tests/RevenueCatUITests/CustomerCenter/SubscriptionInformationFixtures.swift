@@ -60,6 +60,29 @@ enum SubscriptionInformationFixtures {
         ]
     )
 
+    static func screenWithPromo(offerID: String) -> CustomerCenterConfigData.Screen {
+        return .init(
+            type: .management,
+            title: "Manage Subscription",
+            subtitle: "Manage your subscription details here",
+            paths: [
+                .init(
+                    id: "1",
+                    title: "Didn't receive purchase",
+                    url: nil,
+                    openMethod: nil,
+                    type: .missingPurchase,
+                    detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
+                        iosOfferId: offerID,
+                        eligible: true,
+                        title: "title",
+                        subtitle: "subtitle"
+                    ))
+                )
+            ]
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

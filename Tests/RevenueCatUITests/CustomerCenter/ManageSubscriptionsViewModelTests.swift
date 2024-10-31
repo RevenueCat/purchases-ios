@@ -364,97 +364,29 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testLoadsPromotionalOffer() async throws {
-        let productIdOne = "com.revenuecat.product1"
-        let productIdTwo = "com.revenuecat.product2"
-        let purchaseDate = "2022-04-12T00:03:28Z"
-        let expirationDateFirst = "2062-04-12T00:03:35Z"
-        let expirationDateSecond = "2062-05-12T00:03:35Z"
-        let offerIdentifier = "offer_id"
-        let product = SubscriptionInformationFixtures.product(id: productIdOne,
-                                                              title: "yearly",
-                                                              duration: .year,
-                                                              price: 29.99,
-                                                              offerIdentifier: offerIdentifier)
-        let products = [
-            product,
-            SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
-        ]
-        let customerInfo = CustomerInfoFixtures.customerInfo(
-            subscriptions: [
-                CustomerInfoFixtures.Subscription(
-                    id: productIdOne,
-                    store: "app_store",
-                    purchaseDate: purchaseDate,
-                    expirationDate: expirationDateFirst
-                ),
-                CustomerInfoFixtures.Subscription(
-                    id: productIdTwo,
-                    store: "app_store",
-                    purchaseDate: purchaseDate,
-                    expirationDate: expirationDateSecond
-                )
-            ].shuffled(),
-            entitlements: [
-                CustomerInfoFixtures.Entitlement(
-                    entitlementId: "premium",
-                    productId: productIdOne,
-                    purchaseDate: purchaseDate,
-                    expirationDate: expirationDateFirst
-                )
-            ]
+        let offerIdentifierInJSON = "rc_refund_offer"
+        let (viewModel, loadPromotionalOfferUseCase) = try await setupPromotionalOfferTest(
+            offerIdentifierInJSON: offerIdentifierInJSON,
+            offerIdentifierInProduct: offerIdentifierInJSON
         )
-        let promoOfferDetails = CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifier,
-                                                                                   eligible: true,
-                                                                                   title: "Wait",
-                                                                                   subtitle: "Here's an offer for you")
-        let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
-        loadPromotionalOfferUseCase.mockedProduct = product
-        loadPromotionalOfferUseCase.mockedPromoOfferDetails = promoOfferDetails
-        let signedData = PromotionalOffer.SignedData(identifier: "id",
-                                                     keyIdentifier: "key_i",
-                                                     nonce: UUID(),
-                                                     signature: "a signature",
-                                                     timestamp: 1234)
-        let discount = MockStoreProductDiscount(offerIdentifier: offerIdentifier,
-                                                currencyCode: "usd",
-                                                price: 1,
-                                                localizedPriceString: "$1.00",
-                                                paymentMode: .payAsYouGo,
-                                                subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
-                                                numberOfPeriods: 1,
-                                                type: .introductory)
 
-        loadPromotionalOfferUseCase.mockedPromotionalOffer = PromotionalOffer(discount: discount,
-                                                                              signedData: signedData)
+        try await verifyPromotionalOfferLoading(viewModel: viewModel,
+                                                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                                                expectedOfferIdentifierInJSON: offerIdentifierInJSON)
+    }
 
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
-                                                     customerCenterActionHandler: nil,
-                                                     purchasesProvider: MockManageSubscriptionsPurchases(
-                                                        customerInfo: customerInfo,
-                                                        products: products
-                                                     ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+    func testLoadsPromotionalOfferWithSuffix() async throws {
+        let offerIdentifierInJSON = "rc_refund_offer"
+        let offerIdentifierInProduct = "monthly_rc_refund_offer"
+        let (viewModel, loadPromotionalOfferUseCase) = try await setupPromotionalOfferTest(
+            offerIdentifierInJSON: offerIdentifierInJSON,
+            offerIdentifierInProduct: offerIdentifierInProduct
+        )
 
-        await viewModel.loadScreen()
-
-        let screen = try XCTUnwrap(viewModel.screen)
-        expect(viewModel.state) == .success
-
-        let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
-            if case .promotionalOffer = path.detail {
-                return true
-            }
-            return false
-        })
-
-        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
-
-        await viewModel.determineFlow(for: pathWithPromotionalOffer)
-
-        let loadingPath = try XCTUnwrap(viewModel.loadingPath)
-        expect(loadingPath.id) == pathWithPromotionalOffer.id
-
-        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor?.iosOfferId) == offerIdentifier
+        try await verifyPromotionalOfferLoading(viewModel: viewModel,
+                                                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                                                expectedOfferIdentifierInJSON: offerIdentifierInJSON,
+                                                expectedOfferIdentifierInProduct: offerIdentifierInProduct)
     }
 
     func testDoesNotLoadPromotionalOfferIfNotEligible() async throws {
@@ -546,6 +478,117 @@ class ManageSubscriptionsViewModelTests: TestCase {
         await viewModel.determineFlow(for: pathWithPromotionalOffer)
 
         expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
+    }
+
+    // Helper methods
+    private func setupPromotionalOfferTest(offerIdentifierInJSON: String,
+                                           offerIdentifierInProduct: String
+    ) async throws -> (ManageSubscriptionsViewModel, MockLoadPromotionalOfferUseCase) {
+        let productIdOne = "com.revenuecat.product1"
+        let productIdTwo = "com.revenuecat.product2"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDateFirst = "2062-04-12T00:03:35Z"
+        let expirationDateSecond = "2062-05-12T00:03:35Z"
+
+        let product = Fixtures.product(id: productIdOne,
+                                       title: "yearly",
+                                       duration: .year,
+                                       price: 29.99,
+                                       offerIdentifier: offerIdentifierInProduct)
+        let products = [
+            product,
+            Fixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
+        ]
+        let customerInfo = Fixtures.customerInfo(
+            subscriptions: [
+                Fixtures.Subscription(
+                    id: productIdOne,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDateFirst
+                ),
+                Fixtures.Subscription(
+                    id: productIdTwo,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDateSecond
+                )
+            ].shuffled(),
+            entitlements: [
+                Fixtures.Entitlement(
+                    entitlementId: "premium",
+                    productId: productIdOne,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDateFirst
+                )
+            ]
+        )
+        let promoOfferDetails =
+        CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifierInJSON,
+                                                           eligible: true,
+                                                           title: "Wait",
+                                                           subtitle: "Here's an offer for you")
+        let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
+        loadPromotionalOfferUseCase.mockedProduct = product
+        loadPromotionalOfferUseCase.mockedPromoOfferDetails = promoOfferDetails
+        let signedData = PromotionalOffer.SignedData(identifier: "id",
+                                                     keyIdentifier: "key_i",
+                                                     nonce: UUID(),
+                                                     signature: "a signature",
+                                                     timestamp: 1234)
+        let discount = MockStoreProductDiscount(offerIdentifier: offerIdentifierInProduct,
+                                                currencyCode: "usd",
+                                                price: 1,
+                                                localizedPriceString: "$1.00",
+                                                paymentMode: .payAsYouGo,
+                                                subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+                                                numberOfPeriods: 1,
+                                                type: .introductory)
+
+        loadPromotionalOfferUseCase.mockedPromotionalOffer = PromotionalOffer(discount: discount,
+                                                                              signedData: signedData)
+
+        let viewModel = ManageSubscriptionsViewModel(screen: Fixtures.screenWithPromo(offerID: offerIdentifierInJSON),
+                                                     customerCenterActionHandler: nil,
+                                                     purchasesProvider: MockManageSubscriptionsPurchases(
+                                                        customerInfo: customerInfo,
+                                                        products: products
+                                                     ),
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+
+        await viewModel.loadScreen()
+
+        return (viewModel, loadPromotionalOfferUseCase)
+    }
+
+    private func verifyPromotionalOfferLoading(viewModel: ManageSubscriptionsViewModel,
+                                               loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase,
+                                               expectedOfferIdentifierInJSON: String,
+                                               expectedOfferIdentifierInProduct: String? = nil) async throws {
+        let screen = try XCTUnwrap(viewModel.screen)
+        expect(viewModel.state) == .success
+
+        let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
+            if case .promotionalOffer = path.detail {
+                return true
+            }
+            return false
+        })
+
+        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
+
+        await viewModel.determineFlow(for: pathWithPromotionalOffer)
+
+        let loadingPath = try XCTUnwrap(viewModel.loadingPath)
+        expect(loadingPath.id) == pathWithPromotionalOffer.id
+
+        expect(loadPromotionalOfferUseCase.offerToLoadPromoFor?.iosOfferId) == expectedOfferIdentifierInJSON
+
+        if let expectedOfferIdentifierInProduct = expectedOfferIdentifierInProduct {
+            expect(
+                loadPromotionalOfferUseCase.mockedPromotionalOffer?.discount.offerIdentifier
+            ) == expectedOfferIdentifierInProduct
+        }
     }
 
     private func reformat(ISO8601Date: String) -> String {
