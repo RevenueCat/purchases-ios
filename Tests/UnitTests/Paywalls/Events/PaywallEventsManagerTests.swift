@@ -48,7 +48,7 @@ class PaywallEventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            .init(event: event, userID: Self.userID)
+            .init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)
         ]
     }
 
@@ -61,8 +61,8 @@ class PaywallEventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            .init(event: event1, userID: Self.userID),
-            .init(event: event2, userID: Self.userID)
+            .init(event: AnyEncodable(event1), userID: Self.userID, feature: .paywalls),
+            .init(event: AnyEncodable(event2), userID: Self.userID, feature: .paywalls)
         ]
     }
 
@@ -81,7 +81,7 @@ class PaywallEventsManagerTests: TestCase {
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: event, userID: Self.userID)]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)]]
 
         await self.verifyEmptyStore()
     }
@@ -98,8 +98,8 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [.init(event: event1, userID: Self.userID)],
-            [.init(event: event2, userID: Self.userID)]
+            [.init(event: AnyEncodable(event1), userID: Self.userID, feature: .paywalls)],
+            [.init(event: AnyEncodable(event2), userID: Self.userID, feature: .paywalls)]
         ]
 
         await self.verifyEmptyStore()
@@ -107,7 +107,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushOnlyOneEventPostsFirstOne() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: PaywallStoredEvent = .init(event: event, userID: Self.userID)
+        let storedEvent: StoredEvent = .init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)
 
         _ = await self.storeRandomEvent()
         _ = await self.storeRandomEvent()
@@ -125,7 +125,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: PaywallStoredEvent = .init(event: event, userID: Self.userID)
+        let storedEvent: StoredEvent = .init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)
         let expectedError: NetworkError = .offlineConnection()
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
@@ -183,9 +183,13 @@ class PaywallEventsManagerTests: TestCase {
         }
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: event1, userID: Self.userID)]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: AnyEncodable(event1),
+                                                                       userID: Self.userID,
+                                                                       feature: .paywalls)]]
 
-        await self.verifyEvents([.init(event: event2, userID: Self.userID)])
+        await self.verifyEvents([.init(event: AnyEncodable(event2),
+                                       userID: Self.userID,
+                                       feature: .paywalls)])
     }
 
     func testCannotFlushMultipleTimesInParallel() async throws {
@@ -207,7 +211,9 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
-        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [.init(event: event1, userID: Self.userID)]
+        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [.init(event: AnyEncodable(event1),
+                                                                                  userID: Self.userID,
+                                                                                  feature: .paywalls)]
 
         self.logger.verifyMessageWasLogged(Strings.paywalls.event_flush_already_in_progress,
                                            level: .debug,
@@ -238,7 +244,7 @@ private extension PaywallEventsManagerTests {
     }
 
     func verifyEvents(
-        _ expected: [PaywallStoredEvent],
+        _ expected: [StoredEvent],
         file: StaticString = #file,
         line: UInt = #line
     ) async {
@@ -253,13 +259,13 @@ private extension PaywallEventsManagerTests {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private actor MockPaywallEventStore: PaywallEventStoreType {
 
-    var storedEvents: [PaywallStoredEvent] = []
+    var storedEvents: [StoredEvent] = []
 
-    func store(_ storedEvent: PaywallStoredEvent) {
+    func store(_ storedEvent: StoredEvent) {
         self.storedEvents.append(storedEvent)
     }
 
-    func fetch(_ count: Int) -> [PaywallStoredEvent] {
+    func fetch(_ count: Int) -> [StoredEvent] {
         return Array(self.storedEvents.prefix(count))
     }
 

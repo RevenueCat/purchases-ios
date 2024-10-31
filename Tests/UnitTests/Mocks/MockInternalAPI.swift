@@ -21,12 +21,12 @@ class MockInternalAPI: InternalAPI {
     }
 
     var invokedPostPaywallEvents: Bool = false
-    var invokedPostPaywallEventsParameters: [[PaywallStoredEvent]] = []
+    var invokedPostPaywallEventsParameters: [[StoredEvent]] = []
     var stubbedPostPaywallEventsCompletionResult: BackendError?
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     override func postPaywallEvents(
-        events: [PaywallStoredEvent],
+        events: [StoredEvent],
         completion: @escaping InternalAPI.ResponseHandler
     ) {
         self.invokedPostPaywallEvents = true

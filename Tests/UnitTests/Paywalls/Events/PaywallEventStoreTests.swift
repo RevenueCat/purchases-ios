@@ -90,7 +90,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreOneEvent() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
 
@@ -109,8 +109,8 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreMultipleEvents() async {
-        let event1: PaywallStoredEvent = .randomImpressionEvent()
-        let event2: PaywallStoredEvent = .randomImpressionEvent()
+        let event1: StoredEvent = .randomImpressionEvent()
+        let event2: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event1)
         await self.store.store(event2)
@@ -120,7 +120,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testFetchOnlySomeEvents() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.store(.randomImpressionEvent())
@@ -131,7 +131,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testFetchEventsWithUnrecognizedLines() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.handler.append(line: "not an event")
@@ -151,7 +151,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testClearSingleEvent() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.clear(1)
@@ -161,7 +161,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testClearOnlyOneEvent() async {
-        let storedEvents: [PaywallStoredEvent] = [
+        let storedEvents: [StoredEvent] = [
             .randomImpressionEvent(),
             .randomImpressionEvent(),
             .randomImpressionEvent()
@@ -278,10 +278,12 @@ extension PaywallEvent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallStoredEvent {
+private extension StoredEvent {
 
     static func randomImpressionEvent() -> Self {
-        return .init(event: .randomImpressionEvent(), userID: UUID().uuidString)
+        return .init(event: AnyEncodable(PaywallEvent.randomImpressionEvent()),
+                     userID: UUID().uuidString,
+                     feature: .paywalls)
     }
 
 }

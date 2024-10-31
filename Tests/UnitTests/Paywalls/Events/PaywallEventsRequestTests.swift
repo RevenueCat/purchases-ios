@@ -26,25 +26,33 @@ class PaywallEventsRequestTests: TestCase {
     }
 
     func testImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(Self.eventCreationData,
-                                                                 Self.eventData), userID: Self.userID)
-        let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
+        let event: StoredEvent =
+            .init(event: AnyEncodable(PaywallEvent.impression(Self.eventCreationData, Self.eventData)),
+                  userID: Self.userID,
+                  feature: .paywalls)
+        let requestEvent: EventsRequest.PaywallEvent? = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCancelEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .cancel(Self.eventCreationData,
-                                                             Self.eventData), userID: Self.userID)
-        let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
+        let event: StoredEvent =
+            .init(event: AnyEncodable(PaywallEvent.cancel(Self.eventCreationData,
+                                                             Self.eventData)),
+                  userID: Self.userID,
+                  feature: .paywalls)
+        let requestEvent: EventsRequest.PaywallEvent? = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .close(Self.eventCreationData,
-                                                            Self.eventData), userID: Self.userID)
-        let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
+        let event: StoredEvent =
+            .init(event: AnyEncodable(PaywallEvent.close(Self.eventCreationData,
+                                                            Self.eventData)),
+                  userID: Self.userID,
+                  feature: .paywalls)
+        let requestEvent: EventsRequest.PaywallEvent? = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }

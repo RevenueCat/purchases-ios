@@ -25,27 +25,35 @@ class PaywallEventSerializerTests: TestCase {
     }
 
     func testEncodeImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(.random(), .random()), userID: Self.userID)
+        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.impression(.random(), .random())),
+                                       userID: Self.userID,
+                                       feature: .paywalls)
 
         let encoded = try PaywallEventSerializer.encode(event)
-        let decoded: PaywallStoredEvent = try JSONDecoder.default.decode(jsonData: encoded.asData)
+        let decoded: StoredEvent = try JSONDecoder.default.decode(jsonData: encoded.asData)
 
         expect(encoded.numberOfLines) == 1
         expect(decoded) == event
     }
 
     func testDecodeImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(.random(), .random()), userID: Self.userID)
+        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.impression(.random(), .random())),
+                                       userID: Self.userID,
+                                       feature: .paywalls)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .cancel(.random(), .random()), userID: Self.userID)
+        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.cancel(.random(), .random())),
+                                       userID: Self.userID,
+                                       feature: .paywalls)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .close(.random(), .random()), userID: Self.userID)
+        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.close(.random(), .random())),
+                                       userID: Self.userID,
+                                       feature: .paywalls)
         expect(try event.encodeAndDecode()) == event
     }
 

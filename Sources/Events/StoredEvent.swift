@@ -47,7 +47,14 @@ extension StoredEvent: Codable {
 
         self.event = try container.decode(AnyEncodable.self, forKey: .event)
         self.userID = try container.decode(String.self, forKey: .userID)
-        self.feature = try container.decodeIfPresent(Feature.self, forKey: .feature) ?? .paywalls
+        if let featureString = try container.decodeIfPresent(String.self, forKey: .feature),
+           let feature = Feature(rawValue: featureString) {
+            self.feature = feature
+        } else {
+            self.feature = .paywalls
+        }
     }
 
 }
+
+
