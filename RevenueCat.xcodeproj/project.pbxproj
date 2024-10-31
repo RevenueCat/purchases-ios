@@ -17,6 +17,7 @@
 		1E5F8F782C46BBD90041EECD /* CustomerCenterAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */; };
 		1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */; };
 		1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */; };
+		2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */; };
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */; };
 		2C2AEB3B2CA7209F00A50F38 /* PaywallPackageComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */; };
@@ -25,7 +26,6 @@
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
-		2C8EC6AF2CCBD34100D6CCF8 /* ButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponent.swift */; };
 		2C8EC6DB2CCC23B700D6CCF8 /* Template5Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DA2CCC23B700D6CCF8 /* Template5Preview.swift */; };
 		2C8EC6DD2CCC7C5B00D6CCF8 /* PackageValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */; };
 		2C8EC6DF2CCD27A500D6CCF8 /* PartialComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */; };
@@ -1175,6 +1175,7 @@
 		1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterAction.swift; sourceTree = "<group>"; };
 		1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelperTests.swift; sourceTree = "<group>"; };
 		1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+		2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentTests.swift; sourceTree = "<group>"; };
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template1Preview.swift; sourceTree = "<group>"; };
 		2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPackageComponent.swift; sourceTree = "<group>"; };
@@ -1186,7 +1187,6 @@
 		2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesSyncAttributesAndOfferingsIfNeededTests.swift; sourceTree = "<group>"; };
 		2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiter.swift; sourceTree = "<group>"; };
 		2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterRests.swift; sourceTree = "<group>"; };
-		2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponent.swift; sourceTree = "<group>"; };
 		2C8EC6DA2CCC23B700D6CCF8 /* Template5Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template5Preview.swift; sourceTree = "<group>"; };
 		2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidator.swift; sourceTree = "<group>"; };
 		2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialComponentTests.swift; sourceTree = "<group>"; };
@@ -2315,8 +2315,8 @@
 		2C8EC6AD2CCBD33800D6CCF8 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */,
 				2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */,
-				2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponent.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -5908,6 +5908,7 @@
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
+				2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */,
 				5796A38127D6B78500653165 /* BaseBackendTest.swift in Sources */,
 				351B516226D44BEE00BD2BD7 /* CustomerInfoManagerTests.swift in Sources */,
 				5748008C29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift in Sources */,
@@ -5953,7 +5954,6 @@
 				5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */,
 				57554CC1282AE1E3009A7E58 /* TestCase.swift in Sources */,
 				57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */,
-				2C8EC6AF2CCBD34100D6CCF8 /* ButtonComponent.swift in Sources */,
 				351B515A26D44B6200BD2BD7 /* MockAttributionFetcher.swift in Sources */,
 				5796A38C27D6BA1600653165 /* BackendLoginTests.swift in Sources */,
 				351B51BD26D450E800BD2BD7 /* EntitlementInfosTests.swift in Sources */,
