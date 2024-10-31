@@ -490,24 +490,24 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let expirationDateFirst = "2062-04-12T00:03:35Z"
         let expirationDateSecond = "2062-05-12T00:03:35Z"
 
-        let product = Fixtures.product(id: productIdOne,
-                                       title: "yearly",
-                                       duration: .year,
-                                       price: 29.99,
-                                       offerIdentifier: offerIdentifierInProduct)
+        let product = SubscriptionInformationFixtures.product(id: productIdOne,
+                                                              title: "yearly",
+                                                              duration: .year,
+                                                              price: 29.99,
+                                                              offerIdentifier: offerIdentifierInProduct)
         let products = [
             product,
-            Fixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
+            SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
         ]
-        let customerInfo = Fixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                Fixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdOne,
                     store: "app_store",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                Fixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdTwo,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -515,7 +515,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ].shuffled(),
             entitlements: [
-                Fixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productIdOne,
                     purchaseDate: purchaseDate,
@@ -548,7 +548,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
         loadPromotionalOfferUseCase.mockedPromotionalOffer = PromotionalOffer(discount: discount,
                                                                               signedData: signedData)
 
-        let viewModel = ManageSubscriptionsViewModel(screen: Fixtures.screenWithPromo(offerID: offerIdentifierInJSON),
+        let screen = SubscriptionInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
+        let viewModel = ManageSubscriptionsViewModel(screen: screen,
                                                      customerCenterActionHandler: nil,
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
