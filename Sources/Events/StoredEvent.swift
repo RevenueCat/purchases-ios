@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallStoredEvent.swift
+//  StoredEvent.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
 
 /// Contains the necessary information for storing and sending events.
-struct PaywallStoredEvent {
+struct StoredEvent {
 
     var event: AnyEncodable
     var userID: String
@@ -30,9 +30,9 @@ enum Feature: String, Codable {
 
 // MARK: - Extensions
 
-extension PaywallStoredEvent: Equatable, Sendable {}
+extension StoredEvent: Equatable, Sendable {}
 
-extension PaywallStoredEvent: Codable {
+extension StoredEvent: Codable {
 
     private enum CodingKeys: String, CodingKey {
 

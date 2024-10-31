@@ -42,7 +42,7 @@ extension EventsRequest.PaywallEvent {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init?(storedEvent: PaywallStoredEvent) {
+    init?(storedEvent: StoredEvent) {
         guard let eventData = storedEvent.event.value as? [String: Any],
               let paywallEvent: PaywallEvent = try? JSONDecoder.default.decode(dictionary: eventData) else {
             Logger.error(Strings.paywalls.event_cannot_deserialize)

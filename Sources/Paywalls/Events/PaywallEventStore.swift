@@ -17,11 +17,11 @@ protocol PaywallEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func store(_ storedEvent: PaywallStoredEvent) async
+    func store(_ storedEvent: StoredEvent) async
 
     /// - Returns: the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetch(_ count: Int) async -> [PaywallStoredEvent]
+    func fetch(_ count: Int) async -> [StoredEvent]
 
     /// Removes the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -38,7 +38,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         self.handler = handler
     }
 
-    func store(_ storedEvent: PaywallStoredEvent) async {
+    func store(_ storedEvent: StoredEvent) async {
         do {
             if let eventDescription = try? storedEvent.event.prettyPrintedJSON {
                 Logger.verbose(PaywallEventStoreStrings.storing_event(eventDescription))
@@ -53,7 +53,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         }
     }
 
-    func fetch(_ count: Int) async -> [PaywallStoredEvent] {
+    func fetch(_ count: Int) async -> [StoredEvent] {
         assert(count > 0, "Invalid count: \(count)")
 
         do {
