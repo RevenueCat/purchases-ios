@@ -49,6 +49,8 @@ extension WinBackOfferEligibilityCalculator {
     private func calculateEligibleWinBackOffers(
         forProduct product: StoreProduct
     ) async throws -> [WinBackOffer] {
+
+        #if compiler(>=6.0)
         guard self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable else {
             throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
         }
@@ -78,10 +80,14 @@ extension WinBackOfferEligibilityCalculator {
             })
 
         return eligibleWinBackOffers
+        #else
+        return []
+        #endif
     }
 
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     private func calculateEligibleWinBackOfferIDs(forProduct product: StoreProduct) async -> [String] {
+        #if compiler(>=6.0)
         guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
             // If StoreKit.Product.subscription is nil, then the product isn't a subscription
             // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
@@ -121,6 +127,9 @@ extension WinBackOfferEligibilityCalculator {
         }()
 
         return eligibleWinBackOfferIDs
+        #else
+        return []
+        #endif
     }
 
 }
