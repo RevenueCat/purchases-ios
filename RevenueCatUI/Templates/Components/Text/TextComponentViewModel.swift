@@ -11,7 +11,6 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
-import Foundation
 import RevenueCat
 import SwiftUI
 
@@ -64,4 +63,5 @@ class TextComponentViewModel {
     }
 
 }
+
 #endif
