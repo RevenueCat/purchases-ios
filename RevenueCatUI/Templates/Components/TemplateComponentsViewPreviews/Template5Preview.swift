@@ -72,14 +72,14 @@ private enum Template5Preview {
             makePackage(packageID: "monthly",
                         nameTextLid: "monthly_name",
                         detailTextLid: "monthly_detail",
-                        isDefaultSelected: true)
+                        isSelectedByDefault: true)
         ]
 
     static func makePackage(
         packageID: String,
         nameTextLid: String,
         detailTextLid: String,
-        isDefaultSelected: Bool = false
+        isSelectedByDefault: Bool = false
     ) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent.StackComponent = .init(
             components: [
@@ -113,7 +113,7 @@ private enum Template5Preview {
 
         return PaywallComponent.PackageComponent(
             packageID: packageID,
-            isDefaultSelected: isDefaultSelected,
+            isSelectedByDefault: isSelectedByDefault,
             stack: stack
         )
     }
@@ -129,7 +129,7 @@ private enum Template5Preview {
             .package(makePackage(packageID: "monthly",
                                  nameTextLid: "monthly_name",
                                  detailTextLid: "monthly_detail",
-                                 isDefaultSelected: true)),
+                                 isSelectedByDefault: true)),
             .text(.init(
                 text: "package_terms",
                 color: .init(light: "#999999"),
@@ -158,8 +158,8 @@ private enum Template5Preview {
             backgroundColor: .init(light: "#e89d89"),
             padding: .init(top: 15,
                            bottom: 15,
-                           leading: 30,
-                           trailing: 30),
+                           leading: 50,
+                           trailing: 50),
             cornerRadiuses: .init(topLeading: 16,
                                   topTrailing: 16,
                                   bottomLeading: 16,
@@ -208,11 +208,14 @@ private enum Template5Preview {
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
         componentsConfigs: .init(
-            base: .init(stack: .init(
-                components: [
-                    .stack(stack)
-                ]
-            ))
+            base: .init(
+                stack: .init(
+                    components: [
+                        .stack(stack)
+                    ]
+                ),
+                stickyFooter: nil
+            )
         ),
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),

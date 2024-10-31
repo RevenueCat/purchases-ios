@@ -1,6 +1,6 @@
 //
 //  PaywallComponentViewModel.swift
-//  
+//
 //
 //  Created by James Borthwick on 2024-08-29.
 //
@@ -13,6 +13,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
 
+    case root(RootViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
     case spacer(SpacerComponentViewModel)
@@ -21,12 +22,14 @@ enum PaywallComponentViewModel {
     case button(ButtonComponentViewModel)
     case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
+    case stickyFooter(StickyFooterComponentViewModel)
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
+    // swiftlint:disable:next function_body_length
     func toViewModel(
         packageValidator: PackageValidator,
         offering: Offering,
@@ -71,7 +74,10 @@ extension PaywallComponent {
                                                           localizedStrings: localizedStrings,
                                                           component: component,
                                                           offering: offering)
-            packageValidator.add(viewModel)
+
+            if let package = viewModel.package {
+                packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
+            }
 
             return .package(viewModel)
         case .purchaseButton(let component):
@@ -80,6 +86,18 @@ extension PaywallComponent {
                                                      localizedStrings: localizedStrings,
                                                      component: component,
                                                      offering: offering)
+            )
+        case .stickyFooter(let component):
+            return .stickyFooter(
+                try StickyFooterComponentViewModel(
+                    component: component,
+                    stackViewModel: StackComponentViewModel(
+                        packageValidator: packageValidator,
+                        component: component.stack,
+                        localizedStrings: localizedStrings,
+                        offering: offering
+                    )
+                )
             )
         }
     }

@@ -94,7 +94,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     packageID: "weekly",
-                    isDefaultSelected: false,
+                    isSelectedByDefault: false,
                     stack: stack
                 ),
                 offering: .init(identifier: "default",
