@@ -143,46 +143,55 @@ struct WrongPlatformView: View {
 @available(watchOS, unavailable)
 struct WrongPlatformView_Previews: PreviewProvider {
 
+    private struct PreviewData {
+        let store: Store
+        let managementURL: URL?
+        let customerInfo: CustomerInfo
+        let displayName: String
+    }
+    
+    private static let previewCases: [PreviewData] = [
+        .init(store: .playStore,
+              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
+              customerInfo: CustomerInfoFixtures.customerInfoWithGoogleSubscriptions,
+              displayName: "Play Store"),
+        .init(store: .rcBilling,
+              managementURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
+              customerInfo: CustomerInfoFixtures.customerInfoWithRCBillingSubscriptions,
+              displayName: "RCBilling"),
+        .init(store: .stripe,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
+              displayName: "Stripe"),
+        .init(store: .external,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
+              displayName: "External"),
+        .init(store: .promotional,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithPromotional,
+              displayName: "Promotional"),
+        .init(store: .promotional,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithLifetimePromotional,
+              displayName: "Promotional Lifetime"),
+        .init(store: .amazon,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions,
+              displayName: "Amazon")
+    ]
+
     static var previews: some View {
         Group {
-            WrongPlatformView(store: .playStore,
-                              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithGoogleSubscriptions))
-                .previewDisplayName("Play Store")
-
-            WrongPlatformView(store: .rcBilling,
-                              managementURL:
-                                URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithStripeSubscriptions))
-                .previewDisplayName("RCBilling")
-
-            WrongPlatformView(store: .stripe,
-                              managementURL: nil,
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithStripeSubscriptions))
-                .previewDisplayName("Stripe")
-
-            WrongPlatformView(store: .external,
-                              managementURL: nil,
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithStripeSubscriptions))
-                .previewDisplayName("External")
-
-            WrongPlatformView(store: .promotional,
-                              managementURL: nil,
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithPromotional))
-                .previewDisplayName("Promotional")
-
-            WrongPlatformView(store: .promotional,
-                              managementURL: nil,
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithLifetimePromotional))
-                .previewDisplayName("Promotional Lifetime")
-
-            WrongPlatformView(store: .amazon,
-                              managementURL: nil,
-                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions))
-                .previewDisplayName("Amazon")
-
+            ForEach(previewCases, id: \.displayName) { data in
+                WrongPlatformView(
+                    store: data.store,
+                    managementURL: data.managementURL,
+                    subscriptionInformation: getSubscriptionInformation(for: data.customerInfo)
+                )
+                .previewDisplayName(data.displayName)
+            }
         }
-
     }
 
     private static func getSubscriptionInformation(for customerInfo: CustomerInfo) -> SubscriptionInformation {
