@@ -711,7 +711,7 @@ private extension SamplePaywallLoader {
     static func makePackage(packageID: String,
                             nameTextLid: String,
                             detailTextLid: String,
-                            isDefaultSelected: Bool = false) -> PaywallComponent.PackageComponent {
+                            isSelectedByDefault: Bool = false) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent.StackComponent = .init(
             components: [
                 .text(.init(
@@ -744,7 +744,7 @@ private extension SamplePaywallLoader {
 
         return .init(
             packageID: packageID,
-            isDefaultSelected: isDefaultSelected,
+            isSelectedByDefault: isSelectedByDefault,
             stack: stack
         )
     }
@@ -760,7 +760,7 @@ private extension SamplePaywallLoader {
                         .package(makePackage(packageID: Package.string(from: PackageType.annual)!,
                                     nameTextLid: "annual_package_name",
                                     detailTextLid: "annual_package_details",
-                                    isDefaultSelected: true))
+                                    isSelectedByDefault: true))
                     ],
                     spacing: 20,
                     margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)

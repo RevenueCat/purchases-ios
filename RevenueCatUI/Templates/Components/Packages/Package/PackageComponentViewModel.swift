@@ -23,7 +23,7 @@ class PackageComponentViewModel {
     private let component: PaywallComponent.PackageComponent
     private let offering: Offering
 
-    let isDefaultSelected: Bool
+    let isSelectedByDefault: Bool
     let package: Package?
     let stackViewModel: StackComponentViewModel
 
@@ -35,7 +35,7 @@ class PackageComponentViewModel {
         self.component = component
         self.offering = offering
 
-        self.isDefaultSelected = component.isDefaultSelected
+        self.isSelectedByDefault = component.isSelectedByDefault
         self.package = offering.package(identifier: component.packageID)
         if package == nil {
             Logger.warning(Strings.paywall_could_not_find_package(component.packageID))

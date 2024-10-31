@@ -88,7 +88,7 @@ private enum Template1Preview {
 
     static let package = PaywallComponent.PackageComponent(
         packageID: "weekly",
-        isDefaultSelected: false,
+        isSelectedByDefault: false,
         stack: packageStack
     )
 

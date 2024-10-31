@@ -71,7 +71,10 @@ extension PaywallComponent {
                                                           localizedStrings: localizedStrings,
                                                           component: component,
                                                           offering: offering)
-            packageValidator.add(viewModel)
+
+            if let package = viewModel.package {
+                packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
+            }
 
             return .package(viewModel)
         case .purchaseButton(let component):
