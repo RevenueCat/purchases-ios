@@ -15,10 +15,9 @@ import Foundation
 import StoreKit
 
 /// Represents an Apple win-back offer.
-///
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 @objc(RCWinBackOffer)
-internal final class WinBackOffer: NSObject {
+internal final class WinBackOffer: NSObject, Sendable {
 
     /// The ``StoreProductDiscount`` in this offer.
     @objc internal let discount: StoreProductDiscount
@@ -28,6 +27,3 @@ internal final class WinBackOffer: NSObject {
     }
 
 }
-
-@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-extension WinBackOffer: Sendable {}
