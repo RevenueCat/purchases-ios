@@ -30,10 +30,9 @@ public extension PaywallComponent {
 
     struct ComponentConditions<T: PartialComponent>: PaywallComponentBase {
 
-        let mobileLandscape: T?
-        let tablet: T?
-        let tabletLandscape: T?
-        let desktop: T?
+        let compact: T?
+        let medium: T?
+        let expanded: T?
 
     }
 
