@@ -1448,7 +1448,8 @@ private extension SamplePaywallLoader {
                 spacing: 10,
                 backgroundColor: .init(light: "#F2545B"),
                 padding: .zero,
-                cornerRadiuses: .init(topLeading: 16.0, topTrailing: 16.0, bottomLeading: 0.0, bottomTrailing: 0.0)
+                cornerRadiuses: .init(topLeading: 16.0, topTrailing: 16.0, bottomLeading: 0.0, bottomTrailing: 0.0),
+                shadow: PaywallComponent.Shadow(color: .init(light: "#000000"), radius: 8, x: 0, y: 0)
             )
         )
     }()
