@@ -11,6 +11,8 @@
 //
 //  Created by Cesar de la Vega on 24/10/24.
 
+import Foundation
+
 extension EventsRequest {
 
     struct PaywallEvent: FeatureEvent {

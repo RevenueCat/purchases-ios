@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PaywallEventSerializerTests: TestCase {
@@ -25,41 +26,64 @@ class PaywallEventSerializerTests: TestCase {
     }
 
     func testEncodeImpressionEvent() throws {
-        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.impression(.random(), .random())),
+        let originalEvent = PaywallEvent.impression(.random(), .random())
+        let event: StoredEvent = .init(event: AnyEncodable(originalEvent),
                                        userID: Self.userID,
                                        feature: .paywalls)
 
         let encoded = try PaywallEventSerializer.encode(event)
-        let decoded: StoredEvent = try JSONDecoder.default.decode(jsonData: encoded.asData)
+        let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
 
         expect(encoded.numberOfLines) == 1
-        expect(decoded) == event
-    }
-
-    func testDecodeImpressionEvent() throws {
-        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.impression(.random(), .random())),
-                                       userID: Self.userID,
-                                       feature: .paywalls)
-        expect(try event.encodeAndDecode()) == event
+        try verifyDecodedEvent(decoded, matches: event)
     }
 
     func testDecodeCancelEvent() throws {
-        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.cancel(.random(), .random())),
+        let originalEvent = PaywallEvent.cancel(.random(), .random())
+        let event: StoredEvent = .init(event: AnyEncodable(originalEvent),
                                        userID: Self.userID,
                                        feature: .paywalls)
-        expect(try event.encodeAndDecode()) == event
+
+        let encoded = try PaywallEventSerializer.encode(event)
+        let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
+
+        expect(encoded.numberOfLines) == 1
+        try verifyDecodedEvent(decoded, matches: event)
     }
 
     func testDecodeCloseEvent() throws {
-        let event: StoredEvent = .init(event: AnyEncodable(PaywallEvent.close(.random(), .random())),
+        let originalEvent = PaywallEvent.close(.random(), .random())
+        let event: StoredEvent = .init(event: AnyEncodable(originalEvent),
                                        userID: Self.userID,
+
                                        feature: .paywalls)
-        expect(try event.encodeAndDecode()) == event
+
+        let encoded = try PaywallEventSerializer.encode(event)
+        let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
+
+        expect(encoded.numberOfLines) == 1
+        try verifyDecodedEvent(decoded, matches: event)
     }
 
     // MARK: -
 
     private static let userID = UUID().uuidString
+
+    private func verifyDecodedEvent(
+        _ decoded: StoredEvent,
+        matches original: StoredEvent,
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        expect(file: file, line: line, decoded.userID) == original.userID
+        expect(file: file, line: line, decoded.feature) == original.feature
+
+        let eventData = try XCTUnwrap(decoded.event.value as? [String: Any])
+        let paywallEvent: PaywallEvent = try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: eventData))
+        
+        let originalEvent = try XCTUnwrap(original.event.value as? PaywallEvent)
+        expect(file: file, line: line, paywallEvent) == originalEvent
+    }
 
 }
 
