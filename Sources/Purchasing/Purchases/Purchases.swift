@@ -1934,6 +1934,7 @@ private extension Purchases {
 }
 
 // MARK: - Win-Back Offers
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 extension Purchases {
 
@@ -1944,7 +1945,7 @@ extension Purchases {
      * - Returns: The win-back offers on the given product that a subscriber is eliglble for.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    public func eligibleWinBackOffers(
+    internal func eligibleWinBackOffers(
         forProduct product: StoreProduct
     ) async throws -> [WinBackOffer] {
         return try await self.purchasesOrchestrator.eligibleWinBackOffers(forProduct: product)
@@ -1958,7 +1959,7 @@ extension Purchases {
      * offers for the provided product.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    public func eligibleWinBackOffers(
+    internal func eligibleWinBackOffers(
         forProduct product: StoreProduct,
         completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
     ) {
@@ -1977,5 +1978,5 @@ extension Purchases {
             }
         }
     }
-
 }
+#endif
