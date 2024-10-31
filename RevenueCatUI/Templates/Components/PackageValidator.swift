@@ -19,21 +19,12 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
-    private var packageViewModels: [PackageComponentViewModel] = []
+    typealias PackageInfo = (package: Package, isSelectedByDefault: Bool)
 
-    typealias PackageInfo = (package: Package, isDefaultSelected: Bool)
+    private var packageInfos: [PackageInfo] = []
 
-    var packageInfos: [PackageInfo] {
-        self.packageViewModels.compactMap { packageViewModel in
-            guard let package = packageViewModel.package else {
-                return nil
-            }
-            return (package: package, isDefaultSelected: packageViewModel.isDefaultSelected)
-        }
-    }
-
-    func add(_ packageViewModel: PackageComponentViewModel) {
-        self.packageViewModels.append(packageViewModel)
+    func add(_ package: Package, isSelectedByDefault: Bool) {
+        self.packageInfos.append((package, isSelectedByDefault))
     }
 
     var isValid: Bool {
@@ -42,7 +33,7 @@ class PackageValidator {
 
     var defaultSelectedPackage: Package? {
         let defaultSelectedPackage = packageInfos.first(where: { pkg in
-            return pkg.isDefaultSelected
+            return pkg.isSelectedByDefault
         })
 
         // Set selected package
