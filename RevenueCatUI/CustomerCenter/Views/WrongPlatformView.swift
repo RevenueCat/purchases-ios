@@ -149,7 +149,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
         let customerInfo: CustomerInfo
         let displayName: String
     }
-    
+
     private static let previewCases: [PreviewData] = [
         .init(store: .playStore,
               managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),

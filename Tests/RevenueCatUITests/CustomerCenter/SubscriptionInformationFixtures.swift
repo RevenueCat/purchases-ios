@@ -17,7 +17,7 @@ import Foundation
 import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class SubscriptionInformationFixtures {
+enum SubscriptionInformationFixtures {
 
     static func product(
         id: String,
