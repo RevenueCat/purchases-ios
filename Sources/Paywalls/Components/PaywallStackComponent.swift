@@ -32,6 +32,9 @@ public extension PaywallComponent {
         public let border: Border?
         public let shadow: Shadow?
 
+        public let state: ComponentState<PartialStackComponent>?
+        public let conditions: ComponentConditions<PartialStackComponent>?
+
         public init(components: [PaywallComponent],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
@@ -41,7 +44,9 @@ public extension PaywallComponent {
                     margin: Padding = .zero,
                     cornerRadiuses: CornerRadiuses? = nil,
                     border: Border? = nil,
-                    shadow: Shadow? = nil
+                    shadow: Shadow? = nil,
+                    state: ComponentState<PartialStackComponent>? = nil,
+                    conditions: ComponentConditions<PartialStackComponent>? = nil
         ) {
             self.components = components
             self.width = width
@@ -54,6 +59,40 @@ public extension PaywallComponent {
             self.cornerRadiuses = cornerRadiuses
             self.border = border
             self.shadow = shadow
+            self.state = state
+            self.conditions = conditions
+        }
+
+    }
+
+    struct PartialStackComponent: PartialComponent {
+
+        public let width: WidthSize?
+        public let spacing: CGFloat?
+        public let backgroundColor: ColorInfo?
+        public let dimension: Dimension?
+        public let padding: Padding?
+        public let margin: Padding?
+        public let cornerRadiuses: CornerRadiuses?
+        public let border: Border?
+
+        public init(dimension: Dimension? = nil,
+                    width: WidthSize? = nil,
+                    spacing: CGFloat? = nil,
+                    backgroundColor: ColorInfo? = nil,
+                    padding: Padding? = nil,
+                    margin: Padding? = nil,
+                    cornerRadiuses: CornerRadiuses? = nil,
+                    border: Border? = nil
+        ) {
+            self.width = width
+            self.spacing = spacing
+            self.backgroundColor = backgroundColor
+            self.dimension = dimension
+            self.padding = padding
+            self.margin = margin
+            self.cornerRadiuses = cornerRadiuses
+            self.border = border
         }
 
     }
