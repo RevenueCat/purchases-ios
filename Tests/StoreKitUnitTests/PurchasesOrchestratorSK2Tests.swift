@@ -891,4 +891,33 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
     #endif
 
+    #if compiler(>=6.0)
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func testEligibleWinBackOffersDoesntThrowsWhenInSK2Mode() async throws {
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+
+        self.setUpOrchestrator()
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        _ = try await self.orchestrator.eligibleWinBackOffers(forProduct: storeProduct)
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func testEligibleWinBackOffersReturnsValueFromWinBackEligibilityCalculator() async throws {
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+
+        self.setUpOrchestrator()
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        let eligibileWinBackOffers = try await self.orchestrator.eligibleWinBackOffers(forProduct: storeProduct)
+
+        expect(eligibileWinBackOffers).to(equal([]))
+        expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersCalled).to(beTrue())
+        expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersCallCount).to(equal(1))
+        expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersProduct).to(equal(storeProduct))
+    }
+    #endif
+
 }

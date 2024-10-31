@@ -181,6 +181,9 @@ extension ErrorCode: DescribableError {
             return "This feature is not available when utilizing the customEntitlementsComputation dangerousSetting."
         case .signatureVerificationFailed:
             return "Request failed signature verification. See https://rev.cat/trusted-entitlements for more info."
+        case .featureNotSupportedWithStoreKit1:
+            return "This feature is not supported when using StoreKit 1." +
+                "Configure the SDK to use StoreKit 2 to use this feature."
 
         @unknown default:
             return "Something went wrong."
@@ -282,6 +285,8 @@ extension ErrorCode {
             return "FEATURE_NOT_AVAILABLE_IN_CUSTOM_ENTITLEMENTS_COMPUTATION_MODE_ERROR"
         case .signatureVerificationFailed:
             return "SIGNATURE_VERIFICATION_FAILED"
+        case .featureNotSupportedWithStoreKit1:
+            return "FEATURE_NOT_SUPPORTED_WITH_STOREKIT1"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

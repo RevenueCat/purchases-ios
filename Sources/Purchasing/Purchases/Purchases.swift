@@ -1960,15 +1960,20 @@ extension Purchases {
      */
     public func eligibleWinBackOffers(
         forProduct product: StoreProduct,
-        completion: @escaping (Result<[WinBackOffer], PublicError>) -> Void
+        completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
     ) {
         Task {
+            let result: Result<[WinBackOffer], PublicError>
             do {
                 let eligibleWinBackOffers = try await self.eligibleWinBackOffers(forProduct: product)
-                completion(.success(eligibleWinBackOffers))
+                result = .success(eligibleWinBackOffers)
             } catch {
                 let publicError = RevenueCat.ErrorUtils.purchasesError(withUntypedError: error).asPublicError
-                completion(.failure(publicError))
+                result = .failure(publicError)
+            }
+
+            OperationDispatcher.dispatchOnMainActor {
+                completion(result)
             }
         }
     }

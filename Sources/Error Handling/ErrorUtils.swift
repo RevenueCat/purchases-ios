@@ -677,7 +677,8 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
                 .featureNotAvailableInCustomEntitlementsComputationMode,
-                .signatureVerificationFailed:
+                .signatureVerificationFailed,
+                .featureNotSupportedWithStoreKit1:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,
