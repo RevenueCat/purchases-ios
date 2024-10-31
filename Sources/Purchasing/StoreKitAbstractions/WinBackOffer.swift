@@ -27,10 +27,10 @@ import StoreKit
 /// - ``Purchases/purchase(product:promotionalOffer:completion:)``
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 @objc(RCWinBackOffer)
-public final class WinBackOffer: NSObject {
+internal final class WinBackOffer: NSObject {
 
     /// The ``StoreProductDiscount`` in this offer.
-    @objc public let discount: StoreProductDiscount
+    @objc internal let discount: StoreProductDiscount
 
     init(discount: StoreProductDiscount) {
         self.discount = discount
