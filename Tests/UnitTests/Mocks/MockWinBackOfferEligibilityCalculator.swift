@@ -21,6 +21,12 @@ final class MockWinBackOfferEligibilityCalculator: WinBackOfferEligibilityCalcul
     var eligibleWinBackOffersCallCount = 0
     var eligibleWinBackOffersProduct: RevenueCat.StoreProduct?
 
+    enum EligibleWinBackOffersResult {
+        case error
+        case success
+    }
+    var eligibleWinBackOffersResult: EligibleWinBackOffersResult = .success
+
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func eligibleWinBackOffers(
         forProduct product: RevenueCat.StoreProduct
@@ -29,6 +35,11 @@ final class MockWinBackOfferEligibilityCalculator: WinBackOfferEligibilityCalcul
         eligibleWinBackOffersCallCount += 1
         eligibleWinBackOffersProduct = product
 
-        return []
+        switch self.eligibleWinBackOffersResult {
+        case .error:
+            throw ErrorUtils.featureNotSupportedWithStoreKit1Error()
+        case .success:
+            return []
+        }
     }
 }

@@ -54,7 +54,7 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
         case introductory = 0
         /// Promotional offer for subscriptions
         case promotional = 1
-        // Win-back offers
+        /// Win-back offers
         case winBack = 2
     }
 
@@ -277,7 +277,8 @@ extension StoreProductDiscount.DiscountType {
 
             // winBack discount type was added in iOS 18.0, but it's not recognized by Xcode versions <16.0.
             #if compiler(>=6.0)
-            if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *), case .winBack = sk2Discount.type {
+            if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
+               case .winBack = sk2Discount.type {
                 return .winBack
             }
             #endif
