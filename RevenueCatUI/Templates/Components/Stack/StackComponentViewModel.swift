@@ -92,6 +92,17 @@ class StackComponentViewModel {
         }
     }
 
+    var shadow: ShadowModifier.ShadowInfo? {
+        component.shadow.flatMap { shadow in
+            ShadowModifier.ShadowInfo(
+                color: shadow.color.toDyanmicColor(),
+                radius: shadow.radius,
+                x: shadow.x,
+                y: shadow.y
+            )
+        }
+    }
+
 }
 
 #endif
