@@ -11,7 +11,7 @@
 //
 //  Created by Cesar de la Vega on 28/10/24.
 
-@testable import RevenueCat
+import RevenueCat
 
 class CustomerInfoFixtures {
 
