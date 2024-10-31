@@ -21,6 +21,15 @@ struct StackComponentView: View {
 
     let viewModel: StackComponentViewModel
     let onDismiss: () -> Void
+    /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
+    /// area when displayed as a sticky footer.
+    let additionalPadding: EdgeInsets
+
+    init(viewModel: StackComponentViewModel, onDismiss: @escaping () -> Void, additionalPadding: EdgeInsets? = nil) {
+        self.viewModel = viewModel
+        self.onDismiss = onDismiss
+        self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+    }
 
     var body: some View {
         Group {
@@ -42,6 +51,7 @@ struct StackComponentView: View {
             }
         }
         .padding(viewModel.padding)
+        .padding(additionalPadding)
         .width(viewModel.width)
         .background(viewModel.backgroundColor)
         .cornerBorder(border: viewModel.border,

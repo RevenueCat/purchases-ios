@@ -135,11 +135,14 @@ private enum Template1Preview {
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
         componentsConfigs: .init(
-            base: .init(stack: .init(
-                components: [
-                    .stack(stack)
-                ]
-            ))
+            base: .init(
+                stack: .init(
+                    components: [
+                        .stack(stack)
+                    ]
+                ),
+                stickyFooter: nil
+            )
         ),
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),
