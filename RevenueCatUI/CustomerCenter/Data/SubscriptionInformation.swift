@@ -72,10 +72,10 @@ struct SubscriptionInformation {
     }
 
     init(entitlement: EntitlementInfo,
-         subscribedProduct: StoreProduct? = nil) {
+         subscribedProduct: StoreProduct? = nil,
+         dateFormatter: DateFormatter = DateFormatter()) {
         // swiftlint:disable:next todo
         // TODO: support non-consumables
-        let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
 
         self.title = subscribedProduct?.localizedTitle
