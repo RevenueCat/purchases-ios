@@ -66,11 +66,20 @@ struct SubscriptionDetailsView: View {
                 }
 
                 if let expirationOrRenewal = subscriptionInformation.expirationOrRenewal {
-                    IconLabelView(
-                        iconName: "calendar",
-                        label: label(for: expirationOrRenewal),
-                        value: String(describing: expirationOrRenewal.date)
-                    )
+                    switch expirationOrRenewal.date {
+                    case .never:
+                        IconLabelView(
+                            iconName: "calendar",
+                            label: label(for: expirationOrRenewal),
+                            value: localization.commonLocalizedString(for: .never)
+                        )
+                    case .date(let value):
+                        IconLabelView(
+                            iconName: "calendar",
+                            label: label(for: expirationOrRenewal),
+                            value: value
+                        )
+                    }
                 }
 
                 if let refundRequestStatus = refundRequestStatus,

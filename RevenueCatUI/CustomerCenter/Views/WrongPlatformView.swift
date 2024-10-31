@@ -145,49 +145,48 @@ struct WrongPlatformView_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
-            WrongPlatformView(store: .macAppStore,
-                              managementURL: URL(string: "https://apps.apple.com/account/subscriptions"),
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
-                .previewDisplayName("Mac AppStore")
-
             WrongPlatformView(store: .playStore,
                               managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithGoogleSubscriptions))
                 .previewDisplayName("Play Store")
 
             WrongPlatformView(store: .rcBilling,
                               managementURL:
                                 URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithStripeSubscriptions))
                 .previewDisplayName("RCBilling")
 
             WrongPlatformView(store: .stripe,
                               managementURL: nil,
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithStripeSubscriptions))
                 .previewDisplayName("Stripe")
 
             WrongPlatformView(store: .external,
                               managementURL: nil,
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithStripeSubscriptions))
                 .previewDisplayName("External")
 
             WrongPlatformView(store: .promotional,
                               managementURL: nil,
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithPromotional))
+                .previewDisplayName("Promotional")
+
+            WrongPlatformView(store: .promotional,
+                              managementURL: nil,
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithLifetimePromotional))
                 .previewDisplayName("Promotional Lifetime")
 
             WrongPlatformView(store: .amazon,
                               managementURL: nil,
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
+                              subscriptionInformation: getSubscriptionInformation(for: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions))
                 .previewDisplayName("Amazon")
-
-            WrongPlatformView(store: .unknownStore,
-                              managementURL: nil,
-                              subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing)
-                .previewDisplayName("Unknown")
 
         }
 
+    }
+
+    private static func getSubscriptionInformation(for customerInfo: CustomerInfo) -> SubscriptionInformation {
+        return SubscriptionInformation(entitlement: customerInfo.entitlements.active.first!.value)
     }
 
 }

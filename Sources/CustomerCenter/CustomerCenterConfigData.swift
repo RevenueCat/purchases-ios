@@ -94,6 +94,7 @@ public struct CustomerCenterConfigData {
             case youHavePromo = "you_have_promo"
             case youHaveLifetime = "you_have_lifetime"
             case free = "free"
+            case never = "never"
 
             var defaultValue: String {
                 switch self {
@@ -168,11 +169,10 @@ public struct CustomerCenterConfigData {
                     return "You have an active Apple App Store purchase. " +
                     "You can manage your subscription by using the App Store app on an Apple device."
                 case .googleSubscriptionManage:
-                    return "You have an active Google Play Store purchase. " +
-                    "You can manage your subscription by using the Play Store app on an Android device"
+                    return "You have an active Google Play Store purchase"
                 case .amazonSubscriptionManage:
-                    return "You have an Amazon Appstore subscription. " +
-                    "You can manage your subscription in the Amazon Appstore app on an Amazon device."
+                    return "You have an active Amazon Appstore purchase. " +
+                    "You can manage your subscription in the Amazon Appstore app."
                 case .webSubscriptionManage:
                     return "You are subscribed to a web subscription." +
                     " You can manage your subscription by visiting your account."
@@ -184,6 +184,8 @@ public struct CustomerCenterConfigData {
                     return "Your active lifetime subscription"
                 case .free:
                     return "Free"
+                case .never:
+                    return "Never"
                 }
             }
 

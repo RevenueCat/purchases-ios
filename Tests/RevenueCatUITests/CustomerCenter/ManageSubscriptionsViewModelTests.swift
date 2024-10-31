@@ -85,9 +85,9 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                                 title: "title",
                                                                 duration: .month,
                                                                 price: 2.99)]
-        let customerInfo = SubscriptionInformationFixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productId,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -95,7 +95,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ],
             entitlements: [
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productId,
                     purchaseDate: purchaseDate,
@@ -143,15 +143,15 @@ class ManageSubscriptionsViewModelTests: TestCase {
             SubscriptionInformationFixtures.product(id: productIdOne, title: "yearly", duration: .year, price: 29.99),
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
         ]
-        let customerInfo = SubscriptionInformationFixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdOne,
                     store: "app_store",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdTwo,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -159,7 +159,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ].shuffled(),
             entitlements: [
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productIdOne,
                     purchaseDate: purchaseDate,
@@ -207,15 +207,15 @@ class ManageSubscriptionsViewModelTests: TestCase {
             SubscriptionInformationFixtures.product(id: productIdOne, title: "yearly", duration: .year, price: 29.99),
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
         ]
-        let customerInfo = SubscriptionInformationFixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdOne,
                     store: "app_store",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdTwo,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -223,13 +223,13 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ].shuffled(),
             entitlements: [
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productIdOne,
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "plus",
                     productId: productIdTwo,
                     purchaseDate: purchaseDate,
@@ -276,15 +276,15 @@ class ManageSubscriptionsViewModelTests: TestCase {
             SubscriptionInformationFixtures.product(id: productIdOne, title: "yearly", duration: .year, price: 29.99),
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
         ]
-        let customerInfo = SubscriptionInformationFixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdOne,
                     store: "play_store",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdTwo,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -292,13 +292,13 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ].shuffled(),
             entitlements: [
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productIdOne,
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "plus",
                     productId: productIdTwo,
                     purchaseDate: purchaseDate,
@@ -337,7 +337,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testLoadScreenNoActiveSubscription() async {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithExpiredAppleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let mockPurchases = MockManageSubscriptionsPurchases(customerInfo: customerInfo)
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      customerCenterActionHandler: nil,
@@ -379,15 +379,15 @@ class ManageSubscriptionsViewModelTests: TestCase {
             product,
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
         ]
-        let customerInfo = SubscriptionInformationFixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdOne,
                     store: "app_store",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdTwo,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -395,7 +395,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ].shuffled(),
             entitlements: [
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productIdOne,
                     purchaseDate: purchaseDate,
@@ -473,15 +473,15 @@ class ManageSubscriptionsViewModelTests: TestCase {
             product,
             SubscriptionInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
         ]
-        let customerInfo = SubscriptionInformationFixtures.customerInfo(
+        let customerInfo = CustomerInfoFixtures.customerInfo(
             subscriptions: [
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdOne,
                     store: "app_store",
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDateFirst
                 ),
-                SubscriptionInformationFixtures.Subscription(
+                CustomerInfoFixtures.Subscription(
                     id: productIdTwo,
                     store: "app_store",
                     purchaseDate: purchaseDate,
@@ -489,7 +489,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                 )
             ].shuffled(),
             entitlements: [
-                SubscriptionInformationFixtures.Entitlement(
+                CustomerInfoFixtures.Entitlement(
                     entitlementId: "premium",
                     productId: productIdOne,
                     purchaseDate: purchaseDate,
@@ -567,13 +567,13 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
     let beginRefundShouldFail: Bool
 
     init(
-        customerInfo: CustomerInfo = SubscriptionInformationFixtures.customerInfoWithAppleSubscriptions,
+        customerInfo: CustomerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
         customerInfoError: Error? = nil,
         products: [RevenueCat.StoreProduct] =
-            [SubscriptionInformationFixtures.product(id: "com.revenuecat.product",
-                                                     title: "title",
-                                                     duration: .month,
-                                                     price: 2.99)],
+        [SubscriptionInformationFixtures.product(id: "com.revenuecat.product",
+                                                 title: "title",
+                                                 duration: .month,
+                                                 price: 2.99)],
         showManageSubscriptionsError: Error? = nil,
         beginRefundShouldFail: Bool = false
     ) {

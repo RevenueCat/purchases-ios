@@ -26,7 +26,7 @@ class SubscriptionInformationTests: TestCase {
     static let locale: Locale = .current
 
     func testAppleEntitlementAndSubscribedProduct() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithAppleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let mockProduct = TestStoreProduct(
@@ -60,7 +60,7 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testAppleEntitlementAndNonRenewingSubscribedProduct() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithNonRenewingAppleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let mockProduct = TestStoreProduct(
@@ -94,7 +94,7 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testAppleEntitlementAndExpiredSubscribedProduct() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithExpiredAppleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let mockProduct = TestStoreProduct(
@@ -128,14 +128,14 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testInitWithGoogleEntitlement() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithGoogleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.explanation) == .earliestRenewal
+        expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.price) == .unknown
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -149,14 +149,14 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testInitWithGoogleEntitlementNonRenewing() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithNonRenewingGoogleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.explanation) == .earliestExpiration
+        expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.price) == .unknown
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -170,14 +170,14 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testInitWithGoogleEntitlementExpired() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithExpiredGoogleSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.explanation) == .expired
+        expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.price) == .unknown
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -191,7 +191,7 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testInitWithPromotionalEntitlement() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithPromotional
+        let customerInfo = CustomerInfoFixtures.customerInfoWithPromotional
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
@@ -212,7 +212,7 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testInitWithPromotionalLifetimeEntitlement() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithLifetimePromotional
+        let customerInfo = CustomerInfoFixtures.customerInfoWithLifetimePromotional
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
@@ -233,14 +233,14 @@ class SubscriptionInformationTests: TestCase {
     }
 
     func testInitWithStripeEntitlement() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithStripeSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithStripeSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.explanation) == .earliestRenewal
+        expect(subscriptionInfo.explanation) == .web
         expect(subscriptionInfo.price) == .unknown
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -250,18 +250,18 @@ class SubscriptionInformationTests: TestCase {
         expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.active) == true
-        expect(subscriptionInfo.store) == .playStore
+        expect(subscriptionInfo.store) == .stripe
     }
 
     func testInitWithStripeEntitlementNonRenewing() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithNonRenewingStripeSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingStripeSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.explanation) == .earliestExpiration
+        expect(subscriptionInfo.explanation) == .web
         expect(subscriptionInfo.price) == .unknown
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -271,18 +271,18 @@ class SubscriptionInformationTests: TestCase {
         expect(subscriptionInfo.willRenew) == false
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.active) == true
-        expect(subscriptionInfo.store) == .playStore
+        expect(subscriptionInfo.store) == .stripe
     }
 
     func testInitWithStripeEntitlementExpired() throws {
-        let customerInfo = SubscriptionInformationFixtures.customerInfoWithExpiredStripeSubscriptions
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredStripeSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement))
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.explanation) == .expired
+        expect(subscriptionInfo.explanation) == .web
         expect(subscriptionInfo.price) == .unknown
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -292,7 +292,7 @@ class SubscriptionInformationTests: TestCase {
         expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.active) == false
-        expect(subscriptionInfo.store) == .playStore
+        expect(subscriptionInfo.store) == .stripe
     }
 
 }
