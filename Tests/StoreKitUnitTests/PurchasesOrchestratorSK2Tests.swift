@@ -52,7 +52,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         _ = try await orchestrator.purchase(sk2Product: product,
                                             package: package,
-                                            promotionalOffer: nil)
+                                            promotionalOffer: nil,
+                                            winBackOffer: nil)
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptData).to(beTrue())
@@ -72,7 +73,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk2Product()
         let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
                                                                                          package: nil,
-                                                                                         promotionalOffer: nil)
+                                                                                         promotionalOffer: nil,
+                                                                                         winBackOffer: nil)
 
         expect(transaction?.sk2Transaction) == mockTransaction.underlyingTransaction
         expect(userCancelled) == false
@@ -92,7 +94,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         do {
             _ = try await orchestrator.purchase(sk2Product: product,
                                                 package: nil,
-                                                promotionalOffer: nil)
+                                                promotionalOffer: nil,
+                                                winBackOffer: nil)
             XCTFail("Expected error")
         } catch {
             expect(self.backend.invokedPostReceiptData) == false
@@ -116,7 +119,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         )
 
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
+            _ = try await orchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: offer,
+                winBackOffer: nil
+            )
             XCTFail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
@@ -133,7 +141,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let (transaction, customerInfo, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
                                                                                           package: nil,
-                                                                                          promotionalOffer: nil)
+                                                                                          promotionalOffer: nil,
+                                                                                          winBackOffer: nil)
 
         expect(transaction).to(beNil())
         expect(customerInfo) == self.mockCustomerInfo
@@ -156,7 +165,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let (transaction, info, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
                                                                                   package: nil,
-                                                                                  promotionalOffer: nil)
+                                                                                  promotionalOffer: nil,
+                                                                                  winBackOffer: nil)
 
         expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
         let purchaseResult = try XCTUnwrap(
@@ -189,7 +199,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         backend.stubbedPostReceiptResult = .success(.emptyInfo)
 
         let product = try await fetchSk2Product()
-        let result = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        let result = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
         expect(result.transaction?.sk2Transaction?.appAccountToken).to(equal(uuid))
     }
 
@@ -201,7 +216,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         let product = try await fetchSk2Product()
-        let result = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        let result = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
         expect(result.transaction?.sk2Transaction?.appAccountToken).to(beNil())
     }
 
@@ -230,7 +250,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let product = try await fetchSk2Product()
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
-        let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        let result = try await orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
 
         expect(result.transaction) == transaction.verifiedStoreTransaction
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -258,7 +283,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         _ = try await self.orchestrator.purchase(sk2Product: product,
                                                  package: nil,
-                                                 promotionalOffer: nil)
+                                                 promotionalOffer: nil,
+                                                 winBackOffer: nil)
 
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
@@ -281,10 +307,20 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
-        _ = try? await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        _ = try? await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
 
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        _ = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
 
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
@@ -309,7 +345,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
 
         let product = try await self.fetchSk2Product()
-        _ = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.aadAttributionToken).to(beNil())
@@ -351,7 +392,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
 
         let product = try await self.fetchSk2Product()
-        _ = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        _ = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil
+        )
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.aadAttributionToken) == token
@@ -784,7 +830,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk2Product()
         let (transaction, _, _) = try await orchestrator.purchase(sk2Product: product,
                                                                   package: nil,
-                                                                  promotionalOffer: nil)
+                                                                  promotionalOffer: nil,
+                                                                  winBackOffer: nil)
 
         expect(transaction).toNot(beNil())
         try await asyncWait(
@@ -827,7 +874,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             timestamp: Int.random(in: 0..<1000)
         )
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer)
+            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer, winBackOffer: nil)
             XCTFail("Expected error")
         } catch {
             try await asyncWait(
@@ -870,7 +917,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         do {
             let (transaction, _, _) = try await orchestrator.purchase(sk2Product: product,
                                                                       package: nil,
-                                                                      promotionalOffer: nil)
+                                                                      promotionalOffer: nil,
+                                                                      winBackOffer: nil)
             XCTFail("Expected error")
         } catch {
             try await asyncWait(
