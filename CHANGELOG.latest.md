@@ -1,40 +1,16 @@
 ## RevenueCat SDK
 ### 📦 Dependency Updates
-* Bump danger from 9.5.0 to 9.5.1 (#4388) via dependabot[bot] (@dependabot[bot])
-* Bump fastlane from 2.224.0 to 2.225.0 (#4387) via dependabot[bot] (@dependabot[bot])
+* Bump rexml from 3.3.8 to 3.3.9 (#4419) via dependabot[bot] (@dependabot[bot])
+* Bump rexml from 3.3.7 to 3.3.9 in /Tests/InstallationTests/CocoapodsInstallation (#4418) via dependabot[bot] (@dependabot[bot])
 
 ## RevenueCatUI SDK
 ### Customer Center
-#### ✨ New Features
-* [CustomerCenter] Add default info to support emails (#4397) via Toni Rico (@tonidero)
-* Support custom URL paths in `ManageSubscriptionsView` (#4382) via Toni Rico (@tonidero)
 #### 🐞 Bugfixes
-* Default URL to nil in CustomerCenter HelpPaths (#4401) via Cesar de la Vega (@vegaro)
-* Add default values to enums in Customer Center config response (#4386) via Cesar de la Vega (@vegaro)
-* Fixes `SubscriptionDetailsView` background color in dark mode (#4371) via JayShortway (@JayShortway)
-* Better spacing in `PromotionalOfferView` (#4369) via Cesar de la Vega (@vegaro)
+* Adds compatibility for suffix offer identifiers (#4393) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Fix integration tests simulator (#4396) via Cesar de la Vega (@vegaro)
-* adds callout to SPM installation tip for visibility (#4398) via rglanz-rc (@rglanz-rc)
-* Fix iOS 15, 14 tests using wrong version of `swift-snapshot-testing` and API tests (#4394) via Cesar de la Vega (@vegaro)
-* Fixes broken references in project.pbxproj. (#4385) via JayShortway (@JayShortway)
-* Fix `PaywallsTester` compilation (#4389) via Cesar de la Vega (@vegaro)
-* Fixes macOS snapshots for X-Is-Debug-Build header (#4383) via JayShortway (@JayShortway)
-* Paywall component containers are all stacks (#4380) via Josh Holtz (@joshdholtz)
-* Remove Storefront from PaymentWrapperQueue (#4377) via Will Taylor (@fire-at-will)
-* Select package and purchase (#4332) via Josh Holtz (@joshdholtz)
-* Added new individual corner radius and border modifier (#4328) via Josh Holtz (@joshdholtz)
-* Render packages, package, and purchase button views for paywall components (#4324) via Josh Holtz (@joshdholtz)
-* ButtonComponent can show the Customer Center (#4373) via JayShortway (@JayShortway)
-* Added scaffolding for paywall components, view models, and views (#4321) via Josh Holtz (@joshdholtz)
-* Adds actionlint to lint GitHub Actions workflows (#4326) via JayShortway (@JayShortway)
-* Local.xcconfig is read by Package.swift (#4368) via JayShortway (@JayShortway)
-* ButtonComponent can restore purchases (#4372) via JayShortway (@JayShortway)
-* ButtonComponent can dismiss the paywall (#4365) via JayShortway (@JayShortway)
-* ButtonComponent can handle URL destinations (#4360) via JayShortway (@JayShortway)
-* Models the Action for the ButtonComponent (#4353) via JayShortway (@JayShortway)
-* Adds scaffolding for the ButtonComponent. (#4348) via JayShortway (@JayShortway)
-* Local.xcconfig is read by PurchaseTester and PaywallsTester (#4367) via JayShortway (@JayShortway)
-* Adds X-Is-Debug-Build header (#4364) via JayShortway (@JayShortway)
-* Adds `.index-build` to `.gitignore`. (#4366) via JayShortway (@JayShortway)
+* Fixes the sticky footer not drawing in the bottom safe area. (#4422) via JayShortway (@JayShortway)
+* Adds long sample paywall with sticky footer to PaywallsTester (#4412) via JayShortway (@JayShortway)
+* `RootView` actually shows the sticky footer (#4411) via JayShortway (@JayShortway)
+* Adds scaffolding for `StickyFooterComponent` (#4409) via JayShortway (@JayShortway)
+* Improved JSON format for ButtonComponent codables (#4408) via Josh Holtz (@joshdholtz)
