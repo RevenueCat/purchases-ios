@@ -60,7 +60,6 @@ import Foundation
     @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode)
     case featureNotAvailableInCustomEntitlementsComputationMode = 36
     @objc(RCSignatureVerificationFailed) case signatureVerificationFailed = 37
-    @objc(RCInvalidSubscriptionOffer) case invalidSubscriptionOfferError = 38
 
     // swiftlint:enable missing_docs
 
@@ -181,8 +180,6 @@ extension ErrorCode: DescribableError {
             return "This feature is not available when utilizing the customEntitlementsComputation dangerousSetting."
         case .signatureVerificationFailed:
             return "Request failed signature verification. See https://rev.cat/trusted-entitlements for more info."
-        case .invalidSubscriptionOfferError:
-            return "Invalid subscription offer type used."
 
         @unknown default:
             return "Something went wrong."
@@ -284,8 +281,6 @@ extension ErrorCode {
             return "FEATURE_NOT_AVAILABLE_IN_CUSTOM_ENTITLEMENTS_COMPUTATION_MODE_ERROR"
         case .signatureVerificationFailed:
             return "SIGNATURE_VERIFICATION_FAILED"
-        case .invalidSubscriptionOfferError:
-            return "INVALID_SUBSCRIPTION_OFFER"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

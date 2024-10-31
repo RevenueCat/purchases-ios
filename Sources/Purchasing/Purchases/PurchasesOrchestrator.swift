@@ -1031,6 +1031,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 @available(visionOS, unavailable)
 extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
 
+    // swiftlint:disable:next function_body_length
     func storeKit2PurchaseIntentListener(
         _ listener: any StoreKit2PurchaseIntentListenerType,
         purchaseIntent: StorePurchaseIntent
