@@ -1923,3 +1923,86 @@ private extension Purchases {
     }
 
 }
+
+// MARK: - Win-Back Offers
+@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+extension Purchases {
+    public func eligibleWinBackOffers(
+        forProduct product: StoreProduct
+    ) async -> [WinBackOffer] {
+        guard self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable else {
+            // TODO: Throw exception
+            return []
+        }
+
+        let eligibleWinBackOfferIDs: [String] = await self.getEligibleWinBackOfferIDs(forProduct: product)
+        guard !eligibleWinBackOfferIDs.isEmpty else { return [] }
+
+        guard let allWinBackOffersForThisProduct: [Product.SubscriptionOffer] = product.sk2Product?.subscription?.winBackOffers else {
+            // StoreKit.Product.SubscriptionInfo is nil if the product is not a subscription
+            return []
+        }
+
+        let eligibleWinBackSubscriptionOffers = allWinBackOffersForThisProduct
+            // 1. Filter out the offers that the subscriber is not eligible for
+            .filter({
+                Set(eligibleWinBackOfferIDs).contains($0.id)
+            })
+
+        let eligibileStoreProductDiscounts = eligibleWinBackSubscriptionOffers
+            // 2. Convert the eligilble offers to StoreProductDiscounts for us to use
+            .compactMap({
+                StoreProductDiscount(sk2Discount: $0, currencyCode: product.currencyCode)
+            })
+
+        let eligibleWinBackOffers = eligibileStoreProductDiscounts
+            // 3. Convert the StoreProductDiscounts to WinBackOffer objects
+            .map({
+                WinBackOffer(discount: $0)
+            })
+
+        return eligibleWinBackOffers
+    }
+
+    private func getEligibleWinBackOfferIDs(forProduct product: StoreProduct) async -> [String] {
+        guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
+            // If StoreKit.Product.subscription is nil, then the product isn't a subscription
+            // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
+            return []
+        }
+
+        let purchasedSubscriptionStatuses = statuses.filter({
+            switch $0.transaction {
+            case .unverified:
+                return false
+            case .verified(let transaction):
+                // Intentionally exclude transactions acquired through family sharing
+                return transaction.ownershipType == .purchased
+            }
+        })
+
+        let renewalInfos: [Product.SubscriptionInfo.RenewalInfo] = purchasedSubscriptionStatuses.compactMap({
+            switch $0.renewalInfo {
+            case .unverified:
+                return nil
+            case .verified(let renewalInfo):
+                return renewalInfo
+            }
+        })
+
+        let eligibleWinBackOfferIDsPerRenewalInfo: [[String]] = renewalInfos.map({
+            // StoreKit sorts eligibleWinBackOfferIDs by the "best" win-back offer first.
+            $0.eligibleWinBackOfferIDs
+        })
+
+        // Flatten the win-back offer IDs we've received for all of the renewalInfos while removing duplicates
+        let eligibleWinBackOfferIDs: [String] = {
+            var seen = Set<String>()
+            return eligibleWinBackOfferIDsPerRenewalInfo
+                .flatMap { $0 }
+                .filter { seen.insert($0).inserted }
+        }()
+
+        return eligibleWinBackOfferIDs
+    }
+}
