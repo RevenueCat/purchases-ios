@@ -874,7 +874,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             timestamp: Int.random(in: 0..<1000)
         )
         do {
-            _ = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: offer, winBackOffer: nil)
+            _ = try await orchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: offer,
+                winBackOffer: nil
+            )
             XCTFail("Expected error")
         } catch {
             try await asyncWait(
