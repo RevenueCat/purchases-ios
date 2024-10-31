@@ -643,13 +643,17 @@ private extension SamplePaywallLoader {
     typealias LocaleID = PaywallComponent.LocaleID
     typealias LocalizationDictionary = PaywallComponent.LocalizationDictionary
 
-    static func createFakePaywallComponentsData(components: [PaywallComponent], localization: [LocaleID: LocalizationDictionary]) -> PaywallComponentsData {
+    static func createFakePaywallComponentsData(
+        components: [PaywallComponent],
+        stickyFooter: PaywallComponent.StickyFooterComponent?,
+        localization: [LocaleID: LocalizationDictionary]
+    ) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
                               componentsConfigs: .init(
                                 base: .init(
                                     stack: .init(components: components),
-                                    stickyFooter: nil
+                                    stickyFooter: stickyFooter
                                 )
                               ),
                               componentsLocalizations: localization,
@@ -658,15 +662,35 @@ private extension SamplePaywallLoader {
     }
 
     internal static var fitnessComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: fitnessSample, localization: fitnessPaywallStrings())
+        return createFakePaywallComponentsData(
+            components: fitnessSample,
+            stickyFooter: nil,
+            localization: fitnessPaywallStrings()
+        )
     }
 
     internal static var template1Components: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: curiosity, localization: curiosityPaywallStrings())
+        return createFakePaywallComponentsData(
+            components: curiosity,
+            stickyFooter: nil,
+            localization: curiosityPaywallStrings()
+        )
     }
 
     internal static var simpleSampleComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: simpleSix, localization: simplePaywallStrings())
+        return createFakePaywallComponentsData(
+            components: simpleSix,
+            stickyFooter: nil,
+            localization: simplePaywallStrings()
+        )
+    }
+    
+    internal static var longWithStickyFooter: PaywallComponentsData {
+        return createFakePaywallComponentsData(
+            components: longWithStickyFooterComponents,
+            stickyFooter: stickyPurchaseButtonFooter,
+            localization: curiosityPaywallStrings()
+        )
     }
 
     static var simpleOne: [PaywallComponent] = {
@@ -1378,6 +1402,56 @@ private extension SamplePaywallLoader {
                       backgroundColor: nil,
                       padding: .zero))]
 
+    }()
+    
+    // Long with sticky footer
+    
+    static var longWithStickyFooterComponents: [PaywallComponent] = {
+        [
+            .stack(
+                .init(
+                    components: [
+                        headerZStack,
+                        spacer,
+                        headingText,
+                        subHeadingText,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                    ],
+                    dimension: .vertical(),
+                    spacing: nil,
+                    backgroundColor: nil,
+                    padding: .zero
+                )
+            )
+        ]
+    }()
+    
+    static var stickyPurchaseButtonFooter: PaywallComponent.StickyFooterComponent = {
+        PaywallComponent.StickyFooterComponent(
+            stack: .init(
+                components: [
+                    costText,
+                    purchaseButton,
+                    footerStack
+                ],
+                dimension: .vertical(),
+                spacing: 10,
+                backgroundColor: .init(light: "#F2545B"),
+                padding: .zero,
+                cornerRadiuses: .init(topLeading: 16.0, topTrailing: 16.0, bottomLeading: 0.0, bottomTrailing: 0.0),
+                shadow: PaywallComponent.Shadow(color: .init(light: "#000000"), radius: 8, x: 0, y: 0)
+            )
+        )
     }()
 
     static func fitnessPaywallStrings() -> [LocaleID: LocalizationDictionary] {

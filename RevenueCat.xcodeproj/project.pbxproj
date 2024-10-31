@@ -692,6 +692,7 @@
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
 		7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */; };
+		77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */; };
 		77372D992C6F8C7B008E59D3 /* AppUpdateWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */; };
 		77791ECF2C6B852000BCEF03 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */; };
 		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
@@ -1867,6 +1868,7 @@
 		7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallButtonComponent.swift; sourceTree = "<group>"; };
 		7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModel.swift; sourceTree = "<group>"; };
 		7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentView.swift; sourceTree = "<group>"; };
+		77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowModifier.swift; sourceTree = "<group>"; };
 		77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateWarningView.swift; sourceTree = "<group>"; };
 		77607FD72CAD87D60066C23C /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Global.xcconfig; sourceTree = "<group>"; };
 		77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
@@ -4449,6 +4451,7 @@
 				88B1BADF2C813A3C001B7EE5 /* Spacer */,
 				88B1BAEA2C813A3C001B7EE5 /* Stack */,
 				88B1BADC2C813A3C001B7EE5 /* Text */,
+				77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -6159,6 +6162,7 @@
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,
 				887A60892C1D037000E1A461 /* PaywallPurchasesType.swift in Sources */,
+				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
 				3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */,
 				887A60C22C1D037000E1A461 /* ErrorDisplay.swift in Sources */,
 				2D2AFE8F2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift in Sources */,
