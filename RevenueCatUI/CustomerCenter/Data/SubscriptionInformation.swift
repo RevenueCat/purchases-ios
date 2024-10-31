@@ -81,7 +81,7 @@ struct SubscriptionInformation {
         self.title = subscribedProduct?.localizedTitle
         self.explanation = entitlement.explanation
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
-        self.price = entitlement.priceBestGuess(product: subscribedProduct)
+        self.price = entitlement.priceBestEffort(product: subscribedProduct)
         self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
         self.willRenew = entitlement.willRenew
         self.productIdentifier = entitlement.productIdentifier
@@ -128,7 +128,7 @@ struct SubscriptionInformation {
 
 fileprivate extension EntitlementInfo {
 
-    func priceBestGuess(product: StoreProduct?) -> SubscriptionInformation.PriceDetails {
+    func priceBestEffort(product: StoreProduct?) -> SubscriptionInformation.PriceDetails {
         if let product {
             return .paid(product.localizedPriceString)
         }
@@ -138,7 +138,7 @@ fileprivate extension EntitlementInfo {
         return .unknown
     }
 
-    func durationTitleBestGuess(productIdentifier: String) -> String? {
+    func durationTitleBestEffort(productIdentifier: String) -> String? {
         switch self.store {
         case .promotional:
             if productIdentifier.isPromotionalLifetime(store: store) {
@@ -153,7 +153,7 @@ fileprivate extension EntitlementInfo {
     }
 
     func expirationOrRenewal(dateFormatter: DateFormatter) -> SubscriptionInformation.ExpirationOrRenewal? {
-        guard let date = expirationDateStringBestGuess(dateFormatter: dateFormatter) else {
+        guard let date = expirationDateBestEffort(dateFormatter: dateFormatter) else {
             return nil
         }
         let label: SubscriptionInformation.ExpirationOrRenewal.Label =
@@ -189,7 +189,7 @@ fileprivate extension EntitlementInfo {
         }
     }
 
-    private func expirationDateStringBestGuess(
+    private func expirationDateBestEffort(
         dateFormatter: DateFormatter
     ) -> SubscriptionInformation.ExpirationOrRenewal.Date? {
         if self.expirationDate == nil {
