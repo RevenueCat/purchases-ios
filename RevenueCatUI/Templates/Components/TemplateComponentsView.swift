@@ -43,8 +43,25 @@ struct TemplateComponentsView: View {
 
         do {
             // STEP 2: Make the view models & validate all components have required localization and packages
-            self.componentViewModel = try PaywallComponent.stack(componentsConfig.stack)
-                .toViewModel(offering: offering, localizedStrings: localization.localizedStrings)
+            self.componentViewModel = try PaywallComponentViewModel.root(
+                RootViewModel(
+                    stackViewModel: StackComponentViewModel(
+                        component: componentsConfig.stack,
+                        localizedStrings: localization.localizedStrings,
+                        offering: offering
+                    ),
+                    stickyFooterViewModel: componentsConfig.stickyFooter.map {
+                        StickyFooterComponentViewModel(
+                            component: $0,
+                            stackViewModel: try StackComponentViewModel(
+                                component: $0.stack,
+                                localizedStrings: localization.localizedStrings,
+                                offering: offering
+                            )
+                        )
+                    }
+                )
+            )
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
             Logger.error(Strings.paywall_view_model_construction_failed(error))
@@ -115,6 +132,8 @@ struct ComponentsView: View {
     func layoutComponents(_ componentViewModels: [PaywallComponentViewModel]) -> some View {
         ForEach(Array(componentViewModels.enumerated()), id: \.offset) { _, item in
             switch item {
+            case .root(let viewModel):
+                RootView(viewModel: viewModel, onDismiss: onDismiss)
             case .text(let viewModel):
                 TextComponentView(viewModel: viewModel)
             case .image(let viewModel):
@@ -131,6 +150,8 @@ struct ComponentsView: View {
                 PackageGroupComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .purchaseButton(let viewModel):
                 PurchaseButtonComponentView(viewModel: viewModel)
+            case .stickyFooter(let viewModel):
+                StickyFooterComponentView(viewModel: viewModel)
             }
         }
     }

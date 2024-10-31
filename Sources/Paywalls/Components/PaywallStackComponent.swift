@@ -36,16 +36,18 @@ public extension PaywallComponent {
         public let margin: Padding
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
+        public let shadow: Shadow?
 
         public init(components: [T],
                     dimension: Dimension = .vertical(.center),
                     width: WidthSize? = nil,
-                    spacing: CGFloat? = 0,
+                    spacing: CGFloat? = nil,
                     backgroundColor: ColorInfo? = nil,
                     padding: Padding = .zero,
                     margin: Padding = .zero,
                     cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil
+                    border: Border? = nil,
+                    shadow: Shadow? = nil
         ) {
             self.components = components
             self.width = width
@@ -57,6 +59,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
             self.border = border
+            self.shadow = shadow
         }
 
     }

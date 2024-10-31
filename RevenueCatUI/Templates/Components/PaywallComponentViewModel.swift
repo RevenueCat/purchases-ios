@@ -1,6 +1,6 @@
 //
 //  PaywallComponentViewModel.swift
-//  
+//
 //
 //  Created by James Borthwick on 2024-08-29.
 //
@@ -13,6 +13,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
 
+    case root(RootViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
     case spacer(SpacerComponentViewModel)
@@ -22,12 +23,14 @@ enum PaywallComponentViewModel {
     case packageGroup(PackageGroupComponentViewModel)
     // Purposely leaving out a `case package` since `PackageGroupComponentViewModel` creates this model
     case purchaseButton(PurchaseButtonComponentViewModel)
+    case stickyFooter(StickyFooterComponentViewModel)
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent {
 
+    // swiftlint:disable:next function_body_length
     func toViewModel(
         offering: Offering,
         localizedStrings: LocalizationDictionary
@@ -77,6 +80,17 @@ extension PaywallComponent {
             return .purchaseButton(
                 try PurchaseButtonComponentViewModel(localizedStrings: localizedStrings,
                                                      component: component)
+            )
+        case .stickyFooter(let component):
+            return .stickyFooter(
+                try StickyFooterComponentViewModel(
+                    component: component,
+                    stackViewModel: StackComponentViewModel(
+                        component: component.stack,
+                        localizedStrings: localizedStrings,
+                        offering: offering
+                    )
+                )
             )
         }
     }
