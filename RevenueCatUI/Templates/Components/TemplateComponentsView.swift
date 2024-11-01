@@ -31,14 +31,45 @@ enum PackageGroupValidationError: Error {
 
 }
 
+enum ScreenCondition {
+
+    case compact, medium, expanded
+
+    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
+        guard let sizeClass else {
+            return .compact
+        }
+
+        switch sizeClass {
+        case .compact:
+            return .compact
+        case .regular:
+            return .medium
+        @unknown default:
+            return .compact
+        }
+    }
+
+}
+
+struct ScreenConditionKey: EnvironmentKey {
+    static let defaultValue = ScreenCondition.compact
+}
+
+extension EnvironmentValues {
+
+    var screenCondition: ScreenCondition {
+        get { self[ScreenConditionKey.self] }
+        set { self[ScreenConditionKey.self] = newValue }
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
-    @Environment(\.userInterfaceIdiom)
-    private var userInterfaceIdiom
-
-    @StateObject
-    private var screenConditionObserver = ScreenConditionObserver()
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
 
     @StateObject
     private var paywallState: PaywallState
@@ -60,10 +91,27 @@ struct TemplateComponentsView: View {
         do {
             // STEP 2: Make the view models & validate all components have required localization
             let packageValidator = PackageValidator()
-            let componentViewModel = try PaywallComponent.stack(componentsConfig.stack)
-                .toViewModel(packageValidator: packageValidator,
-                             offering: offering,
-                             localizedStrings: localization.localizedStrings)
+            let componentViewModel = try PaywallComponentViewModel.root(
+                RootViewModel(
+                    stackViewModel: StackComponentViewModel(
+                        packageValidator: packageValidator,
+                        component: componentsConfig.stack,
+                        localizedStrings: localization.localizedStrings,
+                        offering: offering
+                    ),
+                    stickyFooterViewModel: componentsConfig.stickyFooter.map {
+                        StickyFooterComponentViewModel(
+                            component: $0,
+                            stackViewModel: try StackComponentViewModel(
+                                packageValidator: packageValidator,
+                                component: $0.stack,
+                                localizedStrings: localization.localizedStrings,
+                                offering: offering
+                            )
+                        )
+                    }
+                )
+            )
 
             guard packageValidator.isValid else {
                 Logger.error(Strings.paywall_could_not_find_any_packages)
@@ -94,7 +142,7 @@ struct TemplateComponentsView: View {
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
         .environmentObject(self.paywallState)
-        .environment(\.screenCondition, self.screenConditionObserver.conditionType)
+        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
     }
 
     static func chooseLocalization(
@@ -147,6 +195,8 @@ struct ComponentsView: View {
     func layoutComponents(_ componentViewModels: [PaywallComponentViewModel]) -> some View {
         ForEach(Array(componentViewModels.enumerated()), id: \.offset) { _, item in
             switch item {
+            case .root(let viewModel):
+                RootView(viewModel: viewModel, onDismiss: onDismiss)
             case .text(let viewModel):
                 TextComponentView(viewModel: viewModel)
             case .image(let viewModel):
@@ -163,6 +213,8 @@ struct ComponentsView: View {
                 PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .purchaseButton(let viewModel):
                 PurchaseButtonComponentView(viewModel: viewModel)
+            case .stickyFooter(let viewModel):
+                StickyFooterComponentView(viewModel: viewModel)
             }
         }
     }

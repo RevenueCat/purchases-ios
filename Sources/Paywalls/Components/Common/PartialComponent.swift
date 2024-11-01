@@ -19,18 +19,15 @@ import Foundation
 
 public extension PaywallComponent {
 
-    protocol PartialComponent: PaywallComponentBase {
-
-        var visible: Bool? { get }
-
-    }
+    protocol PartialComponent: PaywallComponentBase {}
 
     struct ComponentState<T: PartialComponent>: PaywallComponentBase {
 
-        public init(selected: T?, introOffer: T?) {
+        public init(selected: T? = nil, introOffer: T? = nil) {
             self.selected = selected
             self.introOffer = introOffer
         }
+        
 
         public let selected: T?
         public let introOffer: T?
@@ -38,27 +35,20 @@ public extension PaywallComponent {
     }
 
     enum ComponentConditionsType {
-        case mobileLandscape, tablet, tabletLandscape, desktop
+        case compact, medium, expanded
     }
 
     struct ComponentConditions<T: PartialComponent>: PaywallComponentBase {
-
-        public init(
-            mobileLandscape: T? = nil,
-            tablet: T? = nil,
-            tabletLandscape: T? = nil,
-            desktop: T? = nil
-        ) {
-            self.mobileLandscape = mobileLandscape
-            self.tablet = tablet
-            self.tabletLandscape = tabletLandscape
-            self.desktop = desktop
+        public init(compact: T? = nil, medium: T? = nil, expanded: T? = nil) {
+            self.compact = compact
+            self.medium = medium
+            self.expanded = expanded
         }
+        
 
-        public let mobileLandscape: T?
-        public let tablet: T?
-        public let tabletLandscape: T?
-        public let desktop: T?
+        public let compact: T?
+        public let medium: T?
+        public let expanded: T?
 
     }
 

@@ -30,6 +30,7 @@ public extension PaywallComponent {
         public let margin: Padding
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
+        public let shadow: Shadow?
 
         public let state: ComponentState<PartialStackComponent>?
         public let conditions: ComponentConditions<PartialStackComponent>?
@@ -43,6 +44,7 @@ public extension PaywallComponent {
                     margin: Padding = .zero,
                     cornerRadiuses: CornerRadiuses? = nil,
                     border: Border? = nil,
+                    shadow: Shadow? = nil,
                     state: ComponentState<PartialStackComponent>? = nil,
                     conditions: ComponentConditions<PartialStackComponent>? = nil
         ) {
@@ -56,6 +58,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
             self.border = border
+            self.shadow = shadow
             self.state = state
             self.conditions = conditions
         }

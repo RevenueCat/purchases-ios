@@ -11,7 +11,6 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
-import Foundation
 import RevenueCat
 import SwiftUI
 
@@ -53,16 +52,13 @@ class TextComponentViewModel {
 
         self.localizedConditions = try self.component.conditions.flatMap({ condition in
             LocalizedConditions(
-                mobileLandscape: try condition.mobileLandscape.flatMap({ partial in
+                compact: try condition.compact.flatMap({ partial in
                     try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 }),
-                tablet: try condition.tablet.flatMap({ partial in
+                medium: try condition.medium.flatMap({ partial in
                     try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 }),
-                tabletLandscape: try condition.tabletLandscape.flatMap({ partial in
-                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                }),
-                desktop: try condition.desktop.flatMap({ partial in
+                expanded: try condition.expanded.flatMap({ partial in
                     try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 })
             )
@@ -119,16 +115,12 @@ class TextComponentViewModel {
         // Get all conditions to include
         let conditionTypesToApply: [PaywallComponent.ComponentConditionsType]
         switch conditionType {
-        case .default:
-            conditionTypesToApply = []
-        case .mobileLandscape:
-            conditionTypesToApply = [.mobileLandscape]
-        case .tablet:
-            conditionTypesToApply = [.mobileLandscape, .tablet]
-        case .tabletLandscape:
-            conditionTypesToApply = [.mobileLandscape, .tablet, .tabletLandscape]
-        case .desktop:
-            conditionTypesToApply = [.mobileLandscape, .tablet, .tabletLandscape, .desktop]
+        case .compact:
+            conditionTypesToApply = [.compact]
+        case .medium:
+            conditionTypesToApply = [.compact, .medium]
+        case .expanded:
+            conditionTypesToApply = [.compact, .medium, .expanded]
         }
 
         var combinedPartial = LocalizedTextPartial(
@@ -136,28 +128,22 @@ class TextComponentViewModel {
             partial: PaywallComponent.PartialTextComponent()
         )
 
-        // Apply mobile landscape on top of base
-        if let mobileLandscape = self.localizedConditions?.mobileLandscape,
-           conditionTypesToApply.contains(.mobileLandscape) {
-            combinedPartial = combine(combinedPartial, with: mobileLandscape)
+        // Apply compact on top of existing partial
+        if let compact = self.localizedConditions?.compact,
+           conditionTypesToApply.contains(.compact) {
+            combinedPartial = combine(combinedPartial, with: compact)
         }
 
-        // Apply tablet on top of existing partial
-        if let tablet = self.localizedConditions?.tablet,
-           conditionTypesToApply.contains(.tablet) {
-            combinedPartial = combine(combinedPartial, with: tablet)
+        // Apply medium on top of existing partial
+        if let medium = self.localizedConditions?.medium,
+           conditionTypesToApply.contains(.medium) {
+            combinedPartial = combine(combinedPartial, with: medium)
         }
 
-        // Apply tablet landscape on top of existin partial
-        if let tabletLandscape = self.localizedConditions?.tabletLandscape,
-           conditionTypesToApply.contains(.tabletLandscape) {
-            combinedPartial = combine(combinedPartial, with: tabletLandscape)
-        }
-
-        // Apply desktop on top of existing partial
-        if let desktop = self.localizedConditions?.desktop,
-           conditionTypesToApply.contains(.desktop) {
-            combinedPartial = combine(combinedPartial, with: desktop)
+        // Apply expanded on top of existing partial
+        if let expanded = self.localizedConditions?.expanded,
+           conditionTypesToApply.contains(.expanded) {
+            combinedPartial = combine(combinedPartial, with: expanded)
         }
 
         // Return the combined partial if it's not empty, otherwise return nil

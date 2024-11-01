@@ -643,25 +643,54 @@ private extension SamplePaywallLoader {
     typealias LocaleID = PaywallComponent.LocaleID
     typealias LocalizationDictionary = PaywallComponent.LocalizationDictionary
 
-    static func createFakePaywallComponentsData(components: [PaywallComponent], localization: [LocaleID: LocalizationDictionary]) -> PaywallComponentsData {
+    static func createFakePaywallComponentsData(
+        components: [PaywallComponent],
+        stickyFooter: PaywallComponent.StickyFooterComponent?,
+        localization: [LocaleID: LocalizationDictionary]
+    ) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
-                              componentsConfigs: .init(base: .init(stack: .init(components: components))),
+                              componentsConfigs: .init(
+                                base: .init(
+                                    stack: .init(components: components),
+                                    stickyFooter: stickyFooter
+                                )
+                              ),
                               componentsLocalizations: localization,
                               revision: 0,
                               defaultLocaleIdentifier: "en_US")
     }
 
     internal static var fitnessComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: fitnessSample, localization: fitnessPaywallStrings())
+        return createFakePaywallComponentsData(
+            components: fitnessSample,
+            stickyFooter: nil,
+            localization: fitnessPaywallStrings()
+        )
     }
 
     internal static var template1Components: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: curiosity, localization: curiosityPaywallStrings())
+        return createFakePaywallComponentsData(
+            components: curiosity,
+            stickyFooter: nil,
+            localization: curiosityPaywallStrings()
+        )
     }
 
     internal static var simpleSampleComponents: PaywallComponentsData {
-        return createFakePaywallComponentsData(components: simpleSix, localization: simplePaywallStrings())
+        return createFakePaywallComponentsData(
+            components: simpleSix,
+            stickyFooter: nil,
+            localization: simplePaywallStrings()
+        )
+    }
+    
+    internal static var longWithStickyFooter: PaywallComponentsData {
+        return createFakePaywallComponentsData(
+            components: longWithStickyFooterComponents,
+            stickyFooter: stickyPurchaseButtonFooter,
+            localization: curiosityPaywallStrings()
+        )
     }
 
     static var simpleOne: [PaywallComponent] = {
@@ -711,7 +740,7 @@ private extension SamplePaywallLoader {
     static func makePackage(packageID: String,
                             nameTextLid: String,
                             detailTextLid: String,
-                            isDefaultSelected: Bool = false) -> PaywallComponent.PackageComponent {
+                            isSelectedByDefault: Bool = false) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent.StackComponent = .init(
             components: [
                 .text(.init(
@@ -762,7 +791,7 @@ private extension SamplePaywallLoader {
 
         return .init(
             packageID: packageID,
-            isDefaultSelected: isDefaultSelected,
+            isSelectedByDefault: isSelectedByDefault,
             stack: stack
         )
     }
@@ -778,7 +807,7 @@ private extension SamplePaywallLoader {
                         .package(makePackage(packageID: Package.string(from: PackageType.annual)!,
                                     nameTextLid: "annual_package_name",
                                     detailTextLid: "annual_package_details",
-                                    isDefaultSelected: true))
+                                    isSelectedByDefault: true))
                     ],
                     spacing: 20,
                     margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
@@ -816,8 +845,8 @@ private extension SamplePaywallLoader {
             text: "condition_1_default",
             color: .init(light: "#000000"),
             conditions: .init(
-                mobileLandscape: .init(
-                    text: "condition_1_landscape"
+                medium: .init(
+                    text: "condition_1_medium"
                 )
             )
         )
@@ -828,7 +857,7 @@ private extension SamplePaywallLoader {
             text: "condition_2_default",
             color: .init(light: "#000000"),
             conditions: .init(
-                mobileLandscape: .init(
+                medium: .init(
                     visible: false
                 )
             )
@@ -1423,6 +1452,56 @@ private extension SamplePaywallLoader {
                       padding: .zero))]
 
     }()
+    
+    // Long with sticky footer
+    
+    static var longWithStickyFooterComponents: [PaywallComponent] = {
+        [
+            .stack(
+                .init(
+                    components: [
+                        headerZStack,
+                        spacer,
+                        headingText,
+                        subHeadingText,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                        featureVStack,
+                        spacer,
+                    ],
+                    dimension: .vertical(),
+                    spacing: nil,
+                    backgroundColor: nil,
+                    padding: .zero
+                )
+            )
+        ]
+    }()
+    
+    static var stickyPurchaseButtonFooter: PaywallComponent.StickyFooterComponent = {
+        PaywallComponent.StickyFooterComponent(
+            stack: .init(
+                components: [
+                    costText,
+                    purchaseButton,
+                    footerStack
+                ],
+                dimension: .vertical(),
+                spacing: 10,
+                backgroundColor: .init(light: "#F2545B"),
+                padding: .zero,
+                cornerRadiuses: .init(topLeading: 16.0, topTrailing: 16.0, bottomLeading: 0.0, bottomTrailing: 0.0),
+                shadow: PaywallComponent.Shadow(color: .init(light: "#000000"), radius: 8, x: 0, y: 0)
+            )
+        )
+    }()
 
     static func fitnessPaywallStrings() -> [LocaleID: LocalizationDictionary] {
         return [
@@ -1531,7 +1610,7 @@ private extension SamplePaywallLoader {
                 "cta_intro": .string("Claim free trial"),
 
                 "condition_1_default": .string("Showing in portrait"),
-                "condition_1_landscape": .string("Showing in landscape"),
+                "condition_1_medium": .string("Showing in landscape"),
                 "condition_2_default": .string("Should only show in portrait")
             ],
             "fr_FR": [
@@ -1550,7 +1629,7 @@ private extension SamplePaywallLoader {
                 "cta_intro": .string("Claim free trial FRENCH"),
 
                 "condition_1_default": .string("Showing in portrait IN FRENCH"),
-                "condition_1_landscape": .string("Showing in landscape IN FRENCH"),
+                "condition_1_medium": .string("Showing in landscape IN FRENCH"),
                 "condition_2_default": .string("Should only show in portrait IN FRENCH")
             ],
             "es_ES": [
@@ -1569,7 +1648,7 @@ private extension SamplePaywallLoader {
                 "cta_intro": .string("Claim free trial SPANISH"),
 
                 "condition_1_default": .string("Showing in portrait IN SPANISH"),
-                "condition_1_landscape": .string("Showing in landscape IN SPANISH"),
+                "condition_1_medium": .string("Showing in landscape IN SPANISH"),
                 "condition_2_default": .string("Should only show in portrait IN SPANISH")
             ]
         ]

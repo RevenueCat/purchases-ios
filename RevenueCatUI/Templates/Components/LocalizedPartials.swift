@@ -26,10 +26,9 @@ struct LocalizedStates<T: LocalizedPartial> {
 
 struct LocalizedConditions<T: LocalizedPartial> {
 
-    let mobileLandscape: T?
-    let tablet: T?
-    let tabletLandscape: T?
-    let desktop: T?
+    let compact: T?
+    let medium: T?
+    let expanded: T?
 
 }
 

@@ -132,7 +132,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                           trailing: 10),
                             textStyle: .title
                         ),
-                        introOffer: .init()
+                        introOffer: nil
                     )
                 )
             )
@@ -141,51 +141,51 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("State - Selected")
 
-        // Condition - Landscape
+        // Condition - Medium
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
                 localizedStrings: [
                     "id_1": .string("THIS TEXT SHOULDN'T SHOW"),
-                    "id_2": .string("Showing landscape condition")
+                    "id_2": .string("Showing medium condition")
                 ],
                 component: .init(
                     text: "id_1",
                     color: .init(light: "#000000"),
                     conditions: .init(
-                        mobileLandscape: .init(
+                        medium: .init(
                             text: "id_2"
                         )
                     )
                 )
             )
         )
-        .environment(\.screenCondition, .mobileLandscape)
+        .environment(\.screenCondition, .medium)
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Condition - Landscape")
+        .previewDisplayName("Condition - Medium")
 
-        // Condition - Has tablet but not tablet
+        // Condition - Has medium but not medium
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
                 localizedStrings: [
-                    "id_1": .string("Showing mobile condition"),
-                    "id_2": .string("SHOULDN'T SHOW TABLET")
+                    "id_1": .string("Showing compact condition"),
+                    "id_2": .string("SHOULDN'T SHOW MEDIUM")
                 ],
                 component: .init(
                     text: "id_1",
                     color: .init(light: "#000000"),
                     conditions: .init(
-                        tablet: .init(
+                        medium: .init(
                             text: "id_2"
                         )
                     )
                 )
             )
         )
-        .environment(\.screenCondition, .mobileLandscape)
+        .environment(\.screenCondition, .compact)
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Condition - Has tablet but not tablet")
+        .previewDisplayName("Condition - Has medium but not medium")
     }
 }
 
