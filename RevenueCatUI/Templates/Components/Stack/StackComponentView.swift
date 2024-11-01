@@ -36,7 +36,6 @@ struct StackComponentView: View {
             switch viewModel.dimension {
             case .vertical(let horizontalAlignment):
                 Group {
-                    // TODO: Need to add alignment back into the vstack
                     // This is NOT a final implementation of this
                     // There are some horizontal sizing issues with using LazyVStack
                     // There are so performance issues with VStack with lots of children

@@ -109,7 +109,7 @@ public extension PaywallComponent {
 
     }
 
-    enum WidthSizeType: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum WidthSizeType: String, Codable, Sendable, Hashable, Equatable {
         case fit, fill, fixed
     }
 
@@ -125,7 +125,7 @@ public extension PaywallComponent {
 
     }
 
-    enum FlexDistribution: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum FlexDistribution: String, Codable, Sendable, Hashable, Equatable {
 
         case start
         case center
@@ -136,7 +136,7 @@ public extension PaywallComponent {
 
     }
 
-    enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case leading
         case center
@@ -144,7 +144,7 @@ public extension PaywallComponent {
 
     }
 
-    enum VerticalAlignment: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum VerticalAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case top
         case center
@@ -152,7 +152,7 @@ public extension PaywallComponent {
 
     }
 
-    enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
+    @frozen enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
 
         case center
         case leading
@@ -166,7 +166,7 @@ public extension PaywallComponent {
 
     }
 
-    enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
 
         case ultraLight = "ultra_light"
         case thin
@@ -180,7 +180,7 @@ public extension PaywallComponent {
 
     }
 
-    enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
+    @frozen  enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
 
         case largeTitle = "large_title"
         case title
@@ -200,7 +200,7 @@ public extension PaywallComponent {
 
     }
 
-    enum FitMode: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum FitMode: String, Codable, Sendable, Hashable, Equatable {
 
         case fit
         case fill
