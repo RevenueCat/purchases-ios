@@ -1952,7 +1952,7 @@ extension Purchases {
     }
 
     /**
-     * Returns the win-back offers that the subscriber is eliglble for on the provided product.
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
      *
      * - Parameter product: The product to check for eliglble win-back offers.
      * - Parameter completion: A completion block that is called with the eligible win-back
