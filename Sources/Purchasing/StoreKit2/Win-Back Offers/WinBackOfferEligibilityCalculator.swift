@@ -105,12 +105,7 @@ extension WinBackOfferEligibilityCalculator {
         })
 
         let renewalInfos: [Product.SubscriptionInfo.RenewalInfo] = purchasedSubscriptionStatuses.compactMap({
-            switch $0.renewalInfo {
-            case .unverified:
-                return nil
-            case .verified(let renewalInfo):
-                return renewalInfo
-            }
+            $0.verifiedRenewalInfo
         })
 
         let eligibleWinBackOfferIDsPerRenewalInfo: [[String]] = renewalInfos.map({
@@ -132,4 +127,21 @@ extension WinBackOfferEligibilityCalculator {
         #endif
     }
 
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension StoreKit.Product.SubscriptionInfo.Status {
+    var verifiedRenewalInfo: StoreKit.Product.SubscriptionInfo.RenewalInfo? {
+        switch self.renewalInfo {
+        case .unverified:
+            Logger.warn(
+                Strings.storeKit.sk2_unverified_renewal_info(
+                    productIdentifier: String(self.transaction.underlyingTransaction.productID)
+                )
+            )
+            return nil
+        case .verified(let status):
+            return status
+        }
+    }
 }
