@@ -1941,8 +1941,8 @@ extension Purchases {
     /**
      * Returns the win-back offers that the subscriber is eligible for on the provided product.
      *
-     * - Parameter product: The product to check for eliglble win-back offers.
-     * - Returns: The win-back offers on the given product that a subscriber is eliglble for.
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
     internal func eligibleWinBackOffers(
@@ -1954,7 +1954,7 @@ extension Purchases {
     /**
      * Returns the win-back offers that the subscriber is eligible for on the provided product.
      *
-     * - Parameter product: The product to check for eliglble win-back offers.
+     * - Parameter product: The product to check for eligible win-back offers.
      * - Parameter completion: A completion block that is called with the eligible win-back
      * offers for the provided product.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
