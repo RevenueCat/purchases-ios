@@ -17,13 +17,13 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 enum ComponentViewState {
-    case normal
+    case `default`
     case selected
 }
 
 struct ComponentViewStateKey: EnvironmentKey {
 
-    static let defaultValue: ComponentViewState = .normal
+    static let defaultValue: ComponentViewState = .default
 
 }
 

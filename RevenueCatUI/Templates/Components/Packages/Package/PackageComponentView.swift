@@ -29,10 +29,10 @@ struct PackageComponentView: View {
     private var componentViewState: ComponentViewState {
         guard let selectedPackage = paywallState.selectedPackage,
                 let package = viewModel.package else {
-            return .normal
+            return .default
         }
 
-        return selectedPackage.identifier == package.identifier ? .selected : .normal
+        return selectedPackage.identifier == package.identifier ? .selected : .default
     }
 
     var body: some View {

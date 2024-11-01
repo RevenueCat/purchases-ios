@@ -71,7 +71,7 @@ class TextComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
-        application: @escaping (TextComponentStyle) -> some View
+        apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localalizedPartial = self.buildPartial(state: state, condition: condition)
         let partial = localalizedPartial?.partial
@@ -89,7 +89,7 @@ class TextComponentViewModel {
             horizontalAlignment: partial?.horizontalAlignment ?? self.component.horizontalAlignment
         )
 
-        application(style)
+        apply(style)
     }
 
     func buildPartial(
@@ -99,7 +99,7 @@ class TextComponentViewModel {
         var partial = self.buildConditionPartial(for: condition)
 
         switch state {
-        case .normal:
+        case .default:
             break
         case .selected:
             partial = self.combine(partial, with: self.localizedOverrides?.states?.selected)
@@ -124,10 +124,7 @@ class TextComponentViewModel {
             conditionTypesToApply = [.compact, .medium, .expanded]
         }
 
-        var combinedPartial = LocalizedTextPartial(
-            text: nil,
-            partial: PaywallComponent.PartialTextComponent()
-        )
+        var combinedPartial: LocalizedTextPartial? = nil
 
         // Apply compact on top of existing partial
         if let compact = self.localizedOverrides?.conditions?.compact,
@@ -148,7 +145,7 @@ class TextComponentViewModel {
         }
 
         // Return the combined partial if it's not empty, otherwise return nil
-        return combinedPartial.partial.isEmpty ? nil : combinedPartial
+        return combinedPartial
     }
 
     private func combine(_ base: LocalizedTextPartial?, with other: LocalizedTextPartial?) -> LocalizedTextPartial {
@@ -186,16 +183,6 @@ extension LocalizedTextPartial {
             },
             partial: partial
         )
-    }
-
-}
-
-extension PaywallComponent.PartialTextComponent {
-
-    var isEmpty: Bool {
-        return visible == nil && text == nil && fontFamily == nil && fontWeight == nil && color == nil &&
-               backgroundColor == nil && padding == nil && margin == nil &&
-               textStyle == nil && horizontalAlignment == nil
     }
 
 }
