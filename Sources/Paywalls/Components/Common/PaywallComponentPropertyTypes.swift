@@ -148,16 +148,16 @@ public extension PaywallComponent {
         case trailing
         case top
         case bottom
-        case topLeading
-        case topTrailing
-        case bottomLeading
-        case bottomTrailing
+        case topLeading = "top_leading"
+        case topTrailing = "top_trailing"
+        case bottomLeading = "bottom_leading"
+        case bottomTrailing = "bottom_trailing"
 
     }
 
     enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
 
-        case ultraLight
+        case ultraLight = "ultra_light"
         case thin
         case light
         case regular

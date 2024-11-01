@@ -137,7 +137,7 @@ private enum Template1Preview {
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
-        componentsConfigs: .init(
+        componentsConfig: .init(
             base: .init(
                 stack: .init(
                     components: [

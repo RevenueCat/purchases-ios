@@ -650,7 +650,7 @@ private extension SamplePaywallLoader {
     ) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
-                              componentsConfigs: .init(
+                              componentsConfig: .init(
                                 base: .init(
                                     stack: .init(components: components),
                                     stickyFooter: stickyFooter

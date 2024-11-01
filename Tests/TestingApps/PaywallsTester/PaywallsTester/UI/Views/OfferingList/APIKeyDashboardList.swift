@@ -208,7 +208,9 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
     var description: String {
         if let name = self.name {
             #if DEBUG
-            if let template = PaywallTemplate(rawValue: name) {
+            if name == "components" {
+                return "V2"
+            } else if let template = PaywallTemplate(rawValue: name) {
                 return template.name
             } else {
                 return "Unrecognized template"
