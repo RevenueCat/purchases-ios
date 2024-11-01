@@ -1096,7 +1096,7 @@ internal protocol InternalPurchasesType: AnyObject {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /**
-     * Returns the win-back offers that the subscriber is eliglble for on the provided product.
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
      *
      * - Parameter product: The product to check for eliglble win-back offers.
      * - Returns: The win-back offers on the given product that a subscriber is eliglble for.
