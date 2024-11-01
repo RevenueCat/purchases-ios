@@ -124,7 +124,7 @@ class TextComponentViewModel {
             conditionTypesToApply = [.compact, .medium, .expanded]
         }
 
-        var combinedPartial: LocalizedTextPartial? = nil
+        var combinedPartial: LocalizedTextPartial?
 
         // Apply compact on top of existing partial
         if let compact = self.localizedOverrides?.conditions?.compact,
