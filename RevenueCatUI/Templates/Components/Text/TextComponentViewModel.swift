@@ -16,50 +16,213 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
+struct LocalizedTextPartial: LocalizedPartial {
+
+    let text: String?
+    let partial: PaywallComponent.PartialTextComponent
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
     private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.TextComponent
 
-    let text: String
+    private let text: String
+    private let localizedOverrides: LocalizedOverrides<LocalizedTextPartial>?
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
         self.text = try localizedStrings.string(key: component.text)
+
+        self.localizedOverrides = try self.component.overrides.flatMap({ overrides in
+            LocalizedOverrides(
+                introOffer: try overrides.introOffer.flatMap({ partial in
+                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                }),
+                states: try overrides.states.flatMap({ states in
+                    LocalizedStates(
+                        selected: try states.selected.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        })
+                    )
+                }),
+                conditions: try overrides.conditions.flatMap({ condition in
+                    LocalizedConditions(
+                        compact: try condition.compact.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        }),
+                        medium: try condition.medium.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        }),
+                        expanded: try condition.expanded.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        })
+                    )
+                })
+            )
+        })
+
     }
 
-    var fontFamily: String? {
-        component.fontFamily
+    @ViewBuilder
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        apply: @escaping (TextComponentStyle) -> some View
+    ) -> some View {
+        let localalizedPartial = self.buildPartial(state: state, condition: condition)
+        let partial = localalizedPartial?.partial
+
+        let style = TextComponentStyle(
+            visible: partial?.visible ?? true,
+            text: localalizedPartial?.text ?? self.text,
+            fontFamily: partial?.fontFamily ?? self.component.fontFamily,
+            fontWeight: partial?.fontWeight ?? self.component.fontWeight,
+            color: partial?.color ?? self.component.color,
+            backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            padding: partial?.padding ?? self.component.padding,
+            margin: partial?.margin ?? self.component.margin,
+            textStyle: partial?.textStyle ?? self.component.textStyle,
+            horizontalAlignment: partial?.horizontalAlignment ?? self.component.horizontalAlignment
+        )
+
+        apply(style)
     }
 
-    var fontWeight: Font.Weight {
-        component.fontWeight.fontWeight
+    func buildPartial(
+        state: ComponentViewState,
+        condition: ScreenCondition
+    ) -> LocalizedTextPartial? {
+        var partial = self.buildConditionPartial(for: condition)
+
+        switch state {
+        case .default:
+            break
+        case .selected:
+            partial = self.combine(partial, with: self.localizedOverrides?.states?.selected)
+        }
+
+        // WIP: Get partial for intro offer
+        return partial
     }
 
-    var color: Color {
-        component.color.toDyanmicColor()
+    private func buildConditionPartial(
+        for conditionType: ScreenCondition
+    ) -> LocalizedTextPartial? {
+
+        // Get all conditions to include
+        let conditionTypesToApply: [PaywallComponent.ComponentConditionsType]
+        switch conditionType {
+        case .compact:
+            conditionTypesToApply = [.compact]
+        case .medium:
+            conditionTypesToApply = [.compact, .medium]
+        case .expanded:
+            conditionTypesToApply = [.compact, .medium, .expanded]
+        }
+
+        var combinedPartial: LocalizedTextPartial?
+
+        // Apply compact on top of existing partial
+        if let compact = self.localizedOverrides?.conditions?.compact,
+           conditionTypesToApply.contains(.compact) {
+            combinedPartial = combine(combinedPartial, with: compact)
+        }
+
+        // Apply medium on top of existing partial
+        if let medium = self.localizedOverrides?.conditions?.medium,
+           conditionTypesToApply.contains(.medium) {
+            combinedPartial = combine(combinedPartial, with: medium)
+        }
+
+        // Apply expanded on top of existing partial
+        if let expanded = self.localizedOverrides?.conditions?.expanded,
+           conditionTypesToApply.contains(.expanded) {
+            combinedPartial = combine(combinedPartial, with: expanded)
+        }
+
+        // Return the combined partial if it's not empty, otherwise return nil
+        return combinedPartial
     }
 
-    var textStyle: Font {
-        component.textStyle.font
+    private func combine(_ base: LocalizedTextPartial?, with other: LocalizedTextPartial?) -> LocalizedTextPartial {
+        let otherPartial = other?.partial
+        let basePartial = base?.partial
+
+        return LocalizedTextPartial(
+            text: other?.text ?? base?.text,
+            partial: PaywallComponent.PartialTextComponent(
+                visible: otherPartial?.visible ?? basePartial?.visible,
+                text: otherPartial?.text ?? basePartial?.text,
+                fontFamily: otherPartial?.fontFamily ?? basePartial?.fontFamily,
+                fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
+                color: otherPartial?.color ?? basePartial?.color,
+                backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
+                padding: otherPartial?.padding ?? basePartial?.padding,
+                margin: otherPartial?.margin ?? basePartial?.margin,
+                textStyle: otherPartial?.textStyle ?? basePartial?.textStyle,
+                horizontalAlignment: otherPartial?.horizontalAlignment ?? basePartial?.horizontalAlignment
+            )
+        )
     }
 
-    var horizontalAlignment: TextAlignment {
-        component.horizontalAlignment.textAlignment
+}
+
+extension LocalizedTextPartial {
+
+    static func create(
+        from partial: PaywallComponent.PartialTextComponent,
+        using localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws -> LocalizedTextPartial {
+        return LocalizedTextPartial(
+            text: try partial.text.flatMap { key in
+                try localizedStrings.string(key: key)
+            },
+            partial: partial
+        )
     }
 
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
-    }
+}
 
-    var padding: EdgeInsets {
-        component.padding.edgeInsets
-    }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct TextComponentStyle {
 
-    var margin: EdgeInsets {
-        component.margin.edgeInsets
+    let visible: Bool
+    let text: String
+    let fontFamily: String?
+    let fontWeight: Font.Weight
+    let color: Color
+    let textStyle: Font
+    let horizontalAlignment: TextAlignment
+    let backgroundColor: Color
+    let padding: EdgeInsets
+    let margin: EdgeInsets
+
+    init(
+        visible: Bool,
+        text: PaywallComponent.LocalizationKey,
+        fontFamily: String?,
+        fontWeight: PaywallComponent.FontWeight,
+        color: PaywallComponent.ColorInfo,
+        backgroundColor: PaywallComponent.ColorInfo?,
+        padding: PaywallComponent.Padding,
+        margin: PaywallComponent.Padding,
+        textStyle: PaywallComponent.TextStyle,
+        horizontalAlignment: PaywallComponent.HorizontalAlignment
+    ) {
+        self.visible = visible
+        self.text = text
+        self.fontFamily = fontFamily
+        self.fontWeight = fontWeight.fontWeight
+        self.color = color.toDyanmicColor()
+        self.textStyle = textStyle.font
+        self.horizontalAlignment = horizontalAlignment.textAlignment
+        self.backgroundColor = backgroundColor?.toDyanmicColor() ?? Color.clear
+        self.padding = padding.edgeInsets
+        self.margin = margin.edgeInsets
     }
 
 }

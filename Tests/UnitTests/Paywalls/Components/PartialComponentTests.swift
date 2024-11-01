@@ -20,7 +20,7 @@ import XCTest
 final class PartialComponentTests: TestCase {
 
     // Properties of full components that partials can't have
-    static let ignoredProperties = ["type", "components", "state", "conditions"]
+    static let ignoredProperties = ["type", "components", "overrides"]
 
     static let sampleURL = URL(string: "https://revenuecat.com")!
 

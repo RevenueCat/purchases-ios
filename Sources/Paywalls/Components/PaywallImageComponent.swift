@@ -22,8 +22,7 @@ public extension PaywallComponent {
         public let maxHeight: CGFloat?
         public let fitMode: FitMode
 
-        public let state: ComponentState<PartialImageComponent>?
-        public let conditions: ComponentConditions<PartialImageComponent>?
+        public let overrides: ComponentOverrides<PartialImageComponent>?
 
         public init(
             source: ThemeImageUrls,
@@ -32,8 +31,7 @@ public extension PaywallComponent {
             maxHeight: CGFloat? = nil,
             cornerRadiuses: CornerRadiuses? = nil,
             gradientColors: [ColorHex]? = [],
-            state: ComponentState<PartialImageComponent>? = nil,
-            conditions: ComponentConditions<PartialImageComponent>? = nil
+            overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
             self.type = .image
             self.source = source
@@ -42,14 +40,14 @@ public extension PaywallComponent {
             self.maxHeight = maxHeight
             self.cornerRadiuses = cornerRadiuses
             self.gradientColors = gradientColors
-            self.state = state
-            self.conditions = conditions
+            self.overrides = overrides
         }
 
     }
 
     struct PartialImageComponent: PartialComponent {
 
+        public let visible: Bool?
         public let source: ThemeImageUrls?
         public let overrideSourceLid: LocalizationKey?
         public let cornerRadiuses: CornerRadiuses?
@@ -58,6 +56,7 @@ public extension PaywallComponent {
         public let fitMode: FitMode?
 
         public init(
+            visible: Bool? = true,
             source: ThemeImageUrls? = nil,
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode? = nil,
@@ -65,6 +64,7 @@ public extension PaywallComponent {
             cornerRadiuses: CornerRadiuses? = nil,
             gradientColors: [ColorHex]? = nil
         ) {
+            self.visible = visible
             self.source = source
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode

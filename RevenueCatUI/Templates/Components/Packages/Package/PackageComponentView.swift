@@ -26,6 +26,15 @@ struct PackageComponentView: View {
     let viewModel: PackageComponentViewModel
     let onDismiss: () -> Void
 
+    private var componentViewState: ComponentViewState {
+        guard let selectedPackage = paywallState.selectedPackage,
+                let package = viewModel.package else {
+            return .default
+        }
+
+        return selectedPackage.identifier == package.identifier ? .selected : .default
+    }
+
     var body: some View {
         if let package = self.viewModel.package {
             Button {
@@ -35,6 +44,7 @@ struct PackageComponentView: View {
                     viewModel: self.viewModel.stackViewModel,
                     onDismiss: self.onDismiss
                 )
+                .environment(\.componentViewState, componentViewState)
             }
         } else {
             EmptyView()
@@ -47,6 +57,16 @@ struct PackageComponentView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageComponentView_Previews: PreviewProvider {
+
+    static var package: Package {
+        return .init(identifier: "weekly",
+                     packageType: .weekly,
+                     storeProduct: .init(sk1Product: .init()),
+                     offeringIdentifier: "default")
+    }
+
+    static let paywallState = PaywallState(selectedPackage: nil)
+    static let paywallStateSelected = PaywallState(selectedPackage: package)
 
     static var stack: PaywallComponent.StackComponent {
         return .init(
@@ -75,13 +95,6 @@ struct PackageComponentView_Previews: PreviewProvider {
         )
     }
 
-    static var package: Package {
-        return .init(identifier: "weekly",
-                     packageType: .weekly,
-                     storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
-    }
-
     static var previews: some View {
         // Package
         PackageComponentView(
@@ -102,6 +115,30 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 availablePackages: [package])
             ), onDismiss: {}
         )
+        .environmentObject(paywallState)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Package")
+
+        // Package - Selected
+        PackageComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                packageValidator: PackageValidator(),
+                localizedStrings: [
+                    "name": .string("Weekly"),
+                    "detail": .string("Get for $39.99/wk")
+                ],
+                component: .init(
+                    packageID: "weekly",
+                    isSelectedByDefault: false,
+                    stack: stack
+                ),
+                offering: .init(identifier: "default",
+                                serverDescription: "",
+                                availablePackages: [package])
+            ), onDismiss: {}
+        )
+        .environmentObject(paywallStateSelected)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package")
     }

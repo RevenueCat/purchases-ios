@@ -31,15 +31,52 @@ enum PackageGroupValidationError: Error {
 
 }
 
+enum ScreenCondition {
+
+    case compact, medium, expanded
+
+    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
+        guard let sizeClass else {
+            return .compact
+        }
+
+        switch sizeClass {
+        case .compact:
+            return .compact
+        case .regular:
+            return .medium
+        @unknown default:
+            return .compact
+        }
+    }
+
+}
+
+struct ScreenConditionKey: EnvironmentKey {
+    static let defaultValue = ScreenCondition.compact
+}
+
+extension EnvironmentValues {
+
+    var screenCondition: ScreenCondition {
+        get { self[ScreenConditionKey.self] }
+        set { self[ScreenConditionKey.self] = newValue }
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
-    let paywallComponentsData: PaywallComponentsData
-    let componentViewModel: PaywallComponentViewModel
-    private let onDismiss: () -> Void
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
 
     @StateObject
     private var paywallState: PaywallState
+
+    private let paywallComponentsData: PaywallComponentsData
+    private let componentViewModel: PaywallComponentViewModel
+    private let onDismiss: () -> Void
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -105,6 +142,7 @@ struct TemplateComponentsView: View {
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
         .environmentObject(self.paywallState)
+        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
     }
 
     static func chooseLocalization(

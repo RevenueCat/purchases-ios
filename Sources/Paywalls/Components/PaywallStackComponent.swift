@@ -32,21 +32,20 @@ public extension PaywallComponent {
         public let border: Border?
         public let shadow: Shadow?
 
-        public let state: ComponentState<PartialStackComponent>?
-        public let conditions: ComponentConditions<PartialStackComponent>?
+        public let overrides: ComponentOverrides<PartialStackComponent>?
 
-        public init(components: [PaywallComponent],
-                    dimension: Dimension = .vertical(.center),
-                    width: WidthSize? = nil,
-                    spacing: CGFloat? = nil,
-                    backgroundColor: ColorInfo? = nil,
-                    padding: Padding = .zero,
-                    margin: Padding = .zero,
-                    cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil,
-                    shadow: Shadow? = nil,
-                    state: ComponentState<PartialStackComponent>? = nil,
-                    conditions: ComponentConditions<PartialStackComponent>? = nil
+        public init(
+            components: [PaywallComponent],
+            dimension: Dimension = .vertical(.center),
+            width: WidthSize? = nil,
+            spacing: CGFloat? = nil,
+            backgroundColor: ColorInfo? = nil,
+            padding: Padding = .zero,
+            margin: Padding = .zero,
+            cornerRadiuses: CornerRadiuses? = nil,
+            border: Border? = nil,
+            shadow: Shadow? = nil,
+            overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.components = components
             self.width = width
@@ -59,14 +58,14 @@ public extension PaywallComponent {
             self.cornerRadiuses = cornerRadiuses
             self.border = border
             self.shadow = shadow
-            self.state = state
-            self.conditions = conditions
+            self.overrides = overrides
         }
 
     }
 
     struct PartialStackComponent: PartialComponent {
 
+        public let visible: Bool?
         public let width: WidthSize?
         public let spacing: CGFloat?
         public let backgroundColor: ColorInfo?
@@ -75,16 +74,21 @@ public extension PaywallComponent {
         public let margin: Padding?
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
+        public let shadow: Shadow?
 
-        public init(dimension: Dimension? = nil,
-                    width: WidthSize? = nil,
-                    spacing: CGFloat? = nil,
-                    backgroundColor: ColorInfo? = nil,
-                    padding: Padding? = nil,
-                    margin: Padding? = nil,
-                    cornerRadiuses: CornerRadiuses? = nil,
-                    border: Border? = nil
+        public init(
+            visible: Bool? = true,
+            dimension: Dimension? = nil,
+            width: WidthSize? = nil,
+            spacing: CGFloat? = nil,
+            backgroundColor: ColorInfo? = nil,
+            padding: Padding? = nil,
+            margin: Padding? = nil,
+            cornerRadiuses: CornerRadiuses? = nil,
+            border: Border? = nil,
+            shadow: Shadow? = nil
         ) {
+            self.visible = visible
             self.width = width
             self.spacing = spacing
             self.backgroundColor = backgroundColor
@@ -93,6 +97,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
             self.border = border
+            self.shadow = shadow
         }
 
     }

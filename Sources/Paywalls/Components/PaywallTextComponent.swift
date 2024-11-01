@@ -25,8 +25,7 @@ public extension PaywallComponent {
         public let padding: Padding
         public let margin: Padding
 
-        public let state: ComponentState<PartialTextComponent>?
-        public let conditions: ComponentConditions<PartialTextComponent>?
+        public let overrides: ComponentOverrides<PartialTextComponent>?
 
         public init(
             text: String,
@@ -38,8 +37,7 @@ public extension PaywallComponent {
             margin: Padding = .zero,
             textStyle: TextStyle = .body,
             horizontalAlignment: HorizontalAlignment = .center,
-            state: ComponentState<PartialTextComponent>? = nil,
-            conditions: ComponentConditions<PartialTextComponent>? = nil
+            overrides: ComponentOverrides<PartialTextComponent>? = nil
         ) {
             self.type = .text
             self.text = text
@@ -51,13 +49,13 @@ public extension PaywallComponent {
             self.margin = margin
             self.textStyle = textStyle
             self.horizontalAlignment = horizontalAlignment
-            self.state = state
-            self.conditions = conditions
+            self.overrides = overrides
         }
     }
 
     struct PartialTextComponent: PartialComponent {
 
+        public let visible: Bool?
         public let text: LocalizationKey?
         public let fontFamily: String?
         public let fontWeight: FontWeight?
@@ -69,6 +67,7 @@ public extension PaywallComponent {
         public let margin: Padding?
 
         public init(
+            visible: Bool? = true,
             text: LocalizationKey? = nil,
             fontFamily: String? = nil,
             fontWeight: FontWeight? = nil,
@@ -79,6 +78,7 @@ public extension PaywallComponent {
             textStyle: TextStyle? = nil,
             horizontalAlignment: HorizontalAlignment? = nil
         ) {
+            self.visible = visible
             self.text = text
             self.fontFamily = fontFamily
             self.fontWeight = fontWeight
@@ -107,8 +107,7 @@ extension PaywallComponent.TextComponent {
         case padding
         case margin
 
-        case state
-        case conditions
+        case overrides
     }
 
 }
@@ -116,6 +115,7 @@ extension PaywallComponent.TextComponent {
 extension PaywallComponent.PartialTextComponent {
 
     enum CodingKeys: String, CodingKey {
+        case visible
         case text = "text_lid"
         case fontFamily
         case fontWeight

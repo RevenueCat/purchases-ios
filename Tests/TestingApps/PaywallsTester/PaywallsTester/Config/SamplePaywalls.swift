@@ -748,13 +748,27 @@ private extension SamplePaywallLoader {
                     fontWeight: .bold,
                     color: .init(light: "#000000"),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: "#ff0000")
+                            )
+                        )
+                    )
                 )),
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: "#000000"),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: "#ff0000")
+                            )
+                        )
+                    )
                 ))
             ],
             dimension: .vertical(.leading),
@@ -768,7 +782,14 @@ private extension SamplePaywallLoader {
                                   topTrailing: 8,
                                   bottomLeading: 8,
                                   bottomTrailing: 8),
-            border: .init(color: .init(light: "#000000"), width: 1)
+            border: .init(color: .init(light: "#cccccc"), width: 1),
+            overrides: .init(
+                states: .init(
+                    selected: .init(
+                        border: .init(color: .init(light: "#ff0000"), width: 1)
+                    )
+                )
+            )
         )
 
         return .init(
@@ -822,12 +843,42 @@ private extension SamplePaywallLoader {
         ))
     }()
 
+    static var conditionsText1: PaywallComponent = PaywallComponent.text(
+        .init(
+            text: "condition_1_default",
+            color: .init(light: "#000000"),
+            overrides: .init(
+                conditions: .init(
+                    medium: .init(
+                        text: "condition_1_medium"
+                    )
+                )
+            )
+        )
+    )
+
+    static var conditionsText2: PaywallComponent = PaywallComponent.text(
+        .init(
+            text: "condition_2_default",
+            color: .init(light: "#000000"),
+            overrides: .init(
+                conditions: .init(
+                    medium: .init(
+                        visible: false
+                    )
+                )
+            )
+        )
+    )
+
     static var simpleSix: [PaywallComponent] = {
         let components: [PaywallComponent] = [
             .stack(.init(components:
                             [
                                 fuzzyCat,
                                 spacer,
+                                conditionsText1,
+                                conditionsText2,
                                 simpleFeatureStack(text: featureText),
                                 spacer,
                                 simpleSixPackages
@@ -1563,7 +1614,11 @@ private extension SamplePaywallLoader {
                 "annual_package_name": .string("Annual"),
                 "annual_package_details": .string("Get now for $19.99/month"),
                 "cta": .string("Purchase now"),
-                "cta_intro": .string("Claim free trial")
+                "cta_intro": .string("Claim free trial"),
+
+                "condition_1_default": .string("Showing in portrait"),
+                "condition_1_medium": .string("Showing in landscape"),
+                "condition_2_default": .string("Should only show in portrait")
             ],
             "fr_FR": [
                 "welcome_message": .string("Bonjour, Composants Paywall!"),
@@ -1578,7 +1633,11 @@ private extension SamplePaywallLoader {
                 "annual_package_name": .string("Annua FRENCH"),
                 "annual_package_details": .string("Get now for $19.99/month FRENCH"),
                 "cta": .string("Purchase now FRENCH"),
-                "cta_intro": .string("Claim free trial FRENCH")
+                "cta_intro": .string("Claim free trial FRENCH"),
+
+                "condition_1_default": .string("Showing in portrait IN FRENCH"),
+                "condition_1_medium": .string("Showing in landscape IN FRENCH"),
+                "condition_2_default": .string("Should only show in portrait IN FRENCH")
             ],
             "es_ES": [
                 "welcome_message": .string("¡Hola, Componentes Paywall!"),
@@ -1593,7 +1652,11 @@ private extension SamplePaywallLoader {
                 "annual_package_name": .string("Annual SPANISH"),
                 "annual_package_details": .string("Get now for $19.99/month SPANISH"),
                 "cta": .string("Purchase now SPANISH"),
-                "cta_intro": .string("Claim free trial SPANISH")
+                "cta_intro": .string("Claim free trial SPANISH"),
+
+                "condition_1_default": .string("Showing in portrait IN SPANISH"),
+                "condition_1_medium": .string("Showing in landscape IN SPANISH"),
+                "condition_2_default": .string("Should only show in portrait IN SPANISH")
             ]
         ]
     }
