@@ -263,11 +263,12 @@ commands:
           name: Run tests
           working_directory: << parameters.directory >>
           command: bundle exec fastlane scan
+      # FIXME Check artifacts and adjust
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output
+          destination: scan-test-output
 
   scan-and-archive:
     parameters:
@@ -281,11 +282,12 @@ commands:
           name: Run tests
           working_directory: << parameters.directory >>
           command: bundle exec fastlane scan
+      # FIXME Check artifacts and adjust
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output
+          destination: scan-test-output
       - run:
           name: Archive
           working_directory: << parameters.directory >>
@@ -304,11 +306,12 @@ commands:
           name: Run tests
           working_directory: << parameters.directory >>
           command: bundle exec fastlane scan
+      # FIXME Check artifacts and adjust
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output
+          destination: scan-test-output
       - run:
           name: Archive all platforms
           working_directory: << parameters.directory >>
@@ -394,7 +397,7 @@ commands:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -666,7 +669,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "macos"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/macos/revenuecat/tests.xml
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -694,7 +697,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "ios-18"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -722,7 +725,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "ios-17"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -754,7 +757,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "ios-16"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -784,7 +787,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "ios-15"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -803,7 +806,7 @@ jobs:
           directory: fastlane/test_output/xctest/tvos
           bundle_name: RevenueCat
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/tvos/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -830,7 +833,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "watchos"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/watchos/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -866,7 +869,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "ios-14"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -901,7 +904,7 @@ jobs:
           job: "create_snapshot_pr"
           version: "ios-13"
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -989,8 +992,7 @@ jobs:
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output
       - store_artifacts:
           path: RevenueCat.xcframework.zip
           destination: RevenueCat.xcframework.zip
@@ -1183,7 +1185,7 @@ jobs:
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/swiftlint/junit.xml
       - store_artifacts:
           path: fastlane/test_output
 
@@ -1244,7 +1246,7 @@ jobs:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
       - store_test_results:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest/ios/report.junit
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
@@ -1264,6 +1266,11 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: v3LoadShedderIntegration
+      - store_test_results:
+          path: fastlane/test_output/xctest/ios/report.junit
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
 
   deploy-purchase-tester:
     executor:
