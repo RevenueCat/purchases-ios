@@ -27,7 +27,6 @@ public extension PaywallComponent {
             self.selected = selected
             self.introOffer = introOffer
         }
-        
 
         public let selected: T?
         public let introOffer: T?
@@ -44,7 +43,6 @@ public extension PaywallComponent {
             self.medium = medium
             self.expanded = expanded
         }
-        
 
         public let compact: T?
         public let medium: T?

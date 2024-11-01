@@ -76,6 +76,7 @@ public extension PaywallComponent {
         public let margin: Padding?
         public let cornerRadiuses: CornerRadiuses?
         public let border: Border?
+        public let shadow: Shadow?
 
         public init(
             visible: Bool? = true,
@@ -86,7 +87,8 @@ public extension PaywallComponent {
             padding: Padding? = nil,
             margin: Padding? = nil,
             cornerRadiuses: CornerRadiuses? = nil,
-            border: Border? = nil
+            border: Border? = nil,
+            shadow: Shadow? = nil
         ) {
             self.visible = visible
             self.width = width
@@ -97,6 +99,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.cornerRadiuses = cornerRadiuses
             self.border = border
+            self.shadow = shadow
         }
 
     }
