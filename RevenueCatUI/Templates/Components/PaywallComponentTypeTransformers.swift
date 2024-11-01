@@ -127,6 +127,17 @@ extension PaywallComponent.TwoDimensionAlignment {
 
 extension PaywallComponent.HorizontalAlignment {
 
+    var stackAlignment: SwiftUI.HorizontalAlignment {
+        switch self {
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        }
+    }
+
     var textAlignment: TextAlignment {
         switch self {
         case .leading:
@@ -138,7 +149,7 @@ extension PaywallComponent.HorizontalAlignment {
         }
     }
 
-    var stackAlignment: SwiftUI.Alignment {
+    var frameAlignment: SwiftUI.Alignment {
         switch self {
         case .leading:
             return .leading

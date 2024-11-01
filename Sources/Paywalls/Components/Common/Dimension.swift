@@ -21,7 +21,7 @@ public extension PaywallComponent {
     enum Dimension: Codable, Sendable, Hashable {
 
         case vertical(HorizontalAlignment)
-        case horizontal(VerticalAlignment)
+        case horizontal(VerticalAlignment, FlexDistribution)
         case zlayer(TwoDimensionAlignment)
 
         public func encode(to encoder: any Encoder) throws {
@@ -31,9 +31,10 @@ public extension PaywallComponent {
             case .vertical(let alignment):
                 try container.encode(DimensionType.vertical.rawValue, forKey: .type)
                 try container.encode(alignment, forKey: .alignment)
-            case .horizontal(let alignment):
+            case .horizontal(let alignment, let distribution):
                 try container.encode(DimensionType.horizontal.rawValue, forKey: .type)
                 try container.encode(alignment, forKey: .alignment)
+                try container.encode(distribution, forKey: .distribution)
             case .zlayer(let alignment):
                 try container.encode(DimensionType.zlayer.rawValue, forKey: .type)
                 try container.encode(alignment.rawValue, forKey: .alignment)
@@ -50,7 +51,8 @@ public extension PaywallComponent {
                 self = .vertical(alignment)
             case .horizontal:
                 let alignment = try container.decode(VerticalAlignment.self, forKey: .alignment)
-                self = .horizontal(alignment)
+                let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
+                self = .horizontal(alignment, distribution)
             case .zlayer:
                 let alignment = try container.decode(TwoDimensionAlignment.self, forKey: .alignment)
                 self = .zlayer(alignment)
@@ -58,7 +60,7 @@ public extension PaywallComponent {
         }
 
         public static func horizontal() -> Dimension {
-            return .horizontal(.center)
+            return .horizontal(.center, .start)
         }
 
         public static func vertical() -> Dimension {
@@ -70,6 +72,7 @@ public extension PaywallComponent {
 
             case type
             case alignment
+            case distribution
 
         }
 

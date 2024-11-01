@@ -171,7 +171,7 @@ private enum Template5Preview {
         components: [
             .purchaseButton(purchaseButton)
         ],
-        dimension: .horizontal(.center),
+        dimension: .horizontal(.center, .start),
         width: .init(type: .fill, value: nil),
         spacing: 0,
         backgroundColor: nil

@@ -125,6 +125,17 @@ public extension PaywallComponent {
 
     }
 
+    enum FlexDistribution: String, Codable, Sendable, Hashable, Equatable {
+
+        case start
+        case center
+        case end
+        case spaceBetween = "space_between"
+        case spaceAround = "space_around"
+        case spaceEvenly = "space_evenly"
+
+    }
+
     enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case leading
