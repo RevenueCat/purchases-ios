@@ -30,36 +30,37 @@ class TextComponentViewModel {
     private let component: PaywallComponent.TextComponent
 
     private let text: String
-    private let localizedStates: LocalizedStates<LocalizedTextPartial>?
-    private let localizedConditions: LocalizedConditions<LocalizedTextPartial>?
+    private let localizedOverrides: LocalizedOverrides<LocalizedTextPartial>?
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
         self.text = try localizedStrings.string(key: component.text)
 
-        // Localize state partials
-        self.localizedStates = try self.component.state.flatMap({ state in
-            LocalizedStates(
-                selected: try state.selected.flatMap({ partial in
+        self.localizedOverrides = try self.component.overrides.flatMap({ overrides in
+            LocalizedOverrides(
+                introOffer: try overrides.introOffer.flatMap({ partial in
                     try LocalizedTextPartial.create(from: partial, using: localizedStrings)
                 }),
-                introOffer: try state.introOffer.flatMap({ partial in
-                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                })
-            )
-        })
-
-        self.localizedConditions = try self.component.conditions.flatMap({ condition in
-            LocalizedConditions(
-                compact: try condition.compact.flatMap({ partial in
-                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                states: try overrides.states.flatMap({ states in
+                    LocalizedStates(
+                        selected: try states.selected.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        })
+                    )
                 }),
-                medium: try condition.medium.flatMap({ partial in
-                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                }),
-                expanded: try condition.expanded.flatMap({ partial in
-                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                conditions: try overrides.conditions.flatMap({ condition in
+                    LocalizedConditions(
+                        compact: try condition.compact.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        }),
+                        medium: try condition.medium.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        }),
+                        expanded: try condition.expanded.flatMap({ partial in
+                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
+                        })
+                    )
                 })
             )
         })
@@ -101,7 +102,7 @@ class TextComponentViewModel {
         case .normal:
             break
         case .selected:
-            partial = self.combine(partial, with: self.localizedStates?.selected)
+            partial = self.combine(partial, with: self.localizedOverrides?.states?.selected)
         }
 
         // WIP: Get partial for intro offer
@@ -129,19 +130,19 @@ class TextComponentViewModel {
         )
 
         // Apply compact on top of existing partial
-        if let compact = self.localizedConditions?.compact,
+        if let compact = self.localizedOverrides?.conditions?.compact,
            conditionTypesToApply.contains(.compact) {
             combinedPartial = combine(combinedPartial, with: compact)
         }
 
         // Apply medium on top of existing partial
-        if let medium = self.localizedConditions?.medium,
+        if let medium = self.localizedOverrides?.conditions?.medium,
            conditionTypesToApply.contains(.medium) {
             combinedPartial = combine(combinedPartial, with: medium)
         }
 
         // Apply expanded on top of existing partial
-        if let expanded = self.localizedConditions?.expanded,
+        if let expanded = self.localizedOverrides?.conditions?.expanded,
            conditionTypesToApply.contains(.expanded) {
             combinedPartial = combine(combinedPartial, with: expanded)
         }

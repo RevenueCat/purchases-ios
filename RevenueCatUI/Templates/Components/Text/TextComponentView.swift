@@ -117,22 +117,23 @@ struct TextComponentView_Previews: PreviewProvider {
                 component: .init(
                     text: "id_1",
                     color: .init(light: "#000000"),
-                    state: .init(
-                        selected: .init(
-                            fontWeight: .black,
-                            color: .init(light: "#ff0000"),
-                            backgroundColor: .init(light: "#0000ff"),
-                            padding: .init(top: 10,
-                                           bottom: 10,
-                                           leading: 10,
-                                           trailing: 10),
-                            margin: .init(top: 10,
-                                          bottom: 10,
-                                          leading: 10,
-                                          trailing: 10),
-                            textStyle: .title
-                        ),
-                        introOffer: nil
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                fontWeight: .black,
+                                color: .init(light: "#ff0000"),
+                                backgroundColor: .init(light: "#0000ff"),
+                                padding: .init(top: 10,
+                                               bottom: 10,
+                                               leading: 10,
+                                               trailing: 10),
+                                margin: .init(top: 10,
+                                              bottom: 10,
+                                              leading: 10,
+                                              trailing: 10),
+                                textStyle: .title
+                            )
+                        )
                     )
                 )
             )
@@ -152,9 +153,11 @@ struct TextComponentView_Previews: PreviewProvider {
                 component: .init(
                     text: "id_1",
                     color: .init(light: "#000000"),
-                    conditions: .init(
-                        medium: .init(
-                            text: "id_2"
+                    overrides: .init(
+                        conditions: .init(
+                            medium: .init(
+                                text: "id_2"
+                            )
                         )
                     )
                 )
@@ -175,9 +178,11 @@ struct TextComponentView_Previews: PreviewProvider {
                 component: .init(
                     text: "id_1",
                     color: .init(light: "#000000"),
-                    conditions: .init(
-                        medium: .init(
-                            text: "id_2"
+                    overrides: .init(
+                        conditions: .init(
+                            medium: .init(
+                                text: "id_2"
+                            )
                         )
                     )
                 )

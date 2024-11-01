@@ -749,11 +749,12 @@ private extension SamplePaywallLoader {
                     color: .init(light: "#000000"),
                     padding: .zero,
                     margin: .zero,
-                    state: .init(
-                        selected: .init(
-                            color: .init(light: "#ff0000")
-                        ),
-                        introOffer: nil
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: "#ff0000")
+                            )
+                        )
                     )
                 )),
                 .text(.init(
@@ -761,11 +762,12 @@ private extension SamplePaywallLoader {
                     color: .init(light: "#000000"),
                     padding: .zero,
                     margin: .zero,
-                    state: .init(
-                        selected: .init(
-                            color: .init(light: "#ff0000")
-                        ),
-                        introOffer: nil
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: "#ff0000")
+                            )
+                        )
                     )
                 ))
             ],
@@ -781,11 +783,12 @@ private extension SamplePaywallLoader {
                                   bottomLeading: 8,
                                   bottomTrailing: 8),
             border: .init(color: .init(light: "#cccccc"), width: 1),
-            state: .init(
-                selected: .init(
-                    border: .init(color: .init(light: "#ff0000"), width: 1)
-                ),
-                introOffer: nil
+            overrides: .init(
+                states: .init(
+                    selected: .init(
+                        border: .init(color: .init(light: "#ff0000"), width: 1)
+                    )
+                )
             )
         )
 
@@ -844,9 +847,11 @@ private extension SamplePaywallLoader {
         .init(
             text: "condition_1_default",
             color: .init(light: "#000000"),
-            conditions: .init(
-                medium: .init(
-                    text: "condition_1_medium"
+            overrides: .init(
+                conditions: .init(
+                    medium: .init(
+                        text: "condition_1_medium"
+                    )
                 )
             )
         )
@@ -856,9 +861,11 @@ private extension SamplePaywallLoader {
         .init(
             text: "condition_2_default",
             color: .init(light: "#000000"),
-            conditions: .init(
-                medium: .init(
-                    visible: false
+            overrides: .init(
+                conditions: .init(
+                    medium: .init(
+                        visible: false
+                    )
                 )
             )
         )

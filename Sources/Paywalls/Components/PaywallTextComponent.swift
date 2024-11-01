@@ -25,8 +25,7 @@ public extension PaywallComponent {
         public let padding: Padding
         public let margin: Padding
 
-        public let state: ComponentState<PartialTextComponent>?
-        public let conditions: ComponentConditions<PartialTextComponent>?
+        public let overrides: ComponentOverrides<PartialTextComponent>?
 
         public init(
             text: String,
@@ -38,8 +37,7 @@ public extension PaywallComponent {
             margin: Padding = .zero,
             textStyle: TextStyle = .body,
             horizontalAlignment: HorizontalAlignment = .center,
-            state: ComponentState<PartialTextComponent>? = nil,
-            conditions: ComponentConditions<PartialTextComponent>? = nil
+            overrides: ComponentOverrides<PartialTextComponent>? = nil
         ) {
             self.type = .text
             self.text = text
@@ -51,8 +49,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.textStyle = textStyle
             self.horizontalAlignment = horizontalAlignment
-            self.state = state
-            self.conditions = conditions
+            self.overrides = overrides
         }
     }
 
@@ -110,8 +107,7 @@ extension PaywallComponent.TextComponent {
         case padding
         case margin
 
-        case state
-        case conditions
+        case overrides
     }
 
 }

@@ -22,8 +22,7 @@ public extension PaywallComponent {
         public let maxHeight: CGFloat?
         public let fitMode: FitMode
 
-        public let state: ComponentState<PartialImageComponent>?
-        public let conditions: ComponentConditions<PartialImageComponent>?
+        public let overrides: ComponentOverrides<PartialImageComponent>?
 
         public init(
             source: ThemeImageUrls,
@@ -32,8 +31,7 @@ public extension PaywallComponent {
             maxHeight: CGFloat? = nil,
             cornerRadiuses: CornerRadiuses? = nil,
             gradientColors: [ColorHex]? = [],
-            state: ComponentState<PartialImageComponent>? = nil,
-            conditions: ComponentConditions<PartialImageComponent>? = nil
+            overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
             self.type = .image
             self.source = source
@@ -42,8 +40,7 @@ public extension PaywallComponent {
             self.maxHeight = maxHeight
             self.cornerRadiuses = cornerRadiuses
             self.gradientColors = gradientColors
-            self.state = state
-            self.conditions = conditions
+            self.overrides = overrides
         }
 
     }

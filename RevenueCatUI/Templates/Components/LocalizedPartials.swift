@@ -10,17 +10,27 @@
 //  LocalizedPartials.swift
 //
 //  Created by Josh Holtz on 10/27/24.
+//
+// swiftlint:disable missing_docs
 
 import Foundation
+import RevenueCat
 
 #if PAYWALL_COMPONENTS
 
 protocol LocalizedPartial {}
 
+struct LocalizedOverrides<T: LocalizedPartial> {
+
+    public let introOffer: LocalizedPartial?
+    public let states: LocalizedStates<T>?
+    public let conditions: LocalizedConditions<T>?
+
+}
+
 struct LocalizedStates<T: LocalizedPartial> {
 
     let selected: T?
-    let introOffer: T?
 
 }
 

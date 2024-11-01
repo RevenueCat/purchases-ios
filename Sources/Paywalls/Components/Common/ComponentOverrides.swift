@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PartialComponent.swift
+//  ComponentOverrides.swift
 //
 //  Created by Josh Holtz on 10/26/24.
 //
@@ -21,15 +21,31 @@ public extension PaywallComponent {
 
     protocol PartialComponent: PaywallComponentBase {}
 
-    struct ComponentState<T: PartialComponent>: PaywallComponentBase {
+    struct ComponentOverrides<T: PartialComponent>: PaywallComponentBase {
 
-        public init(selected: T? = nil, introOffer: T? = nil) {
-            self.selected = selected
+        public init(
+            introOffer: T? = nil,
+            states: PaywallComponent.ComponentStates<T>? = nil,
+            conditions: PaywallComponent.ComponentConditions<T>? = nil
+        ) {
             self.introOffer = introOffer
+            self.states = states
+            self.conditions = conditions
+        }
+
+        public let introOffer: T?
+        public let states: ComponentStates<T>?
+        public let conditions: ComponentConditions<T>?
+
+    }
+
+    struct ComponentStates<T: PartialComponent>: PaywallComponentBase {
+
+        public init(selected: T? = nil) {
+            self.selected = selected
         }
 
         public let selected: T?
-        public let introOffer: T?
 
     }
 
