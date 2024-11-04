@@ -138,27 +138,27 @@ extension PaywallEvent {
 extension PaywallEvent.CreationData: Equatable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}
-
-extension PaywallEvent.CreationData: Codable {
-
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case date
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id, forKey: .id)
-        // Encode date as milliseconds timestamp
-        try container.encode(date.millisecondsSince1970, forKey: .date)
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(UUID.self, forKey: .id)
-        // Decode milliseconds timestamp back to Date
-        let timestamp = try container.decode(UInt64.self, forKey: .date)
-        date = Date(millisecondsSince1970: timestamp)
-    }
-
-}
+//
+//extension PaywallEvent.CreationData: Codable {
+//
+//    private enum CodingKeys: String, CodingKey {
+//        case id
+//        case date
+//    }
+//    
+//    public func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self)
+//        try container.encode(id, forKey: .id)
+//        // Encode date as milliseconds timestamp
+//        try container.encode(date.millisecondsSince1970, forKey: .date)
+//    }
+//    
+//    public init(from decoder: Decoder) throws {
+//        let container = try decoder.container(keyedBy: CodingKeys.self)
+//        id = try container.decode(UUID.self, forKey: .id)
+//        // Decode milliseconds timestamp back to Date
+//        let timestamp = try container.decode(UInt64.self, forKey: .date)
+//        date = Date(millisecondsSince1970: timestamp)
+//    }
+//
+//}

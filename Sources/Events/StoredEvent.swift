@@ -47,7 +47,7 @@ extension StoredEvent: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
-        case encodedEvent
+        case encodedEvent = "event"
         case userID = "userId"
         case feature
 
