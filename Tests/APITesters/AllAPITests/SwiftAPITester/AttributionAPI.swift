@@ -58,6 +58,9 @@ func checkAttributionAPI() {
     attribution.setFirebaseAppInstanceID("")
     attribution.setFirebaseAppInstanceID(nil)
 
+    attribution.setTenjinAnalyticsInstallationID("")
+    attribution.setTenjinAnalyticsInstallationID(nil)
+
     attribution.setMediaSource("")
     attribution.setMediaSource(nil)
 

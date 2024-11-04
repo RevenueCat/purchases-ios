@@ -213,6 +213,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetFirebaseAppInstanceIDParametersList.append((firebaseAppInstanceID, appUserID))
     }
 
+    var invokedSetTenjinAnalyticsInstallationID = false
+    var invokedSetTenjinAnalyticsInstallationIDCount = 0
+    var invokedSetTenjinAnalyticsInstallationIDParameters: (tenjinID: String?, appUserID: String?)?
+    var invokedSetTenjinAnalyticsInstallationIDParametersList = [(tenjinID: String?, appUserID: String?)]()
+
+    override func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: String?, appUserID: String) {
+        invokedSetTenjinAnalyticsInstallationID = true
+        invokedSetTenjinAnalyticsInstallationIDCount += 1
+        invokedSetTenjinAnalyticsInstallationIDParameters = (tenjinAnalyticsInstallationID, appUserID)
+        invokedSetTenjinAnalyticsInstallationIDParametersList.append((tenjinAnalyticsInstallationID, appUserID))
+    }
+
     var invokedSetMediaSource = false
     var invokedSetMediaSourceCount = 0
     var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?
