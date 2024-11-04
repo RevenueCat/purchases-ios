@@ -206,12 +206,13 @@ class CustomerInfoFixtures {
     }()
 
     static let customerInfoWithPromotional: CustomerInfo = {
-        makeCustomerInfo(store: "promotional")
+        makeCustomerInfo(store: "promotional", productId: "rc_promo_pro_cat_yearly")
     }()
 
     static let customerInfoWithLifetimePromotional: CustomerInfo = {
         makeCustomerInfo(
             store: "promotional",
+            productId: "rc_promo_pro_cat_lifetime",
             purchaseDate: "2022-04-12T00:03:28Z",
             expirationDate: "2600-04-12T00:03:35Z"
         )
