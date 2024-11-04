@@ -16,6 +16,8 @@ import Nimble
 
 @testable import RevenueCat
 
+import XCTest
+
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PaywallEventsManagerTests: TestCase {
 
@@ -41,18 +43,18 @@ class PaywallEventsManagerTests: TestCase {
 
     // MARK: - trackEvent
 
-    func testTrackEvent() async {
+    func testTrackEvent() async throws {
         let event: PaywallEvent = .impression(.random(), .random())
 
         await self.manager.track(paywallEvent: event)
 
         let events = await self.store.storedEvents
         expect(events) == [
-            .init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)
+            try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
         ]
     }
 
-    func testTrackMultipleEvents() async {
+    func testTrackMultipleEvents() async throws {
         let event1: PaywallEvent = .impression(.random(), .random())
         let event2: PaywallEvent = .close(.random(), .random())
 
@@ -61,8 +63,8 @@ class PaywallEventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            .init(event: AnyEncodable(event1), userID: Self.userID, feature: .paywalls),
-            .init(event: AnyEncodable(event2), userID: Self.userID, feature: .paywalls)
+            try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls)),
+            try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))
         ]
     }
 
@@ -81,9 +83,9 @@ class PaywallEventsManagerTests: TestCase {
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: AnyEncodable(event),
-                                                                       userID: Self.userID,
-                                                                       feature: .paywalls)]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[try XCTUnwrap(.init(event: event,
+                                                                                     userID: Self.userID,
+                                                                                     feature: .paywalls))]]
 
         await self.verifyEmptyStore()
     }
@@ -100,8 +102,8 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [.init(event: AnyEncodable(event1), userID: Self.userID, feature: .paywalls)],
-            [.init(event: AnyEncodable(event2), userID: Self.userID, feature: .paywalls)]
+            [try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls))],
+            [try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))]
         ]
 
         await self.verifyEmptyStore()
@@ -109,7 +111,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushOnlyOneEventPostsFirstOne() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: StoredEvent = .init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
 
         _ = await self.storeRandomEvent()
         _ = await self.storeRandomEvent()
@@ -127,7 +129,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: StoredEvent = .init(event: AnyEncodable(event), userID: Self.userID, feature: .paywalls)
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
         let expectedError: NetworkError = .offlineConnection()
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
@@ -185,13 +187,12 @@ class PaywallEventsManagerTests: TestCase {
         }
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[.init(event: AnyEncodable(event1),
-                                                                       userID: Self.userID,
-                                                                       feature: .paywalls)]]
+        let expectedEvent: StoredEvent = try XCTUnwrap(.init(event: event1,
+                                                             userID: Self.userID,
+                                                             feature: .paywalls))
+        expect(self.api.invokedPostPaywallEventsParameters) == [[]]
 
-        await self.verifyEvents([.init(event: AnyEncodable(event2),
-                                       userID: Self.userID,
-                                       feature: .paywalls)])
+        await self.verifyEvents([try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))])
     }
 
     func testCannotFlushMultipleTimesInParallel() async throws {
@@ -213,9 +214,9 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
-        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [.init(event: AnyEncodable(event1),
-                                                                                  userID: Self.userID,
-                                                                                  feature: .paywalls)]
+        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [try XCTUnwrap(.init(event: event1,
+                                                                                                userID: Self.userID,
+                                                                                                feature: .paywalls))]
 
         self.logger.verifyMessageWasLogged(Strings.paywalls.event_flush_already_in_progress,
                                            level: .debug,

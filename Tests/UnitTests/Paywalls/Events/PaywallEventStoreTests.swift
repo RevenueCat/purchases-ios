@@ -251,13 +251,14 @@ private extension PaywallEventStoreTests {
             expect(file: file, line: line, actualEvent.userID) == expectedEvent.userID
             expect(file: file, line: line, actualEvent.feature) == expectedEvent.feature
 
-            let actualEventData = try XCTUnwrap(actualEvent.event.value as? [String: Any])
-            let actualPaywallEvent: PaywallEvent = try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: actualEventData))
-            
+            let actualEventData = try XCTUnwrap(actualEvent.encodedEvent.value as? [String: Any])
+            let actualPaywallEvent: PaywallEvent =
+            try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: actualEventData))
+
             expect(
                 file: file,
                 line: line,
-                expectedEvent.event.value as? PaywallEvent
+                expectedEvent.encodedEvent.value as? PaywallEvent
             ) == actualPaywallEvent
         }
     }
@@ -305,9 +306,10 @@ extension PaywallEvent {
 private extension StoredEvent {
 
     static func randomImpressionEvent() -> Self {
-        return .init(event: AnyEncodable(PaywallEvent.randomImpressionEvent()),
+        let event = PaywallEvent.randomImpressionEvent()
+        return .init(event: event,
                      userID: UUID().uuidString,
-                     feature: .paywalls)
+                     feature: .paywalls)!
     }
 
 }

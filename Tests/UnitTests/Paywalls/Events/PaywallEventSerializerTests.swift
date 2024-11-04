@@ -27,9 +27,9 @@ class PaywallEventSerializerTests: TestCase {
 
     func testEncodeImpressionEvent() throws {
         let originalEvent = PaywallEvent.impression(.random(), .random())
-        let event: StoredEvent = .init(event: AnyEncodable(originalEvent),
-                                       userID: Self.userID,
-                                       feature: .paywalls)
+        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls))
 
         let encoded = try PaywallEventSerializer.encode(event)
         let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
@@ -40,9 +40,9 @@ class PaywallEventSerializerTests: TestCase {
 
     func testDecodeCancelEvent() throws {
         let originalEvent = PaywallEvent.cancel(.random(), .random())
-        let event: StoredEvent = .init(event: AnyEncodable(originalEvent),
-                                       userID: Self.userID,
-                                       feature: .paywalls)
+        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls))
 
         let encoded = try PaywallEventSerializer.encode(event)
         let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
@@ -53,10 +53,9 @@ class PaywallEventSerializerTests: TestCase {
 
     func testDecodeCloseEvent() throws {
         let originalEvent = PaywallEvent.close(.random(), .random())
-        let event: StoredEvent = .init(event: AnyEncodable(originalEvent),
-                                       userID: Self.userID,
-
-                                       feature: .paywalls)
+        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls))
 
         let encoded = try PaywallEventSerializer.encode(event)
         let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
@@ -78,10 +77,10 @@ class PaywallEventSerializerTests: TestCase {
         expect(file: file, line: line, decoded.userID) == original.userID
         expect(file: file, line: line, decoded.feature) == original.feature
 
-        let eventData = try XCTUnwrap(decoded.event.value as? [String: Any])
+        let eventData = try XCTUnwrap(decoded.encodedEvent.value as? [String: Any])
         let paywallEvent: PaywallEvent = try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: eventData))
 
-        let originalEvent = try XCTUnwrap(original.event.value as? PaywallEvent)
+        let originalEvent = try XCTUnwrap(original.encodedEvent.value as? PaywallEvent)
         expect(file: file, line: line, paywallEvent) == originalEvent
     }
 

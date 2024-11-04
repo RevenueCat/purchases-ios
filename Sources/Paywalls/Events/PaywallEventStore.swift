@@ -40,7 +40,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
 
     func store(_ storedEvent: StoredEvent) async {
         do {
-            if let eventDescription = try? storedEvent.event.prettyPrintedJSON {
+            if let eventDescription = try? storedEvent.encodedEvent.prettyPrintedJSON {
                 Logger.verbose(PaywallEventStoreStrings.storing_event(eventDescription))
             } else {
                 Logger.verbose(PaywallEventStoreStrings.storing_event_without_json)

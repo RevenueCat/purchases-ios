@@ -45,28 +45,31 @@ extension EventsRequest.PaywallEvent {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredEvent) {
-        guard let eventData = storedEvent.event.value as? [String: Any],
-              let paywallEvent: PaywallEvent = try? JSONDecoder.default.decode(dictionary: eventData) else {
+        guard let eventData = storedEvent.encodedEvent.value as? [String: Any] else {
             Logger.error(Strings.paywalls.event_cannot_deserialize)
             return nil
         }
+        do {
+            let paywallEvent: PaywallEvent = try JSONDecoder.default.decode(dictionary: eventData)
+            let creationData = paywallEvent.creationData
+            let data = paywallEvent.data
 
-        let creationData = paywallEvent.creationData
-        let data = paywallEvent.data
-
-        self.init(
-            id: creationData.id.uuidString,
-            version: Self.version,
-            type: paywallEvent.eventType,
-            appUserID: storedEvent.userID,
-            sessionID: data.sessionIdentifier.uuidString,
-            offeringID: data.offeringIdentifier,
-            paywallRevision: data.paywallRevision,
-            timestamp: creationData.date.millisecondsSince1970,
-            displayMode: data.displayMode,
-            darkMode: data.darkMode,
-            localeIdentifier: data.localeIdentifier
-        )
+            self.init(
+                id: creationData.id.uuidString,
+                version: Self.version,
+                type: paywallEvent.eventType,
+                appUserID: storedEvent.userID,
+                sessionID: data.sessionIdentifier.uuidString,
+                offeringID: data.offeringIdentifier,
+                paywallRevision: data.paywallRevision,
+                timestamp: creationData.date.millisecondsSince1970,
+                displayMode: data.displayMode,
+                darkMode: data.darkMode,
+                localeIdentifier: data.localeIdentifier
+            )
+        } catch {
+            return nil
+        }
     }
 
     private static let version: Int = 1
