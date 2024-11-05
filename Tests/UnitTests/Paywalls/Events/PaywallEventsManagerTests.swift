@@ -190,7 +190,7 @@ class PaywallEventsManagerTests: TestCase {
         let expectedEvent: StoredEvent = try XCTUnwrap(.init(event: event1,
                                                              userID: Self.userID,
                                                              feature: .paywalls))
-        expect(self.api.invokedPostPaywallEventsParameters) == [[]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[expectedEvent]]
 
         await self.verifyEvents([try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))])
     }
