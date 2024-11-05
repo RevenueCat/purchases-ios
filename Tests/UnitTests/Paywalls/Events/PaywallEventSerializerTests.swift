@@ -31,11 +31,7 @@ class PaywallEventSerializerTests: TestCase {
                                                      userID: Self.userID,
                                                      feature: .paywalls))
 
-        let encoded = try PaywallEventSerializer.encode(event)
-        let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
-
-        expect(encoded.numberOfLines) == 1
-        expect(decoded).to(equal(event))
+        expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
@@ -44,11 +40,7 @@ class PaywallEventSerializerTests: TestCase {
                                                      userID: Self.userID,
                                                      feature: .paywalls))
 
-        let encoded = try PaywallEventSerializer.encode(event)
-        let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
-
-        expect(encoded.numberOfLines) == 1
-        expect(decoded).to(equal(event))
+        expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
@@ -57,11 +49,7 @@ class PaywallEventSerializerTests: TestCase {
                                                      userID: Self.userID,
                                                      feature: .paywalls))
 
-        let encoded = try PaywallEventSerializer.encode(event)
-        let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
-
-        expect(encoded.numberOfLines) == 1
-        expect(decoded).to(equal(event))
+        expect(try event.encodeAndDecode()) == event
     }
 
     // MARK: -
