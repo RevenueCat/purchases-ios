@@ -315,6 +315,8 @@
 		35F249CC2C493DCC0058993A /* CustomerCenterPurchasesType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F249CB2C493DCC0058993A /* CustomerCenterPurchasesType.swift */; };
 		35F249CE2C493E3D0058993A /* CustomerCenterPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F249CD2C493E3D0058993A /* CustomerCenterPurchases.swift */; };
 		35F38B482C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F38B472C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift */; };
+		35F7884B2CC68F5300080F32 /* CustomerCenterEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F7884A2CC68F4C00080F32 /* CustomerCenterEvent.swift */; };
+		35F788F62CC6B62600080F32 /* EventsRequest+CustomerCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F788F52CC6B62400080F32 /* EventsRequest+CustomerCenter.swift */; };
 		35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */; };
 		35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB126A98EC50051DF03 /* AttributionDataMigratorTests.swift */; };
 		35F82BB426A9A74D0051DF03 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB326A9A74D0051DF03 /* HTTPClient.swift */; };
@@ -1571,6 +1573,8 @@
 		35F249CB2C493DCC0058993A /* CustomerCenterPurchasesType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPurchasesType.swift; sourceTree = "<group>"; };
 		35F249CD2C493E3D0058993A /* CustomerCenterPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPurchases.swift; sourceTree = "<group>"; };
 		35F38B472C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetCustomerCenterConfigTests.swift; sourceTree = "<group>"; };
+		35F7884A2CC68F4C00080F32 /* CustomerCenterEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterEvent.swift; sourceTree = "<group>"; };
+		35F788F52CC6B62400080F32 /* EventsRequest+CustomerCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+CustomerCenter.swift"; sourceTree = "<group>"; };
 		35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extensions.swift"; sourceTree = "<group>"; };
 		35F82BB126A98EC50051DF03 /* AttributionDataMigratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributionDataMigratorTests.swift; sourceTree = "<group>"; };
 		35F82BB326A9A74D0051DF03 /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
@@ -3685,6 +3689,7 @@
 		3592E8892C2ED54A00D7F91D /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
+				35F7884C2CC68F5F00080F32 /* Events */,
 				3592E8882C2ED54A00D7F91D /* CustomerCenterConfigData.swift */,
 			);
 			path = CustomerCenter;
@@ -3762,6 +3767,15 @@
 				353756512C382BC700A1B8D6 /* PreferredLocalesProvider.swift */,
 			);
 			path = Locale;
+			sourceTree = "<group>";
+		};
+		35F7884C2CC68F5F00080F32 /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				35F788F52CC6B62400080F32 /* EventsRequest+CustomerCenter.swift */,
+				35F7884A2CC68F4C00080F32 /* CustomerCenterEvent.swift */,
+			);
+			path = Events;
 			sourceTree = "<group>";
 		};
 		35F82BBB26A9BFA60051DF03 /* FoundationExtensions */ = {
@@ -5747,6 +5761,7 @@
 				B34605C5279A6E380031CA74 /* CustomerInfoResponseHandler.swift in Sources */,
 				5796A3A927D7C43500653165 /* Deprecations.swift in Sources */,
 				4F0201C42A13C85500091612 /* Assertions.swift in Sources */,
+				35F7884B2CC68F5300080F32 /* CustomerCenterEvent.swift in Sources */,
 				5753ED8E294A662400CBAB54 /* DateFormatter+Extensions.swift in Sources */,
 				4F174F472B07EA7E00FE538E /* StorefrontProvider.swift in Sources */,
 				B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */,
@@ -5931,6 +5946,7 @@
 				B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */,
 				F516BD29282434070083480B /* StoreKit2StorefrontListener.swift in Sources */,
 				4D6ABB102AF13FBD00BB2A08 /* SK2AppTransaction.swift in Sources */,
+				35F788F62CC6B62600080F32 /* EventsRequest+CustomerCenter.swift in Sources */,
 				5766AAB0283D8CDC00FA6091 /* CacheFetchPolicy.swift in Sources */,
 				4FD368B42AA7CFED00F63354 /* PaywallEventStore.swift in Sources */,
 				B302206E2728B798008F1A0D /* BackendErrorStrings.swift in Sources */,
