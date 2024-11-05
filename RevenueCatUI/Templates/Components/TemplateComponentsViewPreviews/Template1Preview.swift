@@ -38,7 +38,7 @@ private enum Template1Preview {
     static let title = PaywallComponent.TextComponent(
         text: "title",
         fontFamily: nil,
-        fontWeight: .heavy,
+        fontWeight: .black,
         color: .init(light: "#000000"),
         backgroundColor: nil,
         padding: .zero,

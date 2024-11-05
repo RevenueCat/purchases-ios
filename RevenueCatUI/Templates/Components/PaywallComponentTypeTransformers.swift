@@ -60,7 +60,7 @@ extension PaywallComponent.FontWeight {
 
     var fontWeight: Font.Weight {
         switch self {
-        case .ultraLight:
+        case .extraLight:
             return .ultraLight
         case .thin:
             return .thin
@@ -74,7 +74,7 @@ extension PaywallComponent.FontWeight {
             return .semibold
         case .bold:
             return .bold
-        case .heavy:
+        case .extraBold:
             return .heavy
         case .black:
             return .black

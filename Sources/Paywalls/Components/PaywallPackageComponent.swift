@@ -45,7 +45,7 @@ extension PaywallComponent.PackageComponent {
     enum CodingKeys: String, CodingKey {
         case type
         case packageID = "packageId"
-        case isSelectedByDefault = "isDefaultSelected"
+        case isSelectedByDefault
         case stack
     }
 

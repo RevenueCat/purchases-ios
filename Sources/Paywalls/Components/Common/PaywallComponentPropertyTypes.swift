@@ -168,19 +168,19 @@ public extension PaywallComponent {
 
     @frozen enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
 
-        case ultraLight = "ultra_light"
+        case extraLight = "extra_light"
         case thin
         case light
         case regular
         case medium
         case semibold
         case bold
-        case heavy
+        case extraBold = "extra_bold"
         case black
 
     }
 
-    @frozen  enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
+    @frozen enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
 
         case largeTitle = "large_title"
         case title
