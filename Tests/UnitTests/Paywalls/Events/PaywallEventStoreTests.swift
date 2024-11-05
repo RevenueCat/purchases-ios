@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PaywallEventStoreTests: TestCase {
@@ -89,9 +90,8 @@ class PaywallEventStoreTests: TestCase {
         expect(events).to(beEmpty())
     }
 
-    func testStoreOneEvent() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
-
+    func testStoreOneEvent() async throws {
+        let event: StoredEvent = .randomImpressionEvent()
         await self.store.store(event)
 
         let events = await self.store.fetch(1)
@@ -108,9 +108,9 @@ class PaywallEventStoreTests: TestCase {
         expect(eventsAfterFetching).toNot(beEmpty())
     }
 
-    func testStoreMultipleEvents() async {
-        let event1: PaywallStoredEvent = .randomImpressionEvent()
-        let event2: PaywallStoredEvent = .randomImpressionEvent()
+    func testStoreMultipleEvents() async throws {
+        let event1: StoredEvent = .randomImpressionEvent()
+        let event2: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event1)
         await self.store.store(event2)
@@ -119,8 +119,8 @@ class PaywallEventStoreTests: TestCase {
         expect(events) == [event1, event2]
     }
 
-    func testFetchOnlySomeEvents() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+    func testFetchOnlySomeEvents() async throws {
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.store(.randomImpressionEvent())
@@ -130,8 +130,8 @@ class PaywallEventStoreTests: TestCase {
         expect(events) == [event]
     }
 
-    func testFetchEventsWithUnrecognizedLines() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+    func testFetchEventsWithUnrecognizedLines() async throws {
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.handler.append(line: "not an event")
@@ -151,7 +151,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testClearSingleEvent() async {
-        let event: PaywallStoredEvent = .randomImpressionEvent()
+        let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.clear(1)
@@ -160,8 +160,8 @@ class PaywallEventStoreTests: TestCase {
         expect(events).to(beEmpty())
     }
 
-    func testClearOnlyOneEvent() async {
-        let storedEvents: [PaywallStoredEvent] = [
+    func testClearOnlyOneEvent() async throws {
+        let storedEvents: [StoredEvent] = [
             .randomImpressionEvent(),
             .randomImpressionEvent(),
             .randomImpressionEvent()
@@ -278,10 +278,13 @@ extension PaywallEvent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallStoredEvent {
+private extension StoredEvent {
 
     static func randomImpressionEvent() -> Self {
-        return .init(event: .randomImpressionEvent(), userID: UUID().uuidString)
+        let event = PaywallEvent.randomImpressionEvent()
+        return .init(event: event,
+                     userID: UUID().uuidString,
+                     feature: .paywalls)!
     }
 
 }

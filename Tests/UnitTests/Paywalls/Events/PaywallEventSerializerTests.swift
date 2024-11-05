@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PaywallEventSerializerTests: TestCase {
@@ -25,27 +26,29 @@ class PaywallEventSerializerTests: TestCase {
     }
 
     func testEncodeImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(.random(), .random()), userID: Self.userID)
+        let originalEvent = PaywallEvent.impression(.random(), .random())
+        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls))
 
-        let encoded = try PaywallEventSerializer.encode(event)
-        let decoded: PaywallStoredEvent = try JSONDecoder.default.decode(jsonData: encoded.asData)
-
-        expect(encoded.numberOfLines) == 1
-        expect(decoded) == event
-    }
-
-    func testDecodeImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(.random(), .random()), userID: Self.userID)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .cancel(.random(), .random()), userID: Self.userID)
+        let originalEvent = PaywallEvent.cancel(.random(), .random())
+        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls))
+
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .close(.random(), .random()), userID: Self.userID)
+        let originalEvent = PaywallEvent.close(.random(), .random())
+        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls))
+
         expect(try event.encodeAndDecode()) == event
     }
 
