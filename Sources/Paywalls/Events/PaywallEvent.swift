@@ -135,10 +135,10 @@ extension PaywallEvent {
 
 // MARK: - 
 
-extension PaywallEvent.CreationData: Equatable, Sendable {}
+extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}
-//
+
 //extension PaywallEvent.CreationData: Codable {
 //
 //    private enum CodingKeys: String, CodingKey {
