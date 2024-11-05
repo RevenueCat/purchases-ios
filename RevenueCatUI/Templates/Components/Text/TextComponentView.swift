@@ -20,6 +20,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -27,15 +33,26 @@ struct TextComponentView: View {
     }
 
     var body: some View {
-        Text(viewModel.text)
-            .font(viewModel.textStyle)
-            .fontWeight(viewModel.fontWeight)
-            .fixedSize(horizontal: false, vertical: true)
-            .multilineTextAlignment(viewModel.horizontalAlignment)
-            .foregroundStyle(viewModel.color)
-            .padding(viewModel.padding)
-            .background(viewModel.backgroundColor)
-            .padding(viewModel.margin)
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition
+        ) { style in
+            Group {
+                if style.visible {
+                    Text(style.text)
+                        .font(style.textStyle)
+                        .fontWeight(style.fontWeight)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(style.horizontalAlignment)
+                        .foregroundStyle(style.color)
+                        .padding(style.padding)
+                        .background(style.backgroundColor)
+                        .padding(style.margin)
+                } else {
+                    EmptyView()
+                }
+            }
+        }
     }
 
 }
@@ -89,6 +106,91 @@ struct TextComponentView_Previews: PreviewProvider {
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
+
+        // State - Selected
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("Hello, world")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: "#000000"),
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                fontWeight: .black,
+                                color: .init(light: "#ff0000"),
+                                backgroundColor: .init(light: "#0000ff"),
+                                padding: .init(top: 10,
+                                               bottom: 10,
+                                               leading: 10,
+                                               trailing: 10),
+                                margin: .init(top: 10,
+                                              bottom: 10,
+                                              leading: 10,
+                                              trailing: 10),
+                                textStyle: .title
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        .environment(\.componentViewState, .selected)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("State - Selected")
+
+        // Condition - Medium
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("THIS TEXT SHOULDN'T SHOW"),
+                    "id_2": .string("Showing medium condition")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: "#000000"),
+                    overrides: .init(
+                        conditions: .init(
+                            medium: .init(
+                                text: "id_2"
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        .environment(\.screenCondition, .medium)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Condition - Medium")
+
+        // Condition - Has medium but not medium
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("Showing compact condition"),
+                    "id_2": .string("SHOULDN'T SHOW MEDIUM")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: "#000000"),
+                    overrides: .init(
+                        conditions: .init(
+                            medium: .init(
+                                text: "id_2"
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        .environment(\.screenCondition, .compact)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Condition - Has medium but not medium")
     }
 }
 

@@ -15,8 +15,52 @@ class PaywallState: ObservableObject {
 
     @Published var selectedPackage: Package?
 
+    init(selectedPackage: Package?) {
+        self.selectedPackage = selectedPackage
+    }
+
     func select(package: Package) {
         self.selectedPackage = package
+    }
+
+}
+
+enum PackageGroupValidationError: Error {
+
+    case noAvailablePackages(String)
+
+}
+
+enum ScreenCondition {
+
+    case compact, medium, expanded
+
+    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
+        guard let sizeClass else {
+            return .compact
+        }
+
+        switch sizeClass {
+        case .compact:
+            return .compact
+        case .regular:
+            return .medium
+        @unknown default:
+            return .compact
+        }
+    }
+
+}
+
+struct ScreenConditionKey: EnvironmentKey {
+    static let defaultValue = ScreenCondition.compact
+}
+
+extension EnvironmentValues {
+
+    var screenCondition: ScreenCondition {
+        get { self[ScreenConditionKey.self] }
+        set { self[ScreenConditionKey.self] = newValue }
     }
 
 }
@@ -24,12 +68,15 @@ class PaywallState: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
-    let paywallComponentsData: PaywallComponentsData
-    let componentViewModel: PaywallComponentViewModel
-    private let onDismiss: () -> Void
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
 
     @StateObject
-    private var paywallState = PaywallState()
+    private var paywallState: PaywallState
+
+    private let paywallComponentsData: PaywallComponentsData
+    private let componentViewModel: PaywallComponentViewModel
+    private let onDismiss: () -> Void
 
     public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
         self.paywallComponentsData = paywallComponentsData
@@ -42,10 +89,12 @@ struct TemplateComponentsView: View {
         let localization = Self.chooseLocalization(for: paywallComponentsData)
 
         do {
-            // STEP 2: Make the view models & validate all components have required localization and packages
-            self.componentViewModel = try PaywallComponentViewModel.root(
+            // STEP 2: Make the view models & validate all components have required localization
+            let packageValidator = PackageValidator()
+            let componentViewModel = try PaywallComponentViewModel.root(
                 RootViewModel(
                     stackViewModel: StackComponentViewModel(
+                        packageValidator: packageValidator,
                         component: componentsConfig.stack,
                         localizedStrings: localization.localizedStrings,
                         offering: offering
@@ -54,6 +103,7 @@ struct TemplateComponentsView: View {
                         StickyFooterComponentViewModel(
                             component: $0,
                             stackViewModel: try StackComponentViewModel(
+                                packageValidator: packageValidator,
                                 component: $0.stack,
                                 localizedStrings: localization.localizedStrings,
                                 offering: offering
@@ -62,11 +112,23 @@ struct TemplateComponentsView: View {
                     }
                 )
             )
+
+            guard packageValidator.isValid else {
+                Logger.error(Strings.paywall_could_not_find_any_packages)
+                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
+            }
+
+            self.componentViewModel = componentViewModel
+            self._paywallState = .init(wrappedValue: PaywallState(
+                selectedPackage: packageValidator.defaultSelectedPackage
+            ))
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
             Logger.error(Strings.paywall_view_model_construction_failed(error))
 
+            // WIP: Need to select default package in fallback view model
             self.componentViewModel = Self.fallbackPaywallViewModels()
+            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
         }
     }
 
@@ -80,6 +142,7 @@ struct TemplateComponentsView: View {
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
         .environmentObject(self.paywallState)
+        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
     }
 
     static func chooseLocalization(
@@ -146,8 +209,8 @@ struct ComponentsView: View {
                 LinkButtonComponentView(viewModel: viewModel)
             case .button(let viewModel):
                 ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
-            case .packageGroup(let viewModel):
-                PackageGroupComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            case .package(let viewModel):
+                PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .purchaseButton(let viewModel):
                 PurchaseButtonComponentView(viewModel: viewModel)
             case .stickyFooter(let viewModel):

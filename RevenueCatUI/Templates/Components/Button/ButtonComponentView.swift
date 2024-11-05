@@ -35,10 +35,11 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        AsyncButton(
-            action: { try await performAction() },
-            label: { StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss) }
-        )
+        AsyncButton {
+            try await performAction()
+        } label: {
+            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss)
+        }
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
@@ -111,6 +112,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
             ButtonComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
+                    packageValidator: PackageValidator(),
                     component: .init(
                         action: .navigateBack,
                         stack: .init(
