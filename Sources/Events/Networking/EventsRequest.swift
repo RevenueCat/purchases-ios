@@ -31,6 +31,11 @@ struct EventsRequest {
                     return nil
                 }
                 return AnyEncodable(event)
+            case .customerCenter:
+                guard let event = CustomerCenterEvent(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
             }
         })
     }
