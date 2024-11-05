@@ -1827,13 +1827,16 @@ private extension Purchases {
         }
         #endif
 
-        self.postPaywallEventsIfNeeded()
+        self.postPaywallEventsIfNeeded(delayed: true)
 
         #endif
     }
 
     @objc func applicationDidEnterBackground() {
         self.dispatchSyncSubscriberAttributes()
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.postPaywallEventsIfNeeded()
+        #endif
     }
 
     func subscribeToAppStateNotifications() {
@@ -1945,11 +1948,18 @@ private extension Purchases {
         }
     }
 
-    private func postPaywallEventsIfNeeded() {
+    private func postPaywallEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.paywallEventsManager else { return }
 
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
+        let delay: JitterableDelay
+        if delayed {
+            delay = .long
+        } else {
+            // When backgrounding, the app only has about 5 seconds to perform work
+            delay = .none
+        }
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
         }
     }
