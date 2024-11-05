@@ -203,24 +203,42 @@ class PaywallEventsManagerTests: TestCase {
         let event1 = await self.storeRandomEvent()
         _ = await self.storeRandomEvent()
 
-        let task1 = Task<Int, Error> { [manager = self.manager!] in try await manager.flushEvents(count: 1) }
-        let task2 = Task<Int, Error> { [manager = self.manager!] in try await manager.flushEvents(count: 1) }
+        // Creates a stream and its continuation
+        let continuation = AsyncStream<Void>.makeStream()
 
-        let (result1, result2) = try await (task1.value, task2.value)
+        // Set up the mock to wait for our signal
+        self.api.stubbedPostPaywallEventsCallback = { completion in
+            Task {
+                // This waits until something is sent through the stream
+                await continuation.stream.first { _ in true }
+                // Once we receive the signal, call completion
+                completion(nil)
+            }
+        }
 
-        // Tasks aren't guaranteed to start in order.
-        // We just care that one of them posted 1 event and the other 0.
-        expect(Set([result1, result2])) == [1, 0]
+        let manager = self.manager!
+        async let result1 = manager.flushEvents(count: 1)
+        async let result2 = manager.flushEvents(count: 1)
+
+        // Signal the API call to complete
+        continuation.continuation.yield()
+        continuation.continuation.finish()
+
+        // Wait for both results
+        let results = try await [result1, result2]
+        expect(Set(results)) == [1, 0]
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
-        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [try XCTUnwrap(.init(event: event1,
-                                                                                                userID: Self.userID,
-                                                                                                feature: .paywalls))]
+        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [
+            try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls))
+        ]
 
-        self.logger.verifyMessageWasLogged(Strings.paywalls.event_flush_already_in_progress,
-                                           level: .debug,
-                                           expectedCount: 1)
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.event_flush_already_in_progress,
+            level: .debug,
+            expectedCount: 1
+        )
     }
 
     // MARK: -
