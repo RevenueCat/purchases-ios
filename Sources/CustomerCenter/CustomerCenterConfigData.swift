@@ -171,7 +171,7 @@ public struct CustomerCenterConfigData {
                 case .googleSubscriptionManage:
                     return "You have an active Google Play Store purchase"
                 case .amazonSubscriptionManage:
-                    return "You have an active Amazon Appstore purchase. " +
+                    return "You have an active subscription from the Amazon Appstore. " +
                     "You can manage your subscription in the Amazon Appstore app."
                 case .webSubscriptionManage:
                     return "You are subscribed to a web subscription." +
