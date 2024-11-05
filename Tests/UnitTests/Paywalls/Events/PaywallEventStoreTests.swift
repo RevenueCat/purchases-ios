@@ -91,11 +91,11 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreOneEvent() async throws {
-        let eventToStore: StoredEvent = .randomImpressionEvent()
-        await self.store.store(eventToStore)
+        let event: StoredEvent = .randomImpressionEvent()
+        await self.store.store(event)
 
         let events = await self.store.fetch(1)
-        try verifyEvents(events, equalTo: [eventToStore])
+        expect(events) == [event]
     }
 
     func testFetchEventsDoesNotRemoveEvents() async {
@@ -109,14 +109,14 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreMultipleEvents() async throws {
-        let eventToStore1: StoredEvent = .randomImpressionEvent()
-        let eventToStore2: StoredEvent = .randomImpressionEvent()
+        let event1: StoredEvent = .randomImpressionEvent()
+        let event2: StoredEvent = .randomImpressionEvent()
 
-        await self.store.store(eventToStore1)
-        await self.store.store(eventToStore2)
+        await self.store.store(event1)
+        await self.store.store(event2)
 
         let events = await self.store.fetch(2)
-        try verifyEvents(events, equalTo: [eventToStore1, eventToStore2])
+        expect(events) == [event1, event2]
     }
 
     func testFetchOnlySomeEvents() async throws {
@@ -127,7 +127,7 @@ class PaywallEventStoreTests: TestCase {
         await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(1)
-        try verifyEvents(events, equalTo: [event])
+        expect(events) == [event]
     }
 
     func testFetchEventsWithUnrecognizedLines() async throws {
@@ -138,7 +138,7 @@ class PaywallEventStoreTests: TestCase {
         await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(2)
-        try verifyEvents(events, equalTo: [event])
+        expect(events) == [event]
     }
 
     // - MARK: clear events
@@ -174,8 +174,7 @@ class PaywallEventStoreTests: TestCase {
         await self.store.clear(1)
 
         let events = await self.store.fetch(storedEvents.count)
-        let expectedStoredEvents = Array(storedEvents.dropFirst())
-        try verifyEvents(events, equalTo: expectedStoredEvents)
+        expect(events) == Array(storedEvents.dropFirst())
     }
 
     func testClearAllEvents() async {
@@ -237,30 +236,6 @@ private extension PaywallEventStoreTests {
             line: line,
             events
         ).to(haveCount(expectedCount))
-    }
-
-    func verifyEvents(
-        _ actual: [StoredEvent],
-        equalTo expected: [StoredEvent],
-        file: FileString = #file,
-        line: UInt = #line
-    ) throws {
-        expect(file: file, line: line, actual.count) == expected.count
-
-        for (actualEvent, expectedEvent) in zip(actual, expected) {
-            expect(file: file, line: line, actualEvent.userID) == expectedEvent.userID
-            expect(file: file, line: line, actualEvent.feature) == expectedEvent.feature
-
-            let actualEventData = try XCTUnwrap(actualEvent.encodedEvent.value as? [String: Any])
-            let actualPaywallEvent: PaywallEvent =
-            try XCTUnwrap(try? JSONDecoder.default.decode(dictionary: actualEventData))
-
-            expect(
-                file: file,
-                line: line,
-                expectedEvent.encodedEvent.value as? PaywallEvent
-            ) == actualPaywallEvent
-        }
     }
 
 }
