@@ -18,7 +18,7 @@ import Foundation
 
 public extension PaywallComponent {
 
-    @frozen enum Dimension: Codable, Sendable, Hashable {
+    enum Dimension: Codable, Sendable, Hashable {
 
         case vertical(HorizontalAlignment)
         case horizontal(VerticalAlignment, FlexDistribution)
