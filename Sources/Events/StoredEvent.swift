@@ -21,7 +21,7 @@ struct StoredEvent {
     private(set) var feature: Feature
 
     init?<T: Encodable>(event: T, userID: String, feature: Feature) {
-        guard let data = try? JSONEncoder().encode(event),
+        guard let data = try? JSONEncoder.default.encode(value: event),
               let dictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
         }
@@ -41,7 +41,7 @@ enum Feature: String, Codable {
 
 // MARK: - Extensions
 
-extension StoredEvent: Equatable, Sendable {}
+extension StoredEvent: Sendable {}
 
 extension StoredEvent: Codable {
 
@@ -64,6 +64,21 @@ extension StoredEvent: Codable {
         } else {
             self.feature = .paywalls
         }
+    }
+
+}
+
+extension StoredEvent: Equatable {
+
+    static func == (lhs: StoredEvent, rhs: StoredEvent) -> Bool {
+        guard let lhsValue = lhs.encodedEvent.value as? [String: Any],
+              let rhsValue = rhs.encodedEvent.value as? [String: Any] else {
+            return false
+        }
+        
+        return lhs.userID == rhs.userID &&
+               lhs.feature == rhs.feature &&
+               (lhsValue as NSDictionary).isEqual(to: rhsValue)
     }
 
 }

@@ -35,7 +35,7 @@ class PaywallEventSerializerTests: TestCase {
         let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
 
         expect(encoded.numberOfLines) == 1
-        try verifyDecodedEvent(decoded, matches: event)
+        expect(decoded).to(equal(event))
     }
 
     func testDecodeCancelEvent() throws {
@@ -48,7 +48,7 @@ class PaywallEventSerializerTests: TestCase {
         let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
 
         expect(encoded.numberOfLines) == 1
-        try verifyDecodedEvent(decoded, matches: event)
+        expect(decoded).to(equal(event))
     }
 
     func testDecodeCloseEvent() throws {
@@ -61,31 +61,12 @@ class PaywallEventSerializerTests: TestCase {
         let decoded: StoredEvent = try PaywallEventSerializer.decode(encoded)
 
         expect(encoded.numberOfLines) == 1
-        try verifyDecodedEvent(decoded, matches: event)
+        expect(decoded).to(equal(event))
     }
 
     // MARK: -
 
     private static let userID = UUID().uuidString
-
-    private func verifyDecodedEvent(
-        _ decoded: StoredEvent,
-        matches original: StoredEvent,
-        file: FileString = #file,
-        line: UInt = #line
-    ) throws {
-        expect(file: file, line: line, decoded.userID) == original.userID
-        expect(file: file, line: line, decoded.feature) == original.feature
-
-        let eventData = try XCTUnwrap(decoded.encodedEvent.value as? [String: Any])
-        do {
-            let paywallEvent: PaywallEvent = try JSONDecoder.default.decode(dictionary: eventData)
-            let originalEvent = try XCTUnwrap(original.encodedEvent.value as? PaywallEvent)
-            expect(file: file, line: line, paywallEvent) == originalEvent
-        } catch {
-            XCTFail("Failed to decode PaywallEvent: \(error)")
-        }
-    }
 
 }
 
