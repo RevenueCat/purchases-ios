@@ -75,7 +75,7 @@ extension StoredEvent: Equatable {
               let rhsValue = rhs.encodedEvent.value as? [String: Any] else {
             return false
         }
-        
+
         return lhs.userID == rhs.userID &&
                lhs.feature == rhs.feature &&
                (lhsValue as NSDictionary).isEqual(to: rhsValue)
