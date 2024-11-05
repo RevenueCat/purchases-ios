@@ -166,7 +166,7 @@ public struct CustomerCenterConfigData {
                 case .pleaseContactSupportToManage:
                     return "Please contact support to manage your subscription."
                 case .appleSubscriptionManage:
-                    return "You have an active Apple App Store purchase. " +
+                    return "You have an active subscription from the Apple App Store. " +
                     "You can manage your subscription by using the App Store app on an Apple device."
                 case .googleSubscriptionManage:
                     return "You have an active Google Play Store purchase"
