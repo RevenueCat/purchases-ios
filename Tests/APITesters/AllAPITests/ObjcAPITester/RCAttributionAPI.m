@@ -44,6 +44,8 @@
     [a setMixpanelDistinctID: @""];
     [a setFirebaseAppInstanceID: nil];
     [a setFirebaseAppInstanceID: @""];
+    [a setTenjinAnalyticsInstallationID: nil];
+    [a setTenjinAnalyticsInstallationID: @""];
     [a setMediaSource: nil];
     [a setMediaSource: @""];
     [a setCampaign: nil];
