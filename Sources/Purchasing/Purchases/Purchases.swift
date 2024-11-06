@@ -291,19 +291,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
+        let userDefaults = userDefaults ?? UserDefaults.computeDefault()
+        let deviceCache = DeviceCache(sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
+                                      userDefaults: userDefaults)
+
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: !observerMode,
                                     operationDispatcher: operationDispatcher,
                                     storeKitVersion: storeKitVersion,
                                     responseVerificationMode: responseVerificationMode,
-                                    dangerousSettings: dangerousSettings)
+                                    dangerousSettings: dangerousSettings,
+                                    deviceCache: deviceCache)
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
-        let userDefaults = userDefaults ?? UserDefaults.computeDefault()
-        let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
 
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
         let transactionFetcher = StoreKit2TransactionFetcher()
