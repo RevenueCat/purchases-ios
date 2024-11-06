@@ -29,6 +29,14 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseWithInvalidPromotionalOfferSignatureFails() async throws
 
+    // MARK: - PurchaseParams
+
+    #if ENABLE_PURCHASE_PARAMS
+    func testPurchaseWithPurchaseParamsPostsReceipt() async throws
+
+    func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws
+    #endif
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws
