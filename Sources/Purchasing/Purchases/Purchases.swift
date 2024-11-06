@@ -512,10 +512,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     paywallEventsManager: paywallEventsManager,
-                    deepLinkHandler: .init(),
-                    webPurchaseRedemptionHelper: .init(backend: backend,
-                                                       identityManager: identityManager,
-                                                       customerInfoManager: customerInfoManager)
+                    webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
+                                                                             identityManager: identityManager,
+                                                                             customerInfoManager: customerInfoManager)
                 )
             } else {
                 return .init(
@@ -539,10 +538,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeMessagesHelper: storeMessagesHelper,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     paywallEventsManager: paywallEventsManager,
-                    deepLinkHandler: .init(),
-                    webPurchaseRedemptionHelper: .init(backend: backend,
-                                                       identityManager: identityManager,
-                                                       customerInfoManager: customerInfoManager)
+                    webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
+                                                                             identityManager: identityManager,
+                                                                             customerInfoManager: customerInfoManager)
                 )
             }
         }()

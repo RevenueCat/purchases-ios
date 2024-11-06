@@ -13,7 +13,13 @@
 
 import Foundation
 
-actor WebPurchaseRedemptionHelper {
+protocol WebPurchaseRedemptionHelperType {
+
+    func handleRedeemWebPurchase(redemptionToken: String) async -> WebPurchaseRedemptionResult
+
+}
+
+actor WebPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType {
 
     private let backend: Backend
     private let identityManager: IdentityManager
@@ -37,10 +43,26 @@ actor WebPurchaseRedemptionHelper {
                     Logger.debug(Strings.webRedemption.redeemed_web_purchase)
                     self.customerInfoManager.cache(customerInfo: customerInfo,
                                                    appUserID: self.identityManager.currentAppUserID)
-                    continuation.resume(returning: WebPurchaseRedemptionResult.success(customerInfo))
+                    continuation.resume(returning: .success(customerInfo))
                 case let .failure(error):
                     Logger.error(Strings.webRedemption.error_redeeming_web_purchase(error))
-                    continuation.resume(returning: WebPurchaseRedemptionResult.error(error.asPublicError))
+                    let purchasesError = error.asPurchasesError
+                    switch purchasesError.errorCode {
+                    case ErrorCode.invalidWebPurchaseToken.rawValue:
+                        continuation.resume(returning: .invalidToken)
+                    case ErrorCode.alreadyRedeemedWebPurchaseToken.rawValue:
+                        continuation.resume(returning: .alreadyRedeemed)
+                    case ErrorCode.expiredWebPurchaseToken.rawValue:
+                        guard let obfuscatedEmail = purchasesError.userInfo[ErrorDetails.obfuscatedEmailKey] as? String,
+                              let wasEmailSent = purchasesError.userInfo[ErrorDetails.wasEmailSentKey] as? Bool
+                        else {
+                            continuation.resume(returning: .error(error.asPublicError))
+                            return
+                        }
+                        continuation.resume(returning: .expired(obfuscatedEmail, wasEmailSent: wasEmailSent))
+                    default:
+                        continuation.resume(returning: .error(error.asPublicError))
+                    }
                 }
             }
         }

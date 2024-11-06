@@ -23,6 +23,7 @@ enum HTTPStatusCode {
     case temporaryRedirect
     case invalidRequest
     case unauthorized
+    case forbidden
     case notFoundError
     case tooManyRequests
     case internalServerError
@@ -38,6 +39,7 @@ enum HTTPStatusCode {
         .temporaryRedirect,
         .invalidRequest,
         .unauthorized,
+        .forbidden,
         .notFoundError,
         .internalServerError,
         .networkConnectTimeoutError
@@ -60,6 +62,7 @@ extension HTTPStatusCode: RawRepresentable {
         case .temporaryRedirect: return 307
         case .invalidRequest: return 400
         case .unauthorized: return 401
+        case .forbidden: return 403
         case .notFoundError: return 404
         case .tooManyRequests: return 429
         case .internalServerError: return 500

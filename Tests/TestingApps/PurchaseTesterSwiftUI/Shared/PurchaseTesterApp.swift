@@ -74,6 +74,12 @@ struct PurchaseTesterApp: App {
                             print("RevenueCat redeemed deep link: \(customerInfo)")
                         case let .error(error):
                             print("RevenueCat errored redeeming deep link: \(error.localizedDescription)")
+                        case .invalidToken:
+                            print("The provided purchase redemption token is invalid.")
+                        case .alreadyRedeemed:
+                            print("RevenueCat purchase link was already redeemeed.")
+                        case let .expired(obfuscatedEmail, wasEmailSent):
+                            print("RevenueCat purchase link expired. Email was \(wasEmailSent ? "sent" : "not sent")")
                         @unknown default:
                             print("Unknown web purchase redemption result: \(result)")
                         }

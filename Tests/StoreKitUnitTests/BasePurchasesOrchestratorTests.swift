@@ -45,7 +45,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     private var paywallEventsManager: PaywallEventsManagerType!
-    var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
+    var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockPaywallEventsManager: MockPaywallEventsManager {
@@ -121,9 +121,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.notificationCenter = MockNotificationCenter()
         let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
                                                   mockDeviceCache: self.deviceCache)
-        self.webPurchaseRedemptionHelper = .init(backend: self.backend,
-                                                 identityManager: identityManager,
-                                                 customerInfoManager: self.customerInfoManager)
+        self.webPurchaseRedemptionHelper = MockWebPurchaseRedemptionHelper()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()

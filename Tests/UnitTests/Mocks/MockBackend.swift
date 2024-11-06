@@ -34,7 +34,7 @@ class MockBackend: Backend {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
-        let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+        let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
