@@ -550,6 +550,7 @@ private extension BasePurchasesTests {
         self.deviceCache = nil
         self.paywallCache = nil
         self.paywallEventsManager = nil
+        self.webPurchaseRedemptionHelper = nil
         self.purchases = nil
     }
 
