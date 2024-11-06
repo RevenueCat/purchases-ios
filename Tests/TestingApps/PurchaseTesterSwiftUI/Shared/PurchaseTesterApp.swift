@@ -16,7 +16,13 @@ struct PurchaseTesterApp: App {
 
     @State
     private var configuration: ConfiguredPurchases?
-    
+
+    @State
+    private var showAlert = false
+
+    @State
+    private var alertMessage: String?
+
     @StateObject
     private var revenueCatCustomerData: RevenueCatCustomerData = .init()
 
@@ -71,20 +77,27 @@ struct PurchaseTesterApp: App {
                         let result = await Purchases.shared.redeemWebPurchase(webRedemption)
                         switch result {
                         case let .success(customerInfo):
-                            print("RevenueCat redeemed deep link: \(customerInfo)")
+                            alertMessage = "RevenueCat redeemed deep link: \(customerInfo)"
                         case let .error(error):
-                            print("RevenueCat errored redeeming deep link: \(error.localizedDescription)")
+                            alertMessage = "RevenueCat errored redeeming deep link: \(error.localizedDescription)"
                         case .invalidToken:
-                            print("The provided purchase redemption token is invalid.")
+                            alertMessage = "The provided purchase redemption token is invalid."
                         case .alreadyRedeemed:
-                            print("RevenueCat purchase link was already redeemeed.")
+                            alertMessage = "RevenueCat purchase link was already redeemed."
                         case let .expired(obfuscatedEmail, wasEmailSent):
-                            print("RevenueCat purchase link expired. Email was \(wasEmailSent ? "sent" : "not sent")")
+                            alertMessage = "RevenueCat purchase link expired. Email " +
+                                "was \(wasEmailSent ? "sent" : "not sent") to \(obfuscatedEmail)"
                         @unknown default:
-                            print("Unknown web purchase redemption result: \(result)")
+                            alertMessage = "Unknown web purchase redemption result: \(result)"
                         }
+                        showAlert = true
                     }
                 }
+            }
+            .alert("Redemption result", isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(alertMessage ?? "No result")
             }
         }
 
