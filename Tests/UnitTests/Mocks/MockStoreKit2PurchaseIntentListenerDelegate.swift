@@ -15,6 +15,9 @@
 import StoreKit
 
 @available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
 // swiftlint:disable:next type_name
 final class MockStoreKit2PurchaseIntentListenerDelegate: StoreKit2PurchaseIntentListenerDelegate, @unchecked Sendable {
 

@@ -42,7 +42,9 @@ class StoreKit2PurchaseIntentListenerBaseTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         // Unfinished transactions before beginning the test might lead to false positives / negatives
-        await self.verifyNoUnfinishedTransactions()
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            await self.verifyNoUnfinishedTransactions()
+        }
 
         self.delegate = .init()
         self.listener = StoreKit2PurchaseIntentListener(delegate: self.delegate, updates: try await self.updates)
