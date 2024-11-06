@@ -265,6 +265,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
+    private let offerCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
 
@@ -307,6 +308,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
         let transactionFetcher = StoreKit2TransactionFetcher()
+        let offerCodeRedemptionSheetPresenter = OfferCodeRedemptionSheetPresenter()
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
@@ -570,7 +572,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
-                  storeMessagesHelper: storeMessagesHelper
+                  storeMessagesHelper: storeMessagesHelper,
+                  offerCodeRedemptionSheetPresenter: offerCodeRedemptionSheetPresenter
         )
     }
 
@@ -599,7 +602,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
-         storeMessagesHelper: StoreMessagesHelperType?
+         storeMessagesHelper: StoreMessagesHelperType?,
+         offerCodeRedemptionSheetPresenter: OfferCodeRedemptionSheetPresenterType
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -647,6 +651,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
+        self.offerCodeRedemptionSheetPresenter = offerCodeRedemptionSheetPresenter
 
         super.init()
 
@@ -1085,15 +1090,44 @@ public extension Purchases {
     }
 #endif
 
-#if os(iOS) || VISION_OS
+    #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
 
     @available(iOS 14.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
+    @available(macCatalyst 16.0, *)
+    @objc func presentCodeRedemptionSheet(
+        uiWindowScene: UIWindowScene? = nil
+    ) async throws {
+        try await self.presentOfferCodeRedemptionSheet(uiWindowScene: uiWindowScene)
+    }
+
+    @available(iOS 14.0, *)
     @available(macCatalyst, unavailable)
-    @objc func presentCodeRedemptionSheet() {
-        self.paymentQueueWrapper.paymentQueueWrapperType.presentCodeRedemptionSheet()
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
+    internal func presentOfferCodeRedemptionSheet(uiWindowScene: UIWindowScene?) async throws {
+        var windowScene = uiWindowScene
+        if windowScene == nil {
+            windowScene = try await systemInfo.currentWindowScene
+        }
+
+        guard let windowScene else {
+            Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet_no_window_scene)
+            return
+        }
+
+        do {
+            try await self.offerCodeRedemptionSheetPresenter.presentCodeRedemptionSheet(
+                windowScene: windowScene,
+                storeKitVersion: self.systemInfo.storeKitVersion
+            )
+        } catch {
+            Logger.error(Strings.storeKit.error_displaying_offer_code_redemption_sheet(error))
+            throw error
+        }
     }
 #endif
 

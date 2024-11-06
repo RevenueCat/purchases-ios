@@ -319,9 +319,13 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    #if os(iOS) || VISION_OS
+    #if (os(iOS) || VISION_OS) && !targetEnvironment(macCatalyst)
 
     func presentCodeRedemptionSheet() {
+        self.unimplemented()
+    }
+
+    func presentCodeRedemptionSheet(uiWindowScene: UIWindowScene?) async throws {
         self.unimplemented()
     }
 

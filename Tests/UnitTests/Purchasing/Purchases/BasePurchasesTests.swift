@@ -72,6 +72,7 @@ class BasePurchasesTests: TestCase {
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
+        self.mockOfferCodeSheetPresenter = MockOfferCodeRedemptionSheetPresenter()
 
         let apiKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: apiKey,
@@ -187,6 +188,7 @@ class BasePurchasesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
+    var mockOfferCodeSheetPresenter: MockOfferCodeRedemptionSheetPresenter!
 
     // swiftlint:disable:next weak_delegate
     var purchasesDelegate: MockPurchasesDelegate!
@@ -298,7 +300,8 @@ class BasePurchasesTests: TestCase {
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
-                                   storeMessagesHelper: self.mockStoreMessagesHelper)
+                                   storeMessagesHelper: self.mockStoreMessagesHelper,
+                                   offerCodeRedemptionSheetPresenter: mockOfferCodeSheetPresenter)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -546,6 +549,7 @@ private extension BasePurchasesTests {
         self.paywallCache = nil
         self.paywallEventsManager = nil
         self.purchases = nil
+        self.mockOfferCodeSheetPresenter = nil
     }
 
 }

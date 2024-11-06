@@ -172,7 +172,9 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
 #if os(iOS) || VISION_OS
     if #available(iOS 14.0, *) {
-        purchases.presentCodeRedemptionSheet()
+        Task {
+            try await purchases.presentCodeRedemptionSheet(uiWindowScene: nil)
+        }
     }
 #endif
 
@@ -361,6 +363,10 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
+
+    if #available(iOS 14.0, *) {
+        purchases.presentCodeRedemptionSheet()
+    }
 
     Purchases.configure(withAPIKey: "", appUserID: "")
 
