@@ -108,8 +108,9 @@ extension PaywallData {
         // swiftlint:disable missing_docs
 
         public var title: String
-        public var callToAction: String
 
+        @DefaultDecodable.EmptyString
+        var _callToAction: String
         @NonEmptyStringDecodable
         var _subtitle: String?
         @NonEmptyStringDecodable
@@ -127,6 +128,10 @@ extension PaywallData {
         @DefaultDecodable.EmptyDictionary
         var _offerOverrides: [String: OfferOverride]
 
+        public var callToAction: String {
+            get { return self._callToAction }
+            set { self._callToAction = newValue }
+        }
         public var subtitle: String? {
             get { return self._subtitle }
             set { self._subtitle = newValue }
@@ -718,7 +723,7 @@ extension PaywallData.LocalizedConfiguration: Codable {
     private enum CodingKeys: String, CodingKey {
         case title
         case _subtitle = "subtitle"
-        case callToAction
+        case _callToAction = "callToAction"
         case _callToActionWithIntroOffer = "callToActionWithIntroOffer"
         case _offerDetails = "offerDetails"
         case _offerDetailsWithIntroOffer = "offerDetailsWithIntroOffer"
