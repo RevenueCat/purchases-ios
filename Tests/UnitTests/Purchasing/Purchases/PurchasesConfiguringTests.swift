@@ -543,11 +543,15 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
+        #if os(watchOS)
+        expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
+        #else
         if #available(iOS 16.4, macOS 14.4, *) {
             expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).toEventuallyNot(beNil())
         } else {
             expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
         }
+        #endif
     }
 
   private static func create(
