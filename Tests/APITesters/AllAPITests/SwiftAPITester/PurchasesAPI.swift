@@ -87,6 +87,7 @@ func checkPurchasesEnums() {
 }
 
 private func checkStaticMethods() {
+    let url: URL = URL(string: "https://example.com")!
     let logHandler: (LogLevel, String) -> Void = { _, _ in }
     Purchases.logHandler = logHandler
 
@@ -98,9 +99,10 @@ private func checkStaticMethods() {
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
     let sharedPurchases: Purchases = Purchases.shared
     let isPurchasesConfigured: Bool = Purchases.isConfigured
+    let webPurchaseRedemption: WebPurchaseRedemption? = Purchases.parseAsWebPurchaseRedemption(url)
 
     print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
-          sharedPurchases, isPurchasesConfigured)
+          sharedPurchases, isPurchasesConfigured, webPurchaseRedemption!)
 }
 
 private func checkTypealiases(
@@ -243,7 +245,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let stp: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let offer: PromotionalOffer! = nil
-    let deepLink: Purchases.DeepLink.WebPurchaseRedemption! = nil
+    let webPurchaseRedemption: WebPurchaseRedemption! = nil
 
     do {
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
@@ -299,7 +301,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
 
-        let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(deepLink)
+        let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
+            webPurchaseRedemption
+        )
     } catch {}
 }
 
@@ -323,7 +327,7 @@ func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bo
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
-    let deepLink: Purchases.DeepLink.WebPurchaseRedemption! = nil
+    let webPurchaseRedemption: WebPurchaseRedemption! = nil
     let redemptionCompletion: ((CustomerInfo?, PublicError?) -> Void)! = nil
 
     #if os(iOS) || VISION_OS
@@ -339,7 +343,7 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.showStoreMessages(for: [StoreMessageType.generic]) { }
     }
     #endif
-    purchases.redeemWebPurchase(deepLink: deepLink, completion: redemptionCompletion)
+    purchases.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption, completion: redemptionCompletion)
 }
 
 private func checkConfigure() -> Purchases! {

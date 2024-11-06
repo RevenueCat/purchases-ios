@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  DeepLinkHandler.swift
+//  DeepLinkParser.swift
 //
 //  Created by Antonio Rico Diez on 2024-10-17.
 
@@ -17,11 +17,11 @@ enum DeepLinkParser {
 
     private static let redeemRCBPurchaseHost = "redeem_web_purchase"
 
-    static func parse(_ url: URL) -> Purchases.DeepLink? {
+    static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
         if url.host == Self.redeemRCBPurchaseHost,
            let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
            let redemptionToken = queryItems.first(where: { queryItem in queryItem.name == "redemption_token" })?.value {
-            return Purchases.DeepLink.WebPurchaseRedemption(redemptionToken: redemptionToken)
+            return WebPurchaseRedemption(redemptionToken: redemptionToken)
         }
         return nil
     }

@@ -16,6 +16,7 @@
 		1E568B512ACC6A8300D3C12F /* StoreMessageTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */; };
 		1E5F8F6E2C4515430041EECD /* View+PresentCustomerCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */; };
 		1E5F8F782C46BBD90041EECD /* CustomerCenterAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */; };
+		1E8A60422CDBD75A0034ACF3 /* WebPurchaseRedemption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60412CDBD75A0034ACF3 /* WebPurchaseRedemption.swift */; };
 		1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */; };
 		1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */; };
 		2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */; };
@@ -25,7 +26,6 @@
 		1EB697862CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697852CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift */; };
 		1ED4CA492CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA482CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift */; };
 		1ED4CA4D2CC1515F0021AB8F /* DeepLinkParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA4C2CC1515F0021AB8F /* DeepLinkParser.swift */; };
-		1ED4CA512CC151B00021AB8F /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA502CC151B00021AB8F /* DeepLink.swift */; };
 		1ED4CA532CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */; };
 		1ED4CA552CC157A20021AB8F /* RedeemWebPurchaseAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */; };
 		1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */; };
@@ -1213,6 +1213,7 @@
 		1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessageTypeTests.swift; sourceTree = "<group>"; };
 		1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PresentCustomerCenter.swift"; sourceTree = "<group>"; };
 		1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterAction.swift; sourceTree = "<group>"; };
+		1E8A60412CDBD75A0034ACF3 /* WebPurchaseRedemption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemption.swift; sourceTree = "<group>"; };
 		1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelperTests.swift; sourceTree = "<group>"; };
 		1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentTests.swift; sourceTree = "<group>"; };
@@ -1222,7 +1223,6 @@
 		1EB697852CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResult.swift; sourceTree = "<group>"; };
 		1ED4CA482CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostRedeemWebPurchaseOperation.swift; sourceTree = "<group>"; };
 		1ED4CA4C2CC1515F0021AB8F /* DeepLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkParser.swift; sourceTree = "<group>"; };
-		1ED4CA502CC151B00021AB8F /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionHelper.swift; sourceTree = "<group>"; };
 		1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchaseAPI.swift; sourceTree = "<group>"; };
 		1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
@@ -2378,13 +2378,20 @@
 			path = StoreKit2;
 			sourceTree = "<group>";
 		};
+		1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */ = {
+			isa = PBXGroup;
+			children = (
+				1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */,
+				1EB697852CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift */,
+				1E8A60412CDBD75A0034ACF3 /* WebPurchaseRedemption.swift */,
+			);
+			path = WebPurchaseRedemption;
+			sourceTree = "<group>";
+		};
 		1ED4CA4F2CC1517D0021AB8F /* DeepLink */ = {
 			isa = PBXGroup;
 			children = (
 				1ED4CA4C2CC1515F0021AB8F /* DeepLinkParser.swift */,
-				1ED4CA502CC151B00021AB8F /* DeepLink.swift */,
-				1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */,
-				1EB697852CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift */,
 			);
 			path = DeepLink;
 			sourceTree = "<group>";
@@ -2646,6 +2653,7 @@
 			isa = PBXGroup;
 			children = (
 				353DE0042CCA4EA600A8F632 /* Events */,
+				1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */,
 				1ED4CA4F2CC1517D0021AB8F /* DeepLink */,
 				3592E8892C2ED54A00D7F91D /* CustomerCenter */,
 				F5BE44412698580200254A30 /* Attribution */,
@@ -5629,6 +5637,7 @@
 				F5C0196926E880800005D61E /* StoreKitStrings.swift in Sources */,
 				2D4E926526990AB1000E10B0 /* StoreKit1Wrapper.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
+				1E8A60422CDBD75A0034ACF3 /* WebPurchaseRedemption.swift in Sources */,
 				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,
 				9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */,
 				57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */,
@@ -5759,7 +5768,6 @@
 				F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */,
 				F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */,
 				57CD86DA291C1E2300768DE1 /* UserDefaults+Extensions.swift in Sources */,
-				1ED4CA512CC151B00021AB8F /* DeepLink.swift in Sources */,
 				4FD368B62AA7D09C00F63354 /* PaywallEventSerializer.swift in Sources */,
 				4D6ABB0C2AF13F9400BB2A08 /* StoreKit2Receipt.swift in Sources */,
 				F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */,

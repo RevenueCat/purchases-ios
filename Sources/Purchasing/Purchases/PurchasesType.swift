@@ -908,15 +908,16 @@ public protocol PurchasesType: AnyObject {
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
 
     /**
-     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink(_:)``.
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``.
      * We recommend using ``Purchases/redeemWebPurchase(_:)`` for a nicer API unless you're using ObjC.
      *
-     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purchases/parseAsDeepLink(_:)``
+     * - Parameter webPurchaseRedemption: WebPurchaseRedemption object previously parsed from
+     * a URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
      * - Parameter completion: The completion block to be called with the updated CustomerInfo
      * on a successful redemption, or the error if not.
      */
     func redeemWebPurchase(
-        deepLink: Purchases.DeepLink.WebPurchaseRedemption,
+        webPurchaseRedemption: WebPurchaseRedemption,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     )
 
@@ -1139,12 +1140,13 @@ public protocol PurchasesSwiftType: AnyObject {
     ) async throws -> StoreTransaction?
 
     /**
-     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsDeepLink``
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``
      *
-     * - Parameter deepLink: Deep link previously parsed from a URL using ``Purhcases/parseAsDeepLink``
+     * - Parameter webPurchaseRedemption: Deep link previously parsed from a
+     * URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
      */
     func redeemWebPurchase(
-        _ deepLink: Purchases.DeepLink.WebPurchaseRedemption
+        _ webPurchaseRedemption: WebPurchaseRedemption
     ) async -> WebPurchaseRedemptionResult
 
 }
