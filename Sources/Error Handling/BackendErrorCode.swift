@@ -43,6 +43,9 @@ enum BackendErrorCode: Int, Error {
     case invalidSubscriberAttributes = 7263
     case invalidSubscriberAttributesBody = 7264
     case purchasedProductMissingInAppleReceipt = 7712
+    case invalidWebRedemptionToken = 7849
+    case webPurchaseAlreadyRedeemed = 7852
+    case expiredWebRedemptionToken = 7853
 
     /**
      * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
@@ -118,6 +121,12 @@ extension BackendErrorCode {
              .badRequest,
              .internalServerError:
             return .unknownBackendError
+        case .invalidWebRedemptionToken:
+            return .invalidWebPurchaseToken
+        case .webPurchaseAlreadyRedeemed:
+            return .alreadyRedeemedWebPurchaseToken
+        case .expiredWebRedemptionToken:
+            return .expiredWebPurchaseToken
         case .unknownError:
             return .unknownError
         }

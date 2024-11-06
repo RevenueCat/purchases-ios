@@ -302,6 +302,25 @@ private func checkAsyncMethods(purchases: Purchases) async {
     } catch {}
 }
 
+func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bool {
+    switch result {
+    case let .success(customerInfo):
+        let _: CustomerInfo = customerInfo
+        return true
+    case let .error(error):
+        let _: PublicError = error
+        return true
+    case .invalidToken:
+        return true
+    case .alreadyRedeemed:
+        return true
+    case let .expired(obfuscatedEmail, wasEmailSent):
+        let _: String = obfuscatedEmail
+        let _: Bool = wasEmailSent
+        return true
+    }
+}
+
 func checkNonAsyncMethods(_ purchases: Purchases) {
     let deepLink: Purchases.DeepLink.WebPurchaseRedemption! = nil
     let redemptionCompletion: ((CustomerInfo?, PublicError?) -> Void)! = nil

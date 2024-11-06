@@ -20,7 +20,14 @@ struct ErrorResponse: Equatable {
     var originalCode: Int
     var message: String?
     var attributeErrors: [String: String] = [:]
+    var purchaseRedemptionErrorInfo: PurchaseRedemptionErrorInfo?
 
+    struct PurchaseRedemptionErrorInfo: Decodable, Equatable {
+
+        let obfuscatedEmail: String
+        let wasEmailSent: Bool
+
+    }
 }
 
 extension ErrorResponse {
@@ -38,6 +45,11 @@ extension ErrorResponse {
 
         if !self.attributeErrors.isEmpty {
             userInfo[.attributeErrors] = self.attributeErrors as NSDictionary
+        }
+
+        if let redemptionErrorInfo = self.purchaseRedemptionErrorInfo {
+            userInfo[.obfuscatedEmail] = redemptionErrorInfo.obfuscatedEmail
+            userInfo[.wasEmailSent] = redemptionErrorInfo.wasEmailSent
         }
 
         // If the backend didn't provide a message we default to showing the status code.
@@ -74,6 +86,7 @@ extension ErrorResponse: Decodable {
         case code
         case message
         case attributeErrors
+        case purchaseRedemptionErrorInfo
 
     }
 
@@ -93,6 +106,8 @@ extension ErrorResponse: Decodable {
         self.code = BackendErrorCode(code: codeAsInteger ?? codeAsString)
         self.originalCode = codeAsInteger ?? BackendErrorCode.unknownBackendError.rawValue
         self.message = try container.decodeIfPresent(String.self, forKey: .message)
+        self.purchaseRedemptionErrorInfo = try container.decodeIfPresent(PurchaseRedemptionErrorInfo.self,
+                                                                         forKey: .purchaseRedemptionErrorInfo)
 
         let attributeErrors = (
             try? container.decodeIfPresent(Array<AttributeError>.self,

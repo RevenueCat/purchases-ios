@@ -21,5 +21,13 @@ public enum WebPurchaseRedemptionResult: Sendable {
     case success(_ customerInfo: CustomerInfo)
     /// Represents that the web purchase failed to redeem
     case error(_ error: PublicError)
+    /// Represents that the token was not a valid redemption token. Maybe the link was invalid or incomplete.
+    case invalidToken
+    /// Indicates that the web purchase has already been redeemed and can't be redeemed again.
+    case alreadyRedeemed
+    /// Indicates that the redemption token has expired. An email with a new redemption token
+    /// might be sent depending on the value of  wasEmailSent.
+    /// The email where it was sent is indicated by the obfuscatedEmail.
+    case expired(_ obfuscatedEmail: String, wasEmailSent: Bool)
 
 }

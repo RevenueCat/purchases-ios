@@ -78,7 +78,7 @@ final class PostRedeemWebPurchaseOperation: CacheableNetworkOperation {
 
     override func begin(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .post(self.postData),
-                                  path: .postRedeemWebPurchase(appUserID: postData.appUserID),
+                                  path: .postRedeemWebPurchase,
                                   isRetryable: true)
 
         self.httpClient.perform(

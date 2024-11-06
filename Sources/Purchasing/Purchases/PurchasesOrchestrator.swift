@@ -71,8 +71,7 @@ final class PurchasesOrchestrator {
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
     private let paywallEventsManager: PaywallEventsManagerType?
-    private let deepLinkHandler: DeepLinkHandler
-    private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper
+    private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -136,8 +135,7 @@ final class PurchasesOrchestrator {
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      paywallEventsManager: PaywallEventsManagerType?,
-                     deepLinkHandler: DeepLinkHandler,
-                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper
+                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     ) {
         self.init(
             productsManager: productsManager,
@@ -217,8 +215,7 @@ final class PurchasesOrchestrator {
          storeMessagesHelper: StoreMessagesHelperType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          paywallEventsManager: PaywallEventsManagerType?,
-         deepLinkHandler: DeepLinkHandler,
-         webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper
+         webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -266,6 +263,21 @@ final class PurchasesOrchestrator {
                 completion(customerInfo, nil)
             case let .error(error):
                 completion(nil, error)
+            case .invalidToken:
+                let userInfo: [String: Any] = [:]
+                let error = PurchasesError(error: .invalidWebPurchaseToken, userInfo: userInfo)
+                completion(nil, error.asPublicError)
+            case .alreadyRedeemed:
+                let userInfo: [String: Any] = [:]
+                let error = PurchasesError(error: .alreadyRedeemedWebPurchaseToken, userInfo: userInfo)
+                completion(nil, error.asPublicError)
+            case let .expired(obfuscatedEmail, wasEmailSent):
+                let userInfo: [NSError.UserInfoKey: Any] = [
+                    .obfuscatedEmail: obfuscatedEmail,
+                    .wasEmailSent: wasEmailSent
+                ]
+                let error = PurchasesError(error: .expiredWebPurchaseToken, userInfo: userInfo)
+                completion(nil, error.asPublicError)
             }
         }
     }

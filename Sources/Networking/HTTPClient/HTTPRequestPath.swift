@@ -71,7 +71,7 @@ extension HTTPRequest {
         case health
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
-        case postRedeemWebPurchase(appUserID: String)
+        case postRedeemWebPurchase
 
     }
 
@@ -212,8 +212,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getCustomerCenterConfig(appUserID):
             return "customercenter/\(Self.escape(appUserID))"
 
-        case let .postRedeemWebPurchase(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/redeem_web_purchase"
+        case .postRedeemWebPurchase:
+            return "subscribers/redeem_purchase"
 
         }
     }
