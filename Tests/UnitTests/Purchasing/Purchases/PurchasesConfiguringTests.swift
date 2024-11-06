@@ -543,7 +543,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        #if os(watchOS)
+        #if os(watchOS) || os(tvOS) || os(visionOS)
         expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
         #else
         if #available(iOS 16.4, macOS 14.4, *) {
