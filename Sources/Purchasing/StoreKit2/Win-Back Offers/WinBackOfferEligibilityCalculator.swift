@@ -94,39 +94,25 @@ extension WinBackOfferEligibilityCalculator {
             return []
         }
 
-        let purchasedSubscriptionStatuses = statuses.filter({
-            switch $0.transaction {
-            case .unverified:
-                return false
-            case .verified(let transaction):
-                // Intentionally exclude transactions acquired through family sharing
-                return transaction.ownershipType == .purchased
-            }
-        })
+        // It's okay for us to only check the first matching status since you can only be subscribed to a product once.
+        // Thus, there can be at most 1 renewalInfo that is not a family shared one.
+        // See https://developer.apple.com/videos/play/wwdc2024/10110/ for an example.
+        guard let purchaseSubscriptionStatus = statuses.first(where: {
+            $0.transaction.unsafePayloadValue.ownershipType == .purchased
+        }) else {
+            return []
+        }
 
-        let renewalInfos: [Product.SubscriptionInfo.RenewalInfo] = purchasedSubscriptionStatuses.compactMap({
-            $0.verifiedRenewalInfo
-        })
+        guard let renewalInfo = purchaseSubscriptionStatus.verifiedRenewalInfo else {
+            return []
+        }
 
-        let eligibleWinBackOfferIDsPerRenewalInfo: [[String]] = renewalInfos.map({
-            // StoreKit sorts eligibleWinBackOfferIDs by the "best" win-back offer first.
-            $0.eligibleWinBackOfferIDs
-        })
-
-        // Flatten the win-back offer IDs we've received for all of the renewalInfos while removing duplicates
-        let eligibleWinBackOfferIDs: [String] = {
-            var seen = Set<String>()
-            return eligibleWinBackOfferIDsPerRenewalInfo
-                .flatMap { $0 }
-                .filter { seen.insert($0).inserted }
-        }()
-
-        return eligibleWinBackOfferIDs
+        // StoreKit sorts eligibleWinBackOfferIDs by the "best" win-back offer first.
+        return renewalInfo.eligibleWinBackOfferIDs
         #else
         return []
         #endif
     }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
