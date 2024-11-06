@@ -522,6 +522,13 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 ///   </li>
 /// </ul>
 - (void)setFirebaseAppInstanceID:(NSString * _Nullable)firebaseAppInstanceID;
+/// Subscriber attribute associated with the Tenjin analytics installation ID for the user.
+/// Required for the RevenueCat Tenjin integration.
+/// \code
+///  *- Parameter firebaseAppInstanceID: Empty String or `nil` will delete the subscriber attribute.
+///
+/// \endcode
+- (void)setTenjinAnalyticsInstallationID:(NSString * _Nullable)tenjinAnalyticsInstallationID;
 /// Subscriber attribute associated with the install media source for the user.
 /// <h4>Related Articles</h4>
 /// <ul>
