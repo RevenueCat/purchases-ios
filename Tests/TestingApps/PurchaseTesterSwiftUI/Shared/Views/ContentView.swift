@@ -35,5 +35,6 @@ final class RevenueCatCustomerData: ObservableObject {
 
     @Published var appUserID: String? = nil
     @Published var customerInfo: CustomerInfo? = nil
+    @Published var metadata: [String: String]? = nil
 
 }
