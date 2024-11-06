@@ -510,7 +510,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
-                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
+                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+                    paywallEventsManager: paywallEventsManager
                 )
             } else {
                 return .init(
@@ -532,7 +533,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
-                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
+                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+                    paywallEventsManager: paywallEventsManager
                 )
             }
         }()
@@ -1827,7 +1829,7 @@ private extension Purchases {
         }
         #endif
 
-        self.postPaywallEventsIfNeeded(delayed: true)
+        self.purchasesOrchestrator.postPaywallEventsIfNeeded(delayed: true)
 
         #endif
     }
@@ -1835,7 +1837,7 @@ private extension Purchases {
     @objc func applicationDidEnterBackground() {
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.postPaywallEventsIfNeeded()
+        self.purchasesOrchestrator.postPaywallEventsIfNeeded()
         #endif
     }
 
@@ -1945,22 +1947,6 @@ private extension Purchases {
                     await cache.warmUpPaywallImagesCache(offerings: offerings)
                 }
             }
-        }
-    }
-
-    private func postPaywallEventsIfNeeded(delayed: Bool = false) {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
-              let manager = self.paywallEventsManager else { return }
-
-        let delay: JitterableDelay
-        if delayed {
-            delay = .long
-        } else {
-            // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
         }
     }
 
