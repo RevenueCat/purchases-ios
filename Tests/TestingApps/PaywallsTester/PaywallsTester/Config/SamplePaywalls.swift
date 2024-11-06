@@ -739,7 +739,8 @@ private extension SamplePaywallLoader {
 
     static func makePackage(packageID: String,
                             nameTextLid: String,
-                            detailTextLid: String) -> PaywallComponent.PackageComponent {
+                            detailTextLid: String,
+                            isSelectedByDefault: Bool = false) -> PaywallComponent.PackageComponent {
         let stack: PaywallComponent.StackComponent = .init(
             components: [
                 .text(.init(
@@ -747,13 +748,27 @@ private extension SamplePaywallLoader {
                     fontWeight: .bold,
                     color: .init(light: "#000000"),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: "#ff0000")
+                            )
+                        )
+                    )
                 )),
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: "#000000"),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: "#ff0000")
+                            )
+                        )
+                    )
                 ))
             ],
             dimension: .vertical(.leading),
@@ -767,11 +782,19 @@ private extension SamplePaywallLoader {
                                   topTrailing: 8,
                                   bottomLeading: 8,
                                   bottomTrailing: 8),
-            border: .init(color: .init(light: "#000000"), width: 1)
+            border: .init(color: .init(light: "#cccccc"), width: 1),
+            overrides: .init(
+                states: .init(
+                    selected: .init(
+                        border: .init(color: .init(light: "#ff0000"), width: 1)
+                    )
+                )
+            )
         )
 
         return .init(
             packageID: packageID,
+            isSelectedByDefault: isSelectedByDefault,
             stack: stack
         )
     }
@@ -779,43 +802,74 @@ private extension SamplePaywallLoader {
     static var simpleSixPackages: PaywallComponent = {
         return .stack(.init(
             components: [
-                .packageGroup(.init(
-                    defaultSelectedPackageID: Package.string(from: PackageType.monthly)!,
-                    stack: .init(
-                        components: [
-                            makePackage(packageID: Package.string(from: PackageType.monthly)!,
-                                        nameTextLid: "monthly_package_name",
-                                        detailTextLid: "monthly_package_details"),
-                            makePackage(packageID: Package.string(from: PackageType.annual)!,
-                                        nameTextLid: "annual_package_name",
-                                        detailTextLid: "annual_package_details")
-                        ],
-                        spacing: 20,
-                        margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
-                    )
+                .stack(.init(
+                    components: [
+                        .package(makePackage(packageID: Package.string(from: PackageType.monthly)!,
+                                    nameTextLid: "monthly_package_name",
+                                    detailTextLid: "monthly_package_details")),
+                        .package(makePackage(packageID: Package.string(from: PackageType.annual)!,
+                                    nameTextLid: "annual_package_name",
+                                    detailTextLid: "annual_package_details",
+                                    isSelectedByDefault: true))
+                    ],
+                    spacing: 20,
+                    margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
                 )),
                 .purchaseButton(.init(
-                    cta: "cta",
-                    ctaIntroOffer: "cta_intro",
-                    fontWeight: .bold,
-                    color: .init(light: "#ffffff"),
-                    backgroundColor: .init(light: "#ff0000"),
-                    padding: .init(top: 10,
-                                   bottom: 10,
-                                   leading: 30,
-                                   trailing: 30),
-                    shape: .rectangle,
-                    cornerRadiuses: .init(topLeading: 10,
-                                          topTrailing: 10,
-                                          bottomLeading: 10,
-                                          bottomTrailing: 10)
+                    stack: .init(
+                        components: [
+                            // WIP: Intro offer state with "cta_intro",
+                            .text(.init(
+                                text: "cta",
+                                fontWeight: .bold,
+                                color: .init(light: "#ffffff")
+                            ))
+                        ],
+                        backgroundColor: .init(light: "#ff0000"),
+                        padding: .init(top: 15,
+                                       bottom: 15,
+                                       leading: 30,
+                                       trailing: 30),
+                        cornerRadiuses: .init(topLeading: 16,
+                                              topTrailing: 16,
+                                              bottomLeading: 16,
+                                              bottomTrailing: 16)
+                    )
                 ))
             ],
             width: .init(type: .fill, value: nil),
-            backgroundColor: .init(light: "#cccccc"),
+            backgroundColor: nil,
             margin: .init(top: 0, bottom: 0, leading: 20, trailing: 20)
         ))
     }()
+
+    static var conditionsText1: PaywallComponent = PaywallComponent.text(
+        .init(
+            text: "condition_1_default",
+            color: .init(light: "#000000"),
+            overrides: .init(
+                conditions: .init(
+                    medium: .init(
+                        text: "condition_1_medium"
+                    )
+                )
+            )
+        )
+    )
+
+    static var conditionsText2: PaywallComponent = PaywallComponent.text(
+        .init(
+            text: "condition_2_default",
+            color: .init(light: "#000000"),
+            overrides: .init(
+                conditions: .init(
+                    medium: .init(
+                        visible: false
+                    )
+                )
+            )
+        )
+    )
 
     static var simpleSix: [PaywallComponent] = {
         let components: [PaywallComponent] = [
@@ -823,6 +877,8 @@ private extension SamplePaywallLoader {
                             [
                                 fuzzyCat,
                                 spacer,
+                                conditionsText1,
+                                conditionsText2,
                                 simpleFeatureStack(text: featureText),
                                 spacer,
                                 simpleSixPackages
@@ -1448,7 +1504,8 @@ private extension SamplePaywallLoader {
                 spacing: 10,
                 backgroundColor: .init(light: "#F2545B"),
                 padding: .zero,
-                cornerRadiuses: .init(topLeading: 16.0, topTrailing: 16.0, bottomLeading: 0.0, bottomTrailing: 0.0)
+                cornerRadiuses: .init(topLeading: 16.0, topTrailing: 16.0, bottomLeading: 0.0, bottomTrailing: 0.0),
+                shadow: PaywallComponent.Shadow(color: .init(light: "#000000"), radius: 8, x: 0, y: 0)
             )
         )
     }()
@@ -1557,7 +1614,11 @@ private extension SamplePaywallLoader {
                 "annual_package_name": .string("Annual"),
                 "annual_package_details": .string("Get now for $19.99/month"),
                 "cta": .string("Purchase now"),
-                "cta_intro": .string("Claim free trial")
+                "cta_intro": .string("Claim free trial"),
+
+                "condition_1_default": .string("Showing in portrait"),
+                "condition_1_medium": .string("Showing in landscape"),
+                "condition_2_default": .string("Should only show in portrait")
             ],
             "fr_FR": [
                 "welcome_message": .string("Bonjour, Composants Paywall!"),
@@ -1572,7 +1633,11 @@ private extension SamplePaywallLoader {
                 "annual_package_name": .string("Annua FRENCH"),
                 "annual_package_details": .string("Get now for $19.99/month FRENCH"),
                 "cta": .string("Purchase now FRENCH"),
-                "cta_intro": .string("Claim free trial FRENCH")
+                "cta_intro": .string("Claim free trial FRENCH"),
+
+                "condition_1_default": .string("Showing in portrait IN FRENCH"),
+                "condition_1_medium": .string("Showing in landscape IN FRENCH"),
+                "condition_2_default": .string("Should only show in portrait IN FRENCH")
             ],
             "es_ES": [
                 "welcome_message": .string("¡Hola, Componentes Paywall!"),
@@ -1587,7 +1652,11 @@ private extension SamplePaywallLoader {
                 "annual_package_name": .string("Annual SPANISH"),
                 "annual_package_details": .string("Get now for $19.99/month SPANISH"),
                 "cta": .string("Purchase now SPANISH"),
-                "cta_intro": .string("Claim free trial SPANISH")
+                "cta_intro": .string("Claim free trial SPANISH"),
+
+                "condition_1_default": .string("Showing in portrait IN SPANISH"),
+                "condition_1_medium": .string("Showing in landscape IN SPANISH"),
+                "condition_2_default": .string("Should only show in portrait IN SPANISH")
             ]
         ]
     }

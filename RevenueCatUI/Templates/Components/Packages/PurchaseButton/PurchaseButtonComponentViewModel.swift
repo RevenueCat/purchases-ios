@@ -23,65 +23,23 @@ class PurchaseButtonComponentViewModel {
     private let localizedStrings: PaywallComponent.LocalizationDictionary
     private let component: PaywallComponent.PurchaseButtonComponent
 
-    let cta: String
-    let ctaIntroOffer: String?
+    let stackViewModel: StackComponentViewModel
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary,
-         component: PaywallComponent.PurchaseButtonComponent) throws {
+    init(
+        packageValidator: PackageValidator,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        component: PaywallComponent.PurchaseButtonComponent,
+        offering: Offering
+    ) throws {
         self.localizedStrings = localizedStrings
         self.component = component
 
-        self.cta = try localizedStrings.string(key: component.cta)
-        self.ctaIntroOffer = try component.ctaIntroOffer.flatMap {
-            try localizedStrings.string(key: $0)
-        }
-    }
-
-    var fontFamily: String? {
-        component.fontFamily
-    }
-
-    var fontWeight: Font.Weight {
-        component.fontWeight.fontWeight
-    }
-
-    var color: Color {
-        component.color.toDyanmicColor()
-    }
-
-    var textStyle: Font {
-        component.textStyle.font
-    }
-
-    var horizontalAlignment: TextAlignment {
-        component.horizontalAlignment.textAlignment
-    }
-
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
-    }
-
-    var padding: EdgeInsets {
-        component.padding.edgeInsets
-    }
-
-    var margin: EdgeInsets {
-        component.margin.edgeInsets
-    }
-
-    var clipShape: PaywallComponent.Shape {
-        component.shape
-    }
-
-    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
-        component.cornerRadiuses.flatMap { cornerRadiuses in
-            CornerBorderModifier.RaidusInfo(
-                topLeft: cornerRadiuses.topLeading,
-                topRight: cornerRadiuses.topTrailing,
-                bottomLeft: cornerRadiuses.bottomLeading,
-                bottomRight: cornerRadiuses.bottomLeading
-            )
-        }
+        self.stackViewModel = try StackComponentViewModel(
+            packageValidator: packageValidator,
+            component: component.stack,
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
     }
 
 }

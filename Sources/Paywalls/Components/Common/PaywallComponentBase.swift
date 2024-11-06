@@ -19,7 +19,6 @@ public enum PaywallComponent: PaywallComponentBase {
     case stack(StackComponent)
     case linkButton(LinkButtonComponent)
     case button(ButtonComponent)
-    case packageGroup(PackageGroupComponent)
     case package(PackageComponent)
     case purchaseButton(PurchaseButtonComponent)
     case stickyFooter(StickyFooterComponent)
@@ -32,7 +31,6 @@ public enum PaywallComponent: PaywallComponentBase {
         case stack
         case linkButton = "link_button"
         case button
-        case packageGroup
         case package
         case purchaseButton
         case stickyFooter
@@ -78,9 +76,6 @@ extension PaywallComponent: Codable {
         case .button(let component):
             try container.encode(ComponentType.button, forKey: .type)
             try component.encode(to: encoder)
-        case .packageGroup(let component):
-            try container.encode(ComponentType.packageGroup, forKey: .type)
-            try component.encode(to: encoder)
         case .package(let component):
             try container.encode(ComponentType.package, forKey: .type)
             try component.encode(to: encoder)
@@ -110,8 +105,6 @@ extension PaywallComponent: Codable {
             self = .linkButton(try LinkButtonComponent(from: decoder))
         case .button:
             self = .button(try ButtonComponent(from: decoder))
-        case .packageGroup:
-            self = .packageGroup(try PackageGroupComponent(from: decoder))
         case .package:
             self = .package(try PackageComponent(from: decoder))
         case .purchaseButton:

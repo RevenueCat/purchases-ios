@@ -43,6 +43,7 @@ enum ReservedSubscriberAttribute: String {
     case kochavaDeviceID = "$kochavaDeviceId"
     case mixpanelDistinctID = "$mixpanelDistinctId"
     case firebaseAppInstanceID = "$firebaseAppInstanceId"
+    case tenjinAnalyticsInstallationID = "$tenjinId"
 
     case mediaSource = "$mediaSource"
     case campaign = "$campaign"

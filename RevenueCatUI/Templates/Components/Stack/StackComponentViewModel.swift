@@ -24,6 +24,7 @@ class StackComponentViewModel {
     let viewModels: [PaywallComponentViewModel]
 
     convenience init(
+        packageValidator: PackageValidator,
         component: PaywallComponent.StackComponent,
         localizedStrings: PaywallComponent.LocalizationDictionary,
         offering: Offering
@@ -31,7 +32,9 @@ class StackComponentViewModel {
         self.init(
             component: component,
             viewModels: try component.components.map {
-                try $0.toViewModel(offering: offering, localizedStrings: localizedStrings)
+                try $0.toViewModel(packageValidator: packageValidator,
+                                   offering: offering,
+                                   localizedStrings: localizedStrings)
             }
         )
     }
@@ -88,6 +91,17 @@ class StackComponentViewModel {
             CornerBorderModifier.BorderInfo(
                 color: border.color.toDyanmicColor(),
                 width: border.width
+            )
+        }
+    }
+
+    var shadow: ShadowModifier.ShadowInfo? {
+        component.shadow.flatMap { shadow in
+            ShadowModifier.ShadowInfo(
+                color: shadow.color.toDyanmicColor(),
+                radius: shadow.radius,
+                x: shadow.x,
+                y: shadow.y
             )
         }
     }

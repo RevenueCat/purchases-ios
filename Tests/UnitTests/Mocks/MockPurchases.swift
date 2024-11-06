@@ -419,6 +419,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
         self.unimplemented()
     }

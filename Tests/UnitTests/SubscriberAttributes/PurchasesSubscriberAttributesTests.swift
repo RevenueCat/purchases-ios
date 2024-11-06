@@ -469,6 +469,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         (nil, purchases.appUserID)
     }
 
+    func testSetAndClearTenjinAnalyticsInstallationID() {
+        setupPurchases()
+        purchases.attribution.setTenjinAnalyticsInstallationID("tenjin")
+        purchases.attribution.setTenjinAnalyticsInstallationID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDParametersList[0]) ==
+        ("tenjin", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDParametersList[1]) ==
+        (nil, purchases.appUserID)
+    }
+
     func testSetAndClearMediaSource() {
         setupPurchases()
         purchases.attribution.setMediaSource("media")
@@ -659,6 +669,17 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParameters?.firebaseAppInstanceID) ==
         "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetFirebaseAppInstanceIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetTenjinAnalyticsInstallationIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setTenjinAnalyticsInstallationID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDParameters?.tenjinID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID
     }
 

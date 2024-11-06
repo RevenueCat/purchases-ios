@@ -108,6 +108,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.firebaseAppInstanceID, value: firebaseAppInstanceID, appUserID: appUserID)
     }
 
+    func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: String?, appUserID: String) {
+        setReservedAttribute(.tenjinAnalyticsInstallationID, value: tenjinAnalyticsInstallationID, appUserID: appUserID)
+    }
+
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
         setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }

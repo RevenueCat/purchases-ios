@@ -196,6 +196,25 @@ public extension PaywallComponent {
 
     }
 
+    struct Shadow: Codable, Sendable, Hashable, Equatable {
+
+        public let color: ColorInfo
+        public let radius: CGFloat
+        // swiftlint:disable:next identifier_name
+        public let x: CGFloat
+        // swiftlint:disable:next identifier_name
+        public let y: CGFloat
+
+        // swiftlint:disable:next identifier_name
+        public init(color: ColorInfo, radius: CGFloat, x: CGFloat, y: CGFloat) {
+            self.color = color
+            self.radius = radius
+            self.x = x
+            self.y = y
+        }
+
+    }
+
 }
 
 #endif

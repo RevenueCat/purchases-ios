@@ -320,6 +320,17 @@ public extension Attribution {
     }
 
     /**
+     * Subscriber attribute associated with the Tenjin analytics installation ID for the user.
+     * Required for the RevenueCat Tenjin integration.
+     *
+     *- Parameter firebaseAppInstanceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: String?) {
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(tenjinAnalyticsInstallationID,
+                                                                          appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles

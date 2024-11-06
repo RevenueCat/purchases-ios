@@ -56,6 +56,10 @@ struct StackComponentView: View {
         .background(viewModel.backgroundColor)
         .cornerBorder(border: viewModel.border,
                       radiuses: viewModel.cornerRadiuses)
+        .applyIfLet(viewModel.shadow) { view, shadow in
+            // Without compositingGroup(), the shadow is applied to the stack's children as well.
+            view.compositingGroup().shadow(shadow: shadow)
+        }
         .padding(viewModel.margin)
     }
 
