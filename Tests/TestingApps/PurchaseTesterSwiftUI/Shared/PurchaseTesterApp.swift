@@ -69,12 +69,11 @@ struct PurchaseTesterApp: App {
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
             .onOpenURL { url in
-                let deepLink = Purchases.parseAsDeepLink(url)
-                if let webRedemption = deepLink as? Purchases.DeepLink.WebPurchaseRedemption,
+                if let webPurchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url),
                     Purchases.isConfigured {
                     print("Redeeming web purchase.")
                     Task {
-                        let result = await Purchases.shared.redeemWebPurchase(webRedemption)
+                        let result = await Purchases.shared.redeemWebPurchase(webPurchaseRedemption)
                         switch result {
                         case let .success(customerInfo):
                             alertMessage = "RevenueCat redeemed deep link: \(customerInfo)"

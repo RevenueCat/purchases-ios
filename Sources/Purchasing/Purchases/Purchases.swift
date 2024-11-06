@@ -753,11 +753,10 @@ extension Purchases {
 
 public extension Purchases {
 
-    /// Parses a deep link URL to verify it's a RevenueCat supported DeepLink
-    /// and returns the RevenueCat deep link for that URL.
+    /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
     /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
-    static func parseAsDeepLink(_ url: URL) -> DeepLink? {
-        return DeepLinkParser.parse(url)
+    @objc static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
+        return DeepLinkParser.parseAsWebPurchaseRedemption(url)
     }
 
     @objc var appUserID: String { self.identityManager.currentAppUserID }
@@ -1232,14 +1231,15 @@ public extension Purchases {
     }
 
     func redeemWebPurchase(
-        deepLink: DeepLink.WebPurchaseRedemption,
+        webPurchaseRedemption: WebPurchaseRedemption,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     ) {
-        self.purchasesOrchestrator.redeemWebPurchase(deepLink: deepLink, completion: completion)
+        self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption,
+                                                     completion: completion)
     }
 
-    func redeemWebPurchase(_ deepLink: DeepLink.WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
-        return await self.purchasesOrchestrator.redeemWebPurchase(deepLink)
+    func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
+        return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
     }
 }
 
