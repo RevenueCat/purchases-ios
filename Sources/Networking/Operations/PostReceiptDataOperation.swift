@@ -273,7 +273,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
         case appTransaction = "app_transaction"
-        case metadata = "metadata"
+        case metadata
 
     }
 
