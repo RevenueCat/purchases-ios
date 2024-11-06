@@ -104,19 +104,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
 
-        // swiftlint:disable:next todo
-        // TODO: support non-consumables
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        self.subscriptionInformation = SubscriptionInformation(
-            title: subscribedProduct.localizedTitle,
-            durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
-            price: subscribedProduct.localizedPriceString,
-            expirationDateString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
-            willRenew: currentEntitlement.willRenew,
-            productIdentifier: currentEntitlement.productIdentifier,
-            active: currentEntitlement.isActive
-        )
+        let subscriptionInformation = SubscriptionInformation(entitlement: currentEntitlement,
+                                                              subscribedProduct: subscribedProduct)
+        self.subscriptionInformation = subscriptionInformation
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
