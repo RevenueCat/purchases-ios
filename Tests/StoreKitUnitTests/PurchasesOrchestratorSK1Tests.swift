@@ -850,4 +850,22 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(params.storeKitErrorDescription) == SKError.Code.invalidSignature.trackingDescription
     }
 
+    #if compiler(>=6.0)
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func testEligibleWinBackOffersThrowsWhenInSK1Mode() async throws {
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+        self.setUpOrchestrator()
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        var error: Error?
+        do {
+            _ = try await self.orchestrator.eligibleWinBackOffers(forProduct: storeProduct)
+        } catch let thrownError {
+            error = thrownError
+        }
+
+        expect(error).to(matchError(ErrorCode.featureNotSupportedWithStoreKit1))
+    }
+    #endif
 }

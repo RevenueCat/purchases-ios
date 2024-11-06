@@ -58,7 +58,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
     /// ``Purchases/configure(withAPIKey:)`` or one of its overloads.
     /// If there's a chance that may have not happened yet, you can use ``isConfigured`` to check if it's safe to call.
-    /// 
+    ///
     /// ### Related symbols
     /// - ``isConfigured``
     @objc(sharedPurchases)
@@ -460,6 +460,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeMessagesHelper = nil
         #endif
 
+        let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            winBackOfferEligibilityCalculator = WinBackOfferEligibilityCalculator(systemInfo: systemInfo)
+        } else {
+            winBackOfferEligibilityCalculator = nil
+        }
+
         let notificationCenter: NotificationCenter = .default
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -502,7 +509,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
-                    diagnosticsTracker: diagnosticsTracker
+                    diagnosticsTracker: diagnosticsTracker,
+                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
                 )
             } else {
                 return .init(
@@ -523,7 +531,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
-                    storeMessagesHelper: storeMessagesHelper
+                    storeMessagesHelper: storeMessagesHelper,
+                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
                 )
             }
         }()
@@ -786,7 +795,7 @@ public extension Purchases {
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
-    // This allows us to provide a compile-time warning to developers who accidentally 
+    // This allows us to provide a compile-time warning to developers who accidentally
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
     @objc(logIn:completion:)
@@ -813,7 +822,7 @@ public extension Purchases {
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
-    // This allows us to provide a compile-time warning to developers who accidentally 
+    // This allows us to provide a compile-time warning to developers who accidentally
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
@@ -1946,3 +1955,51 @@ private extension Purchases {
     }
 
 }
+
+// MARK: - Win-Back Offers
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+extension Purchases {
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
+     *
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    internal func eligibleWinBackOffers(
+        forProduct product: StoreProduct
+    ) async throws -> [WinBackOffer] {
+        return try await self.purchasesOrchestrator.eligibleWinBackOffers(forProduct: product)
+    }
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
+     *
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    internal func eligibleWinBackOffers(
+        forProduct product: StoreProduct,
+        completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
+    ) {
+        Task {
+            let result: Result<[WinBackOffer], PublicError>
+            do {
+                let eligibleWinBackOffers = try await self.eligibleWinBackOffers(forProduct: product)
+                result = .success(eligibleWinBackOffers)
+            } catch {
+                let publicError = RevenueCat.ErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                result = .failure(publicError)
+            }
+
+            OperationDispatcher.dispatchOnMainActor {
+                completion(result)
+            }
+        }
+    }
+}
+#endif

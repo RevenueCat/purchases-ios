@@ -42,6 +42,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockOfferingsManager: MockOfferingsManager!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
 
     var orchestrator: PurchasesOrchestrator!
@@ -101,6 +102,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
         self.mockStoreMessagesHelper = .init()
+        self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.notificationCenter = MockNotificationCenter()
         self.setUpStoreKit1Wrapper()
@@ -154,24 +156,27 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func setUpOrchestrator() {
-        self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
-                                                  paymentQueueWrapper: self.paymentQueueWrapper,
-                                                  systemInfo: self.systemInfo,
-                                                  subscriberAttributes: self.attribution,
-                                                  operationDispatcher: self.operationDispatcher,
-                                                  receiptFetcher: self.receiptFetcher,
-                                                  receiptParser: self.receiptParser,
-                                                  transactionFetcher: self.mockTransactionFetcher,
-                                                  customerInfoManager: self.customerInfoManager,
-                                                  backend: self.backend,
-                                                  transactionPoster: self.transactionPoster,
-                                                  currentUserProvider: self.currentUserProvider,
-                                                  transactionsManager: self.transactionsManager,
-                                                  deviceCache: self.deviceCache,
-                                                  offeringsManager: self.mockOfferingsManager,
-                                                  manageSubscriptionsHelper: self.mockManageSubsHelper,
-                                                  beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
-                                                  storeMessagesHelper: self.mockStoreMessagesHelper)
+        self.orchestrator = PurchasesOrchestrator(
+            productsManager: self.productsManager,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            subscriberAttributes: self.attribution,
+            operationDispatcher: self.operationDispatcher,
+            receiptFetcher: self.receiptFetcher,
+            receiptParser: self.receiptParser,
+            transactionFetcher: self.mockTransactionFetcher,
+            customerInfoManager: self.customerInfoManager,
+            backend: self.backend,
+            transactionPoster: self.transactionPoster,
+            currentUserProvider: self.currentUserProvider,
+            transactionsManager: self.transactionsManager,
+            deviceCache: self.deviceCache,
+            offeringsManager: self.mockOfferingsManager,
+            manageSubscriptionsHelper: self.mockManageSubsHelper,
+            beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
+            storeMessagesHelper: self.mockStoreMessagesHelper,
+            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator
+        )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
@@ -206,7 +211,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsSynchronizer: diagnosticsSynchronizer,
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }

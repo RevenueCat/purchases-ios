@@ -73,6 +73,8 @@ enum StoreKitStrings {
 
     case sk2_unverified_transaction(identifier: String, Error)
 
+    case sk2_unverified_renewal_info(productIdentifier: String)
+
     case sk2_receipt_missing_purchase(transactionId: String)
 
     #if DEBUG
@@ -185,6 +187,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_unverified_transaction(id, error):
             return "Found unverified transaction with ID: '\(id)' Error: '\(error)'"
+
+        case let .sk2_unverified_renewal_info(productIdentifier):
+            return "Found unverified renewal info for product with identifier: '\(productIdentifier)'"
 
         case let .sk2_receipt_missing_purchase(transactionId):
             return "SK2 receipt is still missing transaction with id '\(transactionId)'"
