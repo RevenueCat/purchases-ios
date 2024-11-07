@@ -19,11 +19,11 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class ButtonComponentViewModel {
+class ButtonComponentViewModel {
 
     /// A mirror of ButtonComponent.Action, with the sole purpose of being able to change the type of urlLid parameters
     /// of some Destination's to actual URLs.
-    internal enum Action {
+    enum Action {
         case restorePurchases
         case navigateTo(destination: Destination)
         case navigateBack
@@ -32,32 +32,27 @@ public class ButtonComponentViewModel {
     /// A mirror of ButtonComponent.Destination, with any urlLid parameters changed to be of the actual URL type. This
     /// allows us to verify the URLs exist and are properly formatted, before making them available to the view layer.
     /// This way the view layer doesn't need to handle this error scenario.
-    internal enum Destination {
+    enum Destination {
         case customerCenter
         case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
     }
 
-    internal let component: PaywallComponent.ButtonComponent
-    internal let localizedStrings: PaywallComponent.LocalizationDictionary
-    internal let action: Action
+    let component: PaywallComponent.ButtonComponent
+    let localizedStrings: PaywallComponent.LocalizationDictionary
+    let action: Action
     let stackViewModel: StackComponentViewModel
 
     init(
-        packageValidator: PackageValidator,
         component: PaywallComponent.ButtonComponent,
         localizedStrings: PaywallComponent.LocalizationDictionary,
-        offering: Offering
+        offering: Offering,
+        stackViewModel: StackComponentViewModel
     ) throws {
         self.component = component
         self.localizedStrings = localizedStrings
-        self.stackViewModel = try StackComponentViewModel(
-            packageValidator: packageValidator,
-            component: component.stack,
-            localizedStrings: localizedStrings,
-            offering: offering
-        )
+        self.stackViewModel = stackViewModel
 
         // Mapping ButtonComponent.Action to ButtonComponentViewModel.Action to verify that any passed-in urlLids exist
         // in localizedStrings:

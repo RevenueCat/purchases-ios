@@ -89,29 +89,16 @@ struct TemplateComponentsView: View {
         let localization = Self.chooseLocalization(for: paywallComponentsData)
 
         do {
+            let factory = ViewModelFactory()
+            let root = try factory.toRootViewModel(
+                componentsConfig: componentsConfig,
+                offering: offering,
+                localizedStrings: localization.localizedStrings
+            )
+
             // STEP 2: Make the view models & validate all components have required localization
             let packageValidator = PackageValidator()
-            let componentViewModel = try PaywallComponentViewModel.root(
-                RootViewModel(
-                    stackViewModel: StackComponentViewModel(
-                        packageValidator: packageValidator,
-                        component: componentsConfig.stack,
-                        localizedStrings: localization.localizedStrings,
-                        offering: offering
-                    ),
-                    stickyFooterViewModel: componentsConfig.stickyFooter.map {
-                        StickyFooterComponentViewModel(
-                            component: $0,
-                            stackViewModel: try StackComponentViewModel(
-                                packageValidator: packageValidator,
-                                component: $0.stack,
-                                localizedStrings: localization.localizedStrings,
-                                offering: offering
-                            )
-                        )
-                    }
-                )
-            )
+            let componentViewModel = PaywallComponentViewModel.root(root)
 
             // WIP: Maybe re-enable this later or add some warnings
 //            guard packageValidator.isValid else {

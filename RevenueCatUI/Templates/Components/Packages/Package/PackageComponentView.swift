@@ -55,94 +55,94 @@ struct PackageComponentView: View {
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PackageComponentView_Previews: PreviewProvider {
-
-    static var package: Package {
-        return .init(identifier: "weekly",
-                     packageType: .weekly,
-                     storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
-    }
-
-    static let paywallState = PaywallState(selectedPackage: nil)
-    static let paywallStateSelected = PaywallState(selectedPackage: package)
-
-    static var stack: PaywallComponent.StackComponent {
-        return .init(
-            components: [
-                .text(.init(
-                    text: "name",
-                    fontWeight: .bold,
-                    color: .init(light: "#000000"),
-                    padding: .zero,
-                    margin: .zero
-                )),
-                .text(.init(
-                    text: "detail",
-                    color: .init(light: "#000000"),
-                    padding: .zero,
-                    margin: .zero
-                ))
-            ],
-            dimension: .vertical(.leading),
-            spacing: 0,
-            backgroundColor: nil,
-            padding: .init(top: 10,
-                           bottom: 10,
-                           leading: 20,
-                           trailing: 20)
-        )
-    }
-
-    static var previews: some View {
-        // Package
-        PackageComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! .init(
-                packageValidator: PackageValidator(),
-                localizedStrings: [
-                    "name": .string("Weekly"),
-                    "detail": .string("Get for $39.99/wk")
-                ],
-                component: .init(
-                    packageID: "weekly",
-                    isSelectedByDefault: false,
-                    stack: stack
-                ),
-                offering: .init(identifier: "default",
-                                serverDescription: "",
-                                availablePackages: [package])
-            ), onDismiss: {}
-        )
-        .environmentObject(paywallState)
-        .previewLayout(.sizeThatFits)
-        .previewDisplayName("Package")
-
-        // Package - Selected
-        PackageComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! .init(
-                packageValidator: PackageValidator(),
-                localizedStrings: [
-                    "name": .string("Weekly"),
-                    "detail": .string("Get for $39.99/wk")
-                ],
-                component: .init(
-                    packageID: "weekly",
-                    isSelectedByDefault: false,
-                    stack: stack
-                ),
-                offering: .init(identifier: "default",
-                                serverDescription: "",
-                                availablePackages: [package])
-            ), onDismiss: {}
-        )
-        .environmentObject(paywallStateSelected)
-        .previewLayout(.sizeThatFits)
-        .previewDisplayName("Package")
-    }
-}
+//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+//struct PackageComponentView_Previews: PreviewProvider {
+//
+//    static var package: Package {
+//        return .init(identifier: "weekly",
+//                     packageType: .weekly,
+//                     storeProduct: .init(sk1Product: .init()),
+//                     offeringIdentifier: "default")
+//    }
+//
+//    static let paywallState = PaywallState(selectedPackage: nil)
+//    static let paywallStateSelected = PaywallState(selectedPackage: package)
+//
+//    static var stack: PaywallComponent.StackComponent {
+//        return .init(
+//            components: [
+//                .text(.init(
+//                    text: "name",
+//                    fontWeight: .bold,
+//                    color: .init(light: "#000000"),
+//                    padding: .zero,
+//                    margin: .zero
+//                )),
+//                .text(.init(
+//                    text: "detail",
+//                    color: .init(light: "#000000"),
+//                    padding: .zero,
+//                    margin: .zero
+//                ))
+//            ],
+//            dimension: .vertical(.leading),
+//            spacing: 0,
+//            backgroundColor: nil,
+//            padding: .init(top: 10,
+//                           bottom: 10,
+//                           leading: 20,
+//                           trailing: 20)
+//        )
+//    }
+//
+//    static var previews: some View {
+//        // Package
+//        PackageComponentView(
+//            // swiftlint:disable:next force_try
+//            viewModel: try! .init(
+//                packageValidator: PackageValidator(),
+//                localizedStrings: [
+//                    "name": .string("Weekly"),
+//                    "detail": .string("Get for $39.99/wk")
+//                ],
+//                component: .init(
+//                    packageID: "weekly",
+//                    isSelectedByDefault: false,
+//                    stack: stack
+//                ),
+//                offering: .init(identifier: "default",
+//                                serverDescription: "",
+//                                availablePackages: [package])
+//            ), onDismiss: {}
+//        )
+//        .environmentObject(paywallState)
+//        .previewLayout(.sizeThatFits)
+//        .previewDisplayName("Package")
+//
+//        // Package - Selected
+//        PackageComponentView(
+//            // swiftlint:disable:next force_try
+//            viewModel: try! .init(
+//                packageValidator: PackageValidator(),
+//                localizedStrings: [
+//                    "name": .string("Weekly"),
+//                    "detail": .string("Get for $39.99/wk")
+//                ],
+//                component: .init(
+//                    packageID: "weekly",
+//                    isSelectedByDefault: false,
+//                    stack: stack
+//                ),
+//                offering: .init(identifier: "default",
+//                                serverDescription: "",
+//                                availablePackages: [package])
+//            ), onDismiss: {}
+//        )
+//        .environmentObject(paywallStateSelected)
+//        .previewLayout(.sizeThatFits)
+//        .previewDisplayName("Package")
+//    }
+//}
 
 #endif
 
