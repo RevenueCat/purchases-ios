@@ -83,12 +83,18 @@ public struct CustomerCenterConfigData {
             case appleSubscriptionManage = "apple_subscription_manage"
             case googleSubscriptionManage = "google_subscription_manage"
             case amazonSubscriptionManage = "amazon_subscription_manage"
+            case webSubscriptionManage = "web_subscription_manage"
             case platformMismatch = "platform_mismatch"
             case goingToCheckPurchases = "going_to_check_purchases"
             case checkPastPurchases = "check_past_purchases"
             case purchasesRecovered = "purchases_recovered"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
             case purchasesNotRecovered = "purchases_not_recovered"
+            case manageSubscription = "manage_subscription"
+            case youHavePromo = "you_have_promo"
+            case youHaveLifetime = "you_have_lifetime"
+            case free = "free"
+            case never = "never"
 
             var defaultValue: String {
                 switch self {
@@ -160,11 +166,26 @@ public struct CustomerCenterConfigData {
                 case .pleaseContactSupportToManage:
                     return "Please contact support to manage your subscription."
                 case .appleSubscriptionManage:
-                    return "You can manage your subscription by using the App Store app on an Apple device."
+                    return "You have an active subscription from the Apple App Store. " +
+                    "You can manage your subscription by using the App Store app on an Apple device."
                 case .googleSubscriptionManage:
-                    return "You can manage your subscription by using the Play Store app on an Android device"
+                    return "You have an active subscription from the Google Play Store"
                 case .amazonSubscriptionManage:
-                    return "You can manage your subscription in the Amazon Appstore app on an Amazon device."
+                    return "You have an active subscription from the Amazon Appstore. " +
+                    "You can manage your subscription in the Amazon Appstore app."
+                case .webSubscriptionManage:
+                    return "You have an active subscription that was created on the web." +
+                    " You can manage your subscription by visiting your account."
+                case .manageSubscription:
+                    return "Manage your subscription"
+                case .youHavePromo:
+                    return "You’ve been granted a subscription that doesn’t renew"
+                case .youHaveLifetime:
+                    return "Your active lifetime subscription"
+                case .free:
+                    return "Free"
+                case .never:
+                    return "Never"
                 }
             }
 

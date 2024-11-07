@@ -17,11 +17,11 @@ protocol PaywallEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func store(_ storedEvent: PaywallStoredEvent) async
+    func store(_ storedEvent: StoredEvent) async
 
     /// - Returns: the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetch(_ count: Int) async -> [PaywallStoredEvent]
+    func fetch(_ count: Int) async -> [StoredEvent]
 
     /// Removes the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -38,17 +38,22 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         self.handler = handler
     }
 
-    func store(_ storedEvent: PaywallStoredEvent) async {
+    func store(_ storedEvent: StoredEvent) async {
         do {
-            Logger.verbose(PaywallEventStoreStrings.storing_event(storedEvent.event))
+            if let eventDescription = try? storedEvent.encodedEvent.prettyPrintedJSON {
+                Logger.verbose(PaywallEventStoreStrings.storing_event(eventDescription))
+            } else {
+                Logger.verbose(PaywallEventStoreStrings.storing_event_without_json)
+            }
 
-            await self.handler.append(line: try PaywallEventSerializer.encode(storedEvent))
+            let event = try PaywallEventSerializer.encode(storedEvent)
+            await self.handler.append(line: event)
         } catch {
             Logger.error(PaywallEventStoreStrings.error_storing_event(error))
         }
     }
 
-    func fetch(_ count: Int) async -> [PaywallStoredEvent] {
+    func fetch(_ count: Int) async -> [StoredEvent] {
         assert(count > 0, "Invalid count: \(count)")
 
         do {
@@ -167,7 +172,8 @@ private enum PaywallEventStoreStrings {
     case removing_old_documents_store(URL)
     case error_removing_old_documents_store(Error)
 
-    case storing_event(PaywallEvent)
+    case storing_event(String)
+    case storing_event_without_json
 
     case error_storing_event(Error)
     case error_fetching_events(Error)
@@ -191,8 +197,11 @@ extension PaywallEventStoreStrings: LogMessage {
         case let .error_removing_old_documents_store(error):
             return "Failed removing old store: \((error as NSError).description)"
 
-        case let .storing_event(event):
-            return "Storing event: \(event.debugDescription)"
+        case let .storing_event(eventDescription):
+            return "Storing event: \(eventDescription)"
+
+        case .storing_event_without_json:
+            return "Storing an event. There was an error trying to print it"
 
         case let .error_storing_event(error):
             return "Error storing event: \((error as NSError).description)"

@@ -48,7 +48,6 @@ extension Message.Reason {
         case .generic: return .generic
         default:
             // winBackOffer message reason was added in iOS 18.0, but it's not recognized by xcode versions <16.0.
-            // https://developer.apple.com/documentation/xcode-release-notes/xcode-14_3-release-notes
             #if compiler(>=6.0)
             if #available(iOS 18.0, visionOS 2.0, *), case .winBackOffer = self {
                 return .winBackOffer

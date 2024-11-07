@@ -27,6 +27,10 @@ struct WrongPlatformView: View {
 
     @State
     private var store: Store?
+    @State
+    private var managementURL: URL?
+    @State
+    private var subscriptionInformation: SubscriptionInformation?
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -51,20 +55,30 @@ struct WrongPlatformView: View {
     init() {
     }
 
-    fileprivate init(store: Store) {
+    fileprivate init(store: Store,
+                     managementURL: URL?,
+                     subscriptionInformation: SubscriptionInformation) {
         self._store = State(initialValue: store)
+        self._managementURL = State(initialValue: managementURL)
+        self._subscriptionInformation = State(initialValue: subscriptionInformation)
     }
 
     var body: some View {
         List {
-            Section {
-                let platformInstructions = self.humanReadableInstructions(for: store)
-
-                CompatibilityContentUnavailableView(
-                    localization.commonLocalizedString(for: .platformMismatch),
-                    systemImage: "exclamationmark.triangle.fill",
-                    description: Text(platformInstructions)
-                )
+            if let subscriptionInformation = self.subscriptionInformation {
+                Section {
+                    SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                                            refundRequestStatus: nil)
+                }
+            }
+            if let managementURL = self.managementURL {
+                Section {
+                    AsyncButton {
+                        openURL(managementURL)
+                    } label: {
+                        Text(localization.commonLocalizedString(for: .manageSubscription))
+                    }
+                }
             }
             if let url = supportURL {
                 Section {
@@ -82,11 +96,15 @@ struct WrongPlatformView: View {
                 DismissCircleButton()
             }
         }
+        .navigationTitle("How can we help?")
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             if store == nil {
                 if let customerInfo = try? await Purchases.shared.customerInfo(),
-                   let firstEntitlement = customerInfo.entitlements.active.first {
-                    self.store = firstEntitlement.value.store
+                   let entitlement = customerInfo.entitlements.active.first?.value {
+                    self.store = entitlement.store
+                    self.managementURL = customerInfo.managementURL
+                    self.subscriptionInformation = SubscriptionInformation(entitlement: entitlement)
                 }
             }
         }
@@ -101,10 +119,14 @@ struct WrongPlatformView: View {
                 return localization.commonLocalizedString(for: .appleSubscriptionManage)
             case .playStore:
                 return localization.commonLocalizedString(for: .googleSubscriptionManage)
-            case .stripe, .rcBilling, .external, .promotional, .unknownStore:
+            case .stripe, .rcBilling:
+                return localization.commonLocalizedString(for: .webSubscriptionManage)
+            case .external, .promotional, .unknownStore:
                 return defaultContactSupport
             case .amazon:
                 return localization.commonLocalizedString(for: .amazonSubscriptionManage)
+            @unknown default:
+                return defaultContactSupport
             }
         } else {
             return defaultContactSupport
@@ -121,18 +143,59 @@ struct WrongPlatformView: View {
 @available(watchOS, unavailable)
 struct WrongPlatformView_Previews: PreviewProvider {
 
+    private struct PreviewData {
+        let store: Store
+        let managementURL: URL?
+        let customerInfo: CustomerInfo
+        let displayName: String
+    }
+
+    private static let previewCases: [PreviewData] = [
+        .init(store: .playStore,
+              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
+              customerInfo: CustomerInfoFixtures.customerInfoWithGoogleSubscriptions,
+              displayName: "Play Store"),
+        .init(store: .rcBilling,
+              managementURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
+              customerInfo: CustomerInfoFixtures.customerInfoWithRCBillingSubscriptions,
+              displayName: "RCBilling"),
+        .init(store: .stripe,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
+              displayName: "Stripe"),
+        .init(store: .external,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
+              displayName: "External"),
+        .init(store: .promotional,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithPromotional,
+              displayName: "Promotional"),
+        .init(store: .promotional,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithLifetimePromotional,
+              displayName: "Promotional Lifetime"),
+        .init(store: .amazon,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions,
+              displayName: "Amazon")
+    ]
+
     static var previews: some View {
         Group {
-            WrongPlatformView(store: .appStore)
-                .previewDisplayName("App Store")
-
-            WrongPlatformView(store: .amazon)
-                .previewDisplayName("Amazon")
-
-            WrongPlatformView(store: .rcBilling)
-                .previewDisplayName("RCBilling")
+            ForEach(previewCases, id: \.displayName) { data in
+                WrongPlatformView(
+                    store: data.store,
+                    managementURL: data.managementURL,
+                    subscriptionInformation: getSubscriptionInformation(for: data.customerInfo)
+                )
+                .previewDisplayName(data.displayName)
+            }
         }
+    }
 
+    private static func getSubscriptionInformation(for customerInfo: CustomerInfo) -> SubscriptionInformation {
+        return SubscriptionInformation(entitlement: customerInfo.entitlements.active.first!.value)
     }
 
 }

@@ -96,10 +96,6 @@ struct TemplateComponentsView: View {
                 localizedStrings: localization.localizedStrings
             )
 
-            // STEP 2: Make the view models & validate all components have required localization
-            let packageValidator = PackageValidator()
-            let componentViewModel = PaywallComponentViewModel.root(root)
-
             // WIP: Maybe re-enable this later or add some warnings
 //            guard packageValidator.isValid else {
 //                Logger.error(Strings.paywall_could_not_find_any_packages)

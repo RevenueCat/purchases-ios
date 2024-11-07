@@ -24,7 +24,6 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct SubscriptionDetailsView: View {
 
-    let iconWidth = 22.0
     let subscriptionInformation: SubscriptionInformation
     let refundRequestStatus: RefundRequestStatus?
     @Environment(\.localization)
@@ -32,99 +31,71 @@ struct SubscriptionDetailsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            VStack(alignment: .leading) {
-                Text("\(subscriptionInformation.title)")
-                    .font(.headline)
-
-                let explanation = subscriptionInformation.active ? (
-                     subscriptionInformation.willRenew ?
-                            localization.commonLocalizedString(for: .subEarliestRenewal) :
-                            localization.commonLocalizedString(for: .subEarliestExpiration)
-                    ) : localization.commonLocalizedString(for: .subExpired)
-
-                Text("\(explanation)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-            }.padding([.bottom], 10)
+            SubscriptionDetailsHeader(subscriptionInformation: subscriptionInformation, localization: localization)
+                .padding(.bottom, 10)
 
             Divider()
                 .padding(.bottom)
 
             VStack(alignment: .leading, spacing: 16.0) {
-                HStack(alignment: .center) {
-                    Image(systemName: "coloncurrencysign.arrow.circlepath")
-                        .accessibilityHidden(true)
-                        .frame(width: iconWidth)
-                    VStack(alignment: .leading) {
-                        Text(localization.commonLocalizedString(for: .billingCycle))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                        Text("\(subscriptionInformation.durationTitle)")
-                            .font(.body)
+                if let durationTitle = subscriptionInformation.durationTitle {
+                    IconLabelView(
+                        iconName: "coloncurrencysign.arrow.circlepath",
+                        label: localization.commonLocalizedString(for: .billingCycle),
+                        value: durationTitle
+                    )
+                }
+
+                let priceValue: String? = {
+                    switch subscriptionInformation.price {
+                    case .free:
+                        return localization.commonLocalizedString(for: .free)
+                    case .paid(let localizedPrice):
+                        return localizedPrice
+                    case .unknown:
+                        return nil
+                    }
+                }()
+
+                if let price = priceValue {
+                    IconLabelView(
+                        iconName: "coloncurrencysign",
+                        label: localization.commonLocalizedString(for: .currentPrice),
+                        value: price
+                    )
+                }
+
+                if let expirationOrRenewal = subscriptionInformation.expirationOrRenewal {
+                    switch expirationOrRenewal.date {
+                    case .never:
+                        IconLabelView(
+                            iconName: "calendar",
+                            label: label(for: expirationOrRenewal),
+                            value: localization.commonLocalizedString(for: .never)
+                        )
+                    case .date(let value):
+                        IconLabelView(
+                            iconName: "calendar",
+                            label: label(for: expirationOrRenewal),
+                            value: value
+                        )
                     }
                 }
 
-                HStack(alignment: .center) {
-                    Image(systemName: "coloncurrencysign")
-                        .accessibilityHidden(true)
-                        .frame(width: iconWidth)
-                    VStack(alignment: .leading) {
-                        Text(localization.commonLocalizedString(for: .currentPrice))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                        Text("\(subscriptionInformation.price)")
-                            .font(.body)
-                    }
-                }
-
-                if let nextRenewal =  subscriptionInformation.expirationDateString {
-
-                    let expirationString = subscriptionInformation.active ? (
-                        subscriptionInformation.willRenew ?
-                            localization.commonLocalizedString(for: .nextBillingDate) :
-                            localization.commonLocalizedString(for: .expires)
-                    ) : localization.commonLocalizedString(for: .expired)
-
-                    HStack(alignment: .center) {
-                        Image(systemName: "calendar")
-                            .accessibilityHidden(true)
-                            .frame(width: iconWidth)
-                        VStack(alignment: .leading) {
-                            Text("\(expirationString)")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .textCase(.uppercase)
-                            Text("\(String(describing: nextRenewal))")
-                                .font(.body)
-                        }
-                    }
-                }
-
-                if let refundRequestStatus = refundRequestStatus {
-                    HStack(alignment: .center) {
-                        Image(systemName: "arrowshape.turn.up.backward")
-                            .accessibilityHidden(true)
-                            .frame(width: iconWidth)
-                        VStack(alignment: .leading) {
-                            Text(localization.commonLocalizedString(for: .refundStatus))
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .textCase(.uppercase)
-                            Text(refundStatusMessage(for: refundRequestStatus))
-                                .font(.body)
-                        }
-                    }
+                if let refundRequestStatus = refundRequestStatus,
+                   let refundStatusMessage = refundStatusMessage(for: refundRequestStatus) {
+                    IconLabelView(
+                        iconName: "arrowshape.turn.up.backward",
+                        label: localization.commonLocalizedString(for: .refundStatus),
+                        value: refundStatusMessage
+                    )
                 }
             }
-
         }
         .padding(.vertical, 8.0)
     }
 
-    private func refundStatusMessage(for status: RefundRequestStatus) -> String {
+    private func refundStatusMessage(for status: RefundRequestStatus) -> String? {
         switch status {
         case .error:
             return localization.commonLocalizedString(for: .refundErrorGeneric)
@@ -132,6 +103,96 @@ struct SubscriptionDetailsView: View {
             return localization.commonLocalizedString(for: .refundGranted)
         case .userCancelled:
             return localization.commonLocalizedString(for: .refundCanceled)
+        @unknown default:
+            return nil
+        }
+    }
+
+    private func label(for expirationOrRenewal: SubscriptionInformation.ExpirationOrRenewal) -> String {
+        switch expirationOrRenewal.label {
+        case .nextBillingDate:
+            return localization.commonLocalizedString(for: .nextBillingDate)
+        case .expires:
+            return localization.commonLocalizedString(for: .expires)
+        case .expired:
+            return localization.commonLocalizedString(for: .expired)
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailsHeader: View {
+    let subscriptionInformation: SubscriptionInformation
+    let localization: CustomerCenterConfigData.Localization
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            if let title = subscriptionInformation.title {
+                Text(title)
+                    .font(.headline)
+            }
+
+            let explanation = getSubscriptionExplanation(from: subscriptionInformation, localization: localization)
+
+            Text(explanation)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
+        }
+    }
+
+    private func getSubscriptionExplanation(from subscriptionInformation: SubscriptionInformation,
+                                            localization: CustomerCenterConfigData.Localization) -> String {
+        switch subscriptionInformation.explanation {
+        case .promotional:
+            return localization.commonLocalizedString(for: .youHavePromo)
+        case .earliestRenewal:
+            return localization.commonLocalizedString(for: .subEarliestRenewal)
+        case .earliestExpiration:
+            return localization.commonLocalizedString(for: .subEarliestExpiration)
+        case .expired:
+            return localization.commonLocalizedString(for: .subExpired)
+        case .lifetime:
+            return localization.commonLocalizedString(for: .youHaveLifetime)
+        case .google:
+            return localization.commonLocalizedString(for: .googleSubscriptionManage)
+        case .web:
+            return localization.commonLocalizedString(for: .webSubscriptionManage)
+        case .otherStorePurchase:
+            return localization.commonLocalizedString(for: .pleaseContactSupportToManage)
+        case .amazon:
+            return localization.commonLocalizedString(for: .amazonSubscriptionManage)
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct IconLabelView: View {
+    let iconName: String
+    let label: String
+    let value: String
+
+    private let iconWidth = 22.0
+
+    var body: some View {
+        HStack(alignment: .center) {
+            Image(systemName: iconName)
+                .accessibilityHidden(true)
+                .frame(width: iconWidth)
+            VStack(alignment: .leading) {
+                Text(label)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .textCase(.uppercase)
+                Text(value)
+                    .font(.body)
+            }
         }
     }
 }

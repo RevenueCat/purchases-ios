@@ -15,6 +15,7 @@ import Foundation
 import Nimble
 @testable import RevenueCat
 import SnapshotTesting
+import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PaywallEventsRequestTests: TestCase {
@@ -26,25 +27,32 @@ class PaywallEventsRequestTests: TestCase {
     }
 
     func testImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(Self.eventCreationData,
-                                                                 Self.eventData), userID: Self.userID)
-        let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+                                                           userID: Self.userID,
+                                                           feature: .paywalls))
+        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCancelEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .cancel(Self.eventCreationData,
-                                                             Self.eventData), userID: Self.userID)
-        let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
+        let event = PaywallEvent.cancel(Self.eventCreationData, Self.eventData)
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+                                                           userID: Self.userID,
+                                                           feature: .paywalls))
+        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .close(Self.eventCreationData,
-                                                            Self.eventData), userID: Self.userID)
-        let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
+        let event = PaywallEvent.close(Self.eventCreationData,
+                                       Self.eventData)
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+                                                           userID: Self.userID,
+                                                           feature: .paywalls))
+        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }

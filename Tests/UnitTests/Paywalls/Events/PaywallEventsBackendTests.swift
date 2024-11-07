@@ -39,24 +39,31 @@ class BackendPaywallEventTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
-    func testPostPaywallEventsWithOneEvent() {
-        let event: PaywallStoredEvent = .init(event: .impression(Self.eventCreation1,
-                                                                 Self.eventData1), userID: Self.userID)
+    func testPostPaywallEventsWithOneEvent() throws {
+        let event = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+                                                           userID: Self.userID,
+                                                           feature: .paywalls))
 
         let error = waitUntilValue { completion in
-            self.internalAPI.postPaywallEvents(events: [event], completion: completion)
+            self.internalAPI.postPaywallEvents(events: [storedEvent], completion: completion)
         }
 
         expect(error).to(beNil())
     }
 
-    func testPostPaywallEventsWithMultipleEvents() {
-        let event1: PaywallStoredEvent = .init(event: .impression(Self.eventCreation1,
-                                                                  Self.eventData1), userID: Self.userID)
-        let event2: PaywallStoredEvent = .init(event: .close(Self.eventCreation2, Self.eventData2), userID: Self.userID)
+    func testPostPaywallEventsWithMultipleEvents() throws {
+        let event1 = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
+        let storedEvent1: StoredEvent = try XCTUnwrap(.init(event: event1,
+                                                            userID: Self.userID,
+                                                            feature: .paywalls))
+        let event2 = PaywallEvent.close(Self.eventCreation2, Self.eventData2)
+        let storedEvent2: StoredEvent =  try XCTUnwrap(.init(event: event2,
+                                                             userID: Self.userID,
+                                                             feature: .paywalls))
 
         let error = waitUntilValue { completion in
-            self.internalAPI.postPaywallEvents(events: [event1, event2],
+            self.internalAPI.postPaywallEvents(events: [storedEvent1, storedEvent2],
                                                completion: completion)
         }
 

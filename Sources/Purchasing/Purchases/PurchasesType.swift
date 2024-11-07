@@ -351,6 +351,54 @@ public protocol PurchasesType: AnyObject {
      */
     func purchase(package: Package) async throws -> PurchaseResultData
 
+    #if ENABLE_PURCHASE_PARAMS
+
+    /**
+     * Initiates a purchase.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter params: The ``PurchaseParams`` instance with the configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @objc(params:withCompletion:)
+    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock)
+
+    /**
+     * Initiates a purchase.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
+     *
+     * - Note: You do not need to finish the transaction yourself after this, ``Purchases`` will
+     * handle this for you.
+     *
+     * - Parameter params: The ``PurchaseParams`` instance with extra configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
+     *
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
+     */
+    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData
+
+    #endif
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
@@ -1076,7 +1124,6 @@ public protocol PurchasesSwiftType: AnyObject {
     func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
-
 }
 
 // MARK: -
@@ -1094,5 +1141,33 @@ internal protocol InternalPurchasesType: AnyObject {
     func productEntitlementMapping() async throws -> ProductEntitlementMapping
 
     var responseVerificationMode: Signing.ResponseVerificationMode { get }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
+     *
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct
+    ) async throws -> [WinBackOffer]
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
+     *
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct,
+        completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
+    )
+    #endif
 
 }
