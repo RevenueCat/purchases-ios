@@ -158,7 +158,6 @@ final class PurchasesOrchestrator {
             storeMessagesHelper: storeMessagesHelper,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             paywallEventsManager: paywallEventsManager,
-            deepLinkHandler: deepLinkHandler,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper
         )
 
@@ -237,7 +236,6 @@ final class PurchasesOrchestrator {
         self.storeMessagesHelper = storeMessagesHelper
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.paywallEventsManager = paywallEventsManager
-        self.deepLinkHandler = deepLinkHandler
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
