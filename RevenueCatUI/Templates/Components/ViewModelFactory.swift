@@ -11,7 +11,6 @@
 //
 //  Created by Josh Holtz on 11/5/24.
 
-
 import Foundation
 import RevenueCat
 
@@ -75,14 +74,14 @@ struct ViewModelFactory {
         case .stack(let component):
             let viewModels = try component.components.map { component in
                 try self.toViewModel(component: component,
-                                   packageValidator: packageValidator,
-                                   offering: offering,
-                                   localizedStrings: localizedStrings)
+                                     packageValidator: packageValidator,
+                                     offering: offering,
+                                     localizedStrings: localizedStrings)
             }
 
             return .stack(
                 StackComponentViewModel(component: component,
-                                            viewModels: viewModels)
+                                        viewModels: viewModels)
             )
         case .linkButton(let component):
             return .linkButton(
@@ -111,7 +110,12 @@ struct ViewModelFactory {
                 offering: offering
             )
 
-            let viewModel = PackageComponentViewModel(localizedStrings: localizedStrings, component: component, offering: offering, stackViewModel: stackViewModel)
+            let viewModel = PackageComponentViewModel(
+                localizedStrings: localizedStrings,
+                component: component,
+                offering: offering,
+                stackViewModel: stackViewModel
+            )
 
             if let package = viewModel.package {
                 packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
@@ -136,7 +140,7 @@ struct ViewModelFactory {
             )
 
             return .stickyFooter(
-                try StickyFooterComponentViewModel(
+                StickyFooterComponentViewModel(
                     component: component,
                     stackViewModel: stackViewModel
                 )

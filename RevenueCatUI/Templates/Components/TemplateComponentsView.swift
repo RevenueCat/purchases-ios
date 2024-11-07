@@ -102,9 +102,9 @@ struct TemplateComponentsView: View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            self.componentViewModel = componentViewModel
+            self.componentViewModel = .root(root)
             self._paywallState = .init(wrappedValue: PaywallState(
-                selectedPackage: packageValidator.defaultSelectedPackage
+                selectedPackage: factory.packageValidator.defaultSelectedPackage
             ))
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails

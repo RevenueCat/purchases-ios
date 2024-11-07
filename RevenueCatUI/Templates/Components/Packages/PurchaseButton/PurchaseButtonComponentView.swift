@@ -77,83 +77,103 @@ private extension View {
 
 #if DEBUG
 
-//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//struct PurchaseButtonComponentView_Previews: PreviewProvider {
-//
-//    static var previews: some View {
-//        // Pill
-//        PurchaseButtonComponentView(
-//            // swiftlint:disable:next force_try
-//            viewModel: try! .init(
-//                packageValidator: PackageValidator(),
-//                localizedStrings: [
-//                    "id_1": .string("Hello, world"),
-//                    "id_2": .string("Hello, world intro offer")
-//                ],
-//                component: .init(
-//                    stack: .init(components: [
-//                        // WIP: Intro offer state with "id_2",
-//                        .text(.init(
-//                            text: "id_1",
-//                            fontWeight: .bold,
-//                            color: .init(light: "#ffffff"),
-//                            backgroundColor: .init(light: "#ff0000"),
-//                            padding: .init(top: 10,
-//                                           bottom: 10,
-//                                           leading: 30,
-//                                           trailing: 30)
-//                        ))
-//                    ])
-//                ),
-//                offering: Offering(identifier: "",
-//                                   serverDescription: "",
-//                                   availablePackages: [])
-//            )
-//        )
-//        .previewLayout(.sizeThatFits)
-//        .previewDisplayName("Pill")
-//
-//        // Rounded Rectangle
-//        PurchaseButtonComponentView(
-//            // swiftlint:disable:next force_try
-//            viewModel: try! .init(
-//                packageValidator: PackageValidator(),
-//                localizedStrings: [
-//                    "id_1": .string("Hello, world"),
-//                    "id_2": .string("Hello, world intro offer")
-//                ],
-//                component: .init(
-//                    stack: .init(
-//                        components: [
-//                            // WIP: Intro offer state with "id_2",
-//                            .text(.init(
-//                                text: "id_1",
-//                                fontWeight: .bold,
-//                                color: .init(light: "#ffffff")
-//                            ))
-//                        ],
-//                        backgroundColor: .init(light: "#ff0000"),
-//                        padding: .init(top: 8,
-//                                       bottom: 8,
-//                                       leading: 8,
-//                                       trailing: 8),
-//                        cornerRadiuses: PaywallComponent.CornerRadiuses(
-//                            topLeading: 8,
-//                            topTrailing: 8,
-//                            bottomLeading: 8,
-//                            bottomTrailing: 8
-//                        )
-//                    )
-//                ),
-//                offering: Offering(identifier: "",
-//                                   serverDescription: "",
-//                                   availablePackages: [])
-//            )
-//        )
-//        .previewLayout(.sizeThatFits)
-//        .previewDisplayName("Rounded Rectangle")
-//    }
-//}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PurchaseButtonComponentView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        // Pill
+        PurchaseButtonComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    stack: .init(components: [
+                        // WIP: Intro offer state with "id_2",
+                        .text(.init(
+                            text: "id_1",
+                            fontWeight: .bold,
+                            color: .init(light: "#ffffff"),
+                            backgroundColor: .init(light: "#ff0000"),
+                            padding: .init(top: 10,
+                                           bottom: 10,
+                                           leading: 30,
+                                           trailing: 30)
+                        ))
+                    ])
+                ),
+                localizedStrings: [
+                    "id_1": .string("Hello, world"),
+                    "id_2": .string("Hello, world intro offer")
+                ],
+                offering: Offering(identifier: "",
+                                   serverDescription: "",
+                                   availablePackages: [])
+            )
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Pill")
+
+        // Rounded Rectangle
+        PurchaseButtonComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    stack: .init(
+                        components: [
+                            // WIP: Intro offer state with "id_2",
+                            .text(.init(
+                                text: "id_1",
+                                fontWeight: .bold,
+                                color: .init(light: "#ffffff")
+                            ))
+                        ],
+                        backgroundColor: .init(light: "#ff0000"),
+                        padding: .init(top: 8,
+                                       bottom: 8,
+                                       leading: 8,
+                                       trailing: 8),
+                        cornerRadiuses: PaywallComponent.CornerRadiuses(
+                            topLeading: 8,
+                            topTrailing: 8,
+                            bottomLeading: 8,
+                            bottomTrailing: 8
+                        )
+                    )
+                ),
+                localizedStrings: [
+                    "id_1": .string("Hello, world"),
+                    "id_2": .string("Hello, world intro offer")
+                ],
+                offering: Offering(identifier: "",
+                                   serverDescription: "",
+                                   availablePackages: [])
+            )
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Rounded Rectangle")
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension PurchaseButtonComponentViewModel {
+
+    convenience init(
+        component: PaywallComponent.PurchaseButtonComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
+    ) throws {
+        let factory = ViewModelFactory()
+        let stackViewModel = try factory.toStackViewModel(
+            component: component.stack,
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
+
+        self.init(
+            stackViewModel: stackViewModel
+        )
+    }
+
+}
 
 #endif
 

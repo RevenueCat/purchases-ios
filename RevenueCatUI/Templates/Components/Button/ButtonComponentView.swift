@@ -104,41 +104,65 @@ struct ButtonComponentView: View {
 
 #if DEBUG
 
-//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//struct ButtonComponentView_Previews: PreviewProvider {
-//
-//    static var previews: some View {
-//        VStack {
-//            ButtonComponentView(
-//                // swiftlint:disable:next force_try
-//                viewModel: try! .init(
-//                    packageValidator: PackageValidator(),
-//                    localizedStrings: [
-//                        "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
-//                    ],
-//                    component: .init(
-//                        action: .navigateBack,
-//                        stack: .init(
-//                            components: [
-//                                PaywallComponent.text(
-//                                    PaywallComponent.TextComponent(
-//                                        text: "buttonText",
-//                                        color: .init(light: "#000000")
-//                                    )
-//                                )
-//                            ],
-//                            backgroundColor: nil
-//                        )
-//                    ),
-//                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
-//                ),
-//                onDismiss: { }
-//            )
-//        }
-//        .previewLayout(.fixed(width: 400, height: 400))
-//        .previewDisplayName("Default")
-//    }
-//}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct ButtonComponentView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        VStack {
+            ButtonComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        action: .navigateBack,
+                        stack: .init(
+                            components: [
+                                PaywallComponent.text(
+                                    PaywallComponent.TextComponent(
+                                        text: "buttonText",
+                                        color: .init(light: "#000000")
+                                    )
+                                )
+                            ],
+                            backgroundColor: nil
+                        )
+                    ),
+                    localizedStrings: [
+                        "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                    ],
+                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
+                ),
+                onDismiss: { }
+            )
+        }
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Default")
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension ButtonComponentViewModel {
+
+    convenience init(
+        component: PaywallComponent.ButtonComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
+    ) throws {
+        let factory = ViewModelFactory()
+        let stackViewModel = try factory.toStackViewModel(
+            component: component.stack,
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
+
+        try self.init(
+            component: component,
+            localizedStrings: localizedStrings,
+            offering: offering,
+            stackViewModel: stackViewModel
+        )
+    }
+
+}
 
 #endif
 
