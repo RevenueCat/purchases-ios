@@ -32,8 +32,8 @@ public enum PaywallComponent: PaywallComponentBase {
         case linkButton = "link_button"
         case button
         case package
-        case purchaseButton
-        case stickyFooter
+        case purchaseButton = "purchase_button"
+        case stickyFooter = "sticky_footer"
 
     }
 

@@ -47,6 +47,33 @@ class StackComponentViewModel {
         self.viewModels = viewModels
     }
 
+    var shouldUseVStack: Bool {
+        switch self.dimension {
+        case .vertical:
+            if viewModels.count < 3 {
+                return true
+            }
+            return false
+        case .horizontal, .zlayer:
+            return false
+        }
+    }
+
+    var shouldUseFlex: Bool {
+        guard let widthType = self.component.width?.type else {
+            return false
+        }
+
+        switch widthType {
+        case .fit:
+            return false
+        case .fill:
+            return true
+        case .fixed:
+            return true
+        }
+    }
+
     var dimension: PaywallComponent.Dimension {
         component.dimension
     }

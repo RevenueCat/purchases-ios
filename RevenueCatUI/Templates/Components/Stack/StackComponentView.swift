@@ -35,14 +35,53 @@ struct StackComponentView: View {
         Group {
             switch viewModel.dimension {
             case .vertical(let horizontalAlignment):
-                // LazyVStack needed for performance when loading
-                LazyVStack(spacing: viewModel.spacing) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
-                    .frame(maxWidth: .infinity, alignment: horizontalAlignment.stackAlignment)
+                Group {
+                    // This is NOT a final implementation of this
+                    // There are some horizontal sizing issues with using LazyVStack
+                    // There are so performance issues with VStack with lots of children
+                    if viewModel.shouldUseVStack {
+                        // VStack when not many things
+                        VStack(
+                            alignment: horizontalAlignment.stackAlignment,
+                            spacing: viewModel.spacing
+                        ) {
+                            ComponentsView(
+                                componentViewModels: self.viewModel.viewModels,
+                                onDismiss: self.onDismiss
+                            )
+                        }
+                    } else {
+                        // LazyVStack needed for performance when loading
+                        LazyVStack(
+                            alignment: horizontalAlignment.stackAlignment,
+                            spacing: viewModel.spacing
+                        ) {
+                            ComponentsView(
+                                componentViewModels: self.viewModel.viewModels,
+                                onDismiss: self.onDismiss
+                            )
+                        }
+                    }
                 }
-            case .horizontal(let verticalAlignment):
-                HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
+                .applyIf(viewModel.shouldUseFlex) {
+                    $0.frame(
+                        maxWidth: .infinity,
+                        alignment: horizontalAlignment.frameAlignment
+                    )
+                }
+            case .horizontal(let verticalAlignment, let distribution):
+                if viewModel.shouldUseFlex {
+                    FlexHStack(
+                        alignment: verticalAlignment.stackAlignment,
+                        spacing: viewModel.spacing,
+                        justifyContent: distribution.justifyContent,
+                        componentViewModels: self.viewModel.viewModels,
+                        onDismiss: self.onDismiss
+                    )
+                } else {
+                    HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
+                        ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
+                    }
                 }
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
@@ -61,6 +100,27 @@ struct StackComponentView: View {
             view.compositingGroup().shadow(shadow: shadow)
         }
         .padding(viewModel.margin)
+    }
+
+}
+
+extension PaywallComponent.FlexDistribution {
+
+    var justifyContent: JustifyContent {
+        switch self {
+        case .start:
+            return .start
+        case .center:
+            return .center
+        case .end:
+            return .end
+        case .spaceBetween:
+            return .spaceBetween
+        case .spaceAround:
+            return .spaceAround
+        case .spaceEvenly:
+            return .spaceEvenly
+        }
     }
 
 }

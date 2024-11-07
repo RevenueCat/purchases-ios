@@ -35,6 +35,18 @@ public extension PaywallComponent {
             self.isSelectedByDefault = isSelectedByDefault
             self.stack = stack
         }
+
+    }
+
+}
+
+extension PaywallComponent.PackageComponent {
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case packageID = "packageId"
+        case isSelectedByDefault
+        case stack
     }
 
 }

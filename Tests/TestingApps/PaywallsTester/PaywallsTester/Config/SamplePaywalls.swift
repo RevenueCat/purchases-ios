@@ -650,7 +650,7 @@ private extension SamplePaywallLoader {
     ) -> PaywallComponentsData {
         PaywallComponentsData(templateName: "Component Sample",
                               assetBaseURL: URL(string:"https://assets.pawwalls.com/")!,
-                              componentsConfigs: .init(
+                              componentsConfig: .init(
                                 base: .init(
                                     stack: .init(components: components),
                                     stickyFooter: stickyFooter
@@ -928,7 +928,7 @@ private extension SamplePaywallLoader {
 
     static func simpleFeatureStack(text: PaywallComponent) -> PaywallComponent {
         .stack(.init(components: [checkmarkImage, text],
-                     dimension: .horizontal(.center),
+                     dimension: .horizontal(.center, .start),
                      spacing: nil,
                      backgroundColor: nil,
                      padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
@@ -1109,7 +1109,7 @@ private extension SamplePaywallLoader {
 
     static var featureImageStack1: PaywallComponent = {
         .stack(.init(components: [treadmillText, spacer, treadmill, spacer],
-                     dimension: .horizontal(.center),
+                     dimension: .horizontal(.center, .start),
                      spacing: nil,
                      backgroundColor: nil,
                      padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
@@ -1117,7 +1117,7 @@ private extension SamplePaywallLoader {
 
     static var featureImageStack2: PaywallComponent = {
         .stack(.init(components: [spacer, cycle, spacer, cycleText],
-                     dimension: .horizontal(.center),
+                     dimension: .horizontal(.center, .start),
                      spacing: nil,
                      backgroundColor: nil,
                      padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))
@@ -1125,7 +1125,7 @@ private extension SamplePaywallLoader {
 
     static var featureImageStack3: PaywallComponent = {
         .stack(.init(components: [weightsText, spacer, weights, spacer],
-                     dimension: .horizontal(.center),
+                     dimension: .horizontal(.center, .start),
                      spacing: nil,
                      backgroundColor: nil,
                      padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 40, trailing: 40)))

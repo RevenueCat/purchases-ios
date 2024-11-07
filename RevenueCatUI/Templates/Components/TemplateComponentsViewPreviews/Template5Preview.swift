@@ -41,7 +41,7 @@ private enum Template5Preview {
     static let title = PaywallComponent.TextComponent(
         text: "title",
         fontFamily: nil,
-        fontWeight: .heavy,
+        fontWeight: .black,
         color: .init(light: "#000000"),
         backgroundColor: nil,
         padding: .zero,
@@ -171,7 +171,7 @@ private enum Template5Preview {
         components: [
             .purchaseButton(purchaseButton)
         ],
-        dimension: .horizontal(.center),
+        dimension: .horizontal(.center, .start),
         width: .init(type: .fill, value: nil),
         spacing: 0,
         backgroundColor: nil
@@ -207,7 +207,7 @@ private enum Template5Preview {
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
-        componentsConfigs: .init(
+        componentsConfig: .init(
             base: .init(
                 stack: .init(
                     components: [

@@ -60,7 +60,7 @@ extension PaywallComponent.FontWeight {
 
     var fontWeight: Font.Weight {
         switch self {
-        case .ultraLight:
+        case .extraLight:
             return .ultraLight
         case .thin:
             return .thin
@@ -74,7 +74,7 @@ extension PaywallComponent.FontWeight {
             return .semibold
         case .bold:
             return .bold
-        case .heavy:
+        case .extraBold:
             return .heavy
         case .black:
             return .black
@@ -127,6 +127,17 @@ extension PaywallComponent.TwoDimensionAlignment {
 
 extension PaywallComponent.HorizontalAlignment {
 
+    var stackAlignment: SwiftUI.HorizontalAlignment {
+        switch self {
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        }
+    }
+
     var textAlignment: TextAlignment {
         switch self {
         case .leading:
@@ -138,7 +149,7 @@ extension PaywallComponent.HorizontalAlignment {
         }
     }
 
-    var stackAlignment: SwiftUI.Alignment {
+    var frameAlignment: SwiftUI.Alignment {
         switch self {
         case .leading:
             return .leading

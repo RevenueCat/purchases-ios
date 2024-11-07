@@ -83,7 +83,7 @@ struct TemplateComponentsView: View {
         self.onDismiss = onDismiss
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
-        let componentsConfig = paywallComponentsData.componentsConfigs.base
+        let componentsConfig = paywallComponentsData.componentsConfig.base
 
         // Step 1: Get localization
         let localization = Self.chooseLocalization(for: paywallComponentsData)
@@ -113,10 +113,11 @@ struct TemplateComponentsView: View {
                 )
             )
 
-            guard packageValidator.isValid else {
-                Logger.error(Strings.paywall_could_not_find_any_packages)
-                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
-            }
+            // WIP: Maybe re-enable this later or add some warnings
+//            guard packageValidator.isValid else {
+//                Logger.error(Strings.paywall_could_not_find_any_packages)
+//                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
+//            }
 
             self.componentViewModel = componentViewModel
             self._paywallState = .init(wrappedValue: PaywallState(

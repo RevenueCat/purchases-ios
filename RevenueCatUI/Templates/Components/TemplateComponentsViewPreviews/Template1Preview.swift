@@ -38,7 +38,7 @@ private enum Template1Preview {
     static let title = PaywallComponent.TextComponent(
         text: "title",
         fontFamily: nil,
-        fontWeight: .heavy,
+        fontWeight: .black,
         color: .init(light: "#000000"),
         backgroundColor: nil,
         padding: .zero,
@@ -137,7 +137,7 @@ private enum Template1Preview {
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
-        componentsConfigs: .init(
+        componentsConfig: .init(
             base: .init(
                 stack: .init(
                     components: [
