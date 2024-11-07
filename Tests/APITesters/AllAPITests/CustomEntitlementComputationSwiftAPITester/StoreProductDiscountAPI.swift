@@ -60,7 +60,8 @@ func checkTypeEnum() {
     switch type! {
     case
             .introductory,
-            .promotional:
+            .promotional,
+            .winBack:
         break
 
     @unknown default: fatalError()

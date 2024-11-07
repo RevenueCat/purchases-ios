@@ -78,7 +78,8 @@ func checkPurchasesEnums() {
     switch storeMessageType! {
     case .billingIssue,
          .priceIncreaseConsent,
-         .generic:
+         .generic,
+         .winBackOffer:
         print(storeMessageType!)
     @unknown default:
         fatalError()
