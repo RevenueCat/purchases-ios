@@ -373,6 +373,32 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == Self.paywallEvent
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSyncsPaywallEvents() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let transaction = try await createTransaction(finished: true)
+        let product = try await self.fetchSk2Product()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering")
+        mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+
+        _ = try await orchestrator.purchase(sk2Product: product,
+                                            package: package,
+                                            promotionalOffer: nil)
+
+        let manager = try self.mockPaywallEventsManager
+
+        try await asyncWait { await manager.invokedFlushEvents == true }
+
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
+    }
+
     // MARK: - AdServices and Attributes
 
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws {

@@ -510,7 +510,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
-                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
+                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+                    paywallEventsManager: paywallEventsManager
                 )
             } else {
                 return .init(
@@ -532,7 +533,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
-                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
+                    winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+                    paywallEventsManager: paywallEventsManager
                 )
             }
         }()
@@ -1827,13 +1829,16 @@ private extension Purchases {
         }
         #endif
 
-        self.postPaywallEventsIfNeeded()
+        self.purchasesOrchestrator.postPaywallEventsIfNeeded(delayed: true)
 
         #endif
     }
 
     @objc func applicationDidEnterBackground() {
         self.dispatchSyncSubscriberAttributes()
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.purchasesOrchestrator.postPaywallEventsIfNeeded()
+        #endif
     }
 
     func subscribeToAppStateNotifications() {
@@ -1942,15 +1947,6 @@ private extension Purchases {
                     await cache.warmUpPaywallImagesCache(offerings: offerings)
                 }
             }
-        }
-    }
-
-    private func postPaywallEventsIfNeeded() {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
-              let manager = self.paywallEventsManager else { return }
-
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
-            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
         }
     }
 

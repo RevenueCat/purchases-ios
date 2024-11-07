@@ -190,6 +190,37 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == false
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSyncsPaywallEvents() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = try await self.fetchSk1StoreProduct()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: .from(product: storeProduct),
+                              offeringIdentifier: "offering")
+
+        let payment = storeKit1Wrapper.payment(with: product)
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(sk1Product: product,
+                                  payment: payment,
+                                  package: package,
+                                  wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        let manager = try self.mockPaywallEventsManager
+
+        try await asyncWait { await manager.invokedFlushEvents == true }
+
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
+    }
+
     // MARK: - Purchasing, StoreKit 1 only
 
     func testPurchaseSK1DoesNotAlwaysRefreshReceiptInProduction() async throws {

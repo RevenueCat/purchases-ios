@@ -44,6 +44,14 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
+    private var paywallEventsManager: PaywallEventsManagerType!
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockPaywallEventsManager: MockPaywallEventsManager {
+        get throws {
+            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+        }
+    }
 
     var orchestrator: PurchasesOrchestrator!
 
@@ -67,6 +75,11 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
         self.backend = MockBackend()
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.paywallEventsManager = MockPaywallEventsManager()
+        } else {
+            self.paywallEventsManager = nil
+        }
 
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.operationDispatcher,
@@ -175,8 +188,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
-            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator
-        )
+            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
+            paywallEventsManager: self.paywallEventsManager)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
@@ -212,7 +225,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsSynchronizer: diagnosticsSynchronizer,
             diagnosticsTracker: diagnosticsTracker,
-            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator
+            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
+            paywallEventsManager: self.paywallEventsManager
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }

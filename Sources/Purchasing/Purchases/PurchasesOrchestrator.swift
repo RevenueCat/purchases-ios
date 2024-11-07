@@ -70,6 +70,7 @@ final class PurchasesOrchestrator {
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
+    private let paywallEventsManager: PaywallEventsManagerType?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -131,7 +132,8 @@ final class PurchasesOrchestrator {
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
-                     winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
+                     winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
+                     paywallEventsManager: PaywallEventsManagerType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -152,7 +154,8 @@ final class PurchasesOrchestrator {
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper,
-            winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator
+            winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+            paywallEventsManager: paywallEventsManager
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -206,7 +209,8 @@ final class PurchasesOrchestrator {
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
          storeMessagesHelper: StoreMessagesHelperType?,
-         winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
+         winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
+         paywallEventsManager: PaywallEventsManagerType?
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -227,6 +231,7 @@ final class PurchasesOrchestrator {
         self.beginRefundRequestHelper = beginRefundRequestHelper
         self.storeMessagesHelper = storeMessagesHelper
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
+        self.paywallEventsManager = paywallEventsManager
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
@@ -433,6 +438,8 @@ final class PurchasesOrchestrator {
                         Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
                             productIdentifier: productIdentifier
                         ))
+
+                        self.postPaywallEventsIfNeeded()
                     }
                 }
 
@@ -551,6 +558,8 @@ final class PurchasesOrchestrator {
 
         if let transaction = transaction {
             customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+
+            self.postPaywallEventsIfNeeded()
         } else {
             // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
             // `Product.PurchaseResult.userCancelled`.
@@ -605,6 +614,22 @@ final class PurchasesOrchestrator {
 
         case .cancel:
             break
+        }
+    }
+
+    func postPaywallEventsIfNeeded(delayed: Bool = false) {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+              let manager = self.paywallEventsManager else { return }
+
+        let delay: JitterableDelay
+        if delayed {
+            delay = .long
+        } else {
+            // When backgrounding, the app only has about 5 seconds to perform work
+            delay = .none
+        }
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
+            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
         }
     }
 
