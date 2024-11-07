@@ -191,7 +191,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: nil)
-        )
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
             receiptFetcher: mockReceiptFetcher,
