@@ -53,13 +53,12 @@ actor WebPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType {
                     case ErrorCode.alreadyRedeemedWebPurchaseToken.rawValue:
                         continuation.resume(returning: .alreadyRedeemed)
                     case ErrorCode.expiredWebPurchaseToken.rawValue:
-                        guard let obfuscatedEmail = purchasesError.userInfo[ErrorDetails.obfuscatedEmailKey] as? String,
-                              let wasEmailSent = purchasesError.userInfo[ErrorDetails.wasEmailSentKey] as? Bool
+                        guard let obfuscatedEmail = purchasesError.userInfo[ErrorDetails.obfuscatedEmailKey] as? String
                         else {
                             continuation.resume(returning: .error(error.asPublicError))
                             return
                         }
-                        continuation.resume(returning: .expired(obfuscatedEmail, wasEmailSent: wasEmailSent))
+                        continuation.resume(returning: .expired(obfuscatedEmail))
                     default:
                         continuation.resume(returning: .error(error.asPublicError))
                     }

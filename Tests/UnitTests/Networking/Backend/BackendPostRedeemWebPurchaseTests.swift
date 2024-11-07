@@ -109,8 +109,7 @@ class BackendPostRedeemWebPurchaseTests: BaseBackendTests {
         let errorResponse = ErrorResponse(code: backendErrorCode,
                                           originalCode: backendErrorCode.rawValue,
                                           message: message,
-                                          purchaseRedemptionErrorInfo: .init(obfuscatedEmail: "t***@r*****.**m",
-                                                                             wasEmailSent: true))
+                                          purchaseRedemptionErrorInfo: .init(obfuscatedEmail: "t***@r*****.**m"))
         self.httpClient.mock(
             requestPath: .postRedeemWebPurchase,
             response: .init(error: .errorResponse(errorResponse, .forbidden))
@@ -130,6 +129,5 @@ class BackendPostRedeemWebPurchaseTests: BaseBackendTests {
             "The link you provided has expired. A new one will be sent to the customer email. Token expired."
         ))
         expect(error?.userInfo[ErrorDetails.obfuscatedEmailKey] as? String) == "t***@r*****.**m"
-        expect(error?.userInfo[ErrorDetails.wasEmailSentKey] as? Bool) == true
     }
 }

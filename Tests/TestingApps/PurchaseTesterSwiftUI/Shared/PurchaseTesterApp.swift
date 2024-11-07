@@ -83,9 +83,9 @@ struct PurchaseTesterApp: App {
                             alertMessage = "The provided purchase redemption token is invalid."
                         case .alreadyRedeemed:
                             alertMessage = "RevenueCat purchase link was already redeemed."
-                        case let .expired(obfuscatedEmail, wasEmailSent):
+                        case let .expired(obfuscatedEmail):
                             alertMessage = "RevenueCat purchase link expired. Email " +
-                                "was \(wasEmailSent ? "sent" : "not sent") to \(obfuscatedEmail)"
+                                "was sent to \(obfuscatedEmail)"
                         @unknown default:
                             alertMessage = "Unknown web purchase redemption result: \(result)"
                         }
