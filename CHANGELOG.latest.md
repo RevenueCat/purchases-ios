@@ -1,16 +1,24 @@
 ## RevenueCat SDK
+### ✨ New Features
+* Add `tenjinAnalyticsInstallationId` setter property (#4437) via Toni Rico (@tonidero)
 ### 📦 Dependency Updates
-* Bump rexml from 3.3.8 to 3.3.9 (#4419) via dependabot[bot] (@dependabot[bot])
-* Bump rexml from 3.3.7 to 3.3.9 in /Tests/InstallationTests/CocoapodsInstallation (#4418) via dependabot[bot] (@dependabot[bot])
+* Bump cocoapods from 1.15.2 to 1.16.2 (#4433) via dependabot[bot] (@dependabot[bot])
 
 ## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fixes reloading paywall images after they've been scrolled off screen (#4423) via JayShortway (@JayShortway)
 ### Customer Center
 #### 🐞 Bugfixes
-* Adds compatibility for suffix offer identifiers (#4393) via Cesar de la Vega (@vegaro)
+* Refactor `SubscriptionDetailsView` and better `WrongPlatformView` (#4410) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Fixes the sticky footer not drawing in the bottom safe area. (#4422) via JayShortway (@JayShortway)
-* Adds long sample paywall with sticky footer to PaywallsTester (#4412) via JayShortway (@JayShortway)
-* `RootView` actually shows the sticky footer (#4411) via JayShortway (@JayShortway)
-* Adds scaffolding for `StickyFooterComponent` (#4409) via JayShortway (@JayShortway)
-* Improved JSON format for ButtonComponent codables (#4408) via Josh Holtz (@joshdholtz)
+* Skip `testCannotFlushMultipleTimesInParallel` test in xcode 14 (#4443) via Cesar de la Vega (@vegaro)
+* [Paywalls] Send paywall events when the app is backgrounded and after a successful purchase (#4438) via Mark Villacampa (@MarkVillacampa)
+* Support fetching eligible win-back offers for a product (#4431) via Will Taylor (@fire-at-will)
+* Introduce PurchaseParams to allow passing extra configuration info when making a purchase (#4400) via Mark Villacampa (@MarkVillacampa)
+* Refactor Paywall events so it can be used for customer center (#4376) via Cesar de la Vega (@vegaro)
+* Apply state and conditions ONLY for text component (#4417) via Josh Holtz (@joshdholtz)
+* Text, Image, and Stack properties can be overridden on different states/conditions (#4414) via Josh Holtz (@joshdholtz)
+* PurchaseButtonComponent is now just a container/stack like ButtonComponent (#4415) via Josh Holtz (@joshdholtz)
+* Remove PackageGroup (#4413) via Josh Holtz (@joshdholtz)
+* The StackComponent has an optional shadow (#4429) via JayShortway (@JayShortway)
