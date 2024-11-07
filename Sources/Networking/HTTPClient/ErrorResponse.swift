@@ -25,7 +25,6 @@ struct ErrorResponse: Equatable {
     struct PurchaseRedemptionErrorInfo: Decodable, Equatable {
 
         let obfuscatedEmail: String
-        let wasEmailSent: Bool
 
     }
 }
@@ -49,7 +48,6 @@ extension ErrorResponse {
 
         if let redemptionErrorInfo = self.purchaseRedemptionErrorInfo {
             userInfo[.obfuscatedEmail] = redemptionErrorInfo.obfuscatedEmail
-            userInfo[.wasEmailSent] = redemptionErrorInfo.wasEmailSent
         }
 
         // If the backend didn't provide a message we default to showing the status code.

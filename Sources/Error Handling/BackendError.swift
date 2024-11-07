@@ -28,7 +28,7 @@ enum BackendError: Error, Equatable {
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
     case invalidWebRedemptionToken
     case webPurchaseAlreadyRedeemed
-    case expiredWebRedemptionToken(obfuscatedEmail: String, wasEmailSent: Bool)
+    case expiredWebRedemptionToken(obfuscatedEmail: String)
 
 }
 
@@ -135,13 +135,12 @@ extension BackendError: PurchasesErrorConvertible {
             let code = BackendErrorCode.webPurchaseAlreadyRedeemed
             return ErrorUtils.backendError(withBackendCode: code,
                                            originalBackendErrorCode: code.rawValue)
-        case let .expiredWebRedemptionToken(obfuscatedEmail, wasEmailSent):
+        case let .expiredWebRedemptionToken(obfuscatedEmail):
             let code = BackendErrorCode.expiredWebRedemptionToken
             return ErrorUtils.backendError(withBackendCode: code,
                                            originalBackendErrorCode: code.rawValue,
                                            extraUserInfo: [
-                                            .obfuscatedEmail: obfuscatedEmail,
-                                            .wasEmailSent: wasEmailSent
+                                            .obfuscatedEmail: obfuscatedEmail
                                            ])
 
         }

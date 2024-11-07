@@ -109,23 +109,20 @@ class WebPurchaseRedemptionHelperTests: TestCase {
 
     func testHandleRedeemWebPurchaseExpired() async throws {
         self.redeemWebPurchaseAPI.stubbedPostRedeemWebPurchaseResult = .failure(
-            .expiredWebRedemptionToken(obfuscatedEmail: "test-obfuscated-email", wasEmailSent: true)
+            .expiredWebRedemptionToken(obfuscatedEmail: "test-obfuscated-email")
         )
 
         let result = await self.helper.handleRedeemWebPurchase(redemptionToken: "test-redemption-token")
 
         var receivedObfuscatedEmail: String?
-        var receivedWasEmailSent: Bool?
 
         switch result {
-        case let .expired(obfuscatedEmail, wasEmailSent):
+        case let .expired(obfuscatedEmail):
             receivedObfuscatedEmail = obfuscatedEmail
-            receivedWasEmailSent = wasEmailSent
         default:
             XCTFail("Should be a expired error.")
         }
 
         expect(receivedObfuscatedEmail) == "test-obfuscated-email"
-        expect(receivedWasEmailSent) == true
     }
 }

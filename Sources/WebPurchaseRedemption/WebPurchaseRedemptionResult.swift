@@ -26,8 +26,8 @@ public enum WebPurchaseRedemptionResult: Sendable {
     /// Indicates that the web purchase has already been redeemed and can't be redeemed again.
     case alreadyRedeemed
     /// Indicates that the redemption token has expired. An email with a new redemption token
-    /// might be sent depending on the value of  wasEmailSent.
-    /// The email where it was sent is indicated by the obfuscatedEmail.
-    case expired(_ obfuscatedEmail: String, wasEmailSent: Bool)
+    /// might be sent if a new one wasn't already sent recently.
+    /// The email where it will be sent is indicated by the [obfuscatedEmail].
+    case expired(_ obfuscatedEmail: String)
 
 }

@@ -319,9 +319,8 @@ func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bo
         return true
     case .alreadyRedeemed:
         return true
-    case let .expired(obfuscatedEmail, wasEmailSent):
+    case let .expired(obfuscatedEmail):
         let _: String = obfuscatedEmail
-        let _: Bool = wasEmailSent
         return true
     }
 }
