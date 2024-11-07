@@ -195,6 +195,8 @@ class PaywallEventsManagerTests: TestCase {
         await self.verifyEvents([try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))])
     }
 
+    #if swift(>=5.9)
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func testCannotFlushMultipleTimesInParallel() async throws {
         // The way this test is written does not work in iOS 15.
         // The second Task does not start until the first one is done.
@@ -240,6 +242,7 @@ class PaywallEventsManagerTests: TestCase {
             expectedCount: 1
         )
     }
+    #endif
 
     // MARK: -
 
