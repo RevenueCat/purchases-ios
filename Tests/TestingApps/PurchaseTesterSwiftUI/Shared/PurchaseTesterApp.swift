@@ -71,7 +71,6 @@ struct PurchaseTesterApp: App {
             .onOpenURL { url in
                 if let webPurchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url),
                     Purchases.isConfigured {
-                    print("Redeeming web purchase.")
                     Task {
                         let result = await Purchases.shared.redeemWebPurchase(webPurchaseRedemption)
                         switch result {
