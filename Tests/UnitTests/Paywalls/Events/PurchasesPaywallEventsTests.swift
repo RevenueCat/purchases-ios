@@ -29,13 +29,23 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
     }
 
     func testApplicationWillEnterForegroundSendsEvents() async throws {
-        self.notificationCenter.fireNotifications()
+        self.notificationCenter.fireApplicationWillEnterForegroundNotification()
 
         let manager = try self.mockPaywallEventsManager
 
         try await asyncWait { await manager.invokedFlushEvents == true }
 
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == .long
+    }
+
+    func testApplicationWillEnterBackgroundSendsEvents() async throws {
+        self.notificationCenter.fireApplicationDidEnterBackgroundNotification()
+
+        let manager = try self.mockPaywallEventsManager
+
+        try await asyncWait { await manager.invokedFlushEvents == true }
+
+        expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
 }

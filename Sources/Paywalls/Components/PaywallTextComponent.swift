@@ -97,7 +97,7 @@ extension PaywallComponent.TextComponent {
 
     enum CodingKeys: String, CodingKey {
         case type
-        case text = "text_lid"
+        case text = "textLid"
         case fontFamily
         case fontWeight
         case color
@@ -116,7 +116,7 @@ extension PaywallComponent.PartialTextComponent {
 
     enum CodingKeys: String, CodingKey {
         case visible
-        case text = "text_lid"
+        case text = "textLid"
         case fontFamily
         case fontWeight
         case color

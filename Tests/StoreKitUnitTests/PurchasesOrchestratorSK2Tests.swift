@@ -409,6 +409,32 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ) == Self.paywallEvent
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSyncsPaywallEvents() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let transaction = try await createTransaction(finished: true)
+        let product = try await self.fetchSk2Product()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering")
+        mockStoreKit2TransactionListener?.mockTransaction = .init(transaction.sk2Transaction)
+        mockStoreKit2TransactionListener?.mockJWSToken = transaction.jwsRepresentation!
+
+        _ = try await orchestrator.purchase(sk2Product: product,
+                                            package: package,
+                                            promotionalOffer: nil)
+
+        let manager = try self.mockPaywallEventsManager
+
+        try await asyncWait { await manager.invokedFlushEvents == true }
+
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
+    }
+
     // MARK: - AdServices and Attributes
 
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws {
@@ -1068,6 +1094,35 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(purchaseIntentListener.listenForPurchaseIntentsCalled).toEventually(beTrue())
         expect(purchaseIntentListener.lastProvidedDelegate).toEventuallyNot(beNil())
         expect(purchaseIntentListener.setDelegateCalled).toEventually(beTrue())
+    }
+    #endif
+
+    #if compiler(>=6.0)
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func testEligibleWinBackOffersDoesntThrowsWhenInSK2Mode() async throws {
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+
+        self.setUpOrchestrator()
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        _ = try await self.orchestrator.eligibleWinBackOffers(forProduct: storeProduct)
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func testEligibleWinBackOffersReturnsValueFromWinBackEligibilityCalculator() async throws {
+        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+
+        self.setUpOrchestrator()
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        let eligibileWinBackOffers = try await self.orchestrator.eligibleWinBackOffers(forProduct: storeProduct)
+
+        expect(eligibileWinBackOffers).to(equal([]))
+        expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersCalled).to(beTrue())
+        expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersCallCount).to(equal(1))
+        expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersProduct).to(equal(storeProduct))
     }
     #endif
 }

@@ -125,6 +125,17 @@ public extension PaywallComponent {
 
     }
 
+    enum FlexDistribution: String, Codable, Sendable, Hashable, Equatable {
+
+        case start
+        case center
+        case end
+        case spaceBetween = "space_between"
+        case spaceAround = "space_around"
+        case spaceEvenly = "space_evenly"
+
+    }
+
     enum HorizontalAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case leading
@@ -148,23 +159,23 @@ public extension PaywallComponent {
         case trailing
         case top
         case bottom
-        case topLeading
-        case topTrailing
-        case bottomLeading
-        case bottomTrailing
+        case topLeading = "top_leading"
+        case topTrailing = "top_trailing"
+        case bottomLeading = "bottom_leading"
+        case bottomTrailing = "bottom_trailing"
 
     }
 
     enum FontWeight: String, Codable, Sendable, Hashable, Equatable {
 
-        case ultraLight
+        case extraLight = "extra_light"
         case thin
         case light
         case regular
         case medium
         case semibold
         case bold
-        case heavy
+        case extraBold = "extra_bold"
         case black
 
     }

@@ -88,7 +88,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 component: .init(
                     text: "id_1",
                     fontFamily: nil,
-                    fontWeight: .heavy,
+                    fontWeight: .black,
                     color: .init(light: "#ff0000"),
                     backgroundColor: .init(light: "#dedede"),
                     padding: .init(top: 10,
