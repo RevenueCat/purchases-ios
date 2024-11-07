@@ -28,6 +28,9 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
+    // Win-backs are available in Xcode 16.0+, which ships with the 6.0 version
+    // of the Swift compiler
+    #if compiler(>=6.0)
     // MARK: - Success Cases
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func testEligibileWinBackOffersAsyncForwardsSuccess() async throws {
@@ -43,9 +46,6 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
         expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersProduct).to(equal(product))
     }
 
-    // async version of fulfillment() is available starting in iOS 15, which was shipped
-    // with Swift 5.5
-    #if swift(>=5.5)
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func testEligibileWinBackOffersCallbackForwardsSuccess() async throws {
         try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
