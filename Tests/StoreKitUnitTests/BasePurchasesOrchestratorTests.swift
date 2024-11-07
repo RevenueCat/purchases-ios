@@ -190,7 +190,6 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager)
-        )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
