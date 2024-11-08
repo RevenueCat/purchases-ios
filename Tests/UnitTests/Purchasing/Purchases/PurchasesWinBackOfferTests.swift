@@ -46,9 +46,9 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
         expect(self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersProduct).to(equal(product))
     }
 
-    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
     func testEligibileWinBackOffersCallbackForwardsSuccess() async throws {
-        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APINoVisionOSAvailableOrSkipTest()
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "abc123"))
         self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersResult = .success
@@ -85,9 +85,9 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
         expect(error).to(matchError(ErrorCode.featureNotSupportedWithStoreKit1))
     }
 
-    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
     func testEligibileWinBackOffersCallbackForwardsErrors() async throws {
-        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APINoVisionOSAvailableOrSkipTest()
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "abc123"))
         self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersResult = .error
@@ -102,9 +102,9 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
     }
 
     // MARK: - Misc Tests
-    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
     func testEligibileWinBackOffersCallbackCallsCallbackOnMainThread() async throws {
-        try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS18APINoVisionOSAvailableOrSkipTest()
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "abc123"))
 
