@@ -85,11 +85,6 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
         PurchaseButtonComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                packageValidator: PackageValidator(),
-                localizedStrings: [
-                    "id_1": .string("Hello, world"),
-                    "id_2": .string("Hello, world intro offer")
-                ],
                 component: .init(
                     stack: .init(components: [
                         // WIP: Intro offer state with "id_2",
@@ -105,6 +100,10 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         ))
                     ])
                 ),
+                localizedStrings: [
+                    "id_1": .string("Hello, world"),
+                    "id_2": .string("Hello, world intro offer")
+                ],
                 offering: Offering(identifier: "",
                                    serverDescription: "",
                                    availablePackages: [])
@@ -117,11 +116,6 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
         PurchaseButtonComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                packageValidator: PackageValidator(),
-                localizedStrings: [
-                    "id_1": .string("Hello, world"),
-                    "id_2": .string("Hello, world intro offer")
-                ],
                 component: .init(
                     stack: .init(
                         components: [
@@ -145,6 +139,10 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         )
                     )
                 ),
+                localizedStrings: [
+                    "id_1": .string("Hello, world"),
+                    "id_2": .string("Hello, world intro offer")
+                ],
                 offering: Offering(identifier: "",
                                    serverDescription: "",
                                    availablePackages: [])
@@ -153,6 +151,28 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Rounded Rectangle")
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension PurchaseButtonComponentViewModel {
+
+    convenience init(
+        component: PaywallComponent.PurchaseButtonComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
+    ) throws {
+        let factory = ViewModelFactory()
+        let stackViewModel = try factory.toStackViewModel(
+            component: component.stack,
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
+
+        self.init(
+            stackViewModel: stackViewModel
+        )
+    }
+
 }
 
 #endif

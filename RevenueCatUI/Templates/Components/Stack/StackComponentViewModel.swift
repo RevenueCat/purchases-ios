@@ -23,22 +23,6 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
 
-    convenience init(
-        packageValidator: PackageValidator,
-        component: PaywallComponent.StackComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary,
-        offering: Offering
-    ) throws {
-        self.init(
-            component: component,
-            viewModels: try component.components.map {
-                try $0.toViewModel(packageValidator: packageValidator,
-                                   offering: offering,
-                                   localizedStrings: localizedStrings)
-            }
-        )
-    }
-
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel]

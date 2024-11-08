@@ -112,7 +112,6 @@ struct ButtonComponentView_Previews: PreviewProvider {
             ButtonComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
-                    packageValidator: PackageValidator(),
                     component: .init(
                         action: .navigateBack,
                         stack: .init(
@@ -138,6 +137,31 @@ struct ButtonComponentView_Previews: PreviewProvider {
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension ButtonComponentViewModel {
+
+    convenience init(
+        component: PaywallComponent.ButtonComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
+    ) throws {
+        let factory = ViewModelFactory()
+        let stackViewModel = try factory.toStackViewModel(
+            component: component.stack,
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
+
+        try self.init(
+            component: component,
+            localizedStrings: localizedStrings,
+            offering: offering,
+            stackViewModel: stackViewModel
+        )
+    }
+
 }
 
 #endif

@@ -1262,7 +1262,7 @@ private extension SamplePaywallLoader {
     static var headingText: PaywallComponent = {
         .text(.init(
             text: "curiosity_headline",
-            fontWeight: .heavy,
+            fontWeight: .black,
             color: .init(light: "#000000"),
             textStyle: .extraLargeTitle
         ))

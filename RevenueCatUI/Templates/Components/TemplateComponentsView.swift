@@ -89,28 +89,11 @@ struct TemplateComponentsView: View {
         let localization = Self.chooseLocalization(for: paywallComponentsData)
 
         do {
-            // STEP 2: Make the view models & validate all components have required localization
-            let packageValidator = PackageValidator()
-            let componentViewModel = try PaywallComponentViewModel.root(
-                RootViewModel(
-                    stackViewModel: StackComponentViewModel(
-                        packageValidator: packageValidator,
-                        component: componentsConfig.stack,
-                        localizedStrings: localization.localizedStrings,
-                        offering: offering
-                    ),
-                    stickyFooterViewModel: componentsConfig.stickyFooter.map {
-                        StickyFooterComponentViewModel(
-                            component: $0,
-                            stackViewModel: try StackComponentViewModel(
-                                packageValidator: packageValidator,
-                                component: $0.stack,
-                                localizedStrings: localization.localizedStrings,
-                                offering: offering
-                            )
-                        )
-                    }
-                )
+            let factory = ViewModelFactory()
+            let root = try factory.toRootViewModel(
+                componentsConfig: componentsConfig,
+                offering: offering,
+                localizedStrings: localization.localizedStrings
             )
 
             // WIP: Maybe re-enable this later or add some warnings
@@ -119,9 +102,9 @@ struct TemplateComponentsView: View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            self.componentViewModel = componentViewModel
+            self.componentViewModel = .root(root)
             self._paywallState = .init(wrappedValue: PaywallState(
-                selectedPackage: packageValidator.defaultSelectedPackage
+                selectedPackage: factory.packageValidator.defaultSelectedPackage
             ))
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails

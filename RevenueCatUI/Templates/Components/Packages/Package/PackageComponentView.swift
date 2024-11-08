@@ -91,7 +91,19 @@ struct PackageComponentView_Previews: PreviewProvider {
             padding: .init(top: 10,
                            bottom: 10,
                            leading: 20,
-                           trailing: 20)
+                           trailing: 20),
+            margin: .init(top: 10,
+                          bottom: 10,
+                          leading: 10,
+                          trailing: 10),
+            border: .init(color: .init(light: "#cccccc"), width: 2),
+            overrides: .init(
+                states: .init(
+                    selected: .init(
+                        border: .init(color: .init(light: "#ff0000"), width: 2)
+                    )
+                )
+            )
         )
     }
 
@@ -100,16 +112,15 @@ struct PackageComponentView_Previews: PreviewProvider {
         PackageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                packageValidator: PackageValidator(),
-                localizedStrings: [
-                    "name": .string("Weekly"),
-                    "detail": .string("Get for $39.99/wk")
-                ],
                 component: .init(
                     packageID: "weekly",
                     isSelectedByDefault: false,
                     stack: stack
                 ),
+                localizedStrings: [
+                    "name": .string("Weekly"),
+                    "detail": .string("Get for $39.99/wk")
+                ],
                 offering: .init(identifier: "default",
                                 serverDescription: "",
                                 availablePackages: [package])
@@ -123,16 +134,15 @@ struct PackageComponentView_Previews: PreviewProvider {
         PackageComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                packageValidator: PackageValidator(),
-                localizedStrings: [
-                    "name": .string("Weekly"),
-                    "detail": .string("Get for $39.99/wk")
-                ],
                 component: .init(
                     packageID: "weekly",
                     isSelectedByDefault: false,
                     stack: stack
                 ),
+                localizedStrings: [
+                    "name": .string("Weekly"),
+                    "detail": .string("Get for $39.99/wk")
+                ],
                 offering: .init(identifier: "default",
                                 serverDescription: "",
                                 availablePackages: [package])
@@ -142,6 +152,31 @@ struct PackageComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package")
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension PackageComponentViewModel {
+
+    convenience init(
+        component: PaywallComponent.PackageComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary,
+        offering: Offering
+    ) throws {
+        let factory = ViewModelFactory()
+        let stackViewModel = try factory.toStackViewModel(
+            component: component.stack,
+            localizedStrings: localizedStrings,
+            offering: offering
+        )
+
+        self.init(
+            localizedStrings: localizedStrings,
+            component: component,
+            offering: offering,
+            stackViewModel: stackViewModel
+        )
+    }
+
 }
 
 #endif
