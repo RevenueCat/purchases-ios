@@ -663,6 +663,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
+        #if os(iOS) || targetEnvironment(macCatalyst) || os(macOS)
+        if #available(iOS 16.4, macOS 14.4, *), systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
+            purchasesOrchestrator.setSK2PurchaseIntentListener(StoreKit2PurchaseIntentListener())
+        }
+        #endif
+
         self.purchasesOrchestrator.delegate = self
 
         // Don't update caches in the background to potentially avoid apps being launched through a notification

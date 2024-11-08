@@ -75,6 +75,7 @@ final class PurchasesOrchestrator {
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
+    var _storeKit2PurchaseIntentListener: Any?
     var _storeKit2StorefrontListener: Any?
     var _diagnosticsSynchronizer: Any?
     var _diagnosticsTracker: Any?
@@ -85,6 +86,15 @@ final class PurchasesOrchestrator {
     var storeKit2TransactionListener: StoreKit2TransactionListenerType {
         // swiftlint:disable:next force_cast
         return self._storeKit2TransactionListener! as! StoreKit2TransactionListenerType
+    }
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    var storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
+        // swiftlint:disable:next force_cast
+        return self._storeKit2PurchaseIntentListener! as! StoreKit2PurchaseIntentListenerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -498,6 +508,7 @@ final class PurchasesOrchestrator {
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
+                  winBackOffer: Product.SubscriptionOffer? = nil,
                   metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
@@ -518,6 +529,18 @@ final class PurchasesOrchestrator {
                     Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
                 )
                 options.insert(try signedData.sk2PurchaseOption)
+            }
+
+            if let winBackOffer, #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+                // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with
+                // version 6.0 of the Swift compiler. The win-back symbols won't be found if compiled on
+                // Xcode < 16.0, so we need to ensure that the Swift compiler 6.0 or higher is available.
+                #if compiler(>=6.0)
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_winback_offer_option(winBackOffer.id ?? "unknown ID")
+                )
+                options.insert(.winBackOffer(winBackOffer))
+                #endif
             }
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
@@ -676,6 +699,25 @@ final class PurchasesOrchestrator {
     }
 
 #endif
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    internal func setSK2PurchaseIntentListener(
+        _ storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType
+    ) {
+        // We can't inject StoreKit2PurchaseIntentListener in the constructor since
+        // it has different availability requirements than the constructor.
+
+        if systemInfo.storeKitVersion == .storeKit2 {
+            self._storeKit2PurchaseIntentListener = storeKit2PurchaseIntentListener
+            Task {
+                await self.storeKit2PurchaseIntentListener.set(delegate: self)
+                await self.storeKit2PurchaseIntentListener.listenForPurchaseIntents()
+            }
+        }
+    }
 
 }
 
@@ -1009,6 +1051,88 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         ?? self.paymentQueueWrapper.sk1Wrapper?.currentStorefront
     }
 
+}
+
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
+
+    // swiftlint:disable:next function_body_length
+    func storeKit2PurchaseIntentListener(
+        _ listener: any StoreKit2PurchaseIntentListenerType,
+        purchaseIntent: StorePurchaseIntent
+    ) async {
+        // Making the extension unavailable on tvOS & watchOS doesn't
+        // stop the compiler from checking availability in the functions.
+        // We also need to ensure that we're on Xcode >= 15.3, since that is when
+        // PurchaseIntents were first made available on macOS.
+        #if !os(tvOS) && !os(watchOS) && compiler(>=5.10)
+
+        guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
+        let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)
+
+        delegate?.readyForPromotedProduct(storeProduct) { completion in
+
+            var attemptedToPurchaseWithASubscriptionOffer = false
+
+            if #available(iOS 18.0, macOS 15.0, visionOS 2.0, *) {
+                #if compiler(>=6.0)
+                if let offer = purchaseIntent.offer {
+                    switch offer.type {
+
+                    // The `OfferType.winBack` case was added in iOS 18.0, but
+                    // it's not recognized by Xcode versions <16.0
+                    case .winBack:
+                        Task {
+                            do {
+                                attemptedToPurchaseWithASubscriptionOffer = true
+
+                                let result = try await self.purchase(
+                                    sk2Product: purchaseIntent.product,
+                                    package: nil,
+                                    promotionalOffer: nil,
+                                    winBackOffer: offer
+                                )
+
+                                self.operationDispatcher.dispatchOnMainActor {
+                                    completion(result.transaction, result.customerInfo, nil, result.userCancelled)
+                                }
+                            } catch {
+                                self.operationDispatcher.dispatchOnMainActor {
+                                    completion(
+                                        nil,
+                                        nil,
+                                        ErrorUtils.purchasesError(withUntypedError: error).asPublicError,
+                                        false
+                                    )
+                                }
+                            }
+                        }
+                    default:
+                        // PurchaseIntents are only supported for promoted purchases on the App Store
+                        // and win-back offers, so we don't want to handle any other offers here.
+                        break
+                    }
+                }
+                #endif
+            }
+
+            if !attemptedToPurchaseWithASubscriptionOffer {
+                self.purchase(
+                    product: storeProduct,
+                    package: nil
+                ) { transaction, customerInfo, publicError, userCancelled in
+                    self.operationDispatcher.dispatchOnMainActor {
+                        completion(transaction, customerInfo, publicError, userCancelled)
+                    }
+                }
+            }
+        }
+
+        #endif
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -1598,6 +1722,17 @@ extension PurchasesOrchestrator {
     }
 
     private func setSK2DelegateAndStartListening() async {
+        await storeKit2TransactionListener.set(delegate: self)
+        if systemInfo.storeKitVersion == .storeKit2 {
+            await storeKit2TransactionListener.listenForTransactions()
+        }
+    }
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    private func setSK2PurchaseIntentDelegateAndStartListening() async {
         await storeKit2TransactionListener.set(delegate: self)
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()

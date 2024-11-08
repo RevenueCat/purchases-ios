@@ -527,6 +527,33 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         ) == false
     }
 
+    // MARK: StoreKit2PurchaseIntentListener Configuration Tests
+    func testDoesntSetPurchasesOrchestratorStoreKit2PurchaseIntentListenerIfSK1IsEnabled() {
+        self.systemInfo = MockSystemInfo(finishTransactions: false,
+                                         storeKitVersion: .storeKit1)
+
+        self.setupPurchases()
+
+        expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
+    }
+
+    func testSetsPurchasesOrchestratorStoreKit2PurchaseIntentListenerIfSK2IsEnabled() {
+        self.systemInfo = MockSystemInfo(finishTransactions: false,
+                                         storeKitVersion: .storeKit2)
+
+        self.setupPurchases()
+
+        #if os(watchOS) || os(tvOS) || os(visionOS)
+        expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
+        #else
+        if #available(iOS 16.4, macOS 14.4, *) {
+            expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).toEventuallyNot(beNil())
+        } else {
+            expect(self.purchasesOrchestrator._storeKit2PurchaseIntentListener).to(beNil())
+        }
+        #endif
+    }
+
   private static func create(
       purchasesAreCompletedBy: PurchasesAreCompletedBy,
       dangerousSettings: DangerousSettings = .init()

@@ -37,6 +37,8 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_promotional_offer_option(String)
 
+    case sk2_purchasing_added_winback_offer_option(String)
+
     case sk2_purchasing_added_uuid_option(UUID)
 
     case sk2_unknown_product_type(String)
@@ -60,6 +62,8 @@ enum StoreKitStrings {
     case sk2_product_request_too_slow
 
     case sk2_observing_transaction_updates
+
+    case sk2_observing_purchase_intents
 
     case sk2_unknown_environment(String)
 
@@ -126,6 +130,9 @@ extension StoreKitStrings: LogMessage {
         case let .sk2_purchasing_added_promotional_offer_option(discountIdentifier):
             return "Adding Product.PurchaseOption for discount '\(discountIdentifier)'"
 
+        case let .sk2_purchasing_added_winback_offer_option(winBackOfferID):
+            return "Adding Product.PurchaseOption for win-back offer with ID '\(winBackOfferID)'"
+
         case let .sk2_purchasing_added_uuid_option(uuid):
             return "Adding Product.PurchaseOption for .appAccountToken '\(uuid)'"
 
@@ -169,6 +176,9 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_observing_transaction_updates:
             return "Observing StoreKit.Transaction.updates"
+
+        case .sk2_observing_purchase_intents:
+            return "Observing StoreKit.PurchaseIntent.intents"
 
         case let .sk2_unknown_environment(environment):
             return "Unrecognized StoreKit Environment: \(environment)"

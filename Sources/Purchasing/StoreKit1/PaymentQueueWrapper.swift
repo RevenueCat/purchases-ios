@@ -57,14 +57,43 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
     private let paymentQueue: SKPaymentQueue
 
+    private lazy var purchaseIntentsAPIAvailable: Bool = {
+        // PurchaseIntents was introduced in macOS with macOS 14.4, which was first shipped with Xcode 15.3,
+        // which shipped with version 5.10 of the Swift compiler. We need to check for the Swift compiler version
+        // because the PurchaseIntents symbol isn't available on Xcode versions <15.3.
+        #if compiler(>=5.10)
+        if #available(iOS 16.4, macOS 14.4, *) {
+            return true
+        } else {
+            return false
+        }
+        #else
+        return false
+        #endif
+    }()
+
     weak var delegate: PaymentQueueWrapperDelegate? {
         didSet {
             if self.delegate != nil {
                 self.paymentQueue.delegate = self
-                self.paymentQueue.add(self)
+
+                if !purchaseIntentsAPIAvailable {
+                    // The PurchaseIntent documentation states that we shouldn't use both the PurchaseIntents API and
+                    // `SKPaymentTransactionObserver/paymentQueue(queue:shouldAddStorePayment:for:) -> Bool` at the same
+                    // time. So, we only observe the payment queue when using StoreKit 2 if the PurchaseIntents API
+                    // is unavailable. See https://developer.apple.com/documentation/storekit/purchaseintent
+                    // for more info.
+                    //
+                    // We don't need to check that SK2 is available and used since PaymentQueueWrapper itself
+                    // is only used in SK2 mode. When running in SK1 mode, the StoreKit1Wrapper is used instead.
+                    self.paymentQueue.add(self)
+                }
             } else if self.delegate == nil, self.paymentQueue.delegate === self {
                 self.paymentQueue.delegate = nil
-                self.paymentQueue.remove(self)
+
+                if !purchaseIntentsAPIAvailable {
+                    self.paymentQueue.remove(self)
+                }
             }
         }
     }
