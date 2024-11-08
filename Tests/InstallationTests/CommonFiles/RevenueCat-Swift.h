@@ -726,12 +726,12 @@ SWIFT_CLASS_NAMED("Builder")
 
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -807,7 +807,6 @@ SWIFT_CLASS_NAMED("Configuration")
 
 
 
-
 @interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
 @end
 
@@ -843,6 +842,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementV
 /// <code>ErrorCode/signatureVerificationFailed</code> will be thrown.
   RCEntitlementVerificationModeEnforced = 2,
 };
+
 
 
 @class RCEntitlementInfos;
@@ -958,10 +958,10 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 
 
 
+
 @interface RCCustomerInfo (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @end
-
 
 @class RCStoreTransaction;
 
@@ -1240,6 +1240,9 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCFeatureNotAvailableInCustomEntitlementsComputationMode SWIFT_COMPILE_NAME("featureNotAvailableInCustomEntitlementsComputationMode") = 36,
   RCSignatureVerificationFailed SWIFT_COMPILE_NAME("signatureVerificationFailed") = 37,
   RCFeatureNotSupportedWithStoreKit1 SWIFT_COMPILE_NAME("featureNotSupportedWithStoreKit1") = 38,
+  RCInvalidWebPurchaseToken SWIFT_COMPILE_NAME("invalidWebPurchaseToken") = 39,
+  RCAlreadyRedeemedWebPurchaseToken SWIFT_COMPILE_NAME("alreadyRedeemedWebPurchaseToken") = 40,
+  RCExpiredWebPurchaseToken SWIFT_COMPILE_NAME("expiredWebPurchaseToken") = 41,
 };
 static NSString * _Nonnull const RCPurchasesErrorCodeDomain = @"RevenueCat.ErrorCode";
 
@@ -1707,6 +1710,13 @@ SWIFT_CLASS("_TtC10RevenueCat24PostReceiptDataOperation")
 
 
 
+SWIFT_CLASS("_TtC10RevenueCat30PostRedeemWebPurchaseOperation")
+@interface PostRedeemWebPurchaseOperation : CacheableNetworkOperation
+@end
+
+
+
+
 SWIFT_CLASS("_TtC10RevenueCat33PostSubscriberAttributesOperation")
 @interface PostSubscriberAttributesOperation : NetworkOperation
 @end
@@ -1871,6 +1881,7 @@ SWIFT_CLASS_NAMED("PurchaserInfo") SWIFT_AVAILABILITY(macos,obsoleted=1,message=
 
 @protocol RCPurchasesDelegate;
 @class NSError;
+@class RCWebPurchaseRedemption;
 
 /// Interface for <code>Purchases</code>.
 SWIFT_PROTOCOL_NAMED("PurchasesType")
@@ -2526,6 +2537,15 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///   </li>
 /// </ul>
 - (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+/// Redeems a web purchase previously parsed from a deep link with <code>Purchases/parseAsWebPurchaseRedemption(_:)</code>.
+/// We recommend using <code>Purchases/redeemWebPurchase(_:)</code> for a nicer API unless you’re using ObjC.
+/// \param webPurchaseRedemption WebPurchaseRedemption object previously parsed from
+/// a URL using <code>Purchases/parseAsWebPurchaseRedemption(_:)</code>
+///
+/// \param completion The completion block to be called with the updated CustomerInfo
+/// on a successful redemption, or the error if not.
+///
+- (void)redeemWebPurchaseWithWebPurchaseRedemption:(RCWebPurchaseRedemption * _Nonnull)webPurchaseRedemption completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
 @property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED;
 - (void)setEmail:(NSString * _Nullable)email SWIFT_DEPRECATED;
@@ -2873,6 +2893,10 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Parses a deep link URL to verify it’s a RevenueCat web purchase redemption link
+/// seealso:
+/// <code>Purchases/redeemWebPurchase(_:)</code>
++ (RCWebPurchaseRedemption * _Nullable)parseAsWebPurchaseRedemption:(NSURL * _Nonnull)url SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly, copy) NSString * _Nonnull appUserID;
 @property (nonatomic, readonly) BOOL isAnonymous;
 - (void)getOfferingsWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
@@ -3133,6 +3157,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)eligiblePromotionalOffersForProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(NSArray<RCPromotionalOffer *> * _Nonnull))completionHandler;
 - (void)showManageSubscriptionsWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
 - (void)showManageSubscriptionsWithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
+- (void)redeemWebPurchaseWithWebPurchaseRedemption:(RCWebPurchaseRedemption * _Nonnull)webPurchaseRedemption completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 @end
 
 /// Where responsibility for completing purchase transactions lies.
@@ -3223,7 +3248,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 @end
 
 
-
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
 /// Perform tests to ensure SDK is configured correctly.
 /// <ul>
@@ -3233,6 +3257,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 /// </ul>
 - (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
 @end
+
 
 
 
@@ -3254,10 +3279,10 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3730,13 +3755,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
@@ -3818,6 +3843,16 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", 
 /// </ul>
   RCVerificationResultFailed = 2,
 };
+
+
+/// Class representing a web redemption deep link that can be redeemed by the SDK.
+/// seealso:
+/// <code>Purchases/redeemWebPurchase(_:)</code>
+SWIFT_CLASS_NAMED("WebPurchaseRedemption")
+@interface RCWebPurchaseRedemption : NSObject
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
 
 
 /// Represents an Apple win-back offer.
