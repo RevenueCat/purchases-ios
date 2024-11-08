@@ -83,7 +83,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.9.0-SNAPSHOT"
+        return "5.9.0-alpha-web-redemption.01"
     }
 
     static var systemVersion: String {

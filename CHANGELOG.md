@@ -1,3 +1,10 @@
+## 5.9.0-alpha-web-redemption.01
+### 🔄 Changes
+This prerelease has some new APIs to allow performing anonymous web purchases and redeem them in mobile through our SDK. 
+
+These APIs are currently on alpha.
+
+
 ## 5.8.0
 ## RevenueCat SDK
 ### ✨ New Features
