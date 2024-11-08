@@ -1373,15 +1373,15 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-      - docs-deploy:
-          requires:
-            - make-release
-          <<: *release-tags
-      - deploy-purchase-tester:
-          dry_run: false
-          requires:
-            - make-release
-          <<: *release-tags
+      # - docs-deploy:
+      #     requires:
+      #       - make-release
+      #     <<: *release-tags
+      # - deploy-purchase-tester:
+      #     dry_run: false
+      #     requires:
+      #       - make-release
+      #     <<: *release-tags
 
   snapshot-bump:
     when:
