@@ -42,7 +42,7 @@ private enum Template5Preview {
         text: "title",
         fontFamily: nil,
         fontWeight: .black,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
@@ -54,7 +54,7 @@ private enum Template5Preview {
         text: "body",
         fontFamily: nil,
         fontWeight: .regular,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
@@ -86,13 +86,13 @@ private enum Template5Preview {
                 .text(.init(
                     text: nameTextLid,
                     fontWeight: .bold,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
                     text: detailTextLid,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 ))
@@ -108,7 +108,7 @@ private enum Template5Preview {
                                   topTrailing: 16,
                                   bottomLeading: 16,
                                   bottomTrailing: 20),
-            border: .init(color: .init(light: "#cccccc"), width: 1)
+            border: .init(color: .init(light: .hex("#cccccc")), width: 1)
         )
 
         return PaywallComponent.PackageComponent(
@@ -132,7 +132,7 @@ private enum Template5Preview {
                                  isSelectedByDefault: true)),
             .text(.init(
                 text: "package_terms",
-                color: .init(light: "#999999"),
+                color: .init(light: .hex("#999999")),
                 textStyle: .caption
             ))
         ],
@@ -152,10 +152,10 @@ private enum Template5Preview {
                 .text(.init(
                     text: "cta",
                     fontWeight: .bold,
-                    color: .init(light: "#ffffff")
+                    color: .init(light: .hex("#ffffff"))
                 ))
             ],
-            backgroundColor: .init(light: "#e89d89"),
+            backgroundColor: .init(light: .hex("#e89d89")),
             padding: .init(top: 15,
                            bottom: 15,
                            leading: 50,

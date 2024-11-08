@@ -24,7 +24,7 @@ public extension PaywallComponent {
         public let components: [PaywallComponent]
         public let width: WidthSize?
         public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
+        public let backgroundColor: ColorScheme?
         public let dimension: Dimension
         public let padding: Padding
         public let margin: Padding
@@ -39,7 +39,7 @@ public extension PaywallComponent {
             dimension: Dimension = .vertical(.center),
             width: WidthSize? = nil,
             spacing: CGFloat? = nil,
-            backgroundColor: ColorInfo? = nil,
+            backgroundColor: ColorScheme? = nil,
             padding: Padding = .zero,
             margin: Padding = .zero,
             cornerRadiuses: CornerRadiuses? = nil,
@@ -68,7 +68,7 @@ public extension PaywallComponent {
         public let visible: Bool?
         public let width: WidthSize?
         public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
+        public let backgroundColor: ColorScheme?
         public let dimension: Dimension?
         public let padding: Padding?
         public let margin: Padding?
@@ -81,7 +81,7 @@ public extension PaywallComponent {
             dimension: Dimension? = nil,
             width: WidthSize? = nil,
             spacing: CGFloat? = nil,
-            backgroundColor: ColorInfo? = nil,
+            backgroundColor: ColorScheme? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
             cornerRadiuses: CornerRadiuses? = nil,
