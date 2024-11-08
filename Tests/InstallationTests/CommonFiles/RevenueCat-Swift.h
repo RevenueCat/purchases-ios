@@ -522,6 +522,13 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 ///   </li>
 /// </ul>
 - (void)setFirebaseAppInstanceID:(NSString * _Nullable)firebaseAppInstanceID;
+/// Subscriber attribute associated with the Tenjin analytics installation ID for the user.
+/// Required for the RevenueCat Tenjin integration.
+/// \code
+///  *- Parameter firebaseAppInstanceID: Empty String or `nil` will delete the subscriber attribute.
+///
+/// \endcode
+- (void)setTenjinAnalyticsInstallationID:(NSString * _Nullable)tenjinAnalyticsInstallationID;
 /// Subscriber attribute associated with the install media source for the user.
 /// <h4>Related Articles</h4>
 /// <ul>
@@ -1232,6 +1239,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCOfflineConnectionError SWIFT_COMPILE_NAME("offlineConnectionError") = 35,
   RCFeatureNotAvailableInCustomEntitlementsComputationMode SWIFT_COMPILE_NAME("featureNotAvailableInCustomEntitlementsComputationMode") = 36,
   RCSignatureVerificationFailed SWIFT_COMPILE_NAME("signatureVerificationFailed") = 37,
+  RCFeatureNotSupportedWithStoreKit1 SWIFT_COMPILE_NAME("featureNotSupportedWithStoreKit1") = 38,
 };
 static NSString * _Nonnull const RCPurchasesErrorCodeDomain = @"RevenueCat.ErrorCode";
 
@@ -2682,6 +2690,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 
 
 
+
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
@@ -3214,6 +3223,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 @end
 
 
+
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
 /// Perform tests to ensure SDK is configured correctly.
 /// <ul>
@@ -3223,7 +3233,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 /// </ul>
 - (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
 @end
-
 
 
 
@@ -3245,10 +3254,10 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
+
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
-
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3598,6 +3607,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
   RCDiscountTypeIntroductory = 0,
 /// Promotional offer for subscriptions
   RCDiscountTypePromotional = 1,
+/// Win-back offers
+  RCDiscountTypeWinBack = 2,
 };
 
 
@@ -3807,6 +3818,16 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", 
 /// </ul>
   RCVerificationResultFailed = 2,
 };
+
+
+/// Represents an Apple win-back offer.
+SWIFT_CLASS_NAMED("WinBackOffer") SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0)
+@interface RCWinBackOffer : NSObject
+/// The <code>StoreProductDiscount</code> in this offer.
+@property (nonatomic, readonly, strong) RCStoreProductDiscount * _Nonnull discount;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
 
 #endif
 #if __has_attribute(external_source_symbol)
