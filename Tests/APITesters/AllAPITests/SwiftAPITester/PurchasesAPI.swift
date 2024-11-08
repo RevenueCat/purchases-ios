@@ -99,10 +99,17 @@ private func checkStaticMethods() {
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
     let sharedPurchases: Purchases = Purchases.shared
     let isPurchasesConfigured: Bool = Purchases.isConfigured
-    let webPurchaseRedemption: WebPurchaseRedemption? = Purchases.parseAsWebPurchaseRedemption(url)
 
     print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
-          sharedPurchases, isPurchasesConfigured, webPurchaseRedemption!)
+          sharedPurchases, isPurchasesConfigured)
+}
+
+private func checkExtensions() {
+    let url: URL = URL(string: "https://example.com")!
+
+    let webPurchaseRedemption: WebPurchaseRedemption? = url.asWebPurchaseRedemption
+
+    print(webPurchaseRedemption!)
 }
 
 private func checkTypealiases(

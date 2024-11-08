@@ -69,7 +69,7 @@ struct PurchaseTesterApp: App {
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
             .onOpenURL { url in
-                if let webPurchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url),
+                if let webPurchaseRedemption = url.asWebPurchaseRedemption,
                     Purchases.isConfigured {
                     Task {
                         let result = await Purchases.shared.redeemWebPurchase(webPurchaseRedemption)

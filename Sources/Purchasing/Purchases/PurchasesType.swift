@@ -916,7 +916,7 @@ public protocol PurchasesType: AnyObject {
      * - Parameter completion: The completion block to be called with the updated CustomerInfo
      * on a successful redemption, or the error if not.
      */
-    func redeemWebPurchase(
+    @objc func redeemWebPurchase(
         webPurchaseRedemption: WebPurchaseRedemption,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     )
