@@ -49,7 +49,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.onOpenURL { url in
-            if let webPurchaseRedemption = Purchases.parseAsWebPurchaseRedemption(url),
+            if let webPurchaseRedemption = url.asWebPurchaseRedemption,
                 Purchases.isConfigured {
                 Task {
                     let result = await Purchases.shared.redeemWebPurchase(webPurchaseRedemption)
