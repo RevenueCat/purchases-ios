@@ -18,10 +18,10 @@ public extension PaywallComponent {
         public let text: LocalizationKey
         public let fontFamily: String?
         public let fontWeight: FontWeight
-        public let color: ColorInfo
+        public let color: ColorScheme
         public let textStyle: TextStyle
         public let horizontalAlignment: HorizontalAlignment
-        public let backgroundColor: ColorInfo?
+        public let backgroundColor: ColorScheme?
         public let padding: Padding
         public let margin: Padding
 
@@ -31,8 +31,8 @@ public extension PaywallComponent {
             text: String,
             fontFamily: String? = nil,
             fontWeight: FontWeight = .regular,
-            color: ColorInfo,
-            backgroundColor: ColorInfo? = nil,
+            color: ColorScheme,
+            backgroundColor: ColorScheme? = nil,
             padding: Padding = .zero,
             margin: Padding = .zero,
             textStyle: TextStyle = .body,
@@ -59,10 +59,10 @@ public extension PaywallComponent {
         public let text: LocalizationKey?
         public let fontFamily: String?
         public let fontWeight: FontWeight?
-        public let color: ColorInfo?
+        public let color: ColorScheme?
         public let textStyle: TextStyle?
         public let horizontalAlignment: HorizontalAlignment?
-        public let backgroundColor: ColorInfo?
+        public let backgroundColor: ColorScheme?
         public let padding: Padding?
         public let margin: Padding?
 
@@ -71,8 +71,8 @@ public extension PaywallComponent {
             text: LocalizationKey? = nil,
             fontFamily: String? = nil,
             fontWeight: FontWeight? = nil,
-            color: ColorInfo? = nil,
-            backgroundColor: ColorInfo? = nil,
+            color: ColorScheme? = nil,
+            backgroundColor: ColorScheme? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
             textStyle: TextStyle? = nil,

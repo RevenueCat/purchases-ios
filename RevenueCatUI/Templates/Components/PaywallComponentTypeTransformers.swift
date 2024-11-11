@@ -180,6 +180,19 @@ extension PaywallComponent.FitMode {
     }
 }
 
+extension PaywallComponent.ColorInfo {
+
+    func toColor(fallback: Color) -> Color {
+        switch self {
+        case .hex(let hex):
+            return hex.toColor(fallback: fallback)
+        case .alias:
+            // WIP: Need to implement this when we actually have alias implemented
+            return fallback
+        }
+    }
+}
+
 extension PaywallComponent.ColorHex {
 
     func toColor(fallback: Color) -> Color {
@@ -222,7 +235,7 @@ extension PaywallComponent.ColorHex {
 
 }
 
-extension PaywallComponent.ColorInfo {
+extension PaywallComponent.ColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func toDyanmicColor() -> Color {

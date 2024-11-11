@@ -20,10 +20,10 @@ public extension PaywallComponent {
 
     struct Border: Codable, Sendable, Hashable {
 
-        public let color: ColorInfo
+        public let color: ColorScheme
         public let width: Double
 
-        public init(color: PaywallComponent.ColorInfo, width: Double) {
+        public init(color: PaywallComponent.ColorScheme, width: Double) {
             self.color = color
             self.width = width
         }

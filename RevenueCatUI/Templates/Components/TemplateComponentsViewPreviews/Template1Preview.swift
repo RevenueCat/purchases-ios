@@ -39,7 +39,7 @@ private enum Template1Preview {
         text: "title",
         fontFamily: nil,
         fontWeight: .black,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
@@ -51,7 +51,7 @@ private enum Template1Preview {
         text: "body",
         fontFamily: nil,
         fontWeight: .regular,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
@@ -65,13 +65,13 @@ private enum Template1Preview {
                 .text(.init(
                     text: "package_name",
                     fontWeight: .bold,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
                     text: "package_detail",
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 ))
@@ -98,8 +98,8 @@ private enum Template1Preview {
             .text(.init(
                 text: "cta",
                 fontWeight: .bold,
-                color: .init(light: "#ffffff"),
-                backgroundColor: .init(light: "#e89d89"),
+                color: .init(light: .hex("#ffffff")),
+                backgroundColor: .init(light: .hex("#e89d89")),
                 padding: .init(top: 10,
                                bottom: 10,
                                leading: 30,
