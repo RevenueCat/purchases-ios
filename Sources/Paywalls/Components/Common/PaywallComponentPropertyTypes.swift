@@ -187,7 +187,7 @@ public extension PaywallComponent {
 
         case fit
         case fill
-        case fixed(Int)
+        case fixed(UInt)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -213,7 +213,7 @@ public extension PaywallComponent {
             case .fill:
                 self = .fill
             case .fixed:
-                let value = try container.decode(Int.self, forKey: .value)
+                let value = try container.decode(UInt.self, forKey: .value)
                 self = .fixed(value)
             }
         }

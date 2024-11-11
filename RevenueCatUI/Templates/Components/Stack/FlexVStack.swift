@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  FlexHStack.swift
+//  FlexVStack.swift
 //
 //  Created by Josh Holtz on 11/1/24.
 
