@@ -115,7 +115,6 @@ private enum Template1Preview {
             .package(package),
             .purchaseButton(purchaseButton)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 30,
         backgroundColor: nil,
         margin: .init(top: 0,
@@ -129,7 +128,6 @@ private enum Template1Preview {
             .image(catImage),
             .stack(contentStack)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 20,
         backgroundColor: nil
     )

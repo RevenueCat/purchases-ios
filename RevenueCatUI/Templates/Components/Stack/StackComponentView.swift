@@ -126,36 +126,204 @@ extension PaywallComponent.FlexDistribution {
 }
 
 struct WidthModifier: ViewModifier {
-    var width: PaywallComponent.WidthSize?
+
+    var sizeConstraint: PaywallComponent.SizeConstraint
 
     func body(content: Content) -> some View {
-        if let width = width {
-            switch width.type {
-            case .fit:
-                content
-            case .fill:
-                content
-                    .frame(maxWidth: .infinity)
-            case .fixed:
-                if let value = width.value {
-                    content
-                        .frame(width: CGFloat(value))
-                } else {
-                    content
-                }
-            }
-        } else {
+        switch self.sizeConstraint {
+        case .fit:
             content
+        case .fill:
+            content
+                .frame(maxWidth: .infinity)
+        case .fixed(let value):
+            content
+                .frame(width: CGFloat(value))
         }
     }
+
 }
 
 extension View {
 
-    func width(_ width: PaywallComponent.WidthSize? = nil) -> some View {
-        self.modifier(WidthModifier(width: width))
+    func width(_ sizeConstraint: PaywallComponent.SizeConstraint) -> some View {
+        self.modifier(WidthModifier(sizeConstraint: sizeConstraint))
     }
 
 }
+
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Default - Fill
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .text(.init(
+                            text: "text_1",
+                            color: .init(light: .hex("#000000"))))
+                    ],
+                    size: .init(
+                        width: .fill,
+                        height: .fit
+                    ),
+                    backgroundColor: .init(light: .hex("#ff0000"))
+                ),
+                localizedStrings: [
+                    "text_1": .string("Hey")
+                ]),
+            onDismiss: {}
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Default - Fill")
+
+        // Default - Fit
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .text(.init(
+                            text: "text_1",
+                            color: .init(light: .hex("#000000"))))
+                    ],
+                    size: .init(
+                        width: .fit,
+                        height: .fit
+                    ),
+                    backgroundColor: .init(light: .hex("#ff0000"))
+                ),
+                localizedStrings: [
+                    "text_1": .string("Hey")
+                ]),
+            onDismiss: {}
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Default - Fit")
+
+        // Default - Fill Fit Fixed Fill
+        HStack(spacing: 0) {
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .text(.init(
+                                text: "text_1",
+                                color: .init(light: .hex("#000000"))))
+                        ],
+                        size: .init(
+                            width: .fill,
+                            height: .fit
+                        ),
+                        backgroundColor: .init(light: .hex("#ff0000"))
+                    ),
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]),
+                onDismiss: {}
+            )
+
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .text(.init(
+                                text: "text_1",
+                                color: .init(light: .hex("#000000"))))
+                        ],
+                        size: .init(
+                            width: .fit,
+                            height: .fit
+                        ),
+                        backgroundColor: .init(light: .hex("#0000ff"))
+                    ),
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]),
+                onDismiss: {}
+            )
+
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .text(.init(
+                                text: "text_1",
+                                color: .init(light: .hex("#000000"))))
+                        ],
+                        size: .init(
+                            width: .fixed(100),
+                            height: .fit
+                        ),
+                        backgroundColor: .init(light: .hex("#00ff00"))
+                    ),
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]),
+                onDismiss: {}
+            )
+
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .text(.init(
+                                text: "text_1",
+                                color: .init(light: .hex("#000000"))))
+                        ],
+                        size: .init(
+                            width: .fill,
+                            height: .fit
+                        ),
+                        backgroundColor: .init(light: .hex("#ff0000"))
+                    ),
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]),
+                onDismiss: {}
+            )
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Default - Fill Fit Fixed Fill")
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension StackComponentViewModel {
+
+    convenience init(
+        component: PaywallComponent.StackComponent,
+        localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws {
+        let validator = PackageValidator()
+        let factory = ViewModelFactory()
+        let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+
+        let viewModels = try component.components.map { component in
+            try factory.toViewModel(
+                component: component,
+                packageValidator: validator,
+                offering: offering,
+                localizedStrings: localizedStrings
+            )
+        }
+
+        self.init(
+            component: component,
+            viewModels: viewModels
+        )
+    }
+
+}
+
+#endif
 
 #endif

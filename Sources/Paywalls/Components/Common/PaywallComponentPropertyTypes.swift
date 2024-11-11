@@ -171,19 +171,69 @@ public extension PaywallComponent {
 
     }
 
-    enum WidthSizeType: String, Codable, Sendable, Hashable, Equatable {
-        case fit, fill, fixed
-    }
+    struct Size: Codable, Sendable, Hashable, Equatable {
 
-    struct WidthSize: Codable, Sendable, Hashable, Equatable {
+        public let width: SizeConstraint
+        public let height: SizeConstraint
 
-        public init(type: WidthSizeType, value: Int? ) {
-            self.type = type
-            self.value = value
+        public init(width: PaywallComponent.SizeConstraint, height: PaywallComponent.SizeConstraint) {
+            self.width = width
+            self.height = height
         }
 
-        public let type: WidthSizeType
-        public let value: Int?
+    }
+
+    enum SizeConstraint: Codable, Sendable, Hashable {
+
+        case fit
+        case fill
+        case fixed(Int)
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .fit:
+                try container.encode(SizeConstraintType.fit.rawValue, forKey: .type)
+            case .fill:
+                try container.encode(SizeConstraintType.fill.rawValue, forKey: .type)
+            case .fixed(let value):
+                try container.encode(SizeConstraintType.fixed.rawValue, forKey: .type)
+                try container.encode(value, forKey: .value)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(SizeConstraintType.self, forKey: .type)
+
+            switch type {
+            case .fit:
+                self = .fit
+            case .fill:
+                self = .fill
+            case .fixed:
+                let value = try container.decode(Int.self, forKey: .value)
+                self = .fixed(value)
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case value
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum SizeConstraintType: String, Decodable {
+
+            case fit
+            case fill
+            case fixed
+
+        }
 
     }
 

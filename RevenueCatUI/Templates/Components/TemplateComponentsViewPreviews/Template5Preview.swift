@@ -172,7 +172,6 @@ private enum Template5Preview {
             .purchaseButton(purchaseButton)
         ],
         dimension: .horizontal(.center, .start),
-        width: .init(type: .fill, value: nil),
         spacing: 0,
         backgroundColor: nil
     )
@@ -185,7 +184,6 @@ private enum Template5Preview {
             .stack(purchaseButtonStack)
         ],
         dimension: .vertical(.leading),
-        width: .init(type: .fill, value: nil),
         spacing: 30,
         backgroundColor: nil,
         margin: .init(top: 0,
@@ -199,7 +197,6 @@ private enum Template5Preview {
             .image(catImage),
             .stack(contentStack)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 20,
         backgroundColor: nil
     )

@@ -22,7 +22,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let components: [PaywallComponent]
-        public let width: WidthSize?
+        public let size: Size
         public let spacing: CGFloat?
         public let backgroundColor: ColorScheme?
         public let dimension: Dimension
@@ -37,7 +37,7 @@ public extension PaywallComponent {
         public init(
             components: [PaywallComponent],
             dimension: Dimension = .vertical(.center),
-            width: WidthSize? = nil,
+            size: Size = .init(width: .fill, height: .fit),
             spacing: CGFloat? = nil,
             backgroundColor: ColorScheme? = nil,
             padding: Padding = .zero,
@@ -48,7 +48,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.components = components
-            self.width = width
+            self.size = size
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.type = .stack
@@ -66,7 +66,7 @@ public extension PaywallComponent {
     struct PartialStackComponent: PartialComponent {
 
         public let visible: Bool?
-        public let width: WidthSize?
+        public let size: Size?
         public let spacing: CGFloat?
         public let backgroundColor: ColorScheme?
         public let dimension: Dimension?
@@ -79,7 +79,7 @@ public extension PaywallComponent {
         public init(
             visible: Bool? = true,
             dimension: Dimension? = nil,
-            width: WidthSize? = nil,
+            size: Size? = nil,
             spacing: CGFloat? = nil,
             backgroundColor: ColorScheme? = nil,
             padding: Padding? = nil,
@@ -89,7 +89,7 @@ public extension PaywallComponent {
             shadow: Shadow? = nil
         ) {
             self.visible = visible
-            self.width = width
+            self.size = size
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.dimension = dimension

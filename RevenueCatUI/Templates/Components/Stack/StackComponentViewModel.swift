@@ -44,11 +44,8 @@ class StackComponentViewModel {
     }
 
     var shouldUseFlex: Bool {
-        guard let widthType = self.component.width?.type else {
-            return false
-        }
-
-        switch widthType {
+        // TODO: Maybe fix this
+        switch self.component.size.width {
         case .fit:
             return false
         case .fill:
@@ -82,8 +79,12 @@ class StackComponentViewModel {
         component.margin.edgeInsets
     }
 
-    var width: PaywallComponent.WidthSize? {
-        component.width
+    var width: PaywallComponent.SizeConstraint {
+        component.size.width
+    }
+
+    var height: PaywallComponent.SizeConstraint {
+        component.size.height
     }
 
     var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
