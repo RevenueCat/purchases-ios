@@ -92,6 +92,7 @@ import Foundation
             return self
         }
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         /**
          * Sets a win-back offer for the purchase.
          * - Parameter winBackOffer: The ``WinBackOffer`` to apply to the purchase.
@@ -103,6 +104,7 @@ import Foundation
             self.winBackOffer = winBackOffer
             return self
         }
+        #endif
 
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> PurchaseParams {

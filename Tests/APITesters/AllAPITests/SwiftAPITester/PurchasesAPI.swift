@@ -138,6 +138,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
     let offer: PromotionalOffer! = nil
+    let winBackOffer: WinBackOffer! = nil
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
@@ -161,10 +162,19 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let packageParams = PurchaseParams.Builder(package: pack)
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        .with(winBackOffer: winBackOffer)
+        #endif
+
         .build()
     let productParams = PurchaseParams.Builder(product: storeProduct)
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        .with(winBackOffer: winBackOffer)
+        #endif
         .build()
     purchases.purchase(params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     #endif
