@@ -13,7 +13,7 @@
 
 import Foundation
 
-#if ENABLE_PURCHASE_PARAMS
+// #if ENABLE_PURCHASE_PARAMS
 
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
@@ -34,6 +34,7 @@ import Foundation
     let package: Package?
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
+    let winBackOffer: WinBackOffer?
     let metadata: [String: String]?
 
     private init(with builder: Builder) {
@@ -41,6 +42,7 @@ import Foundation
         self.metadata = builder.metadata
         self.product = builder.product
         self.package = builder.package
+        self.winBackOffer = builder.winBackOffer
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -49,6 +51,7 @@ import Foundation
         private(set) var metadata: [String: String]?
         private(set) var package: Package?
         private(set) var product: StoreProduct?
+        private(set) var winBackOffer: WinBackOffer?
 
         /**
          * Create a new builder with a ``Package``.
@@ -89,6 +92,18 @@ import Foundation
             return self
         }
 
+        /**
+         * Sets a win-back offer for the purchase.
+         * - Parameter winBackOffer: The ``WinBackOffer`` to apply to the purchase.
+         *
+         * Availability: iOS 18.0+, macOS 15.0+, tvOS 18.0+, watchOS 11.0+, visionOS 2.0+
+         */
+        @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+        public func with(winBackOffer: WinBackOffer) -> Self {
+            self.winBackOffer = winBackOffer
+            return self
+        }
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> PurchaseParams {
             return PurchaseParams(with: self)
@@ -96,4 +111,4 @@ import Foundation
     }
 }
 
-#endif
+// #endif

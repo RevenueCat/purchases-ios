@@ -83,7 +83,7 @@ extension Purchases {
         }
     }
 
-    #if ENABLE_PURCHASE_PARAMS
+//    #if ENABLE_PURCHASE_PARAMS
 
     func purchaseAsync(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
@@ -95,7 +95,7 @@ extension Purchases {
         }
     }
 
-    #endif
+//    #endif
 
     func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in

@@ -333,7 +333,7 @@ final class PurchasesOrchestrator {
         }
     }
 
-    #if ENABLE_PURCHASE_PARAMS
+//    #if ENABLE_PURCHASE_PARAMS
     func purchase(params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
@@ -347,14 +347,16 @@ final class PurchasesOrchestrator {
         purchase(product: product,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
+                 winBackOffer: params.winBackOffer,
                  metadata: params.metadata,
                  completion: completion)
     }
-    #endif
+//    #endif
 
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
+                  winBackOffer: WinBackOffer? = nil,
                   metadata: [String: String]? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
@@ -372,6 +374,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk2Product: sk2Product,
                           package: package,
                           promotionalOffer: promotionalOffer,
+                          winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completion)
         } else if product.isTestProduct {
@@ -466,14 +469,18 @@ final class PurchasesOrchestrator {
     func purchase(sk2Product product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
+                  winBackOffer: WinBackOffer?,
                   metadata: [String: String]? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
-                let result: PurchaseResultData = try await self.purchase(sk2Product: product,
-                                                                         package: package,
-                                                                         promotionalOffer: promotionalOffer,
-                                                                         metadata: metadata)
+                let result: PurchaseResultData = try await self.purchase(
+                    sk2Product: product,
+                    package: package,
+                    promotionalOffer: promotionalOffer,
+                    winBackOffer: winBackOffer?.discount.sk2Discount,
+                    metadata: metadata
+                )
 
                 if !result.userCancelled {
                     Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
