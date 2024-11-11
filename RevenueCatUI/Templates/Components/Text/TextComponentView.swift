@@ -46,6 +46,7 @@ struct TextComponentView: View {
                         .multilineTextAlignment(style.horizontalAlignment)
                         .foregroundStyle(style.color)
                         .padding(style.padding)
+                        .size(style.size)
                         .background(style.backgroundColor)
                         .padding(style.margin)
                 } else {

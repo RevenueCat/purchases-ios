@@ -83,6 +83,7 @@ class TextComponentViewModel {
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            size: partial?.size ?? self.component.size,
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
             fontSize: partial?.fontSize ?? self.component.fontSize,
@@ -197,6 +198,7 @@ struct TextComponentStyle {
     let fontSize: Font
     let horizontalAlignment: TextAlignment
     let backgroundColor: Color
+    let size: PaywallComponent.Size
     let padding: EdgeInsets
     let margin: EdgeInsets
 
@@ -207,6 +209,7 @@ struct TextComponentStyle {
         fontWeight: PaywallComponent.FontWeight,
         color: PaywallComponent.ColorScheme,
         backgroundColor: PaywallComponent.ColorScheme?,
+        size: PaywallComponent.Size,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
         fontSize: PaywallComponent.FontSize,
@@ -222,6 +225,7 @@ struct TextComponentStyle {
 
         self.horizontalAlignment = horizontalAlignment.textAlignment
         self.backgroundColor = backgroundColor?.toDyanmicColor() ?? Color.clear
+        self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
     }

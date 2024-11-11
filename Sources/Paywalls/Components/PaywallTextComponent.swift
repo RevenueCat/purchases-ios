@@ -22,6 +22,7 @@ public extension PaywallComponent {
         public let fontSize: FontSize
         public let horizontalAlignment: HorizontalAlignment
         public let backgroundColor: ColorScheme?
+        public let size: Size
         public let padding: Padding
         public let margin: Padding
 
@@ -33,6 +34,7 @@ public extension PaywallComponent {
             fontWeight: FontWeight = .regular,
             color: ColorScheme,
             backgroundColor: ColorScheme? = nil,
+            size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
             margin: Padding = .zero,
             fontSize: FontSize = .bodyM,
@@ -45,6 +47,7 @@ public extension PaywallComponent {
             self.fontWeight = fontWeight
             self.color = color
             self.backgroundColor = backgroundColor
+            self.size = size
             self.padding = padding
             self.margin = margin
             self.fontSize = fontSize
@@ -63,6 +66,7 @@ public extension PaywallComponent {
         public let fontSize: FontSize?
         public let horizontalAlignment: HorizontalAlignment?
         public let backgroundColor: ColorScheme?
+        public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
 
@@ -73,6 +77,7 @@ public extension PaywallComponent {
             fontWeight: FontWeight? = nil,
             color: ColorScheme? = nil,
             backgroundColor: ColorScheme? = nil,
+            size: Size? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
             fontSize: FontSize? = nil,
@@ -84,6 +89,7 @@ public extension PaywallComponent {
             self.fontWeight = fontWeight
             self.color = color
             self.backgroundColor = backgroundColor
+            self.size = size
             self.padding = padding
             self.margin = margin
             self.fontSize = fontSize
@@ -104,6 +110,7 @@ extension PaywallComponent.TextComponent {
         case fontSize
         case horizontalAlignment
         case backgroundColor
+        case size
         case padding
         case margin
 
@@ -123,6 +130,7 @@ extension PaywallComponent.PartialTextComponent {
         case fontSize
         case horizontalAlignment
         case backgroundColor
+        case size
         case padding
         case margin
     }
