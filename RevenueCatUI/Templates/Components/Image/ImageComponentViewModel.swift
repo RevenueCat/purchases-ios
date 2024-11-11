@@ -40,9 +40,9 @@ class ImageComponentViewModel {
         self.imageInfo.light.heic
     }
 
-    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
+    var cornerRadiuses: ShapeModifier.RaidusInfo? {
         component.cornerRadiuses.flatMap { cornerRadiuses in
-            CornerBorderModifier.RaidusInfo(
+            ShapeModifier.RaidusInfo(
                 topLeft: cornerRadiuses.topLeading,
                 topRight: cornerRadiuses.topTrailing,
                 bottomLeft: cornerRadiuses.bottomLeading,

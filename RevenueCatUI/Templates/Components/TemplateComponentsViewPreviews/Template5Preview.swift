@@ -104,10 +104,10 @@ private enum Template5Preview {
                                               bottom: 10,
                                               leading: 20,
                                               trailing: 20),
-            cornerRadiuses: .init(topLeading: 16,
-                                  topTrailing: 16,
-                                  bottomLeading: 16,
-                                  bottomTrailing: 20),
+            shape: .rectangle(.init(topLeading: 16,
+                                    topTrailing: 16,
+                                    bottomLeading: 16,
+                                    bottomTrailing: 20)),
             border: .init(color: .init(light: .hex("#cccccc")), width: 1)
         )
 
@@ -160,10 +160,10 @@ private enum Template5Preview {
                            bottom: 15,
                            leading: 50,
                            trailing: 50),
-            cornerRadiuses: .init(topLeading: 16,
-                                  topTrailing: 16,
-                                  bottomLeading: 16,
-                                  bottomTrailing: 16)
+            shape: .rectangle(.init(topLeading: 16,
+                                    topTrailing: 16,
+                                    bottomLeading: 16,
+                                    bottomTrailing: 16))
         )
     )
 

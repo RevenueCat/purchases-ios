@@ -107,8 +107,49 @@ public extension PaywallComponent {
 
     enum Shape: Codable, Sendable, Hashable, Equatable {
 
-        case rectangle
+        case rectangle(CornerRadiuses?)
         case pill
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let corners):
+                try container.encode(ShapeType.rectangle.rawValue, forKey: .type)
+                try container.encode(corners, forKey: .corners)
+            case .pill:
+                try container.encode(ShapeType.pill.rawValue, forKey: .type)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(ShapeType.self, forKey: .type)
+
+            switch type {
+            case .rectangle:
+                let value = try container.decode(CornerRadiuses.self, forKey: .corners)
+                self = .rectangle(value)
+            case .pill:
+                self = .pill
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case corners
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum ShapeType: String, Decodable {
+
+            case rectangle
+            case pill
+
+        }
 
     }
 

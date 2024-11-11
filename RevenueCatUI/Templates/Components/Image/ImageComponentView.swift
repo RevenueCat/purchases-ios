@@ -56,8 +56,8 @@ struct ImageComponentView: View {
                     endPoint: .bottom
                 )
             )
-            .cornerBorder(border: nil,
-                          radiuses: viewModel.cornerRadiuses)
+            .shape(border: nil,
+                   shape: .rectangle(viewModel.cornerRadiuses))
     }
 
 }
