@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BackendPostDiagnosticsTests.swift
+//  BackendPostRedeemWebPurchaseTests.swift
 //
-//  Created by Cesar de la Vega on 10/4/24.
+//  Created by Antonio Rico Diez on 11/6/24.
 
 import Foundation
 import Nimble
