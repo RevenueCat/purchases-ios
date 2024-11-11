@@ -909,12 +909,12 @@ public protocol PurchasesType: AnyObject {
 
     /**
      * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``.
-     * We recommend using ``Purchases/redeemWebPurchase(_:)`` for a nicer API unless you're using ObjC.
      *
      * - Parameter webPurchaseRedemption: WebPurchaseRedemption object previously parsed from
      * a URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
      * - Parameter completion: The completion block to be called with the updated CustomerInfo
      * on a successful redemption, or the error if not.
+     * - Seealso: ``Purchases/redeemWebPurchase(_:)``
      */
     @objc func redeemWebPurchase(
         webPurchaseRedemption: WebPurchaseRedemption,
