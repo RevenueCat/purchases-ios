@@ -101,12 +101,8 @@ class StackComponentViewModel {
         component.margin.edgeInsets
     }
 
-    var width: PaywallComponent.SizeConstraint {
-        component.size.width
-    }
-
-    var height: PaywallComponent.SizeConstraint {
-        component.size.height
+    var size: PaywallComponent.Size {
+        component.size
     }
 
     var cornerRadiuses: CornerBorderModifier.RaidusInfo? {

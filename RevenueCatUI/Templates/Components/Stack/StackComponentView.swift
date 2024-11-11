@@ -96,8 +96,7 @@ struct StackComponentView: View {
         }
         .padding(viewModel.padding)
         .padding(additionalPadding)
-        .height(viewModel.height)
-        .width(viewModel.width)
+        .size(viewModel.size)
         .background(viewModel.backgroundColor)
         .cornerBorder(border: viewModel.border,
                       radiuses: viewModel.cornerRadiuses)
@@ -106,60 +105,6 @@ struct StackComponentView: View {
             view.compositingGroup().shadow(shadow: shadow)
         }
         .padding(viewModel.margin)
-    }
-
-}
-
-struct HeightModifier: ViewModifier {
-
-    var sizeConstraint: PaywallComponent.SizeConstraint
-
-    func body(content: Content) -> some View {
-        switch self.sizeConstraint {
-        case .fit:
-            content
-        case .fill:
-            content
-                .frame(maxHeight: .infinity)
-        case .fixed(let value):
-            content
-                .frame(height: CGFloat(value))
-        }
-    }
-
-}
-
-extension View {
-
-    func height(_ sizeConstraint: PaywallComponent.SizeConstraint) -> some View {
-        self.modifier(HeightModifier(sizeConstraint: sizeConstraint))
-    }
-
-}
-
-struct WidthModifier: ViewModifier {
-
-    var sizeConstraint: PaywallComponent.SizeConstraint
-
-    func body(content: Content) -> some View {
-        switch self.sizeConstraint {
-        case .fit:
-            content
-        case .fill:
-            content
-                .frame(maxWidth: .infinity)
-        case .fixed(let value):
-            content
-                .frame(width: CGFloat(value))
-        }
-    }
-
-}
-
-extension View {
-
-    func width(_ sizeConstraint: PaywallComponent.SizeConstraint) -> some View {
-        self.modifier(WidthModifier(sizeConstraint: sizeConstraint))
     }
 
 }
