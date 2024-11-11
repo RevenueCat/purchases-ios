@@ -16,9 +16,8 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct FlexHStack: View {
-
-    let alignment: VerticalAlignment
+struct FlexVStack: View {
+    let alignment: HorizontalAlignment
     let justifyContent: JustifyContent
     let spacing: CGFloat?
     let componentViewModels: [PaywallComponentViewModel]
@@ -26,7 +25,7 @@ struct FlexHStack: View {
     let onDismiss: () -> Void
 
     init(
-        alignment: VerticalAlignment,
+        alignment: HorizontalAlignment,
         spacing: CGFloat?,
         justifyContent: JustifyContent,
         componentViewModels: [PaywallComponentViewModel],
@@ -40,7 +39,7 @@ struct FlexHStack: View {
     }
 
     var body: some View {
-        HStack(alignment: self.alignment, spacing: self.spacing) {
+        VStack(alignment: self.alignment, spacing: self.spacing) {
             switch justifyContent {
             case .start:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in

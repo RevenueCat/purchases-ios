@@ -97,7 +97,7 @@ private enum Template5Preview {
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.leading),
+            dimension: .vertical(.leading, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -136,7 +136,7 @@ private enum Template5Preview {
                 textStyle: .caption
             ))
         ],
-        dimension: .vertical(.center),
+        dimension: .vertical(.center, .start),
         spacing: 10,
         backgroundColor: nil,
         margin: .init(top: 20,
@@ -183,7 +183,7 @@ private enum Template5Preview {
             .stack(packagesStack),
             .stack(purchaseButtonStack)
         ],
-        dimension: .vertical(.leading),
+        dimension: .vertical(.leading, .start),
         spacing: 30,
         backgroundColor: nil,
         margin: .init(top: 0,

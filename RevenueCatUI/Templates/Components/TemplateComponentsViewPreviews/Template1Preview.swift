@@ -76,7 +76,7 @@ private enum Template1Preview {
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.center),
+            dimension: .vertical(.center, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: .init(top: 0,

@@ -34,12 +34,14 @@ struct StackComponentView: View {
     var body: some View {
         Group {
             switch viewModel.dimension {
-            case .vertical(let horizontalAlignment):
+            case .vertical(let horizontalAlignment, let distribution):
                 Group {
                     // This is NOT a final implementation of this
                     // There are some horizontal sizing issues with using LazyVStack
                     // There are so performance issues with VStack with lots of children
-                    if viewModel.shouldUseVStack {
+
+                    switch self.viewModel.vstackStrategy {
+                    case .normal:
                         // VStack when not many things
                         VStack(
                             alignment: horizontalAlignment.stackAlignment,
@@ -50,7 +52,7 @@ struct StackComponentView: View {
                                 onDismiss: self.onDismiss
                             )
                         }
-                    } else {
+                    case .lazy:
                         // LazyVStack needed for performance when loading
                         LazyVStack(
                             alignment: horizontalAlignment.stackAlignment,
@@ -61,16 +63,23 @@ struct StackComponentView: View {
                                 onDismiss: self.onDismiss
                             )
                         }
+                    case .flex:
+                        FlexVStack(
+                            alignment: horizontalAlignment.stackAlignment,
+                            spacing: viewModel.spacing,
+                            justifyContent: distribution.justifyContent,
+                            componentViewModels: self.viewModel.viewModels,
+                            onDismiss: self.onDismiss
+                        )
                     }
                 }
-                .applyIf(viewModel.shouldUseFlex) {
-                    $0.frame(
-                        maxWidth: .infinity,
-                        alignment: horizontalAlignment.frameAlignment
-                    )
-                }
             case .horizontal(let verticalAlignment, let distribution):
-                if viewModel.shouldUseFlex {
+                switch self.viewModel.hstackStrategy {
+                case .normal, .lazy:
+                    HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
+                        ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
+                    }
+                case .flex:
                     FlexHStack(
                         alignment: verticalAlignment.stackAlignment,
                         spacing: viewModel.spacing,
@@ -78,10 +87,6 @@ struct StackComponentView: View {
                         componentViewModels: self.viewModel.viewModels,
                         onDismiss: self.onDismiss
                     )
-                } else {
-                    HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
-                        ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
-                    }
                 }
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
@@ -91,6 +96,7 @@ struct StackComponentView: View {
         }
         .padding(viewModel.padding)
         .padding(additionalPadding)
+        .height(viewModel.height)
         .width(viewModel.width)
         .background(viewModel.backgroundColor)
         .cornerBorder(border: viewModel.border,
@@ -104,23 +110,29 @@ struct StackComponentView: View {
 
 }
 
-extension PaywallComponent.FlexDistribution {
+struct HeightModifier: ViewModifier {
 
-    var justifyContent: JustifyContent {
-        switch self {
-        case .start:
-            return .start
-        case .center:
-            return .center
-        case .end:
-            return .end
-        case .spaceBetween:
-            return .spaceBetween
-        case .spaceAround:
-            return .spaceAround
-        case .spaceEvenly:
-            return .spaceEvenly
+    var sizeConstraint: PaywallComponent.SizeConstraint
+
+    func body(content: Content) -> some View {
+        switch self.sizeConstraint {
+        case .fit:
+            content
+        case .fill:
+            content
+                .frame(maxHeight: .infinity)
+        case .fixed(let value):
+            content
+                .frame(height: CGFloat(value))
         }
+    }
+
+}
+
+extension View {
+
+    func height(_ sizeConstraint: PaywallComponent.SizeConstraint) -> some View {
+        self.modifier(HeightModifier(sizeConstraint: sizeConstraint))
     }
 
 }
