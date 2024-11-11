@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostReceiptDataOperation.swift
+// PostRedeeemWebPurchaseOperation.swift
 //
-//  Created by Joshua Liebowitz on 11/18/21.
+// Created by Antonio Rico Diez on 2024-10-17.
 
 import Foundation
 
@@ -48,8 +48,8 @@ final class PostRedeemWebPurchaseOperation: CacheableNetworkOperation {
         /// - `redemptionToken`
         let cacheKey = "\(configuration.appUserID)-\(postData.redemptionToken)"
 
-        return .init({ cacheKey in
-                    .init(
+        return CacheableNetworkOperationFactory({ cacheKey in
+                    PostRedeemWebPurchaseOperation(
                         configuration: configuration,
                         postData: postData,
                         customerInfoResponseHandler: customerInfoResponseHandler,

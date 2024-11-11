@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ETagStrings.swift
+// WebRedemptionStrings.swift
 //
-//  Created by Nacho Soto on 6/15/23.
+// Created by Antonio Rico Diez on 2024-10-17.
 
 import Foundation
 

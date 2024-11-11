@@ -193,7 +193,7 @@ extension ErrorCode: DescribableError {
         case .alreadyRedeemedWebPurchaseToken:
             return "The link you provided has already been redeemed."
         case .expiredWebPurchaseToken:
-            return "The link you provided has expired. A new one will be sent to the customer email."
+            return "The link you provided has expired. A new one will be sent to the email used to make the purchase."
         @unknown default:
             return "Something went wrong."
         }
