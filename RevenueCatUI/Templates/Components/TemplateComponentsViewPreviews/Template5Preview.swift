@@ -97,7 +97,7 @@ private enum Template5Preview {
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.leading),
+            dimension: .vertical(.leading, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -136,7 +136,7 @@ private enum Template5Preview {
                 textStyle: .caption
             ))
         ],
-        dimension: .vertical(.center),
+        dimension: .vertical(.center, .start),
         spacing: 10,
         backgroundColor: nil,
         margin: .init(top: 20,
@@ -172,7 +172,6 @@ private enum Template5Preview {
             .purchaseButton(purchaseButton)
         ],
         dimension: .horizontal(.center, .start),
-        width: .init(type: .fill, value: nil),
         spacing: 0,
         backgroundColor: nil
     )
@@ -184,8 +183,7 @@ private enum Template5Preview {
             .stack(packagesStack),
             .stack(purchaseButtonStack)
         ],
-        dimension: .vertical(.leading),
-        width: .init(type: .fill, value: nil),
+        dimension: .vertical(.leading, .start),
         spacing: 30,
         backgroundColor: nil,
         margin: .init(top: 0,
@@ -199,7 +197,6 @@ private enum Template5Preview {
             .image(catImage),
             .stack(contentStack)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 20,
         backgroundColor: nil
     )

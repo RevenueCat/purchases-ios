@@ -85,7 +85,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.leading),
+            dimension: .vertical(.leading, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: .init(top: 10,

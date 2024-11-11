@@ -20,7 +20,7 @@ public extension PaywallComponent {
 
     enum Dimension: Codable, Sendable, Hashable {
 
-        case vertical(HorizontalAlignment)
+        case vertical(HorizontalAlignment, FlexDistribution)
         case horizontal(VerticalAlignment, FlexDistribution)
         case zlayer(TwoDimensionAlignment)
 
@@ -28,9 +28,10 @@ public extension PaywallComponent {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .vertical(let alignment):
+            case .vertical(let alignment, let distribution):
                 try container.encode(DimensionType.vertical.rawValue, forKey: .type)
                 try container.encode(alignment, forKey: .alignment)
+                try container.encode(distribution, forKey: .distribution)
             case .horizontal(let alignment, let distribution):
                 try container.encode(DimensionType.horizontal.rawValue, forKey: .type)
                 try container.encode(alignment, forKey: .alignment)
@@ -48,7 +49,8 @@ public extension PaywallComponent {
             switch type {
             case .vertical:
                 let alignment = try container.decode(HorizontalAlignment.self, forKey: .alignment)
-                self = .vertical(alignment)
+                let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
+                self = .vertical(alignment, distribution)
             case .horizontal:
                 let alignment = try container.decode(VerticalAlignment.self, forKey: .alignment)
                 let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
@@ -64,7 +66,7 @@ public extension PaywallComponent {
         }
 
         public static func vertical() -> Dimension {
-            return .vertical(.center)
+            return .vertical(.center, .start)
         }
 
         // swiftlint:disable:next nesting
