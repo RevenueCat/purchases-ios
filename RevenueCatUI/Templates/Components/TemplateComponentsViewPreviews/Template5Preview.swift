@@ -40,25 +40,25 @@ private enum Template5Preview {
 
     static let title = PaywallComponent.TextComponent(
         text: "title",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .black,
         color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .largeTitle,
+        fontSize: .headingL,
         horizontalAlignment: .leading
     )
 
     static let body = PaywallComponent.TextComponent(
         text: "body",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .regular,
         color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .body,
+        fontSize: .bodyM,
         horizontalAlignment: .leading
     )
 
@@ -133,7 +133,7 @@ private enum Template5Preview {
             .text(.init(
                 text: "package_terms",
                 color: .init(light: .hex("#999999")),
-                textStyle: .caption
+                fontSize: .bodyS
             ))
         ],
         dimension: .vertical(.center, .start),

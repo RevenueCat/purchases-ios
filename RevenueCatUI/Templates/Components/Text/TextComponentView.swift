@@ -40,7 +40,7 @@ struct TextComponentView: View {
             Group {
                 if style.visible {
                     Text(style.text)
-                        .font(style.textStyle)
+                        .font(style.fontSize)
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(style.horizontalAlignment)
@@ -87,7 +87,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     text: "id_1",
-                    fontFamily: nil,
+                    fontName: nil,
                     fontWeight: .black,
                     color: .init(light: .hex("#ff0000")),
                     backgroundColor: .init(light: .hex("#dedede")),
@@ -99,7 +99,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                   bottom: 20,
                                   leading: 10,
                                   trailing: 10),
-                    textStyle: .footnote,
+                    fontSize: .bodyS,
                     horizontalAlignment: .leading
                 )
             )
@@ -131,7 +131,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                               bottom: 10,
                                               leading: 10,
                                               trailing: 10),
-                                textStyle: .title
+                                fontSize: .headingXL
                             )
                         )
                     )

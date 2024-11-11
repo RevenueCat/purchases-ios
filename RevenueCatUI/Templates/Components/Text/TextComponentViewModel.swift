@@ -79,13 +79,13 @@ class TextComponentViewModel {
         let style = TextComponentStyle(
             visible: partial?.visible ?? true,
             text: localalizedPartial?.text ?? self.text,
-            fontFamily: partial?.fontFamily ?? self.component.fontFamily,
+            fontFamily: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
-            textStyle: partial?.textStyle ?? self.component.textStyle,
+            fontSize: partial?.fontSize ?? self.component.fontSize,
             horizontalAlignment: partial?.horizontalAlignment ?? self.component.horizontalAlignment
         )
 
@@ -157,13 +157,13 @@ class TextComponentViewModel {
             partial: PaywallComponent.PartialTextComponent(
                 visible: otherPartial?.visible ?? basePartial?.visible,
                 text: otherPartial?.text ?? basePartial?.text,
-                fontFamily: otherPartial?.fontFamily ?? basePartial?.fontFamily,
+                fontName: otherPartial?.fontName ?? basePartial?.fontName,
                 fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
                 color: otherPartial?.color ?? basePartial?.color,
                 backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
                 padding: otherPartial?.padding ?? basePartial?.padding,
                 margin: otherPartial?.margin ?? basePartial?.margin,
-                textStyle: otherPartial?.textStyle ?? basePartial?.textStyle,
+                fontSize: otherPartial?.fontSize ?? basePartial?.fontSize,
                 horizontalAlignment: otherPartial?.horizontalAlignment ?? basePartial?.horizontalAlignment
             )
         )
@@ -192,10 +192,9 @@ struct TextComponentStyle {
 
     let visible: Bool
     let text: String
-    let fontFamily: String?
     let fontWeight: Font.Weight
     let color: Color
-    let textStyle: Font
+    let fontSize: Font
     let horizontalAlignment: TextAlignment
     let backgroundColor: Color
     let padding: EdgeInsets
@@ -210,15 +209,17 @@ struct TextComponentStyle {
         backgroundColor: PaywallComponent.ColorScheme?,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
-        textStyle: PaywallComponent.TextStyle,
+        fontSize: PaywallComponent.FontSize,
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
         self.visible = visible
         self.text = text
-        self.fontFamily = fontFamily
         self.fontWeight = fontWeight.fontWeight
         self.color = color.toDyanmicColor()
-        self.textStyle = textStyle.font
+
+        // WIP: Take into account the fontFamily mapping
+        self.fontSize = fontSize.font
+
         self.horizontalAlignment = horizontalAlignment.textAlignment
         self.backgroundColor = backgroundColor?.toDyanmicColor() ?? Color.clear
         self.padding = padding.edgeInsets

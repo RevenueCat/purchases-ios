@@ -16,10 +16,10 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let text: LocalizationKey
-        public let fontFamily: String?
+        public let fontName: String?
         public let fontWeight: FontWeight
         public let color: ColorScheme
-        public let textStyle: TextStyle
+        public let fontSize: FontSize
         public let horizontalAlignment: HorizontalAlignment
         public let backgroundColor: ColorScheme?
         public let padding: Padding
@@ -29,25 +29,25 @@ public extension PaywallComponent {
 
         public init(
             text: String,
-            fontFamily: String? = nil,
+            fontName: String? = nil,
             fontWeight: FontWeight = .regular,
             color: ColorScheme,
             backgroundColor: ColorScheme? = nil,
             padding: Padding = .zero,
             margin: Padding = .zero,
-            textStyle: TextStyle = .body,
+            fontSize: FontSize = .bodyM,
             horizontalAlignment: HorizontalAlignment = .center,
             overrides: ComponentOverrides<PartialTextComponent>? = nil
         ) {
             self.type = .text
             self.text = text
-            self.fontFamily = fontFamily
+            self.fontName = fontName
             self.fontWeight = fontWeight
             self.color = color
             self.backgroundColor = backgroundColor
             self.padding = padding
             self.margin = margin
-            self.textStyle = textStyle
+            self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
             self.overrides = overrides
         }
@@ -57,10 +57,10 @@ public extension PaywallComponent {
 
         public let visible: Bool?
         public let text: LocalizationKey?
-        public let fontFamily: String?
+        public let fontName: String?
         public let fontWeight: FontWeight?
         public let color: ColorScheme?
-        public let textStyle: TextStyle?
+        public let fontSize: FontSize?
         public let horizontalAlignment: HorizontalAlignment?
         public let backgroundColor: ColorScheme?
         public let padding: Padding?
@@ -69,24 +69,24 @@ public extension PaywallComponent {
         public init(
             visible: Bool? = true,
             text: LocalizationKey? = nil,
-            fontFamily: String? = nil,
+            fontName: String? = nil,
             fontWeight: FontWeight? = nil,
             color: ColorScheme? = nil,
             backgroundColor: ColorScheme? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
-            textStyle: TextStyle? = nil,
+            fontSize: FontSize? = nil,
             horizontalAlignment: HorizontalAlignment? = nil
         ) {
             self.visible = visible
             self.text = text
-            self.fontFamily = fontFamily
+            self.fontName = fontName
             self.fontWeight = fontWeight
             self.color = color
             self.backgroundColor = backgroundColor
             self.padding = padding
             self.margin = margin
-            self.textStyle = textStyle
+            self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
         }
     }
@@ -98,10 +98,10 @@ extension PaywallComponent.TextComponent {
     enum CodingKeys: String, CodingKey {
         case type
         case text = "textLid"
-        case fontFamily
+        case fontName
         case fontWeight
         case color
-        case textStyle
+        case fontSize
         case horizontalAlignment
         case backgroundColor
         case padding
@@ -117,10 +117,10 @@ extension PaywallComponent.PartialTextComponent {
     enum CodingKeys: String, CodingKey {
         case visible
         case text = "textLid"
-        case fontFamily
+        case fontName
         case fontWeight
         case color
-        case textStyle
+        case fontSize
         case horizontalAlignment
         case backgroundColor
         case padding
