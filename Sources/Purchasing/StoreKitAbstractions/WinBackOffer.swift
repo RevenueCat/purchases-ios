@@ -20,8 +20,7 @@ public final class WinBackOffer: NSObject, Sendable {
     /// The ``StoreProductDiscount`` in this offer.
     @objc public let discount: StoreProductDiscount
 
-    init(discount: StoreProductDiscount) {
-        self.discount = discount
+    init(discount: StoreProductDiscountType) {
+        self.discount = StoreProductDiscount.from(discount: discount)
     }
-
 }

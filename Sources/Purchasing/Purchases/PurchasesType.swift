@@ -351,7 +351,7 @@ public protocol PurchasesType: AnyObject {
      */
     func purchase(package: Package) async throws -> PurchaseResultData
 
-//    #if ENABLE_PURCHASE_PARAMS
+    #if ENABLE_PURCHASE_PARAMS
 
     /**
      * Initiates a purchase.
@@ -397,7 +397,7 @@ public protocol PurchasesType: AnyObject {
      */
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData
 
-//    #endif
+    #endif
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 

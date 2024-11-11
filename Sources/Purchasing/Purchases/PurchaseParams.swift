@@ -13,7 +13,7 @@
 
 import Foundation
 
-// #if ENABLE_PURCHASE_PARAMS
+ #if ENABLE_PURCHASE_PARAMS
 
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
@@ -111,4 +111,4 @@ import Foundation
     }
 }
 
-// #endif
+ #endif

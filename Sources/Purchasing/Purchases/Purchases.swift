@@ -994,7 +994,7 @@ public extension Purchases {
         return try await purchaseAsync(package: package)
     }
 
-//    #if ENABLE_PURCHASE_PARAMS
+    #if ENABLE_PURCHASE_PARAMS
 
     @objc(params:withCompletion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
@@ -1005,7 +1005,7 @@ public extension Purchases {
         return try await purchaseAsync(params)
     }
 
-//    #endif
+    #endif
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         self.purchasesOrchestrator.restorePurchases { @Sendable in
