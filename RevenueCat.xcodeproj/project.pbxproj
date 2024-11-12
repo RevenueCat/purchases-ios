@@ -7025,7 +7025,6 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
@@ -7058,7 +7057,6 @@
 					"@loader_path/Frameworks",
 				);
 				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
