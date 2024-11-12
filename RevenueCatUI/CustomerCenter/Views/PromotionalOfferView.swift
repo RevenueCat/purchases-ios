@@ -45,7 +45,8 @@ struct PromotionalOfferView: View {
                 promotionalOffer: promotionalOffer,
                 product: product,
                 promoOfferDetails: promoOfferDetails
-            )
+            ),
+            onPromotionalOfferSuccessfullyPurchased: self.onPromotionalOfferSuccessfullyPurchased
         ))
     }
 
@@ -85,6 +86,9 @@ struct PromotionalOfferView: View {
         }
     }
 
+    private func onPromotionalOfferSuccessfullyPurchased() {
+        self.dismiss()
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

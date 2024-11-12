@@ -14,6 +14,8 @@
 //
 
 import Foundation
+import SwiftUI
+
 import RevenueCat
 
 #if os(iOS)
@@ -33,14 +35,17 @@ class PromotionalOfferViewModel: ObservableObject {
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
-    convenience init() {
-        self.init(promotionalOfferData: nil)
-    }
+    private let onPromotionalOfferSuccessfullyPurchased: () -> Void
 
-    init(promotionalOfferData: PromotionalOfferData?) {
+    init(
+        promotionalOfferData: PromotionalOfferData?,
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
+        onPromotionalOfferSuccessfullyPurchased: @escaping () -> Void
+    ) {
         self.promotionalOfferData = promotionalOfferData
-        self.purchasesProvider = CustomerCenterPurchases()
+        self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
+        self.onPromotionalOfferSuccessfullyPurchased = onPromotionalOfferSuccessfullyPurchased
     }
 
     func purchasePromo() async {
@@ -51,10 +56,15 @@ class PromotionalOfferViewModel: ObservableObject {
         }
 
         do {
-            let result = try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
+            let result = try await self.purchasesProvider.purchase(
+                product: product,
+                promotionalOffer: promotionalOffer
+            )
+
             // swiftlint:disable:next todo
             // TODO: do something with result
             Logger.debug("Purchased promotional offer: \(result)")
+            self.onPromotionalOfferSuccessfullyPurchased()
         } catch {
             self.error = error
         }
