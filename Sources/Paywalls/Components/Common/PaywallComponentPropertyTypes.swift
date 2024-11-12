@@ -43,15 +43,65 @@ public extension PaywallComponent {
         public let heicLowRes: URL
     }
 
-    struct ColorInfo: Codable, Sendable, Hashable, Equatable {
+    struct ColorScheme: Codable, Sendable, Hashable, Equatable {
 
-        public init(light: ColorHex, dark: ColorHex? = nil) {
+        public init(light: ColorInfo, dark: ColorInfo? = nil) {
             self.light = light
             self.dark = dark
         }
 
-        public let light: ColorHex
-        public let dark: ColorHex?
+        public let light: ColorInfo
+        public let dark: ColorInfo?
+
+    }
+
+    enum ColorInfo: Codable, Sendable, Hashable {
+
+        case hex(ColorHex)
+        case alias(String)
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .hex(let hex):
+                try container.encode(ColorInfoTypes.hex.rawValue, forKey: .type)
+                try container.encode(hex, forKey: .value)
+            case .alias(let alias):
+                try container.encode(ColorInfoTypes.alias.rawValue, forKey: .type)
+                try container.encode(alias, forKey: .value)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(ColorInfoTypes.self, forKey: .type)
+
+            switch type {
+            case .hex:
+                let value = try container.decode(ColorHex.self, forKey: .value)
+                self = .hex(value)
+            case .alias:
+                let value = try container.decode(String.self, forKey: .value)
+                self = .alias(value)
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case value
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum ColorInfoTypes: String, Decodable {
+
+            case hex
+            case alias
+
+        }
 
     }
 
@@ -109,19 +159,69 @@ public extension PaywallComponent {
 
     }
 
-    enum WidthSizeType: String, Codable, Sendable, Hashable, Equatable {
-        case fit, fill, fixed
-    }
+    struct Size: Codable, Sendable, Hashable, Equatable {
 
-    struct WidthSize: Codable, Sendable, Hashable, Equatable {
+        public let width: SizeConstraint
+        public let height: SizeConstraint
 
-        public init(type: WidthSizeType, value: Int? ) {
-            self.type = type
-            self.value = value
+        public init(width: PaywallComponent.SizeConstraint, height: PaywallComponent.SizeConstraint) {
+            self.width = width
+            self.height = height
         }
 
-        public let type: WidthSizeType
-        public let value: Int?
+    }
+
+    enum SizeConstraint: Codable, Sendable, Hashable {
+
+        case fit
+        case fill
+        case fixed(UInt)
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .fit:
+                try container.encode(SizeConstraintType.fit.rawValue, forKey: .type)
+            case .fill:
+                try container.encode(SizeConstraintType.fill.rawValue, forKey: .type)
+            case .fixed(let value):
+                try container.encode(SizeConstraintType.fixed.rawValue, forKey: .type)
+                try container.encode(value, forKey: .value)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(SizeConstraintType.self, forKey: .type)
+
+            switch type {
+            case .fit:
+                self = .fit
+            case .fill:
+                self = .fill
+            case .fixed:
+                let value = try container.decode(UInt.self, forKey: .value)
+                self = .fixed(value)
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case value
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum SizeConstraintType: String, Decodable {
+
+            case fit
+            case fill
+            case fixed
+
+        }
 
     }
 
@@ -180,23 +280,18 @@ public extension PaywallComponent {
 
     }
 
-    enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
+    enum FontSize: String, Codable, Sendable, Hashable, Equatable {
 
-        case largeTitle = "large_title"
-        case title
-        case title2
-        case title3
-        case headline
-        case subheadline
-        case body
-        case callout
-        case footnote
-        case caption
-        case caption2
-
-        // Swift 5.9 stuff
-        case extraLargeTitle = "extra_large_title"
-        case extraLargeTitle2 = "extra_large_title2"
+        case headingXXL = "heading_xxl"
+        case headingXL = "heading_xl"
+        case headingL = "heading_l"
+        case headingM = "heading_m"
+        case headingS = "heading_s"
+        case headingXS = "heading_xs"
+        case bodyXL = "body_xl"
+        case bodyL = "body_l"
+        case bodyM = "body_m"
+        case bodyS = "body_s"
 
     }
 
@@ -209,7 +304,7 @@ public extension PaywallComponent {
 
     struct Shadow: Codable, Sendable, Hashable, Equatable {
 
-        public let color: ColorInfo
+        public let color: ColorScheme
         public let radius: CGFloat
         // swiftlint:disable:next identifier_name
         public let x: CGFloat
@@ -217,7 +312,7 @@ public extension PaywallComponent {
         public let y: CGFloat
 
         // swiftlint:disable:next identifier_name
-        public init(color: ColorInfo, radius: CGFloat, x: CGFloat, y: CGFloat) {
+        public init(color: ColorScheme, radius: CGFloat, x: CGFloat, y: CGFloat) {
             self.color = color
             self.radius = radius
             self.x = x

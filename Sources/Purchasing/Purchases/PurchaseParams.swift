@@ -26,7 +26,7 @@ import Foundation
  *                            .with(metadata: ["key": "value"])
  *                            .with(promotionalOffer: promotionalOffer)
  *                            .build()
- *  Purchases.shared.purchase(package: package, params: params)
+ * Purchases.shared.purchase(params)
  * ```
  */
 @objc(RCPurchaseParams) public final class PurchaseParams: NSObject {

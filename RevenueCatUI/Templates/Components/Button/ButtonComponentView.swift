@@ -119,7 +119,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                                 PaywallComponent.text(
                                     PaywallComponent.TextComponent(
                                         text: "buttonText",
-                                        color: .init(light: "#000000")
+                                        color: .init(light: .hex("#000000"))
                                     )
                                 )
                             ],

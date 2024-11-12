@@ -74,18 +74,18 @@ struct PackageComponentView_Previews: PreviewProvider {
                 .text(.init(
                     text: "name",
                     fontWeight: .bold,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
                     text: "detail",
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.leading),
+            dimension: .vertical(.leading, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: .init(top: 10,
@@ -96,11 +96,11 @@ struct PackageComponentView_Previews: PreviewProvider {
                           bottom: 10,
                           leading: 10,
                           trailing: 10),
-            border: .init(color: .init(light: "#cccccc"), width: 2),
+            border: .init(color: .init(light: .hex("#cccccc")), width: 2),
             overrides: .init(
                 states: .init(
                     selected: .init(
-                        border: .init(color: .init(light: "#ff0000"), width: 2)
+                        border: .init(color: .init(light: .hex("#ff0000")), width: 2)
                     )
                 )
             )

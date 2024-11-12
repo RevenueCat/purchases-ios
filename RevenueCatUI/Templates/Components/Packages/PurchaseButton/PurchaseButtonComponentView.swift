@@ -91,8 +91,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "id_1",
                             fontWeight: .bold,
-                            color: .init(light: "#ffffff"),
-                            backgroundColor: .init(light: "#ff0000"),
+                            color: .init(light: .hex("#ffffff")),
+                            backgroundColor: .init(light: .hex("#ff0000")),
                             padding: .init(top: 10,
                                            bottom: 10,
                                            leading: 30,
@@ -123,10 +123,10 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                             .text(.init(
                                 text: "id_1",
                                 fontWeight: .bold,
-                                color: .init(light: "#ffffff")
+                                color: .init(light: .hex("#ffffff"))
                             ))
                         ],
-                        backgroundColor: .init(light: "#ff0000"),
+                        backgroundColor: .init(light: .hex("#ff0000")),
                         padding: .init(top: 8,
                                        bottom: 8,
                                        leading: 8,

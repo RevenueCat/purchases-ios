@@ -19,6 +19,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
+    enum StackStrategy {
+        case normal, lazy, flex
+    }
+
     private let component: PaywallComponent.StackComponent
 
     let viewModels: [PaywallComponentViewModel]
@@ -31,30 +35,45 @@ class StackComponentViewModel {
         self.viewModels = viewModels
     }
 
-    var shouldUseVStack: Bool {
-        switch self.dimension {
-        case .vertical:
-            if viewModels.count < 3 {
-                return true
-            }
-            return false
-        case .horizontal, .zlayer:
-            return false
+    var vstackStrategy: StackStrategy {
+        // Ensure vertical
+        guard case let .vertical(_, distribution) = self.dimension else {
+            return .normal
+        }
+
+        // Normal stragety for fit
+        switch self.component.size.height {
+        case .fit:
+            return .normal
+        case .fill, .fixed:
+            break
+        }
+
+        // Normal strategy if start
+        guard case .start = distribution else {
+            return .flex
+        }
+
+        // WIP: Look deeper in tree
+        if self.components.count > 3 {
+            return .lazy
+        } else {
+            return .normal
         }
     }
 
-    var shouldUseFlex: Bool {
-        guard let widthType = self.component.width?.type else {
-            return false
+    var hstackStrategy: StackStrategy {
+        // Ensure horizontal
+        guard case .horizontal = self.dimension else {
+            return .normal
         }
 
-        switch widthType {
+        // Not stragety for fit
+        switch self.component.size.width {
         case .fit:
-            return false
-        case .fill:
-            return true
-        case .fixed:
-            return true
+            return .normal
+        case .fill, .fixed:
+            return .flex
         }
     }
 
@@ -82,8 +101,8 @@ class StackComponentViewModel {
         component.margin.edgeInsets
     }
 
-    var width: PaywallComponent.WidthSize? {
-        component.width
+    var size: PaywallComponent.Size {
+        component.size
     }
 
     var cornerRadiuses: CornerBorderModifier.RaidusInfo? {

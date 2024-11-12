@@ -22,9 +22,9 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let components: [PaywallComponent]
-        public let width: WidthSize?
+        public let size: Size
         public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
+        public let backgroundColor: ColorScheme?
         public let dimension: Dimension
         public let padding: Padding
         public let margin: Padding
@@ -36,10 +36,10 @@ public extension PaywallComponent {
 
         public init(
             components: [PaywallComponent],
-            dimension: Dimension = .vertical(.center),
-            width: WidthSize? = nil,
+            dimension: Dimension = .vertical(.center, .start),
+            size: Size = .init(width: .fill, height: .fit),
             spacing: CGFloat? = nil,
-            backgroundColor: ColorInfo? = nil,
+            backgroundColor: ColorScheme? = nil,
             padding: Padding = .zero,
             margin: Padding = .zero,
             cornerRadiuses: CornerRadiuses? = nil,
@@ -48,7 +48,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.components = components
-            self.width = width
+            self.size = size
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.type = .stack
@@ -66,9 +66,9 @@ public extension PaywallComponent {
     struct PartialStackComponent: PartialComponent {
 
         public let visible: Bool?
-        public let width: WidthSize?
+        public let size: Size?
         public let spacing: CGFloat?
-        public let backgroundColor: ColorInfo?
+        public let backgroundColor: ColorScheme?
         public let dimension: Dimension?
         public let padding: Padding?
         public let margin: Padding?
@@ -79,9 +79,9 @@ public extension PaywallComponent {
         public init(
             visible: Bool? = true,
             dimension: Dimension? = nil,
-            width: WidthSize? = nil,
+            size: Size? = nil,
             spacing: CGFloat? = nil,
-            backgroundColor: ColorInfo? = nil,
+            backgroundColor: ColorScheme? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
             cornerRadiuses: CornerRadiuses? = nil,
@@ -89,7 +89,7 @@ public extension PaywallComponent {
             shadow: Shadow? = nil
         ) {
             self.visible = visible
-            self.width = width
+            self.size = size
             self.spacing = spacing
             self.backgroundColor = backgroundColor
             self.dimension = dimension
