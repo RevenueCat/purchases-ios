@@ -110,6 +110,34 @@ extension PresentedPartial {
 
 extension PaywallComponent.ComponentOverrides {
 
+    func toPresentedOverrides<P: PresentedPartial>(convert: (T) -> P) -> PresentedOverrides<P> {
+        PresentedOverrides(
+            introOffer: self.introOffer.flatMap({ partial in
+                convert(partial)
+            }),
+            states: self.states.flatMap({ states in
+                PresentedStates(
+                    selected: states.selected.flatMap({ partial in
+                        convert(partial)
+                    })
+                )
+            }),
+            conditions: self.conditions.flatMap({ condition in
+                PresentedConditions(
+                    compact: condition.compact.flatMap({ partial in
+                        convert(partial)
+                    }),
+                    medium: condition.medium.flatMap({ partial in
+                        convert(partial)
+                    }),
+                    expanded: condition.expanded.flatMap({ partial in
+                        convert(partial)
+                    })
+                )
+            })
+        )
+    }
+
     func toPresentedOverrides<P: PresentedPartial>(convert: (T) throws -> P) throws -> PresentedOverrides<P> {
         PresentedOverrides(
             introOffer: try self.introOffer.flatMap({ partial in

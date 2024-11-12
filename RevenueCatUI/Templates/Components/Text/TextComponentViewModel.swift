@@ -16,34 +16,6 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-struct LocalizedTextPartial: PresentedPartial {
-
-    let text: String?
-    let partial: PaywallComponent.PartialTextComponent
-
-    static func combine(_ base: LocalizedTextPartial?, with other: LocalizedTextPartial?) -> LocalizedTextPartial {
-        let otherPartial = other?.partial
-        let basePartial = base?.partial
-
-        return LocalizedTextPartial(
-            text: other?.text ?? base?.text,
-            partial: PaywallComponent.PartialTextComponent(
-                visible: otherPartial?.visible ?? basePartial?.visible,
-                text: otherPartial?.text ?? basePartial?.text,
-                fontName: otherPartial?.fontName ?? basePartial?.fontName,
-                fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
-                color: otherPartial?.color ?? basePartial?.color,
-                backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
-                padding: otherPartial?.padding ?? basePartial?.padding,
-                margin: otherPartial?.margin ?? basePartial?.margin,
-                fontSize: otherPartial?.fontSize ?? basePartial?.fontSize,
-                horizontalAlignment: otherPartial?.horizontalAlignment ?? basePartial?.horizontalAlignment
-            )
-        )
-    }
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
@@ -92,6 +64,34 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+}
+
+struct LocalizedTextPartial: PresentedPartial {
+
+    let text: String?
+    let partial: PaywallComponent.PartialTextComponent
+
+    static func combine(_ base: LocalizedTextPartial?, with other: LocalizedTextPartial?) -> LocalizedTextPartial {
+        let otherPartial = other?.partial
+        let basePartial = base?.partial
+
+        return LocalizedTextPartial(
+            text: other?.text ?? base?.text,
+            partial: PaywallComponent.PartialTextComponent(
+                visible: otherPartial?.visible ?? basePartial?.visible,
+                text: otherPartial?.text ?? basePartial?.text,
+                fontName: otherPartial?.fontName ?? basePartial?.fontName,
+                fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
+                color: otherPartial?.color ?? basePartial?.color,
+                backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
+                padding: otherPartial?.padding ?? basePartial?.padding,
+                margin: otherPartial?.margin ?? basePartial?.margin,
+                fontSize: otherPartial?.fontSize ?? basePartial?.fontSize,
+                horizontalAlignment: otherPartial?.horizontalAlignment ?? basePartial?.horizontalAlignment
+            )
+        )
     }
 
 }

@@ -16,10 +16,13 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
+private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
     private let component: PaywallComponent.StackComponent
+    private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
 
@@ -29,6 +32,8 @@ class StackComponentViewModel {
     ) {
         self.component = component
         self.viewModels = viewModels
+
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder
@@ -37,37 +42,46 @@ class StackComponentViewModel {
         condition: ScreenCondition,
         apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
-//        let localalizedPartial = self.buildPartial(state: state, condition: condition)
-//        let partial = localalizedPartial?.partial
-//
-//        let style = TextComponentStyle(
-//            visible: partial?.visible ?? true,
-//            text: localalizedPartial?.text ?? self.text,
-//            fontFamily: partial?.fontName ?? self.component.fontName,
-//            fontWeight: partial?.fontWeight ?? self.component.fontWeight,
-//            color: partial?.color ?? self.component.color,
-//            backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
-//            size: partial?.size ?? self.component.size,
-//            padding: partial?.padding ?? self.component.padding,
-//            margin: partial?.margin ?? self.component.margin,
-//            fontSize: partial?.fontSize ?? self.component.fontSize,
-//            horizontalAlignment: partial?.horizontalAlignment ?? self.component.horizontalAlignment
-//        )
+        let partial = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            with: self.presentedOverrides
+        )
 
         let style = StackComponentStyle(
-            visible: true,
-            dimension: self.component.dimension,
-            size: self.component.size,
-            spacing: self.component.spacing,
-            backgroundColor: self.component.backgroundColor,
-            padding: self.component.padding,
-            margin: self.component.margin,
-            shape: self.component.shape,
-            border: self.component.border,
-            shadow: self.component.shadow
+            visible: partial?.visible ?? true,
+            dimension: partial?.dimension ?? self.component.dimension,
+            size: partial?.size ?? self.component.size,
+            spacing: partial?.spacing ?? self.component.spacing,
+            backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            padding: partial?.padding ?? self.component.padding,
+            margin: partial?.margin ?? self.component.margin,
+            shape: partial?.shape ?? self.component.shape,
+            border: partial?.border ?? self.component.border,
+            shadow: partial?.shadow ?? self.component.shadow
         )
 
         apply(style)
+    }
+
+}
+
+extension PresentedStackPartial: PresentedPartial {
+
+    static func combine(_ base: Self?, with other: Self?) -> Self {
+
+        return .init(
+            visible: other?.visible ?? base?.visible,
+            dimension: other?.dimension ?? base?.dimension,
+            size: other?.size ?? base?.size,
+            spacing: other?.spacing ?? base?.spacing,
+            backgroundColor: other?.backgroundColor ?? base?.backgroundColor,
+            padding: other?.padding ?? base?.padding,
+            margin: other?.margin ?? base?.margin,
+            shape: other?.shape ?? base?.shape,
+            border: other?.border ?? base?.border,
+            shadow: other?.shadow ?? base?.shadow
+        )
     }
 
 }
