@@ -35,12 +35,12 @@ class PromotionalOfferViewModel: ObservableObject {
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
-    private let onPromotionalOfferSuccessfullyPurchased: () -> Void
+    internal var onPromotionalOfferSuccessfullyPurchased: (() -> Void)?
 
     init(
         promotionalOfferData: PromotionalOfferData?,
         purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
-        onPromotionalOfferSuccessfullyPurchased: @escaping () -> Void
+        onPromotionalOfferSuccessfullyPurchased: (() -> Void)? = nil
     ) {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider
@@ -64,7 +64,7 @@ class PromotionalOfferViewModel: ObservableObject {
             // swiftlint:disable:next todo
             // TODO: do something with result
             Logger.debug("Purchased promotional offer: \(result)")
-            self.onPromotionalOfferSuccessfullyPurchased()
+            self.onPromotionalOfferSuccessfullyPurchased?()
         } catch {
             self.error = error
         }

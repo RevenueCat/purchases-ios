@@ -45,8 +45,7 @@ struct PromotionalOfferView: View {
                 promotionalOffer: promotionalOffer,
                 product: product,
                 promoOfferDetails: promoOfferDetails
-            ),
-            onPromotionalOfferSuccessfullyPurchased: self.onPromotionalOfferSuccessfullyPurchased
+            )
         ))
     }
 
@@ -83,6 +82,9 @@ struct PromotionalOfferView: View {
                         }
                 }
             }
+        }
+        .onAppear {
+            self.viewModel.onPromotionalOfferSuccessfullyPurchased = self.onPromotionalOfferSuccessfullyPurchased
         }
     }
 
