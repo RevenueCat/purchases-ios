@@ -40,6 +40,10 @@ class ImageComponentViewModel {
         self.imageInfo.light.heic
     }
 
+    var size: PaywallComponent.Size {
+        self.component.size
+    }
+
     var shape: ShapeModifier.Shape? {
         guard let shape = self.component.maskShape else {
             return nil
@@ -71,10 +75,6 @@ class ImageComponentViewModel {
 
     var contentMode: ContentMode {
         component.fitMode.contentMode
-    }
-
-    var maxHeight: CGFloat? {
-        component.maxHeight
     }
 
 }

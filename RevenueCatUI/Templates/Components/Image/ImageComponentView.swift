@@ -24,24 +24,9 @@ struct ImageComponentView: View {
 
     var body: some View {
         RemoteImage(url: viewModel.url) { (image, size) in
-            Group {
-                switch viewModel.contentMode {
-                case .fit:
-                    renderImage(image, size)
-                case .fill:
-                    // Need this to be in a clear color overlay so the image
-                    // doesn't push/adjust any parent sizes
-                    Color.clear.overlay {
-                        renderImage(image, size)
-                    }
-                }
-            }
-            // Works as a max height for both fit and fill
-            // using the CGSize of an image
-            .applyIfLet(viewModel.maxHeight, apply: { view, value in
-                view.frame(height: value)
-            })
+            renderImage(image, size)
         }
+        .size(viewModel.size)
         .clipped()
     }
 
@@ -157,7 +142,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         maskShape: .rectangle(.init(topLeading: 40,
                                                     topTrailing: 40,
                                                     bottomLeading: 40,
-                                                    bottomTrailing: 40)) 
+                                                    bottomTrailing: 40))
                     )
                 )
             )
