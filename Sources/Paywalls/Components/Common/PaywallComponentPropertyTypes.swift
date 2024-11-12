@@ -105,18 +105,6 @@ public extension PaywallComponent {
 
     }
 
-//    struct ColorInfo: Codable, Sendable, Hashable, Equatable {
-//
-//        public init(light: ColorHex, dark: ColorHex? = nil) {
-//            self.light = light
-//            self.dark = dark
-//        }
-//
-//        public let light: ColorHex
-//        public let dark: ColorHex?
-//
-//    }
-
     enum Shape: Codable, Sendable, Hashable, Equatable {
 
         case rectangle
@@ -292,23 +280,18 @@ public extension PaywallComponent {
 
     }
 
-    enum TextStyle: String, Codable, Sendable, Hashable, Equatable {
+    enum FontSize: String, Codable, Sendable, Hashable, Equatable {
 
-        case largeTitle = "large_title"
-        case title
-        case title2
-        case title3
-        case headline
-        case subheadline
-        case body
-        case callout
-        case footnote
-        case caption
-        case caption2
-
-        // Swift 5.9 stuff
-        case extraLargeTitle = "extra_large_title"
-        case extraLargeTitle2 = "extra_large_title2"
+        case headingXXL = "heading_xxl"
+        case headingXL = "heading_xl"
+        case headingL = "heading_l"
+        case headingM = "heading_m"
+        case headingS = "heading_s"
+        case headingXS = "heading_xs"
+        case bodyXL = "body_xl"
+        case bodyL = "body_l"
+        case bodyM = "body_m"
+        case bodyS = "body_s"
 
     }
 

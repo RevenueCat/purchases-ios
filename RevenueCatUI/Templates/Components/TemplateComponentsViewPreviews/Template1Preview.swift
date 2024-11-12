@@ -37,25 +37,25 @@ private enum Template1Preview {
 
     static let title = PaywallComponent.TextComponent(
         text: "title",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .black,
         color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .largeTitle,
+        fontSize: .headingL,
         horizontalAlignment: .center
     )
 
     static let body = PaywallComponent.TextComponent(
         text: "body",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .regular,
         color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .body,
+        fontSize: .bodyM,
         horizontalAlignment: .center
     )
 

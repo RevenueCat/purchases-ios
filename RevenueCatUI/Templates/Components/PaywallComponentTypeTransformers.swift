@@ -16,42 +16,44 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-extension PaywallComponent.TextStyle {
+extension PaywallComponent.FontSize {
 
     var font: Font {
+        return Font(self.uiFont)
+    }
+
+    private var textStyle: UIFont.TextStyle {
         switch self {
-        case .largeTitle: return .largeTitle
-        case .title: return .title
-        case .title2: if #available(iOS 14.0, *) {
-            return .title2
-        } else {
-            return .title
+        case .headingXXL: return .largeTitle
+        case .headingXL: return .title1
+        case .headingL: return .title2
+        case .headingM: return .title3
+        case .headingS: return .headline
+        case .headingXS: return .subheadline
+        case .bodyXL, .bodyL: return .body
+        case .bodyM: return .callout
+        case .bodyS: return .footnote
         }
-        case .title3: if #available(iOS 14.0, *) {
-            return .title3
-        } else {
-            return .title
-        }
-        case .headline: return .headline
-        case .subheadline: return .subheadline
-        case .body: return .body
-        case .callout: return .callout
-        case .footnote: return .footnote
-        case .caption: return .caption
-        case .caption2: if #available(iOS 14.0, *) {
-            return .caption2
-        } else {
-            return .caption
+    }
+
+    private var uiFont: UIFont {
+        let fontSize: CGFloat
+        switch self {
+        case .headingXXL: fontSize = 40
+        case .headingXL: fontSize = 34
+        case .headingL: fontSize = 28
+        case .headingM: fontSize = 24
+        case .headingS: fontSize = 20
+        case .headingXS: fontSize = 16
+        case .bodyXL: fontSize = 18
+        case .bodyL: fontSize = 17
+        case .bodyM: fontSize = 15
+        case .bodyS: fontSize = 13
         }
 
-        #if swift(>=5.9) && VISION_OS
-        case .extraLargeTitle: return .extraLargeTitle
-        case .extraLargeTitle2: return .extraLargeTitle2
-        #else
-        case .extraLargeTitle: return .largeTitle
-        case .extraLargeTitle2: return .largeTitle
-        #endif
-        }
+        // Create a UIFont and apply dynamic type scaling
+        let baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
     }
 
 }
