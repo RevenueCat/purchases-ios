@@ -138,7 +138,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
     let offer: PromotionalOffer! = nil
-    let winBackOffer: WinBackOffer! = nil
+    // Commented out until we make fetching/redeeming win-back offers public
+//    let winBackOffer: WinBackOffer! = nil
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
@@ -163,6 +164,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
 
+    // Commented out until we make fetching/redeeming win-back offers public
 //        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 //        .with(winBackOffer: winBackOffer)
 //        #endif
@@ -172,6 +174,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
 
+    // Commented out until we make fetching/redeeming win-back offers public
 //        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 //        .with(winBackOffer: winBackOffer)
 //        #endif
