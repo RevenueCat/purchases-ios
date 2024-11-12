@@ -1124,6 +1124,23 @@ public protocol PurchasesSwiftType: AnyObject {
     func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
+}
+
+// MARK: -
+
+/// Interface for ``Purchases``'s internal-only methods.
+internal protocol InternalPurchasesType: AnyObject {
+
+    /// Performs an unauthenticated request to the API to verify connectivity.
+    /// - Throws: `PublicError` if request failed.
+    func healthRequest(signatureVerification: Bool) async throws
+
+    func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func productEntitlementMapping() async throws -> ProductEntitlementMapping
+
+    var responseVerificationMode: Signing.ResponseVerificationMode { get }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /**
@@ -1152,50 +1169,5 @@ public protocol PurchasesSwiftType: AnyObject {
         completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
     )
     #endif
-}
-
-// MARK: -
-
-/// Interface for ``Purchases``'s internal-only methods.
-internal protocol InternalPurchasesType: AnyObject {
-
-    /// Performs an unauthenticated request to the API to verify connectivity.
-    /// - Throws: `PublicError` if request failed.
-    func healthRequest(signatureVerification: Bool) async throws
-
-    func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func productEntitlementMapping() async throws -> ProductEntitlementMapping
-
-    var responseVerificationMode: Signing.ResponseVerificationMode { get }
-
-//    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-//    /**
-//     * Returns the win-back offers that the subscriber is eligible for on the provided product.
-//     *
-//     * - Parameter product: The product to check for eligible win-back offers.
-//     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
-//     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
-//     */
-//    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-//    func eligibleWinBackOffers(
-//        forProduct product: StoreProduct
-//    ) async throws -> [WinBackOffer]
-//
-//    /**
-//     * Returns the win-back offers that the subscriber is eligible for on the provided product.
-//     *
-//     * - Parameter product: The product to check for eligible win-back offers.
-//     * - Parameter completion: A completion block that is called with the eligible win-back
-//     * offers for the provided product.
-//     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
-//     */
-//    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-//    func eligibleWinBackOffers(
-//        forProduct product: StoreProduct,
-//        completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
-//    )
-//    #endif
 
 }
