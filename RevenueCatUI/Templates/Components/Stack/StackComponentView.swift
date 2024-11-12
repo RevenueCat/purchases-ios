@@ -19,11 +19,17 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
-    let viewModel: StackComponentViewModel
-    let onDismiss: () -> Void
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    private let viewModel: StackComponentViewModel
+    private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
-    let additionalPadding: EdgeInsets
+    private let additionalPadding: EdgeInsets
 
     init(viewModel: StackComponentViewModel, onDismiss: @escaping () -> Void, additionalPadding: EdgeInsets? = nil) {
         self.viewModel = viewModel
@@ -32,79 +38,131 @@ struct StackComponentView: View {
     }
 
     var body: some View {
-        Group {
-            switch viewModel.dimension {
-            case .vertical(let horizontalAlignment, let distribution):
-                Group {
-                    // This is NOT a final implementation of this
-                    // There are some horizontal sizing issues with using LazyVStack
-                    // There are so performance issues with VStack with lots of children
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition
+        ) { style in
+            self.make(style: style)
+        }
+    }
 
-                    switch self.viewModel.vstackStrategy {
-                    case .normal:
-                        // VStack when not many things
-                        VStack(
-                            alignment: horizontalAlignment.stackAlignment,
-                            spacing: viewModel.spacing
-                        ) {
-                            ComponentsView(
-                                componentViewModels: self.viewModel.viewModels,
-                                onDismiss: self.onDismiss
-                            )
-                        }
-                    case .lazy:
-                        // LazyVStack needed for performance when loading
-                        LazyVStack(
-                            alignment: horizontalAlignment.stackAlignment,
-                            spacing: viewModel.spacing
-                        ) {
-                            ComponentsView(
-                                componentViewModels: self.viewModel.viewModels,
-                                onDismiss: self.onDismiss
-                            )
-                        }
-                    case .flex:
-                        FlexVStack(
-                            alignment: horizontalAlignment.stackAlignment,
-                            spacing: viewModel.spacing,
-                            justifyContent: distribution.justifyContent,
-                            componentViewModels: self.viewModel.viewModels,
-                            onDismiss: self.onDismiss
-                        )
-                    }
-                }
+    @ViewBuilder
+    private func make(style: StackComponentStyle) -> some View {
+        Group {
+            switch style.dimension {
+            case .vertical(let horizontalAlignment, let distribution):
+                VerticalStack(
+                    style: style,
+                    horizontalAlignment: horizontalAlignment,
+                    distribution: distribution,
+                    viewModels: self.viewModel.viewModels,
+                    onDismiss: self.onDismiss
+                )
             case .horizontal(let verticalAlignment, let distribution):
-                switch self.viewModel.hstackStrategy {
-                case .normal, .lazy:
-                    HStack(alignment: verticalAlignment.stackAlignment, spacing: viewModel.spacing) {
-                        ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
-                    }
-                case .flex:
-                    FlexHStack(
-                        alignment: verticalAlignment.stackAlignment,
-                        spacing: viewModel.spacing,
-                        justifyContent: distribution.justifyContent,
-                        componentViewModels: self.viewModel.viewModels,
-                        onDismiss: self.onDismiss
-                    )
-                }
+                HorizontalStack(
+                    style: style,
+                    verticalAlignment: verticalAlignment,
+                    distribution: distribution,
+                    viewModels: self.viewModel.viewModels,
+                    onDismiss: self.onDismiss
+                )
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
                 }
             }
         }
-        .padding(viewModel.padding)
+        .padding(style.padding)
         .padding(additionalPadding)
-        .size(viewModel.size)
-        .background(viewModel.backgroundColor)
-        .shape(border: viewModel.border,
-               shape: viewModel.shape)
-        .applyIfLet(viewModel.shadow) { view, shadow in
+        .size(style.size)
+        .background(style.backgroundColor)
+        .shape(border: style.border,
+               shape: style.shape)
+        .applyIfLet(style.shadow) { view, shadow in
             // Without compositingGroup(), the shadow is applied to the stack's children as well.
             view.compositingGroup().shadow(shadow: shadow)
         }
-        .padding(viewModel.margin)
+        .padding(style.margin)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct VerticalStack: View {
+
+    let style: StackComponentStyle
+    let horizontalAlignment: PaywallComponent.HorizontalAlignment
+    let distribution: PaywallComponent.FlexDistribution
+
+    let viewModels: [PaywallComponentViewModel]
+    let onDismiss: () -> Void
+
+    var body: some View {
+        // This is NOT a final implementation of this
+        // There are some horizontal sizing issues with using LazyVStack
+        // There are so performance issues with VStack with lots of children
+
+        switch style.vstackStrategy {
+        case .normal:
+            // VStack when not many things
+            VStack(
+                alignment: horizontalAlignment.stackAlignment,
+                spacing: style.spacing
+            ) {
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
+            }
+        case .lazy:
+            // LazyVStack needed for performance when loading
+            LazyVStack(
+                alignment: horizontalAlignment.stackAlignment,
+                spacing: style.spacing
+            ) {
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
+            }
+        case .flex:
+            FlexVStack(
+                alignment: horizontalAlignment.stackAlignment,
+                spacing: style.spacing,
+                justifyContent: distribution.justifyContent,
+                componentViewModels: self.viewModels,
+                onDismiss: self.onDismiss
+            )
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct HorizontalStack: View {
+
+    let style: StackComponentStyle
+    let verticalAlignment: PaywallComponent.VerticalAlignment
+    let distribution: PaywallComponent.FlexDistribution
+
+    let viewModels: [PaywallComponentViewModel]
+    let onDismiss: () -> Void
+
+    var body: some View {
+        switch style.hstackStrategy {
+        case .normal, .lazy:
+            HStack(alignment: verticalAlignment.stackAlignment, spacing: style.spacing) {
+                ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
+            }
+        case .flex:
+            FlexHStack(
+                alignment: verticalAlignment.stackAlignment,
+                spacing: style.spacing,
+                justifyContent: distribution.justifyContent,
+                componentViewModels: self.viewModels,
+                onDismiss: self.onDismiss
+            )
+        }
     }
 
 }

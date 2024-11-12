@@ -54,7 +54,6 @@ public extension PaywallComponent {
         public let overrideSourceLid: LocalizationKey?
         public let maskShape: MaskShape?
         public let gradientColors: [ColorHex]?
-        public let maxHeight: CGFloat?
         public let fitMode: FitMode?
 
         public init(
@@ -63,7 +62,6 @@ public extension PaywallComponent {
             size: Size? = nil,
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode? = nil,
-            maxHeight: CGFloat? = nil,
             maskShape: MaskShape? = nil,
             gradientColors: [ColorHex]? = nil
         ) {
@@ -72,7 +70,6 @@ public extension PaywallComponent {
             self.size = size
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
-            self.maxHeight = maxHeight
             self.maskShape = maskShape
             self.gradientColors = gradientColors
         }
