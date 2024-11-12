@@ -15,10 +15,10 @@ import Foundation
 
 /// Represents an Apple win-back offer.
 @objc(RCWinBackOffer)
-public final class WinBackOffer: NSObject, Sendable {
+internal final class WinBackOffer: NSObject, Sendable {
 
     /// The ``StoreProductDiscount`` in this offer.
-    @objc public let discount: StoreProductDiscount
+    @objc internal let discount: StoreProductDiscount
 
     init(discount: StoreProductDiscountType) {
         self.discount = StoreProductDiscount.from(discount: discount)
