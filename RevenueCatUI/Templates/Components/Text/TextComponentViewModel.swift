@@ -128,7 +128,7 @@ struct TextComponentStyle {
 
     init(
         visible: Bool,
-        text: PaywallComponent.LocalizationKey,
+        text: String,
         fontFamily: String?,
         fontWeight: PaywallComponent.FontWeight,
         color: PaywallComponent.ColorScheme,
