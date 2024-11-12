@@ -163,18 +163,19 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
 
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        .with(winBackOffer: winBackOffer)
-        #endif
+//        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+//        .with(winBackOffer: winBackOffer)
+//        #endif
 
         .build()
     let productParams = PurchaseParams.Builder(product: storeProduct)
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
 
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        .with(winBackOffer: winBackOffer)
-        #endif
+//        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+//        .with(winBackOffer: winBackOffer)
+//        #endif
+
         .build()
     purchases.purchase(params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     #endif

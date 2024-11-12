@@ -99,11 +99,11 @@ import Foundation
          *
          * Fetch a winBackOffer to use with this function with ``Purchases/eligibleWinBackOffers(forProduct:)``
          * or ``Purchases/eligibleWinBackOffers(forProduct:completion)``.
-         * 
+         *
          * Availability: iOS 18.0+, macOS 15.0+, tvOS 18.0+, watchOS 11.0+, visionOS 2.0+
          */
         @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-        public func with(winBackOffer: WinBackOffer) -> Self {
+        internal func with(winBackOffer: WinBackOffer) -> Self {
             self.winBackOffer = winBackOffer
             return self
         }
