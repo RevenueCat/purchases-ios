@@ -38,6 +38,7 @@
 		2C91068A2CE22D3500189565 /* FlexVStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9106892CE22D3500189565 /* FlexVStack.swift */; };
 		2C91068C2CE22D4F00189565 /* JustifyContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C91068B2CE22D4F00189565 /* JustifyContent.swift */; };
 		2C91068E2CE2481A00189565 /* SizeModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C91068D2CE2481800189565 /* SizeModifier.swift */; };
+		2C9107E02CE2E33400189565 /* StoredEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6FEE42AA940B700780B45 /* StoredEvent.swift */; };
 		2CAB87F72CAAB13200247013 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CAB87F62CAAB13200247013 /* Shape.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
 		2CC791552CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC791522CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift */; };
@@ -5541,7 +5542,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C9106FF2CE29F1400189565 /* StoredEvent.swift in Sources */,
+				2C9107E02CE2E33400189565 /* StoredEvent.swift in Sources */,
 				B3A36AAE26BC76340059EDEA /* CustomerInfoManager.swift in Sources */,
 				F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */,
 				B3083A132699334C007B5503 /* Offering.swift in Sources */,
