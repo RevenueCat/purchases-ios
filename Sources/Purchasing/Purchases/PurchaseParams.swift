@@ -97,8 +97,9 @@ import Foundation
          * Sets a win-back offer for the purchase.
          * - Parameter winBackOffer: The ``WinBackOffer`` to apply to the purchase.
          *
-         * Fetch a winBackOffer to use here with ``Purchases/eligibleWinBackOffers(forProduct:)``
+         * Fetch a winBackOffer to use with this function with ``Purchases/eligibleWinBackOffers(forProduct:)``
          * or ``Purchases/eligibleWinBackOffers(forProduct:completion)``.
+         * 
          * Availability: iOS 18.0+, macOS 15.0+, tvOS 18.0+, watchOS 11.0+, visionOS 2.0+
          */
         @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
