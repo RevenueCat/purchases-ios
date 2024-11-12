@@ -17,7 +17,7 @@ public extension PaywallComponent {
         let type: ComponentType
         public let source: ThemeImageUrls
         public let overrideSourceLid: LocalizationKey?
-        public let cornerRadiuses: CornerRadiuses?
+        public let maskShape: MaskShape?
         public let gradientColors: [ColorHex]?
         public let maxHeight: CGFloat?
         public let fitMode: FitMode
@@ -29,7 +29,7 @@ public extension PaywallComponent {
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode = .fit,
             maxHeight: CGFloat? = nil,
-            cornerRadiuses: CornerRadiuses? = nil,
+            maskShape: MaskShape? = nil,
             gradientColors: [ColorHex]? = [],
             overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
@@ -38,7 +38,7 @@ public extension PaywallComponent {
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
             self.maxHeight = maxHeight
-            self.cornerRadiuses = cornerRadiuses
+            self.maskShape = maskShape
             self.gradientColors = gradientColors
             self.overrides = overrides
         }
@@ -50,7 +50,7 @@ public extension PaywallComponent {
         public let visible: Bool?
         public let source: ThemeImageUrls?
         public let overrideSourceLid: LocalizationKey?
-        public let cornerRadiuses: CornerRadiuses?
+        public let maskShape: MaskShape?
         public let gradientColors: [ColorHex]?
         public let maxHeight: CGFloat?
         public let fitMode: FitMode?
@@ -61,7 +61,7 @@ public extension PaywallComponent {
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode? = nil,
             maxHeight: CGFloat? = nil,
-            cornerRadiuses: CornerRadiuses? = nil,
+            maskShape: MaskShape? = nil,
             gradientColors: [ColorHex]? = nil
         ) {
             self.visible = visible
@@ -69,7 +69,7 @@ public extension PaywallComponent {
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
             self.maxHeight = maxHeight
-            self.cornerRadiuses = cornerRadiuses
+            self.maskShape = maskShape
             self.gradientColors = gradientColors
         }
 

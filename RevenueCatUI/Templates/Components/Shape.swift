@@ -36,6 +36,8 @@ struct ShapeModifier: ViewModifier {
 
         case rectangle(RaidusInfo?)
         case pill
+        case concave
+        case convex
 
     }
 
@@ -86,7 +88,12 @@ struct ShapeModifier: ViewModifier {
                             .stroke(border.color, lineWidth: border.width)
                     )
                 })
-
+        case .concave:
+            // WIP: Need to implement
+            content
+        case .convex:
+            // WIP: Need to implement
+            content
         }
     }
 }

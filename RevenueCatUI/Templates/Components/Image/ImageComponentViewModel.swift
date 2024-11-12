@@ -40,14 +40,28 @@ class ImageComponentViewModel {
         self.imageInfo.light.heic
     }
 
-    var cornerRadiuses: ShapeModifier.RaidusInfo? {
-        component.cornerRadiuses.flatMap { cornerRadiuses in
-            ShapeModifier.RaidusInfo(
-                topLeft: cornerRadiuses.topLeading,
-                topRight: cornerRadiuses.topTrailing,
-                bottomLeft: cornerRadiuses.bottomLeading,
-                bottomRight: cornerRadiuses.bottomLeading
-            )
+    var shape: ShapeModifier.Shape? {
+        guard let shape = self.component.maskShape else {
+            return nil
+        }
+
+        switch shape {
+        case .rectangle(let cornerRadiuses):
+            let corners = cornerRadiuses.flatMap { cornerRadiuses in
+                ShapeModifier.RaidusInfo(
+                    topLeft: cornerRadiuses.topLeading,
+                    topRight: cornerRadiuses.topTrailing,
+                    bottomLeft: cornerRadiuses.bottomLeading,
+                    bottomRight: cornerRadiuses.bottomLeading
+                )
+            }
+            return .rectangle(corners)
+        case .pill:
+            return .pill
+        case .concave:
+            return .concave
+        case .convex:
+            return .convex
         }
     }
 

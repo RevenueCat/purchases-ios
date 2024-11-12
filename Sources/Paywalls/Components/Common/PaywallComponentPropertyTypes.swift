@@ -10,7 +10,7 @@
 //  PaywallComponentPropertyTypes.swift
 //
 //  Created by James Borthwick on 2024-08-29.
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs file_length
 
 import Foundation
 
@@ -148,6 +148,66 @@ public extension PaywallComponent {
 
             case rectangle
             case pill
+
+        }
+
+    }
+
+    enum MaskShape: Codable, Sendable, Hashable, Equatable {
+
+        case rectangle(CornerRadiuses?)
+        case pill
+        case concave
+        case convex
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let corners):
+                try container.encode(MaskShapeType.rectangle.rawValue, forKey: .type)
+                try container.encode(corners, forKey: .corners)
+            case .pill:
+                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+            case .concave:
+                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+            case .convex:
+                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(MaskShapeType.self, forKey: .type)
+
+            switch type {
+            case .rectangle:
+                let value = try container.decode(CornerRadiuses.self, forKey: .corners)
+                self = .rectangle(value)
+            case .pill:
+                self = .pill
+            case .concave:
+                self = .concave
+            case .convex:
+                self = .convex
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case corners
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum MaskShapeType: String, Decodable {
+
+            case rectangle
+            case pill
+            case concave
+            case convex
 
         }
 

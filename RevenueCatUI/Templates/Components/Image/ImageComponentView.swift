@@ -57,7 +57,7 @@ struct ImageComponentView: View {
                 )
             )
             .shape(border: nil,
-                   shape: .rectangle(viewModel.cornerRadiuses))
+                   shape: viewModel.shape)
     }
 
 }
@@ -154,10 +154,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        cornerRadiuses: .init(topLeading: 40,
-                                              topTrailing: 40,
-                                              bottomLeading: 40,
-                                              bottomTrailing: 40)
+                        maskShape: .rectangle(.init(topLeading: 40,
+                                                    topTrailing: 40,
+                                                    bottomLeading: 40,
+                                                    bottomTrailing: 40)) 
                     )
                 )
             )
