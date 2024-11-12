@@ -10,7 +10,6 @@
 //  OfferingsResponse.swift
 //
 //  Created by Nacho Soto on 3/31/22.
-// swiftlint:disable nesting identifier_name missing_docs
 
 import Foundation
 
@@ -18,6 +17,7 @@ struct OfferingsResponse {
 
     struct Offering {
 
+        // swiftlint:disable:next nesting
         struct Package {
 
             let identifier: String

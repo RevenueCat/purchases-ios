@@ -10,6 +10,7 @@
 //  PaywallComponentsData.swift
 //
 //  Created by Josh Holtz on 11/11/24.
+// swiftlint:disable identifier_name missing_docs
 
 import Foundation
 
@@ -89,7 +90,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
-    public var errorInfo: [String: EquatableError]? = nil
+    public var errorInfo: [String: EquatableError]?
 
     private enum CodingKeys: String, CodingKey {
         case templateName
