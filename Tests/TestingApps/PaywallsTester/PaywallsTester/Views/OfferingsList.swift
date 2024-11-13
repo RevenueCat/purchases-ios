@@ -71,6 +71,9 @@ struct OfferingsList: View {
             VStack {
                 Text(Self.modesInstructions)
                     .font(.footnote)
+                #if PAYWALL_COMPONENTS
+                Text("Paywalls V2 Enabled")
+                #endif
                 self.list(with: data)
             }
 
