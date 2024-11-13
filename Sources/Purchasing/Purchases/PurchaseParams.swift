@@ -102,7 +102,7 @@ import Foundation
          * Availability: iOS 18.0+, macOS 15.0+, tvOS 18.0+, watchOS 11.0+, visionOS 2.0+
          */
         @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-        internal func with(winBackOffer: WinBackOffer) -> Self {
+        public func with(winBackOffer: WinBackOffer) -> Self {
             self.winBackOffer = winBackOffer
             return self
         }

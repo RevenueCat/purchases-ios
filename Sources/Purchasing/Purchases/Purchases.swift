@@ -1966,7 +1966,7 @@ extension Purchases {
      * - Returns: The win-back offers on the given product that a subscriber is eligible for.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    internal func eligibleWinBackOffers(
+    public func eligibleWinBackOffers(
         forProduct product: StoreProduct
     ) async throws -> [WinBackOffer] {
         return try await self.purchasesOrchestrator.eligibleWinBackOffers(forProduct: product)
@@ -1980,7 +1980,7 @@ extension Purchases {
      * offers for the provided product.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    internal func eligibleWinBackOffers(
+    public func eligibleWinBackOffers(
         forProduct product: StoreProduct,
         completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
     ) {

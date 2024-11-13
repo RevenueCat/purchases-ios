@@ -138,8 +138,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
     let offer: PromotionalOffer! = nil
-    // Commented out until we make fetching/redeeming win-back offers public
-//    let winBackOffer: WinBackOffer! = nil
+    let winBackOffer: WinBackOffer! = nil
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
@@ -160,23 +159,26 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    let packageParams = PurchaseParams.Builder(package: pack)
+    var packageParamsBuilder = PurchaseParams.Builder(package: pack)
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
 
-    // Commented out until we make fetching/redeeming win-back offers public
-//        .with(winBackOffer: winBackOffer)
+    if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        packageParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
+    }
+    let packageParams = packageParamsBuilder.build()
 
-        .build()
-    let productParams = PurchaseParams.Builder(product: storeProduct)
+    var productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
 
-    // Commented out until we make fetching/redeeming win-back offers public
-//        .with(winBackOffer: winBackOffer)
+    if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        productParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
+    }
+    let productParams = productParamsBuilder.build()
 
-        .build()
-    purchases.purchase(params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(productParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(productParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     #endif
 
     purchases.invalidateCustomerInfoCache()

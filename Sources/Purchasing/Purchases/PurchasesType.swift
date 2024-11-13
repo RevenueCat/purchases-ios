@@ -1120,23 +1120,6 @@ public protocol PurchasesSwiftType: AnyObject {
     func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
-}
-
-// MARK: -
-
-/// Interface for ``Purchases``'s internal-only methods.
-internal protocol InternalPurchasesType: AnyObject {
-
-    /// Performs an unauthenticated request to the API to verify connectivity.
-    /// - Throws: `PublicError` if request failed.
-    func healthRequest(signatureVerification: Bool) async throws
-
-    func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func productEntitlementMapping() async throws -> ProductEntitlementMapping
-
-    var responseVerificationMode: Signing.ResponseVerificationMode { get }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /**
@@ -1165,5 +1148,22 @@ internal protocol InternalPurchasesType: AnyObject {
         completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
     )
     #endif
+}
+
+// MARK: -
+
+/// Interface for ``Purchases``'s internal-only methods.
+internal protocol InternalPurchasesType: AnyObject {
+
+    /// Performs an unauthenticated request to the API to verify connectivity.
+    /// - Throws: `PublicError` if request failed.
+    func healthRequest(signatureVerification: Bool) async throws
+
+    func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func productEntitlementMapping() async throws -> ProductEntitlementMapping
+
+    var responseVerificationMode: Signing.ResponseVerificationMode { get }
 
 }
