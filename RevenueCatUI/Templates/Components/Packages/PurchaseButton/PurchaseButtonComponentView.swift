@@ -53,28 +53,6 @@ struct PurchaseButtonComponentView: View {
 
 }
 
-private struct ShapeModifier: ViewModifier {
-    var shape: PaywallComponent.Shape
-
-    func body(content: Content) -> some View {
-        switch shape {
-        case .pill:
-            content
-                .clipShape(Capsule())
-        case .rectangle:
-            content
-        }
-    }
-}
-
-private extension View {
-
-    func shape(_ shape: PaywallComponent.Shape) -> some View {
-        self.modifier(ShapeModifier(shape: shape))
-    }
-
-}
-
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -131,12 +109,10 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                        bottom: 8,
                                        leading: 8,
                                        trailing: 8),
-                        cornerRadiuses: PaywallComponent.CornerRadiuses(
-                            topLeading: 8,
-                            topTrailing: 8,
-                            bottomLeading: 8,
-                            bottomTrailing: 8
-                        )
+                        shape: .rectangle(.init(topLeading: 8,
+                                                topTrailing: 8,
+                                                bottomLeading: 8,
+                                                bottomTrailing: 8))
                     )
                 ),
                 localizedStrings: [

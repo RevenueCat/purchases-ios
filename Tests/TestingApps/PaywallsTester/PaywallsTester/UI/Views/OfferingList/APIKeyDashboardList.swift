@@ -172,7 +172,13 @@ struct APIKeyDashboardList: View {
 
         var body: some View {
             Button(action: action) {
-                Text(self.offering.serverDescription)
+                HStack {
+                    Text(self.offering.serverDescription)
+                    Spacer()
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundStyle(Color.red)
+                        .hidden(if: self.offering.paywallComponentsData?.errorInfo?.isEmpty ?? true)
+                }
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())

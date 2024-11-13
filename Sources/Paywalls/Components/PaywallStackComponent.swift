@@ -28,7 +28,7 @@ public extension PaywallComponent {
         public let dimension: Dimension
         public let padding: Padding
         public let margin: Padding
-        public let cornerRadiuses: CornerRadiuses?
+        public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
 
@@ -42,7 +42,7 @@ public extension PaywallComponent {
             backgroundColor: ColorScheme? = nil,
             padding: Padding = .zero,
             margin: Padding = .zero,
-            cornerRadiuses: CornerRadiuses? = nil,
+            shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
@@ -55,7 +55,7 @@ public extension PaywallComponent {
             self.dimension = dimension
             self.padding = padding
             self.margin = margin
-            self.cornerRadiuses = cornerRadiuses
+            self.shape = shape
             self.border = border
             self.shadow = shadow
             self.overrides = overrides
@@ -72,7 +72,7 @@ public extension PaywallComponent {
         public let dimension: Dimension?
         public let padding: Padding?
         public let margin: Padding?
-        public let cornerRadiuses: CornerRadiuses?
+        public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
 
@@ -84,7 +84,7 @@ public extension PaywallComponent {
             backgroundColor: ColorScheme? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
-            cornerRadiuses: CornerRadiuses? = nil,
+            shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil
         ) {
@@ -95,7 +95,7 @@ public extension PaywallComponent {
             self.dimension = dimension
             self.padding = padding
             self.margin = margin
-            self.cornerRadiuses = cornerRadiuses
+            self.shape = shape
             self.border = border
             self.shadow = shadow
         }

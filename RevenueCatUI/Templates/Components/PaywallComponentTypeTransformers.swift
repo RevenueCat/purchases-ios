@@ -240,7 +240,7 @@ extension PaywallComponent.ColorHex {
 extension PaywallComponent.ColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func toDyanmicColor() -> Color {
+    func toDynamicColor() -> Color {
 
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
