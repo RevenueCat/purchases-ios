@@ -34,14 +34,14 @@ struct ShapeModifier: ViewModifier {
 
     enum Shape {
 
-        case rectangle(RaidusInfo?)
+        case rectangle(RadiusInfo?)
         case pill
         case concave
         case convex
 
     }
 
-    struct RaidusInfo {
+    struct RadiusInfo {
 
         let topLeft: CGFloat?
         let topRight: CGFloat?

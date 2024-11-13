@@ -113,11 +113,11 @@ class StackComponentViewModel {
         switch shape {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
-                ShapeModifier.RaidusInfo(
+                ShapeModifier.RadiusInfo(
                     topLeft: cornerRadiuses.topLeading,
                     topRight: cornerRadiuses.topTrailing,
                     bottomLeft: cornerRadiuses.bottomLeading,
-                    bottomRight: cornerRadiuses.bottomLeading
+                    bottomRight: cornerRadiuses.bottomTrailing
                 )
             }
             return .rectangle(corners)
