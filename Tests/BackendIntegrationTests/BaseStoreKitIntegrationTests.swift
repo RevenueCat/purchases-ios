@@ -163,7 +163,7 @@ extension BaseStoreKitIntegrationTests {
             var params = PurchaseParams.Builder(product: self.monthlyPackage.storeProduct)
                 .with(metadata: metadata)
                 .build()
-            data = try await self.purchases.purchase(params: params)
+            data = try await self.purchases.purchase(params)
         } else {
             data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
         }
