@@ -820,6 +820,10 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
+
+            Task {
+                await self.paywallEventsManager?.resetAppSessionID()
+            }
         }
     }
 
@@ -851,6 +855,10 @@ public extension Purchases {
                     }
                 }
                 return
+            }
+
+            Task {
+                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {

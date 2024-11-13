@@ -23,6 +23,8 @@ protocol PaywallEventsManagerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushEvents(count: Int) async throws -> Int
 
+    func resetAppSessionID() async
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
