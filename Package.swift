@@ -29,7 +29,6 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
 
 var ciCompilerFlags: [PackageDescription.SwiftSetting] = [
     // REPLACE_WITH_DEFINES_HERE
-    .define("PAYWALL_COMPONENTS")
 ]
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
