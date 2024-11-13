@@ -28,7 +28,7 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
 }()
 
 var ciCompilerFlags: [PackageDescription.SwiftSetting] = [
-    // REPLACE_HERE
+    // REPLACE_WITH_DEFINES_HERE
     .define("PAYWALL_COMPONENTS")
 ]
 
