@@ -16,13 +16,6 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-struct LocalizedTextPartial: LocalizedPartial {
-
-    let text: String?
-    let partial: PaywallComponent.PartialTextComponent
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
@@ -30,40 +23,16 @@ class TextComponentViewModel {
     private let component: PaywallComponent.TextComponent
 
     private let text: String
-    private let localizedOverrides: LocalizedOverrides<LocalizedTextPartial>?
+    private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
         self.localizedStrings = localizedStrings
         self.component = component
         self.text = try localizedStrings.string(key: component.text)
 
-        self.localizedOverrides = try self.component.overrides.flatMap({ overrides in
-            LocalizedOverrides(
-                introOffer: try overrides.introOffer.flatMap({ partial in
-                    try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                }),
-                states: try overrides.states.flatMap({ states in
-                    LocalizedStates(
-                        selected: try states.selected.flatMap({ partial in
-                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                        })
-                    )
-                }),
-                conditions: try overrides.conditions.flatMap({ condition in
-                    LocalizedConditions(
-                        compact: try condition.compact.flatMap({ partial in
-                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                        }),
-                        medium: try condition.medium.flatMap({ partial in
-                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                        }),
-                        expanded: try condition.expanded.flatMap({ partial in
-                            try LocalizedTextPartial.create(from: partial, using: localizedStrings)
-                        })
-                    )
-                })
-            )
-        })
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
+            try LocalizedTextPartial.create(from: $0, using: localizedStrings)
+        }
 
     }
 
@@ -73,7 +42,11 @@ class TextComponentViewModel {
         condition: ScreenCondition,
         apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
-        let localalizedPartial = self.buildPartial(state: state, condition: condition)
+        let localalizedPartial = LocalizedTextPartial.buildPartial(
+            state: state,
+            condition: condition,
+            with: self.presentedOverrides
+        )
         let partial = localalizedPartial?.partial
 
         let style = TextComponentStyle(
@@ -93,63 +66,14 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    func buildPartial(
-        state: ComponentViewState,
-        condition: ScreenCondition
-    ) -> LocalizedTextPartial? {
-        var partial = self.buildConditionPartial(for: condition)
+}
 
-        switch state {
-        case .default:
-            break
-        case .selected:
-            partial = self.combine(partial, with: self.localizedOverrides?.states?.selected)
-        }
+struct LocalizedTextPartial: PresentedPartial {
 
-        // WIP: Get partial for intro offer
-        return partial
-    }
+    let text: String?
+    let partial: PaywallComponent.PartialTextComponent
 
-    private func buildConditionPartial(
-        for conditionType: ScreenCondition
-    ) -> LocalizedTextPartial? {
-
-        // Get all conditions to include
-        let conditionTypesToApply: [PaywallComponent.ComponentConditionsType]
-        switch conditionType {
-        case .compact:
-            conditionTypesToApply = [.compact]
-        case .medium:
-            conditionTypesToApply = [.compact, .medium]
-        case .expanded:
-            conditionTypesToApply = [.compact, .medium, .expanded]
-        }
-
-        var combinedPartial: LocalizedTextPartial?
-
-        // Apply compact on top of existing partial
-        if let compact = self.localizedOverrides?.conditions?.compact,
-           conditionTypesToApply.contains(.compact) {
-            combinedPartial = combine(combinedPartial, with: compact)
-        }
-
-        // Apply medium on top of existing partial
-        if let medium = self.localizedOverrides?.conditions?.medium,
-           conditionTypesToApply.contains(.medium) {
-            combinedPartial = combine(combinedPartial, with: medium)
-        }
-
-        // Apply expanded on top of existing partial
-        if let expanded = self.localizedOverrides?.conditions?.expanded,
-           conditionTypesToApply.contains(.expanded) {
-            combinedPartial = combine(combinedPartial, with: expanded)
-        }
-
-        // Return the combined partial if it's not empty, otherwise return nil
-        return combinedPartial
-    }
-
-    private func combine(_ base: LocalizedTextPartial?, with other: LocalizedTextPartial?) -> LocalizedTextPartial {
+    static func combine(_ base: LocalizedTextPartial?, with other: LocalizedTextPartial?) -> LocalizedTextPartial {
         let otherPartial = other?.partial
         let basePartial = base?.partial
 
@@ -218,13 +142,13 @@ struct TextComponentStyle {
         self.visible = visible
         self.text = text
         self.fontWeight = fontWeight.fontWeight
-        self.color = color.toDyanmicColor()
+        self.color = color.toDynamicColor()
 
         // WIP: Take into account the fontFamily mapping
         self.fontSize = fontSize.font
 
         self.horizontalAlignment = horizontalAlignment.textAlignment
-        self.backgroundColor = backgroundColor?.toDyanmicColor() ?? Color.clear
+        self.backgroundColor = backgroundColor?.toDynamicColor() ?? Color.clear
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets

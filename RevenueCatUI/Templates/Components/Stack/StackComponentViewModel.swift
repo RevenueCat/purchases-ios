@@ -16,23 +16,116 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
+private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
-    enum StackStrategy {
-        case normal, lazy, flex
-    }
-
     private let component: PaywallComponent.StackComponent
+    private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel]
-    ) {
+    ) throws {
         self.component = component
         self.viewModels = viewModels
+
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+    }
+
+    @ViewBuilder
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        apply: @escaping (StackComponentStyle) -> some View
+    ) -> some View {
+        let partial = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            with: self.presentedOverrides
+        )
+
+        let style = StackComponentStyle(
+            visible: partial?.visible ?? true,
+            dimension: partial?.dimension ?? self.component.dimension,
+            size: partial?.size ?? self.component.size,
+            spacing: partial?.spacing ?? self.component.spacing,
+            backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            padding: partial?.padding ?? self.component.padding,
+            margin: partial?.margin ?? self.component.margin,
+            shape: partial?.shape ?? self.component.shape,
+            border: partial?.border ?? self.component.border,
+            shadow: partial?.shadow ?? self.component.shadow
+        )
+
+        apply(style)
+    }
+
+}
+
+extension PresentedStackPartial: PresentedPartial {
+
+    static func combine(_ base: Self?, with other: Self?) -> Self {
+
+        return .init(
+            visible: other?.visible ?? base?.visible,
+            dimension: other?.dimension ?? base?.dimension,
+            size: other?.size ?? base?.size,
+            spacing: other?.spacing ?? base?.spacing,
+            backgroundColor: other?.backgroundColor ?? base?.backgroundColor,
+            padding: other?.padding ?? base?.padding,
+            margin: other?.margin ?? base?.margin,
+            shape: other?.shape ?? base?.shape,
+            border: other?.border ?? base?.border,
+            shadow: other?.shadow ?? base?.shadow
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentStyle {
+
+    enum StackStrategy {
+        case normal, lazy, flex
+    }
+
+    let visible: Bool
+    let dimension: PaywallComponent.Dimension
+    let size: PaywallComponent.Size
+    let spacing: CGFloat?
+    let backgroundColor: Color
+    let padding: EdgeInsets
+    let margin: EdgeInsets
+    let shape: ShapeModifier.Shape?
+    let border: ShapeModifier.BorderInfo?
+    let shadow: ShadowModifier.ShadowInfo?
+
+    init(
+        visible: Bool,
+        dimension: PaywallComponent.Dimension,
+        size: PaywallComponent.Size,
+        spacing: CGFloat?,
+        backgroundColor: PaywallComponent.ColorScheme?,
+        padding: PaywallComponent.Padding,
+        margin: PaywallComponent.Padding,
+        shape: PaywallComponent.Shape?,
+        border: PaywallComponent.Border?,
+        shadow: PaywallComponent.Shadow?
+    ) {
+        self.visible = visible
+        self.dimension = dimension
+        self.size = size
+        self.spacing = spacing
+        self.backgroundColor = backgroundColor?.toDynamicColor() ?? Color.clear
+        self.padding = padding.edgeInsets
+        self.margin = margin.edgeInsets
+        self.shape = shape?.shape
+        self.border = border?.border
+        self.shadow = shadow?.shadow
     }
 
     var vstackStrategy: StackStrategy {
@@ -41,8 +134,8 @@ class StackComponentViewModel {
             return .normal
         }
 
-        // Normal stragety for fit
-        switch self.component.size.height {
+        // Normal strategy for fit
+        switch self.size.height {
         case .fit:
             return .normal
         case .fill, .fixed:
@@ -55,11 +148,12 @@ class StackComponentViewModel {
         }
 
         // WIP: Look deeper in tree
-        if self.components.count > 3 {
-            return .lazy
-        } else {
-            return .normal
-        }
+//        if self.components.count > 3 {
+//            return .lazy
+//        } else {
+//            return .normal
+//        }
+        return .lazy
     }
 
     var hstackStrategy: StackStrategy {
@@ -68,8 +162,8 @@ class StackComponentViewModel {
             return .normal
         }
 
-        // Not stragety for fit
-        switch self.component.size.width {
+        // Not strategy for fit
+        switch self.size.width {
         case .fit:
             return .normal
         case .fill, .fixed:
@@ -77,40 +171,13 @@ class StackComponentViewModel {
         }
     }
 
-    var dimension: PaywallComponent.Dimension {
-        component.dimension
-    }
+}
 
-    var components: [PaywallComponent] {
-        component.components
-    }
-
-    var spacing: CGFloat? {
-        component.spacing
-    }
-
-    var backgroundColor: Color {
-        component.backgroundColor?.toDyanmicColor() ?? Color.clear
-    }
-
-    var padding: EdgeInsets {
-        component.padding.edgeInsets
-    }
-
-    var margin: EdgeInsets {
-        component.margin.edgeInsets
-    }
-
-    var size: PaywallComponent.Size {
-        component.size
-    }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Shape {
 
     var shape: ShapeModifier.Shape? {
-        guard let shape = self.component.shape else {
-            return nil
-        }
-
-        switch shape {
+        switch self {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
                 ShapeModifier.RadiusInfo(
@@ -126,24 +193,30 @@ class StackComponentViewModel {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Border {
+
     var border: ShapeModifier.BorderInfo? {
-        component.border.flatMap { border in
-            ShapeModifier.BorderInfo(
-                color: border.color.toDyanmicColor(),
-                width: border.width
-            )
-        }
+        ShapeModifier.BorderInfo(
+            color: self.color.toDynamicColor(),
+            width: self.width
+        )
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Shadow {
+
     var shadow: ShadowModifier.ShadowInfo? {
-        component.shadow.flatMap { shadow in
-            ShadowModifier.ShadowInfo(
-                color: shadow.color.toDyanmicColor(),
-                radius: shadow.radius,
-                x: shadow.x,
-                y: shadow.y
-            )
-        }
+        ShadowModifier.ShadowInfo(
+            color: self.color.toDynamicColor(),
+            radius: self.radius,
+            x: self.x,
+            y: self.y
+        )
     }
 
 }

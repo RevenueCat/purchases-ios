@@ -34,7 +34,7 @@
 		2C8EC6DF2CCD27A500D6CCF8 /* PartialComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */; };
 		2C8EC6E12CCD7BA700D6CCF8 /* ComponentOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6E02CCD7BA300D6CCF8 /* ComponentOverrides.swift */; };
 		2C8EC71B2CCDD43900D6CCF8 /* ComponentViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC71A2CCDD43500D6CCF8 /* ComponentViewState.swift */; };
-		2C8EC7202CCF276100D6CCF8 /* LocalizedPartials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC71F2CCF275E00D6CCF8 /* LocalizedPartials.swift */; };
+		2C8EC7202CCF276100D6CCF8 /* PresentedPartials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */; };
 		2C91068A2CE22D3500189565 /* FlexVStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9106892CE22D3500189565 /* FlexVStack.swift */; };
 		2C91068C2CE22D4F00189565 /* JustifyContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C91068B2CE22D4F00189565 /* JustifyContent.swift */; };
 		2C91068E2CE2481A00189565 /* SizeModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C91068D2CE2481800189565 /* SizeModifier.swift */; };
@@ -1224,7 +1224,7 @@
 		2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialComponentTests.swift; sourceTree = "<group>"; };
 		2C8EC6E02CCD7BA300D6CCF8 /* ComponentOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentOverrides.swift; sourceTree = "<group>"; };
 		2C8EC71A2CCDD43500D6CCF8 /* ComponentViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentViewState.swift; sourceTree = "<group>"; };
-		2C8EC71F2CCF275E00D6CCF8 /* LocalizedPartials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedPartials.swift; sourceTree = "<group>"; };
+		2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentedPartials.swift; sourceTree = "<group>"; };
 		2C9106892CE22D3500189565 /* FlexVStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexVStack.swift; sourceTree = "<group>"; };
 		2C91068B2CE22D4F00189565 /* JustifyContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JustifyContent.swift; sourceTree = "<group>"; };
 		2C91068D2CE2481800189565 /* SizeModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SizeModifier.swift; sourceTree = "<group>"; };
@@ -4524,7 +4524,7 @@
 				2C91068D2CE2481800189565 /* SizeModifier.swift */,
 				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
 				2C08B3162CDA443A0024857B /* ViewModelFactory.swift */,
-				2C8EC71F2CCF275E00D6CCF8 /* LocalizedPartials.swift */,
+				2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */,
 				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
 				778360772CCA85D1000785B8 /* StickyFooter */,
 				778360742CCA84FA000785B8 /* Root */,
@@ -6267,7 +6267,7 @@
 				887A60702C1D037000E1A461 /* PaywallTemplate.swift in Sources */,
 				887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */,
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
-				2C8EC7202CCF276100D6CCF8 /* LocalizedPartials.swift in Sources */,
+				2C8EC7202CCF276100D6CCF8 /* PresentedPartials.swift in Sources */,
 				7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
