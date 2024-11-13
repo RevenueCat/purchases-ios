@@ -24,8 +24,13 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
         .split(whereSeparator: \.isWhitespace)
         .filter { !$0.isEmpty && !$0.hasPrefix("$") }
         .map { .define(String($0)) }
-        ?? []
+    ?? [.define("PAYWALL_COMPONENTS")]
 }()
+
+var ciCompilerFlags: [PackageDescription.SwiftSetting] = [
+    // REPLACE_HERE
+    .define("PAYWALL_COMPONENTS")
+]
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin
@@ -75,7 +80,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting] + additionalCompilerFlags),
+                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -85,7 +90,7 @@ let package = Package(
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
-                ] + additionalCompilerFlags),
+                ] + ciCompilerFlags + additionalCompilerFlags),
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
