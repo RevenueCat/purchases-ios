@@ -175,9 +175,11 @@ struct APIKeyDashboardList: View {
                 HStack {
                     Text(self.offering.serverDescription)
                     Spacer()
+                    #if PAYWALL_COMPONENTS
                     Image(systemName: "exclamationmark.circle.fill")
                         .foregroundStyle(Color.red)
                         .hidden(if: self.offering.paywallComponentsData?.errorInfo?.isEmpty ?? true)
+                    #endif
                 }
             }
             .buttonStyle(.plain)
