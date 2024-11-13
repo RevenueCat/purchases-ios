@@ -47,16 +47,16 @@ class ImageComponentViewModel {
         condition: ScreenCondition,
         apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
-        let localalizedPartial = LocalizedImagePartial.buildPartial(
+        let localizedPartial = LocalizedImagePartial.buildPartial(
             state: state,
             condition: condition,
             with: self.presentedOverrides
         )
-        let partial = localalizedPartial?.partial
+        let partial = localizedPartial?.partial
 
         let style = ImageComponentStyle(
             visible: partial?.visible ?? true,
-            source: partial?.source ?? self.imageInfo,
+            source: localizedPartial?.imageInfo ?? self.imageInfo,
             size: partial?.size ?? self.component.size,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,

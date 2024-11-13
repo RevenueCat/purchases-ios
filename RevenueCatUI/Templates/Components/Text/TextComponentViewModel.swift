@@ -42,16 +42,16 @@ class TextComponentViewModel {
         condition: ScreenCondition,
         apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
-        let localalizedPartial = LocalizedTextPartial.buildPartial(
+        let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             with: self.presentedOverrides
         )
-        let partial = localalizedPartial?.partial
+        let partial = localizedPartial?.partial
 
         let style = TextComponentStyle(
             visible: partial?.visible ?? true,
-            text: localalizedPartial?.text ?? self.text,
+            text: localizedPartial?.text ?? self.text,
             fontFamily: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
