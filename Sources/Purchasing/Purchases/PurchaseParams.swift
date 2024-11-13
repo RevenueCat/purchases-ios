@@ -29,7 +29,7 @@ import Foundation
  * Purchases.shared.purchase(params)
  * ```
  */
-@objc(RCPurchaseParams) public final class PurchaseParams: NSObject {
+@objc(RCPurchaseParams) public final class PurchaseParams: NSObject, Sendable {
 
     let package: Package?
     let product: StoreProduct?

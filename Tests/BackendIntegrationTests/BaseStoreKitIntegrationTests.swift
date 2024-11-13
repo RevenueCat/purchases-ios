@@ -160,12 +160,14 @@ extension BaseStoreKitIntegrationTests {
 
         let data: PurchaseResultData
         if let metadata = metadata {
-            var params = PurchaseParams.Builder(product: self.monthlyPackage.storeProduct)
+            let product = await self.monthlyPackage.storeProduct
+            var params = PurchaseParams.Builder(product: product)
                 .with(metadata: metadata)
                 .build()
             data = try await self.purchases.purchase(params)
         } else {
-            data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+            let product = await self.monthlyPackage.storeProduct
+            data = try await self.purchases.purchase(product: product)
         }
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
