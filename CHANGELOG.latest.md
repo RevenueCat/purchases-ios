@@ -1,28 +1,17 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Add `tenjinAnalyticsInstallationId` setter property (#4437) via Toni Rico (@tonidero)
-### 📦 Dependency Updates
-* Bump cocoapods from 1.15.2 to 1.16.2 (#4433) via dependabot[bot] (@dependabot[bot])
-
-## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fixes reloading paywall images after they've been scrolled off screen (#4423) via JayShortway (@JayShortway)
-### Customer Center
-#### 🐞 Bugfixes
-* Refactor `SubscriptionDetailsView` and better `WrongPlatformView` (#4410) via Cesar de la Vega (@vegaro)
+### Win-back Offers
+#### ✨ New Features
+* Support Redeeming Win-Back Offers with Streamlined Purchasing Disabled (#4370) via Will Taylor (@fire-at-will)
 
 ### 🔄 Other Changes
-* Create paywall component view models in a factory (#4455) via Josh Holtz (@joshdholtz)
-* Fix winback tests on iOS 14 & API Tester (#4453) via Will Taylor (@fire-at-will)
-* Fix `RCPurchaseParams` API tests (#4454) via Cesar de la Vega (@vegaro)
-* Fixes for paywalls v2 renderer after testing some real life paywalls (#4436) via Josh Holtz (@joshdholtz)
-* Skip `testCannotFlushMultipleTimesInParallel` test in xcode 14 (#4443) via Cesar de la Vega (@vegaro)
-* [Paywalls] Send paywall events when the app is backgrounded and after a successful purchase (#4438) via Mark Villacampa (@MarkVillacampa)
-* Support fetching eligible win-back offers for a product (#4431) via Will Taylor (@fire-at-will)
-* Introduce PurchaseParams to allow passing extra configuration info when making a purchase (#4400) via Mark Villacampa (@MarkVillacampa)
-* Refactor Paywall events so it can be used for customer center (#4376) via Cesar de la Vega (@vegaro)
-* Apply state and conditions ONLY for text component (#4417) via Josh Holtz (@joshdholtz)
-* Text, Image, and Stack properties can be overridden on different states/conditions (#4414) via Josh Holtz (@joshdholtz)
-* PurchaseButtonComponent is now just a container/stack like ButtonComponent (#4415) via Josh Holtz (@joshdholtz)
-* Remove PackageGroup (#4413) via Josh Holtz (@joshdholtz)
-* The StackComponent has an optional shadow (#4429) via JayShortway (@JayShortway)
+* Fix Paywalls Tester when not being built with Paywalls V2 (#4481) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Fix typo in CI script (#4480) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Enable PAYWALL_COMPONENTS compiler flag when building PaywallTester in Xcode Cloud (#4479) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Update Image to handle property overrides (#4477) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Update Stack to handle property overrides (#4476) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Store decoding errors in individual paywall (instead of failing entire offerings response) (#4473) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Update shape spec (#4472) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Update text spec (#4469) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Update stack size spec (#4467) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Update color spec (#4468) via Josh Holtz (@joshdholtz)
+* Update PurchaseParam code sample (#4470) via Will Taylor (@fire-at-will)
