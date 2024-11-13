@@ -332,7 +332,7 @@ fileprivate extension StackComponentViewModel {
             )
         }
 
-        self.init(
+        try self.init(
             component: component,
             viewModels: viewModels
         )

@@ -29,11 +29,11 @@ class StackComponentViewModel {
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel]
-    ) {
+    ) throws {
         self.component = component
         self.viewModels = viewModels
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder

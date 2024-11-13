@@ -80,8 +80,8 @@ struct ViewModelFactory {
             }
 
             return .stack(
-                StackComponentViewModel(component: component,
-                                        viewModels: viewModels)
+                try StackComponentViewModel(component: component,
+                                            viewModels: viewModels)
             )
         case .linkButton(let component):
             return .linkButton(
@@ -162,7 +162,7 @@ struct ViewModelFactory {
             )
         }
 
-        return StackComponentViewModel(
+        return try StackComponentViewModel(
             component: component,
             viewModels: viewModels
         )
