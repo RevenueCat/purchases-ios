@@ -10,5 +10,5 @@ sed -i '' 's/static var apiKey: String { "" }/static var apiKey: String { "'"$RE
 # This allow Local.xcconfig to be found by Xcode
 xcconfig_file="$(cd "$SCRIPT_DIR/../../../../" && pwd)/Local.xcconfig"
 
-echo "Enabling PAYWALL_COMPONENTS compiler flag in $xcconfig_file"
-echo "SWIFT_ACTIVE_COMPILATION_CONDITIONS = \$(inherited) PAYWALL_COMPONENTS\nOTHER_SWIFT_FLAGS = PAYWALL_COMPONENTS" > "$xcconfig_file"
+# echo "Enabling PAYWALL_COMPONENTS compiler flag in $xcconfig_file"
+# echo "SWIFT_ACTIVE_COMPILATION_CONDITIONS = \$(inherited) PAYWALL_COMPONENTS\nOTHER_SWIFT_FLAGS = PAYWALL_COMPONENTS" > "$xcconfig_file"
