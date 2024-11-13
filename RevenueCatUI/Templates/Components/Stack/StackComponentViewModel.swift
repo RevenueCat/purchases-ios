@@ -120,7 +120,7 @@ struct StackComponentStyle {
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundColor = backgroundColor?.toDyanmicColor() ?? Color.clear
+        self.backgroundColor = backgroundColor?.toDynamicColor() ?? Color.clear
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
@@ -200,7 +200,7 @@ private extension PaywallComponent.Border {
 
     var border: ShapeModifier.BorderInfo? {
         ShapeModifier.BorderInfo(
-            color: self.color.toDyanmicColor(),
+            color: self.color.toDynamicColor(),
             width: self.width
         )
     }
@@ -212,7 +212,7 @@ private extension PaywallComponent.Shadow {
 
     var shadow: ShadowModifier.ShadowInfo? {
         ShadowModifier.ShadowInfo(
-            color: self.color.toDyanmicColor(),
+            color: self.color.toDynamicColor(),
             radius: self.radius,
             x: self.x,
             y: self.y

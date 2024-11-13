@@ -142,13 +142,13 @@ struct TextComponentStyle {
         self.visible = visible
         self.text = text
         self.fontWeight = fontWeight.fontWeight
-        self.color = color.toDyanmicColor()
+        self.color = color.toDynamicColor()
 
         // WIP: Take into account the fontFamily mapping
         self.fontSize = fontSize.font
 
         self.horizontalAlignment = horizontalAlignment.textAlignment
-        self.backgroundColor = backgroundColor?.toDyanmicColor() ?? Color.clear
+        self.backgroundColor = backgroundColor?.toDynamicColor() ?? Color.clear
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
