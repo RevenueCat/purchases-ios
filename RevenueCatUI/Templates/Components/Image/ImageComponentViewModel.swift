@@ -40,14 +40,32 @@ class ImageComponentViewModel {
         self.imageInfo.light.heic
     }
 
-    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
-        component.cornerRadiuses.flatMap { cornerRadiuses in
-            CornerBorderModifier.RaidusInfo(
-                topLeft: cornerRadiuses.topLeading,
-                topRight: cornerRadiuses.topTrailing,
-                bottomLeft: cornerRadiuses.bottomLeading,
-                bottomRight: cornerRadiuses.bottomLeading
-            )
+    var size: PaywallComponent.Size {
+        self.component.size
+    }
+
+    var shape: ShapeModifier.Shape? {
+        guard let shape = self.component.maskShape else {
+            return nil
+        }
+
+        switch shape {
+        case .rectangle(let cornerRadiuses):
+            let corners = cornerRadiuses.flatMap { cornerRadiuses in
+                ShapeModifier.RadiusInfo(
+                    topLeft: cornerRadiuses.topLeading,
+                    topRight: cornerRadiuses.topTrailing,
+                    bottomLeft: cornerRadiuses.bottomLeading,
+                    bottomRight: cornerRadiuses.bottomTrailing
+                )
+            }
+            return .rectangle(corners)
+        case .pill:
+            return .pill
+        case .concave:
+            return .concave
+        case .convex:
+            return .convex
         }
     }
 
@@ -57,10 +75,6 @@ class ImageComponentViewModel {
 
     var contentMode: ContentMode {
         component.fitMode.contentMode
-    }
-
-    var maxHeight: CGFloat? {
-        component.maxHeight
     }
 
 }

@@ -98,8 +98,8 @@ struct StackComponentView: View {
         .padding(additionalPadding)
         .size(viewModel.size)
         .background(viewModel.backgroundColor)
-        .cornerBorder(border: viewModel.border,
-                      radiuses: viewModel.cornerRadiuses)
+        .shape(border: viewModel.border,
+               shape: viewModel.shape)
         .applyIfLet(viewModel.shadow) { view, shadow in
             // Without compositingGroup(), the shadow is applied to the stack's children as well.
             view.compositingGroup().shadow(shadow: shadow)

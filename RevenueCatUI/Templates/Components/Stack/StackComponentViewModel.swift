@@ -105,20 +105,30 @@ class StackComponentViewModel {
         component.size
     }
 
-    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
-        component.cornerRadiuses.flatMap { cornerRadiuses in
-            CornerBorderModifier.RaidusInfo(
-                topLeft: cornerRadiuses.topLeading,
-                topRight: cornerRadiuses.topTrailing,
-                bottomLeft: cornerRadiuses.bottomLeading,
-                bottomRight: cornerRadiuses.bottomLeading
-            )
+    var shape: ShapeModifier.Shape? {
+        guard let shape = self.component.shape else {
+            return nil
+        }
+
+        switch shape {
+        case .rectangle(let cornerRadiuses):
+            let corners = cornerRadiuses.flatMap { cornerRadiuses in
+                ShapeModifier.RadiusInfo(
+                    topLeft: cornerRadiuses.topLeading,
+                    topRight: cornerRadiuses.topTrailing,
+                    bottomLeft: cornerRadiuses.bottomLeading,
+                    bottomRight: cornerRadiuses.bottomTrailing
+                )
+            }
+            return .rectangle(corners)
+        case .pill:
+            return .pill
         }
     }
 
-    var border: CornerBorderModifier.BorderInfo? {
+    var border: ShapeModifier.BorderInfo? {
         component.border.flatMap { border in
-            CornerBorderModifier.BorderInfo(
+            ShapeModifier.BorderInfo(
                 color: border.color.toDyanmicColor(),
                 width: border.width
             )

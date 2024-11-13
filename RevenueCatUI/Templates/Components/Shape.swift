@@ -7,17 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CornerBorder.swift
+//  Shape.swift
 //
 //  Created by Josh Holtz on 9/30/24.
 
 import Foundation
+import RevenueCat
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct CornerBorderModifier: ViewModifier {
+struct ShapeModifier: ViewModifier {
 
     struct BorderInfo {
 
@@ -31,7 +32,16 @@ struct CornerBorderModifier: ViewModifier {
 
     }
 
-    struct RaidusInfo {
+    enum Shape {
+
+        case rectangle(RadiusInfo?)
+        case pill
+        case concave
+        case convex
+
+    }
+
+    struct RadiusInfo {
 
         let topLeft: CGFloat?
         let topRight: CGFloat?
@@ -48,20 +58,43 @@ struct CornerBorderModifier: ViewModifier {
     }
 
     var border: BorderInfo?
-    var radiuses: RaidusInfo?
+    var shape: Shape
+
+    init(border: BorderInfo? = nil, shape: Shape?) {
+        self.border = border
+        self.shape = shape ?? .rectangle(nil)
+    }
 
     func body(content: Content) -> some View {
-        content
-            .conditionalClipShape(topLeft: self.radiuses?.topLeft,
-                                  topRight: self.radiuses?.topRight,
-                                  bottomLeft: self.radiuses?.bottomLeft,
-                                  bottomRight: self.radiuses?.bottomRight)
-            .conditionalOverlay(color: self.border?.color,
-                                width: self.border?.width,
-                                topLeft: self.radiuses?.topLeft,
-                                topRight: self.radiuses?.topRight,
-                                bottomLeft: self.radiuses?.bottomLeft,
-                                bottomRight: self.radiuses?.bottomRight)
+        switch self.shape {
+        case .rectangle(let radiuses):
+            content
+                .conditionalClipShape(topLeft: radiuses?.topLeft,
+                                      topRight: radiuses?.topRight,
+                                      bottomLeft: radiuses?.bottomLeft,
+                                      bottomRight: radiuses?.bottomRight)
+                .conditionalOverlay(color: self.border?.color,
+                                    width: self.border?.width,
+                                    topLeft: radiuses?.topLeft,
+                                    topRight: radiuses?.topRight,
+                                    bottomLeft: radiuses?.bottomLeft,
+                                    bottomRight: radiuses?.bottomRight)
+        case .pill:
+            content
+                .clipShape(Capsule())
+                .applyIfLet(self.border, apply: { view, border in
+                    view.overlay(
+                        Capsule()
+                            .stroke(border.color, lineWidth: border.width)
+                    )
+                })
+        case .concave:
+            // WIP: Need to implement
+            content
+        case .convex:
+            // WIP: Need to implement
+            content
+        }
     }
 }
 
@@ -190,14 +223,14 @@ private struct BorderRoundedCornerShape: Shape {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func cornerBorder(
-        border: CornerBorderModifier.BorderInfo?,
-        radiuses: CornerBorderModifier.RaidusInfo?
+    func shape(
+        border: ShapeModifier.BorderInfo?,
+        shape: ShapeModifier.Shape?
     ) -> some View {
         self.modifier(
-            CornerBorderModifier(
+            ShapeModifier(
                 border: border,
-                radiuses: radiuses
+                shape: shape
             )
         )
     }
@@ -215,12 +248,12 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
                 .background(.yellow)
-                .cornerBorder(
+                .shape(
                     border: nil,
-                    radiuses: .init(topLeft: 8,
-                                    topRight: 8,
-                                    bottomLeft: 8,
-                                    bottomRight: 8))
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 8,
+                                            bottomLeft: 8,
+                                            bottomRight: 8)))
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -232,10 +265,10 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
                 .background(.yellow)
-                .cornerBorder(
+                .shape(
                     border: .init(color: .blue,
                                   width: 4),
-                    radiuses: nil)
+                    shape: nil)
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -247,12 +280,12 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
                 .background(.yellow)
-                .cornerBorder(
+                .shape(
                     border: nil,
-                    radiuses: .init(topLeft: 8,
-                                    topRight: 0,
-                                    bottomLeft: 0,
-                                    bottomRight: 8))
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 0,
+                                            bottomLeft: 0,
+                                            bottomRight: 8)))
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -264,13 +297,13 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
                 .background(.yellow)
-                .cornerBorder(
+                .shape(
                     border: .init(color: .blue,
                                   width: 6),
-                    radiuses: .init(topLeft: 8,
-                                    topRight: 8,
-                                    bottomLeft: 8,
-                                    bottomRight: 8))
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 8,
+                                            bottomLeft: 8,
+                                            bottomRight: 8)))
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -282,13 +315,13 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
                 .background(.yellow)
-                .cornerBorder(
+                .shape(
                     border: .init(color: .blue,
                                   width: 6),
-                    radiuses: .init(topLeft: 8,
-                                    topRight: 0,
-                                    bottomLeft: 0,
-                                    bottomRight: 8))
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 0,
+                                            bottomLeft: 0,
+                                            bottomRight: 8)))
                 .padding()
         }
         .previewLayout(.sizeThatFits)

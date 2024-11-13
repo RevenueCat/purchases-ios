@@ -16,29 +16,30 @@ public extension PaywallComponent {
 
         let type: ComponentType
         public let source: ThemeImageUrls
+        public let size: Size
         public let overrideSourceLid: LocalizationKey?
-        public let cornerRadiuses: CornerRadiuses?
+        public let maskShape: MaskShape?
         public let gradientColors: [ColorHex]?
-        public let maxHeight: CGFloat?
         public let fitMode: FitMode
 
         public let overrides: ComponentOverrides<PartialImageComponent>?
 
         public init(
             source: ThemeImageUrls,
+            size: Size = .init(width: .fill, height: .fit),
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode = .fit,
             maxHeight: CGFloat? = nil,
-            cornerRadiuses: CornerRadiuses? = nil,
+            maskShape: MaskShape? = nil,
             gradientColors: [ColorHex]? = [],
             overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
             self.type = .image
             self.source = source
+            self.size = size
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
-            self.maxHeight = maxHeight
-            self.cornerRadiuses = cornerRadiuses
+            self.maskShape = maskShape
             self.gradientColors = gradientColors
             self.overrides = overrides
         }
@@ -49,8 +50,9 @@ public extension PaywallComponent {
 
         public let visible: Bool?
         public let source: ThemeImageUrls?
+        public let size: Size?
         public let overrideSourceLid: LocalizationKey?
-        public let cornerRadiuses: CornerRadiuses?
+        public let maskShape: MaskShape?
         public let gradientColors: [ColorHex]?
         public let maxHeight: CGFloat?
         public let fitMode: FitMode?
@@ -58,18 +60,20 @@ public extension PaywallComponent {
         public init(
             visible: Bool? = true,
             source: ThemeImageUrls? = nil,
+            size: Size? = nil,
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode? = nil,
             maxHeight: CGFloat? = nil,
-            cornerRadiuses: CornerRadiuses? = nil,
+            maskShape: MaskShape? = nil,
             gradientColors: [ColorHex]? = nil
         ) {
             self.visible = visible
             self.source = source
+            self.size = size
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
             self.maxHeight = maxHeight
-            self.cornerRadiuses = cornerRadiuses
+            self.maskShape = maskShape
             self.gradientColors = gradientColors
         }
 
