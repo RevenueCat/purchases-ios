@@ -18,9 +18,10 @@ struct StoredEvent {
 
     private(set) var encodedEvent: AnyEncodable
     private(set) var userID: String
+    private(set) var appSessionID: UUID
     private(set) var feature: Feature
 
-    init?<T: Encodable>(event: T, userID: String, feature: Feature) {
+    init?<T: Encodable>(event: T, userID: String, appSessionID: UUID, feature: Feature) {
         guard let data = try? JSONEncoder.default.encode(value: event),
               let dictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
@@ -28,6 +29,7 @@ struct StoredEvent {
 
         self.encodedEvent = AnyEncodable(dictionary)
         self.userID = userID
+        self.appSessionID = appSessionID
         self.feature = feature
     }
 
@@ -49,6 +51,7 @@ extension StoredEvent: Codable {
 
         case encodedEvent = "event"
         case userID = "userId"
+        case appSessionID = "appSessionID"
         case feature
 
     }
@@ -63,6 +66,19 @@ extension StoredEvent: Codable {
             self.feature = feature
         } else {
             self.feature = .paywalls
+        }
+        if let appSessionID = try container.decodeIfPresent(UUID.self, forKey: .appSessionID) {
+            self.appSessionID = appSessionID
+        } else {
+            // Backward compatibility for PaywallEvents from before we started storing the user session ID
+            // Just use the paywall event's session ID
+            // Or generate a new one in the worst case
+            if let eventData = encodedEvent.value as? [String: Any],
+               let paywallEvent: PaywallEvent = try JSONDecoder.default.decode(dictionary: eventData) {
+                self.appSessionID = paywallEvent.data.sessionIdentifier
+            } else {
+                self.appSessionID = UUID()
+            }
         }
     }
 

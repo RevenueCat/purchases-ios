@@ -31,6 +31,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
     private let store: PaywallEventStoreType
+    private var appSessionID: UUID
 
     private var flushInProgress = false
 
@@ -42,11 +43,17 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
+        self.appSessionID = UUID()
+    }
+
+    func resetAppSessionID() {
+        self.appSessionID = UUID()
     }
 
     func track(paywallEvent: PaywallEvent) async {
         guard let event: StoredEvent = .init(event: AnyEncodable(paywallEvent),
                                              userID: self.userProvider.currentAppUserID,
+                                             appSessionID: self.appSessionID,
                                              feature: .paywalls) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
