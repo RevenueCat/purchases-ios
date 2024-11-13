@@ -176,9 +176,10 @@ struct APIKeyDashboardList: View {
                     Text(self.offering.serverDescription)
                     Spacer()
                     #if PAYWALL_COMPONENTS
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .foregroundStyle(Color.red)
-                        .hidden(if: self.offering.paywallComponentsData?.errorInfo?.isEmpty ?? true)
+                    if let errorInfo = self.offering.paywallComponentsData?.errorInfo, !errorInfo.isEmpty {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(Color.red)
+                    }
                     #endif
                 }
             }
