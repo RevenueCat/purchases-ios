@@ -24,7 +24,7 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
         .split(whereSeparator: \.isWhitespace)
         .filter { !$0.isEmpty && !$0.hasPrefix("$") }
         .map { .define(String($0)) }
-    ?? []
+        ?? []
 }()
 
 var ciCompilerFlags: [PackageDescription.SwiftSetting] = [
