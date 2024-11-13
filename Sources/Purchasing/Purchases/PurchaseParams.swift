@@ -13,7 +13,6 @@
 
 import Foundation
 
-#if ENABLE_PURCHASE_PARAMS
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
 /**
@@ -115,5 +114,4 @@ import Foundation
     }
 }
 
-#endif
 #endif

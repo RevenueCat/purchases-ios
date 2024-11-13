@@ -1006,8 +1006,6 @@ public extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    #if ENABLE_PURCHASE_PARAMS
-
     @objc(params:withCompletion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, completion: completion)
@@ -1016,8 +1014,6 @@ public extension Purchases {
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await purchaseAsync(params)
     }
-
-    #endif
 
     @objc func invalidateCustomerInfoCache() {
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)

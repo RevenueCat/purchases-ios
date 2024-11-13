@@ -158,18 +158,15 @@ extension BaseStoreKitIntegrationTests {
     ) async throws -> PurchaseResultData {
         let logger = TestLogHandler()
 
-        #if ENABLE_PURCHASE_PARAMS
+        let data: PurchaseResultData
         if let metadata = metadata {
             var params = PurchaseParams.Builder(product: self.monthlyPackage.storeProduct)
                 .with(metadata: metadata)
                 .build()
-            let data = try await self.purchases.purchase(params: params)
+            data = try await self.purchases.purchase(params: params)
         } else {
-            let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+            data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
         }
-        #else
-        let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
-        #endif
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,

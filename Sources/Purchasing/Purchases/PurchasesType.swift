@@ -353,8 +353,6 @@ public protocol PurchasesType: AnyObject {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    #if ENABLE_PURCHASE_PARAMS
-
     /**
      * Initiates a purchase.
      *
@@ -398,8 +396,6 @@ public protocol PurchasesType: AnyObject {
      * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData
-
-    #endif
 
     /**
      * Invalidates the cache for customer information.

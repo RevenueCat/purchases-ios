@@ -269,7 +269,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     // MARK: - PurchaseParams
 
-    #if ENABLE_PURCHASE_PARAMS
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
@@ -344,7 +343,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
         expect(self.mockStoreKit2TransactionListener?.invokedHandleCount) == 1
     }
-    #endif
 
     // MARK: - Paywalls
 

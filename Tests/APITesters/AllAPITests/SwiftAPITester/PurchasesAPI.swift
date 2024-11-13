@@ -160,7 +160,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    #if ENABLE_PURCHASE_PARAMS
     let packageParams = PurchaseParams.Builder(package: pack)
         .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
@@ -178,7 +177,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
         .build()
     purchases.purchase(params) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
-    #endif
     #endif
 
     purchases.invalidateCustomerInfoCache()

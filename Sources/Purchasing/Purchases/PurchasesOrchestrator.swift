@@ -334,7 +334,6 @@ final class PurchasesOrchestrator {
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    #if ENABLE_PURCHASE_PARAMS
     func purchase(params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
@@ -352,7 +351,6 @@ final class PurchasesOrchestrator {
                  metadata: params.metadata,
                  completion: completion)
     }
-    #endif
     #endif
 
     func purchase(product: StoreProduct,

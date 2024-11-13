@@ -131,11 +131,9 @@ NSString *storeFrontCountryCode;
     RCOfferings * _Nullable __unused offerings = p.cachedOfferings;
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    #if ENABLE_PURCHASE_PARAMS
     RCPurchaseParams *packageParams = [[[[[RCPurchaseParamsBuilder alloc] initWithPackage:pack] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
     RCPurchaseParams *productParams = [[[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
     [p params:packageParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
-    #endif
     #endif
 
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<RCStoreProduct *> *products) { }];
