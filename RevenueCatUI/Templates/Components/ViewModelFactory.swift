@@ -67,10 +67,6 @@ struct ViewModelFactory {
             return .image(
                 try ImageComponentViewModel(localizedStrings: localizedStrings, component: component)
             )
-        case .spacer(let component):
-            return .spacer(
-                SpacerComponentViewModel(component: component)
-            )
         case .stack(let component):
             let viewModels = try component.components.map { component in
                 try self.toViewModel(component: component,
@@ -82,11 +78,6 @@ struct ViewModelFactory {
             return .stack(
                 try StackComponentViewModel(component: component,
                                             viewModels: viewModels)
-            )
-        case .linkButton(let component):
-            return .linkButton(
-                try LinkButtonComponentViewModel(component: component,
-                                                 localizedStrings: localizedStrings)
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(

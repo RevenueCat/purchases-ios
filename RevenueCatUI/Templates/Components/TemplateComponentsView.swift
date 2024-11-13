@@ -192,12 +192,8 @@ struct ComponentsView: View {
                 TextComponentView(viewModel: viewModel)
             case .image(let viewModel):
                 ImageComponentView(viewModel: viewModel)
-            case .spacer(let viewModel):
-                SpacerComponentView(viewModel: viewModel)
             case .stack(let viewModel):
                 StackComponentView(viewModel: viewModel, onDismiss: onDismiss)
-            case .linkButton(let viewModel):
-                LinkButtonComponentView(viewModel: viewModel)
             case .button(let viewModel):
                 ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .package(let viewModel):

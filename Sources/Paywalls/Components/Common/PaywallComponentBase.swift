@@ -15,9 +15,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
     case text(TextComponent)
     case image(ImageComponent)
-    case spacer(SpacerComponent)
     case stack(StackComponent)
-    case linkButton(LinkButtonComponent)
     case button(ButtonComponent)
     case package(PackageComponent)
     case purchaseButton(PurchaseButtonComponent)
@@ -27,9 +25,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
         case text
         case image
-        case spacer
         case stack
-        case linkButton = "link_button"
         case button
         case package
         case purchaseButton = "purchase_button"
@@ -64,14 +60,8 @@ extension PaywallComponent: Codable {
         case .image(let component):
             try container.encode(ComponentType.image, forKey: .type)
             try component.encode(to: encoder)
-        case .spacer(let component):
-            try container.encode(ComponentType.spacer, forKey: .type)
-            try component.encode(to: encoder)
         case .stack(let component):
             try container.encode(ComponentType.stack, forKey: .type)
-            try component.encode(to: encoder)
-        case .linkButton(let component):
-            try container.encode(ComponentType.linkButton, forKey: .type)
             try component.encode(to: encoder)
         case .button(let component):
             try container.encode(ComponentType.button, forKey: .type)
@@ -97,12 +87,8 @@ extension PaywallComponent: Codable {
             self = .text(try TextComponent(from: decoder))
         case .image:
             self = .image(try ImageComponent(from: decoder))
-        case .spacer:
-            self = .spacer(try SpacerComponent(from: decoder))
         case .stack:
             self = .stack(try StackComponent(from: decoder))
-        case .linkButton:
-            self = .linkButton(try LinkButtonComponent(from: decoder))
         case .button:
             self = .button(try ButtonComponent(from: decoder))
         case .package:
