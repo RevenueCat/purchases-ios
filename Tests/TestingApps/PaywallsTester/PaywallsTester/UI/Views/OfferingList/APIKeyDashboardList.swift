@@ -200,7 +200,6 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
 
     var description: String {
         if let name = self.name {
-            #if DEBUG
             if name == "components" {
                 return "V2"
             } else if let template = PaywallTemplate(rawValue: name) {
@@ -208,9 +207,6 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
             } else {
                 return "Unrecognized template"
             }
-            #else
-            return name
-            #endif
         } else {
             return "No paywall"
         }
