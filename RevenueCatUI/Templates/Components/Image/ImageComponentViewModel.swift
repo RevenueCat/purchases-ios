@@ -54,7 +54,7 @@ class ImageComponentViewModel {
         )
         let partial = localalizedPartial?.partial
 
-        let style = ImageComponentStyle.init(
+        let style = ImageComponentStyle(
             visible: partial?.visible ?? true,
             source: partial?.source ?? self.imageInfo,
             size: partial?.size ?? self.component.size,
