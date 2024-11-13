@@ -351,6 +351,8 @@ public protocol PurchasesType: AnyObject {
      */
     func purchase(package: Package) async throws -> PurchaseResultData
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     #if ENABLE_PURCHASE_PARAMS
 
     /**
@@ -398,8 +400,6 @@ public protocol PurchasesType: AnyObject {
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData
 
     #endif
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
      * Invalidates the cache for customer information.

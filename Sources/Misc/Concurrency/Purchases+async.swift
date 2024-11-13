@@ -83,6 +83,16 @@ extension Purchases {
         }
     }
 
+    func restorePurchasesAsync() async throws -> CustomerInfo {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.restorePurchases { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     #if ENABLE_PURCHASE_PARAMS
 
     func purchaseAsync(_ params: PurchaseParams) async throws -> PurchaseResultData {
@@ -96,16 +106,6 @@ extension Purchases {
     }
 
     #endif
-
-    func restorePurchasesAsync() async throws -> CustomerInfo {
-        return try await withUnsafeThrowingContinuation { continuation in
-            self.restorePurchases { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in

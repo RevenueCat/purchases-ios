@@ -994,6 +994,18 @@ public extension Purchases {
         return try await purchaseAsync(package: package)
     }
 
+    @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
+        self.purchasesOrchestrator.restorePurchases { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    func restorePurchases() async throws -> CustomerInfo {
+        return try await self.restorePurchasesAsync()
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     #if ENABLE_PURCHASE_PARAMS
 
     @objc(params:withCompletion:)
@@ -1006,18 +1018,6 @@ public extension Purchases {
     }
 
     #endif
-
-    @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
-        self.purchasesOrchestrator.restorePurchases { @Sendable in
-            completion?($0.value, $0.error?.asPublicError)
-        }
-    }
-
-    func restorePurchases() async throws -> CustomerInfo {
-        return try await self.restorePurchasesAsync()
-    }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @objc func invalidateCustomerInfoCache() {
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
