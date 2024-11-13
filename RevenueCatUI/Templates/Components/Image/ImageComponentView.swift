@@ -20,29 +20,40 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
     let viewModel: ImageComponentViewModel
 
     var body: some View {
-        RemoteImage(url: viewModel.url) { (image, size) in
-            renderImage(image, size)
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition
+        ) { style in
+            RemoteImage(url: style.url) { (image, size) in
+                renderImage(image, size, with: style)
+            }
+            .size(style.size)
+            .clipped()
         }
-        .size(viewModel.size)
-        .clipped()
     }
 
-    private func renderImage(_ image: Image, _ size: CGSize) -> some View {
+    private func renderImage(_ image: Image, _ size: CGSize, with style: ImageComponentStyle) -> some View {
         image
             .resizable()
-            .aspectRatio(contentMode: viewModel.contentMode)
+            .aspectRatio(contentMode: style.contentMode)
             .overlay(
                 LinearGradient(
-                    gradient: Gradient(colors: viewModel.gradientColors),
+                    gradient: Gradient(colors: style.gradientColors),
                     startPoint: .top,
                     endPoint: .bottom
                 )
             )
             .shape(border: nil,
-                   shape: viewModel.shape)
+                   shape: style.shape)
     }
 
 }
