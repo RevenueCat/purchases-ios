@@ -13,7 +13,6 @@
 
 import Foundation
 
-#if ENABLE_PURCHASE_PARAMS
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
 /**
@@ -30,7 +29,7 @@ import Foundation
  * Purchases.shared.purchase(params)
  * ```
  */
-@objc(RCPurchaseParams) public final class PurchaseParams: NSObject {
+@objc(RCPurchaseParams) public final class PurchaseParams: NSObject, Sendable {
 
     let package: Package?
     let product: StoreProduct?
@@ -103,7 +102,7 @@ import Foundation
          * Availability: iOS 18.0+, macOS 15.0+, tvOS 18.0+, watchOS 11.0+, visionOS 2.0+
          */
         @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-        internal func with(winBackOffer: WinBackOffer) -> Self {
+        public func with(winBackOffer: WinBackOffer) -> Self {
             self.winBackOffer = winBackOffer
             return self
         }
@@ -115,5 +114,4 @@ import Foundation
     }
 }
 
-#endif
 #endif

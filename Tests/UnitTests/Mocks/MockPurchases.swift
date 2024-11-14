@@ -232,7 +232,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    #if ENABLE_PURCHASE_PARAMS
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         self.unimplemented()
     }
@@ -240,7 +239,6 @@ extension MockPurchases: PurchasesType {
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         self.unimplemented()
     }
-    #endif
 
     func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.unimplemented()

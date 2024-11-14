@@ -46,7 +46,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         expect(originalPurchaseDate).toNot(beNil())
     }
 
-    #if ENABLE_PURCHASE_PARAMS
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testPurchaseMetadataIsInResponse() async throws {
         // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT
@@ -60,7 +59,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         let subscription = try XCTUnwrap(customerInfo.subscriber.subscriptions.first?.value)
         expect(subscription.metadata).to(equal(["sample": "data"]))
     }
-    #endif
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testOriginalApplicationVersionAvailableAfterPurchase() async throws {

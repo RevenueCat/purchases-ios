@@ -19,7 +19,6 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchaseParamsTests: TestCase {
 
-    #if ENABLE_PURCHASE_PARAMS
     // MARK: - PurchaseParams
     func testPurchaseParamsBuilderWithProduct() async throws {
         let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
@@ -94,6 +93,5 @@ class PurchaseParamsTests: TestCase {
             expect(params.winBackOffer).to(equal(winbackOffer))
         }
     }
-    #endif
 
 }

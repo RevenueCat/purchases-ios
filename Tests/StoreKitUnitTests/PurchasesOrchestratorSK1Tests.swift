@@ -333,7 +333,6 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     // MARK: - PurchaseParams
 
-    #if ENABLE_PURCHASE_PARAMS
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
@@ -407,7 +406,6 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let expectedCustomerInfo: CustomerInfo = .emptyInfo
         expect(customerInfo) == expectedCustomerInfo
     }
-    #endif
 
     // MARK: - Paywalls
 
