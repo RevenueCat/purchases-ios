@@ -50,7 +50,7 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
             }
 
             let exactMatch = if !promoOfferDetails.productMapping.isEmpty {
-                // Try to find match using product mapping first
+                // Try to find match using product mapping if configured and ignore iosOfferId
                 subscribedProduct.discounts.first { discount in
                     guard let offerIdentifier = discount.offerIdentifier else { return false }
                     return promoOfferDetails.productMapping[productIdentifier] == offerIdentifier
@@ -78,8 +78,17 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
             }
 
             guard let discount = discount else {
-                let message =
-                Strings.could_not_offer_for_active_subscriptions(promoOfferDetails.iosOfferId, productIdentifier)
+                let message = if !promoOfferDetails.productMapping.isEmpty {
+                    Strings.could_not_offer_for_active_subscriptions(
+                        promoOfferDetails.productMapping[productIdentifier] ?? "nil",
+                        productIdentifier
+                    )
+                } else {
+                    Strings.could_not_offer_for_active_subscriptions(
+                        promoOfferDetails.iosOfferId,
+                        productIdentifier
+                    )
+                }
                 Logger.debug(message)
                 return .failure(CustomerCenterError.couldNotFindSubscriptionInformation)
             }
