@@ -97,12 +97,12 @@ extension FeedbackSurveyViewModel {
         self.promotionalOfferData = nil
         self.loadingOption = nil
 
-        if userAction.shouldTerminateCurrentPathFlow {
-            dismissView()
-        } else {
+        if !userAction.shouldTerminateCurrentPathFlow {
             self.feedbackSurveyData.onOptionSelected()
-            dismissView()
         }
+
+        dismissView()
+
     }
 }
 
