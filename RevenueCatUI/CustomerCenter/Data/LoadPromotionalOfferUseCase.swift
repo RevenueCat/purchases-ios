@@ -42,67 +42,102 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
     ) async -> Result<PromotionalOfferData, Error> {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
-
-            guard let productIdentifier = customerInfo.earliestExpiringAppStoreEntitlement()?.productIdentifier,
-                  let subscribedProduct = await self.purchasesProvider.products([productIdentifier]).first else {
-                Logger.warning(Strings.could_not_offer_for_any_active_subscriptions)
-                return .failure(CustomerCenterError.couldNotFindSubscriptionInformation)
-            }
-
-            let exactMatch = if !promoOfferDetails.productMapping.isEmpty {
-                // Try to find match using product mapping if configured and ignore iosOfferId
-                subscribedProduct.discounts.first { discount in
-                    guard let offerIdentifier = discount.offerIdentifier else { return false }
-                    return promoOfferDetails.productMapping[productIdentifier] == offerIdentifier
-                }
-            } else {
-                // Fall back to iosOfferId if no mapping (in case of using legacy iosOfferId)
-                subscribedProduct.discounts.first { discount in
-                    discount.offerIdentifier == promoOfferDetails.iosOfferId
-                }
-            }
-
-            let discount: StoreProductDiscount?
-            if let exactMatch = exactMatch {
-                discount = exactMatch
-            } else if promoOfferDetails.productMapping.isEmpty {
-                // Only try suffix matching if we're using iosOfferId (no mapping)
-                discount = subscribedProduct.discounts.first { discount in
-                    guard let offerIdentifier = discount.offerIdentifier else {
-                        return false
-                    }
-                    return offerIdentifier.hasSuffix("_\(promoOfferDetails.iosOfferId)")
-                }
-            } else {
-                discount = nil
-            }
-
-            guard let discount = discount else {
-                let message = if !promoOfferDetails.productMapping.isEmpty {
-                    Strings.could_not_offer_for_active_subscriptions(
-                        promoOfferDetails.productMapping[productIdentifier] ?? "nil",
-                        productIdentifier
-                    )
-                } else {
-                    Strings.could_not_offer_for_active_subscriptions(
-                        promoOfferDetails.iosOfferId,
-                        productIdentifier
-                    )
-                }
-                Logger.debug(message)
-                return .failure(CustomerCenterError.couldNotFindSubscriptionInformation)
-            }
-
-            let promotionalOffer = try await self.purchasesProvider.promotionalOffer(forProductDiscount: discount,
-                                                                                     product: subscribedProduct)
-            let promotionalOfferData = PromotionalOfferData(promotionalOffer: promotionalOffer,
-                                                            product: subscribedProduct,
-                                                            promoOfferDetails: promoOfferDetails)
-            return .success(promotionalOfferData)
+            
+            let (productIdentifier, subscribedProduct) = try await getActiveSubscription(customerInfo)
+            let discount = try findDiscount(for: subscribedProduct, 
+                                          productIdentifier: productIdentifier,
+                                          promoOfferDetails: promoOfferDetails)
+            
+            let promotionalOffer = try await self.purchasesProvider.promotionalOffer(
+                forProductDiscount: discount,
+                product: subscribedProduct
+            )
+            return .success(PromotionalOfferData(
+                promotionalOffer: promotionalOffer,
+                product: subscribedProduct,
+                promoOfferDetails: promoOfferDetails
+            ))
         } catch {
             Logger.warning(Strings.error_fetching_promotional_offer(error))
             return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
         }
+    }
+
+    private func getActiveSubscription(_ customerInfo: CustomerInfo) async throws -> (String, StoreProduct) {
+        guard let productIdentifier = customerInfo.earliestExpiringAppStoreEntitlement()?.productIdentifier,
+              let subscribedProduct = await self.purchasesProvider.products([productIdentifier]).first else {
+            Logger.warning(Strings.could_not_offer_for_any_active_subscriptions)
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
+        return (productIdentifier, subscribedProduct)
+    }
+
+    private func findDiscount(
+        for product: StoreProduct,
+        productIdentifier: String,
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+    ) throws -> StoreProductDiscount {
+        let discount = if !promoOfferDetails.productMapping.isEmpty {
+            findMappedDiscount(for: product, 
+                              productIdentifier: productIdentifier,
+                              promoOfferDetails: promoOfferDetails)
+        } else {
+            findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
+        }
+        
+        guard let discount = discount else {
+            logDiscountError(productIdentifier: productIdentifier, promoOfferDetails: promoOfferDetails)
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
+        
+        return discount
+    }
+
+    private func findMappedDiscount(
+        for product: StoreProduct,
+        productIdentifier: String,
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+    ) -> StoreProductDiscount? {
+        product.discounts.first { discount in
+            guard let offerIdentifier = discount.offerIdentifier else { return false }
+            return promoOfferDetails.productMapping[productIdentifier] == offerIdentifier
+        }
+    }
+
+    private func findLegacyDiscount(
+        for product: StoreProduct,
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+    ) -> StoreProductDiscount? {
+        // Try exact match first
+        if let exactMatch = product.discounts.first(where: { 
+            $0.offerIdentifier == promoOfferDetails.iosOfferId 
+        }) {
+            return exactMatch
+        }
+        
+        // Fall back to suffix matching
+        return product.discounts.first { discount in
+            guard let offerIdentifier = discount.offerIdentifier else { return false }
+            return offerIdentifier.hasSuffix("_\(promoOfferDetails.iosOfferId)")
+        }
+    }
+
+    private func logDiscountError(
+        productIdentifier: String,
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+    ) {
+        let message = if !promoOfferDetails.productMapping.isEmpty {
+            Strings.could_not_offer_for_active_subscriptions(
+                promoOfferDetails.productMapping[productIdentifier] ?? "nil",
+                productIdentifier
+            )
+        } else {
+            Strings.could_not_offer_for_active_subscriptions(
+                promoOfferDetails.iosOfferId,
+                productIdentifier
+            )
+        }
+        Logger.debug(message)
     }
 
 }
