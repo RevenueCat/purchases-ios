@@ -47,7 +47,7 @@ enum CustomerCenterConfigTestData {
                                     eligible: true,
                                     title: "title",
                                     subtitle: "subtitle",
-                                    productMapping: ["monthly" : "offer_id"]
+                                    productMapping: ["monthly": "offer_id"]
                                 ))
                             ),
                             .init(

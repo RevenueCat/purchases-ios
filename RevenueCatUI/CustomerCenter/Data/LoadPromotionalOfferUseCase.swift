@@ -42,12 +42,12 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
     ) async -> Result<PromotionalOfferData, Error> {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
-            
+
             let (productIdentifier, subscribedProduct) = try await getActiveSubscription(customerInfo)
-            let discount = try findDiscount(for: subscribedProduct, 
-                                          productIdentifier: productIdentifier,
-                                          promoOfferDetails: promoOfferDetails)
-            
+            let discount = try findDiscount(for: subscribedProduct,
+                                            productIdentifier: productIdentifier,
+                                            promoOfferDetails: promoOfferDetails)
+
             let promotionalOffer = try await self.purchasesProvider.promotionalOffer(
                 forProductDiscount: discount,
                 product: subscribedProduct
@@ -78,18 +78,18 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) throws -> StoreProductDiscount {
         let discount = if !promoOfferDetails.productMapping.isEmpty {
-            findMappedDiscount(for: product, 
-                              productIdentifier: productIdentifier,
-                              promoOfferDetails: promoOfferDetails)
+            findMappedDiscount(for: product,
+                               productIdentifier: productIdentifier,
+                               promoOfferDetails: promoOfferDetails)
         } else {
             findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
         }
-        
+
         guard let discount = discount else {
             logDiscountError(productIdentifier: productIdentifier, promoOfferDetails: promoOfferDetails)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
-        
+
         return discount
     }
 
@@ -109,12 +109,12 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) -> StoreProductDiscount? {
         // Try exact match first
-        if let exactMatch = product.discounts.first(where: { 
-            $0.offerIdentifier == promoOfferDetails.iosOfferId 
+        if let exactMatch = product.discounts.first(where: {
+            $0.offerIdentifier == promoOfferDetails.iosOfferId
         }) {
             return exactMatch
         }
-        
+
         // Fall back to suffix matching
         return product.discounts.first { discount in
             guard let offerIdentifier = discount.offerIdentifier else { return false }
