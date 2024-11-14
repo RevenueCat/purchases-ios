@@ -26,6 +26,7 @@ struct FeedbackSurveyView: View {
 
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -36,9 +37,11 @@ struct FeedbackSurveyView: View {
     @Binding
     private var isPresented: Bool
 
-    init(feedbackSurveyData: FeedbackSurveyData,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         isPresented: Binding<Bool>) {
+    init(
+        feedbackSurveyData: FeedbackSurveyData,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
+        isPresented: Binding<Bool>
+    ) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
             feedbackSurveyData: feedbackSurveyData,
             customerCenterActionHandler: customerCenterActionHandler
@@ -49,26 +52,43 @@ struct FeedbackSurveyView: View {
     var body: some View {
         ZStack {
             List {
-                FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
-                                          onOptionSelected: { option in
-                                              await self.viewModel.handleAction(for: option)
-                                              self.isPresented = false
-                                          },
-                                          loadingState: self.$viewModel.loadingState)
+                FeedbackSurveyButtonsView(
+                    options: self.viewModel.feedbackSurveyData.configuration.options,
+                    onOptionSelected: { option in
+                        await self.viewModel.handleAction(
+                            for: option,
+                            dismissView: self.dismissView
+                        )
+                    },
+                    loadingOption: self.$viewModel.loadingOption
+                )
             }
             .sheet(
                 item: self.$viewModel.promotionalOfferData,
-                onDismiss: { self.viewModel.handleSheetDismiss() },
                 content: { promotionalOfferData in
-                    PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                         product: promotionalOfferData.product,
-                                         promoOfferDetails: promotionalOfferData.promoOfferDetails)
+                    PromotionalOfferView(
+                        promotionalOffer: promotionalOfferData.promotionalOffer,
+                        product: promotionalOfferData.product,
+                        promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                        onDismissPromotionalOfferView: { userAction in
+                            Task(priority: .userInitiated) {
+                                await viewModel.handleDismissPromotionalOfferView(
+                                    userAction,
+                                    dismissView: self.dismissView
+                                )
+                            }
+                        }
+                    )
+                    .interactiveDismissDisabled()
                 })
         }
         .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    private func dismissView() {
+        self.isPresented = false
+    }
 }
 
 @available(iOS 15.0, *)
@@ -83,20 +103,20 @@ struct FeedbackSurveyButtonsView: View {
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
 
     @Binding
-    var loadingState: String?
+    var loadingOption: String?
 
     var body: some View {
         ForEach(options, id: \.id) { option in
             AsyncButton {
                 await self.onOptionSelected(option)
             } label: {
-                if self.loadingState == option.id {
+                if self.loadingOption == option.id {
                     TintedProgressView()
                 } else {
                     Text(option.title)
                 }
             }
-            .disabled(self.loadingState != nil)
+            .disabled(self.loadingOption != nil)
         }
 
     }
