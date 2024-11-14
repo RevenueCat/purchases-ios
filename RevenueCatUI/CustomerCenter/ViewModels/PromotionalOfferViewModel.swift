@@ -36,12 +36,12 @@ class PromotionalOfferViewModel: ObservableObject {
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
     /// Callback to be called when the promotional offer is  purchased
-    internal var onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferView.PromotionalOfferViewAction) -> Void)?
+    internal var onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)?
 
     init(
         promotionalOfferData: PromotionalOfferData?,
         purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
-        onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferView.PromotionalOfferViewAction) -> Void)? = nil
+        onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)? = nil
     ) {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider

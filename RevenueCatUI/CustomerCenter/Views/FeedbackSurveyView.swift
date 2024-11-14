@@ -37,9 +37,11 @@ struct FeedbackSurveyView: View {
     @Binding
     private var isPresented: Bool
 
-    init(feedbackSurveyData: FeedbackSurveyData,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         isPresented: Binding<Bool>) {
+    init(
+        feedbackSurveyData: FeedbackSurveyData,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
+        isPresented: Binding<Bool>
+    ) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
             feedbackSurveyData: feedbackSurveyData,
             customerCenterActionHandler: customerCenterActionHandler
@@ -54,7 +56,6 @@ struct FeedbackSurveyView: View {
                     options: self.viewModel.feedbackSurveyData.configuration.options,
                     onOptionSelected: { option in
                         await self.viewModel.handleAction(for: option)
-                        self.isPresented = false
                     },
                     loadingOption: self.$viewModel.loadingOption
                 )
@@ -68,7 +69,12 @@ struct FeedbackSurveyView: View {
                         promoOfferDetails: promotionalOfferData.promoOfferDetails,
                         onDismissPromotionalOfferView: { userAction in
                             Task(priority: .userInitiated) {
-                                await viewModel.handleDismissPromotionalOfferView(userAction)
+                                await viewModel.handleDismissPromotionalOfferView(
+                                    userAction,
+                                    dismissView: {
+                                        self.isPresented = false
+                                    }
+                                )
                             }
                         }
                     )

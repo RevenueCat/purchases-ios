@@ -85,10 +85,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         state = .success
     }
 
-    deinit {
-        print("ManageSubscriptionsViewModel DEINIT")
-    }
-
     func loadScreen() async {
         do {
             try await loadSubscriptionInformation()
@@ -174,16 +170,13 @@ struct IdentifiableURL: Identifiable {
 extension ManageSubscriptionsViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
-    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferView.PromotionalOfferViewAction) async {
+    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
         // Clear the promotional offer data to dismiss the sheet
         self.promotionalOfferData = nil
 
-        switch userAction {
-        case .successfullyRedeemedPromotionalOffer(let purchaseResultData):
-            // The user redeemed a Promotional Offer, so we want to return out of the current flow
+        if userAction.shouldTerminateCurrentPathFlow {
             self.loadingPath = nil
-        case .promotionalCodeRedemptionFailed, .declinePromotionalOffer:
-            // Continue with the existing path's flow
+        } else {
             if let loadingPath = loadingPath {
                 await self.onPathSelected(path: loadingPath)
                 self.loadingPath = nil

@@ -89,16 +89,17 @@ class FeedbackSurveyViewModel: ObservableObject {
 extension FeedbackSurveyViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
-    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferView.PromotionalOfferViewAction) async {
+    func handleDismissPromotionalOfferView(
+        _ userAction: PromotionalOfferViewAction,
+        dismissView: () -> Void
+    ) async {
         // Clear the promotional offer data to dismiss the sheet
         self.promotionalOfferData = nil
+        self.loadingOption = nil
 
-        switch userAction {
-        case .successfullyRedeemedPromotionalOffer(let purchaseResultData):
-            // The user redeemed a Promotional Offer, so we want to return out of the current flow
-            break
-        case .promotionalCodeRedemptionFailed, .declinePromotionalOffer:
-            // Continue with the existing path's flow
+        if userAction.shouldTerminateCurrentPathFlow {
+            dismissView()
+        } else {
             self.feedbackSurveyData.onOptionSelected()
         }
     }

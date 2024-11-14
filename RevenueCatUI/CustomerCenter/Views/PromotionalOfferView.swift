@@ -35,19 +35,6 @@ struct PromotionalOfferView: View {
     private var colorScheme
     @State private var isLoading: Bool = false
 
-    /// An enum representing the possible actions that a user can take on the PromotionalOfferView
-    enum PromotionalOfferViewAction {
-        /// The user clicked the "No Thanks" button and declined the offer
-        case declinePromotionalOffer
-
-        /// The user successfully redeemed the promotional offer
-        case successfullyRedeemedPromotionalOffer(PurchaseResultData)
-
-        // Promotional code redemption failed. Either the user attempted to redeem the promotional offer, and it failed,
-        // or the promotional offer was not loaded successfully.
-        case promotionalCodeRedemptionFailed(Error)
-    }
-
     private let onDismissPromotionalOfferView: (PromotionalOfferViewAction) -> Void
 
     init(promotionalOffer: PromotionalOffer,
@@ -201,6 +188,40 @@ struct PromoOfferButtonView: View {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+/// An enum representing the possible actions that a user can take on the PromotionalOfferView
+enum PromotionalOfferViewAction {
+    /// The user clicked the "No Thanks" button and declined the offer
+    case declinePromotionalOffer
+
+    /// The user successfully redeemed the promotional offer
+    case successfullyRedeemedPromotionalOffer(PurchaseResultData)
+
+    // Promotional code redemption failed. Either the user attempted to redeem the promotional offer, and it failed,
+    // or the promotional offer was not loaded successfully.
+    case promotionalCodeRedemptionFailed(Error)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension PromotionalOfferViewAction {
+
+    /// Whether the current path flow should be exited after the action is handled
+    var shouldTerminateCurrentPathFlow: Bool {
+        switch self {
+        case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
+            return false
+        case .successfullyRedeemedPromotionalOffer:
+            return true
+        }
+    }
 }
 
 #endif
