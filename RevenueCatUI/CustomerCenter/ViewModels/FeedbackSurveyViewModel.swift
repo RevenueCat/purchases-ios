@@ -102,7 +102,6 @@ extension FeedbackSurveyViewModel {
         }
 
         dismissView()
-
     }
 }
 
