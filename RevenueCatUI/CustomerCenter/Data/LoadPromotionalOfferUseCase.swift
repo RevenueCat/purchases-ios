@@ -49,20 +49,32 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
                 return .failure(CustomerCenterError.couldNotFindSubscriptionInformation)
             }
 
-            let exactMatch = subscribedProduct.discounts.first { discount in
-                discount.offerIdentifier == promoOfferDetails.iosOfferId
+            let exactMatch = if !promoOfferDetails.productMapping.isEmpty {
+                // Try to find match using product mapping first
+                subscribedProduct.discounts.first { discount in
+                    guard let offerIdentifier = discount.offerIdentifier else { return false }
+                    return promoOfferDetails.productMapping[productIdentifier] == offerIdentifier
+                }
+            } else {
+                // Fall back to iosOfferId if no mapping (in case of using legacy iosOfferId)
+                subscribedProduct.discounts.first { discount in
+                    discount.offerIdentifier == promoOfferDetails.iosOfferId
+                }
             }
 
             let discount: StoreProductDiscount?
             if let exactMatch = exactMatch {
                 discount = exactMatch
-            } else {
+            } else if promoOfferDetails.productMapping.isEmpty {
+                // Only try suffix matching if we're using iosOfferId (no mapping)
                 discount = subscribedProduct.discounts.first { discount in
                     guard let offerIdentifier = discount.offerIdentifier else {
                         return false
                     }
                     return offerIdentifier.hasSuffix("_\(promoOfferDetails.iosOfferId)")
                 }
+            } else {
+                discount = nil
             }
 
             guard let discount = discount else {
