@@ -61,7 +61,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                 promotionalOffer: .init(iosOfferId: "offer_id",
                                                         eligible: true,
                                                         title: "Wait!",
-                                                        subtitle: "Before you go"),
+                                                        subtitle: "Before you go",
+                                                        productMapping: [
+                                                            "product_id": "offer_id"
+                                                        ]),
                                 feedbackSurvey: nil
                             ),
                             .init(
@@ -78,7 +81,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                                               promotionalOffer: .init(iosOfferId: "offer_id_1",
                                                                                       eligible: true,
                                                                                       title: "Wait!",
-                                                                                      subtitle: "Before you go"))
+                                                                                      subtitle: "Before you go",
+                                                                                      productMapping: [
+                                                                                          "product_id": "offer_id"
+                                                                                      ]))
                                                       ])
                             ),
                             .init(
@@ -90,7 +96,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                 promotionalOffer: .init(iosOfferId: "offer_id",
                                                         eligible: true,
                                                         title: "Wait!",
-                                                        subtitle: "Before you go"),
+                                                        subtitle: "Before you go",
+                                                        productMapping: [
+                                                            "product_id": "offer_id"
+                                                        ]),
                                 feedbackSurvey: nil
                             )
                         ]
