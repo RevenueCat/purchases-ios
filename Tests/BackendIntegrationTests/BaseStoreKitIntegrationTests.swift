@@ -160,13 +160,19 @@ extension BaseStoreKitIntegrationTests {
 
         let data: PurchaseResultData
         if let metadata = metadata {
-            let product = await self.monthlyPackage.storeProduct
-            var params = PurchaseParams.Builder(product: product)
+            let product = try await self.monthlyPackage.storeProduct
+
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            let params = PurchaseParams.Builder(product: product)
                 .with(metadata: metadata)
                 .build()
             data = try await self.purchases.purchase(params)
+            #else
+            data = try await self.purchases.purchase(product: product)
+            #endif
+
         } else {
-            let product = await self.monthlyPackage.storeProduct
+            let product = try await self.monthlyPackage.storeProduct
             data = try await self.purchases.purchase(product: product)
         }
 
