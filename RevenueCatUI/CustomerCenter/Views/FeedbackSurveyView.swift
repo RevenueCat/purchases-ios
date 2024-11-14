@@ -33,19 +33,27 @@ struct FeedbackSurveyView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Binding
+    private var isPresented: Bool
+
     init(feedbackSurveyData: FeedbackSurveyData,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         customerCenterActionHandler: CustomerCenterActionHandler?,
+         isPresented: Binding<Bool>) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
             feedbackSurveyData: feedbackSurveyData,
             customerCenterActionHandler: customerCenterActionHandler
         ))
+        self._isPresented = isPresented
     }
 
     var body: some View {
         ZStack {
             List {
                 FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
-                                          onOptionSelected: self.viewModel.handleAction(for:),
+                                          onOptionSelected: { option in
+                                              await self.viewModel.handleAction(for: option)
+                                              self.isPresented = false
+                                          },
                                           loadingState: self.$viewModel.loadingState)
             }
             .sheet(
