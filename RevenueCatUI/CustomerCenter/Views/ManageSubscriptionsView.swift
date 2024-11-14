@@ -55,7 +55,8 @@ struct ManageSubscriptionsView: View {
                 .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
                     if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
                         FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
-                                           customerCenterActionHandler: self.customerCenterActionHandler)
+                                           customerCenterActionHandler: self.customerCenterActionHandler,
+                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                     }
                 }
         } else {
@@ -63,7 +64,8 @@ struct ManageSubscriptionsView: View {
                 .background(NavigationLink(
                     destination: self.viewModel.feedbackSurveyData.map { data in
                         FeedbackSurveyView(feedbackSurveyData: data,
-                                           customerCenterActionHandler: self.customerCenterActionHandler)
+                                           customerCenterActionHandler: self.customerCenterActionHandler,
+                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                     },
                     isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
                 ) {

@@ -76,7 +76,14 @@ struct PackageComponentView_Previews: PreviewProvider {
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: .init(
+                        states: .init(
+                            selected: .init(
+                                color: .init(light: .hex("#ff0000"))
+                            )
+                        )
+                    )
                 )),
                 .text(.init(
                     text: "detail",
@@ -150,7 +157,7 @@ struct PackageComponentView_Previews: PreviewProvider {
         )
         .environmentObject(paywallStateSelected)
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Package")
+        .previewDisplayName("Package - Selected")
     }
 }
 

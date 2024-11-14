@@ -24,6 +24,7 @@ class ImageComponentViewModel {
     private let component: PaywallComponent.ImageComponent
 
     private let imageInfo: PaywallComponent.ThemeImageUrls
+    private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
 
     init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
         self.localizedStrings = localizedStrings
@@ -34,33 +35,130 @@ class ImageComponentViewModel {
         } else {
             self.imageInfo = component.source
         }
-    }
 
-    var url: URL {
-        self.imageInfo.light.heic
-    }
-
-    var cornerRadiuses: CornerBorderModifier.RaidusInfo? {
-        component.cornerRadiuses.flatMap { cornerRadiuses in
-            CornerBorderModifier.RaidusInfo(
-                topLeft: cornerRadiuses.topLeading,
-                topRight: cornerRadiuses.topTrailing,
-                bottomLeft: cornerRadiuses.bottomLeading,
-                bottomRight: cornerRadiuses.bottomLeading
-            )
+        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
+            try LocalizedImagePartial.create(from: $0, using: localizedStrings)
         }
     }
 
-    var gradientColors: [Color] {
-        component.gradientColors?.compactMap { $0.toColor(fallback: Color.clear) } ?? []
+    @ViewBuilder
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        apply: @escaping (ImageComponentStyle) -> some View
+    ) -> some View {
+        let localizedPartial = LocalizedImagePartial.buildPartial(
+            state: state,
+            condition: condition,
+            with: self.presentedOverrides
+        )
+        let partial = localizedPartial?.partial
+
+        let style = ImageComponentStyle(
+            visible: partial?.visible ?? true,
+            source: localizedPartial?.imageInfo ?? self.imageInfo,
+            size: partial?.size ?? self.component.size,
+            fitMode: partial?.fitMode ?? self.component.fitMode,
+            maskShape: partial?.maskShape ?? self.component.maskShape,
+            gradientColors: partial?.gradientColors ?? self.component.gradientColors
+        )
+
+        apply(style)
     }
 
-    var contentMode: ContentMode {
-        component.fitMode.contentMode
+}
+
+struct LocalizedImagePartial: PresentedPartial {
+
+    let imageInfo: PaywallComponent.ThemeImageUrls?
+    let partial: PaywallComponent.PartialImageComponent
+
+    static func combine(_ base: Self?, with other: Self?) -> Self {
+        let otherPartial = other?.partial
+        let basePartial = base?.partial
+
+        return Self(
+            imageInfo: other?.imageInfo ?? base?.imageInfo,
+            partial: PaywallComponent.PartialImageComponent(
+                visible: otherPartial?.visible ?? basePartial?.visible,
+                source: otherPartial?.source ?? basePartial?.source,
+                size: otherPartial?.size ?? basePartial?.size,
+                overrideSourceLid: otherPartial?.overrideSourceLid ?? basePartial?.overrideSourceLid,
+                fitMode: otherPartial?.fitMode ?? basePartial?.fitMode,
+                maskShape: otherPartial?.maskShape ?? basePartial?.maskShape,
+                gradientColors: otherPartial?.gradientColors ?? basePartial?.gradientColors
+            )
+        )
     }
 
-    var maxHeight: CGFloat? {
-        component.maxHeight
+}
+
+extension LocalizedImagePartial {
+
+    static func create(
+        from partial: PaywallComponent.PartialImageComponent,
+        using localizedStrings: PaywallComponent.LocalizationDictionary
+    ) throws -> LocalizedImagePartial {
+        return LocalizedImagePartial(
+            imageInfo: try partial.overrideSourceLid.flatMap { key in
+                try localizedStrings.image(key: key)
+            } ?? partial.source,
+            partial: partial
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct ImageComponentStyle {
+
+    let visible: Bool
+    let url: URL
+    let size: PaywallComponent.Size
+    let shape: ShapeModifier.Shape?
+    let gradientColors: [Color]
+    let contentMode: ContentMode
+
+    init(
+        visible: Bool = true,
+        source: PaywallComponent.ThemeImageUrls,
+        size: PaywallComponent.Size,
+        fitMode: PaywallComponent.FitMode,
+        maskShape: PaywallComponent.MaskShape? = nil,
+        gradientColors: [PaywallComponent.ColorHex]? = nil
+    ) {
+        self.visible = visible
+        self.url = source.light.heic // WIP: Do dark mode
+        self.size = size
+        self.shape = maskShape?.shape
+        self.gradientColors = gradientColors?.compactMap { $0.toColor(fallback: Color.clear) } ?? []
+        self.contentMode = fitMode.contentMode
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.MaskShape {
+
+    var shape: ShapeModifier.Shape? {
+        switch self {
+        case .rectangle(let cornerRadiuses):
+            let corners = cornerRadiuses.flatMap { cornerRadiuses in
+                ShapeModifier.RadiusInfo(
+                    topLeft: cornerRadiuses.topLeading,
+                    topRight: cornerRadiuses.topTrailing,
+                    bottomLeft: cornerRadiuses.bottomLeading,
+                    bottomRight: cornerRadiuses.bottomTrailing
+                )
+            }
+            return .rectangle(corners)
+        case .pill:
+            return .pill
+        case .concave:
+            return .concave
+        case .convex:
+            return .convex
+        }
     }
 
 }
