@@ -55,7 +55,10 @@ struct FeedbackSurveyView: View {
                 FeedbackSurveyButtonsView(
                     options: self.viewModel.feedbackSurveyData.configuration.options,
                     onOptionSelected: { option in
-                        await self.viewModel.handleAction(for: option)
+                        await self.viewModel.handleAction(
+                            for: option,
+                            dismissView: self.dismissView
+                        )
                     },
                     loadingOption: self.$viewModel.loadingOption
                 )
@@ -71,9 +74,7 @@ struct FeedbackSurveyView: View {
                             Task(priority: .userInitiated) {
                                 await viewModel.handleDismissPromotionalOfferView(
                                     userAction,
-                                    dismissView: {
-                                        self.isPresented = false
-                                    }
+                                    dismissView: self.dismissView
                                 )
                             }
                         }
@@ -85,6 +86,9 @@ struct FeedbackSurveyView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    private func dismissView() {
+        self.isPresented = false
+    }
 }
 
 @available(iOS 15.0, *)

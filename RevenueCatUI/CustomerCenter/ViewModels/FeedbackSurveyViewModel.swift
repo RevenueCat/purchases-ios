@@ -55,11 +55,10 @@ class FeedbackSurveyViewModel: ObservableObject {
         self.customerCenterActionHandler = customerCenterActionHandler
     }
 
-    deinit {
-        print("DEINIT CALLED")
-    }
-
-    func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async {
+    func handleAction(
+        for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
+        dismissView: () -> Void
+    ) async {
         if let customerCenterActionHandler = self.customerCenterActionHandler {
             customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
         }
@@ -77,6 +76,7 @@ class FeedbackSurveyViewModel: ObservableObject {
             }
         } else {
             self.feedbackSurveyData.onOptionSelected()
+            dismissView()
         }
     }
 }
@@ -101,6 +101,7 @@ extension FeedbackSurveyViewModel {
             dismissView()
         } else {
             self.feedbackSurveyData.onOptionSelected()
+            dismissView()
         }
     }
 }
