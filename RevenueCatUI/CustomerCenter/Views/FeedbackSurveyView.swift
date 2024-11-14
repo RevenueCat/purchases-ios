@@ -26,6 +26,7 @@ struct FeedbackSurveyView: View {
 
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -49,20 +50,29 @@ struct FeedbackSurveyView: View {
     var body: some View {
         ZStack {
             List {
-                FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
-                                          onOptionSelected: { option in
-                                              await self.viewModel.handleAction(for: option)
-                                              self.isPresented = false
-                                          },
-                                          loadingState: self.$viewModel.loadingState)
+                FeedbackSurveyButtonsView(
+                    options: self.viewModel.feedbackSurveyData.configuration.options,
+                    onOptionSelected: { option in
+                        await self.viewModel.handleAction(for: option)
+                        self.isPresented = false
+                    },
+                    loadingOption: self.$viewModel.loadingOption
+                )
             }
             .sheet(
                 item: self.$viewModel.promotionalOfferData,
-                onDismiss: { self.viewModel.handleSheetDismiss() },
                 content: { promotionalOfferData in
-                    PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                         product: promotionalOfferData.product,
-                                         promoOfferDetails: promotionalOfferData.promoOfferDetails)
+                    PromotionalOfferView(
+                        promotionalOffer: promotionalOfferData.promotionalOffer,
+                        product: promotionalOfferData.product,
+                        promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                        onDismissPromotionalOfferView: { userAction in
+                            Task(priority: .userInitiated) {
+                                await viewModel.handleDismissPromotionalOfferView(userAction)
+                            }
+                        }
+                    )
+                    .interactiveDismissDisabled()
                 })
         }
         .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
@@ -83,20 +93,20 @@ struct FeedbackSurveyButtonsView: View {
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
 
     @Binding
-    var loadingState: String?
+    var loadingOption: String?
 
     var body: some View {
         ForEach(options, id: \.id) { option in
             AsyncButton {
                 await self.onOptionSelected(option)
             } label: {
-                if self.loadingState == option.id {
+                if self.loadingOption == option.id {
                     TintedProgressView()
                 } else {
                     Text(option.title)
                 }
             }
-            .disabled(self.loadingState != nil)
+            .disabled(self.loadingOption != nil)
         }
 
     }

@@ -27,8 +27,6 @@ struct PromotionalOfferView: View {
 
     @StateObject
     private var viewModel: PromotionalOfferViewModel
-    @Environment(\.dismiss)
-    private var dismiss
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -37,9 +35,26 @@ struct PromotionalOfferView: View {
     private var colorScheme
     @State private var isLoading: Bool = false
 
+    /// An enum representing the possible actions that a user can take on the PromotionalOfferView
+    enum PromotionalOfferViewAction {
+        /// The user clicked the "No Thanks" button and declined the offer
+        case declinePromotionalOffer
+
+        /// The user successfully redeemed the promotional offer
+        case successfullyRedeemedPromotionalOffer(PurchaseResultData)
+
+        // Promotional code redemption failed. Either the user attempted to redeem the promotional offer, and it failed,
+        // or the promotional offer was not loaded successfully.
+        case promotionalCodeRedemptionFailed(Error)
+    }
+
+    private let onDismissPromotionalOfferView: (PromotionalOfferViewAction) -> Void
+
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
-         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer) {
+         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
+         onDismissPromotionalOfferView: @escaping (PromotionalOfferViewAction) -> Void
+    ) {
         _viewModel = StateObject(wrappedValue: PromotionalOfferViewModel(
             promotionalOfferData: PromotionalOfferData(
                 promotionalOffer: promotionalOffer,
@@ -47,6 +62,7 @@ struct PromotionalOfferView: View {
                 promoOfferDetails: promoOfferDetails
             )
         ))
+        self.onDismissPromotionalOfferView = onDismissPromotionalOfferView
     }
 
     private let horizontalPadding: CGFloat = 20
@@ -63,33 +79,33 @@ struct PromotionalOfferView: View {
 
                     Spacer()
 
-                    PromoOfferButtonView(isLoading: $isLoading,
-                                         viewModel: self.viewModel,
-                                         appearance: self.appearance)
+                    PromoOfferButtonView(
+                        isLoading: $isLoading,
+                        viewModel: self.viewModel,
+                        appearance: self.appearance
+                    )
                     .padding(.horizontal, horizontalPadding)
 
                     Button {
-                        dismiss()
+                        self.dismissPromotionalOfferView(.declinePromotionalOffer)
                     } label: {
                         Text(self.localization.commonLocalizedString(for: .noThanks))
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                } else {
-                    EmptyView()
-                        .onAppear {
-                            dismiss()
-                        }
                 }
             }
         }
         .onAppear {
-            self.viewModel.onPromotionalOfferSuccessfullyPurchased = self.onPromotionalOfferSuccessfullyPurchased
+            self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
     }
 
-    private func onPromotionalOfferSuccessfullyPurchased() {
-        self.dismiss()
+    // Called when the promotional offer flow is purchased, successfully or not
+    private func dismissPromotionalOfferView(
+        _ action: PromotionalOfferViewAction
+    ) {
+        self.onDismissPromotionalOfferView(action) // Forward results to parent view
     }
 }
 

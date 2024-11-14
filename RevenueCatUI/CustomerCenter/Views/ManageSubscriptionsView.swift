@@ -111,17 +111,21 @@ struct ManageSubscriptionsView: View {
             await loadInformationIfNeeded()
         }
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(item: self.$viewModel.promotionalOfferData,
-               onDismiss: {
-            Task {
-                await self.viewModel.handleSheetDismiss()
-            }
-        },
-               content: { promotionalOfferData in
-            PromotionalOfferView(promotionalOffer: promotionalOfferData.promotionalOffer,
-                                 product: promotionalOfferData.product,
-                                 promoOfferDetails: promotionalOfferData.promoOfferDetails)
-        })
+        .sheet(
+            item: self.$viewModel.promotionalOfferData,
+            content: { promotionalOfferData in
+                PromotionalOfferView(
+                    promotionalOffer: promotionalOfferData.promotionalOffer,
+                    product: promotionalOfferData.product,
+                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    onDismissPromotionalOfferView: { userAction in
+                        Task(priority: .userInitiated) {
+                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
+                        }
+                    }
+                )
+                .interactiveDismissDisabled()
+            })
         .sheet(item: self.$viewModel.inAppBrowserURL,
                onDismiss: {
             self.viewModel.onDismissInAppBrowser()

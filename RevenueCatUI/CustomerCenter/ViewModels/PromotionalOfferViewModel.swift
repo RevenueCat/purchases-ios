@@ -35,17 +35,18 @@ class PromotionalOfferViewModel: ObservableObject {
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
-    internal var onPromotionalOfferSuccessfullyPurchased: (() -> Void)?
+    /// Callback to be called when the promotional offer is  purchased
+    internal var onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferView.PromotionalOfferViewAction) -> Void)?
 
     init(
         promotionalOfferData: PromotionalOfferData?,
         purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
-        onPromotionalOfferSuccessfullyPurchased: (() -> Void)? = nil
+        onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferView.PromotionalOfferViewAction) -> Void)? = nil
     ) {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
-        self.onPromotionalOfferSuccessfullyPurchased = onPromotionalOfferSuccessfullyPurchased
+        self.onPromotionalOfferPurchaseFlowComplete = onPromotionalOfferPurchaseFlowComplete
     }
 
     func purchasePromo() async {
@@ -61,12 +62,13 @@ class PromotionalOfferViewModel: ObservableObject {
                 promotionalOffer: promotionalOffer
             )
 
-            // swiftlint:disable:next todo
-            // TODO: do something with result
             Logger.debug("Purchased promotional offer: \(result)")
-            self.onPromotionalOfferSuccessfullyPurchased?()
+            self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
         } catch {
+            // swiftlint:disable:next todo
+            // TODO: Log error message
             self.error = error
+            self.onPromotionalOfferPurchaseFlowComplete?(.promotionalCodeRedemptionFailed(error))
         }
     }
 

@@ -85,6 +85,10 @@ class ManageSubscriptionsViewModel: ObservableObject {
         state = .success
     }
 
+    deinit {
+        print("ManageSubscriptionsViewModel DEINIT")
+    }
+
     func loadScreen() async {
         do {
             try await loadSubscriptionInformation()
@@ -160,6 +164,32 @@ struct IdentifiableURL: Identifiable {
 
     let url: URL
 
+}
+
+// MARK: - Promotional Offer Sheet Dismissal Handling
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension ManageSubscriptionsViewModel {
+
+    /// Function responsible for handling the user's action on the PromotionalOfferView
+    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferView.PromotionalOfferViewAction) async {
+        // Clear the promotional offer data to dismiss the sheet
+        self.promotionalOfferData = nil
+
+        switch userAction {
+        case .successfullyRedeemedPromotionalOffer(let purchaseResultData):
+            // The user redeemed a Promotional Offer, so we want to return out of the current flow
+            self.loadingPath = nil
+        case .promotionalCodeRedemptionFailed, .declinePromotionalOffer:
+            // Continue with the existing path's flow
+            if let loadingPath = loadingPath {
+                await self.onPathSelected(path: loadingPath)
+                self.loadingPath = nil
+            }
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
