@@ -87,8 +87,8 @@ private extension LoadPromotionalOfferUseCase {
     ) throws -> StoreProductDiscount {
         let discount = !promoOfferDetails.productMapping.isEmpty
             ? findMappedDiscount(for: product,
-                               productIdentifier: productIdentifier,
-                               promoOfferDetails: promoOfferDetails)
+                                 productIdentifier: productIdentifier,
+                                 promoOfferDetails: promoOfferDetails)
             : findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
 
         guard let discount = discount else {
