@@ -21,7 +21,7 @@ import SwiftUI
 struct PurchaseButtonComponentView: View {
 
     @EnvironmentObject
-    private var paywallState: PaywallState
+    private var packageContext: PackageContext
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -37,7 +37,7 @@ struct PurchaseButtonComponentView: View {
             guard !self.purchaseHandler.actionInProgress else { return }
 
             // WIP: Need to log warning if currently subscribed
-            guard let selectedPackage = self.paywallState.selectedPackage
+            guard let selectedPackage = self.packageContext.package
 //                    , selectedPackage.currentlySubscribed
             else {
                 Logger.warning(Strings.product_already_subscribed)

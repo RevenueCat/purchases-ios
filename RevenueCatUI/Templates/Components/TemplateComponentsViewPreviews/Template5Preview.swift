@@ -19,9 +19,13 @@ import SwiftUI
 
 #if DEBUG
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum Template5Preview {
 
-    static let paywallState = PaywallState(selectedPackage: nil)
+    static let paywallState = PackageContext(
+        package: nil,
+        variableContext: .init()
+    )
 
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
 

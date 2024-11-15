@@ -20,6 +20,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -35,7 +38,8 @@ struct TextComponentView: View {
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
-            condition: self.screenCondition
+            condition: self.screenCondition,
+            packageContext: self.packageContext
         ) { style in
             Group {
                 if style.visible {
@@ -60,8 +64,81 @@ struct TextComponentView: View {
 
 #if DEBUG
 
+import StoreKit
+
+class MockProduct: SK1Product, @unchecked Sendable {
+
+    class MockSubPeriod: SKProductSubscriptionPeriod, @unchecked Sendable {
+
+        let _unit: SKProduct.PeriodUnit
+
+        init(unit: SKProduct.PeriodUnit) {
+            self._unit = unit
+        }
+
+        override var numberOfUnits: Int {
+            return 1
+        }
+
+        override var unit: SKProduct.PeriodUnit {
+            return self._unit
+        }
+
+    }
+
+    let _price: NSDecimalNumber
+    let _unit: SKProduct.PeriodUnit
+    let _localizedTitle: String
+
+    init(price: NSDecimalNumber, unit: SKProduct.PeriodUnit, localizedTitle: String) {
+        self._price = price
+        self._unit = unit
+        self._localizedTitle = localizedTitle
+    }
+
+    override var price: NSDecimalNumber {
+        return self._price
+    }
+
+    override var subscriptionPeriod: SKProductSubscriptionPeriod? {
+        return MockSubPeriod(unit: self._unit)
+    }
+
+    override var localizedTitle: String {
+        return self._localizedTitle
+    }
+
+    override var priceLocale: Locale {
+        return Locale(identifier: "en-US")
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
+
+    static var monthlyPackage: Package = .init(
+        identifier: "monthly",
+        packageType: .monthly,
+        storeProduct: .init(sk1Product: MockProduct(
+            price: 9.99,
+            unit: .month,
+            localizedTitle: "Monthly"
+        )),
+        offeringIdentifier: "default"
+    )
+
+    static var annualPackage: Package = .init(
+        identifier: "annual",
+        packageType: .annual,
+        storeProduct: .init(sk1Product: MockProduct(
+            price: 99.99,
+            unit: .year,
+            localizedTitle: "Annual"
+        )),
+        offeringIdentifier: "default"
+    )
+
     static var previews: some View {
         // Default
         TextComponentView(
@@ -75,6 +152,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     color: .init(light: .hex("#000000"))
                 )
             )
+        )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
@@ -104,6 +185,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     horizontalAlignment: .leading
                 )
             )
+        )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
@@ -139,6 +224,10 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
+        )
         .environment(\.componentViewState, .selected)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("State - Selected")
@@ -163,6 +252,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     )
                 )
             )
+        )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
         )
         .environment(\.screenCondition, .medium)
         .previewLayout(.sizeThatFits)
@@ -189,9 +282,33 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
+        )
         .environment(\.screenCondition, .compact)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
+
+        // Process variable
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("{{ product_name }} is {{ price_per_period_full }} ({{ sub_relative_discount }})"),
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .environmentObject(PackageContext(
+            package: self.annualPackage,
+            variableContext: .init(packages: [self.monthlyPackage, self.annualPackage]))
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Process variable")
     }
 }
 

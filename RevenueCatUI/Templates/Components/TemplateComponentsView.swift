@@ -11,16 +11,58 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-class PaywallState: ObservableObject {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class PackageContext: ObservableObject {
 
-    @Published var selectedPackage: Package?
+    struct VariableContext {
 
-    init(selectedPackage: Package?) {
-        self.selectedPackage = selectedPackage
+        let mostExpensivePricePerMonth: Double?
+        let showZeroDecimalPlacePrices: Bool
+
+        init(packages: [Package], showZeroDecimalPlacePrices: Bool = true) {
+            let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
+            self.init(
+                mostExpensivePricePerMonth: mostExpensivePricePerMonth,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+        }
+
+        init(mostExpensivePricePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = true) {
+            self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
+            self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        }
+
+        private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
+            return packages
+                .lazy
+                .map(\.storeProduct)
+                .compactMap { product in
+                    product.pricePerMonth.map {
+                        return (
+                            product: product,
+                            pricePerMonth: $0
+                        )
+                    }
+                }
+                .max { productA, productB in
+                    return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
+                }
+                .map(\.pricePerMonth.doubleValue)
+        }
+
     }
 
-    func select(package: Package) {
-        self.selectedPackage = package
+    @Published var package: Package?
+    @Published var variableContext: VariableContext
+
+    init(package: Package?, variableContext: VariableContext) {
+        self.package = package
+        self.variableContext = variableContext
+    }
+
+    func update(packageContext: PackageContext) {
+        self.package = package
+        self.variableContext = variableContext
     }
 
 }
@@ -72,7 +114,7 @@ struct TemplateComponentsView: View {
     private var horizontalSizeClass
 
     @StateObject
-    private var paywallState: PaywallState
+    private var selectedPackageContext: PackageContext
 
     private let paywallComponentsData: PaywallComponentsData
     private let componentViewModel: PaywallComponentViewModel
@@ -84,7 +126,9 @@ struct TemplateComponentsView: View {
 
         guard (self.paywallComponentsData.errorInfo ?? [:]).isEmpty else {
             self.componentViewModel = Self.fallbackPaywallViewModels()
-            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
+            self._selectedPackageContext = .init(
+                wrappedValue: PackageContext(package: nil, variableContext: .init())
+            )
 
             return
         }
@@ -110,8 +154,12 @@ struct TemplateComponentsView: View {
 //            }
 
             self.componentViewModel = .root(root)
-            self._paywallState = .init(wrappedValue: PaywallState(
-                selectedPackage: factory.packageValidator.defaultSelectedPackage
+            self._selectedPackageContext = .init(wrappedValue: PackageContext(
+                package: factory.packageValidator.defaultSelectedPackage,
+                variableContext: .init(
+                    packages: factory.packageValidator.packages,
+                    showZeroDecimalPlacePrices: true // TODO: Get from paywall info
+                )
             ))
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
@@ -119,7 +167,10 @@ struct TemplateComponentsView: View {
 
             // WIP: Need to select default package in fallback view model
             self.componentViewModel = Self.fallbackPaywallViewModels()
-            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
+            self._selectedPackageContext = .init(wrappedValue: PackageContext(
+                package: nil,
+                variableContext: .init()
+            ))
         }
     }
 
@@ -132,7 +183,7 @@ struct TemplateComponentsView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
-        .environmentObject(self.paywallState)
+        .environmentObject(self.selectedPackageContext)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
     }
 
