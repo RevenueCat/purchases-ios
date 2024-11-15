@@ -85,13 +85,11 @@ private extension LoadPromotionalOfferUseCase {
         productIdentifier: String,
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) throws -> StoreProductDiscount {
-        let discount = if !promoOfferDetails.productMapping.isEmpty {
-            findMappedDiscount(for: product,
+        let discount = !promoOfferDetails.productMapping.isEmpty
+            ? findMappedDiscount(for: product,
                                productIdentifier: productIdentifier,
                                promoOfferDetails: promoOfferDetails)
-        } else {
-            findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
-        }
+            : findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
 
         guard let discount = discount else {
             logDiscountError(productIdentifier: productIdentifier, promoOfferDetails: promoOfferDetails)
