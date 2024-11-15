@@ -17,6 +17,13 @@ enum PackageGroupValidationError: Error {
 
 }
 
+struct LocalizationProvider {
+
+    let locale: Locale
+    let localizedStrings: PaywallComponent.LocalizationDictionary
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
@@ -52,14 +59,14 @@ struct TemplateComponentsView: View {
         let componentsConfig = paywallComponentsData.componentsConfig.base
 
         // Step 1: Get localization
-        let localization = Self.chooseLocalization(for: paywallComponentsData)
+        let localizationProvider = Self.chooseLocalization(for: paywallComponentsData)
 
         do {
             let factory = ViewModelFactory()
             let root = try factory.toRootViewModel(
                 componentsConfig: componentsConfig,
                 offering: offering,
-                localizedStrings: localization.localizedStrings
+                localizationProvider: localizationProvider
             )
 
             // WIP: Maybe re-enable this later or add some warnings
@@ -104,11 +111,11 @@ struct TemplateComponentsView: View {
 
     static func chooseLocalization(
         for componentsData: PaywallComponentsData
-    ) -> (locale: Locale, localizedStrings: PaywallComponent.LocalizationDictionary) {
+    ) -> LocalizationProvider {
 
         guard !componentsData.componentsLocalizations.isEmpty else {
             Logger.error(Strings.paywall_contains_no_localization_data)
-            return (Locale.current, PaywallComponent.LocalizationDictionary())
+            return .init(locale: Locale.current, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
 
         // STEP 1: Get available paywall locales
@@ -122,13 +129,13 @@ struct TemplateComponentsView: View {
 
         // STEP 3: Get localization for one of preferred locales in order
         if let localizedStrings = componentsData.componentsLocalizations[chosenLocale.identifier] {
-            return (chosenLocale, localizedStrings)
+            return .init(locale: chosenLocale, localizedStrings: localizedStrings)
         } else if let localizedStrings = componentsData.componentsLocalizations[defaultLocale.identifier] {
             Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
-            return (defaultLocale, localizedStrings)
+            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else {
             Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(defaultLocale)"))
-            return (defaultLocale, PaywallComponent.LocalizationDictionary())
+            return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
     }
 }

@@ -39,19 +39,21 @@ class ButtonComponentViewModel {
     }
 
     let component: PaywallComponent.ButtonComponent
-    let localizedStrings: PaywallComponent.LocalizationDictionary
+    let localizationProvider: LocalizationProvider
     let action: Action
     let stackViewModel: StackComponentViewModel
 
     init(
         component: PaywallComponent.ButtonComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary,
+        localizationProvider: LocalizationProvider,
         offering: Offering,
         stackViewModel: StackComponentViewModel
     ) throws {
         self.component = component
-        self.localizedStrings = localizedStrings
+        self.localizationProvider = localizationProvider
         self.stackViewModel = stackViewModel
+
+        let localizedStrings = localizationProvider.localizedStrings
 
         // Mapping ButtonComponent.Action to ButtonComponentViewModel.Action to verify that any passed-in urlLids exist
         // in localizedStrings:

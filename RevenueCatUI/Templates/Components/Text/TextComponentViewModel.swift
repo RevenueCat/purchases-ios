@@ -19,19 +19,19 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
-    private let localizedStrings: PaywallComponent.LocalizationDictionary
+    private let localizationProvider: LocalizationProvider
     private let component: PaywallComponent.TextComponent
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.TextComponent) throws {
-        self.localizedStrings = localizedStrings
+    init(localizationProvider: LocalizationProvider, component: PaywallComponent.TextComponent) throws {
+        self.localizationProvider = localizationProvider
         self.component = component
-        self.text = try localizedStrings.string(key: component.text)
+        self.text = try localizationProvider.localizedStrings.string(key: component.text)
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
-            try LocalizedTextPartial.create(from: $0, using: localizedStrings)
+            try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
 
     }
@@ -54,7 +54,11 @@ class TextComponentViewModel {
 
         let style = TextComponentStyle(
             visible: partial?.visible ?? true,
-            text: Self.processText(text, packageContext: packageContext),
+            text: Self.processText(
+                text,
+                packageContext: packageContext,
+                locale: self.localizationProvider.locale
+            ),
             fontFamily: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
@@ -69,7 +73,7 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    private static func processText(_ text: String, packageContext: PackageContext) -> String {
+    private static func processText(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -83,7 +87,6 @@ class TextComponentViewModel {
             discountRelativeToMostExpensivePerMonth: discount,
             showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
         )
-        let locale = Locale.current
 
         return VariableHandler.processVariables(
             in: text,

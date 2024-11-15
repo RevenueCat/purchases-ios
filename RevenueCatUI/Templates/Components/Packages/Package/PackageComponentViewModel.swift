@@ -24,7 +24,6 @@ class PackageComponentViewModel {
     let stackViewModel: StackComponentViewModel
 
     init(
-        localizedStrings: PaywallComponent.LocalizationDictionary,
         component: PaywallComponent.PackageComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel
