@@ -3821,7 +3821,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", 
 
 
 /// Represents an Apple win-back offer.
-SWIFT_CLASS_NAMED("WinBackOffer") SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0)
+SWIFT_CLASS_NAMED("WinBackOffer")
 @interface RCWinBackOffer : NSObject
 /// The <code>StoreProductDiscount</code> in this offer.
 @property (nonatomic, readonly, strong) RCStoreProductDiscount * _Nonnull discount;
