@@ -54,7 +54,8 @@ enum SubscriptionInformationFixtures {
                     iosOfferId: "offer_id",
                     eligible: false,
                     title: "title",
-                    subtitle: "subtitle"
+                    subtitle: "subtitle",
+                    productMapping: ["product_id": "offer_id"]
                 ))
             )
         ]
@@ -76,7 +77,8 @@ enum SubscriptionInformationFixtures {
                         iosOfferId: offerID,
                         eligible: true,
                         title: "title",
-                        subtitle: "subtitle"
+                        subtitle: "subtitle",
+                        productMapping: ["product_id": "offer_id"]
                     ))
                 )
             ]

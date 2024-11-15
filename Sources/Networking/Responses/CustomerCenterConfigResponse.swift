@@ -74,6 +74,7 @@ struct CustomerCenterConfigResponse {
             let eligible: Bool
             let title: String
             let subtitle: String
+            let productMapping: [String: String]
 
         }
 
