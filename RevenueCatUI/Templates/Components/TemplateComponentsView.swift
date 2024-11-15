@@ -11,99 +11,9 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class PackageContext: ObservableObject {
-
-    struct VariableContext {
-
-        let mostExpensivePricePerMonth: Double?
-        let showZeroDecimalPlacePrices: Bool
-
-        init(packages: [Package], showZeroDecimalPlacePrices: Bool = true) {
-            let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
-            self.init(
-                mostExpensivePricePerMonth: mostExpensivePricePerMonth,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
-        }
-
-        init(mostExpensivePricePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = true) {
-            self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
-            self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
-        }
-
-        private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
-            return packages
-                .lazy
-                .map(\.storeProduct)
-                .compactMap { product in
-                    product.pricePerMonth.map {
-                        return (
-                            product: product,
-                            pricePerMonth: $0
-                        )
-                    }
-                }
-                .max { productA, productB in
-                    return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
-                }
-                .map(\.pricePerMonth.doubleValue)
-        }
-
-    }
-
-    @Published var package: Package?
-    @Published var variableContext: VariableContext
-
-    init(package: Package?, variableContext: VariableContext) {
-        self.package = package
-        self.variableContext = variableContext
-    }
-
-    func update(packageContext: PackageContext) {
-        self.package = package
-        self.variableContext = variableContext
-    }
-
-}
-
 enum PackageGroupValidationError: Error {
 
     case noAvailablePackages(String)
-
-}
-
-enum ScreenCondition {
-
-    case compact, medium, expanded
-
-    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
-        guard let sizeClass else {
-            return .compact
-        }
-
-        switch sizeClass {
-        case .compact:
-            return .compact
-        case .regular:
-            return .medium
-        @unknown default:
-            return .compact
-        }
-    }
-
-}
-
-struct ScreenConditionKey: EnvironmentKey {
-    static let defaultValue = ScreenCondition.compact
-}
-
-extension EnvironmentValues {
-
-    var screenCondition: ScreenCondition {
-        get { self[ScreenConditionKey.self] }
-        set { self[ScreenConditionKey.self] = newValue }
-    }
 
 }
 
