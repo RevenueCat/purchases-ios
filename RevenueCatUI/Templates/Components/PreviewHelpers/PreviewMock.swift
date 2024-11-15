@@ -61,6 +61,7 @@ extension PreviewMock {
 
     class Product: SK1Product, @unchecked Sendable {
 
+        // swiftlint:disable:next nesting
         class MockSubPeriod: SKProductSubscriptionPeriod, @unchecked Sendable {
 
             let _unit: SKProduct.PeriodUnit

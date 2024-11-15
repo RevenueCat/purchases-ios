@@ -45,7 +45,7 @@ struct PackageComponentView: View {
                 self.packageContext.update(packageContext: .init(
                     package: package,
                     variableContext: self.packageContext.variableContext
-                ))  
+                ))
             } label: {
                 StackComponentView(
                     viewModel: self.viewModel.stackViewModel,
