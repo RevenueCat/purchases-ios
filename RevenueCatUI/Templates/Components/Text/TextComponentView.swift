@@ -240,7 +240,11 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string("{{ product_name }} is {{ price_per_period_full }} ({{ sub_relative_discount }})"),
+                        "id_1": .string(
+                            "{{ product_name }} is " +
+                            "{{ price_per_period_full }} " +
+                            "({{ sub_relative_discount }})"
+                        )
                     ]
                 ),
                 component: .init(
