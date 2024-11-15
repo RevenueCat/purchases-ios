@@ -16,7 +16,6 @@
 
 ### 🔄 Other Changes
 * Enable Paywall Tester to build with Paywalls V2 (#4487) via Josh Holtz (@joshdholtz)
-* Support redeeming winbacks offer with developer-built paywalls (#4471) via Will Taylor (@fire-at-will)
 * Fix Paywalls Tester when not being built with Paywalls V2 (#4481) via Josh Holtz (@joshdholtz)
 * [Paywalls V2] Fix typo in CI script (#4480) via Mark Villacampa (@MarkVillacampa)
 * [Paywalls V2] Enable PAYWALL_COMPONENTS compiler flag when building PaywallTester in Xcode Cloud (#4479) via Mark Villacampa (@MarkVillacampa)
