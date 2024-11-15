@@ -126,17 +126,15 @@ private extension LoadPromotionalOfferUseCase {
         productIdentifier: String,
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) {
-        let message = if !promoOfferDetails.productMapping.isEmpty {
-            Strings.could_not_offer_for_active_subscriptions(
+        let message = !promoOfferDetails.productMapping.isEmpty
+            ? Strings.could_not_offer_for_active_subscriptions(
                 promoOfferDetails.productMapping[productIdentifier] ?? "nil",
                 productIdentifier
             )
-        } else {
-            Strings.could_not_offer_for_active_subscriptions(
+            : Strings.could_not_offer_for_active_subscriptions(
                 promoOfferDetails.iosOfferId,
                 productIdentifier
             )
-        }
         Logger.debug(message)
     }
 
