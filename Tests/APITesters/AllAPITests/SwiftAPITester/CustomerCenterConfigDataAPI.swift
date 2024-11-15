@@ -56,11 +56,13 @@ func checkPromotionalOffer(_ offer: CustomerCenterConfigData.HelpPath.Promotiona
     let eligible: Bool = offer.eligible
     let title: String = offer.title
     let subtitle: String = offer.subtitle
+    let productMapping: [String: String] = offer.productMapping
 
     let _: CustomerCenterConfigData.HelpPath.PromotionalOffer = .init(iosOfferId: iosOfferId,
                                                                       eligible: eligible,
                                                                       title: title,
-                                                                      subtitle: subtitle)
+                                                                      subtitle: subtitle,
+                                                                      productMapping: productMapping)
 }
 
 func checkFeedbackSurvey(_ survey: CustomerCenterConfigData.HelpPath.FeedbackSurvey) {
