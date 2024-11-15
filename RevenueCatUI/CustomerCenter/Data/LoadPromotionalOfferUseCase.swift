@@ -106,10 +106,7 @@ private extension LoadPromotionalOfferUseCase {
         productIdentifier: String,
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) -> StoreProductDiscount? {
-        product.discounts.first { discount in
-            guard let offerIdentifier = discount.offerIdentifier else { return false }
-            return promoOfferDetails.productMapping[productIdentifier] == offerIdentifier
-        }
+        product.discounts.first { $0.offerIdentifier == promoOfferDetails.productMapping[productIdentifier] }
     }
 
     private func findLegacyDiscount(
@@ -124,10 +121,7 @@ private extension LoadPromotionalOfferUseCase {
         }
 
         // Fall back to suffix matching
-        return product.discounts.first { discount in
-            guard let offerIdentifier = discount.offerIdentifier else { return false }
-            return offerIdentifier.hasSuffix("_\(promoOfferDetails.iosOfferId)")
-        }
+        return product.discounts.first { $0.offerIdentifier?.hasSuffix("_\(promoOfferDetails.iosOfferId)") == true }
     }
 
     private func logDiscountError(
