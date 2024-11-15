@@ -43,9 +43,9 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
 
-            let (productIdentifier, subscribedProduct) = try await getActiveSubscription(customerInfo)
+            let subscribedProduct = try await getActiveSubscription(customerInfo)
             let discount = try findDiscount(for: subscribedProduct,
-                                            productIdentifier: productIdentifier,
+                                            productIdentifier: subscribedProduct.productIdentifier,
                                             promoOfferDetails: promoOfferDetails)
 
             let promotionalOffer = try await self.purchasesProvider.promotionalOffer(
@@ -63,13 +63,13 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         }
     }
 
-    private func getActiveSubscription(_ customerInfo: CustomerInfo) async throws -> (String, StoreProduct) {
+    private func getActiveSubscription(_ customerInfo: CustomerInfo) async throws -> StoreProduct {
         guard let productIdentifier = customerInfo.earliestExpiringAppStoreEntitlement()?.productIdentifier,
               let subscribedProduct = await self.purchasesProvider.products([productIdentifier]).first else {
             Logger.warning(Strings.could_not_offer_for_any_active_subscriptions)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
-        return (productIdentifier, subscribedProduct)
+        return subscribedProduct
     }
 
     private func findDiscount(
