@@ -91,17 +91,22 @@ private enum Template5Preview {
                     text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
+                    size: .init(width: .fill, height: .fit),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    horizontalAlignment: .leading
                 )),
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: .hex("#000000")),
+                    size: .init(width: .fill, height: .fit),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    horizontalAlignment: .leading
                 ))
             ],
             dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -124,13 +129,13 @@ private enum Template5Preview {
 
     static let packagesStack = PaywallComponent.StackComponent(
         components: [
-            .package(makePackage(packageID: "weekly",
+            .package(makePackage(packageID: PreviewMock.weeklyPackage.identifier,
                                  nameTextLid: "weekly_name",
                                  detailTextLid: "weekly_detail")),
             .package(makePackage(packageID: "non_existant_package",
                                  nameTextLid: "non_existant_name",
                                  detailTextLid: "non_existant_detail")),
-            .package(makePackage(packageID: "monthly",
+            .package(makePackage(packageID: PreviewMock.monthlyPackage.identifier,
                                  nameTextLid: "monthly_name",
                                  detailTextLid: "monthly_detail",
                                  isSelectedByDefault: true)),
@@ -221,14 +226,14 @@ private enum Template5Preview {
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
-            "cta": .string("Get Started"),
+            "cta": .string("Continue for {{ price_per_period }}"),
             "cta_intro": .string("Claim Free Trial"),
 
             // Packages
-            "weekly_name": .string("Weekly"),
-            "weekly_detail": .string("Get for $39.99/week"),
-            "monthly_name": .string("Monthly"),
-            "monthly_detail": .string("Get for $139.99/month"),
+            "weekly_name": .string("{{ sub_period }} {{ sub_relative_discount }}"),
+            "weekly_detail": .string("Get for {{ total_price_and_per_month }}"),
+            "monthly_name": .string("{{ sub_period }} {{ sub_relative_discount }}"),
+            "monthly_detail": .string("Get for {{ total_price_and_per_month }}"),
             "non_existant_name": .string("THIS SHOULDN'T SHOW"),
             "non_existant_detail": .string("THIS SHOULDN'T SHOW"),
 
@@ -242,13 +247,6 @@ private enum Template5Preview {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Template5Preview_Previews: PreviewProvider {
 
-    static var package: Package {
-        return .init(identifier: "weekly",
-                     packageType: .weekly,
-                     storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
-    }
-
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
 
@@ -258,14 +256,8 @@ struct Template5Preview_Previews: PreviewProvider {
             offering: Offering(identifier: "default",
                                serverDescription: "",
                                availablePackages: [
-                                Package(identifier: "weekly",
-                                        packageType: .weekly,
-                                        storeProduct: .init(sk1Product: .init()),
-                                        offeringIdentifier: "default"),
-                                Package(identifier: "monthly",
-                                        packageType: .monthly,
-                                        storeProduct: .init(sk1Product: .init()),
-                                        offeringIdentifier: "default")
+                                PreviewMock.monthlyPackage,
+                                PreviewMock.weeklyPackage
                                ]),
             showZeroDecimalPlacePrices: true,
             onDismiss: { }

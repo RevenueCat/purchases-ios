@@ -45,13 +45,21 @@ struct PackageComponentView: View {
                 self.packageContext.update(packageContext: .init(
                     package: package,
                     variableContext: self.packageContext.variableContext
-                ))
+                ))  
             } label: {
                 StackComponentView(
                     viewModel: self.viewModel.stackViewModel,
                     onDismiss: self.onDismiss
                 )
                 .environment(\.componentViewState, componentViewState)
+                // Overrides the existing PackageContext
+                .environmentObject(PackageContext(
+                    // This is needed so text component children use this
+                    // package and not selected package for processing variables
+                    package: package,
+                    // However, reusing the same package variable context from parent
+                    variableContext: packageContext.variableContext)
+                )
             }
         } else {
             EmptyView()

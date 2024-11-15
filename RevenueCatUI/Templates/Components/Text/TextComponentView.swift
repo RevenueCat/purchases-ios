@@ -64,82 +64,8 @@ struct TextComponentView: View {
 
 #if DEBUG
 
-// swiftlint:disable identifier_name
-
-import StoreKit
-
-class MockProduct: SK1Product, @unchecked Sendable {
-
-    class MockSubPeriod: SKProductSubscriptionPeriod, @unchecked Sendable {
-
-        let _unit: SKProduct.PeriodUnit
-
-        init(unit: SKProduct.PeriodUnit) {
-            self._unit = unit
-        }
-
-        override var numberOfUnits: Int {
-            return 1
-        }
-
-        override var unit: SKProduct.PeriodUnit {
-            return self._unit
-        }
-
-    }
-
-    let _price: NSDecimalNumber
-    let _unit: SKProduct.PeriodUnit
-    let _localizedTitle: String
-
-    init(price: NSDecimalNumber, unit: SKProduct.PeriodUnit, localizedTitle: String) {
-        self._price = price
-        self._unit = unit
-        self._localizedTitle = localizedTitle
-    }
-
-    override var price: NSDecimalNumber {
-        return self._price
-    }
-
-    override var subscriptionPeriod: SKProductSubscriptionPeriod? {
-        return MockSubPeriod(unit: self._unit)
-    }
-
-    override var localizedTitle: String {
-        return self._localizedTitle
-    }
-
-    override var priceLocale: Locale {
-        return Locale(identifier: "en-US")
-    }
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
-
-    static var monthlyPackage: Package = .init(
-        identifier: "monthly",
-        packageType: .monthly,
-        storeProduct: .init(sk1Product: MockProduct(
-            price: 9.99,
-            unit: .month,
-            localizedTitle: "Monthly"
-        )),
-        offeringIdentifier: "default"
-    )
-
-    static var annualPackage: Package = .init(
-        identifier: "annual",
-        packageType: .annual,
-        storeProduct: .init(sk1Product: MockProduct(
-            price: 99.99,
-            unit: .year,
-            localizedTitle: "Annual"
-        )),
-        offeringIdentifier: "default"
-    )
 
     static var previews: some View {
         // Default
@@ -306,8 +232,8 @@ struct TextComponentView_Previews: PreviewProvider {
             )
         )
         .environmentObject(PackageContext(
-            package: self.annualPackage,
-            variableContext: .init(packages: [self.monthlyPackage, self.annualPackage]))
+            package: PreviewMock.annualPackage,
+            variableContext: .init(packages: [PreviewMock.monthlyPackage, PreviewMock.annualPackage]))
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Process variable")
