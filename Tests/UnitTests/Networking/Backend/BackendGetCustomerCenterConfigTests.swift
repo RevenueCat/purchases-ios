@@ -299,7 +299,10 @@ private extension BackendGetCustomerCenterConfigTests {
                                 "ios_offer_id": "rc-refund-offer",
                                 "eligible": true,
                                 "title": "Wait!",
-                                "subtitle": "Here's an offer for you"
+                                "subtitle": "Here's an offer for you",
+                                "product_mapping": [
+                                    "product_id": "offer_id"
+                                ]
                             ] as [String: Any],
                             "title": "Request a refund",
                             "type": "REFUND_REQUEST"
@@ -318,7 +321,10 @@ private extension BackendGetCustomerCenterConfigTests {
                                             "ios_offer_id": "rc-cancel-offer",
                                             "eligible": false,
                                             "title": "Wait!",
-                                            "subtitle": "Here's an offer for you"
+                                            "subtitle": "Here's an offer for you",
+                                            "product_mapping": [
+                                                "product_id": "offer_id"
+                                            ]
                                         ] as [String: Any],
                                         "title": "Too expensive"
                                     ] as [String: Any],
@@ -328,7 +334,10 @@ private extension BackendGetCustomerCenterConfigTests {
                                             "ios_offer_id": "rc-cancel-offer",
                                             "eligible": false,
                                             "title": "Wait!",
-                                            "subtitle": "Here's an offer for you"
+                                            "subtitle": "Here's an offer for you",
+                                            "product_mapping": [
+                                                "product_id": "offer_id"
+                                            ]
                                         ] as [String: Any],
                                         "title": "Don't use the app"
                                     ] as [String: Any],
