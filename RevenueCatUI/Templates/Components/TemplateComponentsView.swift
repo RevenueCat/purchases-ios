@@ -30,7 +30,12 @@ struct TemplateComponentsView: View {
     private let componentViewModel: PaywallComponentViewModel
     private let onDismiss: () -> Void
 
-    public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
+    public init(
+        paywallComponentsData: PaywallComponentsData,
+        offering: Offering,
+        showZeroDecimalPlacePrices: Bool,
+        onDismiss: @escaping () -> Void
+    ) {
         self.paywallComponentsData = paywallComponentsData
         self.onDismiss = onDismiss
 
@@ -68,7 +73,7 @@ struct TemplateComponentsView: View {
                 package: factory.packageValidator.defaultSelectedPackage,
                 variableContext: .init(
                     packages: factory.packageValidator.packages,
-                    showZeroDecimalPlacePrices: true // TODO: Get from paywall info
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             ))
         } catch {

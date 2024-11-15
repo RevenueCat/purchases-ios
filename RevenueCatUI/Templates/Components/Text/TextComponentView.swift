@@ -64,6 +64,8 @@ struct TextComponentView: View {
 
 #if DEBUG
 
+// swiftlint:disable identifier_name
+
 import StoreKit
 
 class MockProduct: SK1Product, @unchecked Sendable {
@@ -295,7 +297,7 @@ struct TextComponentView_Previews: PreviewProvider {
             // swiftlint:disable:next force_try
             viewModel: try! .init(
                 localizedStrings: [
-                    "id_1": .string("{{ product_name }} is {{ price_per_period_full }} ({{ sub_relative_discount }})"),
+                    "id_1": .string("{{ product_name }} is {{ price_per_period_full }} ({{ sub_relative_discount }})")
                 ],
                 component: .init(
                     text: "id_1",

@@ -267,6 +267,7 @@ struct Template5Preview_Previews: PreviewProvider {
                                         storeProduct: .init(sk1Product: .init()),
                                         offeringIdentifier: "default")
                                ]),
+            showZeroDecimalPlacePrices: true,
             onDismiss: { }
         )
         .previewLayout(.fixed(width: 400, height: 800))
