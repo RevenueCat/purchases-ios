@@ -63,6 +63,14 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private extension LoadPromotionalOfferUseCase {
+
     private func getActiveSubscription(_ customerInfo: CustomerInfo) async throws -> StoreProduct {
         guard let productIdentifier = customerInfo.earliestExpiringAppStoreEntitlement()?.productIdentifier,
               let subscribedProduct = await self.purchasesProvider.products([productIdentifier]).first else {
