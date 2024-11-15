@@ -311,7 +311,8 @@ public struct PaywallView: View {
             displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
             purchaseHandler: purchaseHandler,
-            locale: displayedLocale
+            locale: displayedLocale,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
 
         if let error {
