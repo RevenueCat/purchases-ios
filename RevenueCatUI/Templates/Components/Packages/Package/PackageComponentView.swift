@@ -145,10 +145,13 @@ struct PackageComponentView_Previews: PreviewProvider {
                     isSelectedByDefault: false,
                     stack: stack
                 ),
-                localizedStrings: [
-                    "name": .string("Weekly"),
-                    "detail": .string("Get for $39.99/wk")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "name": .string("Weekly"),
+                        "detail": .string("Get for $39.99/wk")
+                    ]
+                ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
                                 availablePackages: [package])
@@ -167,10 +170,13 @@ struct PackageComponentView_Previews: PreviewProvider {
                     isSelectedByDefault: false,
                     stack: stack
                 ),
-                localizedStrings: [
-                    "name": .string("Weekly"),
-                    "detail": .string("Get for $39.99/wk")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "name": .string("Weekly"),
+                        "detail": .string("Get for $39.99/wk")
+                    ]
+                ),
                 offering: .init(identifier: "default",
                                 serverDescription: "",
                                 availablePackages: [package])
@@ -187,18 +193,17 @@ fileprivate extension PackageComponentViewModel {
 
     convenience init(
         component: PaywallComponent.PackageComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary,
+        localizationProvider: LocalizationProvider,
         offering: Offering
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
-            localizedStrings: localizedStrings,
+            localizationProvider: localizationProvider,
             offering: offering
         )
 
         self.init(
-            localizedStrings: localizedStrings,
             component: component,
             offering: offering,
             stackViewModel: stackViewModel

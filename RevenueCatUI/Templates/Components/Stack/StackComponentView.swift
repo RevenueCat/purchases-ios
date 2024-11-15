@@ -188,9 +188,13 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     backgroundColor: .init(light: .hex("#ff0000"))
                 ),
-                localizedStrings: [
-                    "text_1": .string("Hey")
-                ]),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]
+                )
+            ),
             onDismiss: {}
         )
         .previewLayout(.sizeThatFits)
@@ -212,9 +216,13 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     backgroundColor: .init(light: .hex("#ff0000"))
                 ),
-                localizedStrings: [
-                    "text_1": .string("Hey")
-                ]),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]
+                )
+            ),
             onDismiss: {}
         )
         .previewLayout(.sizeThatFits)
@@ -237,9 +245,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         ),
                         backgroundColor: .init(light: .hex("#ff0000"))
                     ),
-                    localizedStrings: [
-                        "text_1": .string("Hey")
-                    ]),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
                 onDismiss: {}
             )
 
@@ -258,9 +270,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         ),
                         backgroundColor: .init(light: .hex("#0000ff"))
                     ),
-                    localizedStrings: [
-                        "text_1": .string("Hey")
-                    ]),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
                 onDismiss: {}
             )
 
@@ -279,9 +295,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         ),
                         backgroundColor: .init(light: .hex("#00ff00"))
                     ),
-                    localizedStrings: [
-                        "text_1": .string("Hey")
-                    ]),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
                 onDismiss: {}
             )
 
@@ -300,9 +320,13 @@ struct StackComponentView_Previews: PreviewProvider {
                         ),
                         backgroundColor: .init(light: .hex("#ff0000"))
                     ),
-                    localizedStrings: [
-                        "text_1": .string("Hey")
-                    ]),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
                 onDismiss: {}
             )
         }
@@ -317,7 +341,7 @@ fileprivate extension StackComponentViewModel {
 
     convenience init(
         component: PaywallComponent.StackComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary
+        localizationProvider: LocalizationProvider
     ) throws {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
@@ -328,7 +352,7 @@ fileprivate extension StackComponentViewModel {
                 component: component,
                 packageValidator: validator,
                 offering: offering,
-                localizedStrings: localizedStrings
+                localizationProvider: localizationProvider
             )
         }
 

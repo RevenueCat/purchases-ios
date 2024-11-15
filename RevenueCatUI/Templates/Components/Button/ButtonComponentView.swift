@@ -126,9 +126,12 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             backgroundColor: nil
                         )
                     ),
-                    localizedStrings: [
-                        "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
-                    ],
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                        ]
+                    ),
                     offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
                 ),
                 onDismiss: { }
@@ -144,19 +147,19 @@ fileprivate extension ButtonComponentViewModel {
 
     convenience init(
         component: PaywallComponent.ButtonComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary,
+        localizationProvider: LocalizationProvider,
         offering: Offering
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
-            localizedStrings: localizedStrings,
+            localizationProvider: localizationProvider,
             offering: offering
         )
 
         try self.init(
             component: component,
-            localizedStrings: localizedStrings,
+            localizationProvider: localizationProvider,
             offering: offering,
             stackViewModel: stackViewModel
         )

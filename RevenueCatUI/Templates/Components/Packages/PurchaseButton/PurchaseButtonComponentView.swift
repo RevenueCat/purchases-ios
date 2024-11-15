@@ -78,10 +78,13 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         ))
                     ])
                 ),
-                localizedStrings: [
-                    "id_1": .string("Hello, world"),
-                    "id_2": .string("Hello, world intro offer")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world"),
+                        "id_2": .string("Hello, world intro offer")
+                    ]
+                ),
                 offering: Offering(identifier: "",
                                    serverDescription: "",
                                    availablePackages: [])
@@ -115,10 +118,13 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomTrailing: 8))
                     )
                 ),
-                localizedStrings: [
-                    "id_1": .string("Hello, world"),
-                    "id_2": .string("Hello, world intro offer")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world"),
+                        "id_2": .string("Hello, world intro offer")
+                    ]
+                ),
                 offering: Offering(identifier: "",
                                    serverDescription: "",
                                    availablePackages: [])
@@ -134,13 +140,13 @@ fileprivate extension PurchaseButtonComponentViewModel {
 
     convenience init(
         component: PaywallComponent.PurchaseButtonComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary,
+        localizationProvider: LocalizationProvider,
         offering: Offering
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
-            localizedStrings: localizedStrings,
+            localizationProvider: localizationProvider,
             offering: offering
         )
 

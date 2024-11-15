@@ -24,18 +24,18 @@ struct ViewModelFactory {
     func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
-        localizedStrings: PaywallComponent.LocalizationDictionary
+        localizationProvider: LocalizationProvider
     ) throws -> RootViewModel {
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
-            localizedStrings: localizedStrings,
+            localizationProvider: localizationProvider,
             offering: offering
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
-                localizedStrings: localizedStrings,
+                localizationProvider: localizationProvider,
                 offering: offering
             )
 
@@ -56,16 +56,16 @@ struct ViewModelFactory {
         component: PaywallComponent,
         packageValidator: PackageValidator,
         offering: Offering,
-        localizedStrings: PaywallComponent.LocalizationDictionary
+        localizationProvider: LocalizationProvider
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
             return .text(
-                try TextComponentViewModel(localizedStrings: localizedStrings, component: component)
+                try TextComponentViewModel(localizationProvider: localizationProvider, component: component)
             )
         case .image(let component):
             return .image(
-                try ImageComponentViewModel(localizedStrings: localizedStrings, component: component)
+                try ImageComponentViewModel(localizationProvider: localizationProvider, component: component)
             )
         case .spacer(let component):
             return .spacer(
@@ -76,7 +76,7 @@ struct ViewModelFactory {
                 try self.toViewModel(component: component,
                                      packageValidator: packageValidator,
                                      offering: offering,
-                                     localizedStrings: localizedStrings)
+                                     localizationProvider: localizationProvider)
             }
 
             return .stack(
@@ -86,19 +86,19 @@ struct ViewModelFactory {
         case .linkButton(let component):
             return .linkButton(
                 try LinkButtonComponentViewModel(component: component,
-                                                 localizedStrings: localizedStrings)
+                                                 localizationProvider: localizationProvider)
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
-                localizedStrings: localizedStrings,
+                localizationProvider: localizationProvider,
                 offering: offering
             )
 
             return .button(
                 try ButtonComponentViewModel(
                     component: component,
-                    localizedStrings: localizedStrings,
+                    localizationProvider: localizationProvider,
                     offering: offering,
                     stackViewModel: stackViewModel
                 )
@@ -106,12 +106,11 @@ struct ViewModelFactory {
         case .package(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
-                localizedStrings: localizedStrings,
+                localizationProvider: localizationProvider,
                 offering: offering
             )
 
             let viewModel = PackageComponentViewModel(
-                localizedStrings: localizedStrings,
                 component: component,
                 offering: offering,
                 stackViewModel: stackViewModel
@@ -125,7 +124,7 @@ struct ViewModelFactory {
         case .purchaseButton(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
-                localizedStrings: localizedStrings,
+                localizationProvider: localizationProvider,
                 offering: offering
             )
 
@@ -135,7 +134,7 @@ struct ViewModelFactory {
         case .stickyFooter(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
-                localizedStrings: localizedStrings,
+                localizationProvider: localizationProvider,
                 offering: offering
             )
 
@@ -150,7 +149,7 @@ struct ViewModelFactory {
 
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
-        localizedStrings: PaywallComponent.LocalizationDictionary,
+        localizationProvider: LocalizationProvider,
         offering: Offering
     ) throws -> StackComponentViewModel {
         let viewModels = try component.components.map { component in
@@ -158,7 +157,7 @@ struct ViewModelFactory {
                 component: component,
                 packageValidator: packageValidator,
                 offering: offering,
-                localizedStrings: localizedStrings
+                localizationProvider: localizationProvider
             )
         }
 
