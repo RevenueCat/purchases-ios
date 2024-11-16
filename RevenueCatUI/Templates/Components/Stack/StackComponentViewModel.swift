@@ -40,11 +40,13 @@ class StackComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
         apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
             with: self.presentedOverrides
         )
 

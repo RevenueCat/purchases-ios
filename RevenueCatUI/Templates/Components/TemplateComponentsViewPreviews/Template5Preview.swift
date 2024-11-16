@@ -259,6 +259,7 @@ struct Template5Preview_Previews: PreviewProvider {
                                 PreviewMock.monthlyPackage,
                                 PreviewMock.weeklyPackage
                                ]),
+            introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { }
         )

@@ -257,6 +257,7 @@ public struct PaywallView: View {
             TemplateComponentsView(
                 paywallComponentsData: componentData,
                 offering: offering,
+                introEligibilityChecker: .default(),
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                 onDismiss: {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {

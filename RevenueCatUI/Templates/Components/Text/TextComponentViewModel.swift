@@ -41,11 +41,13 @@ class TextComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         packageContext: PackageContext,
+        isEligibleForIntroOffer: Bool,
         apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

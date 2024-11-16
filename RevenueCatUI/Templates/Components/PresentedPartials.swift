@@ -72,12 +72,23 @@ extension PresentedPartial {
     static func buildPartial(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
-        let conditionPartial = buildConditionPartial(for: condition, with: presentedOverrides)
+        var conditionPartial = buildConditionPartial(for: condition, with: presentedOverrides)
 
-        guard case .selected = state else { return conditionPartial }
-        return Self.combine(conditionPartial, with: presentedOverrides?.states?.selected)
+        if isEligibleForIntroOffer {
+            conditionPartial = Self.combine(conditionPartial, with: presentedOverrides?.introOffer)
+        }
+
+        switch state {
+        case .default:
+            break
+        case .selected:
+            conditionPartial = Self.combine(conditionPartial, with: presentedOverrides?.states?.selected)
+        }
+
+        return conditionPartial
     }
 
     /// Builds a partial component based on screen conditions

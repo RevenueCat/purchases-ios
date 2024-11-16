@@ -42,10 +42,10 @@ struct PackageComponentView: View {
                 // Updating package with same variable context
                 // This will be needed when different sets of packages
                 // in different tiers
-                self.packageContext.update(packageContext: .init(
+                self.packageContext.update(
                     package: package,
                     variableContext: self.packageContext.variableContext
-                ))
+                )
             } label: {
                 StackComponentView(
                     viewModel: self.viewModel.stackViewModel,
