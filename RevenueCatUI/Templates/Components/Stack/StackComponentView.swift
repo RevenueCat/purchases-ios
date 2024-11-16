@@ -19,6 +19,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -40,7 +46,10 @@ struct StackComponentView: View {
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
-            condition: self.screenCondition
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            )
         ) { style in
             self.make(style: style)
         }

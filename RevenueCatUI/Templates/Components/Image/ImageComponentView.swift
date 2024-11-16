@@ -20,6 +20,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -31,7 +37,10 @@ struct ImageComponentView: View {
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
-            condition: self.screenCondition
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            )
         ) { style in
             RemoteImage(url: style.url) { (image, size) in
                 renderImage(image, size, with: style)

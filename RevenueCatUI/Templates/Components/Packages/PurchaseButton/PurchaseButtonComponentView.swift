@@ -21,6 +21,9 @@ import SwiftUI
 struct PurchaseButtonComponentView: View {
 
     @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
     private var packageContext: PackageContext
 
     @EnvironmentObject

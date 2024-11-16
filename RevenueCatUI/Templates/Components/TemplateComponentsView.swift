@@ -33,21 +33,32 @@ struct TemplateComponentsView: View {
     @StateObject
     private var selectedPackageContext: PackageContext
 
+    @StateObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
     private let paywallComponentsData: PaywallComponentsData
     private let componentViewModel: PaywallComponentViewModel
     private let onDismiss: () -> Void
 
+    private let packages: [Package]
+
     public init(
         paywallComponentsData: PaywallComponentsData,
         offering: Offering,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void
     ) {
         self.paywallComponentsData = paywallComponentsData
         self.onDismiss = onDismiss
 
+        self._introOfferEligibilityContext = .init(
+            wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
+        )
+
         guard (self.paywallComponentsData.errorInfo ?? [:]).isEmpty else {
             self.componentViewModel = Self.fallbackPaywallViewModels()
+            self.packages = []
             self._selectedPackageContext = .init(
                 wrappedValue: PackageContext(package: nil, variableContext: .init())
             )
@@ -75,19 +86,23 @@ struct TemplateComponentsView: View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
+            let packages = factory.packageValidator.packages
+
             self.componentViewModel = .root(root)
             self._selectedPackageContext = .init(wrappedValue: PackageContext(
                 package: factory.packageValidator.defaultSelectedPackage,
                 variableContext: .init(
-                    packages: factory.packageValidator.packages,
+                    packages: packages,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             ))
+            self.packages = packages
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
             Logger.error(Strings.paywall_view_model_construction_failed(error))
 
             // WIP: Need to select default package in fallback view model
+            self.packages = []
             self.componentViewModel = Self.fallbackPaywallViewModels()
             self._selectedPackageContext = .init(wrappedValue: PackageContext(
                 package: nil,
@@ -105,8 +120,12 @@ struct TemplateComponentsView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
+        .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.selectedPackageContext)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .task {
+            await self.introOfferEligibilityContext.computeEligibility(for: self.packages)
+        }
     }
 
     static func chooseLocalization(

@@ -65,7 +65,7 @@ class PackageContext: ObservableObject {
         self.variableContext = variableContext
     }
 
-    func update(packageContext: PackageContext) {
+    func update(package: Package?, variableContext: VariableContext) {
         self.package = package
         self.variableContext = variableContext
     }

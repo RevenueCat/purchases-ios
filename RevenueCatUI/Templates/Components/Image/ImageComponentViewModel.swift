@@ -20,6 +20,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ImageComponentViewModel {
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
     private let localizationProvider: LocalizationProvider
     private let component: PaywallComponent.ImageComponent
 
@@ -45,11 +48,13 @@ class ImageComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
         apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedImagePartial.buildPartial(
             state: state,
             condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

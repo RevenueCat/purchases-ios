@@ -21,6 +21,9 @@ import SwiftUI
 struct TextComponentView: View {
 
     @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
     private var packageContext: PackageContext
 
     @Environment(\.componentViewState)
@@ -39,7 +42,10 @@ struct TextComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            packageContext: self.packageContext
+            packageContext: self.packageContext,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            )
         ) { style in
             Group {
                 if style.visible {
