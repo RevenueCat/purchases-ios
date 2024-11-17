@@ -251,7 +251,7 @@ struct Template5Preview_Previews: PreviewProvider {
     static var previews: some View {
 
         // Template 5
-        TemplateComponentsView(
+        PaywallsV2View(
             paywallComponentsData: Template5Preview.data,
             offering: Offering(identifier: "default",
                                serverDescription: "",

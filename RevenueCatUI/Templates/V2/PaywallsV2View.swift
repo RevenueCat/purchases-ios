@@ -11,19 +11,6 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-enum PackageGroupValidationError: Error {
-
-    case noAvailablePackages(String)
-
-}
-
-struct LocalizationProvider {
-
-    let locale: Locale
-    let localizedStrings: PaywallComponent.LocalizationDictionary
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class PaywallStateManager: ObservableObject {
     @Published var state: Result<PaywallState, Error>
@@ -44,7 +31,7 @@ private struct PaywallState {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TemplateComponentsView: View {
+struct PaywallsV2View: View {
 
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
@@ -85,7 +72,7 @@ struct TemplateComponentsView: View {
     public var body: some View {
         switch self.paywallStateManager.state {
         case .success(let paywallState):
-            LoadedTemplateComponentsView(
+            LoadedPaywallsV2View(
                 paywallState: paywallState,
                 onDismiss: self.onDismiss
             )
@@ -103,7 +90,7 @@ struct TemplateComponentsView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct LoadedTemplateComponentsView: View {
+private struct LoadedPaywallsV2View: View {
 
     private let paywallState: PaywallState
     private let onDismiss: () -> Void
@@ -141,7 +128,7 @@ private struct LoadedTemplateComponentsView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension TemplateComponentsView {
+fileprivate extension PaywallsV2View {
 
     static func createPaywallState(
         paywallComponentsData: PaywallComponentsData,
