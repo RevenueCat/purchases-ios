@@ -24,6 +24,26 @@ struct LocalizationProvider {
 
 }
 
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate class PaywallStateManager: ObservableObject {
+    @Published var state: Result<PaywallState, Error>
+
+    init(state: Result<PaywallState, Error>) {
+        self.state = state
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate struct PaywallState {
+
+    let viewModelFactory: ViewModelFactory
+    let packages: [Package]
+    let componentViewModel: PaywallComponentViewModel
+    let showZeroDecimalPlacePrices: Bool
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateComponentsView: View {
 
@@ -31,16 +51,12 @@ struct TemplateComponentsView: View {
     private var horizontalSizeClass
 
     @StateObject
-    private var selectedPackageContext: PackageContext
-
-    @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
-    private let paywallComponentsData: PaywallComponentsData
-    private let componentViewModel: PaywallComponentViewModel
-    private let onDismiss: () -> Void
+    @StateObject
+    private var paywallStateManager: PaywallStateManager
 
-    private let packages: [Package]
+    private let onDismiss: () -> Void
 
     public init(
         paywallComponentsData: PaywallComponentsData,
@@ -49,23 +65,45 @@ struct TemplateComponentsView: View {
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void
     ) {
-        self.paywallComponentsData = paywallComponentsData
         self.onDismiss = onDismiss
-
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
 
-        guard (self.paywallComponentsData.errorInfo ?? [:]).isEmpty else {
-            self.componentViewModel = Self.fallbackPaywallViewModels()
-            self.packages = []
-            self._selectedPackageContext = .init(
-                wrappedValue: PackageContext(package: nil, variableContext: .init())
+
+        self._paywallStateManager = .init(
+            wrappedValue: .init(state: Self.createPaywallState(
+                paywallComponentsData: paywallComponentsData,
+                offering: offering,
+                introEligibilityChecker: introEligibilityChecker,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            ))
+        )
+    }
+
+    public var body: some View {
+        switch self.paywallStateManager.state {
+        case .success(let paywallState):
+            LoadedTemplateComponentsView(
+                paywallState: paywallState,
+                onDismiss: self.onDismiss
             )
-
-            return
+            .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+            .environmentObject(self.introOfferEligibilityContext)
+            .task {
+                await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+            }
+        case .failure:
+            Text("Error creating paywall")
         }
+    }
 
+    private static func createPaywallState(
+        paywallComponentsData: PaywallComponentsData,
+        offering: Offering,
+        introEligibilityChecker: TrialOrIntroEligibilityChecker,
+        showZeroDecimalPlacePrices: Bool
+    ) -> Result<PaywallState, Error> {
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
 
@@ -88,47 +126,24 @@ struct TemplateComponentsView: View {
 
             let packages = factory.packageValidator.packages
 
-            self.componentViewModel = .root(root)
-            self._selectedPackageContext = .init(wrappedValue: PackageContext(
-                package: factory.packageValidator.defaultSelectedPackage,
-                variableContext: .init(
+            return .success(
+                .init(
+                    viewModelFactory: factory,
                     packages: packages,
+                    componentViewModel: .root(root),
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
-            ))
-            self.packages = packages
+            )
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
             Logger.error(Strings.paywall_view_model_construction_failed(error))
 
             // WIP: Need to select default package in fallback view model
-            self.packages = []
-            self.componentViewModel = Self.fallbackPaywallViewModels()
-            self._selectedPackageContext = .init(wrappedValue: PackageContext(
-                package: nil,
-                variableContext: .init()
-            ))
+            return .failure(error)
         }
     }
 
-    public var body: some View {
-        VStack(spacing: 0) {
-            ComponentsView(
-                componentViewModels: [self.componentViewModel],
-                onDismiss: onDismiss
-            )
-        }
-        .frame(maxHeight: .infinity, alignment: .topLeading)
-        .edgesIgnoringSafeArea(.top)
-        .environmentObject(self.introOfferEligibilityContext)
-        .environmentObject(self.selectedPackageContext)
-        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-        .task {
-            await self.introOfferEligibilityContext.computeEligibility(for: self.packages)
-        }
-    }
-
-    static func chooseLocalization(
+    private static func chooseLocalization(
         for componentsData: PaywallComponentsData
     ) -> LocalizationProvider {
 
@@ -157,6 +172,44 @@ struct TemplateComponentsView: View {
             return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate struct LoadedTemplateComponentsView: View {
+
+    private let paywallState: PaywallState
+    private let onDismiss: () -> Void
+
+    @StateObject
+    private var selectedPackageContext: PackageContext
+
+    init(paywallState: PaywallState, onDismiss: @escaping () -> Void) {
+        self.paywallState = paywallState
+        self.onDismiss = onDismiss
+
+        self._selectedPackageContext = .init(
+            wrappedValue: .init(
+                package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                variableContext: .init(
+                    packages: paywallState.packages,
+                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices
+                )
+            )
+        )
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ComponentsView(
+                componentViewModels: [paywallState.componentViewModel],
+                onDismiss: self.onDismiss
+            )
+        }
+        .environmentObject(self.selectedPackageContext)
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .edgesIgnoringSafeArea(.top)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

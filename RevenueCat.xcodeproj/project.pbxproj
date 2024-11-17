@@ -2383,6 +2383,44 @@
 			path = PreviewHelpers;
 			sourceTree = "<group>";
 		};
+		2C7457432CEA6470004ACE52 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				7707A94A2CAD936A006E0313 /* Button */,
+				88B1BAE62C813A3C001B7EE5 /* Image */,
+				88B1BAE22C813A3C001B7EE5 /* LinkButton */,
+				2CC791542CC0452100FBE120 /* Packages */,
+				88B1BADF2C813A3C001B7EE5 /* Spacer */,
+				88B1BAEA2C813A3C001B7EE5 /* Stack */,
+				88B1BADC2C813A3C001B7EE5 /* Text */,
+				778360772CCA85D1000785B8 /* StickyFooter */,
+				778360742CCA84FA000785B8 /* Root */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		2C7457442CEA652B004ACE52 /* ViewHelpers */ = {
+			isa = PBXGroup;
+			children = (
+				77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */,
+				2C91068D2CE2481800189565 /* SizeModifier.swift */,
+				2CAB87F62CAAB13200247013 /* Shape.swift */,
+			);
+			path = ViewHelpers;
+			sourceTree = "<group>";
+		};
+		2C7457452CEA653A004ACE52 /* ViewModelHelpers */ = {
+			isa = PBXGroup;
+			children = (
+				2C08B3162CDA443A0024857B /* ViewModelFactory.swift */,
+				2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */,
+				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
+				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
+				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
+			);
+			path = ViewModelHelpers;
+			sourceTree = "<group>";
+		};
 		2C8EC6AD2CCBD33800D6CCF8 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -4327,7 +4365,7 @@
 				887A604D2C1D037000E1A461 /* Template5View.swift */,
 				88A543E22C37A4970039C6A5 /* Template7View.swift */,
 				887A604E2C1D037000E1A461 /* TemplateViewType.swift */,
-				88AD01352C74196600AA1F2B /* Components */,
+				88AD01352C74196600AA1F2B /* V2 */,
 			);
 			path = Templates;
 			sourceTree = "<group>";
@@ -4534,35 +4572,21 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		88AD01352C74196600AA1F2B /* Components */ = {
+		88AD01352C74196600AA1F2B /* V2 */ = {
 			isa = PBXGroup;
 			children = (
 				2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */,
 				2C7457202CE702BB004ACE52 /* PackageContext.swift */,
 				2C74571E2CE7028A004ACE52 /* ScreenCondition.swift */,
-				2C91068D2CE2481800189565 /* SizeModifier.swift */,
-				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
-				2C08B3162CDA443A0024857B /* ViewModelFactory.swift */,
-				2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */,
-				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
-				778360772CCA85D1000785B8 /* StickyFooter */,
-				778360742CCA84FA000785B8 /* Root */,
-				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
 				88B1BAE32C813A3C001B7EE5 /* TemplateComponentsView.swift */,
 				88EA80EC2C8771A7003E6675 /* TemplateComponentsView+Extensions.swift */,
-				2CAB87F62CAAB13200247013 /* Shape.swift */,
 				2C7457222CE713DA004ACE52 /* PreviewHelpers */,
+				2C7457442CEA652B004ACE52 /* ViewHelpers */,
+				2C7457452CEA653A004ACE52 /* ViewModelHelpers */,
 				2C2AEB0D2CA64DA900A50F38 /* TemplateComponentsViewPreviews */,
-				7707A94A2CAD936A006E0313 /* Button */,
-				88B1BAE62C813A3C001B7EE5 /* Image */,
-				88B1BAE22C813A3C001B7EE5 /* LinkButton */,
-				2CC791542CC0452100FBE120 /* Packages */,
-				88B1BADF2C813A3C001B7EE5 /* Spacer */,
-				88B1BAEA2C813A3C001B7EE5 /* Stack */,
-				88B1BADC2C813A3C001B7EE5 /* Text */,
-				77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */,
+				2C7457432CEA6470004ACE52 /* Components */,
 			);
-			path = Components;
+			path = V2;
 			sourceTree = "<group>";
 		};
 		88B1BADC2C813A3C001B7EE5 /* Text */ = {
