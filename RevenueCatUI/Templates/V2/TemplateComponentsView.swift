@@ -24,9 +24,8 @@ struct LocalizationProvider {
 
 }
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate class PaywallStateManager: ObservableObject {
+private class PaywallStateManager: ObservableObject {
     @Published var state: Result<PaywallState, Error>
 
     init(state: Result<PaywallState, Error>) {
@@ -35,7 +34,7 @@ fileprivate class PaywallStateManager: ObservableObject {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate struct PaywallState {
+private struct PaywallState {
 
     let viewModelFactory: ViewModelFactory
     let packages: [Package]
@@ -70,7 +69,9 @@ struct TemplateComponentsView: View {
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
 
-
+        // The creation of the paywall view components can be intensive and should only be executed once.
+        // The instantiation of the PaywallStateManager needs to stay in the init of the wrappedValue
+        // because StateObject init is an autoclosure that will only get executed once.
         self._paywallStateManager = .init(
             wrappedValue: .init(state: Self.createPaywallState(
                 paywallComponentsData: paywallComponentsData,
@@ -94,11 +95,55 @@ struct TemplateComponentsView: View {
                 await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
             }
         case .failure:
+            // WIP: Need to use fallback paywall
             Text("Error creating paywall")
         }
     }
 
-    private static func createPaywallState(
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct LoadedTemplateComponentsView: View {
+
+    private let paywallState: PaywallState
+    private let onDismiss: () -> Void
+
+    @StateObject
+    private var selectedPackageContext: PackageContext
+
+    init(paywallState: PaywallState, onDismiss: @escaping () -> Void) {
+        self.paywallState = paywallState
+        self.onDismiss = onDismiss
+
+        self._selectedPackageContext = .init(
+            wrappedValue: .init(
+                package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                variableContext: .init(
+                    packages: paywallState.packages,
+                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices
+                )
+            )
+        )
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ComponentsView(
+                componentViewModels: [paywallState.componentViewModel],
+                onDismiss: self.onDismiss
+            )
+        }
+        .environmentObject(self.selectedPackageContext)
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .edgesIgnoringSafeArea(.top)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension TemplateComponentsView {
+
+    static func createPaywallState(
         paywallComponentsData: PaywallComponentsData,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
@@ -143,7 +188,7 @@ struct TemplateComponentsView: View {
         }
     }
 
-    private static func chooseLocalization(
+    static func chooseLocalization(
         for componentsData: PaywallComponentsData
     ) -> LocalizationProvider {
 
@@ -172,87 +217,81 @@ struct TemplateComponentsView: View {
             return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
     }
-}
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate struct LoadedTemplateComponentsView: View {
-
-    private let paywallState: PaywallState
-    private let onDismiss: () -> Void
-
-    @StateObject
-    private var selectedPackageContext: PackageContext
-
-    init(paywallState: PaywallState, onDismiss: @escaping () -> Void) {
-        self.paywallState = paywallState
-        self.onDismiss = onDismiss
-
-        self._selectedPackageContext = .init(
-            wrappedValue: .init(
-                package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-                variableContext: .init(
-                    packages: paywallState.packages,
-                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices
-                )
-            )
-        )
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ComponentsView(
-                componentViewModels: [paywallState.componentViewModel],
-                onDismiss: self.onDismiss
-            )
-        }
-        .environmentObject(self.selectedPackageContext)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
-        .edgesIgnoringSafeArea(.top)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ComponentsView: View {
-
-    let componentViewModels: [PaywallComponentViewModel]
-    private let onDismiss: () -> Void
-
-    init(componentViewModels: [PaywallComponentViewModel], onDismiss: @escaping () -> Void) {
-        self.componentViewModels = componentViewModels
-        self.onDismiss = onDismiss
-    }
-
-    var body: some View {
-        self.layoutComponents(self.componentViewModels)
-    }
-
-    @ViewBuilder
-    func layoutComponents(_ componentViewModels: [PaywallComponentViewModel]) -> some View {
-        ForEach(Array(componentViewModels.enumerated()), id: \.offset) { _, item in
-            switch item {
-            case .root(let viewModel):
-                RootView(viewModel: viewModel, onDismiss: onDismiss)
-            case .text(let viewModel):
-                TextComponentView(viewModel: viewModel)
-            case .image(let viewModel):
-                ImageComponentView(viewModel: viewModel)
-            case .spacer(let viewModel):
-                SpacerComponentView(viewModel: viewModel)
-            case .stack(let viewModel):
-                StackComponentView(viewModel: viewModel, onDismiss: onDismiss)
-            case .linkButton(let viewModel):
-                LinkButtonComponentView(viewModel: viewModel)
-            case .button(let viewModel):
-                ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
-            case .package(let viewModel):
-                PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
-            case .purchaseButton(let viewModel):
-                PurchaseButtonComponentView(viewModel: viewModel)
-            case .stickyFooter(let viewModel):
-                StickyFooterComponentView(viewModel: viewModel)
+    /// Returns the preferred paywall locale from the device's preferred locales.
+    ///
+    /// The algorithm matches first on language, then on region. If no matching locale is found,
+    /// the function returns `nil`.
+    ///
+    /// - Parameter paywallLocales: An array of `Locale` objects representing the paywall's available locales.
+    /// - Returns: A `Locale` available on the paywall chosen based on the device's preferredlocales,
+    /// or `nil` if no match is found.
+    ///
+    /// # Example 1
+    ///   device locales: `en_CA, en_US, fr_CA`
+    ///   paywall locales: `en_US, fr_FR, en_CA, de_DE`
+    ///   returns `en_CA`
+    ///
+    ///
+    /// # Example 2
+    ///   device locales: `en_CA, en_US, fr_CA`
+    ///   paywall locales: `en_US, fr_FR, de_DE`
+    ///   returns `en_US`
+    ///
+    /// # Example 3
+    ///   device locales: `fr_CA, en_CA, en_US`
+    ///   paywall locales: `en_US, fr_FR, de_DE, en_CA`
+    ///   returns `fr_FR`
+    ///
+    /// # Example 4
+    ///   device locales: `es_ES`
+    ///   paywall locales: `en_US, de_DE`
+    ///   returns `nil`
+    ///
+    static func preferredLocale(from paywallLocales: [Locale]) -> Locale? {
+        for preferredLocale in Locale.preferredLocales {
+            // match language
+            if let languageMatch = paywallLocales.first(where: { $0.matchesLanguage(preferredLocale) }) {
+                // Look for a match that includes region
+                if let exactMatch = paywallLocales.first(where: { $0 == preferredLocale }) {
+                    return exactMatch
+                }
+                // If no region match, return match that matched on region only
+                return languageMatch
             }
         }
+
+        return nil
+    }
+}
+
+fileprivate extension Locale {
+
+    static var preferredLocales: [Self] {
+        return Self.preferredLanguages.map(Locale.init(identifier:))
+    }
+
+    func matchesLanguage(_ rhs: Locale) -> Bool {
+        self.removingRegion == rhs.removingRegion
+    }
+
+    // swiftlint:disable:next identifier_name
+    var rc_languageCode: String? {
+        #if swift(>=5.9)
+        // `Locale.languageCode` is deprecated
+        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
+            return self.language.languageCode?.identifier
+        } else {
+            return self.languageCode
+        }
+        #else
+        return self.languageCode
+        #endif
+    }
+
+    /// - Returns: the same locale as `self` but removing its region.
+    private var removingRegion: Self? {
+        return self.rc_languageCode.map(Locale.init(identifier:))
     }
 
 }
