@@ -177,7 +177,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     }
     let productParams = productParamsBuilder.build()
 
-    purchases.purchase(productParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(packageParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(productParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     #endif
 
