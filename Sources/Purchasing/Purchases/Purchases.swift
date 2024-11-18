@@ -1980,22 +1980,22 @@ extension Purchases {
      * offers for the provided product.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    public func eligibleWinBackOffers(
+    @objc public func eligibleWinBackOffers(
         forProduct product: StoreProduct,
-        completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     ) {
         Task {
             let result: Result<[WinBackOffer], PublicError>
             do {
                 let eligibleWinBackOffers = try await self.eligibleWinBackOffers(forProduct: product)
-                result = .success(eligibleWinBackOffers)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(eligibleWinBackOffers, nil)
+                }
             } catch {
                 let publicError = RevenueCat.ErrorUtils.purchasesError(withUntypedError: error).asPublicError
-                result = .failure(publicError)
-            }
-
-            OperationDispatcher.dispatchOnMainActor {
-                completion(result)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
             }
         }
     }

@@ -273,7 +273,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
-        let _: [StoreProduct] = await purchases.products([])
+        let storeProducts : [StoreProduct] = await purchases.products([])
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
                                                                                       promotionalOffer: offer)
@@ -281,10 +281,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
 
-        #if ENABLE_STORE_PARAMS
         let params = PurchaseParams.Builder(package: pack).with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
-        #endif
 
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
@@ -295,6 +293,12 @@ private func checkAsyncMethods(purchases: Purchases) async {
             let result = try await StoreKit.Product.products(for: [""]).first!.purchase()
             let _: StoreTransaction? = try await purchases.recordPurchase(result)
         }
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            let winBackOffers: [WinBackOffer] = try await purchases.eligibleWinBackOffers(forProduct: storeProducts.first!)
+        }
+        #endif
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
@@ -324,6 +328,16 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     if #available(iOS 16.0, *) {
         purchases.showStoreMessages { }
         purchases.showStoreMessages(for: [StoreMessageType.generic]) { }
+    }
+    #endif
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        purchases.getProducts([""]) { (products: [StoreProduct]) in
+            purchases.eligibleWinBackOffers(
+                forProduct: products.first!
+            ) { (winBackOffers: [WinBackOffer]?, error: Error?) in }
+        }
     }
     #endif
 }

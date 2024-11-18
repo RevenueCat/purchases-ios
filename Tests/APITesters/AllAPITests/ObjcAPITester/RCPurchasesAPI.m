@@ -133,6 +133,18 @@ NSString *storeFrontCountryCode;
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     RCPurchaseParams *packageParams = [[[[[RCPurchaseParamsBuilder alloc] initWithPackage:pack] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
     RCPurchaseParams *productParams = [[[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
+
+    // Win-back offers
+    if (@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)) {
+        [p eligibleWinBackOffersForProduct:storeProduct
+                                completion:^(NSArray<RCWinBackOffer *> *winBackOffers, NSError *error) {
+            RCPurchaseParams *productParams = [[[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct]
+                                                 withMetadata:@{@"foo": @"bar"}]
+                                                withWinBackOffer:winBackOffers.firstObject]
+                                               build];
+        }];
+    }
+
     [p params:packageParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     #endif
 
