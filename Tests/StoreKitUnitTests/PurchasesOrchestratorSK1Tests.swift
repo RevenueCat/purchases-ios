@@ -343,12 +343,14 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
                               storeProduct: .from(product: storeProduct),
                               offeringIdentifier: "offering")
 
-        let params = PurchaseParams.Builder(package: package)
-            .with(metadata: ["key": "value"])
-            .build()
+        var params = PurchaseParams.Builder(package: package)
+
+        #if ENABLE_TRANSACTION_METADATA
+        params = params.with(metadata: ["key": "value"])
+        #endif
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params.build()) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }

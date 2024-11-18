@@ -283,11 +283,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let metadata = ["key": "value"]
         let params = PurchaseParams.Builder(package: package)
-            .with(metadata: metadata)
-            .build()
+
+        #if ENABLE_TRANSACTION_METADATA
+        params = params.with(metadata: metadata)
+        #endif
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params.build()) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }

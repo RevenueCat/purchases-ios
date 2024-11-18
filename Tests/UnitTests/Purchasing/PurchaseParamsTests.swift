@@ -75,8 +75,11 @@ class PurchaseParamsTests: TestCase {
         )
 
         var builder = PurchaseParams.Builder(package: package)
-            .with(metadata: metadata)
             .with(promotionalOffer: promoOffer)
+
+        #if ENABLE_TRANSACTION_METADATA
+        builder = builder.with(metadata: metadata)
+        #endif
 
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             builder = builder.with(winBackOffer: winbackOffer)
