@@ -82,6 +82,13 @@ struct TemplateComponentsView: View {
         self.paywallComponentsData = paywallComponentsData
         self.onDismiss = onDismiss
 
+        guard (self.paywallComponentsData.errorInfo ?? [:]).isEmpty else {
+            self.componentViewModel = Self.fallbackPaywallViewModels()
+            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
+
+            return
+        }
+
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
 

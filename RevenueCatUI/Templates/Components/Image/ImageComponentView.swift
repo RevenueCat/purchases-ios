@@ -20,44 +20,40 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
 
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
     let viewModel: ImageComponentViewModel
 
     var body: some View {
-        RemoteImage(url: viewModel.url) { (image, size) in
-            Group {
-                switch viewModel.contentMode {
-                case .fit:
-                    renderImage(image, size)
-                case .fill:
-                    // Need this to be in a clear color overlay so the image
-                    // doesn't push/adjust any parent sizes
-                    Color.clear.overlay {
-                        renderImage(image, size)
-                    }
-                }
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition
+        ) { style in
+            RemoteImage(url: style.url) { (image, size) in
+                renderImage(image, size, with: style)
             }
-            // Works as a max height for both fit and fill
-            // using the CGSize of an image
-            .applyIfLet(viewModel.maxHeight, apply: { view, value in
-                view.frame(height: value)
-            })
+            .size(style.size)
+            .clipped()
         }
-        .clipped()
     }
 
-    private func renderImage(_ image: Image, _ size: CGSize) -> some View {
+    private func renderImage(_ image: Image, _ size: CGSize, with style: ImageComponentStyle) -> some View {
         image
             .resizable()
-            .aspectRatio(contentMode: viewModel.contentMode)
+            .aspectRatio(contentMode: style.contentMode)
             .overlay(
                 LinearGradient(
-                    gradient: Gradient(colors: viewModel.gradientColors),
+                    gradient: Gradient(colors: style.gradientColors),
                     startPoint: .top,
                     endPoint: .bottom
                 )
             )
-            .cornerBorder(border: nil,
-                          radiuses: viewModel.cornerRadiuses)
+            .shape(border: nil,
+                   shape: style.shape)
     }
 
 }
@@ -154,10 +150,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        cornerRadiuses: .init(topLeading: 40,
-                                              topTrailing: 40,
-                                              bottomLeading: 40,
-                                              bottomTrailing: 40)
+                        maskShape: .rectangle(.init(topLeading: 40,
+                                                    topTrailing: 40,
+                                                    bottomLeading: 40,
+                                                    bottomTrailing: 40))
                     )
                 )
             )

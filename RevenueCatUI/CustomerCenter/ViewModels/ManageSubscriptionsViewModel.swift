@@ -162,6 +162,29 @@ struct IdentifiableURL: Identifiable {
 
 }
 
+// MARK: - Promotional Offer Sheet Dismissal Handling
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension ManageSubscriptionsViewModel {
+
+    /// Function responsible for handling the user's action on the PromotionalOfferView
+    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        // Clear the promotional offer data to dismiss the sheet
+        self.promotionalOfferData = nil
+
+        if userAction.shouldTerminateCurrentPathFlow {
+            self.loadingPath = nil
+        } else {
+            if let loadingPath = loadingPath {
+                await self.onPathSelected(path: loadingPath)
+                self.loadingPath = nil
+            }
+        }
+    }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

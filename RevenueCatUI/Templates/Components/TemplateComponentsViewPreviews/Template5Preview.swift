@@ -40,25 +40,25 @@ private enum Template5Preview {
 
     static let title = PaywallComponent.TextComponent(
         text: "title",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .black,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .largeTitle,
+        fontSize: .headingL,
         horizontalAlignment: .leading
     )
 
     static let body = PaywallComponent.TextComponent(
         text: "body",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .regular,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .body,
+        fontSize: .bodyM,
         horizontalAlignment: .leading
     )
 
@@ -86,29 +86,29 @@ private enum Template5Preview {
                 .text(.init(
                     text: nameTextLid,
                     fontWeight: .bold,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
                     text: detailTextLid,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.leading),
+            dimension: .vertical(.leading, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
                                               bottom: 10,
                                               leading: 20,
                                               trailing: 20),
-            cornerRadiuses: .init(topLeading: 16,
-                                  topTrailing: 16,
-                                  bottomLeading: 16,
-                                  bottomTrailing: 20),
-            border: .init(color: .init(light: "#cccccc"), width: 1)
+            shape: .rectangle(.init(topLeading: 16,
+                                    topTrailing: 16,
+                                    bottomLeading: 16,
+                                    bottomTrailing: 20)),
+            border: .init(color: .init(light: .hex("#cccccc")), width: 1)
         )
 
         return PaywallComponent.PackageComponent(
@@ -132,11 +132,11 @@ private enum Template5Preview {
                                  isSelectedByDefault: true)),
             .text(.init(
                 text: "package_terms",
-                color: .init(light: "#999999"),
-                textStyle: .caption
+                color: .init(light: .hex("#999999")),
+                fontSize: .bodyS
             ))
         ],
-        dimension: .vertical(.center),
+        dimension: .vertical(.center, .start),
         spacing: 10,
         backgroundColor: nil,
         margin: .init(top: 20,
@@ -152,18 +152,18 @@ private enum Template5Preview {
                 .text(.init(
                     text: "cta",
                     fontWeight: .bold,
-                    color: .init(light: "#ffffff")
+                    color: .init(light: .hex("#ffffff"))
                 ))
             ],
-            backgroundColor: .init(light: "#e89d89"),
+            backgroundColor: .init(light: .hex("#e89d89")),
             padding: .init(top: 15,
                            bottom: 15,
                            leading: 50,
                            trailing: 50),
-            cornerRadiuses: .init(topLeading: 16,
-                                  topTrailing: 16,
-                                  bottomLeading: 16,
-                                  bottomTrailing: 16)
+            shape: .rectangle(.init(topLeading: 16,
+                                    topTrailing: 16,
+                                    bottomLeading: 16,
+                                    bottomTrailing: 16))
         )
     )
 
@@ -172,7 +172,6 @@ private enum Template5Preview {
             .purchaseButton(purchaseButton)
         ],
         dimension: .horizontal(.center, .start),
-        width: .init(type: .fill, value: nil),
         spacing: 0,
         backgroundColor: nil
     )
@@ -184,8 +183,7 @@ private enum Template5Preview {
             .stack(packagesStack),
             .stack(purchaseButtonStack)
         ],
-        dimension: .vertical(.leading),
-        width: .init(type: .fill, value: nil),
+        dimension: .vertical(.leading, .start),
         spacing: 30,
         backgroundColor: nil,
         margin: .init(top: 0,
@@ -199,7 +197,6 @@ private enum Template5Preview {
             .image(catImage),
             .stack(contentStack)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 20,
         backgroundColor: nil
     )

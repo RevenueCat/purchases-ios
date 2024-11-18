@@ -40,12 +40,13 @@ struct TextComponentView: View {
             Group {
                 if style.visible {
                     Text(style.text)
-                        .font(style.textStyle)
+                        .font(style.fontSize)
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(style.horizontalAlignment)
                         .foregroundStyle(style.color)
                         .padding(style.padding)
+                        .size(style.size)
                         .background(style.backgroundColor)
                         .padding(style.margin)
                 } else {
@@ -71,7 +72,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     text: "id_1",
-                    color: .init(light: "#000000")
+                    color: .init(light: .hex("#000000"))
                 )
             )
         )
@@ -87,10 +88,10 @@ struct TextComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     text: "id_1",
-                    fontFamily: nil,
+                    fontName: nil,
                     fontWeight: .black,
-                    color: .init(light: "#ff0000"),
-                    backgroundColor: .init(light: "#dedede"),
+                    color: .init(light: .hex("#ff0000")),
+                    backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 10,
                                    bottom: 10,
                                    leading: 20,
@@ -99,7 +100,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                   bottom: 20,
                                   leading: 10,
                                   trailing: 10),
-                    textStyle: .footnote,
+                    fontSize: .bodyS,
                     horizontalAlignment: .leading
                 )
             )
@@ -116,13 +117,13 @@ struct TextComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     text: "id_1",
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     overrides: .init(
                         states: .init(
                             selected: .init(
                                 fontWeight: .black,
-                                color: .init(light: "#ff0000"),
-                                backgroundColor: .init(light: "#0000ff"),
+                                color: .init(light: .hex("#ff0000")),
+                                backgroundColor: .init(light: .hex("#0000ff")),
                                 padding: .init(top: 10,
                                                bottom: 10,
                                                leading: 10,
@@ -131,7 +132,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                               bottom: 10,
                                               leading: 10,
                                               trailing: 10),
-                                textStyle: .title
+                                fontSize: .headingXL
                             )
                         )
                     )
@@ -152,7 +153,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     text: "id_1",
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     overrides: .init(
                         conditions: .init(
                             medium: .init(
@@ -177,7 +178,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 ],
                 component: .init(
                     text: "id_1",
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     overrides: .init(
                         conditions: .init(
                             medium: .init(

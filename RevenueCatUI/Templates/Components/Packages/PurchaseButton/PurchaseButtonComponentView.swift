@@ -53,28 +53,6 @@ struct PurchaseButtonComponentView: View {
 
 }
 
-private struct ShapeModifier: ViewModifier {
-    var shape: PaywallComponent.Shape
-
-    func body(content: Content) -> some View {
-        switch shape {
-        case .pill:
-            content
-                .clipShape(Capsule())
-        case .rectangle:
-            content
-        }
-    }
-}
-
-private extension View {
-
-    func shape(_ shape: PaywallComponent.Shape) -> some View {
-        self.modifier(ShapeModifier(shape: shape))
-    }
-
-}
-
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -91,8 +69,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "id_1",
                             fontWeight: .bold,
-                            color: .init(light: "#ffffff"),
-                            backgroundColor: .init(light: "#ff0000"),
+                            color: .init(light: .hex("#ffffff")),
+                            backgroundColor: .init(light: .hex("#ff0000")),
                             padding: .init(top: 10,
                                            bottom: 10,
                                            leading: 30,
@@ -123,20 +101,18 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                             .text(.init(
                                 text: "id_1",
                                 fontWeight: .bold,
-                                color: .init(light: "#ffffff")
+                                color: .init(light: .hex("#ffffff"))
                             ))
                         ],
-                        backgroundColor: .init(light: "#ff0000"),
+                        backgroundColor: .init(light: .hex("#ff0000")),
                         padding: .init(top: 8,
                                        bottom: 8,
                                        leading: 8,
                                        trailing: 8),
-                        cornerRadiuses: PaywallComponent.CornerRadiuses(
-                            topLeading: 8,
-                            topTrailing: 8,
-                            bottomLeading: 8,
-                            bottomTrailing: 8
-                        )
+                        shape: .rectangle(.init(topLeading: 8,
+                                                topTrailing: 8,
+                                                bottomLeading: 8,
+                                                bottomTrailing: 8))
                     )
                 ),
                 localizedStrings: [

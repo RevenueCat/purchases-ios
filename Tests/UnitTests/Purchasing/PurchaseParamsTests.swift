@@ -61,15 +61,38 @@ class PurchaseParamsTests: TestCase {
                                                      timestamp: 0)
         let promoOffer = PromotionalOffer(discount: discount, signedData: signedData)
         let metadata = ["key": "value"]
-        let params = PurchaseParams.Builder(package: package)
+
+        let winbackOffer = WinBackOffer(
+            discount: MockStoreProductDiscount(
+                offerIdentifier: nil,
+                currencyCode: nil,
+                price: 0,
+                localizedPriceString: "",
+                paymentMode: .freeTrial,
+                subscriptionPeriod: .init(value: 1, unit: .week),
+                numberOfPeriods: 1,
+                type: .winBack
+            )
+        )
+
+        var builder = PurchaseParams.Builder(package: package)
             .with(metadata: metadata)
             .with(promotionalOffer: promoOffer)
-            .build()
+
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            builder = builder.with(winBackOffer: winbackOffer)
+        }
+
+        let params = builder.build()
 
         expect(params.package).to(equal(package))
         expect(params.product).to(beNil())
         expect(params.metadata).to(equal(metadata))
         expect(params.promotionalOffer).to(equal(promoOffer))
+
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            expect(params.winBackOffer).to(equal(winbackOffer))
+        }
     }
     #endif
 

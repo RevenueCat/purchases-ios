@@ -432,7 +432,11 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let promoOfferDetails = CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifier,
                                                                                    eligible: false,
                                                                                    title: "Wait",
-                                                                                   subtitle: "Here's an offer for you")
+                                                                                   subtitle: "Here's an offer for you",
+                                                                                   productMapping: [
+                                                                                    "product_id": "offer_id"
+                                                                                   ]
+        )
         let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
         loadPromotionalOfferUseCase.mockedProduct = product
         loadPromotionalOfferUseCase.mockedPromoOfferDetails = promoOfferDetails
@@ -527,7 +531,10 @@ class ManageSubscriptionsViewModelTests: TestCase {
         CustomerCenterConfigData.HelpPath.PromotionalOffer(iosOfferId: offerIdentifierInJSON,
                                                            eligible: true,
                                                            title: "Wait",
-                                                           subtitle: "Here's an offer for you")
+                                                           subtitle: "Here's an offer for you",
+                                                           productMapping: [
+                                                            "product_id": "offer_id"
+                                                           ])
         let loadPromotionalOfferUseCase = MockLoadPromotionalOfferUseCase()
         loadPromotionalOfferUseCase.mockedProduct = product
         loadPromotionalOfferUseCase.mockedPromoOfferDetails = promoOfferDetails

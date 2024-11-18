@@ -37,25 +37,25 @@ private enum Template1Preview {
 
     static let title = PaywallComponent.TextComponent(
         text: "title",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .black,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .largeTitle,
+        fontSize: .headingL,
         horizontalAlignment: .center
     )
 
     static let body = PaywallComponent.TextComponent(
         text: "body",
-        fontFamily: nil,
+        fontName: nil,
         fontWeight: .regular,
-        color: .init(light: "#000000"),
+        color: .init(light: .hex("#000000")),
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        textStyle: .body,
+        fontSize: .bodyM,
         horizontalAlignment: .center
     )
 
@@ -65,18 +65,18 @@ private enum Template1Preview {
                 .text(.init(
                     text: "package_name",
                     fontWeight: .bold,
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 )),
                 .text(.init(
                     text: "package_detail",
-                    color: .init(light: "#000000"),
+                    color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero
                 ))
             ],
-            dimension: .vertical(.center),
+            dimension: .vertical(.center, .start),
             spacing: 0,
             backgroundColor: nil,
             padding: .init(top: 0,
@@ -98,8 +98,8 @@ private enum Template1Preview {
             .text(.init(
                 text: "cta",
                 fontWeight: .bold,
-                color: .init(light: "#ffffff"),
-                backgroundColor: .init(light: "#e89d89"),
+                color: .init(light: .hex("#ffffff")),
+                backgroundColor: .init(light: .hex("#e89d89")),
                 padding: .init(top: 10,
                                bottom: 10,
                                leading: 30,
@@ -115,7 +115,6 @@ private enum Template1Preview {
             .package(package),
             .purchaseButton(purchaseButton)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 30,
         backgroundColor: nil,
         margin: .init(top: 0,
@@ -129,7 +128,6 @@ private enum Template1Preview {
             .image(catImage),
             .stack(contentStack)
         ],
-        width: .init(type: .fill, value: nil),
         spacing: 20,
         backgroundColor: nil
     )

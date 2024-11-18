@@ -23,7 +23,7 @@ extension TemplateComponentsView {
         let errorDict: PaywallComponent.LocalizationDictionary = ["errorID": .string("Error creating paywall")]
         let textComponent = PaywallComponent.TextComponent(
             text: "errorID",
-            color: PaywallComponent.ColorInfo(light: "#000000")
+            color: PaywallComponent.ColorScheme(light: .hex("#000000"))
         )
 
         // swiftlint:disable:next force_try

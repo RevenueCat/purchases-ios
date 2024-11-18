@@ -172,7 +172,16 @@ struct APIKeyDashboardList: View {
 
         var body: some View {
             Button(action: action) {
-                Text(self.offering.serverDescription)
+                HStack {
+                    Text(self.offering.serverDescription)
+                    Spacer()
+                    #if PAYWALL_COMPONENTS
+                    if let errorInfo = self.offering.paywallComponentsData?.errorInfo, !errorInfo.isEmpty {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(Color.red)
+                    }
+                    #endif
+                }
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
@@ -191,7 +200,6 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
 
     var description: String {
         if let name = self.name {
-            #if DEBUG
             if name == "components" {
                 return "V2"
             } else if let template = PaywallTemplate(rawValue: name) {
@@ -199,9 +207,6 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
             } else {
                 return "Unrecognized template"
             }
-            #else
-            return name
-            #endif
         } else {
             return "No paywall"
         }
