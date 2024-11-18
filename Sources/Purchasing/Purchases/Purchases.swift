@@ -1985,7 +1985,6 @@ extension Purchases {
         completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     ) {
         Task {
-            let result: Result<[WinBackOffer], PublicError>
             do {
                 let eligibleWinBackOffers = try await self.eligibleWinBackOffers(forProduct: product)
                 OperationDispatcher.dispatchOnMainActor {
