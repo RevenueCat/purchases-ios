@@ -160,8 +160,11 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     var packageParamsBuilder = PurchaseParams.Builder(package: pack)
-        .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
+
+    #if ENABLE_TRANSACTION_METADATA
+    packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
+    #endif
 
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         packageParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
@@ -169,8 +172,11 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let packageParams = packageParamsBuilder.build()
 
     var productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
-        .with(metadata: ["foo":"bar"])
         .with(promotionalOffer: offer)
+
+    #if ENABLE_TRANSACTION_METADATA
+    productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
+    #endif
 
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         productParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
@@ -281,8 +287,13 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
 
-        let params = PurchaseParams.Builder(package: pack).with(metadata: ["foo":"bar"]).with(promotionalOffer: offer).build()
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
+        var params = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+
+        #if ENABLE_TRANSACTION_METADATA
+        params = params.with(metadata: ["foo":"bar"])
+        #endif
+
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params.build())
 
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)

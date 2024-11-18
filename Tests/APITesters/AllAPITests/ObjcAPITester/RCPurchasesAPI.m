@@ -131,15 +131,25 @@ NSString *storeFrontCountryCode;
     RCOfferings * _Nullable __unused offerings = p.cachedOfferings;
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    RCPurchaseParams *packageParams = [[[[[RCPurchaseParamsBuilder alloc] initWithPackage:pack] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
-    RCPurchaseParams *productParams = [[[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct] withMetadata: @{@"foo":@"bar"}] withPromotionalOffer:pro] build];
+    RCPurchaseParamsBuilder *packageParamBuilder = [[[RCPurchaseParamsBuilder alloc] initWithPackage:pack] withPromotionalOffer:pro];
+
+    #if ENABLE_TRANSACTION_METADATA
+    packageParamBuilder = [packageParamBuilder withMetadata:@{@"foo": @"bar"}];
+    #endif
+    RCPurchaseParams *packageParams = [packageParamBuilder build];
+
+
+    RCPurchaseParamsBuilder *productParamBuilder = [[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct] withPromotionalOffer:pro];
+    #if ENABLE_TRANSACTION_METADATA
+    productParamBuilder = [packageParamBuilder withMetadata:@{@"foo": @"bar"}];
+    #endif
+    RCPurchaseParams *productParams = [productParamBuilder build];
 
     // Win-back offers
     if (@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)) {
         [p eligibleWinBackOffersForProduct:storeProduct
                                 completion:^(NSArray<RCWinBackOffer *> *winBackOffers, NSError *error) {
-            RCPurchaseParams *productParams = [[[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct]
-                                                 withMetadata:@{@"foo": @"bar"}]
+            RCPurchaseParams *productParams = [[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct]
                                                 withWinBackOffer:winBackOffers.firstObject]
                                                build];
         }];

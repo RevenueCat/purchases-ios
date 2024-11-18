@@ -83,6 +83,7 @@ import Foundation
             return self
         }
 
+        #if ENABLE_TRANSACTION_METADATA
         /**
          * Set `metadata`.
          * - Parameter metadata: Key-value pairs of metadata to attatch to the purchase.
@@ -91,6 +92,7 @@ import Foundation
             self.metadata = metadata
             return self
         }
+        #endif
 
         /**
          * Sets a win-back offer for the purchase.
