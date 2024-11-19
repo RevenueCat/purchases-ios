@@ -302,7 +302,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         #if ENABLE_TRANSACTION_METADATA
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(equal(metadata))
         #else
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(equal(metadata))
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(beNil())
         #endif
 
         expect(
