@@ -20,24 +20,24 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ImageComponentViewModel {
 
-    private let localizedStrings: PaywallComponent.LocalizationDictionary
+    private let localizationProvider: LocalizationProvider
     private let component: PaywallComponent.ImageComponent
 
     private let imageInfo: PaywallComponent.ThemeImageUrls
     private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
 
-    init(localizedStrings: PaywallComponent.LocalizationDictionary, component: PaywallComponent.ImageComponent) throws {
-        self.localizedStrings = localizedStrings
+    init(localizationProvider: LocalizationProvider, component: PaywallComponent.ImageComponent) throws {
+        self.localizationProvider = localizationProvider
         self.component = component
 
         if let overrideSourceLid = component.overrideSourceLid {
-            self.imageInfo = try localizedStrings.image(key: overrideSourceLid)
+            self.imageInfo = try localizationProvider.localizedStrings.image(key: overrideSourceLid)
         } else {
             self.imageInfo = component.source
         }
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
-            try LocalizedImagePartial.create(from: $0, using: localizedStrings)
+            try LocalizedImagePartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
     }
 

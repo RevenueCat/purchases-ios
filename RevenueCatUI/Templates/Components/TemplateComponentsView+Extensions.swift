@@ -26,9 +26,11 @@ extension TemplateComponentsView {
             color: PaywallComponent.ColorScheme(light: .hex("#000000"))
         )
 
+        let localizationProvider = LocalizationProvider(locale: Locale.current, localizedStrings: errorDict)
+
         // swiftlint:disable:next force_try
         return try! PaywallComponentViewModel.text(
-            TextComponentViewModel(localizedStrings: errorDict, component: textComponent)
+            TextComponentViewModel(localizationProvider: localizationProvider, component: textComponent)
         )
 
     }

@@ -71,7 +71,10 @@ struct ImageComponentView_Previews: PreviewProvider {
             ImageComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
-                    localizedStrings: [:],
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -93,7 +96,10 @@ struct ImageComponentView_Previews: PreviewProvider {
             ImageComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
-                    localizedStrings: [:],
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -115,7 +121,10 @@ struct ImageComponentView_Previews: PreviewProvider {
             ImageComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
-                    localizedStrings: [:],
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -140,7 +149,10 @@ struct ImageComponentView_Previews: PreviewProvider {
             ImageComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
-                    localizedStrings: [:],
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(

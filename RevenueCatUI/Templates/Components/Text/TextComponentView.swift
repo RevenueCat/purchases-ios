@@ -72,9 +72,12 @@ struct TextComponentView_Previews: PreviewProvider {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                localizedStrings: [
-                    "id_1": .string("Hello, world")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world")
+                    ]
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))
@@ -92,9 +95,12 @@ struct TextComponentView_Previews: PreviewProvider {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                localizedStrings: [
-                    "id_1": .string("Hello, world")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world")
+                    ]
+                ),
                 component: .init(
                     text: "id_1",
                     fontName: nil,
@@ -125,9 +131,12 @@ struct TextComponentView_Previews: PreviewProvider {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                localizedStrings: [
-                    "id_1": .string("Hello, world")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world")
+                    ]
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -164,10 +173,13 @@ struct TextComponentView_Previews: PreviewProvider {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                localizedStrings: [
-                    "id_1": .string("THIS TEXT SHOULDN'T SHOW"),
-                    "id_2": .string("Showing medium condition")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("THIS TEXT SHOULDN'T SHOW"),
+                        "id_2": .string("Showing medium condition")
+                    ]
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -193,10 +205,13 @@ struct TextComponentView_Previews: PreviewProvider {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                localizedStrings: [
-                    "id_1": .string("Showing compact condition"),
-                    "id_2": .string("SHOULDN'T SHOW MEDIUM")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Showing compact condition"),
+                        "id_2": .string("SHOULDN'T SHOW MEDIUM")
+                    ]
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -222,9 +237,16 @@ struct TextComponentView_Previews: PreviewProvider {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
-                localizedStrings: [
-                    "id_1": .string("{{ product_name }} is {{ price_per_period_full }} ({{ sub_relative_discount }})")
-                ],
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string(
+                            "{{ product_name }} is " +
+                            "{{ price_per_period_full }} " +
+                            "({{ sub_relative_discount }})"
+                        )
+                    ]
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))
