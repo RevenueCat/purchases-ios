@@ -994,19 +994,6 @@ public extension Purchases {
         return try await purchaseAsync(package: package)
     }
 
-    #if ENABLE_PURCHASE_PARAMS
-
-    @objc(params:withCompletion:)
-    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(params: params, completion: completion)
-    }
-
-    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
-        return try await purchaseAsync(params)
-    }
-
-    #endif
-
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         self.purchasesOrchestrator.restorePurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
@@ -1018,6 +1005,15 @@ public extension Purchases {
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    @objc(params:withCompletion:)
+    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(params: params, completion: completion)
+    }
+
+    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await purchaseAsync(params)
+    }
 
     @objc func invalidateCustomerInfoCache() {
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
@@ -1970,7 +1966,7 @@ extension Purchases {
      * - Returns: The win-back offers on the given product that a subscriber is eligible for.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    internal func eligibleWinBackOffers(
+    public func eligibleWinBackOffers(
         forProduct product: StoreProduct
     ) async throws -> [WinBackOffer] {
         return try await self.purchasesOrchestrator.eligibleWinBackOffers(forProduct: product)
@@ -1984,22 +1980,21 @@ extension Purchases {
      * offers for the provided product.
      * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
      */
-    internal func eligibleWinBackOffers(
+    @objc public func eligibleWinBackOffers(
         forProduct product: StoreProduct,
-        completion: @escaping @Sendable (Result<[WinBackOffer], PublicError>) -> Void
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     ) {
         Task {
-            let result: Result<[WinBackOffer], PublicError>
             do {
                 let eligibleWinBackOffers = try await self.eligibleWinBackOffers(forProduct: product)
-                result = .success(eligibleWinBackOffers)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(eligibleWinBackOffers, nil)
+                }
             } catch {
                 let publicError = RevenueCat.ErrorUtils.purchasesError(withUntypedError: error).asPublicError
-                result = .failure(publicError)
-            }
-
-            OperationDispatcher.dispatchOnMainActor {
-                completion(result)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
             }
         }
     }

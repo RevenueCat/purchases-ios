@@ -31,11 +31,9 @@ protocol PurchasesOrchestratorTests {
 
     // MARK: - PurchaseParams
 
-    #if ENABLE_PURCHASE_PARAMS
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws
 
     func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws
-    #endif
 
     // MARK: - Paywalls
 

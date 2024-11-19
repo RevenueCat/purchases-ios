@@ -232,7 +232,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    #if ENABLE_PURCHASE_PARAMS
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         self.unimplemented()
     }
@@ -240,7 +239,6 @@ extension MockPurchases: PurchasesType {
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         self.unimplemented()
     }
-    #endif
 
     func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.unimplemented()
@@ -491,7 +489,7 @@ extension MockPurchases: PurchasesSwiftType {
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func eligibleWinBackOffers(
         forProduct product: StoreProduct,
-        completion: @escaping (Result<[WinBackOffer], PublicError>) -> Void
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     ) {
         self.unimplemented()
     }

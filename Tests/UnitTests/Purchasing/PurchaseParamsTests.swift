@@ -19,7 +19,6 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchaseParamsTests: TestCase {
 
-    #if ENABLE_PURCHASE_PARAMS
     // MARK: - PurchaseParams
     func testPurchaseParamsBuilderWithProduct() async throws {
         let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
@@ -76,8 +75,11 @@ class PurchaseParamsTests: TestCase {
         )
 
         var builder = PurchaseParams.Builder(package: package)
-            .with(metadata: metadata)
             .with(promotionalOffer: promoOffer)
+
+        #if ENABLE_TRANSACTION_METADATA
+        builder = builder.with(metadata: metadata)
+        #endif
 
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             builder = builder.with(winBackOffer: winbackOffer)
@@ -87,13 +89,18 @@ class PurchaseParamsTests: TestCase {
 
         expect(params.package).to(equal(package))
         expect(params.product).to(beNil())
+
+        #if ENABLE_TRANSACTION_METADATA
         expect(params.metadata).to(equal(metadata))
+        #else
+        expect(params.metadata).to(beNil())
+        #endif
+
         expect(params.promotionalOffer).to(equal(promoOffer))
 
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
             expect(params.winBackOffer).to(equal(winbackOffer))
         }
     }
-    #endif
 
 }
