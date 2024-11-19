@@ -254,9 +254,10 @@ public struct PaywallView: View {
 
         #if PAYWALL_COMPONENTS
         if let componentData = offering.paywallComponentsData {
-            TemplateComponentsView(
+            PaywallsV2View(
                 paywallComponentsData: componentData,
                 offering: offering,
+                introEligibilityChecker: .default(),
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                 onDismiss: {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {
