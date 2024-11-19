@@ -177,6 +177,7 @@ struct Template1Preview_Previews: PreviewProvider {
             offering: .init(identifier: "default",
                             serverDescription: "",
                             availablePackages: [package]),
+            showZeroDecimalPlacePrices: true,
             onDismiss: { }
         )
         .previewLayout(.fixed(width: 400, height: 800))

@@ -40,6 +40,7 @@ class TextComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        packageContext: PackageContext,
         apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
@@ -49,9 +50,11 @@ class TextComponentViewModel {
         )
         let partial = localizedPartial?.partial
 
+        let text = localizedPartial?.text ?? self.text
+
         let style = TextComponentStyle(
             visible: partial?.visible ?? true,
-            text: localizedPartial?.text ?? self.text,
+            text: Self.processText(text, packageContext: packageContext),
             fontFamily: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
@@ -64,6 +67,37 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+    private static func processText(_ text: String, packageContext: PackageContext) -> String {
+        guard let package = packageContext.package else {
+            return text
+        }
+
+        let discount = Self.discount(
+            from: package.storeProduct.pricePerMonth?.doubleValue,
+            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+        )
+
+        let context: VariableHandler.Context = .init(
+            discountRelativeToMostExpensivePerMonth: discount,
+            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
+        )
+        let locale = Locale.current
+
+        return VariableHandler.processVariables(
+            in: text,
+            with: package,
+            context: context,
+            locale: locale
+        )
+    }
+
+    private static func discount(from pricePerMonth: Double?, relativeTo mostExpensive: Double?) -> Double? {
+        guard let pricePerMonth, let mostExpensive else { return nil }
+        guard pricePerMonth < mostExpensive else { return nil }
+
+        return (mostExpensive - pricePerMonth) / mostExpensive
     }
 
 }

@@ -20,6 +20,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView: View {
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -35,7 +38,8 @@ struct TextComponentView: View {
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
-            condition: self.screenCondition
+            condition: self.screenCondition,
+            packageContext: self.packageContext
         ) { style in
             Group {
                 if style.visible {
@@ -62,6 +66,7 @@ struct TextComponentView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
+
     static var previews: some View {
         // Default
         TextComponentView(
@@ -75,6 +80,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     color: .init(light: .hex("#000000"))
                 )
             )
+        )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
@@ -104,6 +113,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     horizontalAlignment: .leading
                 )
             )
+        )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
@@ -139,6 +152,10 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
+        )
         .environment(\.componentViewState, .selected)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("State - Selected")
@@ -163,6 +180,10 @@ struct TextComponentView_Previews: PreviewProvider {
                     )
                 )
             )
+        )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
         )
         .environment(\.screenCondition, .medium)
         .previewLayout(.sizeThatFits)
@@ -189,9 +210,33 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
+        .environmentObject(PackageContext(
+            package: nil,
+            variableContext: .init())
+        )
         .environment(\.screenCondition, .compact)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
+
+        // Process variable
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizedStrings: [
+                    "id_1": .string("{{ product_name }} is {{ price_per_period_full }} ({{ sub_relative_discount }})")
+                ],
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .environmentObject(PackageContext(
+            package: PreviewMock.annualPackage,
+            variableContext: .init(packages: [PreviewMock.monthlyPackage, PreviewMock.annualPackage]))
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Process variable")
     }
 }
 

@@ -21,13 +21,14 @@ import SwiftUI
 struct PackageComponentView: View {
 
     @EnvironmentObject
-    private var paywallState: PaywallState
+    private var packageContext: PackageContext
 
     let viewModel: PackageComponentViewModel
     let onDismiss: () -> Void
 
     private var componentViewState: ComponentViewState {
-        guard let selectedPackage = paywallState.selectedPackage,
+        // Gets selected package context from parent heirarchy
+        guard let selectedPackage = packageContext.package,
                 let package = viewModel.package else {
             return .default
         }
@@ -38,13 +39,27 @@ struct PackageComponentView: View {
     var body: some View {
         if let package = self.viewModel.package {
             Button {
-                self.paywallState.select(package: package)
+                // Updating package with same variable context
+                // This will be needed when different sets of packages
+                // in different tiers
+                self.packageContext.update(packageContext: .init(
+                    package: package,
+                    variableContext: self.packageContext.variableContext
+                ))
             } label: {
                 StackComponentView(
                     viewModel: self.viewModel.stackViewModel,
                     onDismiss: self.onDismiss
                 )
                 .environment(\.componentViewState, componentViewState)
+                // Overrides the existing PackageContext
+                .environmentObject(PackageContext(
+                    // This is needed so text component children use this
+                    // package and not selected package for processing variables
+                    package: package,
+                    // However, reusing the same package variable context from parent
+                    variableContext: packageContext.variableContext)
+                )
             }
         } else {
             EmptyView()
@@ -65,8 +80,14 @@ struct PackageComponentView_Previews: PreviewProvider {
                      offeringIdentifier: "default")
     }
 
-    static let paywallState = PaywallState(selectedPackage: nil)
-    static let paywallStateSelected = PaywallState(selectedPackage: package)
+    static let packageContext = PackageContext(
+        package: nil,
+        variableContext: .init()
+    )
+    static let packageContextSelected = PackageContext(
+        package: Self.package,
+        variableContext: .init()
+    )
 
     static var stack: PaywallComponent.StackComponent {
         return .init(
@@ -133,7 +154,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 availablePackages: [package])
             ), onDismiss: {}
         )
-        .environmentObject(paywallState)
+        .environmentObject(packageContext)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package")
 
@@ -155,7 +176,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 availablePackages: [package])
             ), onDismiss: {}
         )
-        .environmentObject(paywallStateSelected)
+        .environmentObject(packageContextSelected)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package - Selected")
     }

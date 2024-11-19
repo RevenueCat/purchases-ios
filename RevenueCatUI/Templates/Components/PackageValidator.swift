@@ -31,6 +31,10 @@ class PackageValidator {
         !packageInfos.isEmpty
     }
 
+    var packages: [Package] {
+        packageInfos.map(\.package)
+    }
+
     var defaultSelectedPackage: Package? {
         let defaultSelectedPackage = packageInfos.first(where: { pkg in
             return pkg.isSelectedByDefault

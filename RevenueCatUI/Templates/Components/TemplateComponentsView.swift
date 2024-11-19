@@ -11,57 +11,9 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-class PaywallState: ObservableObject {
-
-    @Published var selectedPackage: Package?
-
-    init(selectedPackage: Package?) {
-        self.selectedPackage = selectedPackage
-    }
-
-    func select(package: Package) {
-        self.selectedPackage = package
-    }
-
-}
-
 enum PackageGroupValidationError: Error {
 
     case noAvailablePackages(String)
-
-}
-
-enum ScreenCondition {
-
-    case compact, medium, expanded
-
-    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
-        guard let sizeClass else {
-            return .compact
-        }
-
-        switch sizeClass {
-        case .compact:
-            return .compact
-        case .regular:
-            return .medium
-        @unknown default:
-            return .compact
-        }
-    }
-
-}
-
-struct ScreenConditionKey: EnvironmentKey {
-    static let defaultValue = ScreenCondition.compact
-}
-
-extension EnvironmentValues {
-
-    var screenCondition: ScreenCondition {
-        get { self[ScreenConditionKey.self] }
-        set { self[ScreenConditionKey.self] = newValue }
-    }
 
 }
 
@@ -72,19 +24,26 @@ struct TemplateComponentsView: View {
     private var horizontalSizeClass
 
     @StateObject
-    private var paywallState: PaywallState
+    private var selectedPackageContext: PackageContext
 
     private let paywallComponentsData: PaywallComponentsData
     private let componentViewModel: PaywallComponentViewModel
     private let onDismiss: () -> Void
 
-    public init(paywallComponentsData: PaywallComponentsData, offering: Offering, onDismiss: @escaping () -> Void) {
+    public init(
+        paywallComponentsData: PaywallComponentsData,
+        offering: Offering,
+        showZeroDecimalPlacePrices: Bool,
+        onDismiss: @escaping () -> Void
+    ) {
         self.paywallComponentsData = paywallComponentsData
         self.onDismiss = onDismiss
 
         guard (self.paywallComponentsData.errorInfo ?? [:]).isEmpty else {
             self.componentViewModel = Self.fallbackPaywallViewModels()
-            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
+            self._selectedPackageContext = .init(
+                wrappedValue: PackageContext(package: nil, variableContext: .init())
+            )
 
             return
         }
@@ -110,8 +69,12 @@ struct TemplateComponentsView: View {
 //            }
 
             self.componentViewModel = .root(root)
-            self._paywallState = .init(wrappedValue: PaywallState(
-                selectedPackage: factory.packageValidator.defaultSelectedPackage
+            self._selectedPackageContext = .init(wrappedValue: PackageContext(
+                package: factory.packageValidator.defaultSelectedPackage,
+                variableContext: .init(
+                    packages: factory.packageValidator.packages,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
             ))
         } catch {
             // STEP 2.5: Use fallback paywall if viewmodel construction fails
@@ -119,7 +82,10 @@ struct TemplateComponentsView: View {
 
             // WIP: Need to select default package in fallback view model
             self.componentViewModel = Self.fallbackPaywallViewModels()
-            self._paywallState = .init(wrappedValue: PaywallState(selectedPackage: nil))
+            self._selectedPackageContext = .init(wrappedValue: PackageContext(
+                package: nil,
+                variableContext: .init()
+            ))
         }
     }
 
@@ -132,7 +98,7 @@ struct TemplateComponentsView: View {
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .edgesIgnoringSafeArea(.top)
-        .environmentObject(self.paywallState)
+        .environmentObject(self.selectedPackageContext)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
     }
 
