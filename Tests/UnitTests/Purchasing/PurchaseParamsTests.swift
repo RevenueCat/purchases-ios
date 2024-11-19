@@ -89,7 +89,13 @@ class PurchaseParamsTests: TestCase {
 
         expect(params.package).to(equal(package))
         expect(params.product).to(beNil())
+
+        #if ENABLE_TRANSACTION_METADATA
         expect(params.metadata).to(equal(metadata))
+        #else
+        expect(params.metadata).to(beNil())
+        #endif
+
         expect(params.promotionalOffer).to(equal(promoOffer))
 
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {

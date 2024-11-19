@@ -298,7 +298,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+
+        #if ENABLE_TRANSACTION_METADATA
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(equal(metadata))
+        #else
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(equal(metadata))
+        #endif
+
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "offering"
