@@ -159,6 +159,8 @@ extension BaseStoreKitIntegrationTests {
         let logger = TestLogHandler()
 
         let data: PurchaseResultData
+
+        #if ENABLE_TRANSACTION_METADATA
         if let metadata = metadata {
             let product = try await self.monthlyPackage.storeProduct
 
@@ -175,6 +177,10 @@ extension BaseStoreKitIntegrationTests {
             let product = try await self.monthlyPackage.storeProduct
             data = try await self.purchases.purchase(product: product)
         }
+        #else
+        let product = try await self.monthlyPackage.storeProduct
+        data = try await self.purchases.purchase(product: product)
+        #endif
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
