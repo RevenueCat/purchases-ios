@@ -172,7 +172,7 @@ struct Template1Preview_Previews: PreviewProvider {
     static var previews: some View {
 
         // Template 1
-        TemplateComponentsView(
+        PaywallsV2View(
             paywallComponentsData: Template1Preview.data,
             offering: .init(identifier: "default",
                             serverDescription: "",

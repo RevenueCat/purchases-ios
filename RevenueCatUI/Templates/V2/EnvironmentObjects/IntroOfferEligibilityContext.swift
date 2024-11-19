@@ -30,8 +30,6 @@ class IntroOfferEligibilityContext: ObservableObject {
 
     func computeEligibility(for packages: [Package]) async {
         let result = await self.introEligibilityChecker.eligibility(for: packages)
-
-        print("JOSH \(result)")
         self.allEligibility = result
     }
 
