@@ -22,7 +22,7 @@ class IntroOfferEligibilityContext: ObservableObject {
     private let introEligibilityChecker: TrialOrIntroEligibilityChecker
 
     @Published
-    private(set) var allEligibility: [Package: IntroEligibilityStatus] = [:]
+    private(set) var all: [Package: IntroEligibilityStatus] = [:]
 
     init(introEligibilityChecker: TrialOrIntroEligibilityChecker) {
         self.introEligibilityChecker = introEligibilityChecker
@@ -30,7 +30,7 @@ class IntroOfferEligibilityContext: ObservableObject {
 
     func computeEligibility(for packages: [Package]) async {
         let result = await self.introEligibilityChecker.eligibility(for: packages)
-        self.allEligibility = result
+        self.all = result
     }
 
 }
@@ -41,7 +41,7 @@ extension IntroOfferEligibilityContext {
         guard let package else {
             return false
         }
-        return self.allEligibility[package]?.isEligible ?? false
+        return self.all[package]?.isEligible ?? false
     }
 
 }
