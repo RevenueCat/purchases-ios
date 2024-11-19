@@ -47,7 +47,7 @@ extension PurchasedSK2Product {
         self.entitlement = .init(
             expiresDate: expiration,
             productIdentifier: transaction.productID,
-            purchaseDate: Date(),
+            purchaseDate: transaction.purchaseDate,
             rawData: (try? transaction.jsonRepresentation.asJSONDictionary()) ?? [:]
         )
     }
