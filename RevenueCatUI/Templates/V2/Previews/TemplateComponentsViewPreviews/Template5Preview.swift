@@ -220,7 +220,8 @@ private enum Template5Preview {
                         .stack(stack)
                     ]
                 ),
-                stickyFooter: nil
+                stickyFooter: nil,
+                background: nil
             )
         ),
         componentsLocalizations: ["en_US": [

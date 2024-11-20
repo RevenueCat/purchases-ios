@@ -23,6 +23,7 @@ private class PaywallStateManager: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PaywallState {
 
+    let componentsConfig: PaywallComponentsData.PaywallComponentsConfig
     let viewModelFactory: ViewModelFactory
     let packages: [Package]
     let componentViewModel: PaywallComponentViewModel
@@ -56,12 +57,17 @@ struct PaywallsV2View: View {
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
 
+        // Step 0: Decide which ComponentsConfig to use (base is default)
+        let componentsConfig = paywallComponentsData.componentsConfig.base
+
         // The creation of the paywall view components can be intensive and should only be executed once.
         // The instantiation of the PaywallStateManager needs to stay in the init of the wrappedValue
         // because StateObject init is an autoclosure that will only get executed once.
         self._paywallStateManager = .init(
             wrappedValue: .init(state: Self.createPaywallState(
-                paywallComponentsData: paywallComponentsData,
+                componentsConfig: componentsConfig,
+                componentsLocalizations: paywallComponentsData.componentsLocalizations,
+                defaultLocale: paywallComponentsData.defaultLocale,
                 offering: offering,
                 introEligibilityChecker: introEligibilityChecker,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
@@ -113,6 +119,19 @@ private struct LoadedPaywallsV2View: View {
         )
     }
 
+    private var backgroundStyle: BackgroundStyle? {
+        guard let backgroundStyle = self.paywallState.componentsConfig.background else {
+            return nil
+        }
+
+        switch backgroundStyle {
+        case .color(let value):
+            return .color(value)
+        case .image(let value):
+            return .image(value)
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ComponentsView(
@@ -122,6 +141,7 @@ private struct LoadedPaywallsV2View: View {
         }
         .environmentObject(self.selectedPackageContext)
         .frame(maxHeight: .infinity, alignment: .topLeading)
+        .backgroundStyle(self.backgroundStyle)
         .edgesIgnoringSafeArea(.top)
     }
 
@@ -131,16 +151,18 @@ private struct LoadedPaywallsV2View: View {
 fileprivate extension PaywallsV2View {
 
     static func createPaywallState(
-        paywallComponentsData: PaywallComponentsData,
+        componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
+        componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        defaultLocale: String,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool
     ) -> Result<PaywallState, Error> {
-        // Step 0: Decide which ComponentsConfig to use (base is default)
-        let componentsConfig = paywallComponentsData.componentsConfig.base
-
         // Step 1: Get localization
-        let localizationProvider = Self.chooseLocalization(for: paywallComponentsData)
+        let localizationProvider = Self.chooseLocalization(
+            componentsLocalizations: componentsLocalizations,
+            defaultLocale: defaultLocale
+        )
 
         do {
             let factory = ViewModelFactory()
@@ -160,6 +182,7 @@ fileprivate extension PaywallsV2View {
 
             return .success(
                 .init(
+                    componentsConfig: componentsConfig,
                     viewModelFactory: factory,
                     packages: packages,
                     componentViewModel: .root(root),
@@ -176,27 +199,28 @@ fileprivate extension PaywallsV2View {
     }
 
     static func chooseLocalization(
-        for componentsData: PaywallComponentsData
+        componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        defaultLocale: String
     ) -> LocalizationProvider {
 
-        guard !componentsData.componentsLocalizations.isEmpty else {
+        guard !componentsLocalizations.isEmpty else {
             Logger.error(Strings.paywall_contains_no_localization_data)
             return .init(locale: Locale.current, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
 
         // STEP 1: Get available paywall locales
-        let paywallLocales = componentsData.componentsLocalizations.keys.map { Locale(identifier: $0) }
+        let paywallLocales = componentsLocalizations.keys.map { Locale(identifier: $0) }
 
         // use default locale as a fallback if none of the user's preferred locales are not available in the paywall
-        let defaultLocale = Locale(identifier: componentsData.defaultLocale)
+        let defaultLocale = Locale(identifier: defaultLocale)
 
         // STEP 2: choose best locale based on device's list of preferred locales.
         let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? defaultLocale
 
         // STEP 3: Get localization for one of preferred locales in order
-        if let localizedStrings = componentsData.componentsLocalizations[chosenLocale.identifier] {
+        if let localizedStrings = componentsLocalizations[chosenLocale.identifier] {
             return .init(locale: chosenLocale, localizedStrings: localizedStrings)
-        } else if let localizedStrings = componentsData.componentsLocalizations[defaultLocale.identifier] {
+        } else if let localizedStrings = componentsLocalizations[defaultLocale.identifier] {
             Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
             return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else {

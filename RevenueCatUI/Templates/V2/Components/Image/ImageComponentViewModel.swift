@@ -119,6 +119,9 @@ struct ImageComponentStyle {
 
     let visible: Bool
     let url: URL
+    let lowResUrl: URL?
+    let darkUrl: URL?
+    let darkLowResUrl: URL?
     let size: PaywallComponent.Size
     let shape: ShapeModifier.Shape?
     let gradientColors: [Color]
@@ -133,7 +136,10 @@ struct ImageComponentStyle {
         gradientColors: [PaywallComponent.ColorHex]? = nil
     ) {
         self.visible = visible
-        self.url = source.light.heic // WIP: Do dark mode
+        self.url = source.light.heic
+        self.lowResUrl = source.light.heicLowRes
+        self.darkUrl = source.dark?.heic
+        self.darkLowResUrl = source.dark?.heicLowRes
         self.size = size
         self.shape = maskShape?.shape
         self.gradientColors = gradientColors?.compactMap { $0.toColor(fallback: Color.clear) } ?? []

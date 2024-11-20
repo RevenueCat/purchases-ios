@@ -42,7 +42,12 @@ struct ImageComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            RemoteImage(url: style.url) { (image, size) in
+            RemoteImage(
+                url: style.url,
+                lowResUrl: style.lowResUrl,
+                darkUrl: style.darkUrl,
+                darkLowResUrl: style.darkLowResUrl
+            ) { (image, size) in
                 renderImage(image, size, with: style)
             }
             .size(style.size)
