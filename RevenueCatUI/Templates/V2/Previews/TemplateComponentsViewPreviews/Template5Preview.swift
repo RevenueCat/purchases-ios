@@ -221,7 +221,7 @@ private enum Template5Preview {
                     ]
                 ),
                 stickyFooter: nil,
-                background: nil
+                background: .color(.init(light: .hex("#ffffff")))
             )
         ),
         componentsLocalizations: ["en_US": [

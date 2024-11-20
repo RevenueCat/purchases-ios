@@ -120,11 +120,7 @@ private struct LoadedPaywallsV2View: View {
     }
 
     private var backgroundStyle: BackgroundStyle? {
-        guard let backgroundStyle = self.paywallState.componentsConfig.background else {
-            return nil
-        }
-
-        switch backgroundStyle {
+        switch self.paywallState.componentsConfig.background {
         case .color(let value):
             return .color(value)
         case .image(let value):

@@ -48,10 +48,9 @@ fileprivate extension View {
     func apply(backgroundStyle: BackgroundStyle) -> some View {
         switch backgroundStyle {
         case .color(let color):
-            self
-                .background(color.toDynamicColor())
+            self.background(color.toDynamicColor())
         case .image(let imageInfo):
-            ZStack {
+            self.background {
                 RemoteImage(
                     url: imageInfo.light.heic,
                     lowResUrl: imageInfo.light.heicLowRes,
@@ -63,13 +62,10 @@ fileprivate extension View {
                         .scaledToFill()
                         .ignoresSafeArea()
                 }
-
-                self
             }
         case .gradient:
-            ZStack {
-                // WIP: Gradient
-                self
+            self.background {
+                // WIP: Add you gradient
             }
         }
     }
@@ -84,5 +80,96 @@ extension View {
     }
 
 }
+
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BackgrounDStyle_Previews: PreviewProvider {
+
+    static let lightUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+    static let darkUrl = URL(string: "https://assets.pawwalls.com/954459_1710750526.jpeg")!
+
+    static var previews: some View {
+        // Color - Light (should be red)
+        VStack {
+
+        }
+        .frame(width: 200, height: 200)
+        .backgroundStyle(.color(.init(
+            light: .hex("#ff0000"),
+            dark: .hex("#ffcc00")
+        )))
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Color - Light (should be red)")
+
+        // Color - Dark (should be red)
+        VStack {
+
+        }
+        .frame(width: 200, height: 200)
+        .backgroundStyle(.color(.init(
+            light: .hex("#ff0000"),
+            dark: .hex("#ffcc00")
+        )))
+        .preferredColorScheme(.dark)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Color - Dark (should be yellow)")
+
+        // Color - Dark (should be red because fallback)
+        VStack {
+
+        }
+        .frame(width: 200, height: 200)
+        .backgroundStyle(.color(.init(
+            light: .hex("#ff0000")
+        )))
+        .preferredColorScheme(.dark)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Color - Dark (should be red because fallback)")
+
+        // Image - Light (should be pink cat)
+        VStack {
+
+        }
+        .frame(width: 200, height: 200)
+        .backgroundStyle(.image(.init(
+            light: .init(
+                original: lightUrl,
+                heic: lightUrl,
+                heicLowRes: lightUrl
+            ),
+            dark: .init(
+                original: darkUrl,
+                heic: darkUrl,
+                heicLowRes: darkUrl
+            )
+        )))
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Image - Light (should be pink cat)")
+
+        // Image - Dark (should be japan cats)
+        VStack {
+
+        }
+        .frame(width: 200, height: 200)
+        .backgroundStyle(.image(.init(
+            light: .init(
+                original: lightUrl,
+                heic: lightUrl,
+                heicLowRes: lightUrl
+            ),
+            dark: .init(
+                original: darkUrl,
+                heic: darkUrl,
+                heicLowRes: darkUrl
+            )
+        )))
+        .preferredColorScheme(.dark)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Image - Dark (should be japan cats)")
+    }
+}
+
+#endif
 
 #endif
