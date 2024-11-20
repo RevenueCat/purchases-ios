@@ -19,10 +19,11 @@ import SwiftUI
 struct SizeModifier: ViewModifier {
 
     var size: PaywallComponent.Size
+    var alignment: Alignment
 
     func body(content: Content) -> some View {
         content
-            .applyWidth(size.width)
+            .applyWidth(size.width, alignment: alignment)
             .applyHeight(size.height)
     }
 
@@ -31,16 +32,16 @@ struct SizeModifier: ViewModifier {
 extension View {
 
     @ViewBuilder
-    func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint) -> some View {
+    func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
         case .fit:
             self
         case .fill:
             self
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: alignment)
         case .fixed(let value):
             self
-                .frame(width: CGFloat(value))
+                .frame(width: CGFloat(value), alignment: alignment)
         }
     }
 
@@ -62,8 +63,8 @@ extension View {
 
 extension View {
 
-    func size(_ size: PaywallComponent.Size) -> some View {
-        self.modifier(SizeModifier(size: size))
+    func size(_ size: PaywallComponent.Size, alignment: Alignment = .center) -> some View {
+        self.modifier(SizeModifier(size: size, alignment: alignment))
     }
 
 }

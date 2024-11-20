@@ -53,10 +53,10 @@ struct TextComponentView: View {
                         .font(style.fontSize)
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(style.horizontalAlignment)
+                        .multilineTextAlignment(style.textAlignment)
                         .foregroundStyle(style.color)
                         .padding(style.padding)
-                        .size(style.size)
+                        .size(style.size, alignment: style.horizontalAlignment)
                         .background(style.backgroundColor)
                         .padding(style.margin)
                 } else {
