@@ -139,6 +139,11 @@ import RevenueCat
         }
     }
 
+    func trackImpression() {
+        // swiftlint:disable:next todo
+        // TODO: implement tracking impression
+    }
+
 }
 
 fileprivate extension String {

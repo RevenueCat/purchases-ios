@@ -14,7 +14,7 @@
 import Foundation
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterEvent {
+public enum CustomerCenterEvent: FeatureEvent {
 
     // swiftlint:disable type_name
 
@@ -26,8 +26,18 @@ public enum CustomerCenterEvent {
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
 
-    /// A `CustomerCenterView` was displayed.
+    var feature: Feature {
+        return .customerCenter
+    }
+
+    /// A ``CustomerCenterView`` was displayed.
     case impression(CreationData, Data)
+
+    /// A feedback survey was completed with a particular option.
+    case surveyCompleted(CreationData, Data)
+
+    /// A ``CustomerCenterView`` was closed.
+    case close(CreationData, Data)
 
 }
 
@@ -84,6 +94,8 @@ extension CustomerCenterEvent {
     public var creationData: CreationData {
         switch self {
         case let .impression(creationData, _): return creationData
+        case let .surveyCompleted(creationData, _): return creationData
+        case let .close(creationData, _): return creationData
         }
     }
 
@@ -91,6 +103,8 @@ extension CustomerCenterEvent {
     public var data: Data {
         switch self {
         case let .impression(_, data): return data
+        case let .surveyCompleted(_, data): return data
+        case let .close(_, data): return data
         }
     }
 

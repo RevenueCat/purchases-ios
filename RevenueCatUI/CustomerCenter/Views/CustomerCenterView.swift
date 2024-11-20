@@ -63,6 +63,9 @@ public struct CustomerCenterView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .task {
+            trackImpression()
+        }
         .environmentObject(self.viewModel)
     }
 
@@ -116,6 +119,10 @@ private extension CustomerCenterView {
             destinationContent(configuration: configuration)
         }
         .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+    }
+
+    func trackImpression() {
+        viewModel.trackImpression()
     }
 
 }

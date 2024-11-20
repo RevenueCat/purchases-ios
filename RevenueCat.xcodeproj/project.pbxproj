@@ -234,6 +234,7 @@
 		351B51C126D450E800BD2BD7 /* OfferingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */; };
 		351B51C226D450E800BD2BD7 /* ProductRequestDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E350E57B0A393455A72B40 /* ProductRequestDataTests.swift */; };
 		351B51C326D450F200BD2BD7 /* InMemoryCachedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */; };
+		352137322CDBA2AA00FE961B /* FeatureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352137312CDBA2A700FE961B /* FeatureEvent.swift */; };
 		3525D8A42C4AB3D600C21D99 /* CustomerCenterEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */; };
 		35272E1B26D0029300F22C3B /* DeviceCacheSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C4A795A0F056381A1B3 /* DeviceCacheSubscriberAttributesTests.swift */; };
 		35272E2226D0048D00F22C3B /* HTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E353CBE9CF2572A72A347F /* HTTPClientTests.swift */; };
@@ -1500,6 +1501,7 @@
 		351B517126D44EF300BD2BD7 /* MockInMemoryCachedOfferings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInMemoryCachedOfferings.swift; sourceTree = "<group>"; };
 		351B517326D44F4B00BD2BD7 /* MockPaymentDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentDiscount.swift; sourceTree = "<group>"; };
 		351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRequestFetcher.swift; sourceTree = "<group>"; };
+		352137312CDBA2A700FE961B /* FeatureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEvent.swift; sourceTree = "<group>"; };
 		3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterEnvironment.swift; sourceTree = "<group>"; };
 		352B7D7827BD919B002A47DD /* DangerousSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettings.swift; sourceTree = "<group>"; };
 		3530C18822653E8F00D6DF52 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
@@ -3552,6 +3554,7 @@
 		353DE0042CCA4EA600A8F632 /* Events */ = {
 			isa = PBXGroup;
 			children = (
+				352137312CDBA2A700FE961B /* FeatureEvent.swift */,
 				4FE6FEE42AA940B700780B45 /* StoredEvent.swift */,
 				4FD368B52AA7D09C00F63354 /* StoredEventSerializer.swift */,
 				353DE0052CCA4EAE00A8F632 /* Networking */,
@@ -5735,6 +5738,7 @@
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
+				352137322CDBA2AA00FE961B /* FeatureEvent.swift in Sources */,
 				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
 				4F87610F2A5C9E490006FA14 /* PaywallData.swift in Sources */,

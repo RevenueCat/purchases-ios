@@ -34,4 +34,7 @@ protocol ManageSubscriptionsPurchaseType: Sendable {
     @Sendable
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
 
+    @Sendable
+    func trackImpression(_ eventData: CustomerCenterEvent.Data) async throws
+
 }

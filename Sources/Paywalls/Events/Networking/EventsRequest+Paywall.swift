@@ -15,7 +15,7 @@ import Foundation
 
 extension EventsRequest {
 
-    struct PaywallEvent: FeatureEvent {
+    struct PaywallEvent {
 
         let id: String?
         let version: Int

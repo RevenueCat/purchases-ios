@@ -15,7 +15,7 @@ import Foundation
 
 extension EventsRequest {
 
-    struct CustomerCenterEvent: FeatureEvent {
+    struct CustomerCenterEvent {
 
         let id: String?
         let version: Int
@@ -35,6 +35,8 @@ extension EventsRequest.CustomerCenterEvent {
     enum EventType: String {
 
         case impression = "customer_center_impression"
+        case close = "customer_center_close"
+        case surveyCompleted = "customer_center_survey_completed"
 
     }
 
@@ -73,6 +75,8 @@ private extension CustomerCenterEvent {
     var eventType: EventsRequest.CustomerCenterEvent.EventType {
         switch self {
         case .impression: return .impression
+        case .close: return .close
+        case .surveyCompleted: return .surveyCompleted
         }
 
     }

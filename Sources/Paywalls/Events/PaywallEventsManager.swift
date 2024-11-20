@@ -16,7 +16,7 @@ import Foundation
 protocol PaywallEventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func track(paywallEvent: PaywallEvent) async
+    func track(featureEvent: FeatureEvent) async
 
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
@@ -44,10 +44,10 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         self.store = store
     }
 
-    func track(paywallEvent: PaywallEvent) async {
-        guard let event: StoredEvent = .init(event: paywallEvent,
+    func track(featureEvent: FeatureEvent) async {
+        guard let event: StoredEvent = .init(event: featureEvent,
                                              userID: self.userProvider.currentAppUserID,
-                                             feature: .paywalls) else {
+                                             feature: featureEvent.feature) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }

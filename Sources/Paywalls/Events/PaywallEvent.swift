@@ -14,7 +14,7 @@
 import Foundation
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum PaywallEvent {
+public enum PaywallEvent: FeatureEvent {
 
     // swiftlint:disable type_name
 
@@ -25,6 +25,10 @@ public enum PaywallEvent {
 
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
+
+    var feature: Feature {
+        return .paywalls
+    }
 
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)

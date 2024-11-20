@@ -42,13 +42,4 @@ struct EventsRequest {
 
 }
 
-protocol FeatureEvent: Encodable {
-
-    var id: String? { get }
-    var version: Int { get }
-    var appUserID: String { get }
-    var sessionID: String { get }
-
-}
-
 extension EventsRequest: HTTPRequestBody {}
