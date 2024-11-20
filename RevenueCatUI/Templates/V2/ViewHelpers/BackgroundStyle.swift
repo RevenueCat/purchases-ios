@@ -55,7 +55,7 @@ fileprivate extension View {
                     lowResUrl: imageInfo.light.heicLowRes,
                     darkUrl: imageInfo.dark?.heic,
                     darkLowResUrl: imageInfo.dark?.heicLowRes
-                ) { (image, size) in
+                ) { (image, _) in
                     image
                         .resizable()
                         .scaledToFill()
