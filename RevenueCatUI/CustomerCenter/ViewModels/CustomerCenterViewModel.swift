@@ -110,14 +110,28 @@ import RevenueCat
             // TODO: support non-consumables
             let customerInfo = try await self.customerInfoFetcher()
             let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
+            let hasNonSubscriptions = customerInfo.nonSubscriptions.count > 0
 
-            let subscriptionsAreFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
-                entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
-                customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
-            })
-
-            self.hasSubscriptions = hasSubscriptions
-            self.subscriptionsAreFromApple = subscriptionsAreFromApple
+            if hasSubscriptions {
+                let subscriptionsAreFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
+                    entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
+                    customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
+                })
+                self.hasSubscriptions = hasSubscriptions
+                self.subscriptionsAreFromApple = subscriptionsAreFromApple
+            } else if hasNonSubscriptions {
+                let lifetimeEntitlementFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
+                    entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
+                    customerInfo.nonSubscriptions.contains(where: { nonSubscription in
+                        entitlement.value.productIdentifier == nonSubscription.productIdentifier
+                    })
+                })
+                self.hasSubscriptions = hasNonSubscriptions
+                self.subscriptionsAreFromApple = lifetimeEntitlementFromApple
+            } else {
+                self.hasSubscriptions = false
+                self.subscriptionsAreFromApple = false
+            }
             self.state = .success
         } catch {
             self.state = .error(error)
