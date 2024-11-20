@@ -90,8 +90,6 @@ extension PaywallComponent: Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        // WIP: Use new fallback system (call recursively) that we didn't make yet or catch and throw smarter error
         let type = try container.decode(ComponentType.self, forKey: .type)
 
         switch type {
