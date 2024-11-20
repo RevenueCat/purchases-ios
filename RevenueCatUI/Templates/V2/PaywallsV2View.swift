@@ -146,6 +146,7 @@ private struct LoadedPaywallsV2View: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension PaywallsV2View {
 
+    // swiftlint:disable:next function_parameter_count
     static func createPaywallState(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],

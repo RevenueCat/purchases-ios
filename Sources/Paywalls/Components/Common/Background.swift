@@ -10,6 +10,7 @@
 //  Background.swift
 //
 //  Created by Josh Holtz on 11/20/24.
+// swiftlint:disable missing_docs
 
 import Foundation
 
