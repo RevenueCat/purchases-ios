@@ -106,8 +106,6 @@ import RevenueCat
 
     func loadHasSubscriptions() async {
         do {
-            // swiftlint:disable:next todo
-            // TODO: support non-consumables
             let customerInfo = try await self.customerInfoFetcher()
             let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
             let hasNonSubscriptions = customerInfo.nonSubscriptions.count > 0
