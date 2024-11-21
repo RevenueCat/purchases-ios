@@ -102,6 +102,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit")
 
@@ -127,6 +128,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fill")
 
@@ -155,6 +157,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Gradient")
 
@@ -184,6 +187,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Rounded Corner")
     }

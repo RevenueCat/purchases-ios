@@ -17,8 +17,43 @@
 
 import RevenueCat
 import StoreKit
+import SwiftUI
 
 // swiftlint:disable identifier_name
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PreviewRequiredEnvironmentProperties: ViewModifier {
+
+    static let defaultPackageContext = PackageContext(package: nil, variableContext: .init(packages: []))
+
+    let screenCondition: ScreenCondition
+    let componentViewState: ComponentViewState
+    let packageContext: PackageContext?
+
+    func body(content: Content) -> some View {
+        content
+            .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
+            .environmentObject(self.packageContext ?? Self.defaultPackageContext)
+            .environment(\.screenCondition, screenCondition)
+            .environment(\.componentViewState, componentViewState)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+    func previewRequiredEnvironmentProperties(
+        screenCondition: ScreenCondition = .compact,
+        componentViewState: ComponentViewState = .default,
+        packageContext: PackageContext? = nil
+    ) -> some View {
+        self.modifier(PreviewRequiredEnvironmentProperties(
+            screenCondition: screenCondition,
+            componentViewState: componentViewState,
+            packageContext: packageContext
+        ))
+    }
+}
 
 enum PreviewMock {
 

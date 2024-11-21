@@ -80,6 +80,27 @@ extension View {
 
 }
 
+extension PaywallComponent.Background {
+
+    var backgroundStyle: BackgroundStyle? {
+        switch self {
+        case .color(let value):
+            return .color(value)
+        case .image(let value):
+            return .image(value)
+        }
+    }
+
+}
+
+extension PaywallComponent.ColorScheme {
+
+    var backgroundStyle: BackgroundStyle {
+        return .color(self)
+    }
+
+}
+
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -264,6 +264,7 @@ struct Template5Preview_Previews: PreviewProvider {
             showZeroDecimalPlacePrices: true,
             onDismiss: { }
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 5")
     }

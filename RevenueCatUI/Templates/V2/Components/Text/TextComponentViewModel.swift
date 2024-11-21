@@ -161,7 +161,7 @@ struct TextComponentStyle {
     let fontSize: Font
     let horizontalAlignment: Alignment
     let textAlignment: TextAlignment
-    let backgroundColor: Color
+    let backgroundStyle: BackgroundStyle?
     let size: PaywallComponent.Size
     let padding: EdgeInsets
     let margin: EdgeInsets
@@ -189,7 +189,7 @@ struct TextComponentStyle {
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
-        self.backgroundColor = backgroundColor?.toDynamicColor() ?? Color.clear
+        self.backgroundStyle = backgroundColor?.backgroundStyle
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets

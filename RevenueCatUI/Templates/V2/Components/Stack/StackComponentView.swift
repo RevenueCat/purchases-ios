@@ -84,7 +84,7 @@ struct StackComponentView: View {
         .padding(style.padding)
         .padding(additionalPadding)
         .size(style.size)
-        .background(style.backgroundColor)
+        .backgroundStyle(style.backgroundStyle)
         .shape(border: style.border,
                shape: style.shape)
         .applyIfLet(style.shadow) { view, shadow in
@@ -206,6 +206,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill")
 
@@ -234,6 +235,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fit")
 
@@ -339,6 +341,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {}
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
     }

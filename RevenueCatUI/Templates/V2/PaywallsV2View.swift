@@ -119,15 +119,6 @@ private struct LoadedPaywallsV2View: View {
         )
     }
 
-    private var backgroundStyle: BackgroundStyle? {
-        switch self.paywallState.componentsConfig.background {
-        case .color(let value):
-            return .color(value)
-        case .image(let value):
-            return .image(value)
-        }
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             ComponentsView(
@@ -137,7 +128,7 @@ private struct LoadedPaywallsV2View: View {
         }
         .environmentObject(self.selectedPackageContext)
         .frame(maxHeight: .infinity, alignment: .topLeading)
-        .backgroundStyle(self.backgroundStyle)
+        .backgroundStyle(self.paywallState.componentsConfig.background.backgroundStyle)
         .edgesIgnoringSafeArea(.top)
     }
 

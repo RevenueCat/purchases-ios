@@ -99,7 +99,7 @@ struct StackComponentStyle {
     let dimension: PaywallComponent.Dimension
     let size: PaywallComponent.Size
     let spacing: CGFloat?
-    let backgroundColor: Color
+    let backgroundStyle: BackgroundStyle?
     let padding: EdgeInsets
     let margin: EdgeInsets
     let shape: ShapeModifier.Shape?
@@ -122,7 +122,7 @@ struct StackComponentStyle {
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundColor = backgroundColor?.toDynamicColor() ?? Color.clear
+        self.backgroundStyle = backgroundColor?.backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
