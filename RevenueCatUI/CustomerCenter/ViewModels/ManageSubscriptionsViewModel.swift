@@ -97,49 +97,16 @@ class ManageSubscriptionsViewModel: ObservableObject {
     private func loadSubscriptionInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
 
-        // Find earliest expiring subscription
-        guard let earliestProductId =
-                customerInfo.activeSubscriptions.compactMap({ productId -> (String, Date)? in
-                    guard let expirationDate = customerInfo.expirationDate(forProductIdentifier: productId) else {
-                        return nil
-                    }
-                    return (productId, expirationDate)
-                })
-            .sorted(by: { $0.1 < $1.1 })
-            .first?
-            .0
+        guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
+              let product = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
         else {
-            // If no subscriptions found, check for lifetime purchases
-            if let firstNonSub = customerInfo.nonSubscriptions.first,
-               let entitlement = customerInfo.entitlements.active.values.first,
-               let product = await purchasesProvider.products([firstNonSub.productIdentifier]).first {
-                let subscriptionInformation = SubscriptionInformation(entitlement: entitlement,
-                                                                      subscribedProduct: product)
-                self.subscriptionInformation = subscriptionInformation
-                return
-            }
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
 
-        guard let product = await purchasesProvider.products([earliestProductId]).first else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
-
-        // If we find a matching entitlement, use it. Otherwise, just use the product
-        if let entitlement = customerInfo.entitlements.active.values.first(where: {
-            $0.productIdentifier == earliestProductId
-        }) {
-            let subscriptionInformation = SubscriptionInformation(entitlement: entitlement,
-                                                                  subscribedProduct: product)
-            self.subscriptionInformation = subscriptionInformation
-        } else {
-            let expirationDate = customerInfo.expirationDate(forProductIdentifier: product.productIdentifier)
-            let subscriptionInformation = SubscriptionInformation(product: product,
-                                                                  expirationDate: expirationDate)
-            self.subscriptionInformation = subscriptionInformation
-        }
+        let subscriptionInformation = SubscriptionInformation(entitlement: currentEntitlement,
+                                                              subscribedProduct: product)
+        self.subscriptionInformation = subscriptionInformation
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
