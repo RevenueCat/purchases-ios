@@ -22,7 +22,7 @@ enum SubscriptionInformationFixtures {
     static func product(
         id: String,
         title: String,
-        duration: SKProduct.PeriodUnit,
+        duration: SKProduct.PeriodUnit?,
         price: Decimal,
         priceLocale: String = "en_US",
         offerIdentifier: String? = nil
@@ -32,7 +32,11 @@ enum SubscriptionInformationFixtures {
         let sk1Product = MockSK1Product(mockProductIdentifier: id, mockLocalizedTitle: title)
         sk1Product.mockPrice = price
         sk1Product.mockPriceLocale = Locale(identifier: priceLocale)
-        sk1Product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: duration)
+        if let duration = duration {
+            sk1Product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: duration)
+        } else {
+            sk1Product.mockSubscriptionPeriod = nil
+        }
         if let offerIdentifier = offerIdentifier {
             sk1Product.mockDiscount = SKProductDiscount(identifier: offerIdentifier)
         }

@@ -196,6 +196,139 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(subscriptionInformation.productIdentifier) == productIdOne
     }
 
+    func testShouldShowEarliestExpiration_whenUserHasLifetimeAndSubscriptionsOneEntitlement() async throws {
+        let productIdLifetime = "com.revenuecat.simpleapp.lifetime"
+        let productIdMonthly = "com.revenuecat.simpleapp.monthly"
+        let productIdYearly = "com.revenuecat.simpleapp.yearly"
+        let purchaseDateLifetime = "2024-11-21T16:04:20Z"
+        let purchaseDateMonthly = "2024-11-21T16:04:39Z"
+        let purchaseDateYearly = "2024-11-21T16:04:45Z"
+        let expirationDateMonthly = "2024-11-28T16:04:39Z"
+        let expirationDateYearly = "2025-11-21T16:04:45Z"
+
+        let products = [
+            SubscriptionInformationFixtures.product(id: productIdLifetime,
+                                                    title: "lifetime",
+                                                    duration: nil,
+                                                    price: 29.99),
+            SubscriptionInformationFixtures.product(id: productIdMonthly,
+                                                    title: "monthly",
+                                                    duration: .month,
+                                                    price: 2.99),
+            SubscriptionInformationFixtures.product(id: productIdYearly,
+                                                    title: "yearly",
+                                                    duration: .year,
+                                                    price: 29.99)
+        ]
+
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [
+                CustomerInfoFixtures.Subscription(
+                    id: productIdMonthly,
+                    store: "app_store",
+                    purchaseDate: purchaseDateMonthly,
+                    expirationDate: expirationDateMonthly
+                ),
+                CustomerInfoFixtures.Subscription(
+                    id: productIdYearly,
+                    store: "app_store",
+                    purchaseDate: purchaseDateYearly,
+                    expirationDate: expirationDateYearly
+                )
+            ].shuffled(),
+            entitlements: [
+                CustomerInfoFixtures.Entitlement(
+                    entitlementId: "pro",
+                    productId: productIdLifetime,
+                    purchaseDate: purchaseDateLifetime,
+                    expirationDate: nil
+                )
+            ],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: productIdLifetime,
+                    id: "2fdd18f128",
+                    store: "app_store",
+                    purchaseDate: purchaseDateLifetime
+                )
+            ]
+        )
+
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
+                                                     purchasesProvider: MockManageSubscriptionsPurchases(
+                                                        customerInfo: customerInfo,
+                                                        products: products
+                                                     ),
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.screen).toNot(beNil())
+        expect(viewModel.state) == .success
+
+        let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
+        expect(subscriptionInformation.title) == "lifetime"
+        expect(subscriptionInformation.durationTitle).to(beNil())
+        expect(subscriptionInformation.price) == .paid("$29.99")
+        expect(subscriptionInformation.productIdentifier) == productIdLifetime
+
+        expect(subscriptionInformation.expirationOrRenewal?.date) == .never
+    }
+
+    func testShouldShowLifetim_whenUserHasLifetimeOneEntitlement() async throws {
+        let productIdLifetime = "com.revenuecat.simpleapp.lifetime"
+        let purchaseDateLifetime = "2024-11-21T16:04:20Z"
+
+        let products = [
+            SubscriptionInformationFixtures.product(id: productIdLifetime,
+                                                    title: "lifetime",
+                                                    duration: nil,
+                                                    price: 29.99)
+        ]
+
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [],
+            entitlements: [
+                CustomerInfoFixtures.Entitlement(
+                    entitlementId: "pro",
+                    productId: productIdLifetime,
+                    purchaseDate: purchaseDateLifetime,
+                    expirationDate: nil
+                )
+            ],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: productIdLifetime,
+                    id: "2fdd18f128",
+                    store: "app_store",
+                    purchaseDate: purchaseDateLifetime
+                )
+            ]
+        )
+
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+                                                     customerCenterActionHandler: nil,
+                                                     purchasesProvider: MockManageSubscriptionsPurchases(
+                                                        customerInfo: customerInfo,
+                                                        products: products
+                                                     ),
+                                                     loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase())
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.screen).toNot(beNil())
+        expect(viewModel.state) == .success
+
+        let subscriptionInformation = try XCTUnwrap(viewModel.subscriptionInformation)
+        expect(subscriptionInformation.title) == "lifetime"
+        expect(subscriptionInformation.durationTitle).to(beNil())
+        expect(subscriptionInformation.price) == .paid("$29.99")
+        expect(subscriptionInformation.productIdentifier) == productIdLifetime
+
+        expect(subscriptionInformation.expirationOrRenewal?.date) == .never
+    }
+
     func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async throws {
         // Arrange
         let productIdOne = "com.revenuecat.product1"
