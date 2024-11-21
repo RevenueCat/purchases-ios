@@ -98,6 +98,17 @@ extension PaywallComponent.VerticalAlignment {
         }
     }
 
+    var frameAlignment: SwiftUI.Alignment {
+        switch self {
+        case .top:
+            return .top
+        case .center:
+            return .center
+        case .bottom:
+            return .bottom
+        }
+    }
+
 }
 
 extension PaywallComponent.TwoDimensionAlignment {
