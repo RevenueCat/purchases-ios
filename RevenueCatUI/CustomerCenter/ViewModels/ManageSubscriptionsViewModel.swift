@@ -100,7 +100,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
         // Find earliest expiring subscription
         guard let earliestProductId =
                 customerInfo.activeSubscriptions.compactMap({ productId -> (String, Date)? in
-                    guard let expirationDate = customerInfo.expirationDate(forProductIdentifier: productId) else { return nil }
+                    guard let expirationDate = customerInfo.expirationDate(forProductIdentifier: productId) else {
+                        return nil
+                    }
                     return (productId, expirationDate)
                 })
             .sorted(by: { $0.1 < $1.1 })

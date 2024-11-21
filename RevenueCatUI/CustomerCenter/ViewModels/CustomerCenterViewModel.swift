@@ -32,9 +32,9 @@ import RevenueCat
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    private(set) var hasSubscriptions: Bool = false
+    private(set) var hasActiveProducts: Bool = false
     @Published
-    private(set) var subscriptionsAreFromApple: Bool = false
+    private(set) var hasAppleEntitlement: Bool = false
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
@@ -93,12 +93,12 @@ import RevenueCat
     #if DEBUG
 
     convenience init(
-        hasSubscriptions: Bool = false,
-        areSubscriptionsFromApple: Bool = false
+        hasActiveProducts: Bool = false,
+        hasAppleEntitlement: Bool = false
     ) {
         self.init(customerCenterActionHandler: nil)
-        self.hasSubscriptions = hasSubscriptions
-        self.subscriptionsAreFromApple = areSubscriptionsFromApple
+        self.hasActiveProducts = hasActiveProducts
+        self.hasAppleEntitlement = hasAppleEntitlement
         self.state = .success
     }
 
@@ -107,28 +107,10 @@ import RevenueCat
     func loadHasSubscriptions() async {
         do {
             let customerInfo = try await self.customerInfoFetcher()
-            let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
-            let hasNonSubscriptions = customerInfo.nonSubscriptions.count > 0
-
-            if hasSubscriptions {
-                let subscriptionsAreFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
-                    entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
-                    customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
-                })
-                self.hasSubscriptions = hasSubscriptions
-                self.subscriptionsAreFromApple = subscriptionsAreFromApple
-            } else if hasNonSubscriptions {
-                let lifetimeEntitlementFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
-                    entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
-                    customerInfo.nonSubscriptions.contains(where: { nonSubscription in
-                        entitlement.value.productIdentifier == nonSubscription.productIdentifier
-                    })
-                })
-                self.hasSubscriptions = hasNonSubscriptions
-                self.subscriptionsAreFromApple = lifetimeEntitlementFromApple
-            } else {
-                self.hasSubscriptions = false
-                self.subscriptionsAreFromApple = false
+            self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
+                                customerInfo.nonSubscriptions.count > 0
+            self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in
+                entitlement.value.store == .appStore
             }
             self.state = .success
         } catch {
@@ -157,10 +139,6 @@ import RevenueCat
         }
     }
 
-    func onAppUpdateClick() {
-        // swiftlint:disable:next todo
-        // TODO: implement opening the App Store
-    }
 }
 
 fileprivate extension String {
