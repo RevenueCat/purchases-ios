@@ -294,6 +294,7 @@
 		35D83300262FAD8000E60AC5 /* ETagManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832FF262FAD8000E60AC5 /* ETagManagerTests.swift */; };
 		35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
 		35D83312262FBD4200E60AC5 /* MockETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D83311262FBD4200E60AC5 /* MockETagManager.swift */; };
+		35DE0DB62CEF9E8F00EB83E9 /* SubscriptionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DE0DB52CEF9E8C00EB83E9 /* SubscriptionInfo.swift */; };
 		35E840CC270FB70D00899AE2 /* ManageSubscriptionsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840C5270FB47C00899AE2 /* ManageSubscriptionsHelper.swift */; };
 		35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */; };
 		35F249CA2C493D970058993A /* LoadPromotionalOfferUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F249C92C493D970058993A /* LoadPromotionalOfferUseCase.swift */; };
@@ -1536,6 +1537,7 @@
 		35D832F3262E606500E60AC5 /* HTTPResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPResponse.swift; sourceTree = "<group>"; };
 		35D832FF262FAD8000E60AC5 /* ETagManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ETagManagerTests.swift; sourceTree = "<group>"; };
 		35D83311262FBD4200E60AC5 /* MockETagManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockETagManager.swift; sourceTree = "<group>"; };
+		35DE0DB52CEF9E8C00EB83E9 /* SubscriptionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionInfo.swift; sourceTree = "<group>"; };
 		35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerSK1Tests.swift; sourceTree = "<group>"; };
 		35E840C5270FB47C00899AE2 /* ManageSubscriptionsHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsHelper.swift; sourceTree = "<group>"; };
 		35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockManageSubscriptionsHelper.swift; sourceTree = "<group>"; };
@@ -4767,6 +4769,7 @@
 		B3A36AAC26BC76230059EDEA /* Identity */ = {
 			isa = PBXGroup;
 			children = (
+				35DE0DB52CEF9E8C00EB83E9 /* SubscriptionInfo.swift */,
 				A56F9AB026990E9200AFC48F /* CustomerInfo.swift */,
 				57F3C10429B7B22E0004FD7E /* CustomerInfo+ActiveDates.swift */,
 				4F15B4A02A6774C9005BEFE8 /* CustomerInfo+NonSubscriptions.swift */,
@@ -5733,6 +5736,7 @@
 				FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */,
 				4F7DBFBD2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift in Sources */,
 				5766AB4728401B8400FA6091 /* PackageType.swift in Sources */,
+				35DE0DB62CEF9E8F00EB83E9 /* SubscriptionInfo.swift in Sources */,
 				B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */,
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,

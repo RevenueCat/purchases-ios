@@ -88,6 +88,9 @@ import Foundation
      */
     @objc public let originalApplicationVersion: String?
 
+    /// Dictionary of all subscription product identifiers and their subscription info
+    @objc public let subscriptions: [String: SubscriptionInfo]
+
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
     /// - Returns:  The expiration date for `productIdentifier`, `nil` if product never purchased
@@ -208,6 +211,23 @@ import Foundation
         self.purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
         self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
             .union(self.nonSubscriptions.map { $0.productIdentifier })
+
+        self.subscriptions = subscriber.subscriptions.mapValues { subscriptionData in
+            SubscriptionInfo(
+                purchaseDate: subscriptionData.purchaseDate,
+                originalPurchaseDate: subscriptionData.originalPurchaseDate,
+                expiresDate: subscriptionData.expiresDate,
+                store: subscriptionData.store,
+                isSandbox: subscriptionData.isSandbox,
+                unsubscribeDetectedAt: subscriptionData.unsubscribeDetectedAt,
+                billingIssuesDetectedAt: subscriptionData.billingIssuesDetectedAt,
+                gracePeriodExpiresDate: subscriptionData.gracePeriodExpiresDate,
+                ownershipType: subscriptionData.ownershipType,
+                periodType: subscriptionData.periodType,
+                refundedAt: subscriptionData.refundedAt,
+                storeTransactionId: subscriptionData.storeTransactionId
+            )
+        }
     }
 
     private let expirationDatesByProductId: [String: Date?]

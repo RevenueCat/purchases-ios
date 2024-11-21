@@ -49,7 +49,9 @@ extension CustomerInfoResponse {
 
         @IgnoreDecodeErrors<PeriodType>
         var periodType: PeriodType
+        // TODO: verify if nullable
         var purchaseDate: Date?
+        // TODO: verify if nullable
         var originalPurchaseDate: Date?
         var expiresDate: Date?
         @IgnoreDecodeErrors<Store>
@@ -62,6 +64,10 @@ extension CustomerInfoResponse {
         var ownershipType: PurchaseOwnershipType
         var productPlanIdentifier: String?
         var metadata: [String: String]?
+        var gracePeriodExpiresDate: Date?
+        var refundedAt: Date?
+        // TODO: verify if nullable
+        var storeTransactionId: String
 
     }
 
@@ -209,7 +215,8 @@ extension CustomerInfoResponse.Subscription {
         isSandbox: Bool,
         unsubscribeDetectedAt: Date? = nil,
         billingIssuesDetectedAt: Date? = nil,
-        ownershipType: PurchaseOwnershipType = .defaultValue
+        ownershipType: PurchaseOwnershipType = .defaultValue,
+        storeTransactionId: String = ""
     ) {
         self.periodType = periodType
         self.purchaseDate = purchaseDate
@@ -220,6 +227,7 @@ extension CustomerInfoResponse.Subscription {
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.ownershipType = ownershipType
+        self.storeTransactionId = storeTransactionId
     }
 
     var asTransaction: CustomerInfoResponse.Transaction {
