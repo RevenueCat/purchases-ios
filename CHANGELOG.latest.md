@@ -1,28 +1,19 @@
 ## RevenueCat SDK
-### Customer Center
-#### 🐞 Bugfixes
-* Dismiss promotional offer sheet after successful purchase (#4475) via Will Taylor (@fire-at-will)
-### Win-back Offers
-#### ✨ New Features
-* Support Redeeming Win-Back Offers with Streamlined Purchasing Disabled (#4370) via Will Taylor (@fire-at-will)
 
-## RevenueCatUI SDK
-### Customer Center
+### Win-back Offers
+
 #### ✨ New Features
-* Add support for `product_mapping` in promotional offers (#4489) via Cesar de la Vega (@vegaro)
-#### 🐞 Bugfixes
-* Close feedback survey after picking an option (#4444) via Cesar de la Vega (@vegaro)
+
+- Support fetching & redeeming eligible win-back offers in custom paywalls (#4485) via Will Taylor (@fire-at-will)
+
+### 🐞 Bugfixes
+
+- Fix transaction metadata in purchase tester app (#4505) via Will Taylor (@fire-at-will)
 
 ### 🔄 Other Changes
-* Enable Paywall Tester to build with Paywalls V2 (#4487) via Josh Holtz (@joshdholtz)
-* Fix Paywalls Tester when not being built with Paywalls V2 (#4481) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Fix typo in CI script (#4480) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Enable PAYWALL_COMPONENTS compiler flag when building PaywallTester in Xcode Cloud (#4479) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Update Image to handle property overrides (#4477) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Update Stack to handle property overrides (#4476) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Store decoding errors in individual paywall (instead of failing entire offerings response) (#4473) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Update shape spec (#4472) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Update text spec (#4469) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Update stack size spec (#4467) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Update color spec (#4468) via Josh Holtz (@joshdholtz)
-* Update PurchaseParam code sample (#4470) via Will Taylor (@fire-at-will)
+
+- [Paywalls] Use .frame(alignment:) to fix alignment in non-multiline text components (#4500) via Mark Villacampa (@MarkVillacampa)
+- [Paywalls V2] Allowing intro eligibility overrides for text (and image and stack) (#4495) via Josh Holtz (@joshdholtz)
+- [Paywalls V2] Introduce new `LocalizationProvider` for localized strings and locale (#4491) via Josh Holtz (@joshdholtz)
+- [Paywalls V2] Process variables in the text component (#4490) via Josh Holtz (@joshdholtz)
+- Fighting flakiness: no longer uses `beCloseToDate` in `CustomerInfoOfflineEntitlementsStoreKitTest.verifyEntitlement` (#4399) via JayShortway (@JayShortway)
