@@ -60,8 +60,6 @@ struct APIKeyDashboardList: View {
 
     private func fetchOfferings() async {
         do {
-            self.offerings = nil
-
             // Force refresh offerings
             _ = try await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
 
@@ -73,10 +71,12 @@ struct APIKeyDashboardList: View {
             if let presentedPaywall = presentedPaywall {
                 for offering in offerings {
                     if presentedPaywall.offering.id == offering.id {
-                        withAnimation {
-                            self.presentedPaywall = nil
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        self.presentedPaywall = nil
+                        Task {
+                            // Need to wait for the paywall sheet to be dismissed before presenting again.
+                            // We cannot modify the presented paywall in-place because the paywall components are
+                            // cached in a @StateObject on initialization time.
+                            await Task.sleep(seconds: 1)
                             self.presentedPaywall = .init(offering: offering, mode: .default)
                         }
                     }
