@@ -39,28 +39,63 @@ struct APIKeyDashboardList: View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .automatic) {
+                        Button {
+                            Task {
+                                await fetchOfferings()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .keyboardShortcut("r", modifiers: .shift)
+                    }
+                }
         }
         .task {
-            do {
-                let offerings = try await Purchases.shared.offerings()
-                    .all
-                    .map(\.value)
-                    .sorted { $0.serverDescription > $1.serverDescription }
+            await fetchOfferings()
+        }
+    }
 
-                let offeringsBySection = Dictionary(
-                    grouping: offerings,
-                    by: { Template(name: templateGroupName(offering: $0)) }
-                )
+    private func fetchOfferings() async {
+        do {
+            self.offerings = nil
 
-                self.offerings = .success(
-                    .init(
-                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
-                        offeringsBySection: offeringsBySection
-                    )
-                )
-            } catch let error as NSError {
-                self.offerings = .failure(error)
+            // Force refresh offerings
+            _ = try await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
+
+            let offerings = try await Purchases.shared.offerings()
+                .all
+                .map(\.value)
+                .sorted { $0.serverDescription > $1.serverDescription }
+
+            if let presentedPaywall = presentedPaywall {
+                for offering in offerings {
+                    if presentedPaywall.offering.id == offering.id {
+                        withAnimation {
+                            self.presentedPaywall = nil
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            self.presentedPaywall = .init(offering: offering, mode: .default)
+                        }
+                    }
+                }
             }
+
+            let offeringsBySection = Dictionary(
+                grouping: offerings,
+                by: { Template(name: templateGroupName(offering: $0)) }
+            )
+
+            self.offerings = .success(
+                .init(
+                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    offeringsBySection: offeringsBySection
+                )
+            )
+        } catch let error as NSError {
+            self.offerings = .failure(error)
         }
     }
 
