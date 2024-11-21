@@ -40,8 +40,8 @@ class CustomerCenterViewModelTests: TestCase {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
 
         expect(viewModel.state) == .notLoaded
-        expect(viewModel.hasSubscriptions) == false
-        expect(viewModel.subscriptionsAreFromApple) == false
+        expect(viewModel.hasActiveProducts) == false
+        expect(viewModel.hasAppleEntitlement) == false
         expect(viewModel.isLoaded) == false
     }
 
@@ -77,8 +77,8 @@ class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadHasSubscriptions()
 
-        expect(viewModel.hasSubscriptions) == true
-        expect(viewModel.subscriptionsAreFromApple) == true
+        expect(viewModel.hasActiveProducts) == true
+        expect(viewModel.hasAppleEntitlement) == true
         expect(viewModel.state) == .success
     }
 
@@ -90,8 +90,8 @@ class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadHasSubscriptions()
 
-        expect(viewModel.hasSubscriptions) == true
-        expect(viewModel.subscriptionsAreFromApple) == false
+        expect(viewModel.hasActiveProducts) == true
+        expect(viewModel.hasAppleEntitlement) == false
         expect(viewModel.state) == .success
     }
 
@@ -103,8 +103,8 @@ class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadHasSubscriptions()
 
-        expect(viewModel.hasSubscriptions) == false
-        expect(viewModel.subscriptionsAreFromApple) == false
+        expect(viewModel.hasActiveProducts) == false
+        expect(viewModel.hasAppleEntitlement) == false
         expect(viewModel.state) == .success
     }
 
@@ -116,8 +116,8 @@ class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadHasSubscriptions()
 
-        expect(viewModel.hasSubscriptions) == false
-        expect(viewModel.subscriptionsAreFromApple) == false
+        expect(viewModel.hasActiveProducts) == false
+        expect(viewModel.hasAppleEntitlement) == false
         switch viewModel.state {
         case .error(let stateError):
             expect(stateError as? TestError) == error

@@ -53,9 +53,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .nextBillingDate
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .appStore
     }
 
@@ -87,9 +85,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expires
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == false
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .appStore
     }
 
@@ -121,9 +117,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expired
         expect(expirationOrRenewal.date) == .date("Apr 12, 2000")
 
-        expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == false
         expect(subscriptionInfo.store) == .appStore
     }
 
@@ -142,9 +136,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .nextBillingDate
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .playStore
     }
 
@@ -163,9 +155,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expires
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == false
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .playStore
     }
 
@@ -184,9 +174,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expired
         expect(expirationOrRenewal.date) == .date("Apr 12, 2000")
 
-        expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == false
         expect(subscriptionInfo.store) == .playStore
     }
 
@@ -205,9 +193,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expires
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == false
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .promotional
     }
 
@@ -226,9 +212,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expires
         expect(expirationOrRenewal.date) == .never
 
-        expect(subscriptionInfo.willRenew) == false
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .promotional
     }
 
@@ -247,9 +231,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .nextBillingDate
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .stripe
     }
 
@@ -268,9 +250,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expires
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
-        expect(subscriptionInfo.willRenew) == false
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == true
         expect(subscriptionInfo.store) == .stripe
     }
 
@@ -289,9 +269,7 @@ class SubscriptionInformationTests: TestCase {
         expect(expirationOrRenewal.label) == .expired
         expect(expirationOrRenewal.date) == .date("Apr 12, 2000")
 
-        expect(subscriptionInfo.willRenew) == true
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.active) == false
         expect(subscriptionInfo.store) == .stripe
     }
 
