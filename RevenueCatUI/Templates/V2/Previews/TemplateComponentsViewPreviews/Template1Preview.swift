@@ -93,19 +93,22 @@ private enum Template1Preview {
     )
 
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
-        stack: .init(components: [
-            // WIP: Intro offer state with "cta_intro",
-            .text(.init(
-                text: "cta",
-                fontWeight: .bold,
-                color: .init(light: .hex("#ffffff")),
-                backgroundColor: .init(light: .hex("#e89d89")),
-                padding: .init(top: 10,
-                               bottom: 10,
-                               leading: 30,
-                               trailing: 30)
-            ))
-        ])
+        stack: .init(
+            components: [
+                // WIP: Intro offer state with "cta_intro",
+                .text(.init(
+                    text: "cta",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#ffffff")),
+                    backgroundColor: .init(light: .hex("#e89d89")),
+                    padding: .init(top: 10,
+                                   bottom: 10,
+                                   leading: 30,
+                                   trailing: 30)
+                ))
+            ],
+            shape: .pill
+        )
     )
 
     static let contentStack = PaywallComponent.StackComponent(
@@ -142,7 +145,10 @@ private enum Template1Preview {
                         .stack(stack)
                     ]
                 ),
-                stickyFooter: nil
+                stickyFooter: nil,
+                background: .color(.init(
+                    light: .hex("#ffffff")
+                ))
             )
         ),
         componentsLocalizations: ["en_US": [
@@ -181,6 +187,7 @@ struct Template1Preview_Previews: PreviewProvider {
             showZeroDecimalPlacePrices: true,
             onDismiss: { }
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }

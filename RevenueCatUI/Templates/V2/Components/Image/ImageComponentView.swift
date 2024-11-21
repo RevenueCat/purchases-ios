@@ -42,7 +42,12 @@ struct ImageComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            RemoteImage(url: style.url) { (image, size) in
+            RemoteImage(
+                url: style.url,
+                lowResUrl: style.lowResUrl,
+                darkUrl: style.darkUrl,
+                darkLowResUrl: style.darkLowResUrl
+            ) { (image, size) in
                 renderImage(image, size, with: style)
             }
             .size(style.size)
@@ -97,6 +102,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit")
 
@@ -122,6 +128,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fill")
 
@@ -150,6 +157,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Gradient")
 
@@ -179,6 +187,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Rounded Corner")
     }

@@ -220,7 +220,8 @@ private enum Template5Preview {
                         .stack(stack)
                     ]
                 ),
-                stickyFooter: nil
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
             )
         ),
         componentsLocalizations: ["en_US": [
@@ -263,6 +264,7 @@ struct Template5Preview_Previews: PreviewProvider {
             showZeroDecimalPlacePrices: true,
             onDismiss: { }
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 5")
     }

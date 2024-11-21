@@ -93,6 +93,7 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                    availablePackages: [])
             )
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Pill")
 
@@ -133,6 +134,7 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                    availablePackages: [])
             )
         )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Rounded Rectangle")
     }

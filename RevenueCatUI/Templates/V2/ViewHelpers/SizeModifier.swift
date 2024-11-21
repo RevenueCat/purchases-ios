@@ -29,7 +29,7 @@ struct SizeModifier: ViewModifier {
 
 }
 
-extension View {
+fileprivate extension View {
 
     @ViewBuilder
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {

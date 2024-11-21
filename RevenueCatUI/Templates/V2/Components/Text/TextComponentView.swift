@@ -57,7 +57,7 @@ struct TextComponentView: View {
                         .foregroundStyle(style.color)
                         .padding(style.padding)
                         .size(style.size, alignment: style.horizontalAlignment)
-                        .background(style.backgroundColor)
+                        .backgroundStyle(style.backgroundStyle)
                         .padding(style.margin)
                 } else {
                     EmptyView()
@@ -90,10 +90,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environmentObject(PackageContext(
-            package: nil,
-            variableContext: .init())
-        )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
 
@@ -126,10 +123,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environmentObject(PackageContext(
-            package: nil,
-            variableContext: .init())
-        )
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
 
@@ -167,11 +161,9 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environmentObject(PackageContext(
-            package: nil,
-            variableContext: .init())
+        .previewRequiredEnvironmentProperties(
+            componentViewState: .selected
         )
-        .environment(\.componentViewState, .selected)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("State - Selected")
 
@@ -199,11 +191,9 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environmentObject(PackageContext(
-            package: nil,
-            variableContext: .init())
+        .previewRequiredEnvironmentProperties(
+            screenCondition: .medium
         )
-        .environment(\.screenCondition, .medium)
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Medium")
 
@@ -231,11 +221,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environmentObject(PackageContext(
-            package: nil,
-            variableContext: .init())
-        )
-        .environment(\.screenCondition, .compact)
+        .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
 
@@ -259,9 +245,11 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .environmentObject(PackageContext(
-            package: PreviewMock.annualPackage,
-            variableContext: .init(packages: [PreviewMock.monthlyPackage, PreviewMock.annualPackage]))
+        .previewRequiredEnvironmentProperties(
+            packageContext: .init(
+                package: PreviewMock.annualPackage,
+                variableContext: .init(packages: [PreviewMock.monthlyPackage, PreviewMock.annualPackage])
+            )
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Process variable")

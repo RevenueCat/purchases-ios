@@ -157,7 +157,9 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 availablePackages: [package])
             ), onDismiss: {}
         )
-        .environmentObject(packageContext)
+        .previewRequiredEnvironmentProperties(
+            packageContext: packageContext
+        )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package")
 
@@ -182,7 +184,9 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 availablePackages: [package])
             ), onDismiss: {}
         )
-        .environmentObject(packageContextSelected)
+        .previewRequiredEnvironmentProperties(
+            packageContext: packageContextSelected
+        )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Package - Selected")
     }

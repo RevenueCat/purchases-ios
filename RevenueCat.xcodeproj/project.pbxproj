@@ -33,6 +33,8 @@
 		2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */; };
 		2C7457482CEA66AB004ACE52 /* ComponentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457472CEA66AB004ACE52 /* ComponentsView.swift */; };
 		2C74574B2CEA6B80004ACE52 /* LocalizationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C74574A2CEA6B80004ACE52 /* LocalizationProvider.swift */; };
+		2C7457882CEDF7C0004ACE52 /* BackgroundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */; };
+		2C74578A2CEE314F004ACE52 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457892CEE314C004ACE52 /* Background.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
 		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
 		2C8EC6DB2CCC23B700D6CCF8 /* Template5Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DA2CCC23B700D6CCF8 /* Template5Preview.swift */; };
@@ -1227,6 +1229,8 @@
 		2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroOfferEligibilityContext.swift; sourceTree = "<group>"; };
 		2C7457472CEA66AB004ACE52 /* ComponentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentsView.swift; sourceTree = "<group>"; };
 		2C74574A2CEA6B80004ACE52 /* LocalizationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationProvider.swift; sourceTree = "<group>"; };
+		2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStyle.swift; sourceTree = "<group>"; };
+		2C7457892CEE314C004ACE52 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiter.swift; sourceTree = "<group>"; };
 		2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterRests.swift; sourceTree = "<group>"; };
 		2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentTests.swift; sourceTree = "<group>"; };
@@ -2406,6 +2410,7 @@
 		2C7457442CEA652B004ACE52 /* ViewHelpers */ = {
 			isa = PBXGroup;
 			children = (
+				2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */,
 				77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */,
 				2C91068D2CE2481800189565 /* SizeModifier.swift */,
 				2CAB87F62CAAB13200247013 /* Shape.swift */,
@@ -2484,8 +2489,9 @@
 		2CC791612CC0493600FBE120 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				2C8EC6E02CCD7BA300D6CCF8 /* ComponentOverrides.swift */,
+				2C7457892CEE314C004ACE52 /* Background.swift */,
 				2CC7915B2CC0493600FBE120 /* Border.swift */,
+				2C8EC6E02CCD7BA300D6CCF8 /* ComponentOverrides.swift */,
 				2CC7915C2CC0493600FBE120 /* Dimension.swift */,
 				2CC7915D2CC0493600FBE120 /* PaywallComponentBase.swift */,
 				2CC7915E2CC0493600FBE120 /* PaywallComponentLocalization.swift */,
@@ -5699,6 +5705,7 @@
 				35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */,
 				352B7D7927BD919B002A47DD /* DangerousSettings.swift in Sources */,
 				A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */,
+				2C74578A2CEE314F004ACE52 /* Background.swift in Sources */,
 				35AAEB492BBB17B500A12548 /* DiagnosticsEvent.swift in Sources */,
 				4F6EEBD92A38ED76007FD783 /* FakeSigning.swift in Sources */,
 				8893C9B52C7D1F090060B030 /* PaywallLinkButtonComponent.swift in Sources */,
@@ -6338,6 +6345,7 @@
 				887A606A2C1D037000E1A461 /* TrialOrIntroEligibilityChecker.swift in Sources */,
 				88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */,
 				3546355F2C391F4D001D7E85 /* PromotionalOfferView.swift in Sources */,
+				2C7457882CEDF7C0004ACE52 /* BackgroundStyle.swift in Sources */,
 				2C8EC6DD2CCC7C5B00D6CCF8 /* PackageValidator.swift in Sources */,
 				778360792CCA85E4000785B8 /* StickyFooterComponentViewModel.swift in Sources */,
 				2C7457482CEA66AB004ACE52 /* ComponentsView.swift in Sources */,
