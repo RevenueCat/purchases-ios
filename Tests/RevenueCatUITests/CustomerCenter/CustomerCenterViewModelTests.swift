@@ -69,52 +69,52 @@ class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.isLoaded) == true
     }
 
-    func testLoadHasActivePurchasesApple() async {
+    func testLoadHasSubscriptionsApple() async {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
                                                 customerInfoFetcher: {
             return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
         })
 
-        await viewModel.loadHasActivePurchases()
+        await viewModel.loadHasSubscriptions()
 
         expect(viewModel.hasActiveProducts) == true
         expect(viewModel.hasAppleEntitlement) == true
         expect(viewModel.state) == .success
     }
 
-    func testLoadHasActivePurchasesGoogle() async {
+    func testLoadHasSubscriptionsGoogle() async {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
                                                 customerInfoFetcher: {
             return await CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
         })
 
-        await viewModel.loadHasActivePurchases()
+        await viewModel.loadHasSubscriptions()
 
         expect(viewModel.hasActiveProducts) == true
         expect(viewModel.hasAppleEntitlement) == false
         expect(viewModel.state) == .success
     }
 
-    func testLoadHasActivePurchasesNonActive() async {
+    func testLoadHasSubscriptionsNonActive() async {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
                                                 customerInfoFetcher: {
             return await CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
         })
 
-        await viewModel.loadHasActivePurchases()
+        await viewModel.loadHasSubscriptions()
 
         expect(viewModel.hasActiveProducts) == false
         expect(viewModel.hasAppleEntitlement) == false
         expect(viewModel.state) == .success
     }
 
-    func testLoadHasActivePurchasesError() async {
+    func testLoadHasSubscriptionsFailure() async {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
                                                 customerInfoFetcher: {
             throw TestError(message: "An error occurred")
         })
 
-        await viewModel.loadHasActivePurchases()
+        await viewModel.loadHasSubscriptions()
 
         expect(viewModel.hasActiveProducts) == false
         expect(viewModel.hasAppleEntitlement) == false
