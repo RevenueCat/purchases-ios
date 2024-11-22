@@ -26,7 +26,6 @@ import RevenueCat
     // We fail open.
     private static let defaultAppIsLatestVersion = true
 
-    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
     typealias CurrentVersionFetcher = () -> String?
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
@@ -36,7 +35,10 @@ import RevenueCat
     @Published
     private(set) var appleManagement: Bool = false
     @Published
+    private(set) var purchaseInformation: PurchaseInformation?
+    @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     // @PublicForExternalTesting
     @Published
@@ -68,7 +70,6 @@ import RevenueCat
         return state != .notLoaded && configuration != nil
     }
 
-    private var customerInfoFetcher: CustomerInfoFetcher
     private let currentVersionFetcher: CurrentVersionFetcher
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
@@ -76,18 +77,15 @@ import RevenueCat
 
     init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
-        customerInfoFetcher: @escaping CustomerInfoFetcher = {
-            guard Purchases.isConfigured else { throw PaywallError.purchasesNotConfigured }
-            return try await Purchases.shared.customerInfo()
-        },
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        }
+        },
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()
     ) {
         self.state = .notLoaded
-        self.customerInfoFetcher = customerInfoFetcher
         self.currentVersionFetcher = currentVersionFetcher
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.purchasesProvider = purchasesProvider
     }
 
     #if DEBUG
@@ -106,9 +104,13 @@ import RevenueCat
 
     func loadHasActivePurchases() async {
         do {
-            let customerInfo = try await self.customerInfoFetcher()
+            let customerInfo = try await purchasesProvider.customerInfo()
             self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
                                 customerInfo.nonSubscriptions.count > 0
+            if !self.hasActiveProducts {
+                self.state = .success
+                return
+            }
 
             let activeSubscriptions = customerInfo.subscriptions.values
                 .filter(\.isActive)
@@ -129,13 +131,69 @@ import RevenueCat
                 customerInfo.nonSubscriptions.filter { $0.store != .appStore }
             )
 
-            let selectedProduct: Any? = activeAppleSubscriptions.first ??
+            let selectedProduct = activeAppleSubscriptions.first ??
                 appleNonSubscriptions.first ??
                 otherActiveSubscriptions.first ??
                 otherNonSubscriptions.first
 
-            self.appleManagement = selectedProduct is SubscriptionInfo && (selectedProduct as? SubscriptionInfo)?.store == .appStore ||
-            selectedProduct is NonSubscriptionTransaction && (selectedProduct as? NonSubscriptionTransaction)?.store == .appStore
+            let productId: String
+            let store: Store
+            if let subscription = selectedProduct as? SubscriptionInfo {
+                productId = subscription.productIdentifier
+                store = subscription.store
+            } else if let nonSubscription = selectedProduct as? NonSubscriptionTransaction {
+                productId = nonSubscription.productIdentifier
+                store = nonSubscription.store
+            } else {
+                throw CustomerCenterError.couldNotFindSubscriptionInformation
+            }
+
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == productId })
+
+            if store == .appStore {
+                guard let product = await purchasesProvider.products([productId]).first else {
+                    Logger.warning(Strings.could_not_find_subscription_information)
+                    throw CustomerCenterError.couldNotFindSubscriptionInformation
+                }
+                if let entitlement = entitlement {
+                    if let subscription = selectedProduct as? SubscriptionInfo {
+                        self.purchaseInformation = PurchaseInformation(entitlement: entitlement,
+                                                                       subscribedProduct: product,
+                                                                       subscription: subscription)
+                    } else if let nonSubscription = selectedProduct as? NonSubscriptionTransaction {
+                        self.purchaseInformation = PurchaseInformation(entitlement: entitlement,
+                                                                       subscribedProduct: product,
+                                                                       nonSubscription: nonSubscription)
+                    }
+                } else {
+                    if let subscription = selectedProduct as? SubscriptionInfo {
+                        self.purchaseInformation = PurchaseInformation(subscribedProduct: product,
+                                                                       subscription: subscription)
+                    } else if let nonSubscription = selectedProduct as? NonSubscriptionTransaction {
+                        self.purchaseInformation = PurchaseInformation(subscribedProduct: product,
+                                                                       nonSubscription: nonSubscription)
+                    }
+                }
+            } else {
+                if let entitlement = entitlement {
+                    if let subscription = selectedProduct as? SubscriptionInfo {
+                        self.purchaseInformation = PurchaseInformation(entitlement: entitlement,
+                                                                       subscription: subscription)
+                    } else if let nonSubscription = selectedProduct as? NonSubscriptionTransaction {
+                        self.purchaseInformation = PurchaseInformation(entitlement: entitlement,
+                                                                       nonSubscription: nonSubscription)
+                    }
+                } else {
+                    if let subscription = selectedProduct as? SubscriptionInfo {
+                        self.purchaseInformation = PurchaseInformation(subscription: subscription)
+                    } else if let nonSubscription = selectedProduct as? NonSubscriptionTransaction {
+                        self.purchaseInformation = PurchaseInformation(nonSubscription: nonSubscription)
+                    }
+                }
+            }
+
+            self.appleManagement = store == .appStore
             self.state = .success
         } catch {
             self.state = .error(error)
