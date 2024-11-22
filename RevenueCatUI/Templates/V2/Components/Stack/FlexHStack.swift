@@ -46,17 +46,17 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                 }
-                Spacer()
+                Spacer(minLength: 0)
 
             case .center:
-                Spacer()
+                Spacer(minLength: 0)
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                 }
-                Spacer()
+                Spacer(minLength: 0)
 
             case .end:
-                Spacer()
+                Spacer(minLength: 0)
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                 }
@@ -65,26 +65,23 @@ struct FlexHStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
-                        Spacer()
+                        Spacer(minLength: 0)
                     }
                 }
 
             case .spaceAround:
-                Spacer()
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
+                    Spacer(minLength: 0)
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
-                    if index < self.componentViewModels.count - 1 {
-                        Spacer()
-                    }
+                    Spacer(minLength: 0)
                 }
-                Spacer()
 
             case .spaceEvenly:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    Spacer()
+                    Spacer(minLength: 0)
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                 }
-                Spacer()
+                Spacer(minLength: 0)
             }
         }
     }
