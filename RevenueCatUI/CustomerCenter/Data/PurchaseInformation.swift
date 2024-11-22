@@ -27,203 +27,62 @@ struct PurchaseInformation {
     let productIdentifier: String
     let store: Store
 
-    init(title: String,
-         durationTitle: String,
-         explanation: Explanation,
-         price: PriceDetails,
-         expirationOrRenewal: ExpirationOrRenewal?,
-         willRenew: Bool,
-         productIdentifier: String,
-         active: Bool,
-         store: Store
-    ) {
-        self.title = title
-        self.durationTitle = durationTitle
-        self.explanation = explanation
-        self.price = price
-        self.expirationOrRenewal = expirationOrRenewal
-        self.productIdentifier = productIdentifier
-        self.store = store
-    }
-
-    init(explanation: Explanation,
-         price: PriceDetails,
-         expirationOrRenewal: ExpirationOrRenewal?,
-         willRenew: Bool,
-         productIdentifier: String,
-         active: Bool,
-         store: Store
-    ) {
-        self.title = nil
-        self.durationTitle = nil
-        self.explanation = explanation
-        self.price = price
-        self.expirationOrRenewal = expirationOrRenewal
-        self.productIdentifier = productIdentifier
-        self.store = store
-    }
-
-    init(entitlement: EntitlementInfo,
+    init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
+         subscription: SubscriptionInfo? = nil,
+         nonSubscription: NonSubscriptionTransaction? = nil,
          dateFormatter: DateFormatter = DateFormatter()) {
         dateFormatter.dateStyle = .medium
 
+        // Use entitlement data if available, otherwise use subscription/nonSubscription
+        let transaction = subscription ?? nonSubscription
+        guard let transaction = transaction else {
+            fatalError("Must provide either subscription or nonSubscription")
+        }
+
+        // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
-        self.explanation = entitlement.explanation
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
-        self.price = entitlement.priceBestEffort(product: subscribedProduct)
-        self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
-        self.productIdentifier = entitlement.productIdentifier
-        self.store = entitlement.store
-    }
 
-    init(product: StoreProduct,
-         expirationDate: Date?,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        // We don't have enough information to determine if the subscription will renew or not because we
-        // are loading the information from the product without entitlement information.
-        // We also assume that the subscription is active.
-        // We also assume that the subscription will renew the earliest possible renewal date and this is the
-        // product with the earliest renewal date.
-        dateFormatter.dateStyle = .medium
-
-        self.title = product.localizedTitle
-        self.explanation = .earliestRenewal
-        self.durationTitle = product.subscriptionPeriod?.durationTitle
-        self.price = .paid(product.localizedPriceString)
-        if let dateString = expirationDate.map({ dateFormatter.string(from: $0) }) {
-            let date = PurchaseInformation.ExpirationOrRenewal.Date.date(dateString)
-            self.expirationOrRenewal = PurchaseInformation.ExpirationOrRenewal(label: .expires,
-                                                                               date: date)
+        // Use entitlement explanation if available, otherwise derive from transaction
+        if let entitlement = entitlement {
+            self.explanation = entitlement.explanation
+            self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
+            self.productIdentifier = entitlement.productIdentifier
+            self.store = entitlement.store
+            self.price = entitlement.priceBestEffort(product: subscribedProduct)
         } else {
-            self.expirationOrRenewal = nil
+            if let subscription = subscription {
+                self.explanation = subscription.expiresDate != nil
+                    ? (subscription.isActive ? (subscription.willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
+                    : .lifetime
+                self.productIdentifier = subscription.productIdentifier
+                self.store = subscription.store
+                self.expirationOrRenewal = subscription.expiresDate.map { date in
+                    let dateString = dateFormatter.string(from: date)
+                    let label: ExpirationOrRenewal.Label = subscription.isActive 
+                        ? (subscription.willRenew ? .nextBillingDate : .expires)
+                        : .expired
+                    return ExpirationOrRenewal(label: label, date: .date(dateString))
+                }
+                self.price = subscription.store == .promotional ? .free
+                    : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
+            } else if let nonSubscription = nonSubscription {
+                self.explanation = .lifetime
+                self.productIdentifier = nonSubscription.productIdentifier
+                self.store = nonSubscription.store
+                self.expirationOrRenewal = nil
+                self.price = nonSubscription.store == .promotional ? .free
+                    : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
+            } else {
+                // There's no way to get here
+                self.explanation = .earliestExpiration
+                self.productIdentifier = ""
+                self.store = .unknownStore
+                self.expirationOrRenewal = nil
+                self.price = .unknown
+            }
         }
-        self.productIdentifier = product.productIdentifier
-        self.store = .appStore
-    }
-
-    init(subscribedProduct: StoreProduct,
-         subscription: SubscriptionInfo,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        self.title = subscribedProduct.localizedTitle
-        self.durationTitle = subscribedProduct.subscriptionPeriod?.durationTitle
-        self.explanation = subscription.expiresDate != nil
-            ? (subscription.isActive ? (subscription.willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
-            : .lifetime
-        self.price = .paid(subscribedProduct.localizedPriceString)
-        self.expirationOrRenewal = subscription.expiresDate.map { date in
-            let dateString = dateFormatter.string(from: date)
-            let label: ExpirationOrRenewal.Label = subscription.isActive 
-                ? (subscription.willRenew ? .nextBillingDate : .expires)
-                : .expired
-            return ExpirationOrRenewal(label: label, date: .date(dateString))
-        }
-        self.productIdentifier = subscription.productIdentifier
-        self.store = subscription.store
-    }
-
-    init(subscribedProduct: StoreProduct,
-         nonSubscription: NonSubscriptionTransaction,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        self.title = subscribedProduct.localizedTitle
-        self.durationTitle = nil
-        self.explanation = .lifetime
-        self.price = .paid(subscribedProduct.localizedPriceString)
-        self.expirationOrRenewal = nil
-        self.productIdentifier = nonSubscription.productIdentifier
-        self.store = nonSubscription.store
-    }
-
-    init(subscription: SubscriptionInfo,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        self.title = nil
-        self.durationTitle = nil
-        self.explanation = subscription.expiresDate != nil
-            ? (subscription.isActive ? (subscription.willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
-            : .lifetime
-        self.price = .unknown
-        self.expirationOrRenewal = subscription.expiresDate.map { date in
-            let dateString = dateFormatter.string(from: date)
-            let label: ExpirationOrRenewal.Label = subscription.isActive 
-                ? (subscription.willRenew ? .nextBillingDate : .expires)
-                : .expired
-            return ExpirationOrRenewal(label: label, date: .date(dateString))
-        }
-        self.productIdentifier = subscription.productIdentifier
-        self.store = subscription.store
-    }
-
-    init(nonSubscription: NonSubscriptionTransaction,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        self.title = nil
-        self.durationTitle = nil
-        self.explanation = .lifetime
-        self.price = .unknown
-        self.expirationOrRenewal = nil
-        self.productIdentifier = nonSubscription.productIdentifier
-        self.store = nonSubscription.store
-    }
-
-    // For Apple products with subscription and entitlement
-    init(entitlement: EntitlementInfo,
-         subscribedProduct: StoreProduct,
-         subscription: SubscriptionInfo,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        dateFormatter.dateStyle = .medium
-
-        self.title = subscribedProduct.localizedTitle
-        self.explanation = entitlement.explanation
-        self.durationTitle = subscribedProduct.subscriptionPeriod?.durationTitle
-        self.price = entitlement.priceBestEffort(product: subscribedProduct)
-        self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
-        self.productIdentifier = entitlement.productIdentifier
-        self.store = entitlement.store
-    }
-
-    // For Apple products with non-subscription and entitlement
-    init(entitlement: EntitlementInfo,
-         subscribedProduct: StoreProduct,
-         nonSubscription: NonSubscriptionTransaction,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        dateFormatter.dateStyle = .medium
-
-        self.title = subscribedProduct.localizedTitle
-        self.explanation = entitlement.explanation
-        self.durationTitle = subscribedProduct.subscriptionPeriod?.durationTitle
-        self.price = entitlement.priceBestEffort(product: subscribedProduct)
-        self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
-        self.productIdentifier = entitlement.productIdentifier
-        self.store = entitlement.store
-    }
-
-    // For non-Apple subscription with entitlement
-    init(entitlement: EntitlementInfo,
-         subscription: SubscriptionInfo,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        dateFormatter.dateStyle = .medium
-
-        self.title = nil
-        self.explanation = entitlement.explanation
-        self.durationTitle = nil
-        self.price = entitlement.priceBestEffort(product: nil)
-        self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
-        self.productIdentifier = entitlement.productIdentifier
-        self.store = entitlement.store
-    }
-
-    // For non-Apple non-subscription with entitlement
-    init(entitlement: EntitlementInfo,
-         nonSubscription: NonSubscriptionTransaction,
-         dateFormatter: DateFormatter = DateFormatter()) {
-        dateFormatter.dateStyle = .medium
-
-        self.title = nil
-        self.explanation = entitlement.explanation
-        self.durationTitle = nil
-        self.price = entitlement.priceBestEffort(product: nil)
-        self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
-        self.productIdentifier = entitlement.productIdentifier
-        self.store = entitlement.store
     }
 
     struct ExpirationOrRenewal {
