@@ -84,7 +84,7 @@ private extension CustomerCenterView {
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
         if viewModel.hasActiveProducts {
-            if viewModel.hasAppleActiveProduct,
+            if viewModel.appleManagement,
                let screen = configuration.screens[.management] {
                 if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
                     AppUpdateWarningView(

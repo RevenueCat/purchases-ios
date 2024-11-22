@@ -34,7 +34,7 @@ import RevenueCat
     @Published
     private(set) var hasActiveProducts: Bool = false
     @Published
-    private(set) var hasAppleActiveProduct: Bool = false
+    private(set) var appleManagement: Bool = false
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
@@ -98,7 +98,7 @@ import RevenueCat
     ) {
         self.init(customerCenterActionHandler: nil)
         self.hasActiveProducts = hasActiveProducts
-        self.hasAppleActiveProduct = hasAppleActiveProduct
+        self.appleManagement = appleManagement
         self.state = .success
     }
 
@@ -129,7 +129,13 @@ import RevenueCat
                 customerInfo.nonSubscriptions.filter { $0.store != .appStore }
             )
 
-            self.hasAppleActiveProduct = activeAppleSubscriptions.count > 0 || appleNonSubscriptions.count > 0
+            let selectedProduct: Any? = activeAppleSubscriptions.first ??
+                appleNonSubscriptions.first ??
+                otherActiveSubscriptions.first ??
+                otherNonSubscriptions.first
+
+            self.appleManagement = selectedProduct is SubscriptionInfo && (selectedProduct as? SubscriptionInfo)?.store == .appStore ||
+            selectedProduct is NonSubscriptionTransaction && (selectedProduct as? NonSubscriptionTransaction)?.store == .appStore
             self.state = .success
         } catch {
             self.state = .error(error)
