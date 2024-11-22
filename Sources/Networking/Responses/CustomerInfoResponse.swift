@@ -49,9 +49,7 @@ extension CustomerInfoResponse {
 
         @IgnoreDecodeErrors<PeriodType>
         var periodType: PeriodType
-        // TODO: verify if nullable
-        var purchaseDate: Date?
-        // TODO: verify if nullable
+        var purchaseDate: Date
         var originalPurchaseDate: Date?
         var expiresDate: Date?
         @IgnoreDecodeErrors<Store>
@@ -66,8 +64,7 @@ extension CustomerInfoResponse {
         var metadata: [String: String]?
         var gracePeriodExpiresDate: Date?
         var refundedAt: Date?
-        // TODO: verify if nullable
-        var storeTransactionId: String
+        var storeTransactionId: String?
 
     }
 
