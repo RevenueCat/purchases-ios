@@ -299,7 +299,7 @@ public extension EntitlementInfo {
 
 // MARK: - Internal
 
-private extension EntitlementInfo {
+extension EntitlementInfo {
 
     static func willRenewWithExpirationDate(expirationDate: Date?,
                                             store: Store,

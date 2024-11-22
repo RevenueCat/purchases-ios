@@ -30,6 +30,7 @@ import Foundation
     @objc public let refundedAt: Date?
     @objc public let storeTransactionId: String?
     @objc public let isActive: Bool
+    @objc public let willRenew: Bool
 
     init(productIdentifier: String,
          purchaseDate: Date,
@@ -59,6 +60,10 @@ import Foundation
         self.refundedAt = refundedAt
         self.storeTransactionId = storeTransactionId
         self.isActive = CustomerInfo.isDateActive(expirationDate: expiresDate, for: requestDate)
+        self.willRenew = EntitlementInfo.willRenewWithExpirationDate(expirationDate: expiresDate,
+                                                                     store: store,
+                                                                     unsubscribeDetectedAt: unsubscribeDetectedAt,
+                                                                     billingIssueDetectedAt: billingIssuesDetectedAt)
 
         super.init()
     }
@@ -78,7 +83,8 @@ import Foundation
             periodType: \(String(describing: periodType)),
             refundedAt: \(String(describing: refundedAt)),
             storeTransactionId: \(String(describing: storeTransactionId)),
-            isActive: \(isActive)
+            isActive: \(isActive),
+            willRenew: \(willRenew)
         }
         """
     }
