@@ -34,7 +34,7 @@ import RevenueCat
     @Published
     private(set) var hasActiveProducts: Bool = false
     @Published
-    private(set) var hasAppleEntitlement: Bool = false
+    private(set) var hasAppleActiveProduct: Bool = false
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
@@ -98,7 +98,7 @@ import RevenueCat
     ) {
         self.init(customerCenterActionHandler: nil)
         self.hasActiveProducts = hasActiveProducts
-        self.hasAppleEntitlement = hasAppleEntitlement
+        self.hasAppleActiveProduct = hasAppleActiveProduct
         self.state = .success
     }
 
@@ -109,7 +109,7 @@ import RevenueCat
             let customerInfo = try await self.customerInfoFetcher()
             self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
                                 customerInfo.nonSubscriptions.count > 0
-            self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in
+            self.hasAppleActiveProduct = customerInfo.entitlements.active.contains { entitlement in
                 entitlement.value.store == .appStore
             }
             self.state = .success
