@@ -105,7 +105,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
 
         let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
-                                                              subscribedProduct: product)
+                                                      subscribedProduct: product)
         self.purchaseInformation = purchaseInformation
     }
 
@@ -218,7 +218,7 @@ private extension ManageSubscriptionsViewModel {
             }
         case .customUrl:
             guard let url = path.url,
-                let openMethod = path.openMethod else {
+                  let openMethod = path.openMethod else {
                 Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
                 return
             }

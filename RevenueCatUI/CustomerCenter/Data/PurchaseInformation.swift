@@ -94,7 +94,7 @@ struct PurchaseInformation {
         if let dateString = expirationDate.map({ dateFormatter.string(from: $0) }) {
             let date = PurchaseInformation.ExpirationOrRenewal.Date.date(dateString)
             self.expirationOrRenewal = PurchaseInformation.ExpirationOrRenewal(label: .expires,
-                                                                                   date: date)
+                                                                               date: date)
         } else {
             self.expirationOrRenewal = nil
         }

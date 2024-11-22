@@ -39,6 +39,10 @@ class ManageSubscriptionsViewModelTests: TestCase {
         }
     }
 
+    private func formatPrice(_ price: Decimal) -> String {
+        "$\(String(format: "%.2f", NSDecimalNumber(decimal: price).doubleValue))"
+    }
+
     func testInitialState() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      customerCenterActionHandler: nil)
@@ -206,7 +210,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             // Should always show yearly subscription since it expires first
             expect(purchaseInformation.title) == yearlyProduct.title
             expect(purchaseInformation.durationTitle) == yearlyProduct.duration
-            expect(purchaseInformation.price) == .paid("$\(String(format: "%.2f", NSDecimalNumber(decimal: yearlyProduct.price).doubleValue))")
+            expect(purchaseInformation.price) == .paid(formatPrice(yearlyProduct.price))
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
@@ -431,7 +435,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             // Should always show yearly subscription since it expires first
             expect(purchaseInformation.title) == yearlyProduct.title
             expect(purchaseInformation.durationTitle) == yearlyProduct.duration
-            expect(purchaseInformation.price) == .paid("$\(String(format: "%.2f", NSDecimalNumber(decimal: yearlyProduct.price).doubleValue))")
+            expect(purchaseInformation.price) == .paid(formatPrice(yearlyProduct.price))
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
@@ -517,7 +521,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             // We expect to see the monthly one, because the yearly one is a Google subscription
             expect(purchaseInformation.title) == appleProduct.title
             expect(purchaseInformation.durationTitle) == appleProduct.duration
-            expect(purchaseInformation.price) == .paid("$\(String(format: "%.2f", NSDecimalNumber(decimal: appleProduct.price).doubleValue))")
+            expect(purchaseInformation.price) == .paid(formatPrice(appleProduct.price))
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
