@@ -125,17 +125,7 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
-        case .lazy:
-            // LazyVStack needed for performance when loading
-            LazyVStack(
-                alignment: horizontalAlignment.stackAlignment,
-                spacing: style.spacing
-            ) {
-                ComponentsView(
-                    componentViewModels: self.viewModels,
-                    onDismiss: self.onDismiss
-                )
-            }
+            .frame(maxHeight: .infinity, alignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
@@ -161,10 +151,11 @@ struct HorizontalStack: View {
 
     var body: some View {
         switch style.hstackStrategy {
-        case .normal, .lazy:
+        case .normal:
             HStack(alignment: verticalAlignment.stackAlignment, spacing: style.spacing) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
+            .frame(maxWidth: .infinity, alignment: distribution.horizontalFrameAlignment)
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,

@@ -92,7 +92,7 @@ extension PresentedStackPartial: PresentedPartial {
 struct StackComponentStyle {
 
     enum StackStrategy {
-        case normal, lazy, flex
+        case normal, flex
     }
 
     let visible: Bool
@@ -136,39 +136,24 @@ struct StackComponentStyle {
             return .normal
         }
 
-        // Normal strategy for fit
-        switch self.size.height {
-        case .fit:
+        switch distribution {
+        case .start, .center, .end:
             return .normal
-        case .fill, .fixed:
-            break
-        }
-
-        // Normal strategy if start
-        guard case .start = distribution else {
+        case .spaceBetween, .spaceAround, .spaceEvenly:
             return .flex
         }
-
-        // WIP: Look deeper in tree
-//        if self.components.count > 3 {
-//            return .lazy
-//        } else {
-//            return .normal
-//        }
-        return .lazy
     }
 
     var hstackStrategy: StackStrategy {
         // Ensure horizontal
-        guard case .horizontal = self.dimension else {
+        guard case let .horizontal(_, distribution) = self.dimension else {
             return .normal
         }
 
-        // Not strategy for fit
-        switch self.size.width {
-        case .fit:
+        switch distribution {
+        case .start, .center, .end:
             return .normal
-        case .fill, .fixed:
+        case .spaceBetween, .spaceAround, .spaceEvenly:
             return .flex
         }
     }
