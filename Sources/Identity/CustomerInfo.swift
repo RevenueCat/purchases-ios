@@ -212,8 +212,9 @@ import Foundation
         self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
             .union(self.nonSubscriptions.map { $0.productIdentifier })
 
-        self.subscriptions = subscriber.subscriptions.mapValues { subscriptionData in
-            SubscriptionInfo(
+        self.subscriptions = Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
+            (key, SubscriptionInfo(
+                productIdentifier: key,
                 purchaseDate: subscriptionData.purchaseDate,
                 originalPurchaseDate: subscriptionData.originalPurchaseDate,
                 expiresDate: subscriptionData.expiresDate,
@@ -227,8 +228,8 @@ import Foundation
                 refundedAt: subscriptionData.refundedAt,
                 storeTransactionId: subscriptionData.storeTransactionId,
                 requestDate: response.requestDate
-            )
-        }
+            ))
+        })
     }
 
     private let expirationDatesByProductId: [String: Date?]

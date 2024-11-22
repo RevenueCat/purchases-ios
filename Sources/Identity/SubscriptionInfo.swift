@@ -15,6 +15,8 @@ import Foundation
 
 @objc(RCSubscriptionInfo) public final class SubscriptionInfo: NSObject {
 
+    /// The product identifier.
+    @objc public let productIdentifier: String
     @objc public let purchaseDate: Date
     @objc public let originalPurchaseDate: Date?
     @objc public let expiresDate: Date?
@@ -29,7 +31,8 @@ import Foundation
     @objc public let storeTransactionId: String?
     @objc public let isActive: Bool
 
-    init(purchaseDate: Date,
+    init(productIdentifier: String,
+         purchaseDate: Date,
          originalPurchaseDate: Date?,
          expiresDate: Date?,
          store: Store,
@@ -42,6 +45,7 @@ import Foundation
          refundedAt: Date?,
          storeTransactionId: String?,
          requestDate: Date) {
+        self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
         self.expiresDate = expiresDate
