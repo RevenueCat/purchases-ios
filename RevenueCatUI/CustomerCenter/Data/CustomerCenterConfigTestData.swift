@@ -128,7 +128,7 @@ enum CustomerCenterConfigTestData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static let subscriptionInformationMonthlyRenewing: SubscriptionInformation = .init(
+    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
         title: "Basic",
         durationTitle: "Monthly",
         explanation: .earliestRenewal,
@@ -141,7 +141,7 @@ enum CustomerCenterConfigTestData {
         store: .appStore
     )
 
-    static let subscriptionInformationYearlyExpiring: SubscriptionInformation = .init(
+    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
         title: "Basic",
         durationTitle: "Yearly",
         explanation: .earliestRenewal,

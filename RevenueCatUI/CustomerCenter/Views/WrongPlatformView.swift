@@ -67,7 +67,7 @@ struct WrongPlatformView: View {
         List {
             if let subscriptionInformation = self.subscriptionInformation {
                 Section {
-                    SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                    SubscriptionDetailsView(purchaseInformation: subscriptionInformation,
                                             refundRequestStatus: nil)
                 }
             }

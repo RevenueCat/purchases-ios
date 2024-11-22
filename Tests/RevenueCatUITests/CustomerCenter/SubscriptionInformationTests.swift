@@ -49,7 +49,7 @@ class PurchaseInformationTests: TestCase {
             locale: Self.locale
         )
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      subscribedProduct: mockProduct.toStoreProduct(),
                                                                      dateFormatter: Self.mockDateFormatter))
         expect(subscriptionInfo.title) == "Monthly Product"
@@ -82,7 +82,7 @@ class PurchaseInformationTests: TestCase {
             locale: Self.locale
         )
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      subscribedProduct: mockProduct.toStoreProduct(),
                                                                      dateFormatter: Self.mockDateFormatter))
         expect(subscriptionInfo.title) == "Monthly Product"
@@ -115,7 +115,7 @@ class PurchaseInformationTests: TestCase {
             locale: Self.locale
         )
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      subscribedProduct: mockProduct.toStoreProduct(),
                                                                      dateFormatter: Self.mockDateFormatter))
         expect(subscriptionInfo.title) == "Monthly Product"
@@ -135,7 +135,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -155,7 +155,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -175,7 +175,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -195,7 +195,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithPromotional
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -215,7 +215,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithLifetimePromotional
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -235,7 +235,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithStripeSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -255,7 +255,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingStripeSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -275,7 +275,7 @@ class PurchaseInformationTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredStripeSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(entitlement: entitlement,
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
                                                                      dateFormatter: Self.mockDateFormatter))
 
         expect(subscriptionInfo.title).to(beNil())
@@ -309,7 +309,7 @@ class PurchaseInformationTests: TestCase {
         )
 
         let testDate = Self.mockDateFormatter.date(from: "Apr 12, 2062")!
-        let subscriptionInfo = try XCTUnwrap(SubscriptionInformation(product: mockProduct.toStoreProduct(),
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(product: mockProduct.toStoreProduct(),
                                                                      expirationDate: testDate,
                                                                      dateFormatter: Self.mockDateFormatter))
         expect(subscriptionInfo.title) == "Monthly Product"

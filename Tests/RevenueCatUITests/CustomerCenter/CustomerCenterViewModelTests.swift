@@ -75,7 +75,7 @@ class CustomerCenterViewModelTests: TestCase {
             return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
         })
 
-        await viewModel.loadHasSubscriptions()
+        await viewModel.loadHasActivePurchases()
 
         expect(viewModel.hasActiveProducts) == true
         expect(viewModel.hasAppleEntitlement) == true
@@ -88,7 +88,7 @@ class CustomerCenterViewModelTests: TestCase {
             return await CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
         })
 
-        await viewModel.loadHasSubscriptions()
+        await viewModel.loadHasActivePurchases()
 
         expect(viewModel.hasActiveProducts) == true
         expect(viewModel.hasAppleEntitlement) == false
@@ -101,7 +101,7 @@ class CustomerCenterViewModelTests: TestCase {
             return await CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
         })
 
-        await viewModel.loadHasSubscriptions()
+        await viewModel.loadHasActivePurchases()
 
         expect(viewModel.hasActiveProducts) == false
         expect(viewModel.hasAppleEntitlement) == false
@@ -114,7 +114,7 @@ class CustomerCenterViewModelTests: TestCase {
             throw TestError(message: "An error occurred")
         })
 
-        await viewModel.loadHasSubscriptions()
+        await viewModel.loadHasActivePurchases()
 
         expect(viewModel.hasActiveProducts) == false
         expect(viewModel.hasAppleEntitlement) == false
