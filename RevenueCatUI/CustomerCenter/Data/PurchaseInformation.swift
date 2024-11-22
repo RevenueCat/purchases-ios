@@ -17,7 +17,7 @@ import Foundation
 import RevenueCat
 
 // swiftlint:disable nesting
-struct SubscriptionInformation {
+struct PurchaseInformation {
 
     let title: String?
     let durationTitle: String?

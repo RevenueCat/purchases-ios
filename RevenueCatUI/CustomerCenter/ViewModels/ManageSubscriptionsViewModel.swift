@@ -52,7 +52,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     @Published
-    private(set) var subscriptionInformation: SubscriptionInformation?
+    private(set) var purchaseInformation: PurchaseInformation?
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
@@ -73,11 +73,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     init(screen: CustomerCenterConfigData.Screen,
-         subscriptionInformation: SubscriptionInformation,
+         purchaseInformation: PurchaseInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
-        self.subscriptionInformation = subscriptionInformation
+        self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
@@ -87,14 +87,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     func loadScreen() async {
         do {
-            try await loadSubscriptionInformation()
+            try await loadPurchaseInformation()
             self.state = .success
         } catch {
             self.state = .error(error)
         }
     }
 
-    private func loadSubscriptionInformation() async throws {
+    private func loadPurchaseInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
 
         guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
@@ -104,9 +104,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
 
-        let subscriptionInformation = SubscriptionInformation(entitlement: currentEntitlement,
+        let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
                                                               subscribedProduct: product)
-        self.subscriptionInformation = subscriptionInformation
+        self.purchaseInformation = purchaseInformation
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
@@ -199,8 +199,8 @@ private extension ManageSubscriptionsViewModel {
             self.showRestoreAlert = true
         case .refundRequest:
             do {
-                guard let subscriptionInformation = self.subscriptionInformation else { return }
-                let productId = subscriptionInformation.productIdentifier
+                guard let purchaseInformation = self.purchaseInformation else { return }
+                let productId = purchaseInformation.productIdentifier
                 self.customerCenterActionHandler?(.refundRequestStarted(productId))
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status

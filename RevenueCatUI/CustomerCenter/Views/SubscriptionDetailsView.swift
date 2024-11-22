@@ -24,21 +24,21 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct SubscriptionDetailsView: View {
 
-    let subscriptionInformation: SubscriptionInformation
+    let purchaseInformation: PurchaseInformation
     let refundRequestStatus: RefundRequestStatus?
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SubscriptionDetailsHeader(subscriptionInformation: subscriptionInformation, localization: localization)
+            SubscriptionDetailsHeader(purchaseInformation: purchaseInformation, localization: localization)
                 .padding(.bottom, 10)
 
             Divider()
                 .padding(.bottom)
 
             VStack(alignment: .leading, spacing: 16.0) {
-                if let durationTitle = subscriptionInformation.durationTitle {
+                if let durationTitle = purchaseInformation.durationTitle {
                     IconLabelView(
                         iconName: "coloncurrencysign.arrow.circlepath",
                         label: localization.commonLocalizedString(for: .billingCycle),
@@ -47,7 +47,7 @@ struct SubscriptionDetailsView: View {
                 }
 
                 let priceValue: String? = {
-                    switch subscriptionInformation.price {
+                    switch purchaseInformation.price {
                     case .free:
                         return localization.commonLocalizedString(for: .free)
                     case .paid(let localizedPrice):
@@ -65,7 +65,7 @@ struct SubscriptionDetailsView: View {
                     )
                 }
 
-                if let expirationOrRenewal = subscriptionInformation.expirationOrRenewal {
+                if let expirationOrRenewal = purchaseInformation.expirationOrRenewal {
                     switch expirationOrRenewal.date {
                     case .never:
                         IconLabelView(
@@ -108,7 +108,7 @@ struct SubscriptionDetailsView: View {
         }
     }
 
-    private func label(for expirationOrRenewal: SubscriptionInformation.ExpirationOrRenewal) -> String {
+    private func label(for expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal) -> String {
         switch expirationOrRenewal.label {
         case .nextBillingDate:
             return localization.commonLocalizedString(for: .nextBillingDate)
@@ -125,17 +125,17 @@ struct SubscriptionDetailsView: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct SubscriptionDetailsHeader: View {
-    let subscriptionInformation: SubscriptionInformation
+    let purchaseInformation: PurchaseInformation
     let localization: CustomerCenterConfigData.Localization
 
     var body: some View {
         VStack(alignment: .leading) {
-            if let title = subscriptionInformation.title {
+            if let title = purchaseInformation.title {
                 Text(title)
                     .font(.headline)
             }
 
-            let explanation = getSubscriptionExplanation(from: subscriptionInformation, localization: localization)
+            let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization)
 
             Text(explanation)
                 .font(.subheadline)
@@ -144,9 +144,9 @@ struct SubscriptionDetailsHeader: View {
         }
     }
 
-    private func getSubscriptionExplanation(from subscriptionInformation: SubscriptionInformation,
+    private func getSubscriptionExplanation(from purchaseInformation: PurchaseInformation,
                                             localization: CustomerCenterConfigData.Localization) -> String {
-        switch subscriptionInformation.explanation {
+        switch purchaseInformation.explanation {
         case .promotional:
             return localization.commonLocalizedString(for: .youHavePromo)
         case .earliestRenewal:
@@ -208,7 +208,7 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             SubscriptionDetailsView(
-                subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                 refundRequestStatus: .success
             )
             .preferredColorScheme(colorScheme)

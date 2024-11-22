@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SubscriptionInformationFixtures.swift
+//  PurchaseInformationFixtures.swift
 //
 //  Created by Cesar de la Vega on 10/25/24.
 
@@ -17,7 +17,7 @@ import Foundation
 import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum SubscriptionInformationFixtures {
+enum PurchaseInformationFixtures {
 
     static func product(
         id: String,

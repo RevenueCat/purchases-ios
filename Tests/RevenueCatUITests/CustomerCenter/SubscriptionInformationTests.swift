@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SubscriptionInformationTests.swift
+//  PurchaseInformationTests.swift
 //
 //  Created by Cesar de la Vega on 10/25/24.
 
@@ -21,7 +21,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class SubscriptionInformationTests: TestCase {
+class PurchaseInformationTests: TestCase {
 
     static let locale: Locale = .current
     static let mockDateFormatter: DateFormatter = {
