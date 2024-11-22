@@ -76,7 +76,7 @@ private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
         if !viewModel.isLoaded {
-            await viewModel.loadHasSubscriptions()
+            await viewModel.loadHasActivePurchases()
             await viewModel.loadCustomerCenterConfig()
         }
     }

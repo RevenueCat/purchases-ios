@@ -104,7 +104,7 @@ import RevenueCat
 
     #endif
 
-    func loadHasSubscriptions() async {
+    func loadHasActivePurchases() async {
         do {
             let customerInfo = try await self.customerInfoFetcher()
             self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
