@@ -32,9 +32,9 @@ import RevenueCat
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    private(set) var hasSubscriptions: Bool = false
+    private(set) var hasActiveProducts: Bool = false
     @Published
-    private(set) var subscriptionsAreFromApple: Bool = false
+    private(set) var hasAppleEntitlement: Bool = false
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
@@ -93,31 +93,25 @@ import RevenueCat
     #if DEBUG
 
     convenience init(
-        hasSubscriptions: Bool = false,
-        areSubscriptionsFromApple: Bool = false
+        hasActiveProducts: Bool = false,
+        hasAppleEntitlement: Bool = false
     ) {
         self.init(customerCenterActionHandler: nil)
-        self.hasSubscriptions = hasSubscriptions
-        self.subscriptionsAreFromApple = areSubscriptionsFromApple
+        self.hasActiveProducts = hasActiveProducts
+        self.hasAppleEntitlement = hasAppleEntitlement
         self.state = .success
     }
 
     #endif
 
-    func loadHasSubscriptions() async {
+    func loadHasActivePurchases() async {
         do {
-            // swiftlint:disable:next todo
-            // TODO: support non-consumables
             let customerInfo = try await self.customerInfoFetcher()
-            let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
-
-            let subscriptionsAreFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
-                entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
-                customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
-            })
-
-            self.hasSubscriptions = hasSubscriptions
-            self.subscriptionsAreFromApple = subscriptionsAreFromApple
+            self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
+                                customerInfo.nonSubscriptions.count > 0
+            self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in
+                entitlement.value.store == .appStore
+            }
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -145,10 +139,6 @@ import RevenueCat
         }
     }
 
-    func onAppUpdateClick() {
-        // swiftlint:disable:next todo
-        // TODO: implement opening the App Store
-    }
 }
 
 fileprivate extension String {

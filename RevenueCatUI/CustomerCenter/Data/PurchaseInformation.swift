@@ -17,7 +17,7 @@ import Foundation
 import RevenueCat
 
 // swiftlint:disable nesting
-struct SubscriptionInformation {
+struct PurchaseInformation {
 
     let title: String?
     let durationTitle: String?
@@ -25,10 +25,6 @@ struct SubscriptionInformation {
     let price: PriceDetails
     let expirationOrRenewal: ExpirationOrRenewal?
     let productIdentifier: String
-
-    let willRenew: Bool
-    let active: Bool
-
     let store: Store
 
     init(title: String,
@@ -47,8 +43,6 @@ struct SubscriptionInformation {
         self.price = price
         self.expirationOrRenewal = expirationOrRenewal
         self.productIdentifier = productIdentifier
-        self.willRenew = willRenew
-        self.active = active
         self.store = store
     }
 
@@ -66,16 +60,12 @@ struct SubscriptionInformation {
         self.price = price
         self.expirationOrRenewal = expirationOrRenewal
         self.productIdentifier = productIdentifier
-        self.willRenew = willRenew
-        self.active = active
         self.store = store
     }
 
     init(entitlement: EntitlementInfo,
          subscribedProduct: StoreProduct? = nil,
          dateFormatter: DateFormatter = DateFormatter()) {
-        // swiftlint:disable:next todo
-        // TODO: support non-consumables
         dateFormatter.dateStyle = .medium
 
         self.title = subscribedProduct?.localizedTitle
@@ -83,10 +73,33 @@ struct SubscriptionInformation {
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
         self.price = entitlement.priceBestEffort(product: subscribedProduct)
         self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
-        self.willRenew = entitlement.willRenew
         self.productIdentifier = entitlement.productIdentifier
-        self.active = entitlement.isActive
         self.store = entitlement.store
+    }
+
+    init(product: StoreProduct,
+         expirationDate: Date?,
+         dateFormatter: DateFormatter = DateFormatter()) {
+        // We don't have enough information to determine if the subscription will renew or not because we
+        // are loading the information from the product without entitlement information.
+        // We also assume that the subscription is active.
+        // We also assume that the subscription will renew the earliest possible renewal date and this is the
+        // product with the earliest renewal date.
+        dateFormatter.dateStyle = .medium
+
+        self.title = product.localizedTitle
+        self.explanation = .earliestRenewal
+        self.durationTitle = product.subscriptionPeriod?.durationTitle
+        self.price = .paid(product.localizedPriceString)
+        if let dateString = expirationDate.map({ dateFormatter.string(from: $0) }) {
+            let date = PurchaseInformation.ExpirationOrRenewal.Date.date(dateString)
+            self.expirationOrRenewal = PurchaseInformation.ExpirationOrRenewal(label: .expires,
+                                                                               date: date)
+        } else {
+            self.expirationOrRenewal = nil
+        }
+        self.productIdentifier = product.productIdentifier
+        self.store = .appStore
     }
 
     struct ExpirationOrRenewal {
@@ -128,7 +141,7 @@ struct SubscriptionInformation {
 
 fileprivate extension EntitlementInfo {
 
-    func priceBestEffort(product: StoreProduct?) -> SubscriptionInformation.PriceDetails {
+    func priceBestEffort(product: StoreProduct?) -> PurchaseInformation.PriceDetails {
         if let product {
             return .paid(product.localizedPriceString)
         }
@@ -152,19 +165,19 @@ fileprivate extension EntitlementInfo {
         return nil
     }
 
-    func expirationOrRenewal(dateFormatter: DateFormatter) -> SubscriptionInformation.ExpirationOrRenewal? {
+    func expirationOrRenewal(dateFormatter: DateFormatter) -> PurchaseInformation.ExpirationOrRenewal? {
         guard let date = expirationDateBestEffort(dateFormatter: dateFormatter) else {
             return nil
         }
-        let label: SubscriptionInformation.ExpirationOrRenewal.Label =
+        let label: PurchaseInformation.ExpirationOrRenewal.Label =
         self.isActive ? (
             self.willRenew ? .nextBillingDate : .expires
         ) : .expired
-        return SubscriptionInformation.ExpirationOrRenewal(label: label, date: date)
+        return PurchaseInformation.ExpirationOrRenewal(label: label, date: date)
 
     }
 
-    var explanation: SubscriptionInformation.Explanation {
+    var explanation: PurchaseInformation.Explanation {
         switch self.store {
         case .appStore, .macAppStore:
             if self.expirationDate != nil {
@@ -191,7 +204,7 @@ fileprivate extension EntitlementInfo {
 
     private func expirationDateBestEffort(
         dateFormatter: DateFormatter
-    ) -> SubscriptionInformation.ExpirationOrRenewal.Date? {
+    ) -> PurchaseInformation.ExpirationOrRenewal.Date? {
         if self.expirationDate == nil {
             return .never
         }

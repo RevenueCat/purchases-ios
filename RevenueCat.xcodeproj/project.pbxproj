@@ -227,7 +227,7 @@
 		353756522C382BC700A1B8D6 /* PreferredLocalesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756512C382BC700A1B8D6 /* PreferredLocalesProvider.swift */; };
 		353756652C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */; };
 		353756662C382C2800A1B8D6 /* CustomerCenterError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756542C382C2800A1B8D6 /* CustomerCenterError.swift */; };
-		353756672C382C2800A1B8D6 /* SubscriptionInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756552C382C2800A1B8D6 /* SubscriptionInformation.swift */; };
+		353756672C382C2800A1B8D6 /* PurchaseInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756552C382C2800A1B8D6 /* PurchaseInformation.swift */; };
 		353756682C382C2800A1B8D6 /* CustomerCenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */; };
 		353756692C382C2800A1B8D6 /* CustomerCenterViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */; };
 		3537566A2C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */; };
@@ -1477,7 +1477,7 @@
 		353756512C382BC700A1B8D6 /* PreferredLocalesProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferredLocalesProvider.swift; sourceTree = "<group>"; };
 		353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigTestData.swift; sourceTree = "<group>"; };
 		353756542C382C2800A1B8D6 /* CustomerCenterError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterError.swift; sourceTree = "<group>"; };
-		353756552C382C2800A1B8D6 /* SubscriptionInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriptionInformation.swift; sourceTree = "<group>"; };
+		353756552C382C2800A1B8D6 /* PurchaseInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseInformation.swift; sourceTree = "<group>"; };
 		353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewModel.swift; sourceTree = "<group>"; };
 		353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewState.swift; sourceTree = "<group>"; };
 		353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsViewModel.swift; sourceTree = "<group>"; };
@@ -3426,7 +3426,7 @@
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
 				353756542C382C2800A1B8D6 /* CustomerCenterError.swift */,
 				35C200AE2C39252D00B9778B /* FeedbackSurveyData.swift */,
-				353756552C382C2800A1B8D6 /* SubscriptionInformation.swift */,
+				353756552C382C2800A1B8D6 /* PurchaseInformation.swift */,
 				1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */,
 				35C496052C482ACC0023E924 /* PromotionalOfferData.swift */,
 				35F249C92C493D970058993A /* LoadPromotionalOfferUseCase.swift */,
@@ -6386,7 +6386,7 @@
 				7783607B2CCA88E4000785B8 /* StickyFooterComponentView.swift in Sources */,
 				887A608B2C1D037000E1A461 /* PurchaseHandler+TestData.swift in Sources */,
 				35F249CE2C493E3D0058993A /* CustomerCenterPurchases.swift in Sources */,
-				353756672C382C2800A1B8D6 /* SubscriptionInformation.swift in Sources */,
+				353756672C382C2800A1B8D6 /* PurchaseInformation.swift in Sources */,
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
 				887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */,
 				C3AD12BC2C6EA69D00A4F86F /* SubscriptionDetailsView.swift in Sources */,

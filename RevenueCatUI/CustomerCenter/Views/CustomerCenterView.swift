@@ -76,15 +76,15 @@ private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
         if !viewModel.isLoaded {
-            await viewModel.loadHasSubscriptions()
+            await viewModel.loadHasActivePurchases()
             await viewModel.loadCustomerCenterConfig()
         }
     }
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasSubscriptions {
-            if viewModel.subscriptionsAreFromApple,
+        if viewModel.hasActiveProducts {
+            if viewModel.hasAppleEntitlement,
                let screen = configuration.screens[.management] {
                 if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
                     AppUpdateWarningView(
@@ -129,7 +129,7 @@ private extension CustomerCenterView {
 struct CustomerCenterView_Previews: PreviewProvider {
 
    static var previews: some View {
-       let viewModel = CustomerCenterViewModel(hasSubscriptions: false, areSubscriptionsFromApple: false)
+       let viewModel = CustomerCenterViewModel(hasActiveProducts: false, hasAppleEntitlement: false)
        CustomerCenterView(viewModel: viewModel)
    }
 

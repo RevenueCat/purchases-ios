@@ -30,7 +30,7 @@ struct WrongPlatformView: View {
     @State
     private var managementURL: URL?
     @State
-    private var subscriptionInformation: SubscriptionInformation?
+    private var subscriptionInformation: PurchaseInformation?
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -57,7 +57,7 @@ struct WrongPlatformView: View {
 
     fileprivate init(store: Store,
                      managementURL: URL?,
-                     subscriptionInformation: SubscriptionInformation) {
+                     subscriptionInformation: PurchaseInformation) {
         self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
         self._subscriptionInformation = State(initialValue: subscriptionInformation)
@@ -67,7 +67,7 @@ struct WrongPlatformView: View {
         List {
             if let subscriptionInformation = self.subscriptionInformation {
                 Section {
-                    SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                    SubscriptionDetailsView(purchaseInformation: subscriptionInformation,
                                             refundRequestStatus: nil)
                 }
             }
@@ -104,7 +104,7 @@ struct WrongPlatformView: View {
                    let entitlement = customerInfo.entitlements.active.first?.value {
                     self.store = entitlement.store
                     self.managementURL = customerInfo.managementURL
-                    self.subscriptionInformation = SubscriptionInformation(entitlement: entitlement)
+                    self.subscriptionInformation = PurchaseInformation(entitlement: entitlement)
                 }
             }
         }
@@ -187,15 +187,15 @@ struct WrongPlatformView_Previews: PreviewProvider {
                 WrongPlatformView(
                     store: data.store,
                     managementURL: data.managementURL,
-                    subscriptionInformation: getSubscriptionInformation(for: data.customerInfo)
+                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo)
                 )
                 .previewDisplayName(data.displayName)
             }
         }
     }
 
-    private static func getSubscriptionInformation(for customerInfo: CustomerInfo) -> SubscriptionInformation {
-        return SubscriptionInformation(entitlement: customerInfo.entitlements.active.first!.value)
+    private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
+        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value)
     }
 
 }
