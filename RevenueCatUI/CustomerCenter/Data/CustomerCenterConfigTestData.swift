@@ -135,9 +135,7 @@ enum CustomerCenterConfigTestData {
         price: .paid("$4.99"),
         expirationOrRenewal: .init(label: .nextBillingDate,
                                    date: .date("June 1st, 2024")),
-        willRenew: true,
         productIdentifier: "product_id",
-        active: true,
         store: .appStore
     )
 
@@ -148,9 +146,7 @@ enum CustomerCenterConfigTestData {
         price: .paid("$49.99"),
         expirationOrRenewal: .init(label: .expires,
                                    date: .date("June 1st, 2024")),
-        willRenew: false,
         productIdentifier: "product_id",
-        active: true,
         store: .appStore
     )
 

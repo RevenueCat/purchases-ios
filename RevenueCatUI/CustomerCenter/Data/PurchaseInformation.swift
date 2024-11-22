@@ -27,24 +27,34 @@ struct PurchaseInformation {
     let productIdentifier: String
     let store: Store
 
+    init(title: String,
+         durationTitle: String,
+         explanation: Explanation,
+         price: PriceDetails,
+         expirationOrRenewal: ExpirationOrRenewal?,
+         productIdentifier: String,
+         store: Store
+    ) {
+        self.title = title
+        self.durationTitle = durationTitle
+        self.explanation = explanation
+        self.price = price
+        self.expirationOrRenewal = expirationOrRenewal
+        self.productIdentifier = productIdentifier
+        self.store = store
+    }
+
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
-         subscription: SubscriptionInfo? = nil,
-         nonSubscription: NonSubscriptionTransaction? = nil,
+         transaction: Transaction,
          dateFormatter: DateFormatter = DateFormatter()) {
         dateFormatter.dateStyle = .medium
-
-        // Use entitlement data if available, otherwise use subscription/nonSubscription
-        let transaction = subscription ?? nonSubscription
-        guard let transaction = transaction else {
-            fatalError("Must provide either subscription or nonSubscription")
-        }
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
 
-        // Use entitlement explanation if available, otherwise derive from transaction
+        // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
             self.explanation = entitlement.explanation
             self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
@@ -52,36 +62,27 @@ struct PurchaseInformation {
             self.store = entitlement.store
             self.price = entitlement.priceBestEffort(product: subscribedProduct)
         } else {
-            if let subscription = subscription {
-                self.explanation = subscription.expiresDate != nil
-                    ? (subscription.isActive ? (subscription.willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
+            switch transaction.type {
+            case .subscription(let isActive, let willRenew, let expiresDate):
+                self.explanation = expiresDate != nil
+                    ? (isActive ? (willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
                     : .lifetime
-                self.productIdentifier = subscription.productIdentifier
-                self.store = subscription.store
-                self.expirationOrRenewal = subscription.expiresDate.map { date in
+                self.expirationOrRenewal = expiresDate.map { date in
                     let dateString = dateFormatter.string(from: date)
-                    let label: ExpirationOrRenewal.Label = subscription.isActive 
-                        ? (subscription.willRenew ? .nextBillingDate : .expires)
+                    let label: ExpirationOrRenewal.Label = isActive 
+                        ? (willRenew ? .nextBillingDate : .expires)
                         : .expired
                     return ExpirationOrRenewal(label: label, date: .date(dateString))
                 }
-                self.price = subscription.store == .promotional ? .free
-                    : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
-            } else if let nonSubscription = nonSubscription {
+            case .nonSubscription:
                 self.explanation = .lifetime
-                self.productIdentifier = nonSubscription.productIdentifier
-                self.store = nonSubscription.store
                 self.expirationOrRenewal = nil
-                self.price = nonSubscription.store == .promotional ? .free
-                    : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
-            } else {
-                // There's no way to get here
-                self.explanation = .earliestExpiration
-                self.productIdentifier = ""
-                self.store = .unknownStore
-                self.expirationOrRenewal = nil
-                self.price = .unknown
             }
+            
+            self.productIdentifier = transaction.productIdentifier
+            self.store = transaction.store
+            self.price = transaction.store == .promotional ? .free 
+                : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
         }
     }
 
@@ -216,6 +217,39 @@ fileprivate extension String {
 
     func isPromotionalLifetime(store: Store) -> Bool {
         return self.hasSuffix("_lifetime") && store == .promotional
+    }
+
+}
+
+protocol Transaction {
+
+    var productIdentifier: String { get }
+    var store: Store { get }
+    var type: TransactionType { get }
+
+}
+
+enum TransactionType {
+
+    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?)
+    case nonSubscription
+
+}
+
+extension SubscriptionInfo: Transaction {
+
+    var type: TransactionType {
+        .subscription(isActive: isActive,
+                      willRenew: willRenew,
+                      expiresDate: expiresDate)
+    }
+
+}
+
+extension NonSubscriptionTransaction: Transaction {
+
+    var type: TransactionType {
+        .nonSubscription
     }
 
 }

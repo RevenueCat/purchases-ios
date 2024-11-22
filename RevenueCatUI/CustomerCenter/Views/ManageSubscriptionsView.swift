@@ -37,9 +37,12 @@ struct ManageSubscriptionsView: View {
     private let customerCenterActionHandler: CustomerCenterActionHandler?
 
     init(screen: CustomerCenterConfigData.Screen,
+         purchaseInformation: PurchaseInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
-        let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: customerCenterActionHandler)
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: screen,
+            purchaseInformation: purchaseInformation,
+            customerCenterActionHandler: customerCenterActionHandler)
         self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
     }
 
@@ -107,9 +110,6 @@ struct ManageSubscriptionsView: View {
                 DismissCircleButton()
             }
         }
-        .task {
-            await loadInformationIfNeeded()
-        }
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(
             item: self.$viewModel.promotionalOfferData,
@@ -134,20 +134,6 @@ struct ManageSubscriptionsView: View {
         })
         .navigationTitle(self.viewModel.screen.title)
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension ManageSubscriptionsView {
-
-    func loadInformationIfNeeded() async {
-        if !self.viewModel.isLoaded {
-            await viewModel.loadScreen()
-        }
     }
 
 }

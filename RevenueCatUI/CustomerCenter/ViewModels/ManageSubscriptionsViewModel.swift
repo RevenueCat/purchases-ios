@@ -85,30 +85,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         state = .success
     }
 
-    func loadScreen() async {
-        do {
-            try await loadPurchaseInformation()
-            self.state = .success
-        } catch {
-            self.state = .error(error)
-        }
-    }
-
-    private func loadPurchaseInformation() async throws {
-        let customerInfo = try await purchasesProvider.customerInfo()
-
-        guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
-              let product = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
-        else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
-
-        let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
-                                                      subscribedProduct: product)
-        self.purchaseInformation = purchaseInformation
-    }
-
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
         switch path.detail {
