@@ -488,7 +488,22 @@ extension MockPurchases: PurchasesSwiftType {
 
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     func eligibleWinBackOffers(
+        forPackage package: Package
+    ) async throws -> [WinBackOffer] {
+        self.unimplemented()
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
         forProduct product: StoreProduct,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    ) {
+        self.unimplemented()
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package,
         completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     ) {
         self.unimplemented()

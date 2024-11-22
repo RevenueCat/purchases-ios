@@ -307,7 +307,22 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
-            let winBackOffers: [WinBackOffer] = try await purchases.eligibleWinBackOffers(forProduct: storeProducts.first!)
+            let winBackOffersForProduct: [WinBackOffer] = try await purchases.eligibleWinBackOffers(
+                forProduct: storeProducts.first!
+            )
+
+            purchases.eligibleWinBackOffers(
+                forProduct: storeProducts.first!
+            ) { (winBackOffers: [WinBackOffer]?, error: PublicError?) in
+                return
+            }
+
+            let winBackOffersForPackage: [WinBackOffer] = try await purchases.eligibleWinBackOffers(forPackage: pack)
+            purchases.eligibleWinBackOffers(
+                forPackage: pack
+            ) { (winBackOffers: [WinBackOffer]?, error: PublicError?) in
+                return
+            }
         }
         #endif
 

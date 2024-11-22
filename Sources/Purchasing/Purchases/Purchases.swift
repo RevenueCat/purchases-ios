@@ -1973,6 +1973,20 @@ extension Purchases {
     }
 
     /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    public func eligibleWinBackOffers(
+        forPackage package: Package
+    ) async throws -> [WinBackOffer] {
+        return try await self.eligibleWinBackOffers(forProduct: package.storeProduct)
+    }
+
+    /**
      * Returns the win-back offers that the subscriber is eligible for on the provided product.
      *
      * - Parameter product: The product to check for eligible win-back offers.
@@ -1996,6 +2010,26 @@ extension Purchases {
                     completion(nil, publicError)
                 }
             }
+        }
+    }
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    @objc public func eligibleWinBackOffers(
+        forPackage package: Package,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    ) {
+        self.eligibleWinBackOffers(
+            forProduct: package.storeProduct
+        ) { winBackOffers, error in
+            completion(winBackOffers, error)
         }
     }
 }
