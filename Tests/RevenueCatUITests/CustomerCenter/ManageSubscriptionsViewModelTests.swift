@@ -202,7 +202,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         }
     }
 
-    func testShouldShowEarliestExpiration_whenUserHasLifetimeAndSubscriptionsOneEntitlement() async throws {
+    func testShouldShowLifetime_whenUserHasLifetimeAndSubscriptionsOneEntitlement() async throws {
         let productIdLifetime = "com.revenuecat.simpleapp.lifetime"
         let productIdMonthly = "com.revenuecat.simpleapp.monthly"
         let productIdYearly = "com.revenuecat.simpleapp.yearly"
@@ -282,7 +282,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(purchaseInformation.expirationOrRenewal?.date) == .never
     }
 
-    func testShouldShowLifetim_whenUserHasLifetimeOneEntitlement() async throws {
+    func testShouldShowLifetime_whenUserHasLifetimeOneEntitlement() async throws {
         let productIdLifetime = "com.revenuecat.simpleapp.lifetime"
         let purchaseDateLifetime = "2024-11-21T16:04:20Z"
 
