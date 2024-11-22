@@ -24,7 +24,7 @@ struct SizeModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .applyWidth(size.width, alignment: alignment)
-            .applyHeight(size.height)
+            .applyHeight(size.height, alignment: alignment)
     }
 
 }
@@ -46,16 +46,16 @@ fileprivate extension View {
     }
 
     @ViewBuilder
-    func applyHeight(_ sizeConstraint: PaywallComponent.SizeConstraint) -> some View {
+    func applyHeight(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
         case .fit:
             self
         case .fill:
             self
-                .frame(maxHeight: .infinity)
+                .frame(maxHeight: .infinity, alignment: alignment)
         case .fixed(let value):
             self
-                .frame(height: CGFloat(value))
+                .frame(height: CGFloat(value), alignment: alignment)
         }
     }
 

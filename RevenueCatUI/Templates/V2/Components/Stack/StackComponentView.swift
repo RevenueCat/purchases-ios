@@ -67,6 +67,7 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .size(style.size, alignment: horizontalAlignment.frameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
                 HorizontalStack(
                     style: style,
@@ -75,15 +76,16 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .size(style.size, alignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
                 }
+                .size(style.size)
             }
         }
         .padding(style.padding)
         .padding(additionalPadding)
-        .size(style.size)
         .backgroundStyle(style.backgroundStyle)
         .shape(border: style.border,
                shape: style.shape)
