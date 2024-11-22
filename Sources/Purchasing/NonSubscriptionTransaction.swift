@@ -34,6 +34,11 @@ public final class NonSubscriptionTransaction: NSObject {
     /// The unique identifier for the transaction created by the Store.
     @objc public let storeTransactionIdentifier: String
 
+    /**
+     * The ``Store``tore where this transaction was performed from.
+     */
+    @objc public let store: Store
+
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,
               let storeTransactionIdentifier = transaction.storeTransactionIdentifier else {
@@ -46,6 +51,7 @@ public final class NonSubscriptionTransaction: NSObject {
         self.storeTransactionIdentifier = storeTransactionIdentifier
         self.purchaseDate = transaction.purchaseDate
         self.productIdentifier = productID
+        self.store = transaction.store
     }
 
     public override var description: String {
