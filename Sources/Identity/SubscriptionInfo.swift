@@ -27,6 +27,7 @@ import Foundation
     @objc public let periodType: PeriodType
     @objc public let refundedAt: Date?
     @objc public let storeTransactionId: String?
+    @objc public let isActive: Bool
 
     init(purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -39,7 +40,8 @@ import Foundation
          ownershipType: PurchaseOwnershipType,
          periodType: PeriodType,
          refundedAt: Date?,
-         storeTransactionId: String?) {
+         storeTransactionId: String?,
+         requestDate: Date) {
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
         self.expiresDate = expiresDate
@@ -52,6 +54,7 @@ import Foundation
         self.periodType = periodType
         self.refundedAt = refundedAt
         self.storeTransactionId = storeTransactionId
+        self.isActive = CustomerInfo.isDateActive(expirationDate: expiresDate, for: requestDate)
 
         super.init()
     }
@@ -70,7 +73,8 @@ import Foundation
             ownershipType: \(ownershipType),
             periodType: \(String(describing: periodType)),
             refundedAt: \(String(describing: refundedAt)),
-            storeTransactionId: \(storeTransactionId)
+            storeTransactionId: \(String(describing: storeTransactionId)),
+            isActive: \(isActive)
         }
         """
     }

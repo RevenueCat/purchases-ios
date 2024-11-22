@@ -225,7 +225,8 @@ import Foundation
                 ownershipType: subscriptionData.ownershipType,
                 periodType: subscriptionData.periodType,
                 refundedAt: subscriptionData.refundedAt,
-                storeTransactionId: subscriptionData.storeTransactionId
+                storeTransactionId: subscriptionData.storeTransactionId,
+                requestDate: response.requestDate
             )
         }
     }
