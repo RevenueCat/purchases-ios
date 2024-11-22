@@ -109,9 +109,27 @@ import RevenueCat
             let customerInfo = try await self.customerInfoFetcher()
             self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
                                 customerInfo.nonSubscriptions.count > 0
-            self.hasAppleActiveProduct = customerInfo.entitlements.active.contains { entitlement in
-                entitlement.value.store == .appStore
-            }
+
+            let activeSubscriptions = customerInfo.subscriptions.values
+                .filter(\.isActive)
+                .sorted(by: { 
+                    guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
+                        return $0.expiresDate != nil
+                    }
+                    return date1 < date2 
+                })
+
+            let (activeAppleSubscriptions, otherActiveSubscriptions) = (
+                activeSubscriptions.filter { $0.store == .appStore },
+                activeSubscriptions.filter { $0.store != .appStore }
+            )
+
+            let (appleNonSubscriptions, otherNonSubscriptions) = (
+                customerInfo.nonSubscriptions.filter { $0.store == .appStore },
+                customerInfo.nonSubscriptions.filter { $0.store != .appStore }
+            )
+
+            self.hasAppleActiveProduct = activeAppleSubscriptions.count > 0 || appleNonSubscriptions.count > 0
             self.state = .success
         } catch {
             self.state = .error(error)
