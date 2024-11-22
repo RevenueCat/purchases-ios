@@ -133,43 +133,56 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsOneEntitlement() async throws {
-        for subscriptionsOrder in [
-            [(id: "com.revenuecat.product1", exp: "2062-04-12T00:03:35Z"),
-             (id: "com.revenuecat.product2", exp: "2062-05-12T00:03:35Z")],
-            [(id: "com.revenuecat.product2", exp: "2062-05-12T00:03:35Z"),
-             (id: "com.revenuecat.product1", exp: "2062-04-12T00:03:35Z")]
-        ] {
-            // Arrange
-            let productIdOne = subscriptionsOrder[0].id
-            let productIdTwo = subscriptionsOrder[1].id
+        // Arrange
+        let yearlyProduct = (
+            id: "com.revenuecat.yearly",
+            exp: "2062-04-12T00:03:35Z", // Earlier expiration
+            title: "yearly",
+            duration: "1 year",
+            price: Decimal(29.99)
+        )
+        let monthlyProduct = (
+            id: "com.revenuecat.monthly",
+            exp: "2062-05-12T00:03:35Z", // Later expiration
+            title: "monthly",
+            duration: "1 month",
+            price: Decimal(2.99)
+        )
+        
+        // Test both possible subscription array orders
+        let subscriptionOrders = [
+            [yearlyProduct, monthlyProduct],
+            [monthlyProduct, yearlyProduct]
+        ]
+        
+        for subscriptions in subscriptionOrders {
             let purchaseDate = "2022-04-12T00:03:28Z"
-            let expirationDateFirst = subscriptionsOrder[0].exp
-            let expirationDateSecond = subscriptionsOrder[1].exp
             let products = [
-                PurchaseInformationFixtures.product(id: productIdOne, title: "yearly", duration: .year, price: 29.99),
-                PurchaseInformationFixtures.product(id: productIdTwo, title: "monthly", duration: .month, price: 2.99)
+                PurchaseInformationFixtures.product(id: yearlyProduct.id, 
+                                                  title: yearlyProduct.title, 
+                                                  duration: .year, 
+                                                  price: yearlyProduct.price),
+                PurchaseInformationFixtures.product(id: monthlyProduct.id, 
+                                                  title: monthlyProduct.title, 
+                                                  duration: .month, 
+                                                  price: monthlyProduct.price)
             ]
+            
             let customerInfo = CustomerInfoFixtures.customerInfo(
-                subscriptions: [
+                subscriptions: subscriptions.map { product in
                     CustomerInfoFixtures.Subscription(
-                        id: productIdOne,
+                        id: product.id,
                         store: "app_store",
                         purchaseDate: purchaseDate,
-                        expirationDate: expirationDateFirst
-                    ),
-                    CustomerInfoFixtures.Subscription(
-                        id: productIdTwo,
-                        store: "app_store",
-                        purchaseDate: purchaseDate,
-                        expirationDate: expirationDateSecond
+                        expirationDate: product.exp
                     )
-                ],
+                },
                 entitlements: [
                     CustomerInfoFixtures.Entitlement(
                         entitlementId: "premium",
-                        productId: "com.revenuecat.product1",
+                        productId: yearlyProduct.id,
                         purchaseDate: purchaseDate,
-                        expirationDate: "2062-04-12T00:03:35Z"
+                        expirationDate: yearlyProduct.exp
                     )
                 ]
             )
@@ -190,15 +203,16 @@ class ManageSubscriptionsViewModelTests: TestCase {
             expect(viewModel.state) == .success
 
             let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
-            expect(purchaseInformation.title) == "yearly"
-            expect(purchaseInformation.durationTitle) == "1 year"
-            expect(purchaseInformation.price) == .paid("$29.99")
+            // Should always show yearly subscription since it expires first
+            expect(purchaseInformation.title) == yearlyProduct.title
+            expect(purchaseInformation.durationTitle) == yearlyProduct.duration
+            expect(purchaseInformation.price) == .paid("$\(String(format: "%.2f", NSDecimalNumber(decimal: yearlyProduct.price).doubleValue))")
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
-            expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: "2062-04-12T00:03:35Z"))
+            expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: yearlyProduct.exp))
 
-            expect(purchaseInformation.productIdentifier) == "com.revenuecat.product1"
+            expect(purchaseInformation.productIdentifier) == yearlyProduct.id
         }
     }
 
