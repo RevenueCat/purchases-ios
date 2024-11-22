@@ -67,6 +67,7 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                // This alignment positions the inner VStack horizontally.
                 .size(style.size, alignment: horizontalAlignment.frameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
                 HorizontalStack(
@@ -76,6 +77,7 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                // This alignment positions the inner HStack vertically.
                 .size(style.size, alignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
@@ -117,6 +119,7 @@ struct VerticalStack: View {
         case .normal:
             // VStack when not many things
             VStack(
+                // This alignment positions inner items horizontally relative to each other
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
@@ -125,6 +128,7 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
+            // This alignment positions the items vertically within its parent
             .frame(maxHeight: .infinity, alignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexVStack(
@@ -152,9 +156,14 @@ struct HorizontalStack: View {
     var body: some View {
         switch style.hstackStrategy {
         case .normal:
-            HStack(alignment: verticalAlignment.stackAlignment, spacing: style.spacing) {
+            HStack(
+                // This alignment positions inner items vertically relative to each other
+                alignment: verticalAlignment.stackAlignment,
+                spacing: style.spacing
+            ) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
+            // This alignment positions the items horizontally within its parent
             .frame(maxWidth: .infinity, alignment: distribution.horizontalFrameAlignment)
         case .flex:
             FlexHStack(
