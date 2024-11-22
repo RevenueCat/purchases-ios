@@ -1347,7 +1347,7 @@ private extension PurchasesOrchestrator {
                                   appTransaction: appTransactionJWS) { result in
 
                     self.handleReceiptPost(result: result,
-                                           transactionData: nil,
+                                           transactionData: transactionData,
                                            subscriberAttributes: unsyncedAttributes,
                                            adServicesToken: nil,
                                            completion: completion)
