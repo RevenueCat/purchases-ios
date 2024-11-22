@@ -36,8 +36,7 @@ public final class NonSubscriptionTransaction: NSObject {
 
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,
-              let storeTransactionIdentifier = transaction.storeTransactionIdentifier,
-              let purchaseDate = transaction.purchaseDate else {
+              let storeTransactionIdentifier = transaction.storeTransactionIdentifier else {
             Logger.error("Couldn't initialize NonSubscriptionTransaction. " +
                          "Reason: missing data: \(transaction).")
             return nil
@@ -45,7 +44,7 @@ public final class NonSubscriptionTransaction: NSObject {
 
         self.transactionIdentifier = transactionIdentifier
         self.storeTransactionIdentifier = storeTransactionIdentifier
-        self.purchaseDate = purchaseDate
+        self.purchaseDate = transaction.purchaseDate
         self.productIdentifier = productID
     }
 

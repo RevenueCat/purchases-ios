@@ -70,7 +70,7 @@ extension CustomerInfoResponse {
 
     struct Transaction {
 
-        var purchaseDate: Date?
+        var purchaseDate: Date
         var originalPurchaseDate: Date?
         var transactionIdentifier: String?
         var storeTransactionIdentifier: String?
@@ -177,7 +177,7 @@ extension CustomerInfoResponse.Subscriber {
 extension CustomerInfoResponse.Transaction {
 
     init(
-        purchaseDate: Date?,
+        purchaseDate: Date,
         originalPurchaseDate: Date?,
         transactionIdentifier: String?,
         storeTransactionIdentifier: String?,
@@ -205,7 +205,7 @@ extension CustomerInfoResponse.Subscription {
 
     init(
         periodType: PeriodType = .defaultValue,
-        purchaseDate: Date? = nil,
+        purchaseDate: Date,
         originalPurchaseDate: Date? = nil,
         expiresDate: Date? = nil,
         store: Store = .defaultValue,

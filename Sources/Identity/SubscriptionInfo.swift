@@ -15,7 +15,7 @@ import Foundation
 
 @objc(RCSubscriptionInfo) public final class SubscriptionInfo: NSObject {
 
-    @objc public let purchaseDate: Date?
+    @objc public let purchaseDate: Date
     @objc public let originalPurchaseDate: Date?
     @objc public let expiresDate: Date?
     @objc public let store: Store
@@ -26,9 +26,9 @@ import Foundation
     @objc public let ownershipType: PurchaseOwnershipType
     @objc public let periodType: PeriodType
     @objc public let refundedAt: Date?
-    @objc public let storeTransactionId: String
+    @objc public let storeTransactionId: String?
 
-    init(purchaseDate: Date?,
+    init(purchaseDate: Date,
          originalPurchaseDate: Date?,
          expiresDate: Date?,
          store: Store,
@@ -39,7 +39,7 @@ import Foundation
          ownershipType: PurchaseOwnershipType,
          periodType: PeriodType,
          refundedAt: Date?,
-         storeTransactionId: String) {
+         storeTransactionId: String?) {
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
         self.expiresDate = expiresDate
