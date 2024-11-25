@@ -57,7 +57,9 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
                                    productID: transaction.productID,
                                    entitlementID: entitlementID,
                                    periodType: .trial,
-                                   expiration: transaction.expirationDate)
+                                   expiration: transaction.expirationDate,
+                                   originalPurchaseDate: transaction.originalPurchaseDate,
+                                   latestPurchaseDate: transaction.originalPurchaseDate)
     }
 
     func testRawData() async throws {
@@ -102,12 +104,16 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
                                    productID: transaction.productID,
                                    entitlementID: entitlement1,
                                    periodType: .trial,
-                                   expiration: transaction.expirationDate)
+                                   expiration: transaction.expirationDate,
+                                   originalPurchaseDate: transaction.originalPurchaseDate,
+                                   latestPurchaseDate: transaction.originalPurchaseDate)
         try self.verifyEntitlement(info.entitlements[entitlement2],
                                    productID: transaction.productID,
                                    entitlementID: entitlement2,
                                    periodType: .trial,
-                                   expiration: transaction.expirationDate)
+                                   expiration: transaction.expirationDate,
+                                   originalPurchaseDate: transaction.originalPurchaseDate,
+                                   latestPurchaseDate: transaction.originalPurchaseDate)
     }
 
     func testProductNotFoundInMapping() async throws {
@@ -166,17 +172,23 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
                                    productID: product1.id,
                                    entitlementID: entitlement1,
                                    periodType: .trial,
-                                   expiration: transaction1.expirationDate)
+                                   expiration: transaction1.expirationDate,
+                                   originalPurchaseDate: transaction1.originalPurchaseDate,
+                                   latestPurchaseDate: transaction1.originalPurchaseDate)
         try self.verifyEntitlement(info.entitlements[entitlement2],
                                    productID: product2.id,
                                    entitlementID: entitlement2,
                                    periodType: .normal,
-                                   expiration: transaction2.expirationDate)
+                                   expiration: transaction2.expirationDate,
+                                   originalPurchaseDate: transaction2.originalPurchaseDate,
+                                   latestPurchaseDate: transaction2.originalPurchaseDate)
         try self.verifyEntitlement(info.entitlements[entitlement3],
                                    productID: product2.id,
                                    entitlementID: entitlement3,
                                    periodType: .normal,
-                                   expiration: transaction2.expirationDate)
+                                   expiration: transaction2.expirationDate,
+                                   originalPurchaseDate: transaction2.originalPurchaseDate,
+                                   latestPurchaseDate: transaction2.originalPurchaseDate)
     }
 
     func testOverlappingEntitlementsPrioritizeLongestExpiration() async throws {
@@ -205,7 +217,9 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
                                    productID: product2.id,
                                    entitlementID: entitlementID,
                                    periodType: .normal,
-                                   expiration: transaction2.expirationDate)
+                                   expiration: transaction2.expirationDate,
+                                   originalPurchaseDate: transaction2.originalPurchaseDate,
+                                   latestPurchaseDate: transaction2.originalPurchaseDate)
     }
 
 }
@@ -236,12 +250,15 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expect(info.originalPurchaseDate).to(beCloseToNow())
     }
 
+    // swiftlint:disable:next function_parameter_count
     func verifyEntitlement(
         _ entitlement: EntitlementInfo?,
         productID: String,
         entitlementID: String,
         periodType: PeriodType,
         expiration: Date?,
+        originalPurchaseDate: Date,
+        latestPurchaseDate: Date,
         file: FileString = #file,
         line: UInt = #line
     ) throws {
@@ -252,13 +269,13 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expect(entitlement.productIdentifier) == productID
         expect(entitlement.billingIssueDetectedAt).to(beNil())
         if let expiration = expiration {
-            expect(entitlement.expirationDate).to(beCloseToDate(expiration))
+            expect(entitlement.expirationDate) == expiration
         } else {
             expect(entitlement.expirationDate).to(beNil())
         }
         expect(entitlement.isSandbox) == self.sandboxDetector.isSandbox
-        expect(entitlement.originalPurchaseDate).to(beCloseToNow())
-        expect(entitlement.latestPurchaseDate).to(beCloseToNow())
+        expect(entitlement.originalPurchaseDate) == originalPurchaseDate
+        expect(entitlement.latestPurchaseDate) == latestPurchaseDate
         expect(entitlement.ownershipType) == .purchased
         expect(entitlement.periodType) == periodType
         expect(entitlement.store) == .appStore

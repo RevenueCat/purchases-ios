@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SubscriptionInformationFixtures.swift
+//  PurchaseInformationFixtures.swift
 //
 //  Created by Cesar de la Vega on 10/25/24.
 
@@ -17,12 +17,12 @@ import Foundation
 import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum SubscriptionInformationFixtures {
+enum PurchaseInformationFixtures {
 
     static func product(
         id: String,
         title: String,
-        duration: SKProduct.PeriodUnit,
+        duration: SKProduct.PeriodUnit?,
         price: Decimal,
         priceLocale: String = "en_US",
         offerIdentifier: String? = nil
@@ -32,7 +32,11 @@ enum SubscriptionInformationFixtures {
         let sk1Product = MockSK1Product(mockProductIdentifier: id, mockLocalizedTitle: title)
         sk1Product.mockPrice = price
         sk1Product.mockPriceLocale = Locale(identifier: priceLocale)
-        sk1Product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: duration)
+        if let duration = duration {
+            sk1Product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: duration)
+        } else {
+            sk1Product.mockSubscriptionPeriod = nil
+        }
         if let offerIdentifier = offerIdentifier {
             sk1Product.mockDiscount = SKProductDiscount(identifier: offerIdentifier)
         }

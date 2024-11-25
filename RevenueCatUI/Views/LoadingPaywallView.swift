@@ -45,7 +45,8 @@ struct LoadingPaywallView: View {
             displayCloseButton: self.displayCloseButton,
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler,
-            locale: Locale.current
+            locale: Locale.current,
+            showZeroDecimalPlacePrices: true
         )
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)

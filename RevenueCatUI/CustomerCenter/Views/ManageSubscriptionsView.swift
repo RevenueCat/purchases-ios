@@ -80,10 +80,10 @@ struct ManageSubscriptionsView: View {
             if self.viewModel.isLoaded {
                 List {
 
-                    if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                    if let purchaseInformation = self.viewModel.purchaseInformation {
                         Section {
                             SubscriptionDetailsView(
-                                subscriptionInformation: subscriptionInformation,
+                                purchaseInformation: purchaseInformation,
                                 refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
                     }
@@ -221,7 +221,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     customerCenterActionHandler: nil,
                     refundRequestStatus: .success)
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
@@ -234,7 +234,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    subscriptionInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
                     customerCenterActionHandler: nil)
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
                                         customerCenterActionHandler: nil)

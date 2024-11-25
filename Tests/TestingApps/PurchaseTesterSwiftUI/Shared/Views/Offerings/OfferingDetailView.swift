@@ -134,17 +134,19 @@ struct OfferingDetailView: View {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            #if ENABLE_PURCHASE_PARAMS
             let result: PurchaseResultData
             if let metadata = customerData.metadata {
+                #if ENABLE_TRANSACTION_METADATA
                 let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                #else
+                let params = PurchaseParams.Builder(package: package).build()
+                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
+                print("⚠️ Warning - Metadata will not be sent with the purchase")
+                #endif
                 result = try await Purchases.shared.purchase(params)
             } else {
                 result = try await Purchases.shared.purchase(package: self.package)
             }
-            #else
-            let result = try await Purchases.shared.purchase(package: self.package)
-            #endif
             self.completedPurchase(result)
 
         }
@@ -153,17 +155,20 @@ struct OfferingDetailView: View {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            #if ENABLE_PURCHASE_PARAMS
             let result: PurchaseResultData
             if let metadata = customerData.metadata {
-                let params = PurchaseParams.Builder(product: self.package.storeProduct).with(metadata: metadata).build()
+                #if ENABLE_TRANSACTION_METADATA
+                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                #else
+                let params = PurchaseParams.Builder(package: package).build()
+                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
+                print("⚠️ Warning - Metadata will not be sent with the purchase")
+                #endif
                 result = try await Purchases.shared.purchase(params)
             } else {
                 result = try await Purchases.shared.purchase(product: self.package.storeProduct)
             }
-            #else
-            let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
-            #endif
+
             self.completedPurchase(result)
         }
 

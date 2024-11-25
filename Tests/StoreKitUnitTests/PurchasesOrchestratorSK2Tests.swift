@@ -269,7 +269,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     // MARK: - PurchaseParams
 
-    #if ENABLE_PURCHASE_PARAMS
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
@@ -284,11 +283,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let metadata = ["key": "value"]
         let params = PurchaseParams.Builder(package: package)
-            .with(metadata: metadata)
-            .build()
+
+        #if ENABLE_TRANSACTION_METADATA
+        params = params.with(metadata: metadata)
+        #endif
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params.build()) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -297,7 +298,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+
+        #if ENABLE_TRANSACTION_METADATA
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(equal(metadata))
+        #else
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.metadata).to(beNil())
+        #endif
+
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext?.offeringIdentifier
         ) == "offering"
@@ -344,7 +351,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
         expect(self.mockStoreKit2TransactionListener?.invokedHandleCount) == 1
     }
-    #endif
 
     // MARK: - Paywalls
 

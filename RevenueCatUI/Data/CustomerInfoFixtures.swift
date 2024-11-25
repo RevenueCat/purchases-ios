@@ -50,11 +50,11 @@ class CustomerInfoFixtures {
         let id: String
         let json: String
 
-        init(entitlementId: String, productId: String, purchaseDate: String, expirationDate: String) {
+        init(entitlementId: String, productId: String, purchaseDate: String, expirationDate: String? = nil) {
             self.id = entitlementId
             self.json = """
             {
-                "expires_date": "\(expirationDate)",
+                "expires_date": \(expirationDate != nil ? "\"\(expirationDate!)\"" : "null"),
                 "product_identifier": "\(productId)",
                 "purchase_date": "\(purchaseDate)"
             }
@@ -63,7 +63,30 @@ class CustomerInfoFixtures {
 
     }
 
-    static func customerInfo(subscriptions: [Subscription], entitlements: [Entitlement]) -> CustomerInfo {
+    class NonSubscriptionTransaction {
+        let productId: String
+        let id: String
+        let json: String
+
+        init(productId: String = "onetime", id: String, store: String, purchaseDate: String) {
+            self.productId = productId
+            self.id = id
+            self.json = """
+            {
+                "id": "\(id)",
+                "is_sandbox": true,
+                "purchase_date": "\(purchaseDate)",
+                "store": "\(store)"
+            }
+            """
+        }
+    }
+
+    static func customerInfo(
+        subscriptions: [Subscription],
+        entitlements: [Entitlement],
+        nonSubscriptions: [NonSubscriptionTransaction] = []
+    ) -> CustomerInfo {
         let subscriptionsJson = subscriptions.map { subscription in
             """
             "\(subscription.id)": \(subscription.json)
@@ -73,6 +96,15 @@ class CustomerInfoFixtures {
         let entitlementsJson = entitlements.map { entitlement in
             """
             "\(entitlement.id)": \(entitlement.json)
+            """
+        }.joined(separator: ",\n")
+
+        let nonSubscriptionsByProduct = Dictionary(grouping: nonSubscriptions, by: { $0.productId })
+        let nonSubscriptionsJson = nonSubscriptionsByProduct.map { productId, purchases in
+            """
+            "\(productId)": [
+                \(purchases.map { $0.json }.joined(separator: ",\n"))
+            ]
             """
         }.joined(separator: ",\n")
 
@@ -87,6 +119,7 @@ class CustomerInfoFixtures {
                 "last_seen": "2022-03-08T17:42:58Z",
                 "management_url": "https://apps.apple.com/account/subscriptions",
                 "non_subscriptions": {
+                    \(nonSubscriptionsJson)
                 },
                 "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
                 "original_application_version": "1.0",

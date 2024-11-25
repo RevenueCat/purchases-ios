@@ -374,7 +374,7 @@ final class PurchasesOrchestrator {
         }
     }
 
-    #if ENABLE_PURCHASE_PARAMS
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func purchase(params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
@@ -1388,7 +1388,7 @@ private extension PurchasesOrchestrator {
                                   appTransaction: appTransactionJWS) { result in
 
                     self.handleReceiptPost(result: result,
-                                           transactionData: nil,
+                                           transactionData: transactionData,
                                            subscriberAttributes: unsyncedAttributes,
                                            adServicesToken: nil,
                                            completion: completion)

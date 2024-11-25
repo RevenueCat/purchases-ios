@@ -158,17 +158,28 @@ extension BaseStoreKitIntegrationTests {
     ) async throws -> PurchaseResultData {
         let logger = TestLogHandler()
 
-        #if ENABLE_PURCHASE_PARAMS
+        let data: PurchaseResultData
+
+        #if ENABLE_TRANSACTION_METADATA
         if let metadata = metadata {
-            var params = PurchaseParams.Builder(product: self.monthlyPackage.storeProduct)
+            let product = try await self.monthlyPackage.storeProduct
+
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            let params = PurchaseParams.Builder(product: product)
                 .with(metadata: metadata)
                 .build()
-            let data = try await self.purchases.purchase(params: params)
+            data = try await self.purchases.purchase(params)
+            #else
+            data = try await self.purchases.purchase(product: product)
+            #endif
+
         } else {
-            let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+            let product = try await self.monthlyPackage.storeProduct
+            data = try await self.purchases.purchase(product: product)
         }
         #else
-        let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+        let product = try await self.monthlyPackage.storeProduct
+        data = try await self.purchases.purchase(product: product)
         #endif
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
