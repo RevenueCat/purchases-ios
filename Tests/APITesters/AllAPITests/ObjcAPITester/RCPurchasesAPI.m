@@ -156,6 +156,13 @@ NSURL *url;
                                                 withWinBackOffer:winBackOffers.firstObject]
                                                build];
         }];
+
+        [p eligibleWinBackOffersForPackage:pack
+                                completion:^(NSArray<RCWinBackOffer *> *winBackOffers, NSError *error) {
+            RCPurchaseParams *packageParams = [[[[RCPurchaseParamsBuilder alloc] initWithPackage:pack]
+                                                withWinBackOffer:winBackOffers.firstObject]
+                                               build];
+        }];
     }
 
     [p params:packageParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
