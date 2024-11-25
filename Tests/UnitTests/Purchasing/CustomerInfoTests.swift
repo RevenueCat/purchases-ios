@@ -22,14 +22,6 @@ class EmptyCustomerInfoTests: TestCase {
 
 class BasicCustomerInfoTests: TestCase {
 
-    private static func date(withDaysAgo days: Int) throws -> Date {
-        return try XCTUnwrap(Calendar.current.date(byAdding: .day, value: days, to: Date()))
-    }
-
-    private static let expiredSubscriptionDate = ISO8601DateFormatter.default.string(
-        // swiftlint:disable:next force_try
-        from: try! BasicCustomerInfoTests.date(withDaysAgo: -1)
-    )
     static let validSubscriberResponse: [String: Any] = [
         "request_date": "2018-10-19T02:40:36Z",
         "request_date_ms": Int64(1563379533946),
@@ -915,35 +907,6 @@ class BasicCustomerInfoTests: TestCase {
         expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == true
     }
 
-    // MARK: - Private
-
-    private func verifyCopy(
-        of customerInfo: CustomerInfo,
-        onlyModifiesEntitlementVerification newVerification: VerificationResult
-    ) {
-        let copy = customerInfo.copy(with: newVerification)
-        expect(customerInfo) != copy
-
-        expect(copy.entitlements.verification) == newVerification
-
-        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
-        expect(copyWithOriginalVerification) == customerInfo
-    }
-
-    private func verifyCopy(
-        of customerInfo: CustomerInfo,
-        onlyModifiesRequestDate newRequestDate: Date
-    ) {
-        let originalDate = customerInfo.requestDate
-
-        let copy = customerInfo.copy(with: newRequestDate)
-        expect(copy.requestDate) == newRequestDate
-        expect(customerInfo.requestDate) == originalDate
-
-        let copyWithOriginalDate = copy.copy(with: originalDate)
-        expect(copyWithOriginalDate) == customerInfo
-    }
-
 }
 
 extension CustomerInfo {
@@ -957,6 +920,46 @@ extension CustomerInfo {
 
             return nil
         }
+    }
+
+}
+
+private extension BasicCustomerInfoTests {
+
+    static func date(withDaysAgo days: Int) throws -> Date {
+        return try XCTUnwrap(Calendar.current.date(byAdding: .day, value: days, to: Date()))
+    }
+
+    static let expiredSubscriptionDate = ISO8601DateFormatter.default.string(
+        // swiftlint:disable:next force_try
+        from: try! BasicCustomerInfoTests.date(withDaysAgo: -1)
+    )
+    
+    func verifyCopy(
+        of customerInfo: CustomerInfo,
+        onlyModifiesEntitlementVerification newVerification: VerificationResult
+    ) {
+        let copy = customerInfo.copy(with: newVerification)
+        expect(customerInfo) != copy
+
+        expect(copy.entitlements.verification) == newVerification
+
+        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
+        expect(copyWithOriginalVerification) == customerInfo
+    }
+
+    func verifyCopy(
+        of customerInfo: CustomerInfo,
+        onlyModifiesRequestDate newRequestDate: Date
+    ) {
+        let originalDate = customerInfo.requestDate
+
+        let copy = customerInfo.copy(with: newRequestDate)
+        expect(copy.requestDate) == newRequestDate
+        expect(customerInfo.requestDate) == originalDate
+
+        let copyWithOriginalDate = copy.copy(with: originalDate)
+        expect(copyWithOriginalDate) == customerInfo
     }
 
 }
