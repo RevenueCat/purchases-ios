@@ -52,7 +52,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     @Published
-    private(set) var subscriptionInformation: SubscriptionInformation?
+    private(set) var purchaseInformation: PurchaseInformation?
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
@@ -73,11 +73,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     init(screen: CustomerCenterConfigData.Screen,
-         subscriptionInformation: SubscriptionInformation,
+         purchaseInformation: PurchaseInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
-        self.subscriptionInformation = subscriptionInformation
+        self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
@@ -87,26 +87,26 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     func loadScreen() async {
         do {
-            try await loadSubscriptionInformation()
+            try await loadPurchaseInformation()
             self.state = .success
         } catch {
             self.state = .error(error)
         }
     }
 
-    private func loadSubscriptionInformation() async throws {
+    private func loadPurchaseInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
 
         guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
-              let subscribedProduct = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
+              let product = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
         else {
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
 
-        let subscriptionInformation = SubscriptionInformation(entitlement: currentEntitlement,
-                                                              subscribedProduct: subscribedProduct)
-        self.subscriptionInformation = subscriptionInformation
+        let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
+                                                      subscribedProduct: product)
+        self.purchaseInformation = purchaseInformation
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
@@ -162,6 +162,29 @@ struct IdentifiableURL: Identifiable {
 
 }
 
+// MARK: - Promotional Offer Sheet Dismissal Handling
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension ManageSubscriptionsViewModel {
+
+    /// Function responsible for handling the user's action on the PromotionalOfferView
+    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        // Clear the promotional offer data to dismiss the sheet
+        self.promotionalOfferData = nil
+
+        if userAction.shouldTerminateCurrentPathFlow {
+            self.loadingPath = nil
+        } else {
+            if let loadingPath = loadingPath {
+                await self.onPathSelected(path: loadingPath)
+                self.loadingPath = nil
+            }
+        }
+    }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -176,8 +199,8 @@ private extension ManageSubscriptionsViewModel {
             self.showRestoreAlert = true
         case .refundRequest:
             do {
-                guard let subscriptionInformation = self.subscriptionInformation else { return }
-                let productId = subscriptionInformation.productIdentifier
+                guard let purchaseInformation = self.purchaseInformation else { return }
+                let productId = purchaseInformation.productIdentifier
                 self.customerCenterActionHandler?(.refundRequestStarted(productId))
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
@@ -195,7 +218,7 @@ private extension ManageSubscriptionsViewModel {
             }
         case .customUrl:
             guard let url = path.url,
-                let openMethod = path.openMethod else {
+                  let openMethod = path.openMethod else {
                 Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
                 return
             }

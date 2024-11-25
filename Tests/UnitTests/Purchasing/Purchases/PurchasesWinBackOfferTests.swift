@@ -47,16 +47,17 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
     }
 
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-    func testEligibileWinBackOffersCallbackForwardsSuccess() async throws {
+    func testEligibileWinBackOffersCallbackForwardsWinBackOffers() async throws {
         try AvailabilityChecks.iOS18APIAvailableOrSkipTest()
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "abc123"))
         self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersResult = .success
 
         let expectation = self.expectation(description: "Wait for eligibleWinBackOffers callback")
-        self.purchases.eligibleWinBackOffers(forProduct: product) { callResult in
+        self.purchases.eligibleWinBackOffers(forProduct: product) { winBackOffers, error in
 
-            expect(callResult.value).to(equal([]))
+            expect(winBackOffers).to(equal([]))
+            expect(error).to(beNil())
             expectation.fulfill()
         }
 
@@ -93,8 +94,9 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
         self.mockWinBackOfferEligibilityCalculator.eligibleWinBackOffersResult = .error
 
         let expectation = self.expectation(description: "Wait for eligibleWinBackOffers callback")
-        self.purchases.eligibleWinBackOffers(forProduct: product) { callResult in
-            expect(callResult.error).to(matchError(ErrorCode.featureNotSupportedWithStoreKit1))
+        self.purchases.eligibleWinBackOffers(forProduct: product) { winBackOffers, error in
+            expect(winBackOffers).to(beNil())
+            expect(error).to(matchError(ErrorCode.featureNotSupportedWithStoreKit1))
             expectation.fulfill()
         }
 
@@ -109,7 +111,7 @@ class PurchasesWinBackOfferTests: BasePurchasesTests {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "abc123"))
 
         let expectation = self.expectation(description: "Wait for eligibleWinBackOffers callback")
-        self.purchases.eligibleWinBackOffers(forProduct: product) { _ in
+        self.purchases.eligibleWinBackOffers(forProduct: product) { _, _ in
             expect(Thread.isMainThread).to(beTrue())
             expectation.fulfill()
         }

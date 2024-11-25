@@ -39,28 +39,63 @@ struct APIKeyDashboardList: View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .automatic) {
+                        Button {
+                            Task {
+                                await fetchOfferings()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .keyboardShortcut("r", modifiers: .shift)
+                    }
+                }
         }
         .task {
-            do {
-                let offerings = try await Purchases.shared.offerings()
-                    .all
-                    .map(\.value)
-                    .sorted { $0.serverDescription > $1.serverDescription }
+            await fetchOfferings()
+        }
+    }
 
-                let offeringsBySection = Dictionary(
-                    grouping: offerings,
-                    by: { Template(name: templateGroupName(offering: $0)) }
-                )
+    private func fetchOfferings() async {
+        do {
+            // Force refresh offerings
+            _ = try await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
 
-                self.offerings = .success(
-                    .init(
-                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
-                        offeringsBySection: offeringsBySection
-                    )
-                )
-            } catch let error as NSError {
-                self.offerings = .failure(error)
+            let offerings = try await Purchases.shared.offerings()
+                .all
+                .map(\.value)
+                .sorted { $0.serverDescription > $1.serverDescription }
+
+            if let presentedPaywall = presentedPaywall {
+                for offering in offerings {
+                    if presentedPaywall.offering.id == offering.id {
+                        self.presentedPaywall = nil
+                        Task {
+                            // Need to wait for the paywall sheet to be dismissed before presenting again.
+                            // We cannot modify the presented paywall in-place because the paywall components are
+                            // cached in a @StateObject on initialization time.
+                            await Task.sleep(seconds: 1)
+                            self.presentedPaywall = .init(offering: offering, mode: .default)
+                        }
+                    }
+                }
             }
+
+            let offeringsBySection = Dictionary(
+                grouping: offerings,
+                by: { Template(name: templateGroupName(offering: $0)) }
+            )
+
+            self.offerings = .success(
+                .init(
+                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    offeringsBySection: offeringsBySection
+                )
+            )
+        } catch let error as NSError {
+            self.offerings = .failure(error)
         }
     }
 
@@ -172,7 +207,16 @@ struct APIKeyDashboardList: View {
 
         var body: some View {
             Button(action: action) {
-                Text(self.offering.serverDescription)
+                HStack {
+                    Text(self.offering.serverDescription)
+                    Spacer()
+                    #if PAYWALL_COMPONENTS
+                    if let errorInfo = self.offering.paywallComponentsData?.errorInfo, !errorInfo.isEmpty {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(Color.red)
+                    }
+                    #endif
+                }
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
@@ -191,7 +235,6 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
 
     var description: String {
         if let name = self.name {
-            #if DEBUG
             if name == "components" {
                 return "V2"
             } else if let template = PaywallTemplate(rawValue: name) {
@@ -199,9 +242,6 @@ extension APIKeyDashboardList.Template: CustomStringConvertible {
             } else {
                 return "Unrecognized template"
             }
-            #else
-            return name
-            #endif
         } else {
             return "No paywall"
         }

@@ -126,7 +126,8 @@ class BackendPostRedeemWebPurchaseTests: BaseBackendTests {
         let error: PurchasesError? = result?.error?.asPurchasesError
         expect(error?.errorCode).to(equal(ErrorCode.expiredWebPurchaseToken.rawValue))
         expect(error?.localizedDescription).to(equal(
-            "The link you provided has expired. A new one will be sent to the customer email. Token expired."
+            "The link you provided has expired. A new one will be sent to the email used to make the purchase." +
+            " Token expired."
         ))
         expect(error?.userInfo[ErrorDetails.obfuscatedEmailKey] as? String) == "t***@r*****.**m"
     }

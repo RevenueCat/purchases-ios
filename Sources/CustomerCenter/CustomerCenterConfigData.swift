@@ -279,12 +279,18 @@ public struct CustomerCenterConfigData {
             public let eligible: Bool
             public let title: String
             public let subtitle: String
+            public let productMapping: [String: String]
 
-            public init(iosOfferId: String, eligible: Bool, title: String, subtitle: String) {
+            public init(iosOfferId: String,
+                        eligible: Bool,
+                        title: String,
+                        subtitle: String,
+                        productMapping: [String: String]) {
                 self.iosOfferId = iosOfferId
                 self.eligible = eligible
                 self.title = title
                 self.subtitle = subtitle
+                self.productMapping = productMapping
             }
 
         }
@@ -511,6 +517,7 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
         self.eligible = response.eligible
         self.title = response.title
         self.subtitle = response.subtitle
+        self.productMapping = response.productMapping
     }
 
 }

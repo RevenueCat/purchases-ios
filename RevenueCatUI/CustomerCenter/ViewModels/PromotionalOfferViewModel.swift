@@ -14,6 +14,8 @@
 //
 
 import Foundation
+import SwiftUI
+
 import RevenueCat
 
 #if os(iOS)
@@ -33,14 +35,18 @@ class PromotionalOfferViewModel: ObservableObject {
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
 
-    convenience init() {
-        self.init(promotionalOfferData: nil)
-    }
+    /// Callback to be called when the promotional offer is  purchased
+    internal var onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)?
 
-    init(promotionalOfferData: PromotionalOfferData?) {
+    init(
+        promotionalOfferData: PromotionalOfferData?,
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
+        onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)? = nil
+    ) {
         self.promotionalOfferData = promotionalOfferData
-        self.purchasesProvider = CustomerCenterPurchases()
+        self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
+        self.onPromotionalOfferPurchaseFlowComplete = onPromotionalOfferPurchaseFlowComplete
     }
 
     func purchasePromo() async {
@@ -51,12 +57,18 @@ class PromotionalOfferViewModel: ObservableObject {
         }
 
         do {
-            let result = try await Purchases.shared.purchase(product: product, promotionalOffer: promotionalOffer)
-            // swiftlint:disable:next todo
-            // TODO: do something with result
+            let result = try await self.purchasesProvider.purchase(
+                product: product,
+                promotionalOffer: promotionalOffer
+            )
+
             Logger.debug("Purchased promotional offer: \(result)")
+            self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
         } catch {
+            // swiftlint:disable:next todo
+            // TODO: Log error message
             self.error = error
+            self.onPromotionalOfferPurchaseFlowComplete?(.promotionalCodeRedemptionFailed(error))
         }
     }
 

@@ -13,7 +13,7 @@
 
 import Foundation
 
-#if ENABLE_PURCHASE_PARAMS
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
@@ -26,14 +26,15 @@ import Foundation
  *                            .with(metadata: ["key": "value"])
  *                            .with(promotionalOffer: promotionalOffer)
  *                            .build()
- *  Purchases.shared.purchase(package: package, params: params)
+ * Purchases.shared.purchase(params)
  * ```
  */
-@objc(RCPurchaseParams) public final class PurchaseParams: NSObject {
+@objc(RCPurchaseParams) public final class PurchaseParams: NSObject, Sendable {
 
     let package: Package?
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
+    let winBackOffer: WinBackOffer?
     let metadata: [String: String]?
 
     private init(with builder: Builder) {
@@ -41,6 +42,7 @@ import Foundation
         self.metadata = builder.metadata
         self.product = builder.product
         self.package = builder.package
+        self.winBackOffer = builder.winBackOffer
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -49,6 +51,7 @@ import Foundation
         private(set) var metadata: [String: String]?
         private(set) var package: Package?
         private(set) var product: StoreProduct?
+        private(set) var winBackOffer: WinBackOffer?
 
         /**
          * Create a new builder with a ``Package``.
@@ -80,12 +83,29 @@ import Foundation
             return self
         }
 
+        #if ENABLE_TRANSACTION_METADATA
         /**
          * Set `metadata`.
          * - Parameter metadata: Key-value pairs of metadata to attatch to the purchase.
          */
         @objc public func with(metadata: [String: String]) -> Self {
             self.metadata = metadata
+            return self
+        }
+        #endif
+
+        /**
+         * Sets a win-back offer for the purchase.
+         * - Parameter winBackOffer: The ``WinBackOffer`` to apply to the purchase.
+         *
+         * Fetch a winBackOffer to use with this function with ``Purchases/eligibleWinBackOffers(forProduct:)``
+         * or ``Purchases/eligibleWinBackOffers(forProduct:completion)``.
+         *
+         * Availability: iOS 18.0+, macOS 15.0+, tvOS 18.0+, watchOS 11.0+, visionOS 2.0+
+         */
+        @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+        @objc public func with(winBackOffer: WinBackOffer) -> Self {
+            self.winBackOffer = winBackOffer
             return self
         }
 

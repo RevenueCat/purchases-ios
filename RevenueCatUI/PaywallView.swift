@@ -230,6 +230,14 @@ public struct PaywallView: View {
         }
     }
 
+    func showZeroDecimalPlacePrices(countries: [String]?) -> Bool {
+        if Purchases.isConfigured, let countries, let currentCountry = Purchases.shared.storeFrontCountryCode {
+            return countries.contains(currentCountry)
+        } else {
+            return false
+        }
+    }
+
     @ViewBuilder
     // swiftlint:disable:next function_body_length
     private func paywallView(
@@ -240,11 +248,17 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
+        let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+            countries: offering.paywall?.zeroDecimalPlaceCountries
+        )
+
         #if PAYWALL_COMPONENTS
         if let componentData = offering.paywallComponentsData {
-            TemplateComponentsView(
+            PaywallsV2View(
                 paywallComponentsData: componentData,
                 offering: offering,
+                introEligibilityChecker: .default(),
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                 onDismiss: {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {
                         self.dismiss()
@@ -269,7 +283,8 @@ public struct PaywallView: View {
                 displayCloseButton: self.displayCloseButton,
                 introEligibility: checker,
                 purchaseHandler: purchaseHandler,
-                locale: displayedLocale
+                locale: displayedLocale,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
 
             if let error {
@@ -297,7 +312,8 @@ public struct PaywallView: View {
             displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
             purchaseHandler: purchaseHandler,
-            locale: displayedLocale
+            locale: displayedLocale,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
 
         if let error {
@@ -415,7 +431,8 @@ struct LoadedOfferingPaywallView: View {
         displayCloseButton: Bool,
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler,
-        locale: Locale
+        locale: Locale,
+        showZeroDecimalPlacePrices: Bool
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -429,11 +446,7 @@ struct LoadedOfferingPaywallView: View {
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
         self.locale = locale
-        if Purchases.isConfigured, let currentCountry = Purchases.shared.storeFrontCountryCode {
-            self.showZeroDecimalPlacePrices = self.paywall.zeroDecimalPlaceCountries.contains(currentCountry)
-        } else {
-            self.showZeroDecimalPlacePrices = false
-        }
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
     }
 
     var body: some View {

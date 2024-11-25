@@ -14,6 +14,8 @@
 import Foundation
 
 /// Class representing a web redemption deep link that can be redeemed by the SDK.
+/// Warning: This is currently experimental and subject to change.
+///
 /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
 @objc(RCWebPurchaseRedemption) public final class WebPurchaseRedemption: NSObject {
 
