@@ -511,7 +511,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager
+                    paywallEventsManager: paywallEventsManager,
+                    webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
+                                                                             identityManager: identityManager,
+                                                                             customerInfoManager: customerInfoManager)
                 )
             } else {
                 return .init(
@@ -534,7 +537,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager
+                    paywallEventsManager: paywallEventsManager,
+                    webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
+                                                                             identityManager: identityManager,
+                                                                             customerInfoManager: customerInfoManager)
                 )
             }
         }()
@@ -752,6 +758,12 @@ extension Purchases {
 // MARK: Identity
 
 public extension Purchases {
+
+    /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
+    /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
+    @objc internal static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
+        return DeepLinkParser.parseAsWebPurchaseRedemption(url)
+    }
 
     @objc var appUserID: String { self.identityManager.currentAppUserID }
 
@@ -1218,6 +1230,20 @@ public extension Purchases {
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
         }
+    }
+
+    /// Warning: This is currently experimental and subject to change.
+    func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
+        self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption,
+                                                     completion: completion)
+    }
+
+    /// Warning: This is currently experimental and subject to change.
+    func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
+        return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
     }
 }
 

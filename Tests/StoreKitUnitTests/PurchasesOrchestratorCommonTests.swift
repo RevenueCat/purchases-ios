@@ -225,4 +225,23 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).toEventually(beTrue())
     }
 
+    // MARK: - Web purchase redemption
+
+    func testRedeemWebPurchaseWiresResultAppropriately() async {
+        self.setUpOrchestrator()
+
+        self.webPurchaseRedemptionHelper.stubbedHandleRedeemWebPurchaseResult = .alreadyRedeemed
+
+        var expectedResultCalled = false
+        let result = await self.orchestrator.redeemWebPurchase(.init(redemptionToken: "test-redemption-token"))
+        switch result {
+        case .alreadyRedeemed:
+            expectedResultCalled = true
+        default:
+            XCTFail("Unexpected result: \(result)")
+        }
+
+        expect(expectedResultCalled) == true
+    }
+
 }

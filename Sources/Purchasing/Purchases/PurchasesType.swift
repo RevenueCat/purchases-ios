@@ -917,6 +917,20 @@ public protocol PurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
 
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``.
+     *
+     * - Parameter webPurchaseRedemption: WebPurchaseRedemption object previously parsed from
+     * a URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     * - Parameter completion: The completion block to be called with the updated CustomerInfo
+     * on a successful redemption, or the error if not.
+     * - Seealso: ``Purchases/redeemWebPurchase(_:)``
+     */
+    @objc func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    )
+
     // MARK: - Deprecated
 
     // swiftlint:disable missing_docs
@@ -1135,6 +1149,16 @@ public protocol PurchasesSwiftType: AnyObject {
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
 
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     *
+     * - Parameter webPurchaseRedemption: Deep link previously parsed from a
+     * URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     */
+    func redeemWebPurchase(
+        _ webPurchaseRedemption: WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /**
      * Returns the win-back offers that the subscriber is eligible for on the provided product.
@@ -1148,6 +1172,7 @@ public protocol PurchasesSwiftType: AnyObject {
         forProduct product: StoreProduct
     ) async throws -> [WinBackOffer]
     #endif
+
 }
 
 // MARK: -

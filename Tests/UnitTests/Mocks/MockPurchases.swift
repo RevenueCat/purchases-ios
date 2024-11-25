@@ -435,6 +435,13 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
+        self.unimplemented()
+    }
+
 }
 
 extension MockPurchases: PurchasesSwiftType {
@@ -491,6 +498,12 @@ extension MockPurchases: PurchasesSwiftType {
         forProduct product: StoreProduct,
         completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     ) {
+        self.unimplemented()
+    }
+
+    func redeemWebPurchase(
+        _ webPurchaseRedemption: WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult {
         self.unimplemented()
     }
 }

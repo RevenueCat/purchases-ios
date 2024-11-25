@@ -65,6 +65,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
 
     var purchases: Purchases!
 
@@ -155,6 +156,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.webPurchaseRedemptionHelper = .init(backend: self.mockBackend,
+                                                 identityManager: self.mockIdentityManager,
+                                                 customerInfoManager: self.customerInfoManager)
     }
 
     override func tearDown() {
@@ -190,7 +194,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: nil)
+            paywallEventsManager: nil,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
             receiptFetcher: mockReceiptFetcher,

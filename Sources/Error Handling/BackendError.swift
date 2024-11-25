@@ -26,6 +26,9 @@ enum BackendError: Error, Equatable {
     case missingCachedCustomerInfo(Source)
     case invalidAppleSubscriptionKey(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
+    case invalidWebRedemptionToken
+    case webPurchaseAlreadyRedeemed
+    case expiredWebRedemptionToken(obfuscatedEmail: String)
 
 }
 
@@ -124,6 +127,22 @@ extension BackendError: PurchasesErrorConvertible {
                 functionName: source.function,
                 line: source.line
             )
+        case .invalidWebRedemptionToken:
+            let code = BackendErrorCode.invalidWebRedemptionToken
+            return ErrorUtils.backendError(withBackendCode: code,
+                                           originalBackendErrorCode: code.rawValue)
+        case .webPurchaseAlreadyRedeemed:
+            let code = BackendErrorCode.webPurchaseAlreadyRedeemed
+            return ErrorUtils.backendError(withBackendCode: code,
+                                           originalBackendErrorCode: code.rawValue)
+        case let .expiredWebRedemptionToken(obfuscatedEmail):
+            let code = BackendErrorCode.expiredWebRedemptionToken
+            return ErrorUtils.backendError(withBackendCode: code,
+                                           originalBackendErrorCode: code.rawValue,
+                                           extraUserInfo: [
+                                            .obfuscatedEmail: obfuscatedEmail
+                                           ])
+
         }
     }
 
@@ -160,7 +179,10 @@ extension BackendError {
              .invalidAppleSubscriptionKey,
              .missingTransactionProductIdentifier,
              .missingCachedCustomerInfo,
-             .unexpectedBackendResponse:
+             .unexpectedBackendResponse,
+             .invalidWebRedemptionToken,
+             .webPurchaseAlreadyRedeemed,
+             .expiredWebRedemptionToken:
             return nil
         }
     }
@@ -179,7 +201,10 @@ extension BackendError {
                 .missingReceiptFile,
                 .invalidAppleSubscriptionKey,
                 .missingTransactionProductIdentifier,
-                .missingCachedCustomerInfo:
+                .missingCachedCustomerInfo,
+                .invalidWebRedemptionToken,
+                .webPurchaseAlreadyRedeemed,
+                .expiredWebRedemptionToken:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):

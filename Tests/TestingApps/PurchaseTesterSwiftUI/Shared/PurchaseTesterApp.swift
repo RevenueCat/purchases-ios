@@ -16,7 +16,13 @@ struct PurchaseTesterApp: App {
 
     @State
     private var configuration: ConfiguredPurchases?
-    
+
+    @State
+    private var showAlert = false
+
+    @State
+    private var alertMessage: String?
+
     @StateObject
     private var revenueCatCustomerData: RevenueCatCustomerData = .init()
 
@@ -62,6 +68,35 @@ struct PurchaseTesterApp: App {
             .navigationViewStyle(.automatic)
             .animation(.default, value: self.isConfigured)
             .transition(.opacity)
+            .onOpenURL { url in
+                if let webPurchaseRedemption = url.asWebPurchaseRedemption,
+                    Purchases.isConfigured {
+                    Task {
+                        let result = await Purchases.shared.redeemWebPurchase(webPurchaseRedemption)
+                        switch result {
+                        case let .success(customerInfo):
+                            alertMessage = "RevenueCat redeemed deep link: \(customerInfo)"
+                        case let .error(error):
+                            alertMessage = "RevenueCat errored redeeming deep link: \(error.localizedDescription)"
+                        case .invalidToken:
+                            alertMessage = "The provided purchase redemption token is invalid."
+                        case .alreadyRedeemed:
+                            alertMessage = "RevenueCat purchase link was already redeemed."
+                        case let .expired(obfuscatedEmail):
+                            alertMessage = "RevenueCat purchase link expired. Email " +
+                                "was sent to \(obfuscatedEmail)"
+                        @unknown default:
+                            alertMessage = "Unknown web purchase redemption result: \(result)"
+                        }
+                        showAlert = true
+                    }
+                }
+            }
+            .alert("Redemption result", isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(alertMessage ?? "No result")
+            }
         }
 
         WindowGroup(id: Windows.logs.rawValue) {

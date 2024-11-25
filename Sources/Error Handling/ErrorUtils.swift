@@ -678,7 +678,10 @@ private extension ErrorUtils {
                 .offlineConnectionError,
                 .featureNotAvailableInCustomEntitlementsComputationMode,
                 .signatureVerificationFailed,
-                .featureNotSupportedWithStoreKit1:
+                .featureNotSupportedWithStoreKit1,
+                .invalidWebPurchaseToken,
+                .alreadyRedeemedWebPurchaseToken,
+                .expiredWebPurchaseToken:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,
