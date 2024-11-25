@@ -17,19 +17,58 @@ import Foundation
 
     /// The product identifier.
     @objc public let productIdentifier: String
+
+    /// Date when the last subscription period started.
     @objc public let purchaseDate: Date
+
+    /// Date when this subscription first started. This property does not update with renewals.
+    /// This property also does not update for product changes within a subscription group or 
+    /// resubscriptions by lapsed subscribers.
     @objc public let originalPurchaseDate: Date?
+
+    /// Date when the subscription expires/expired
     @objc public let expiresDate: Date?
+
+    /// Store where the subscription was purchased.
     @objc public let store: Store
+
+    /// Whether or not the purchase was made in sandbox mode.
     @objc public let isSandbox: Bool
+
+    /// Date when RevenueCat detected that auto-renewal was turned off for this subsription.
+    /// Note the subscription may still be active, check the ``expiresDate`` attribute.
     @objc public let unsubscribeDetectedAt: Date?
+
+    /// Date when RevenueCat detected any billing issues with this subscription.
+    /// If and when the billing issue gets resolved, this field is set to nil.
+    /// Note the subscription may still be active, check the ``expiresDate`` attribute.
     @objc public let billingIssuesDetectedAt: Date?
+
+    /// Date when any grace period for this subscription expires/expired.
+    /// nil if the customer has never been in a grace period.
     @objc public let gracePeriodExpiresDate: Date?
+
+    /// How the Customer received access to this subscription:
+    /// - ``purchased``: The customer bought the subscription.
+    /// - ``familyShared``: The Customer has access to the product via their family.
     @objc public let ownershipType: PurchaseOwnershipType
+
+    /// Type of the current subscription period:
+    /// - ``normal``: The product is in a normal period (default)
+    /// - ``trial``: The product is in a free trial period
+    /// - ``intro``: The product is in an introductory pricing period
     @objc public let periodType: PeriodType
+
+    /// Date when RevenueCat detected a refund of this subscription.
     @objc public let refundedAt: Date?
+
+    /// The transaction id in the store of the subscription.
     @objc public let storeTransactionId: String?
+
+    /// Whether the subscription is currently active.
     @objc public let isActive: Bool
+
+    /// Whether the subscription will renew at the next billing period.
     @objc public let willRenew: Bool
 
     init(productIdentifier: String,

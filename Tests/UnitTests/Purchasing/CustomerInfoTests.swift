@@ -43,6 +43,7 @@ class BasicCustomerInfoTests: TestCase {
             ] as [String: Any],
             "subscriptions": [
                 "onemonth_freetrial": [
+                    "purchase_date": "2100-07-30T02:40:36Z",
                     "expires_date": "2100-08-30T02:40:36Z",
                     "period_type": "normal",
                     "is_sandbox": false
@@ -55,6 +56,7 @@ class BasicCustomerInfoTests: TestCase {
                     "purchase_date": "2018-05-20T06:24:50Z"
                 ],
                 "onemonth": [
+                    "purchase_date": "2000-07-30T02:40:36Z",
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
                     "period_type": "normal",
                     "is_sandbox": false
@@ -95,17 +97,29 @@ class BasicCustomerInfoTests: TestCase {
         ] as [String: Any]
     ]
 
-    static let validTwoProductsJSON = "{" +
-            "\"request_date\": \"2018-05-20T06:24:50Z\"," +
-            "\"subscriber\": {" +
-            "\"first_seen\": \"2018-05-20T06:24:50Z\"," +
-            "\"original_application_version\": \"1.0\"," +
-            "\"original_app_user_id\": \"abcd\"," +
-            "\"other_purchases\": {}," +
-            "\"subscriptions\":{" +
-                "\"product_a\": {\"expires_date\": \"2018-05-27T06:24:50Z\",\"period_type\": \"normal\"}," +
-                "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
-            "}}}"
+    static let validTwoProductsJSON = """
+        {
+            "request_date": "2018-05-20T06:24:50Z",
+            "subscriber": {
+                "first_seen": "2018-05-20T06:24:50Z",
+                "original_application_version": "1.0",
+                "original_app_user_id": "abcd",
+                "other_purchases": {},
+                "subscriptions": {
+                    "product_a": {
+                        "purchase_date": "2018-04-27T06:24:50Z",
+                        "expires_date": "2018-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    },
+                    "product_b": {
+                        "purchase_date": "2018-04-27T05:24:50Z",
+                        "expires_date": "2018-05-27T05:24:50Z",
+                        "period_type": "normal"
+                    }
+                }
+            }
+        }
+        """
 
     private var customerInfo: CustomerInfo!
 
@@ -389,18 +403,22 @@ class BasicCustomerInfoTests: TestCase {
                 ],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1989-08-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "pro.1": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "pro.2": [
+                        "purchase_date": "1990-07-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z",
                         "period_type": "normal"
                     ]
@@ -460,9 +478,11 @@ class BasicCustomerInfoTests: TestCase {
                 ],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1990-08-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
@@ -539,6 +559,7 @@ class BasicCustomerInfoTests: TestCase {
                 "original_app_user_id": "",
                 "subscriptions": [
                     "pro.1": [
+                        "purchase_date": "2018-07-30T02:40:36Z",
                         "expires_date": "2018-12-19T02:40:36Z"
                     ]],
                 "other_purchases": [:] as [String: Any],
@@ -557,6 +578,7 @@ class BasicCustomerInfoTests: TestCase {
                 "original_app_user_id": "",
                 "subscriptions": [
                     "pro.1": [
+                        "purchase_date": "2018-07-30T02:40:36Z",
                         "expires_date": "2018-12-19T02:40:36Z"
                     ]
                 ],
@@ -776,13 +798,16 @@ class BasicCustomerInfoTests: TestCase {
                 "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "twomonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1990-07-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
@@ -820,13 +845,16 @@ class BasicCustomerInfoTests: TestCase {
                 "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "twomonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1990-07-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
@@ -934,7 +962,7 @@ private extension BasicCustomerInfoTests {
         // swiftlint:disable:next force_try
         from: try! BasicCustomerInfoTests.date(withDaysAgo: -1)
     )
-    
+
     func verifyCopy(
         of customerInfo: CustomerInfo,
         onlyModifiesEntitlementVerification newVerification: VerificationResult
