@@ -288,7 +288,7 @@ private extension BeginRefundRequestHelperTests {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
-                    "onemonth_freetrial": ["purchase_date": "2018-10-26T23:17:53Z"] as [String: Any],
+                    "onemonth_freetrial": ["purchase_date": "2018-10-26T23:17:53Z"] as [String: Any]
                 ],
                 "entitlements": [
                     "\(mockEntitlementID)": [
@@ -310,7 +310,7 @@ private extension BeginRefundRequestHelperTests {
                 "first_seen": "2019-06-17T16:05:33Z",
                 "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
-                    "onemonth_freetrial": ["purchase_date": "2018-10-26T23:17:53Z"] as [String: Any],
+                    "onemonth_freetrial": ["purchase_date": "2018-10-26T23:17:53Z"] as [String: Any]
                 ],
                 "entitlements": [
                     "pro": [

@@ -264,11 +264,31 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [
-                    "product_a": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
-                    "Product_B": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
-                    "ProductC": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
-                    "Pro": ["expires_date": "2098-05-27T06:24:50Z", "period_type": "normal"],
-                    "ProductD": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]
+                    "product_a": [
+                        "purchase_date": "2098-04-27T06:24:50Z",
+                        "expires_date": "2098-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ],
+                    "Product_B": [
+                        "purchase_date": "2098-04-27T06:24:50Z",
+                        "expires_date": "2098-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ],
+                    "ProductC": [
+                        "purchase_date": "2098-04-27T06:24:50Z",
+                        "expires_date": "2098-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ],
+                    "Pro": [
+                        "purchase_date": "2098-04-27T06:24:50Z",
+                        "expires_date": "2098-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ],
+                    "ProductD": [
+                        "purchase_date": "2018-04-27T06:24:50Z",
+                        "expires_date": "2018-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ]
                 ]  as [String: Any],
                 "other_purchases": [:] as [String: Any]
             ]  as [String: Any]
@@ -300,7 +320,13 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "subscriptions": [
+                    "product_a": [
+                        "purchase_date": "2018-04-27T06:24:50Z",
+                        "expires_date": "2018-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ]
+                ],
                 "other_purchases": [:] as [String: Any]
             ]  as [String: Any]
         ])
@@ -329,7 +355,13 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "subscriptions": [
+                    "product_a": [
+                        "purchase_date": "2018-04-27T06:24:50Z",
+                        "expires_date": "2018-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ]
+                ],
                 "other_purchases": [:] as [String: Any]
             ] as [String: Any]
         ]
@@ -350,7 +382,13 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "subscriptions": [
+                    "product_a": [
+                        "purchase_date": "2018-04-27T06:24:50Z",
+                        "expires_date": "2018-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    ]
+                ],
                 "other_purchases": [:] as [String: Any]
             ]  as [String: Any]
         ]
