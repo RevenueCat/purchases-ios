@@ -71,6 +71,7 @@ final class PurchasesOrchestrator {
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
     private let paywallEventsManager: PaywallEventsManagerType?
+    private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -143,7 +144,8 @@ final class PurchasesOrchestrator {
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-                     paywallEventsManager: PaywallEventsManagerType?
+                     paywallEventsManager: PaywallEventsManagerType?,
+                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     ) {
         self.init(
             productsManager: productsManager,
@@ -165,7 +167,8 @@ final class PurchasesOrchestrator {
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-            paywallEventsManager: paywallEventsManager
+            paywallEventsManager: paywallEventsManager,
+            webPurchaseRedemptionHelper: webPurchaseRedemptionHelper
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -220,7 +223,8 @@ final class PurchasesOrchestrator {
          beginRefundRequestHelper: BeginRefundRequestHelper,
          storeMessagesHelper: StoreMessagesHelperType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-         paywallEventsManager: PaywallEventsManagerType?
+         paywallEventsManager: PaywallEventsManagerType?,
+         webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -242,12 +246,49 @@ final class PurchasesOrchestrator {
         self.storeMessagesHelper = storeMessagesHelper
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.paywallEventsManager = paywallEventsManager
+        self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
     deinit {
         Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
+    }
+
+    func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
+        return await self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(
+            redemptionToken: webPurchaseRedemption.redemptionToken
+        )
+    }
+
+    func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
+        Task {
+            let result = await self.redeemWebPurchase(webPurchaseRedemption)
+            switch result {
+
+            case let .success(customerInfo):
+                completion(customerInfo, nil)
+            case let .error(error):
+                completion(nil, error)
+            case .invalidToken:
+                let userInfo: [String: Any] = [:]
+                let error = PurchasesError(error: .invalidWebPurchaseToken, userInfo: userInfo)
+                completion(nil, error.asPublicError)
+            case .alreadyRedeemed:
+                let userInfo: [String: Any] = [:]
+                let error = PurchasesError(error: .alreadyRedeemedWebPurchaseToken, userInfo: userInfo)
+                completion(nil, error.asPublicError)
+            case let .expired(obfuscatedEmail):
+                let userInfo: [NSError.UserInfoKey: Any] = [
+                    .obfuscatedEmail: obfuscatedEmail
+                ]
+                let error = PurchasesError(error: .expiredWebPurchaseToken, userInfo: userInfo)
+                completion(nil, error.asPublicError)
+            }
+        }
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {

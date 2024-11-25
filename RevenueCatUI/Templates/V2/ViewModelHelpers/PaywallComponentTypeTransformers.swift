@@ -175,6 +175,36 @@ extension PaywallComponent.HorizontalAlignment {
 
 }
 
+extension PaywallComponent.FlexDistribution {
+
+    var verticalFrameAlignment: SwiftUI.Alignment {
+        switch self {
+        case .start:
+            return .top
+        case .center:
+            return .center
+        case .end:
+            return .bottom
+        default:
+            return .top
+        }
+    }
+
+    var horizontalFrameAlignment: SwiftUI.Alignment {
+        switch self {
+        case .start:
+            return .leading
+        case .center:
+            return .center
+        case .end:
+            return .trailing
+        default:
+            return .leading
+        }
+    }
+
+}
+
 extension PaywallComponent.Padding {
     var edgeInsets: EdgeInsets {
             EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)

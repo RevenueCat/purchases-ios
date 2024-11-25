@@ -87,6 +87,7 @@ func checkPurchasesEnums() {
 }
 
 private func checkStaticMethods() {
+    let url: URL = URL(string: "https://example.com")!
     let logHandler: (LogLevel, String) -> Void = { _, _ in }
     Purchases.logHandler = logHandler
 
@@ -101,6 +102,14 @@ private func checkStaticMethods() {
 
     print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
           sharedPurchases, isPurchasesConfigured)
+}
+
+private func checkExtensions() {
+    let url: URL = URL(string: "https://example.com")!
+
+    let webPurchaseRedemption: WebPurchaseRedemption? = url.asWebPurchaseRedemption
+
+    print(webPurchaseRedemption!)
 }
 
 private func checkTypealiases(
@@ -261,6 +270,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let stp: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let offer: PromotionalOffer! = nil
+    let webPurchaseRedemption: WebPurchaseRedemption! = nil
 
     do {
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
@@ -339,10 +349,35 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
+
+        let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
+            webPurchaseRedemption
+        )
     } catch {}
 }
 
+func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bool {
+    switch result {
+    case let .success(customerInfo):
+        let _: CustomerInfo = customerInfo
+        return true
+    case let .error(error):
+        let _: PublicError = error
+        return true
+    case .invalidToken:
+        return true
+    case .alreadyRedeemed:
+        return true
+    case let .expired(obfuscatedEmail):
+        let _: String = obfuscatedEmail
+        return true
+    }
+}
+
 func checkNonAsyncMethods(_ purchases: Purchases) {
+    let webPurchaseRedemption: WebPurchaseRedemption! = nil
+    let redemptionCompletion: ((CustomerInfo?, PublicError?) -> Void)! = nil
+
     #if os(iOS) || VISION_OS
     if #available(iOS 15.0, *) {
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
@@ -356,6 +391,8 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.showStoreMessages(for: [StoreMessageType.generic]) { }
     }
     #endif
+
+    purchases.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption, completion: redemptionCompletion)
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {

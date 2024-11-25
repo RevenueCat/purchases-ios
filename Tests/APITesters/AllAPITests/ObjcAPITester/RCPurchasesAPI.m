@@ -29,6 +29,8 @@ id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
 NSString *storeFrontCountryCode;
+RCWebPurchaseRedemption *webPurchaseRedemptionLink;
+NSURL *url;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
@@ -58,6 +60,7 @@ NSString *storeFrontCountryCode;
     simulatesAskToBuyInSandbox = [RCPurchases simulatesAskToBuyInSandbox];
     sharedPurchases = [RCPurchases sharedPurchases];
     isConfigured = [RCPurchases isConfigured];
+    RCWebPurchaseRedemption *webPurchaseRedemption = [RCPurchases parseAsWebPurchaseRedemption:url];
 
     // should have deprecation warning:
     // 'allowSharingAppStoreAccount' is deprecated: Configure behavior through the RevenueCat dashboard instead.
@@ -181,6 +184,9 @@ NSString *storeFrontCountryCode;
 
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
+
+    [p redeemWebPurchaseWithWebPurchaseRedemption:webPurchaseRedemptionLink
+                                       completion:^(RCCustomerInfo * _Nullable ci, NSError * _Nullable e) { }];
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p

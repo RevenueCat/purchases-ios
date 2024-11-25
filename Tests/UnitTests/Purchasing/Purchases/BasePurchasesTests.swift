@@ -125,6 +125,9 @@ class BasePurchasesTests: TestCase {
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.webPurchaseRedemptionHelper = .init(backend: self.backend,
+                                                 identityManager: self.identityManager,
+                                                 customerInfoManager: self.customerInfoManager)
 
         self.addTeardownBlock {
             weak var purchases = self.purchases
@@ -188,6 +191,7 @@ class BasePurchasesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
 
     // swiftlint:disable:next weak_delegate
@@ -265,7 +269,8 @@ class BasePurchasesTests: TestCase {
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager
+            paywallEventsManager: self.paywallEventsManager,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,
@@ -549,6 +554,7 @@ private extension BasePurchasesTests {
         self.deviceCache = nil
         self.paywallCache = nil
         self.paywallEventsManager = nil
+        self.webPurchaseRedemptionHelper = nil
         self.purchases = nil
     }
 
