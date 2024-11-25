@@ -21,12 +21,11 @@ struct StoredEvent {
     private(set) var feature: Feature
 
     init?<T: Encodable>(event: T, userID: String, feature: Feature) {
-        guard let data = try? JSONEncoder.default.encode(value: event),
-              let dictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+        guard let data = try? event.encodedJSON else {
             return nil
         }
 
-        self.encodedEvent = AnyEncodable(dictionary)
+        self.encodedEvent = AnyEncodable(data)
         self.userID = userID
         self.feature = feature
     }
@@ -56,7 +55,24 @@ extension StoredEvent: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.encodedEvent = try container.decode(AnyEncodable.self, forKey: .encodedEvent)
+        // Try to decode as string first (new format)
+        if let jsonString = try? container.decode(String.self, forKey: .encodedEvent) {
+            if let jsonData = jsonString.data(using: .utf8),
+               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData) {
+                self.encodedEvent = AnyEncodable(jsonObject)
+            } else {
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: [CodingKeys.encodedEvent],
+                        debugDescription: "Could not parse stored JSON string"
+                    )
+                )
+            }
+        } else {
+            // Fall back to old format (direct dictionary)
+            self.encodedEvent = try container.decode(AnyEncodable.self, forKey: .encodedEvent)
+        }
+
         self.userID = try container.decode(String.self, forKey: .userID)
         if let featureString = try container.decodeIfPresent(String.self, forKey: .feature),
            let feature = Feature(rawValue: featureString) {

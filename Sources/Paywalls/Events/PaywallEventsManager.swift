@@ -45,7 +45,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     }
 
     func track(paywallEvent: PaywallEvent) async {
-        guard let event: StoredEvent = .init(event: AnyEncodable(paywallEvent),
+        guard let event: StoredEvent = .init(event: paywallEvent,
                                              userID: self.userProvider.currentAppUserID,
                                              feature: .paywalls) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
