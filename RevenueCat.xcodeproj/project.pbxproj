@@ -17,8 +17,8 @@
 		1E5F8F6E2C4515430041EECD /* View+PresentCustomerCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */; };
 		1E5F8F782C46BBD90041EECD /* CustomerCenterAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */; };
 		1E8A60422CDBD75A0034ACF3 /* WebPurchaseRedemption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60412CDBD75A0034ACF3 /* WebPurchaseRedemption.swift */; };
-		1E98EC092CDE567100A751C0 /* URL+WebPurchaseRedemption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E98EC082CDE567100A751C0 /* URL+WebPurchaseRedemption.swift */; };
 		1E8A607F2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A607E2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift */; };
+		1E98EC092CDE567100A751C0 /* URL+WebPurchaseRedemption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E98EC082CDE567100A751C0 /* URL+WebPurchaseRedemption.swift */; };
 		1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */; };
 		1EB697862CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697852CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift */; };
 		1ED4CA492CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA482CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift */; };
@@ -1214,8 +1214,8 @@
 		1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PresentCustomerCenter.swift"; sourceTree = "<group>"; };
 		1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterAction.swift; sourceTree = "<group>"; };
 		1E8A60412CDBD75A0034ACF3 /* WebPurchaseRedemption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemption.swift; sourceTree = "<group>"; };
-		1E98EC082CDE567100A751C0 /* URL+WebPurchaseRedemption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+WebPurchaseRedemption.swift"; sourceTree = "<group>"; };
 		1E8A607E2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+OnRedeemWebPurchaseAttempt.swift"; sourceTree = "<group>"; };
+		1E98EC082CDE567100A751C0 /* URL+WebPurchaseRedemption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+WebPurchaseRedemption.swift"; sourceTree = "<group>"; };
 		1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelperTests.swift; sourceTree = "<group>"; };
 		1EB697852CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResult.swift; sourceTree = "<group>"; };
 		1ED4CA482CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostRedeemWebPurchaseOperation.swift; sourceTree = "<group>"; };
