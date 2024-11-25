@@ -390,7 +390,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
 
     static let purchasedProduct: PurchasedSK2Product = .init(
         productIdentifier: "product",
-        subscription: .init(),
+        subscription: .init(purchaseDate: Date()),
         entitlement: .init(productIdentifier: "entitlement", rawData: [:])
     )
     static let mapping: ProductEntitlementMapping = .init(entitlementsByProduct: [
