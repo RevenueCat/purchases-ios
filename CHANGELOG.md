@@ -1,3 +1,9 @@
+## 5.12.0
+## RevenueCat SDK
+### Win-back Offers
+#### ✨ New Features
+* Add eligibleWinBackOffers(forPackage) functions (#4516) via Will Taylor (@fire-at-will)
+
 ## 5.11.0
 ## RevenueCat SDK
 ### ✨ New Features
