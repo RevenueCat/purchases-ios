@@ -19,7 +19,7 @@ extension URL {
     /// redeemed using ``Purchases/redeemWebPurchase(_:)`
     ///
     /// Warning: This is currently experimental and subject to change.
-    /// `
+    ///
     /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
     public var asWebPurchaseRedemption: WebPurchaseRedemption? {
         return Purchases.parseAsWebPurchaseRedemption(self)

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */; };
+		1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */; };
 		1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
 		2D4C60E62C5AD1BC00A29FD2 /* AllAPITestsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C60E52C5AD1BC00A29FD2 /* AllAPITestsTests.swift */; };
@@ -209,6 +210,7 @@
 
 /* Begin PBXFileReference section */
 		1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
+		1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchasesAPI.swift; sourceTree = "<group>"; };
 		1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResultAPI.swift; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AllAPITests.h; sourceTree = "<group>"; };
@@ -584,6 +586,7 @@
 			isa = PBXGroup;
 			children = (
 				2D4C622D2C5ADA6700A29FD2 /* PaywallViewAPI.swift */,
+				1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */,
 				2D4C622B2C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift */,
 				2D4C622C2C5ADA6700A29FD2 /* main.swift */,
 				2D4C62232C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.h */,
@@ -1037,6 +1040,7 @@
 			files = (
 				2D4C622F2C5ADA6700A29FD2 /* main.swift in Sources */,
 				2D4C62302C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift in Sources */,
+				1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */,
 				2D4C622E2C5ADA6700A29FD2 /* PaywallViewAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
