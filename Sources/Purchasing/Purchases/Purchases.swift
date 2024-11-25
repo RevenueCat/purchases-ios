@@ -1232,6 +1232,7 @@ public extension Purchases {
         }
     }
 
+    /// Warning: This is currently experimental and subject to change.
     func redeemWebPurchase(
         webPurchaseRedemption: WebPurchaseRedemption,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
@@ -1240,6 +1241,7 @@ public extension Purchases {
                                                      completion: completion)
     }
 
+    /// Warning: This is currently experimental and subject to change.
     func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
         return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
     }

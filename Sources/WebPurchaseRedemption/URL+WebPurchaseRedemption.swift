@@ -16,7 +16,10 @@ import Foundation
 extension URL {
 
     /// Parses a URL and converts it to a ``WebPurchaseRedemption`` if possible that can be
-    /// redeemed using ``Purchases/redeemWebPurchase(_:)``
+    /// redeemed using ``Purchases/redeemWebPurchase(_:)`
+    ///
+    /// Warning: This is currently experimental and subject to change.
+    /// `
     /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
     public var asWebPurchaseRedemption: WebPurchaseRedemption? {
         return Purchases.parseAsWebPurchaseRedemption(self)
