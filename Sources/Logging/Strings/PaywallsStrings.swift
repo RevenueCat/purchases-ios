@@ -114,7 +114,7 @@ extension PaywallsStrings: LogMessage {
             return "Couldn't get encoded event from storage."
 
         case let .event_cannot_deserialize(error):
-            return "Couldn't deserialize PaywallEvent from storage. Error: \((error as NSError).localizedDescription)"
+            return "Couldn't deserialize PaywallEvent from storage. Error: \((error as NSError).description)"
         }
     }
 
