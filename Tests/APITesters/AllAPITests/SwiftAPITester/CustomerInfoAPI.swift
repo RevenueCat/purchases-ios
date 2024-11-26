@@ -40,8 +40,10 @@ func checkCustomerInfoAPI() {
 
     let _: String = customerInfo.id
 
+    let subs: [String: SubscriptionInfo] = customerInfo.subscriptions
+
     print(customerInfo!, entitlementInfo, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen,
-          oaud!, murl!, edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData)
+          oaud!, murl!, edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData, subs)
 }
 
 func checkCacheFetchPolicyEnum(_ policy: CacheFetchPolicy) {

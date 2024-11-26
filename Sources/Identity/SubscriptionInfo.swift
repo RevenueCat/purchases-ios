@@ -50,14 +50,14 @@ import Foundation
     @objc public let gracePeriodExpiresDate: Date?
 
     /// How the Customer received access to this subscription:
-    /// - ``purchased``: The customer bought the subscription.
-    /// - ``familyShared``: The Customer has access to the product via their family.
+    /// - ``PurchaseOwnershipType/purchased``: The customer bought the subscription.
+    /// - ``PurchaseOwnershipType/familyShared``: The Customer has access to the product via their family.
     @objc public let ownershipType: PurchaseOwnershipType
 
     /// Type of the current subscription period:
-    /// - ``normal``: The product is in a normal period (default)
-    /// - ``trial``: The product is in a free trial period
-    /// - ``intro``: The product is in an introductory pricing period
+    /// - ``PeriodType/normal``: The product is in a normal period (default)
+    /// - ``PeriodType/trial``: The product is in a free trial period
+    /// - ``PeriodType/intro``: The product is in an introductory pricing period
     @objc public let periodType: PeriodType
 
     /// Date when RevenueCat detected a refund of this subscription.

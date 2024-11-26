@@ -121,6 +121,7 @@
 		2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; };
 		2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -342,6 +343,7 @@
 		2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ReceiptParser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionInfoAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -529,6 +531,7 @@
 		2D4C61B42C5AD61800A29FD2 /* SwiftAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */,
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
 				2D4C61D42C5AD62900A29FD2 /* ConfigurationAPI.swift */,
@@ -989,6 +992,7 @@
 				2D4C61DA2C5AD62A00A29FD2 /* RefundRequestStatusAPI.swift in Sources */,
 				2D4C61F52C5AD62A00A29FD2 /* PromotionalOfferAPI.swift in Sources */,
 				2D4C61E92C5AD62A00A29FD2 /* StoreProductAPI.swift in Sources */,
+				3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */,
 				2D4C61EA2C5AD62A00A29FD2 /* StorefrontAPI.swift in Sources */,
 				2D4C61E42C5AD62A00A29FD2 /* main.swift in Sources */,
 				2D4C61E62C5AD62A00A29FD2 /* StoreProductDiscountAPI.swift in Sources */,

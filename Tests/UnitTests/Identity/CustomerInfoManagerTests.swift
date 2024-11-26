@@ -267,27 +267,77 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "product_a": [
                         "purchase_date": "2098-04-27T06:24:50Z",
                         "expires_date": "2098-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ],
                     "Product_B": [
-                        "purchase_date": "2098-04-27T06:24:50Z",
+                        "purchase_date": "2022-04-12T00:03:28Z",
                         "expires_date": "2098-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": "2098-05-18T06:24:50Z",
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": "2098-05-14T06:24:50Z",
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": "2098-05-16T06:24:50Z",
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ],
                     "ProductC": [
                         "purchase_date": "2098-04-27T06:24:50Z",
                         "expires_date": "2098-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ],
                     "Pro": [
                         "purchase_date": "2098-04-27T06:24:50Z",
                         "expires_date": "2098-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ],
                     "ProductD": [
                         "purchase_date": "2018-04-27T06:24:50Z",
                         "expires_date": "2018-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ]
                 ]  as [String: Any],
                 "other_purchases": [:] as [String: Any]
@@ -324,7 +374,17 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "product_a": [
                         "purchase_date": "2018-04-27T06:24:50Z",
                         "expires_date": "2018-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ]
                 ],
                 "other_purchases": [:] as [String: Any]
@@ -359,7 +419,17 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "product_a": [
                         "purchase_date": "2018-04-27T06:24:50Z",
                         "expires_date": "2018-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ]
                 ],
                 "other_purchases": [:] as [String: Any]
@@ -386,7 +456,17 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
                     "product_a": [
                         "purchase_date": "2018-04-27T06:24:50Z",
                         "expires_date": "2018-05-27T06:24:50Z",
-                        "period_type": "normal"
+                        "period_type": "normal",
+                        "billing_issues_detected_at": nil,
+                        "grace_period_expires_date": nil,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil,
+                        "ownership_type": "PURCHASED",
+                        "refunded_at": nil,
+                        "store_transaction_id": "1",
+                        "auto_resume_date": nil
                     ]
                 ],
                 "other_purchases": [:] as [String: Any]
