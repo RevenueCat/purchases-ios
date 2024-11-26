@@ -13,6 +13,7 @@
 
 import Foundation
 
+/// Subscription purchases of the Customer
 @objc(RCSubscriptionInfo) public final class SubscriptionInfo: NSObject {
 
     /// The product identifier.

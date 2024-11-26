@@ -594,6 +594,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     func testGetsUpdatedSubscriberInfoAfterPost() {
         var dateComponent = DateComponents()
         dateComponent.month = 1
+        let today = Date()
         let futureDateString = ISO8601DateFormatter()
             .string(from: Calendar.current.date(byAdding: dateComponent, to: today)!)
 
