@@ -232,9 +232,7 @@ extension PaywallComponent.ColorInfo {
         case .alias:
             // WIP: Need to implement this when we actually have alias implemented
             return fallback
-        case .linear:
-            return fallback
-        case .radial:
+        case .linear, .radial:
             return fallback
         }
     }
