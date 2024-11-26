@@ -52,6 +52,32 @@ class PaywallEventSerializerTests: TestCase {
         expect(try event.encodeAndDecode()) == event
     }
 
+    func testEncodingBooleans() throws {
+        let expectedUserID = "test-user"
+        let paywallEventCreationData: PaywallEvent.CreationData = .init(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+        let paywallEventData: PaywallEvent.Data = .init(
+            offeringIdentifier: "offeringIdentifier",
+            paywallRevision: 0,
+            sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: true
+        )
+        let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
+
+        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
+        let serializedEvent = try PaywallEventSerializer.encode(storedEvent)
+        let deserializedEvent = try PaywallEventSerializer.decode(serializedEvent)
+        expect(deserializedEvent.userID) == expectedUserID
+        expect(deserializedEvent.feature) == .paywalls
+        let eventData = try XCTUnwrap(deserializedEvent.encodedEvent.value as? [String: Any])
+        let decodedPaywallEvent: PaywallEvent = try JSONDecoder.default.decode(dictionary: eventData)
+        expect(decodedPaywallEvent) == paywallEvent
+    }
+
     // MARK: -
 
     private static let userID = UUID().uuidString
