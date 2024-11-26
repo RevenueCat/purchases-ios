@@ -16,16 +16,16 @@ import Foundation
 /// Contains the necessary information for storing and sending events.
 struct StoredEvent {
 
-    private(set) var encodedEvent: AnyEncodable
+    private(set) var encodedEvent: String
     private(set) var userID: String
     private(set) var feature: Feature
 
     init?<T: Encodable>(event: T, userID: String, feature: Feature) {
-        guard let data = try? event.encodedJSON else {
+        guard let encodedJSON = try? event.encodedJSON else {
             return nil
         }
 
-        self.encodedEvent = AnyEncodable(data)
+        self.encodedEvent = encodedJSON
         self.userID = userID
         self.feature = feature
     }
@@ -57,20 +57,20 @@ extension StoredEvent: Codable {
 
         // Try to decode as string first (new format)
         if let jsonString = try? container.decode(String.self, forKey: .encodedEvent) {
-            if let jsonData = jsonString.data(using: .utf8),
-               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData) {
-                self.encodedEvent = AnyEncodable(jsonObject)
+            self.encodedEvent = jsonString
+        } else {
+            // Fall back to old format (direct dictionary)
+            if let oldEvent = try? container.decode(AnyEncodable.self, forKey: .encodedEvent),
+               let jsonString = try? oldEvent.encodedJSON {
+                self.encodedEvent = jsonString
             } else {
                 throw DecodingError.dataCorrupted(
                     DecodingError.Context(
                         codingPath: [CodingKeys.encodedEvent],
-                        debugDescription: "Could not parse stored JSON string"
+                        debugDescription: "Could not convert old format to JSON string"
                     )
                 )
             }
-        } else {
-            // Fall back to old format (direct dictionary)
-            self.encodedEvent = try container.decode(AnyEncodable.self, forKey: .encodedEvent)
         }
 
         self.userID = try container.decode(String.self, forKey: .userID)
@@ -87,14 +87,20 @@ extension StoredEvent: Codable {
 extension StoredEvent: Equatable {
 
     static func == (lhs: StoredEvent, rhs: StoredEvent) -> Bool {
-        guard let lhsValue = lhs.encodedEvent.value as? [String: Any],
-              let rhsValue = rhs.encodedEvent.value as? [String: Any] else {
+        guard lhs.userID == rhs.userID,
+              lhs.feature == rhs.feature else {
             return false
         }
 
-        return lhs.userID == rhs.userID &&
-               lhs.feature == rhs.feature &&
-               (lhsValue as NSDictionary).isEqual(to: rhsValue)
+        // Compare decoded events instead of raw JSON strings
+        guard let lhsData = lhs.encodedEvent.data(using: .utf8),
+              let rhsData = rhs.encodedEvent.data(using: .utf8),
+              let lhsDict = try? JSONSerialization.jsonObject(with: lhsData) as? [String: Any],
+              let rhsDict = try? JSONSerialization.jsonObject(with: rhsData) as? [String: Any] else {
+            return false
+        }
+
+        return NSDictionary(dictionary: lhsDict).isEqual(rhsDict)
     }
 
 }
