@@ -20,7 +20,6 @@ enum BackgroundStyle {
 
     case color(PaywallComponent.ColorScheme)
     case image(PaywallComponent.ThemeImageUrls)
-    case gradient
 
 }
 
@@ -47,7 +46,26 @@ fileprivate extension View {
     func apply(backgroundStyle: BackgroundStyle) -> some View {
         switch backgroundStyle {
         case .color(let color):
-            self.background(color.toDynamicColor())
+            switch color.light {
+            case .hex, .alias:
+                self.background(color.toDynamicColor())
+            case .linear(let degrees, _):
+                self.background {
+                    GradientView(
+                        lightGradient: color.light.toGradient(),
+                        darkGradient: color.dark?.toGradient(),
+                        gradientType: .linear(degrees)
+                    )
+                }
+            case .radial:
+                self.background {
+                    GradientView(
+                        lightGradient: color.light.toGradient(),
+                        darkGradient: color.dark?.toGradient(),
+                        gradientType: .radial
+                    )
+                }
+            }
         case .image(let imageInfo):
             self.background {
                 RemoteImage(
@@ -61,10 +79,6 @@ fileprivate extension View {
                         .scaledToFill()
                         .ignoresSafeArea()
                 }
-            }
-        case .gradient:
-            self.background {
-                // WIP: Add you gradient
             }
         }
     }
@@ -183,6 +197,81 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Dark (should be japan cats)")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .linear(30, [
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ]),
+                        dark: .linear(30, [
+                            .init(color: "#ff0000", percent: 0),
+                            .init(color: "#E58984", percent: 100)
+                        ])
+                      )
+                 )
+            )
+            .preferredColorScheme(.dark)
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Linear Gradient - Dark (should be red)")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .linear(30, [
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ]),
+                        dark: .linear(30, [
+                            .init(color: "#00E519", percent: 0),
+                            .init(color: "#9DEAD3", percent: 100)
+                        ])
+                      )
+                 )
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Linear Gradient - Light (should be green")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .radial([
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ]),
+                        dark: .radial([
+                            .init(color: "#ff0000", percent: 0),
+                            .init(color: "#E58984", percent: 100)
+                        ])
+                      )
+                 )
+            )
+            .preferredColorScheme(.dark)
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Radial Gradient - Dark (should be red)")
+
+        testContent
+            .backgroundStyle(
+                BackgroundStyle.color(
+                    PaywallComponent.ColorScheme.init(
+                        light: .radial([
+
+                            .init(color: "#00E519", percent: 0),
+                            .init(color: "#9DEAD3", percent: 100)
+                        ]),
+                        dark: .radial([
+                            .init(color: "#000000", percent: 0),
+                            .init(color: "#ffffff", percent: 100)
+                        ])
+                      )
+                 )
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Radial Gradient - Light (should be green")
     }
 }
 
