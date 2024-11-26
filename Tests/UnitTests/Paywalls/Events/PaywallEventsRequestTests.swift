@@ -74,8 +74,8 @@ class PaywallEventsRequestTests: TestCase {
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
         let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
-        let serializedEvent = try PaywallEventSerializer.encode(storedEvent)
-        let deserializedEvent = try PaywallEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
