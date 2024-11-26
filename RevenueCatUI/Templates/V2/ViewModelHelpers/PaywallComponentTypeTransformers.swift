@@ -241,9 +241,7 @@ extension PaywallComponent.ColorInfo {
 
     func toGradient() -> Gradient {
         switch self {
-        case .hex:
-            return Gradient(colors: [.clear])
-        case .alias:
+        case .hex, .alias:
             return Gradient(colors: [.clear])
         case .linear(_, let points), .radial(let points):
             let stops = points.map { point in
