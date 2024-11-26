@@ -245,15 +245,7 @@ extension PaywallComponent.ColorInfo {
             return Gradient(colors: [.clear])
         case .alias:
             return Gradient(colors: [.clear])
-        case .linear(_, let points):
-            let stops = points.map { point in
-                Gradient.Stop(
-                    color: point.color.toColor(fallback: Color.clear),
-                    location: CGFloat(point.percent/100)
-                )
-            }
-            return Gradient(stops: stops)
-        case .radial(let points):
+        case .linear(_, let points), .radial(let points):
             let stops = points.map { point in
                 Gradient.Stop(
                     color: point.color.toColor(fallback: Color.clear),
