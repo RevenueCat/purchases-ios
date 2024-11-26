@@ -43,7 +43,8 @@ enum PaywallsStrings {
     case event_flush_starting(count: Int)
     case event_sync_failed(Error)
     case event_cannot_serialize
-    case event_cannot_deserialize
+    case event_cannot_get_encoded_event
+    case event_cannot_deserialize(Error)
 
 }
 
@@ -109,8 +110,11 @@ extension PaywallsStrings: LogMessage {
         case .event_cannot_serialize:
             return "Couldn't serialize PaywallEvent to storage."
 
-        case .event_cannot_deserialize:
-            return "Couldn't deserialize PaywallEvent from storage."
+        case .event_cannot_get_encoded_event:
+            return "Couldn't get encoded event from storage."
+
+        case let .event_cannot_deserialize(error):
+            return "Couldn't deserialize PaywallEvent from storage. Error: \((error as NSError).localizedDescription)"
         }
     }
 

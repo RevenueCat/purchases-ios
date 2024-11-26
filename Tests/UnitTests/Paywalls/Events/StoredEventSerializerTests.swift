@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventSerializerTests.swift
+//  StoredEventSerializerTests.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
@@ -17,7 +17,7 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventSerializerTests: TestCase {
+class StoredEventSerializerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -69,8 +69,8 @@ class PaywallEventSerializerTests: TestCase {
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
         let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
-        let serializedEvent = try PaywallEventSerializer.encode(storedEvent)
-        let deserializedEvent = try PaywallEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
