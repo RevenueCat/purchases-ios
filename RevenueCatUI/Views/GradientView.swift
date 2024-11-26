@@ -28,7 +28,7 @@ struct GradientView: View {
     let darkGradient: Gradient?
     let gradientStyle: GradientStyle
 
-    var gradient: Gradient {
+    private var gradient: Gradient {
         switch colorScheme {
         case .light:
             lightGradient
@@ -44,8 +44,8 @@ struct GradientView: View {
         case .linear(let degrees):
             LinearGradient(
                 gradient: gradient,
-                startPoint: .init(angle: Angle(degrees: Double(degrees))),
-                endPoint: .init(angle: Angle(degrees: Double(degrees+180)))
+                startPoint: UnitPoint(angle: Angle(degrees: Double(degrees))),
+                endPoint: UnitPoint(angle: Angle(degrees: Double(degrees+180)))
             )
         case .radial:
             RadialGradient(
