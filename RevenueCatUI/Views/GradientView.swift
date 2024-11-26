@@ -16,7 +16,7 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 struct GradientView: View {
-    enum GradientType {
+    enum GradientStyle {
         case linear(Int)
         case radial
     }
@@ -26,7 +26,7 @@ struct GradientView: View {
 
     let lightGradient: Gradient
     let darkGradient: Gradient?
-    let gradientType: GradientType
+    let gradientStyle: GradientStyle
 
     var gradient: Gradient {
         switch colorScheme {
@@ -40,7 +40,7 @@ struct GradientView: View {
     }
 
     var body: some View {
-        switch gradientType {
+        switch gradientStyle {
         case .linear(let degrees):
             LinearGradient(
                 gradient: gradient,
