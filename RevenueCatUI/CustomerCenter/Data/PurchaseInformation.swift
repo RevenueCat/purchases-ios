@@ -69,7 +69,7 @@ struct PurchaseInformation {
                     : .lifetime
                 self.expirationOrRenewal = expiresDate.map { date in
                     let dateString = dateFormatter.string(from: date)
-                    let label: ExpirationOrRenewal.Label = isActive 
+                    let label: ExpirationOrRenewal.Label = isActive
                         ? (willRenew ? .nextBillingDate : .expires)
                         : .expired
                     return ExpirationOrRenewal(label: label, date: .date(dateString))
@@ -78,10 +78,10 @@ struct PurchaseInformation {
                 self.explanation = .lifetime
                 self.expirationOrRenewal = nil
             }
-            
+
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
-            self.price = transaction.store == .promotional ? .free 
+            self.price = transaction.store == .promotional ? .free
                 : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
         }
     }

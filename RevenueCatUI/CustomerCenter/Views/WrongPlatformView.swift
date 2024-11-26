@@ -109,11 +109,11 @@ struct WrongPlatformView: View {
 
 #if DEBUG
 //
-//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//@available(macOS, unavailable)
-//@available(tvOS, unavailable)
-//@available(watchOS, unavailable)
-//struct WrongPlatformView_Previews: PreviewProvider {
+// @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// @available(macOS, unavailable)
+// @available(tvOS, unavailable)
+// @available(watchOS, unavailable)
+// struct WrongPlatformView_Previews: PreviewProvider {
 //
 //    private struct PreviewData {
 //        let store: Store
@@ -170,7 +170,7 @@ struct WrongPlatformView: View {
 //        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value)
 //    }
 //
-//}
+// }
 
 #endif
 

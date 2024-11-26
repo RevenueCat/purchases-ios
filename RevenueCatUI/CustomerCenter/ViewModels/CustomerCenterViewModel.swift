@@ -108,11 +108,11 @@ import RevenueCat
 
             let activeSubscriptions: [Transaction] = customerInfo.subscriptions.values
                 .filter(\.isActive)
-                .sorted(by: { 
+                .sorted(by: {
                     guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
                         return $0.expiresDate != nil
                     }
-                    return date1 < date2 
+                    return date1 < date2
                 })
 
             let (activeAppleSubscriptions, otherActiveSubscriptions): ([Transaction], [Transaction]) = (
