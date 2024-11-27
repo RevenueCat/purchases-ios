@@ -16,26 +16,6 @@ import SwiftUI
 
 #if os(iOS)
 
-/// Warning: This is currently in beta and subject to change.
-///
-/// Presentation options to use with the [presentCustomerCenter](x-source-tag://presentCustomerCenter) View modifiers.
-public enum CustomerCenterPresentationMode {
-
-    /// Customer center presented using SwiftUI's `.sheet`.
-    case sheet
-
-    /// Customer center presented using SwiftUI's `.fullScreenCover`.
-    case fullScreen
-
-}
-
-extension CustomerCenterPresentationMode {
-
-    // swiftlint:disable:next missing_docs
-    public static let `default`: Self = .sheet
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")

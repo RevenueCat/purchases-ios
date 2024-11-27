@@ -21,10 +21,12 @@ extension EventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
-        var sessionID: String
+        var appSessionID: String
         var timestamp: UInt64
         var darkMode: Bool
-        var localeIdentifier: String
+        var locale: String
+        var isSandbox: Bool
+        var displayMode: CustomerCenterPresentationMode
 
     }
 
@@ -57,10 +59,12 @@ extension EventsRequest.CustomerCenterEvent {
                 version: Self.version,
                 type: customerCenterEvent.eventType,
                 appUserID: storedEvent.userID,
-                sessionID: data.sessionIdentifier.uuidString,
+                appSessionID: data.appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
                 darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
+                locale: data.localeIdentifier,
+                isSandbox: data.isSandbox,
+                displayMode: data.displayMode
             )
         } catch {
             return nil
@@ -96,10 +100,12 @@ extension EventsRequest.CustomerCenterEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
-        case sessionID = "sessionId"
+        case appSessionID = "appSessionID"
         case timestamp
         case darkMode
-        case localeIdentifier = "locale"
+        case locale
+        case isSandbox = "isSandbox"
+        case displayMode = "displayMode"
 
     }
 

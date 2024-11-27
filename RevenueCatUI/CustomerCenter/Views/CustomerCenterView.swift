@@ -33,17 +33,23 @@ public struct CustomerCenterView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    private let mode: CustomerCenterPresentationMode
+
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the customer center.
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+                mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
+        self.mode = mode
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel) {
+    fileprivate init(viewModel: CustomerCenterViewModel,
+                     mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue: viewModel)
+        self.mode = mode
     }
 
     // swiftlint:disable:next missing_docs
@@ -122,10 +128,8 @@ private extension CustomerCenterView {
     }
 
     func trackImpression() {
-        let eventData = CustomerCenterEvent.Data(sessionID: CustomerCenterEvent.SessionID(),
-                                                 locale: .current,
-                                                 darkMode: self.colorScheme == .dark)
-        viewModel.trackImpression(eventData)
+        viewModel.trackImpression(darkMode: self.colorScheme == .dark,
+                                  displayMode: self.mode)
     }
 
 }

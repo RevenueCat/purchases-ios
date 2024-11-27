@@ -37,4 +37,8 @@ protocol CustomerCenterPurchasesType: Sendable {
     @Sendable
     func track(customerCenterEvent: CustomerCenterEvent) async throws
 
+    func isSandbox() -> Bool
+
+    func appSessionID() -> UUID
+
 }

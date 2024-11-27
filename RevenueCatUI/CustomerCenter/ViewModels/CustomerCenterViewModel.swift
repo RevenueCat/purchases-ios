@@ -135,7 +135,14 @@ import RevenueCat
         }
     }
 
-    func trackImpression(_ eventData: CustomerCenterEvent.Data) {
+    func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
+        let isSandbox = purchasesProvider.isSandbox()
+        let appSessionID = purchasesProvider.appSessionID()
+        let eventData = CustomerCenterEvent.Data(appSessionID: appSessionID,
+                                                 locale: .current,
+                                                 darkMode: darkMode,
+                                                 isSandbox: isSandbox,
+                                                 displayMode: displayMode)
         let event = CustomerCenterEvent.impression(CustomerCenterEvent.CreationData(), eventData)
 
         Task.detached(priority: .background) { [purchasesProvider = self.purchasesProvider] in

@@ -48,4 +48,14 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         await Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
 
+    func isSandbox() -> Bool {
+        // TODO: implement
+        return true
+    }
+
+    func appSessionID() -> UUID {
+        // TODO: implement
+        return UUID()
+    }
+
 }
