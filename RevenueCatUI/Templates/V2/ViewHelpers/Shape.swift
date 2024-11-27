@@ -194,6 +194,8 @@ private struct BorderRoundedCornerShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
 
+        let maxY = rect.maxY - 1
+
         // Start from the top-left corner
         path.move(to: CGPoint(x: rect.minX + topLeft, y: rect.minY))
 
@@ -203,13 +205,13 @@ private struct BorderRoundedCornerShape: Shape {
                           control: CGPoint(x: rect.maxX, y: rect.minY))
 
         // Right edge and bottom-right corner
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - bottomRight))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX - bottomRight, y: rect.maxY),
-                          control: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: maxY - bottomRight))
+        path.addQuadCurve(to: CGPoint(x: rect.maxX - bottomRight, y: maxY),
+                          control: CGPoint(x: rect.maxX, y: maxY))
 
         // Bottom edge and bottom-left corner
-        path.addLine(to: CGPoint(x: rect.minX + bottomLeft, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY - bottomLeft),
+        path.addLine(to: CGPoint(x: rect.minX + bottomLeft, y: maxY))
+        path.addQuadCurve(to: CGPoint(x: rect.minX, y: maxY - bottomLeft),
                           control: CGPoint(x: rect.minX, y: rect.maxY))
 
         // Left edge and top-left corner
