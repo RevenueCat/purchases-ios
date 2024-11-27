@@ -122,7 +122,10 @@ private extension CustomerCenterView {
     }
 
     func trackImpression() {
-        viewModel.trackImpression()
+        let eventData = CustomerCenterEvent.Data(sessionID: CustomerCenterEvent.SessionID(),
+                                                 locale: .current,
+                                                 darkMode: self.colorScheme == .dark)
+        viewModel.trackImpression(eventData)
     }
 
 }

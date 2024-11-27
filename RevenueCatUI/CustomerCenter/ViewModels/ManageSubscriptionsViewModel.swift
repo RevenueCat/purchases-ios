@@ -259,10 +259,6 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
         await Purchases.shared.products(productIdentifiers)
     }
 
-    func trackImpression(_ eventData: CustomerCenterEvent.Data) async throws {
-        await Purchases.shared.track(customerCenterEvent: CustomerCenterEvent.impression(.init(), eventData))
-    }
-
 }
 
 #endif

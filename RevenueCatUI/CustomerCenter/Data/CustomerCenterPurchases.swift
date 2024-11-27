@@ -43,4 +43,9 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
             promotionalOffer: promotionalOffer
         )
     }
+
+    func track(customerCenterEvent: CustomerCenterEvent) async throws {
+        await Purchases.shared.track(customerCenterEvent: customerCenterEvent)
+    }
+
 }
