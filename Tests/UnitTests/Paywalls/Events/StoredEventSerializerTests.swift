@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventSerializerTests.swift
+//  StoredEventSerializerTests.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
@@ -17,7 +17,7 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventSerializerTests: TestCase {
+class StoredEventSerializerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -50,6 +50,34 @@ class PaywallEventSerializerTests: TestCase {
                                                      feature: .paywalls))
 
         expect(try event.encodeAndDecode()) == event
+    }
+
+    func testEncodingBooleans() throws {
+        let expectedUserID = "test-user"
+        let paywallEventCreationData: PaywallEvent.CreationData = .init(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+        let paywallEventData: PaywallEvent.Data = .init(
+            offeringIdentifier: "offeringIdentifier",
+            paywallRevision: 0,
+            sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: true
+        )
+        let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
+
+        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
+        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        expect(deserializedEvent.userID) == expectedUserID
+        expect(deserializedEvent.feature) == .paywalls
+
+        let eventData = deserializedEvent.encodedEvent
+        let jsonData = try XCTUnwrap(storedEvent.encodedEvent.data(using: .utf8))
+        let decodedPaywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
+        expect(decodedPaywallEvent) == paywallEvent
     }
 
     // MARK: -

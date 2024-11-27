@@ -46,7 +46,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
                 Logger.verbose(PaywallEventStoreStrings.storing_event_without_json)
             }
 
-            let event = try PaywallEventSerializer.encode(storedEvent)
+            let event = try StoredEventSerializer.encode(storedEvent)
             await self.handler.append(line: event)
         } catch {
             Logger.error(PaywallEventStoreStrings.error_storing_event(error))
@@ -59,7 +59,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         do {
             return try await self.handler.readLines()
                 .prefix(count)
-                .compactMap { try? PaywallEventSerializer.decode($0) }
+                .compactMap { try? StoredEventSerializer.decode($0) }
                 .extractValues()
         } catch {
             Logger.error(PaywallEventStoreStrings.error_fetching_events(error))

@@ -57,6 +57,33 @@ class PaywallEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testCanInitFromDeserializedEvent() throws {
+        let expectedUserID = "test-user"
+        let paywallEventCreationData: PaywallEvent.CreationData = .init(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+        let paywallEventData: PaywallEvent.Data = .init(
+            offeringIdentifier: "offeringIdentifier",
+            paywallRevision: 0,
+            sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: true
+        )
+        let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
+
+        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
+        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        expect(deserializedEvent.userID) == expectedUserID
+        expect(deserializedEvent.feature) == .paywalls
+
+        let requestEvent = try XCTUnwrap(EventsRequest.PaywallEvent(storedEvent: deserializedEvent))
+
+        assertSnapshot(matching: requestEvent, as: .formattedJson)
+    }
+
     // MARK: -
 
     private static let eventCreationData: PaywallEvent.CreationData = .init(
@@ -66,7 +93,7 @@ class PaywallEventsRequestTests: TestCase {
 
     private static let eventData: PaywallEvent.Data = .init(
         offeringIdentifier: "offering",
-        paywallRevision: 5,
+        paywallRevision: 0,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",

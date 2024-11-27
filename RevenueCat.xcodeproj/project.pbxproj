@@ -446,7 +446,7 @@
 		4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */; };
 		4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */; };
 		4FD368B42AA7CFED00F63354 /* PaywallEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */; };
-		4FD368B62AA7D09C00F63354 /* PaywallEventSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD368B52AA7D09C00F63354 /* PaywallEventSerializer.swift */; };
+		4FD368B62AA7D09C00F63354 /* StoredEventSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD368B52AA7D09C00F63354 /* StoredEventSerializer.swift */; };
 		4FD7E8662AABC4470055406F /* PurchasesPaywallEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */; };
 		4FDA13842A33D9BD00C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */; };
 		4FDF10E72A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
@@ -460,7 +460,7 @@
 		4FE0685F2A5F54C500B8F56C /* PackageTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE0685E2A5F54C500B8F56C /* PackageTypeTests.swift */; };
 		4FE6669F2A2F95A1004EEAFC /* PaywallExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */; };
 		4FE6FEEA2AA940E300780B45 /* PaywallEventStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6FEE72AA940E300780B45 /* PaywallEventStoreTests.swift */; };
-		4FE6FEEB2AA940E300780B45 /* PaywallEventSerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6FEE82AA940E300780B45 /* PaywallEventSerializerTests.swift */; };
+		4FE6FEEB2AA940E300780B45 /* StoredEventSerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6FEE82AA940E300780B45 /* StoredEventSerializerTests.swift */; };
 		4FEF41AB2B4F2F3400CD699F /* MapAppStoreDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FEF41AA2B4F2F3400CD699F /* MapAppStoreDetector.swift */; };
 		4FEF41AD2B4F301800CD699F /* MacAppStoreDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FEF41AC2B4F301800CD699F /* MacAppStoreDetectorTests.swift */; };
 		4FF017C32AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF017C22AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift */; };
@@ -1702,7 +1702,7 @@
 		4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcherTests.swift; sourceTree = "<group>"; };
 		4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEvent.swift; sourceTree = "<group>"; };
 		4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventStore.swift; sourceTree = "<group>"; };
-		4FD368B52AA7D09C00F63354 /* PaywallEventSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventSerializer.swift; sourceTree = "<group>"; };
+		4FD368B52AA7D09C00F63354 /* StoredEventSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredEventSerializer.swift; sourceTree = "<group>"; };
 		4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesPaywallEventsTests.swift; sourceTree = "<group>"; };
 		4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4FDE95A92A769E9E006E7D2D /* XC-AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "XC-AllTests.xctestplan"; path = "Tests/TestPlans/XC-AllTests.xctestplan"; sourceTree = "<group>"; };
@@ -1720,7 +1720,7 @@
 		4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallExtensions.swift; sourceTree = "<group>"; };
 		4FE6FEE42AA940B700780B45 /* StoredEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoredEvent.swift; sourceTree = "<group>"; };
 		4FE6FEE72AA940E300780B45 /* PaywallEventStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventStoreTests.swift; sourceTree = "<group>"; };
-		4FE6FEE82AA940E300780B45 /* PaywallEventSerializerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventSerializerTests.swift; sourceTree = "<group>"; };
+		4FE6FEE82AA940E300780B45 /* StoredEventSerializerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoredEventSerializerTests.swift; sourceTree = "<group>"; };
 		4FED3AD62AAA7DD4001D4D5E /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ..; sourceTree = "<group>"; };
 		4FEF41AA2B4F2F3400CD699F /* MapAppStoreDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapAppStoreDetector.swift; sourceTree = "<group>"; };
 		4FEF41AC2B4F301800CD699F /* MacAppStoreDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppStoreDetectorTests.swift; sourceTree = "<group>"; };
@@ -3549,6 +3549,7 @@
 			isa = PBXGroup;
 			children = (
 				4FE6FEE42AA940B700780B45 /* StoredEvent.swift */,
+				4FD368B52AA7D09C00F63354 /* StoredEventSerializer.swift */,
 				353DE0052CCA4EAE00A8F632 /* Networking */,
 			);
 			path = Events;
@@ -3967,7 +3968,6 @@
 				4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */,
 				4FFFE6C32AA9464100B2955C /* PaywallEventsManager.swift */,
 				4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */,
-				4FD368B52AA7D09C00F63354 /* PaywallEventSerializer.swift */,
 			);
 			path = Events;
 			sourceTree = "<group>";
@@ -3994,7 +3994,7 @@
 				4FFCED812AA941B200118EF4 /* PaywallEventsBackendTests.swift */,
 				4FFFE6C72AA9467800B2955C /* PaywallEventsManagerTests.swift */,
 				4FFCED802AA941B200118EF4 /* PaywallEventsRequestTests.swift */,
-				4FE6FEE82AA940E300780B45 /* PaywallEventSerializerTests.swift */,
+				4FE6FEE82AA940E300780B45 /* StoredEventSerializerTests.swift */,
 				4FE6FEE72AA940E300780B45 /* PaywallEventStoreTests.swift */,
 				4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */,
 			);
@@ -5845,7 +5845,7 @@
 				F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */,
 				F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */,
 				57CD86DA291C1E2300768DE1 /* UserDefaults+Extensions.swift in Sources */,
-				4FD368B62AA7D09C00F63354 /* PaywallEventSerializer.swift in Sources */,
+				4FD368B62AA7D09C00F63354 /* StoredEventSerializer.swift in Sources */,
 				4D6ABB0C2AF13F9400BB2A08 /* StoreKit2Receipt.swift in Sources */,
 				F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */,
 				9A65E0762591977200DE00B0 /* IdentityStrings.swift in Sources */,
@@ -6042,7 +6042,7 @@
 				2DDF41CA24F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift in Sources */,
 				2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */,
 				57E415EB2846962500EA5460 /* PurchasesSyncPurchasesTests.swift in Sources */,
-				4FE6FEEB2AA940E300780B45 /* PaywallEventSerializerTests.swift in Sources */,
+				4FE6FEEB2AA940E300780B45 /* StoredEventSerializerTests.swift in Sources */,
 				5766AAC5283E843300FA6091 /* PurchasesConfiguringTests.swift in Sources */,
 				351B514D26D44A8600BD2BD7 /* MockHTTPClient.swift in Sources */,
 				4FBBD4E42A620539001CBA21 /* PaywallColorTests.swift in Sources */,
