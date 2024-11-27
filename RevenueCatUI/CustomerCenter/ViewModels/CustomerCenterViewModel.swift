@@ -136,10 +136,8 @@ import RevenueCat
     }
 
     func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
-        let isSandbox = purchasesProvider.isSandbox()
-        let appSessionID = purchasesProvider.appSessionID()
-        let eventData = CustomerCenterEvent.Data(appSessionID: appSessionID,
-                                                 locale: .current,
+        let isSandbox = purchasesProvider.isSandbox
+        let eventData = CustomerCenterEvent.Data(locale: .current,
                                                  darkMode: darkMode,
                                                  isSandbox: isSandbox,
                                                  displayMode: displayMode)

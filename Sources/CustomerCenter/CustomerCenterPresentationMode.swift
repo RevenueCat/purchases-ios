@@ -35,6 +35,52 @@ extension CustomerCenterPresentationMode {
 
 }
 
-extension CustomerCenterPresentationMode: Equatable, Codable, Sendable {}
+extension CustomerCenterPresentationMode {
+
+    var identifier: String {
+        switch self {
+        case .fullScreen: return "full_screen"
+        case .sheet: return "sheet"
+        }
+    }
+
+}
+
+// MARK: - Extensions
+
+extension CustomerCenterPresentationMode: CaseIterable {
+
+    // swiftlint:disable:next missing_docs
+    public static var allCases: [CustomerCenterPresentationMode] {
+        return [
+            .fullScreen,
+            .sheet
+        ]
+    }
+
+}
+
+extension CustomerCenterPresentationMode: Equatable, Sendable {}
+
+extension CustomerCenterPresentationMode: Codable {
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.identifier)
+    }
+
+    // swiftlint:disable:next missing_docs
+    public init(from decoder: Decoder) throws {
+        let identifier = try decoder.singleValueContainer().decode(String.self)
+
+        self = try Self.modesByIdentifier[identifier]
+            .orThrow(CodableError.unexpectedValue(Self.self, identifier))
+    }
+
+    private static let modesByIdentifier: [String: Self] = Set(Self.allCases)
+        .dictionaryWithKeys(\.identifier)
+
+}
 
 #endif

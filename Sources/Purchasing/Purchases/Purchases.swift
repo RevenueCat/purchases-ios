@@ -769,6 +769,8 @@ public extension Purchases {
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
+    @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
+
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }
@@ -832,6 +834,10 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
+
+            Task {
+                await self.paywallEventsManager?.resetAppSessionID()
+            }
         }
     }
 
@@ -863,6 +869,10 @@ public extension Purchases {
                     }
                 }
                 return
+            }
+
+            Task {
+                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {
@@ -1249,7 +1259,7 @@ public extension Purchases {
 
 // swiftlint:enable missing_docs
 
-// MARK: - Paywalls
+// MARK: - Paywalls & Customer Center
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 public extension Purchases {
@@ -1787,10 +1797,6 @@ internal extension Purchases {
 
     var storeKitTimeout: TimeInterval {
         return self.productsManager.requestTimeout
-    }
-
-    var isSandbox: Bool {
-        return self.systemInfo.isSandbox
     }
 
     var observerMode: Bool {

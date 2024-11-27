@@ -68,20 +68,17 @@ extension CustomerCenterEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        var appSessionID: SessionID
         var localeIdentifier: String
         var darkMode: Bool
         var isSandbox: Bool
         var displayMode: CustomerCenterPresentationMode
 
         public init(
-            appSessionID: SessionID,
             locale: Locale,
             darkMode: Bool,
             isSandbox: Bool,
             displayMode: CustomerCenterPresentationMode
         ) {
-            self.appSessionID = appSessionID
             self.localeIdentifier = locale.identifier
             self.darkMode = darkMode
             self.isSandbox = isSandbox

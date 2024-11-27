@@ -44,6 +44,11 @@ extension EventsRequest.CustomerCenterEvent {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredEvent) {
+        guard let appSessionID = storedEvent.appSessionID else {
+            Logger.error(Strings.paywalls.event_missing_app_session_id)
+            return nil
+        }
+
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
             Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil
@@ -59,7 +64,7 @@ extension EventsRequest.CustomerCenterEvent {
                 version: Self.version,
                 type: customerCenterEvent.eventType,
                 appUserID: storedEvent.userID,
-                appSessionID: data.appSessionID.uuidString,
+                appSessionID: appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
                 darkMode: data.darkMode,
                 locale: data.localeIdentifier,

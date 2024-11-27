@@ -45,6 +45,7 @@ enum PaywallsStrings {
     case event_cannot_serialize
     case event_cannot_get_encoded_event
     case event_cannot_deserialize(Error)
+    case event_missing_app_session_id
 
 }
 
@@ -115,6 +116,9 @@ extension PaywallsStrings: LogMessage {
 
         case let .event_cannot_deserialize(error):
             return "Couldn't deserialize PaywallEvent from storage. Error: \((error as NSError).description)"
+
+        case .event_missing_app_session_id:
+            return "Event is missing the app session ID."
         }
     }
 
