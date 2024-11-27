@@ -26,12 +26,15 @@ enum BackgroundStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BackgroundStyleModifier: ViewModifier {
 
+    @Environment(\.colorScheme)
+    var colorScheme
+
     var backgroundStyle: BackgroundStyle?
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
-                .apply(backgroundStyle: backgroundStyle)
+                .apply(backgroundStyle: backgroundStyle, colorScheme: colorScheme)
         } else {
             content
         }
@@ -43,10 +46,10 @@ struct BackgroundStyleModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func apply(backgroundStyle: BackgroundStyle) -> some View {
+    func apply(backgroundStyle: BackgroundStyle, colorScheme: ColorScheme) -> some View {
         switch backgroundStyle {
         case .color(let color):
-            switch color.light {
+            switch color.effectiveColor(for: colorScheme) {
             case .hex, .alias:
                 self.background(color.toDynamicColor())
             case .linear(let degrees, _):
@@ -54,7 +57,7 @@ fileprivate extension View {
                     GradientView(
                         lightGradient: color.light.toGradient(),
                         darkGradient: color.dark?.toGradient(),
-                        gradientType: .linear(degrees)
+                        gradientStyle: .linear(degrees)
                     )
                 }
             case .radial:
@@ -62,7 +65,7 @@ fileprivate extension View {
                     GradientView(
                         lightGradient: color.light.toGradient(),
                         darkGradient: color.dark?.toGradient(),
-                        gradientType: .radial
+                        gradientStyle: .radial
                     )
                 }
             }

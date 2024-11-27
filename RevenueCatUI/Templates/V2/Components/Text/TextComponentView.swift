@@ -54,7 +54,7 @@ struct TextComponentView: View {
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(style.textAlignment)
-                        .foregroundStyle(style.color)
+                        .foregroundColorScheme(style.color)
                         .padding(style.padding)
                         .size(style.size, alignment: style.horizontalAlignment)
                         .backgroundStyle(style.backgroundStyle)
@@ -93,6 +93,38 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
+
+        // Default
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world")
+                    ]
+                ),
+                component: .init(
+                    text: "id_1",
+                    color: PaywallComponent.ColorScheme(
+                        light: .linear(30, [
+                            .init(color: "#0433FF", percent: 0),
+                            .init(color: "#FF40FF", percent: 50),
+                            .init(color: "#00FDFF", percent: 100)
+                        ]),
+                        dark: .linear(30, [
+                            .init(color: "#0433FF", percent: 0),
+                            .init(color: "#FF40FF", percent: 50),
+                            .init(color: "#00FDFF", percent: 100)
+                        ])
+                      ),
+                    fontSize: .headingXXL
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Gradient")
 
         // Customizations
         TextComponentView(

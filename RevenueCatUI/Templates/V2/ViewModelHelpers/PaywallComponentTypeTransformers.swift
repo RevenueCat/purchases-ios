@@ -245,7 +245,7 @@ extension PaywallComponent.ColorInfo {
             let stops = points.map { point in
                 Gradient.Stop(
                     color: point.color.toColor(fallback: Color.clear),
-                    location: CGFloat(point.percent/100)
+                    location: CGFloat(point.percent)/100
                 )
             }
             return Gradient(stops: stops)
@@ -317,6 +317,17 @@ extension PaywallComponent.ColorScheme {
                 return UIColor(lightModeColor.toColor(fallback: Color.clear))
             }
         })
+    }
+
+    func effectiveColor(for colorScheme: ColorScheme) -> PaywallComponent.ColorInfo {
+        switch colorScheme {
+        case .light:
+            return light
+        case .dark:
+            return dark ?? light
+        @unknown default:
+            return light
+        }
     }
 
 }
