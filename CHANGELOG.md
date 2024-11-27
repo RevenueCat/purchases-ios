@@ -1,3 +1,8 @@
+## 5.12.1
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix PaywallEvents failing to deserialize (#4520) via Cesar de la Vega (@vegaro)
+
 ## 5.12.0
 ## RevenueCat SDK
 ### Win-back Offers

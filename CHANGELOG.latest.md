@@ -1,4 +1,3 @@
-## RevenueCat SDK
-### Win-back Offers
-#### ✨ New Features
-* Add eligibleWinBackOffers(forPackage) functions (#4516) via Will Taylor (@fire-at-will)
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix PaywallEvents failing to deserialize (#4520) via Cesar de la Vega (@vegaro)
