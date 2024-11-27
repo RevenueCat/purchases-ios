@@ -42,11 +42,13 @@ extension EventsRequest.CustomerCenterEvent {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredEvent) {
-        guard let eventData = storedEvent.encodedEvent.value as? [String: Any] else {
+        guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
+            Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil
         }
+
         do {
-            let customerCenterEvent: CustomerCenterEvent = try JSONDecoder.default.decode(dictionary: eventData)
+            let customerCenterEvent = try JSONDecoder.default.decode(CustomerCenterEvent.self, from: jsonData)
             let creationData = customerCenterEvent.creationData
             let data = customerCenterEvent.data
 
