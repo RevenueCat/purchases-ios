@@ -48,7 +48,6 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         self.appSessionID = UUID()
     }
 
-
     func resetAppSessionID() {
         self.appSessionID = UUID()
     }

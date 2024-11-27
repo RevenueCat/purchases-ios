@@ -52,5 +52,4 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         await Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
 
-
 }
