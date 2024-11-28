@@ -273,6 +273,22 @@ class PaywallEventsManagerTests: TestCase {
     }
     #endif
 
+    func testResetAppSessionID() async throws {
+        _ = await self.storeRandomEvent()
+        var storedEvents = await self.store.storedEvents
+        let storedEvent1 = try XCTUnwrap(storedEvents.first)
+        let initialSessionID = storedEvent1.appSessionID
+
+        await self.manager.resetAppSessionID()
+
+        _ = await self.storeRandomEvent()
+        storedEvents = await self.store.storedEvents
+        let storedEvent2 = try XCTUnwrap(storedEvents.last)
+        let newSessionID = storedEvent2.appSessionID
+
+        expect(initialSessionID) != newSessionID
+    }
+
     // MARK: -
 
     private static let userID = "nacho"
