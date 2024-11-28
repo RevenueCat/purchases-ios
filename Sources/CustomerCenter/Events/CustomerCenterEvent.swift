@@ -47,8 +47,8 @@ extension CustomerCenterEvent {
     public struct CreationData {
 
         // swiftlint:disable missing_docs
-        var id: ID
-        var date: Date
+        public var id: ID
+        public var date: Date
 
         public init(
             id: ID = .init(),
@@ -68,10 +68,10 @@ extension CustomerCenterEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        var localeIdentifier: String
-        var darkMode: Bool
-        var isSandbox: Bool
-        var displayMode: CustomerCenterPresentationMode
+        public var localeIdentifier: String
+        public var darkMode: Bool
+        public var isSandbox: Bool
+        public var displayMode: CustomerCenterPresentationMode
 
         public init(
             locale: Locale,

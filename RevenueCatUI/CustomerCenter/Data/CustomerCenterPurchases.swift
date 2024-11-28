@@ -48,8 +48,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         )
     }
 
-    func track(customerCenterEvent: CustomerCenterEvent) async throws {
-        await Purchases.shared.track(customerCenterEvent: customerCenterEvent)
+    func track(customerCenterEvent: CustomerCenterEvent) {
+        Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
 
 }

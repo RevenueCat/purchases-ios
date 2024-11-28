@@ -143,9 +143,7 @@ import RevenueCat
                                                  displayMode: displayMode)
         let event = CustomerCenterEvent.impression(CustomerCenterEvent.CreationData(), eventData)
 
-        Task.detached(priority: .background) { [purchasesProvider = self.purchasesProvider] in
-            try await purchasesProvider.track(customerCenterEvent: event)
-        }
+        purchasesProvider.track(customerCenterEvent: event)
     }
 
 }
