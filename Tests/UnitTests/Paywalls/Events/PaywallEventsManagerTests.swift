@@ -46,11 +46,14 @@ class PaywallEventsManagerTests: TestCase {
     func testTrackEvent() async throws {
         let event: PaywallEvent = .impression(.random(), .random())
 
-        await self.manager.track(paywallEvent: event)
+        await self.manager.track(featureEvent: event)
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
+            try XCTUnwrap(.init(event: event,
+                                userID: Self.userID,
+                                feature: .paywalls,
+                                appSessionID: UUID()))
         ]
     }
 
@@ -58,13 +61,19 @@ class PaywallEventsManagerTests: TestCase {
         let event1: PaywallEvent = .impression(.random(), .random())
         let event2: PaywallEvent = .close(.random(), .random())
 
-        await self.manager.track(paywallEvent: event1)
-        await self.manager.track(paywallEvent: event2)
+        await self.manager.track(featureEvent: event1)
+        await self.manager.track(featureEvent: event2)
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls)),
-            try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))
+            try XCTUnwrap(.init(event: event1,
+                                userID: Self.userID,
+                                feature: .paywalls,
+                                appSessionID: UUID())),
+            try XCTUnwrap(.init(event: event2,
+                                userID: Self.userID,
+                                feature: .paywalls,
+                                appSessionID: UUID()))
         ]
     }
 
@@ -85,7 +94,8 @@ class PaywallEventsManagerTests: TestCase {
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [[try XCTUnwrap(.init(event: event,
                                                                                      userID: Self.userID,
-                                                                                     feature: .paywalls))]]
+                                                                                     feature: .paywalls,
+                                                                                     appSessionID: UUID()))]]
 
         await self.verifyEmptyStore()
     }
@@ -102,8 +112,14 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls))],
-            [try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))]
+            [try XCTUnwrap(.init(event: event1,
+                                 userID: Self.userID,
+                                 feature: .paywalls,
+                                 appSessionID: UUID()))],
+            [try XCTUnwrap(.init(event: event2,
+                                 userID: Self.userID,
+                                 feature: .paywalls,
+                                 appSessionID: UUID()))]
         ]
 
         await self.verifyEmptyStore()
@@ -111,7 +127,10 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushOnlyOneEventPostsFirstOne() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+                                                           userID: Self.userID,
+                                                           feature: .paywalls,
+                                                           appSessionID: UUID()))
 
         _ = await self.storeRandomEvent()
         _ = await self.storeRandomEvent()
@@ -129,7 +148,10 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event, userID: Self.userID, feature: .paywalls))
+        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+                                                           userID: Self.userID,
+                                                           feature: .paywalls,
+                                                           appSessionID: UUID()))
         let expectedError: NetworkError = .offlineConnection()
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
@@ -189,10 +211,14 @@ class PaywallEventsManagerTests: TestCase {
         expect(self.api.invokedPostPaywallEvents) == true
         let expectedEvent: StoredEvent = try XCTUnwrap(.init(event: event1,
                                                              userID: Self.userID,
-                                                             feature: .paywalls))
+                                                             feature: .paywalls,
+                                                             appSessionID: UUID()))
         expect(self.api.invokedPostPaywallEventsParameters) == [[expectedEvent]]
 
-        await self.verifyEvents([try XCTUnwrap(.init(event: event2, userID: Self.userID, feature: .paywalls))])
+        await self.verifyEvents([try XCTUnwrap(.init(event: event2,
+                                                     userID: Self.userID,
+                                                     feature: .paywalls,
+                                                     appSessionID: UUID()))])
     }
 
     #if swift(>=5.9)
@@ -233,7 +259,10 @@ class PaywallEventsManagerTests: TestCase {
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
         expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [
-            try XCTUnwrap(.init(event: event1, userID: Self.userID, feature: .paywalls))
+            try XCTUnwrap(.init(event: event1,
+                                userID: Self.userID,
+                                feature: .paywalls,
+                                appSessionID: UUID()))
         ]
 
         self.logger.verifyMessageWasLogged(
@@ -257,7 +286,7 @@ private extension PaywallEventsManagerTests {
 
     func storeRandomEvent() async -> PaywallEvent {
         let event: PaywallEvent = .impression(.random(), .random())
-        await self.manager.track(paywallEvent: event)
+        await self.manager.track(featureEvent: event)
 
         return event
     }

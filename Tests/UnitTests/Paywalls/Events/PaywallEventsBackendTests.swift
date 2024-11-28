@@ -43,7 +43,8 @@ class BackendPaywallEventTests: BaseBackendTests {
         let event = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
-                                                           feature: .paywalls))
+                                                           feature: .paywalls,
+                                                           appSessionID: UUID()))
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [storedEvent], completion: completion)
@@ -56,11 +57,13 @@ class BackendPaywallEventTests: BaseBackendTests {
         let event1 = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
         let storedEvent1: StoredEvent = try XCTUnwrap(.init(event: event1,
                                                             userID: Self.userID,
-                                                            feature: .paywalls))
+                                                            feature: .paywalls,
+                                                            appSessionID: UUID()))
         let event2 = PaywallEvent.close(Self.eventCreation2, Self.eventData2)
         let storedEvent2: StoredEvent =  try XCTUnwrap(.init(event: event2,
                                                              userID: Self.userID,
-                                                             feature: .paywalls))
+                                                             feature: .paywalls,
+                                                             appSessionID: UUID()))
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [storedEvent1, storedEvent2],

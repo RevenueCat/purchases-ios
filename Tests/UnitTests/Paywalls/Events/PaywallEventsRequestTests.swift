@@ -30,7 +30,8 @@ class PaywallEventsRequestTests: TestCase {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
-                                                           feature: .paywalls))
+                                                           feature: .paywalls,
+                                                           appSessionID: UUID()))
         let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -40,7 +41,8 @@ class PaywallEventsRequestTests: TestCase {
         let event = PaywallEvent.cancel(Self.eventCreationData, Self.eventData)
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
-                                                           feature: .paywalls))
+                                                           feature: .paywalls,
+                                                           appSessionID: UUID()))
         let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -51,7 +53,8 @@ class PaywallEventsRequestTests: TestCase {
                                        Self.eventData)
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
-                                                           feature: .paywalls))
+                                                           feature: .paywalls,
+                                                           appSessionID: UUID()))
         let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -73,7 +76,10 @@ class PaywallEventsRequestTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
+        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent,
+                                                    userID: expectedUserID,
+                                                    feature: .paywalls,
+                                                    appSessionID: UUID()))
         let serializedEvent = try StoredEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
