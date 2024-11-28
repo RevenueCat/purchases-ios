@@ -58,6 +58,47 @@ struct GradientView: View {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct GradientView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        GradientView(
+            lightGradient: .init(colors: .init([.red, .white])),
+            darkGradient: .init(colors: .init([.blue, .white])),
+            gradientStyle: .radial
+        )
+        .preferredColorScheme(.dark)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Radial - Dark (should be blue)")
+
+        GradientView(
+            lightGradient: .init(colors: .init([.red, .white])),
+            darkGradient: .init(colors: .init([.blue, .white])),
+            gradientStyle: .radial
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Radial - Light (should be red)")
+
+        GradientView(
+            lightGradient: .init(colors: .init([.red, .white])),
+            darkGradient: .init(colors: .init([.blue, .white])),
+            gradientStyle: .linear(45)
+        )
+        .preferredColorScheme(.dark)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Linear 45º - Dark (should be blue)")
+
+        GradientView(
+            lightGradient: .init(colors: .init([.red, .white])),
+            darkGradient: .init(colors: .init([.blue, .white])),
+            gradientStyle: .linear(90)
+        )
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Linear 90º - Light (should be red)")
+    }
+
+}
+
 private extension UnitPoint {
 
     init(angle: Angle) {
