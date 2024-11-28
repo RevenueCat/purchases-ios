@@ -38,7 +38,6 @@ extension EventsRequest.CustomerCenterEvent {
 
         case impression = "customer_center_impression"
         case close = "customer_center_close"
-        case surveyCompleted = "customer_center_survey_completed"
 
     }
 
