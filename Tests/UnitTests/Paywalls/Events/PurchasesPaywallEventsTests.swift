@@ -48,4 +48,62 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
+    func testLogInWithSuccessResetsAppSessionID() async throws {
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        _ = try await self.purchases.logIn("Static string")
+
+        let manager = try self.mockPaywallEventsManager
+        try await asyncWait { await manager.invokedResetAppSessionID == true }
+    }
+
+    func testLogOutWithSuccessResetsAppSessionID() async throws {
+        self.identityManager.mockLogOutError = nil
+
+        _ = try await self.purchases.logOut()
+
+        let manager = try self.mockPaywallEventsManager
+        try await asyncWait { await manager.invokedResetAppSessionID == true }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension PurchasesPaywallEventsTests {
+
+    typealias LogInResult = Result<(customerInfo: CustomerInfo, created: Bool), PublicError>
+    typealias LogOutResult = Result<CustomerInfo, PublicError>
+
+    // swiftlint:disable force_try
+    static let mockLoggedInInfo = try! CustomerInfo(data: PurchasesPaywallEventsTests.loggedInCustomerInfoData)
+    static let mockLoggedOutInfo = try! CustomerInfo(data: PurchasesPaywallEventsTests.loggedOutCustomerInfoData)
+    // swiftlint:enable force_try
+
+    private static let loggedInCustomerInfoData: [String: Any] = [
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "user",
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
+            "original_application_version": NSNull()
+        ] as [String: Any]
+    ]
+
+    private static let loggedOutCustomerInfoData: [String: Any] = [
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "$RCAnonymousID:5b6fdbad3a0c4f879e43d269ecdf9ba1",
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
+            "original_application_version": NSNull()
+        ] as [String: Any]
+    ]
+
+    /// Converts the result of `Purchases.logIn` into `LogInResult`
+    static func logInResult(_ info: CustomerInfo?, _ created: Bool, _ error: PublicError?) -> LogInResult {
+        return .init(info.map { ($0, created) }, error)
+    }
+
 }

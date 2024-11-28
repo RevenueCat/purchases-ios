@@ -835,7 +835,7 @@ public extension Purchases {
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
 
-            Task {
+            self.operationDispatcher.dispatchOnWorkerThread {
                 await self.paywallEventsManager?.resetAppSessionID()
             }
         }
@@ -871,7 +871,7 @@ public extension Purchases {
                 return
             }
 
-            Task {
+            self.operationDispatcher.dispatchOnWorkerThread {
                 await self.paywallEventsManager?.resetAppSessionID()
             }
 
