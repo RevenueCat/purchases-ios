@@ -72,7 +72,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testLoadHasSubscriptionsApple() async {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.customerInfoResult = .success(CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions)
-        
+
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
@@ -88,7 +88,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testLoadHasSubscriptionsGoogle() async {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.customerInfoResult = .success(CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions)
-        
+
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
@@ -104,7 +104,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testLoadHasSubscriptionsNonActive() async {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.customerInfoResult = .success(CustomerCenterViewModelTests.customerInfoWithoutSubscriptions)
-        
+
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
@@ -120,7 +120,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testLoadHasSubscriptionsFailure() async {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.customerInfoResult = .failure(error)
-        
+
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
@@ -208,7 +208,7 @@ class CustomerCenterViewModelTests: TestCase {
 
         expect(mockPurchases.trackedEvents.count) == 1
         let trackedEvent = try XCTUnwrap(mockPurchases.trackedEvents.first)
-        
+
         expect(trackedEvent.data.darkMode) == darkMode
         expect(trackedEvent.data.displayMode) == displayMode
         expect(trackedEvent.data.localeIdentifier) == Locale.current.identifier
