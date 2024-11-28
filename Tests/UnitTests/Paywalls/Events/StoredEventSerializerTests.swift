@@ -80,7 +80,6 @@ class StoredEventSerializerTests: TestCase {
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
-        let eventData = deserializedEvent.encodedEvent
         let jsonData = try XCTUnwrap(storedEvent.encodedEvent.data(using: .utf8))
         let decodedPaywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
         expect(decodedPaywallEvent) == paywallEvent

@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if os(iOS)
-
 /// Warning: This is currently in beta and subject to change.
 ///
 /// Presentation options to use with the [presentCustomerCenter](x-source-tag://presentCustomerCenter) View modifiers.
@@ -82,5 +80,3 @@ extension CustomerCenterPresentationMode: Codable {
         .dictionaryWithKeys(\.identifier)
 
 }
-
-#endif
