@@ -86,8 +86,6 @@ private extension CustomerCenterEvent {
     var eventType: EventsRequest.CustomerCenterEvent.EventType {
         switch self {
         case .impression: return .impression
-        case .close: return .close
-        case .surveyCompleted: return .surveyCompleted
         }
 
     }

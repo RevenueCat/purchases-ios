@@ -31,29 +31,7 @@ class CustomerCenterEventsRequestTests: TestCase {
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
                                                            feature: .customerCenter,
-                                                           appSessionID: UUID()))
-        let requestEvent: EventsRequest.CustomerCenterEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
-    }
-
-    func testCloseEvent() throws {
-        let event = CustomerCenterEvent.close(Self.eventCreationData, Self.eventData)
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
-                                                           userID: Self.userID,
-                                                           feature: .customerCenter,
-                                                           appSessionID: UUID()))
-        let requestEvent: EventsRequest.CustomerCenterEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
-    }
-
-    func testSurveyCompletedEvent() throws {
-        let event = CustomerCenterEvent.surveyCompleted(Self.eventCreationData, Self.eventData)
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
-                                                           userID: Self.userID,
-                                                           feature: .customerCenter,
-                                                           appSessionID: UUID()))
+                                                           appSessionID: Self.appSessionID))
         let requestEvent: EventsRequest.CustomerCenterEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -77,7 +55,7 @@ class CustomerCenterEventsRequestTests: TestCase {
         let storedEvent = try XCTUnwrap(StoredEvent(event: customerCenterEvent,
                                                     userID: expectedUserID,
                                                     feature: .customerCenter,
-                                                    appSessionID: UUID()))
+                                                    appSessionID: Self.appSessionID))
         let serializedEvent = try StoredEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
@@ -103,4 +81,7 @@ class CustomerCenterEventsRequestTests: TestCase {
     )
 
     private static let userID = "Jack Shepard"
+
+    private static let appSessionID = UUID(uuidString: "83164C05-2BDC-4807-8918-A4105F727DEB")
+
 }
