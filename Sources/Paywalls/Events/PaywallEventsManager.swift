@@ -56,7 +56,8 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         guard let event: StoredEvent = .init(event: featureEvent,
                                              userID: self.userProvider.currentAppUserID,
                                              feature: featureEvent.feature,
-                                             appSessionID: self.appSessionID) else {
+                                             appSessionID: self.appSessionID,
+                                             eventDiscriminator: featureEvent.eventDiscriminator) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }

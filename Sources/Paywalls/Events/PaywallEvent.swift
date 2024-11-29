@@ -30,6 +30,10 @@ public enum PaywallEvent: FeatureEvent {
         return .paywalls
     }
 
+    var eventDiscriminator: String? {
+        return nil
+    }
+
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 

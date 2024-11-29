@@ -32,10 +32,18 @@ struct EventsRequest {
                 }
                 return AnyEncodable(event)
             case .customerCenter:
-                guard let event = CustomerCenterEvent(storedEvent: storedEvent) else {
-                    return nil
+                switch storedEvent.eventDiscriminator {
+                case "survey_option_chosen":
+                    guard let event = CustomerCenterEventSurveyOptionChosen.create(from: storedEvent) else {
+                        return nil
+                    }
+                    return AnyEncodable(event)
+                default:
+                    guard let event = CustomerCenterEventBase.createBase(from: storedEvent) else {
+                        return nil
+                    }
+                    return AnyEncodable(event)
                 }
-                return AnyEncodable(event)
             }
         })
     }
