@@ -13,22 +13,8 @@
 
 import Foundation
 
-public protocol CustomerCenterEventType {
-
-    /// An identifier that represents a customer center event.
-    typealias ID = UUID
-
-    // swiftlint:enable type_name
-
-    /// An identifier that represents a paywall session.
-    typealias SessionID = UUID
-
-    associatedtype EventData
-
-    var creationData: CustomerCenterEventCreationData { get }
-    var data: EventData { get }
-
-}
+/// A protocol that represents a customer center event.
+public protocol CustomerCenterEventType {}
 
 extension CustomerCenterEventType {
 
@@ -36,10 +22,11 @@ extension CustomerCenterEventType {
 
 }
 
+/// Data that represents a customer center event creation.
 public struct CustomerCenterEventCreationData {
 
-    public var id: UUID
-    public var date: Date
+    let id: UUID
+    let date: Date
 
     public init(
         id: UUID = .init(),
@@ -51,31 +38,8 @@ public struct CustomerCenterEventCreationData {
 
 }
 
-public struct CustomerCenterBaseData {
-
-    public var localeIdentifier: String
-    public var darkMode: Bool
-    public var isSandbox: Bool
-    public var displayMode: CustomerCenterPresentationMode
-
-    public init(
-        locale: Locale,
-        darkMode: Bool,
-        isSandbox: Bool,
-        displayMode: CustomerCenterPresentationMode
-    ) {
-        self.localeIdentifier = locale.identifier
-        self.darkMode = darkMode
-        self.isSandbox = isSandbox
-        self.displayMode = displayMode
-    }
-
-}
-
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
-
-    // swiftlint:disable type_name
 
     var eventDiscriminator: String? { "impression" }
 
@@ -86,8 +50,6 @@ public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum CustomerCenterSurveyOptionChosenEvent: FeatureEvent, CustomerCenterEventType {
-
-    // swiftlint:disable type_name
 
     var eventDiscriminator: String? { "survey_option_chosen" }
 
@@ -101,13 +63,13 @@ extension CustomerCenterEvent {
     /// The content of a ``CustomerCenterEvent``.
     public struct Data {
 
-        public let base: CustomerCenterBaseData
-
         // swiftlint:disable missing_docs
         public var localeIdentifier: String { base.localeIdentifier }
         public var darkMode: Bool { base.darkMode }
         public var isSandbox: Bool { base.isSandbox }
         public var displayMode: CustomerCenterPresentationMode { base.displayMode }
+
+        private let base: CustomerCenterBaseData
 
         public init(
             locale: Locale,
@@ -130,18 +92,21 @@ extension CustomerCenterEvent {
 
 extension CustomerCenterSurveyOptionChosenEvent {
 
+    /// The content of a ``CustomerCenterSurveyOptionChosenEvent``.
     public struct Data {
 
-        private let base: CustomerCenterBaseData
+        // swiftlint:disable missing_docs
         public var localeIdentifier: String { base.localeIdentifier }
         public var darkMode: Bool { base.darkMode }
         public var isSandbox: Bool { base.isSandbox }
         public var displayMode: CustomerCenterPresentationMode { base.displayMode }
-        public var pathID: String
-        public var surveyOptionID: String
-        public var surveyOptionTitleKey: String
-        public var additionalContext: String?
-        public var revisionID: Int
+        public let pathID: String
+        public let surveyOptionID: String
+        public let surveyOptionTitleKey: String
+        public let additionalContext: String?
+        public let revisionID: Int
+
+        private let base: CustomerCenterBaseData
 
         public init(
             locale: Locale,
@@ -166,6 +131,7 @@ extension CustomerCenterSurveyOptionChosenEvent {
             self.additionalContext = additionalContext
             self.revisionID = revisionID
         }
+        // swiftlint:enable missing_docs
 
     }
 
@@ -207,23 +173,36 @@ extension CustomerCenterSurveyOptionChosenEvent {
 
 }
 
+private struct CustomerCenterBaseData {
+
+    // swiftlint:disable missing_docs
+    public let localeIdentifier: String
+    public let darkMode: Bool
+    public let isSandbox: Bool
+    public let displayMode: CustomerCenterPresentationMode
+
+    public init(
+        locale: Locale,
+        darkMode: Bool,
+        isSandbox: Bool,
+        displayMode: CustomerCenterPresentationMode
+    ) {
+        self.localeIdentifier = locale.identifier
+        self.darkMode = darkMode
+        self.isSandbox = isSandbox
+        self.displayMode = displayMode
+    }
+    // swiftlint:enable missing_docs
+
+}
+
 // MARK: -
 
 extension CustomerCenterEventCreationData: Equatable, Codable, Sendable {}
 extension CustomerCenterEvent.Data: Equatable, Codable, Sendable {}
 extension CustomerCenterEvent: Equatable, Codable, Sendable {}
 
-extension CustomerCenterBaseData: Equatable, Codable, Sendable {
-
-    private enum CodingKeys: String, CodingKey {
-
-        case localeIdentifier = "localeIdentifier"
-        case darkMode = "darkMode"
-        case isSandbox = "isSandbox"
-        case displayMode = "displayMode"
-    }
-
-}
+extension CustomerCenterBaseData: Equatable, Codable, Sendable {}
 
 extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendable {
 

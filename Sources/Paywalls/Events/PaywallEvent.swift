@@ -61,6 +61,7 @@ extension PaywallEvent {
             self.id = id
             self.date = date
         }
+        // swiftlint:enable missing_docs
 
     }
 
