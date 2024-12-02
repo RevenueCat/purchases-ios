@@ -70,7 +70,7 @@ aliases:
   release-tags: &release-tags
     filters:
       tags:
-        ignore: 
+        ignore:
           - /^.*-SNAPSHOT/
           - /^.*-customercenter.alpha.*/
       branches:
@@ -1282,6 +1282,19 @@ jobs:
           name: Submit Purchase Tester
           command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
 
+  emerge_purchases_ui_snapshot_tests:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - update-spm-installation-commit
+      - run:
+          name: Submit Purchase Tester
+          command: bundle exec fastlane build_paywalls_test
+
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1335,13 +1348,14 @@ workflows:
       - pod-lib-lint
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
+      - emerge_purchases_ui_snapshot_tests
 
   create-tag:
     when:
       and:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - matches: 
+        - matches:
             pattern: "^release/.*$"
             value: << pipeline.git.branch >>
     jobs:
@@ -1426,7 +1440,7 @@ workflows:
       - docs-deploy
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
-  # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields 
+  # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
   # and click "Trigger Pipeline" to begin the pipeline:
   #   - Parameter Type: string
   #   - Name: action
@@ -1434,13 +1448,13 @@ workflows:
   all-tests:
     when:
       or:
-        - matches: 
+        - matches:
             pattern: "^release/.*$"
             value: << pipeline.git.branch >>
         - equal:
             - "run-manual-tests"
             - << pipeline.parameters.action >>
-        - equal: 
+        - equal:
             - "run-from-github-comments"
             - << pipeline.parameters.GHA_Meta >>
     jobs:
@@ -1475,4 +1489,5 @@ workflows:
       - api-tests
       - deploy-purchase-tester:
           dry_run: true
-      
+      - emerge_purchases_ui_snapshot_tests
+
