@@ -17,7 +17,7 @@
     NSString *rci = rct.transactionIdentifier;
     NSString *pid = rct.productIdentifier;
     NSDate *date = rct.purchaseDate;
-    NSString *jws = rct.jwsRepresentation;
+    NSString * _Nullable jws = rct.jwsRepresentation;
     NSLog(rct, rci, pid, date, jws);
 }
 
