@@ -28,6 +28,7 @@ public struct CustomerCenterEventCreationData {
     let id: UUID
     let date: Date
 
+    // swiftlint:disable:next missing_docs
     public init(
         id: UUID = .init(),
         date: Date = .init()
@@ -41,7 +42,7 @@ public struct CustomerCenterEventCreationData {
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
-    var eventDiscriminator: String? { "impression" }
+    var eventDiscriminator: String? { "lifecycle" }
 
     /// The Customer Center was displayed.
     case impression(CustomerCenterEventCreationData, Data)

@@ -31,15 +31,16 @@ class CustomerCenterEventsRequestTests: TestCase {
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
                                                            feature: .customerCenter,
-                                                           appSessionID: Self.appSessionID))
-        let requestEvent: EventsRequest.CustomerCenterEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+                                                           appSessionID: Self.appSessionID,
+                                                           eventDiscriminator: "lifecycle"))
+        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBase.createBase(from: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
-        let customerCenterEventCreationData: CustomerCenterEvent.CreationData = .init(
+        let customerCenterEventCreationData: CustomerCenterEventCreationData = .init(
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328)
         )
@@ -55,20 +56,21 @@ class CustomerCenterEventsRequestTests: TestCase {
         let storedEvent = try XCTUnwrap(StoredEvent(event: customerCenterEvent,
                                                     userID: expectedUserID,
                                                     feature: .customerCenter,
-                                                    appSessionID: Self.appSessionID))
+                                                    appSessionID: Self.appSessionID,
+                                                    eventDiscriminator: "impression"))
         let serializedEvent = try StoredEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .customerCenter
 
-        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEvent(storedEvent: deserializedEvent))
+        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBase.createBase(from: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     // MARK: -
 
-    private static let eventCreationData: CustomerCenterEvent.CreationData = .init(
+    private static let eventCreationData: CustomerCenterEventCreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
         date: .init(timeIntervalSince1970: 1694029328)
     )
