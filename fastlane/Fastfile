@@ -135,7 +135,7 @@ platform :ios do
     File.write("Local.xcconfig", "SWIFT_ACTIVE_COMPILATION_CONDITIONS = \$(inherited) PAYWALL_COMPONENTS")
     replace_text_in_files(
       previous_text: "\/\/ REPLACE_WITH_DEFINES_HERE",
-      new_text: ".define("PAYWALL_COMPONENTS")",
+      new_text: ".define(\"PAYWALL_COMPONENTS\")",
       paths_of_files_to_update: [
         './Package.swift',
       ]
