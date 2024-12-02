@@ -46,11 +46,7 @@ public enum CustomerCenterEvent: FeatureEvent {
         return .customerCenter
     }
 
-    var eventDiscriminator: String? {
-        switch self {
-        case .impression: return "impression"
-        }
-    }
+    var eventDiscriminator: String? { "impression" }
 
     /// The Customer Center was displayed.
     case impression(CreationData, Data)
@@ -66,11 +62,7 @@ public enum CustomerCenterSurveyOptionChosenEvent: FeatureEvent {
         return .customerCenter
     }
 
-    var eventDiscriminator: String? {
-        switch self {
-        case .surveyOptionChosen: return "survey_option_chosen"
-        }
-    }
+    var eventDiscriminator: String? { "survey_option_chosen" }
 
     /// A feedback survey was completed with a particular option.
     case surveyOptionChosen(CreationData, Data)
