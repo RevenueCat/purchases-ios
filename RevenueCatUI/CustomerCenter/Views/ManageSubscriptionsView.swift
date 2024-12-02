@@ -96,7 +96,8 @@ struct ManageSubscriptionsView: View {
                             }
                         }
                     } else {
-                        let fallbackDescription = "We can try checking your Apple account for any previous purchases"
+                        let fallbackDescription = "You currently have no active subscriptions. " +
+                        "We can try checking your Apple account for any previous purchases"
 
                         Section {
                             CompatibilityContentUnavailableView(
@@ -147,8 +148,10 @@ struct ManageSubscriptionsView: View {
         }, content: { inAppBrowserURL in
             SafariView(url: inAppBrowserURL.url)
         })
-        .navigationTitle(self.viewModel.screen.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .applyIf(self.viewModel.screen.type == .management, apply: {
+            $0.navigationTitle(self.viewModel.screen.title).navigationBarTitleDisplayMode(.inline)
+        })
+
     }
 
 }

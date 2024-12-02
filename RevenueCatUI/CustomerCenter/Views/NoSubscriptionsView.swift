@@ -40,7 +40,8 @@ struct NoSubscriptionsView: View {
     }
 
     var body: some View {
-        let fallbackDescription = "We can try checking your Apple account for any previous purchases"
+        let fallbackDescription = "You currently have no active subscriptions. " +
+        "We can try checking your Apple account for any previous purchases"
 
         List {
             Section {
@@ -57,10 +58,6 @@ struct NoSubscriptionsView: View {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)
-            } header: {
-                let subtitle = localization.commonLocalizedString(for: .tryCheckRestore)
-                Text(subtitle)
-                    .textCase(nil)
             }
 
         }
