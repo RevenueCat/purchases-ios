@@ -128,7 +128,7 @@ private extension FeedbackSurveyViewModel {
                                                                           surveyOptionTitleKey: option.title,
                                                                           additionalContext: nil,
                                                                           revisionID: 0)
-        let event = CustomerCenterSurveyOptionChosenEvent.surveyOptionChosen(CustomerCenterEvent.CreationData(),
+        let event = CustomerCenterSurveyOptionChosenEvent.surveyOptionChosen(CustomerCenterEventCreationData(),
                                                                              surveyOptionData)
         purchasesProvider.track(customerCenterEvent: event)
     }

@@ -25,77 +25,89 @@ public protocol CustomerCenterEventType {
 
     associatedtype EventData
 
-    var creationData: CustomerCenterEvent.CreationData { get }
+    var creationData: CustomerCenterEventCreationData { get }
     var data: EventData { get }
 
 }
 
-extension CustomerCenterEvent: CustomerCenterEventType {
-    public typealias EventData = Data
+extension CustomerCenterEventType {
+
+    var feature: Feature { .customerCenter }
+
 }
-extension CustomerCenterSurveyOptionChosenEvent: CustomerCenterEventType {
-    public typealias EventData = Data
+
+public struct CustomerCenterEventCreationData {
+
+    public var id: UUID
+    public var date: Date
+
+    public init(
+        id: UUID = .init(),
+        date: Date = .init()
+    ) {
+        self.id = id
+        self.date = date
+    }
+
+}
+
+public struct CustomerCenterBaseData {
+
+    public var localeIdentifier: String
+    public var darkMode: Bool
+    public var isSandbox: Bool
+    public var displayMode: CustomerCenterPresentationMode
+
+    public init(
+        locale: Locale,
+        darkMode: Bool,
+        isSandbox: Bool,
+        displayMode: CustomerCenterPresentationMode
+    ) {
+        self.localeIdentifier = locale.identifier
+        self.darkMode = darkMode
+        self.isSandbox = isSandbox
+        self.displayMode = displayMode
+    }
+
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterEvent: FeatureEvent {
+public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
     // swiftlint:disable type_name
-
-    var feature: Feature {
-        return .customerCenter
-    }
 
     var eventDiscriminator: String? { "impression" }
 
     /// The Customer Center was displayed.
-    case impression(CreationData, Data)
+    case impression(CustomerCenterEventCreationData, Data)
 
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterSurveyOptionChosenEvent: FeatureEvent {
+public enum CustomerCenterSurveyOptionChosenEvent: FeatureEvent, CustomerCenterEventType {
 
     // swiftlint:disable type_name
-
-    var feature: Feature {
-        return .customerCenter
-    }
 
     var eventDiscriminator: String? { "survey_option_chosen" }
 
     /// A feedback survey was completed with a particular option.
-    case surveyOptionChosen(CreationData, Data)
+    case surveyOptionChosen(CustomerCenterEventCreationData, Data)
 
 }
 
 extension CustomerCenterEvent {
 
-    /// The creation data of a ``CustomerCenterEvent``.
-    public struct CreationData {
-
-        // swiftlint:disable missing_docs
-        public var id: ID
-        public var date: Date
-
-        public init(
-            id: ID = .init(),
-            date: Date = .init()
-        ) {
-            self.id = id
-            self.date = date
-        }
-
-    }
-
     /// The content of a ``CustomerCenterEvent``.
     public struct Data {
 
+        public let base: CustomerCenterBaseData
+
         // swiftlint:disable missing_docs
-        public var localeIdentifier: String
-        public var darkMode: Bool
-        public var isSandbox: Bool
-        public var displayMode: CustomerCenterPresentationMode
+        public var localeIdentifier: String { base.localeIdentifier }
+        public var darkMode: Bool { base.darkMode }
+        public var isSandbox: Bool { base.isSandbox }
+        public var displayMode: CustomerCenterPresentationMode { base.displayMode }
 
         public init(
             locale: Locale,
@@ -103,10 +115,12 @@ extension CustomerCenterEvent {
             isSandbox: Bool,
             displayMode: CustomerCenterPresentationMode
         ) {
-            self.localeIdentifier = locale.identifier
-            self.darkMode = darkMode
-            self.isSandbox = isSandbox
-            self.displayMode = displayMode
+            self.base = CustomerCenterBaseData(
+                locale: locale,
+                darkMode: darkMode,
+                isSandbox: isSandbox,
+                displayMode: displayMode
+            )
         }
         // swiftlint:enable missing_docs
 
@@ -116,14 +130,13 @@ extension CustomerCenterEvent {
 
 extension CustomerCenterSurveyOptionChosenEvent {
 
-    public typealias CreationData = CustomerCenterEvent.CreationData
-
     public struct Data {
 
-        public var localeIdentifier: String
-        public var darkMode: Bool
-        public var isSandbox: Bool
-        public var displayMode: CustomerCenterPresentationMode
+        private let base: CustomerCenterBaseData
+        public var localeIdentifier: String { base.localeIdentifier }
+        public var darkMode: Bool { base.darkMode }
+        public var isSandbox: Bool { base.isSandbox }
+        public var displayMode: CustomerCenterPresentationMode { base.displayMode }
         public var pathID: String
         public var surveyOptionID: String
         public var surveyOptionTitleKey: String
@@ -141,10 +154,12 @@ extension CustomerCenterSurveyOptionChosenEvent {
             additionalContext: String? = nil,
             revisionID: Int
         ) {
-            self.localeIdentifier = locale.identifier
-            self.darkMode = darkMode
-            self.isSandbox = isSandbox
-            self.displayMode = displayMode
+            self.base = CustomerCenterBaseData(
+                locale: locale,
+                darkMode: darkMode,
+                isSandbox: isSandbox,
+                displayMode: displayMode
+            )
             self.pathID = pathID
             self.surveyOptionID = surveyOptionID
             self.surveyOptionTitleKey = surveyOptionTitleKey
@@ -158,8 +173,8 @@ extension CustomerCenterSurveyOptionChosenEvent {
 
 extension CustomerCenterEvent {
 
-    /// - Returns: the underlying ``CustomerCenterEvent/CreationData-swift.struct`` for this event.
-    public var creationData: CreationData {
+    /// - Returns: the underlying ``CustomerCenterEventCreationData-swift.struct`` for this event.
+    public var creationData: CustomerCenterEventCreationData {
         switch self {
         case let .impression(creationData, _): return creationData
         }
@@ -176,8 +191,8 @@ extension CustomerCenterEvent {
 
 extension CustomerCenterSurveyOptionChosenEvent {
 
-    /// - Returns: the underlying ``CustomerCenterSurveyOptionChosenEvent/CreationData-swift.struct`` for this event.
-    public var creationData: CreationData {
+    /// - Returns: the underlying ``CustomerCenterEventCreationData-swift.struct`` for this event.
+    public var creationData: CustomerCenterEventCreationData {
         switch self {
         case let .surveyOptionChosen(creationData, _): return creationData
         }
@@ -194,11 +209,11 @@ extension CustomerCenterSurveyOptionChosenEvent {
 
 // MARK: -
 
-extension CustomerCenterEvent.CreationData: Equatable, Codable, Sendable {}
+extension CustomerCenterEventCreationData: Equatable, Codable, Sendable {}
 extension CustomerCenterEvent.Data: Equatable, Codable, Sendable {}
 extension CustomerCenterEvent: Equatable, Codable, Sendable {}
 
-extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendable {
+extension CustomerCenterBaseData: Equatable, Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -206,6 +221,15 @@ extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendab
         case darkMode = "darkMode"
         case isSandbox = "isSandbox"
         case displayMode = "displayMode"
+    }
+
+}
+
+extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case base
         case pathID = "pathId"
         case surveyOptionID = "surveyOptionId"
         case surveyOptionTitleKey = "surveyOptionTitleKey"
