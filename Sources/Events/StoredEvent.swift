@@ -19,8 +19,9 @@ struct StoredEvent {
     private(set) var encodedEvent: String
     private(set) var userID: String
     private(set) var feature: Feature
+    private(set) var appSessionID: UUID?
 
-    init?<T: Encodable>(event: T, userID: String, feature: Feature) {
+    init?<T: Encodable>(event: T, userID: String, feature: Feature, appSessionID: UUID?) {
         guard let encodedJSON = try? event.encodedJSON else {
             return nil
         }
@@ -28,6 +29,7 @@ struct StoredEvent {
         self.encodedEvent = encodedJSON
         self.userID = userID
         self.feature = feature
+        self.appSessionID = appSessionID
     }
 
 }
@@ -35,6 +37,7 @@ struct StoredEvent {
 enum Feature: String, Codable {
 
     case paywalls
+    case customerCenter
 
 }
 
@@ -49,6 +52,7 @@ extension StoredEvent: Codable {
         case encodedEvent = "event"
         case userID = "userId"
         case feature
+        case appSessionID = "appSessionId"
 
     }
 
@@ -79,6 +83,10 @@ extension StoredEvent: Codable {
             self.feature = feature
         } else {
             self.feature = .paywalls
+        }
+
+        if let appSessionID = try container.decodeIfPresent(UUID.self, forKey: .appSessionID) {
+            self.appSessionID = appSessionID
         }
     }
 

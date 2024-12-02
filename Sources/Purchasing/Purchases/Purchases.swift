@@ -769,6 +769,8 @@ public extension Purchases {
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
+    @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
+
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }
@@ -832,6 +834,10 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await self.paywallEventsManager?.resetAppSessionID()
+            }
         }
     }
 
@@ -863,6 +869,10 @@ public extension Purchases {
                     }
                 }
                 return
+            }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {
@@ -1249,7 +1259,7 @@ public extension Purchases {
 
 // swiftlint:enable missing_docs
 
-// MARK: - Paywalls
+// MARK: - Paywalls & Customer Center
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 public extension Purchases {
@@ -1257,7 +1267,14 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
-        await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
+        await self.paywallEventsManager?.track(featureEvent: paywallEvent)
+    }
+
+    /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
+    func track(customerCenterEvent: CustomerCenterEvent) {
+        operationDispatcher.dispatchOnWorkerThread {
+            await self.paywallEventsManager?.track(featureEvent: customerCenterEvent)
+        }
     }
 
     /// Used by `RevenueCatUI` to download customer center data
@@ -1782,10 +1799,6 @@ internal extension Purchases {
 
     var storeKitTimeout: TimeInterval {
         return self.productsManager.requestTimeout
-    }
-
-    var isSandbox: Bool {
-        return self.systemInfo.isSandbox
     }
 
     var observerMode: Bool {

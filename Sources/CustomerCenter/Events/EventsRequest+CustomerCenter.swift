@@ -7,69 +7,70 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EventsRequest+Paywall.swift
+//  Untitled.swift
 //
-//  Created by Cesar de la Vega on 24/10/24.
+//  Created by Cesar de la Vega on 21/10/24.
 
 import Foundation
 
 extension EventsRequest {
 
-    struct PaywallEvent {
+    struct CustomerCenterEvent {
 
         let id: String?
         let version: Int
         var type: EventType
         var appUserID: String
-        var sessionID: String
-        var offeringID: String
-        var paywallRevision: Int
+        var appSessionID: String
         var timestamp: UInt64
-        var displayMode: PaywallViewMode
         var darkMode: Bool
-        var localeIdentifier: String
+        var locale: String
+        var isSandbox: Bool
+        var displayMode: CustomerCenterPresentationMode
 
     }
 
 }
 
-extension EventsRequest.PaywallEvent {
+extension EventsRequest.CustomerCenterEvent {
 
     enum EventType: String {
 
-        case impression = "paywall_impression"
-        case cancel = "paywall_cancel"
-        case close = "paywall_close"
+        case impression = "customer_center_impression"
+        case close = "customer_center_close"
 
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredEvent) {
+        guard let appSessionID = storedEvent.appSessionID else {
+            Logger.error(Strings.paywalls.event_missing_app_session_id)
+            return nil
+        }
+
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
             Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil
         }
 
         do {
-            let paywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
-            let creationData = paywallEvent.creationData
-            let data = paywallEvent.data
+            let customerCenterEvent = try JSONDecoder.default.decode(CustomerCenterEvent.self, from: jsonData)
+            let creationData = customerCenterEvent.creationData
+            let data = customerCenterEvent.data
 
             self.init(
                 id: creationData.id.uuidString,
                 version: Self.version,
-                type: paywallEvent.eventType,
+                type: customerCenterEvent.eventType,
                 appUserID: storedEvent.userID,
-                sessionID: data.sessionIdentifier.uuidString,
-                offeringID: data.offeringIdentifier,
-                paywallRevision: data.paywallRevision,
+                appSessionID: appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
-                displayMode: data.displayMode,
                 darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
+                locale: data.localeIdentifier,
+                isSandbox: data.isSandbox,
+                displayMode: data.displayMode
             )
         } catch {
-            Logger.error(Strings.paywalls.event_cannot_deserialize(error))
             return nil
         }
     }
@@ -79,13 +80,11 @@ extension EventsRequest.PaywallEvent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallEvent {
+private extension CustomerCenterEvent {
 
-    var eventType: EventsRequest.PaywallEvent.EventType {
+    var eventType: EventsRequest.CustomerCenterEvent.EventType {
         switch self {
         case .impression: return .impression
-        case .cancel: return .cancel
-        case .close: return .close
         }
 
     }
@@ -94,8 +93,8 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
-extension EventsRequest.PaywallEvent.EventType: Encodable {}
-extension EventsRequest.PaywallEvent: Encodable {
+extension EventsRequest.CustomerCenterEvent.EventType: Encodable {}
+extension EventsRequest.CustomerCenterEvent: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -103,13 +102,12 @@ extension EventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
-        case sessionID = "sessionId"
-        case offeringID = "offeringId"
-        case paywallRevision
+        case appSessionID = "appSessionId"
         case timestamp
-        case displayMode
-        case darkMode
-        case localeIdentifier = "locale"
+        case darkMode = "darkMode"
+        case locale
+        case isSandbox = "isSandbox"
+        case displayMode = "displayMode"
 
     }
 

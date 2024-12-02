@@ -26,7 +26,6 @@ import RevenueCat
     // We fail open.
     private static let defaultAppIsLatestVersion = true
 
-    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
     typealias CurrentVersionFetcher = () -> String?
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
@@ -37,6 +36,7 @@ import RevenueCat
     private(set) var hasAppleEntitlement: Bool = false
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     // @PublicForExternalTesting
     @Published
@@ -68,7 +68,6 @@ import RevenueCat
         return state != .notLoaded && configuration != nil
     }
 
-    private var customerInfoFetcher: CustomerInfoFetcher
     private let currentVersionFetcher: CurrentVersionFetcher
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
@@ -76,18 +75,15 @@ import RevenueCat
 
     init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
-        customerInfoFetcher: @escaping CustomerInfoFetcher = {
-            guard Purchases.isConfigured else { throw PaywallError.purchasesNotConfigured }
-            return try await Purchases.shared.customerInfo()
-        },
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        }
+        },
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()
     ) {
         self.state = .notLoaded
-        self.customerInfoFetcher = customerInfoFetcher
         self.currentVersionFetcher = currentVersionFetcher
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.purchasesProvider = purchasesProvider
     }
 
     #if DEBUG
@@ -106,7 +102,7 @@ import RevenueCat
 
     func loadHasActivePurchases() async {
         do {
-            let customerInfo = try await self.customerInfoFetcher()
+            let customerInfo = try await purchasesProvider.customerInfo()
             self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
                                 customerInfo.nonSubscriptions.count > 0
             self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in
@@ -137,6 +133,17 @@ import RevenueCat
             self.customerCenterActionHandler?(.restoreFailed(error))
             return .purchasesNotFound
         }
+    }
+
+    func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
+        let isSandbox = purchasesProvider.isSandbox
+        let eventData = CustomerCenterEvent.Data(locale: .current,
+                                                 darkMode: darkMode,
+                                                 isSandbox: isSandbox,
+                                                 displayMode: displayMode)
+        let event = CustomerCenterEvent.impression(CustomerCenterEvent.CreationData(), eventData)
+
+        purchasesProvider.track(customerCenterEvent: event)
     }
 
 }

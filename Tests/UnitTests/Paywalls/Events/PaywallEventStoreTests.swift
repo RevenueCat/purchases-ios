@@ -284,7 +284,8 @@ private extension StoredEvent {
         let event = PaywallEvent.randomImpressionEvent()
         return .init(event: event,
                      userID: UUID().uuidString,
-                     feature: .paywalls)!
+                     feature: .paywalls,
+                     appSessionID: UUID())!
     }
 
 }

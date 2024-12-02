@@ -29,7 +29,8 @@ class StoredEventSerializerTests: TestCase {
         let originalEvent = PaywallEvent.impression(.random(), .random())
         let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
                                                      userID: Self.userID,
-                                                     feature: .paywalls))
+                                                     feature: .paywalls,
+                                                     appSessionID: UUID()))
 
         expect(try event.encodeAndDecode()) == event
     }
@@ -38,7 +39,8 @@ class StoredEventSerializerTests: TestCase {
         let originalEvent = PaywallEvent.cancel(.random(), .random())
         let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
                                                      userID: Self.userID,
-                                                     feature: .paywalls))
+                                                     feature: .paywalls,
+                                                     appSessionID: UUID()))
 
         expect(try event.encodeAndDecode()) == event
     }
@@ -47,7 +49,8 @@ class StoredEventSerializerTests: TestCase {
         let originalEvent = PaywallEvent.close(.random(), .random())
         let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
                                                      userID: Self.userID,
-                                                     feature: .paywalls))
+                                                     feature: .paywalls,
+                                                     appSessionID: UUID()))
 
         expect(try event.encodeAndDecode()) == event
     }
@@ -68,13 +71,15 @@ class StoredEventSerializerTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent, userID: expectedUserID, feature: .paywalls))
+        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent,
+                                                    userID: expectedUserID,
+                                                    feature: .paywalls,
+                                                    appSessionID: UUID()))
         let serializedEvent = try StoredEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
-        let eventData = deserializedEvent.encodedEvent
         let jsonData = try XCTUnwrap(storedEvent.encodedEvent.data(using: .utf8))
         let decodedPaywallEvent = try JSONDecoder.default.decode(PaywallEvent.self, from: jsonData)
         expect(decodedPaywallEvent) == paywallEvent

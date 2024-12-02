@@ -20,6 +20,8 @@ import RevenueCat
 @available(watchOS, unavailable)
 protocol CustomerCenterPurchasesType: Sendable {
 
+    var isSandbox: Bool { get }
+
     @Sendable
     func customerInfo() async throws -> CustomerInfo
 
@@ -33,5 +35,7 @@ protocol CustomerCenterPurchasesType: Sendable {
         product: StoreProduct,
         promotionalOffer: PromotionalOffer
     ) async throws -> PurchaseResultData
+
+    func track(customerCenterEvent: CustomerCenterEvent)
 
 }
