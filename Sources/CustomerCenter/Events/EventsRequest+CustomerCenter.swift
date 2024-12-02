@@ -102,9 +102,9 @@ extension EventsRequest.CustomerCenterEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
-        case appSessionID = "appSessionID"
+        case appSessionID = "appSessionId"
         case timestamp
-        case darkMode
+        case darkMode = "darkMode"
         case locale
         case isSandbox = "isSandbox"
         case displayMode = "displayMode"

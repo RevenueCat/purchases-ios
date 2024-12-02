@@ -70,7 +70,7 @@ public struct CustomerCenterView: View {
             await loadInformationIfNeeded()
         }
         .task {
-            trackImpression()
+            self.trackImpression()
         }
         .environmentObject(self.viewModel)
     }
