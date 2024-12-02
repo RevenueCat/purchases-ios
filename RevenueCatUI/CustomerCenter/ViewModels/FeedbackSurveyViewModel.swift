@@ -123,7 +123,7 @@ private extension FeedbackSurveyViewModel {
                                                                           darkMode: darkMode,
                                                                           isSandbox: isSandbox,
                                                                           displayMode: displayMode,
-                                                                          pathID: "path_id",
+                                                                          pathID: feedbackSurveyData.path.id,
                                                                           surveyOptionID: option.id,
                                                                           surveyOptionTitleKey: option.title,
                                                                           additionalContext: nil,
