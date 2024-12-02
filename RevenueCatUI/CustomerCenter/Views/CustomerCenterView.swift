@@ -112,7 +112,13 @@ private extension CustomerCenterView {
                 WrongPlatformView()
             }
         } else {
-            NoSubscriptionsView(configuration: configuration)
+            if let screen = configuration.screens[.noActive] {
+                ManageSubscriptionsView(screen: screen,
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+            } else {
+                // Fallback with a restore button
+                NoSubscriptionsView(configuration: configuration)
+            }
         }
     }
 

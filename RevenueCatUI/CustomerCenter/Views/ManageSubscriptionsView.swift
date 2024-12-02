@@ -86,17 +86,32 @@ struct ManageSubscriptionsView: View {
                                 purchaseInformation: purchaseInformation,
                                 refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
-                    }
+                        Section {
+                            ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                           loadingPath: self.$viewModel.loadingPath)
+                        } header: {
+                            if let subtitle = self.viewModel.screen.subtitle {
+                                Text(subtitle)
+                                    .textCase(nil)
+                            }
+                        }
+                    } else {
+                        let fallbackDescription = "We can try checking your Apple account for any previous purchases"
 
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
+                        Section {
+                            CompatibilityContentUnavailableView(
+                                self.viewModel.screen.title,
+                                systemImage: "exclamationmark.triangle.fill",
+                                description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                            )
+                        }
+
+                        Section {
+                            ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                           loadingPath: self.$viewModel.loadingPath)
                         }
                     }
+
                 }
             } else {
                 TintedProgressView()
