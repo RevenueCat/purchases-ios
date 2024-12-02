@@ -1176,6 +1176,13 @@
 			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
 			remoteInfo = UnitTestsHostApp;
 		};
+		4D6F4BE82CFE2FAB00353AF6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FA29FBA82CCAA79800DA1976;
+			remoteInfo = PaywallsTesterTests;
+		};
 		4F6BEE082A27B02400CD9322 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -1631,6 +1638,7 @@
 		4D6ABB0D2AF13FB100BB2A08 /* StoreEnvironment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreEnvironment.swift; sourceTree = "<group>"; };
 		4D6ABB0F2AF13FBD00BB2A08 /* SK2AppTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SK2AppTransaction.swift; sourceTree = "<group>"; };
 		4D6F4BCF2CF69DE300353AF6 /* ForegroundColorScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForegroundColorScheme.swift; sourceTree = "<group>"; };
+		4D6F4BE52CFE2FAB00353AF6 /* PaywallsTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTesterTests.swift; sourceTree = "<group>"; };
 		4D7A3E272B85729E00ABDE67 /* PurchasesOrchestratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorTests.swift; sourceTree = "<group>"; };
 		4DBC30952B1DFA97001D33C7 /* StoreKitVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitVersion.swift; sourceTree = "<group>"; };
 		4DBF1F352B4D572400D52354 /* LocalReceiptFetcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalReceiptFetcher.swift; sourceTree = "<group>"; };
@@ -2999,6 +3007,7 @@
 			children = (
 				2DD500402C519EB4009C19B7 /* ci_scripts */,
 				2DD5008E2C519EB4009C19B7 /* PaywallsTester */,
+				4D6F4BE62CFE2FAB00353AF6 /* PaywallsTesterTests */,
 				2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */,
 				2DD500902C519EB4009C19B7 /* PaywallsTester.xcworkspace */,
 				2DD500912C519EB4009C19B7 /* Postprocessor.sh */,
@@ -3154,6 +3163,7 @@
 			isa = PBXGroup;
 			children = (
 				2DD500F82C519EB4009C19B7 /* PaywallsTester.app */,
+				4D6F4BE92CFE2FAB00353AF6 /* PaywallsTesterTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3858,6 +3868,14 @@
 				2DDF41AA24F6F37C005BC22D /* InAppPurchase.swift */,
 			);
 			path = BasicTypes;
+			sourceTree = "<group>";
+		};
+		4D6F4BE62CFE2FAB00353AF6 /* PaywallsTesterTests */ = {
+			isa = PBXGroup;
+			children = (
+				4D6F4BE52CFE2FAB00353AF6 /* PaywallsTesterTests.swift */,
+			);
+			path = PaywallsTesterTests;
 			sourceTree = "<group>";
 		};
 		4F1428A52A4A1330006CD196 /* Test Data */ = {
@@ -5400,6 +5418,13 @@
 			fileType = wrapper.framework;
 			path = Core.framework;
 			remoteRef = 2DD501092C519EB4009C19B7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4D6F4BE92CFE2FAB00353AF6 /* PaywallsTesterTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = PaywallsTesterTests.xctest;
+			remoteRef = 4D6F4BE82CFE2FAB00353AF6 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
