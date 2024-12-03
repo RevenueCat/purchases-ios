@@ -1348,6 +1348,7 @@ workflows:
       - pod-lib-lint
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
+      - emerge_purchases_ui_snapshot_tests
 
   create-tag:
     when:
