@@ -130,8 +130,8 @@ platform :ios do
     end
   end
 
-  desc "Builds the Paywalls Test app"
-  lane :build_paywalls_test do |options|
+  desc "Build the Paywalls Test app for Emerge Snapshots"
+  lane :build_paywalls_tester_for_emerge do |options|
     File.write("Local.xcconfig", "SWIFT_ACTIVE_COMPILATION_CONDITIONS = \$(inherited) PAYWALL_COMPONENTS")
     replace_text_in_files(
       previous_text: "\/\/ REPLACE_WITH_DEFINES_HERE",
