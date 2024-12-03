@@ -17,7 +17,9 @@ import RevenueCat
 var customerInfo: CustomerInfo!
 func checkCustomerInfoAPI() {
     let entitlementInfo: EntitlementInfos = customerInfo.entitlements
+    let asubsp: Set<ProductIdentifier> = customerInfo.activeSubscriptions
     let asubs: Set<String> = customerInfo.activeSubscriptions
+    let appisp: Set<ProductIdentifier> = customerInfo.allPurchasedProductIdentifiers
     let appis: Set<String> = customerInfo.allPurchasedProductIdentifiers
     let led: Date? = customerInfo.latestExpirationDate
 
@@ -40,7 +42,9 @@ func checkCustomerInfoAPI() {
 
     let _: String = customerInfo.id
 
-    let subs: [String: SubscriptionInfo] = customerInfo.subscriptions
+    let subs: [String: SubscriptionInfo] = customerInfo.subscriptionsByProductIdentifier
+
+    let subsp: [ProductIdentifier: SubscriptionInfo] = customerInfo.subscriptionsByProductIdentifier
 
     print(customerInfo!, entitlementInfo, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen,
           oaud!, murl!, edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData, subs)

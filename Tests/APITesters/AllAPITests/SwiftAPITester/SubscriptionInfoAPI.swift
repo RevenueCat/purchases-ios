@@ -17,6 +17,7 @@ import RevenueCat
 var subscription: SubscriptionInfo!
 func checkSubscriptionInfoAPI() {
     let pId: String = subscription.productIdentifier
+    let pIdP: ProductIdentifier = subscription.productIdentifier
     let pd: Date = subscription.purchaseDate
     let opd: Date? = subscription.originalPurchaseDate
     let eDate: Date? = subscription.expiresDate
