@@ -145,7 +145,7 @@ platform :ios do
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
-    emerge
+    emerge(repo_name: "RevenueCat/purchases-ios")
   end
 
   desc "Runs all the iOS tests"
