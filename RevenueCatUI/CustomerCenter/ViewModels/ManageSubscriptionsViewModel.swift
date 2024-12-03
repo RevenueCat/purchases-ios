@@ -27,6 +27,7 @@ import SwiftUI
 class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
+    let paths: [CustomerCenterConfigData.HelpPath]
 
     @Published
     var showRestoreAlert: Bool = false
@@ -66,6 +67,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
          purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
         self.screen = screen
+        self.paths = screen.filteredPaths
         self.purchasesProvider = purchasesProvider
         self.customerCenterActionHandler = customerCenterActionHandler
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
@@ -77,6 +79,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
+        self.paths = screen.filteredPaths
         self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatus = refundRequestStatus
@@ -257,6 +260,20 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         await Purchases.shared.products(productIdentifiers)
+    }
+
+}
+
+private extension CustomerCenterConfigData.Screen {
+
+    var filteredPaths: [CustomerCenterConfigData.HelpPath] {
+        return self.paths.filter { path in
+            #if targetEnvironment(macCatalyst)
+                return path.type == .refundRequest
+            #else
+                return path.type != .unknown
+            #endif
+        }
     }
 
 }

@@ -34,14 +34,7 @@ struct ManageSubscriptionsButtonsView: View {
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
-        let filteredPaths = self.viewModel.screen.paths.filter { path in
-#if targetEnvironment(macCatalyst)
-            return path.type == .refundRequest
-#else
-            return path.type != .unknown
-#endif
-        }
-        ForEach(filteredPaths, id: \.id) { path in
+        ForEach(self.viewModel.paths, id: \.id) { path in
             ManageSubscriptionButton(path: path, viewModel: self.viewModel)
         }
     }
