@@ -130,6 +130,24 @@ platform :ios do
     end
   end
 
+  desc "Build the Paywalls Test app for Emerge Snapshots"
+  lane :build_paywalls_tester_for_emerge do |options|
+    File.write("Local.xcconfig", "SWIFT_ACTIVE_COMPILATION_CONDITIONS = \$(inherited) PAYWALL_COMPONENTS")
+    replace_text_in_files(
+      previous_text: "\/\/ REPLACE_WITH_DEFINES_HERE",
+      new_text: ".define(\"PAYWALL_COMPONENTS\")",
+      paths_of_files_to_update: [
+        './Package.swift',
+      ]
+    )
+    scan(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      build_for_testing: true,
+    )
+    emerge
+  end
+
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
@@ -814,7 +832,7 @@ platform :ios do
     purchase_tester_root = "#{project_root}/Tests/TestingApps/PurchaseTesterSwiftUI"
     xcodeproj_path = "#{purchase_tester_root}/PurchaseTester.xcodeproj"
 
-    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory,
     # like the Matchfile. So we move to that project's directory to run them.
     Dir.chdir("#{purchase_tester_root}/fastlane") do
       match(readonly: true, platform: "ios")
@@ -823,7 +841,7 @@ platform :ios do
         xcodeproj: xcodeproj_path,
       )
     end
-    
+
     build_ios_app(
       workspace: 'RevenueCat.xcworkspace',
       scheme: "PurchaseTester",
@@ -848,7 +866,7 @@ platform :ios do
       UI.message("Dry run mode enabled. Skipping upload to TestFlight")
     end
 
-    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory, 
+    # The following commands use configuration that lives in the PurchaseTesterSwiftUI directory,
     # like the Matchfile. So we move to that project's directory to run them.
     Dir.chdir("#{purchase_tester_root}/fastlane") do
       match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
@@ -881,7 +899,7 @@ platform :ios do
     else
         UI.message("Dry run mode enabled. Skipping upload to TestFlight")
     end
-    
+
   end
 
   desc "Clones or updates snapshots repo"
@@ -919,7 +937,7 @@ platform :ios do
   lane :deploy_to_spm do
     source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{repo_name}"
     destination_repo = source_repo.sub(/\.git\z/, "-spm.git")
-  
+
     git_clone_and_push(
       source_repo: source_repo,
       destination_repo: destination_repo
@@ -961,7 +979,7 @@ platform :ios do
     rescue => ex
       UI.error("Failed to enable customer center. Error while applying changes from commit #{commit_hash}")
       UI.error(ex.message)
-      
+
       if UI.confirm("Do you want to abort the customer center enablement?")
         sh("git", "cherry-pick", "--abort")
         UI.message("Customer center enablement aborted")

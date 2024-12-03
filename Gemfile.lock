@@ -206,6 +206,8 @@ GEM
       xcodeproj (>= 1.13.0, < 2.0.0)
       xcpretty (~> 0.3.0)
       xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
+    fastlane-plugin-emerge (0.10.6)
+      faraday (~> 1.1)
     fastlane-sirp (1.0.0)
       sysrandom (~> 1.0)
     ffi (1.17.0-arm64-darwin)
@@ -371,6 +373,7 @@ DEPENDENCIES
   danger
   fastlane
   fastlane-plugin-create_xcframework!
+  fastlane-plugin-emerge
   fastlane-plugin-revenuecat_internal!
   nokogiri
   rest-client
