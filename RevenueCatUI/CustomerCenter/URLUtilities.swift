@@ -43,7 +43,7 @@ enum URLUtilities {
 
         components.queryItems = queryItems
 
-        guard let url = components.url, UIApplication.shared.canOpenURL(url) else {
+        guard let url = components.url, URLOpener.canOpenURL(url) else {
             return nil
         }
 
