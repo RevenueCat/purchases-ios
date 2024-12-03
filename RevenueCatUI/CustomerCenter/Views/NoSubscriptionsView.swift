@@ -40,13 +40,13 @@ struct NoSubscriptionsView: View {
     }
 
     var body: some View {
-        let fallbackDescription = "You currently have no active subscriptions. " +
-        "We can try checking your Apple account for any previous purchases"
+        let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
+        let fallbackTitle = localization.commonLocalizedString(for: .noSubscriptionsFound)
 
         List {
             Section {
                 CompatibilityContentUnavailableView(
-                    self.configuration.screens[.noActive]?.title ?? "No subscriptions found",
+                    self.configuration.screens[.noActive]?.title ?? fallbackTitle,
                     systemImage: "exclamationmark.triangle.fill",
                     description:
                         Text(self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription)

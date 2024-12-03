@@ -96,8 +96,7 @@ struct ManageSubscriptionsView: View {
                             }
                         }
                     } else {
-                        let fallbackDescription = "You currently have no active subscriptions. " +
-                        "We can try checking your Apple account for any previous purchases"
+                        let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
 
                         Section {
                             CompatibilityContentUnavailableView(
