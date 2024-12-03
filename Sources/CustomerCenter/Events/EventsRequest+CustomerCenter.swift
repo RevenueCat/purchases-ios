@@ -114,7 +114,8 @@ extension EventsRequest {
         var locale: String
         var isSandbox: Bool
         var displayMode: CustomerCenterPresentationMode
-        var pathID: String
+        var path: String
+        var url: String?
         var surveyOptionID: String
         var surveyOptionTitleKey: String
         var additionalContext: String?
@@ -129,7 +130,8 @@ extension EventsRequest {
              locale: String,
              isSandbox: Bool,
              displayMode: CustomerCenterPresentationMode,
-             pathID: String,
+             path: CustomerCenterConfigData.HelpPath.PathType,
+             url: URL?,
              surveyOptionID: String,
              surveyOptionTitleKey: String,
              additionalContext: String?,
@@ -144,7 +146,8 @@ extension EventsRequest {
             self.locale = locale
             self.isSandbox = isSandbox
             self.displayMode = displayMode
-            self.pathID = pathID
+            self.path = path.rawValue
+            self.url = url?.absoluteString
             self.surveyOptionID = surveyOptionID
             self.surveyOptionTitleKey = surveyOptionTitleKey
             self.additionalContext = additionalContext
@@ -181,7 +184,8 @@ extension EventsRequest {
                 locale: data.localeIdentifier,
                 isSandbox: data.isSandbox,
                 displayMode: data.displayMode,
-                pathID: data.pathID,
+                path: data.path,
+                url: data.url,
                 surveyOptionID: data.surveyOptionID,
                 surveyOptionTitleKey: data.surveyOptionTitleKey,
                 additionalContext: data.additionalContext,
@@ -244,7 +248,8 @@ extension EventsRequest.CustomerCenterEventSurveyOptionChosen: Encodable {
         case locale
         case isSandbox = "isSandbox"
         case displayMode = "displayMode"
-        case pathID = "pathId"
+        case path
+        case url
         case surveyOptionID = "surveyOptionId"
         case surveyOptionTitleKey = "surveyOptionTitleKey"
         case additionalContext = "additionalContext"

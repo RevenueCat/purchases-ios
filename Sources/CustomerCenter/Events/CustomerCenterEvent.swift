@@ -101,7 +101,8 @@ extension CustomerCenterSurveyOptionChosenEvent {
         public var darkMode: Bool { base.darkMode }
         public var isSandbox: Bool { base.isSandbox }
         public var displayMode: CustomerCenterPresentationMode { base.displayMode }
-        public let pathID: String
+        public let path: CustomerCenterConfigData.HelpPath.PathType
+        public let url: URL?
         public let surveyOptionID: String
         public let surveyOptionTitleKey: String
         public let additionalContext: String?
@@ -114,7 +115,8 @@ extension CustomerCenterSurveyOptionChosenEvent {
             darkMode: Bool,
             isSandbox: Bool,
             displayMode: CustomerCenterPresentationMode,
-            pathID: String,
+            path: CustomerCenterConfigData.HelpPath.PathType,
+            url: URL?,
             surveyOptionID: String,
             surveyOptionTitleKey: String,
             additionalContext: String? = nil,
@@ -126,7 +128,8 @@ extension CustomerCenterSurveyOptionChosenEvent {
                 isSandbox: isSandbox,
                 displayMode: displayMode
             )
-            self.pathID = pathID
+            self.path = path
+            self.url = url
             self.surveyOptionID = surveyOptionID
             self.surveyOptionTitleKey = surveyOptionTitleKey
             self.additionalContext = additionalContext
@@ -210,7 +213,8 @@ extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendab
     private enum CodingKeys: String, CodingKey {
 
         case base
-        case pathID = "pathId"
+        case path
+        case url
         case surveyOptionID = "surveyOptionId"
         case surveyOptionTitleKey = "surveyOptionTitleKey"
         case additionalContext = "additionalContext"
@@ -219,4 +223,5 @@ extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendab
     }
 
 }
+
 extension CustomerCenterSurveyOptionChosenEvent: Equatable, Codable, Sendable {}

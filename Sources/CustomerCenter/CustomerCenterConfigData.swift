@@ -553,3 +553,5 @@ extension CustomerCenterConfigData.Support {
     }
 
 }
+
+extension CustomerCenterConfigData.HelpPath.PathType: Sendable, Codable {}
