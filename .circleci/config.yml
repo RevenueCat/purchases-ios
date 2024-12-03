@@ -1293,7 +1293,7 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Build Paywalls Tester
-          command: bundle exec fastlane build_paywalls_test
+          command: bundle exec fastlane build_paywalls_tester_for_emerge
 
   deploy-to-spm:
     docker:
