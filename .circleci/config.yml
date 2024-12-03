@@ -1292,7 +1292,7 @@ jobs:
       - install-dependencies
       - update-spm-installation-commit
       - run:
-          name: Submit Purchase Tester
+          name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_test
 
   deploy-to-spm:
