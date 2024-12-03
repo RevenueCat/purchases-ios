@@ -86,17 +86,32 @@ struct ManageSubscriptionsView: View {
                                 purchaseInformation: purchaseInformation,
                                 refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
-                    }
+                        Section {
+                            ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                           loadingPath: self.$viewModel.loadingPath)
+                        } header: {
+                            if let subtitle = self.viewModel.screen.subtitle {
+                                Text(subtitle)
+                                    .textCase(nil)
+                            }
+                        }
+                    } else {
+                        let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
 
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
+                        Section {
+                            CompatibilityContentUnavailableView(
+                                self.viewModel.screen.title,
+                                systemImage: "exclamationmark.triangle.fill",
+                                description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                            )
+                        }
+
+                        Section {
+                            ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                           loadingPath: self.$viewModel.loadingPath)
                         }
                     }
+
                 }
             } else {
                 TintedProgressView()
@@ -132,8 +147,10 @@ struct ManageSubscriptionsView: View {
         }, content: { inAppBrowserURL in
             SafariView(url: inAppBrowserURL.url)
         })
-        .navigationTitle(self.viewModel.screen.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .applyIf(self.viewModel.screen.type == .management, apply: {
+            $0.navigationTitle(self.viewModel.screen.title).navigationBarTitleDisplayMode(.inline)
+        })
+
     }
 
 }
@@ -148,63 +165,6 @@ private extension ManageSubscriptionsView {
         if !self.viewModel.isLoaded {
             await viewModel.loadScreen()
         }
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ManageSubscriptionsButtonsView: View {
-
-    @ObservedObject
-    var viewModel: ManageSubscriptionsViewModel
-    @Binding
-    var loadingPath: CustomerCenterConfigData.HelpPath?
-    @Environment(\.openURL)
-    var openURL
-
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
-
-    var body: some View {
-        let filteredPaths = self.viewModel.screen.paths.filter { path in
-#if targetEnvironment(macCatalyst)
-            return path.type == .refundRequest
-#else
-            return path.type != .unknown
-#endif
-        }
-        ForEach(filteredPaths, id: \.id) { path in
-            ManageSubscriptionButton(path: path, viewModel: self.viewModel)
-        }
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ManageSubscriptionButton: View {
-
-    let path: CustomerCenterConfigData.HelpPath
-    @ObservedObject var viewModel: ManageSubscriptionsViewModel
-
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
-
-    var body: some View {
-        AsyncButton(action: {
-            await self.viewModel.determineFlow(for: path)
-        }, label: {
-            if self.viewModel.loadingPath?.id == path.id {
-                TintedProgressView()
-            } else {
-                Text(path.title)
-            }
-        })
-        .disabled(self.viewModel.loadingPath != nil)
     }
 
 }
