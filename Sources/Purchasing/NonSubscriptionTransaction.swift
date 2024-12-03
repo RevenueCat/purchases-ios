@@ -35,7 +35,7 @@ public final class NonSubscriptionTransaction: NSObject {
     @objc public let storeTransactionIdentifier: String
 
     /**
-     * The ``Store``tore where this transaction was performed from.
+     * The ``Store`` where this transaction was performed.
      */
     @objc public let store: Store
 
