@@ -227,7 +227,7 @@ private extension ManageSubscriptionsViewModel {
             }
             switch openMethod {
             case .external:
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                URLUtilities.openURLIfNotAppExtension(url)
             case .inApp:
                 self.inAppBrowserURL = .init(url: url)
             }
