@@ -226,10 +226,14 @@ private extension ManageSubscriptionsViewModel {
                 return
             }
             switch openMethod {
-            case .external:
+            case .external,
+                _ where url.isDeeplink:
                 URLUtilities.openURLIfNotAppExtension(url)
             case .inApp:
                 self.inAppBrowserURL = .init(url: url)
+            @unknown default:
+                Logger.warning(Strings.could_not_determine_type_of_custom_url)
+                URLUtilities.openURLIfNotAppExtension(url)
             }
         default:
             break

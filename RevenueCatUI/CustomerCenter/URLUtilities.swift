@@ -74,6 +74,19 @@ enum URLUtilities {
 
 }
 
+extension URL {
+
+    var isDeeplink: Bool {
+        switch scheme?.lowercased() {
+        case "http", "https":
+            return false
+        default:
+            return true
+        }
+    }
+
+}
+
 private extension URLUtilities {
 
     static var isAppExtension: Bool {
