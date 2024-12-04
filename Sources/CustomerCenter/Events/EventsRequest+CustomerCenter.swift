@@ -27,6 +27,7 @@ extension EventsRequest {
         var locale: String
         var isSandbox: Bool
         var displayMode: CustomerCenterPresentationMode
+        var revisionId: Int
 
     }
 
@@ -68,7 +69,8 @@ extension EventsRequest.CustomerCenterEvent {
                 darkMode: data.darkMode,
                 locale: data.localeIdentifier,
                 isSandbox: data.isSandbox,
-                displayMode: data.displayMode
+                displayMode: data.displayMode,
+                revisionId: 1
             )
         } catch {
             return nil
@@ -108,6 +110,7 @@ extension EventsRequest.CustomerCenterEvent: Encodable {
         case locale
         case isSandbox = "isSandbox"
         case displayMode = "displayMode"
+        case revisionId = "revisionId"
 
     }
 
