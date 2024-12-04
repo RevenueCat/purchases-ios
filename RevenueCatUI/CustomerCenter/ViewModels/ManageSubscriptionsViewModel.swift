@@ -232,6 +232,7 @@ private extension ManageSubscriptionsViewModel {
             case .inApp:
                 self.inAppBrowserURL = .init(url: url)
             @unknown default:
+                Logger.warning(Strings.could_not_determine_type_of_custom_url)
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         default:

@@ -67,6 +67,7 @@ enum Strings {
     case could_not_offer_for_active_subscriptions(String, String)
     case error_fetching_promotional_offer(Error)
     case promo_offer_not_loaded
+    case could_not_determine_type_of_custom_url
 
 }
 
@@ -206,6 +207,9 @@ extension Strings: CustomStringConvertible {
 
         case .could_not_offer_for_active_subscriptions(let discount, let subscription):
             return "Could not find offer with id \(discount) for active subscription \(subscription)"
+
+        case .could_not_determine_type_of_custom_url:
+            return "Could not determine the type of custom URL, the URL will be opened externally."
 
         }
     }
