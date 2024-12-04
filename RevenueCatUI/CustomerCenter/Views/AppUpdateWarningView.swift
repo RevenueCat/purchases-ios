@@ -34,7 +34,7 @@ struct AppUpdateWarningView: View {
             onUpdateAppClick: {
                 // productId is a positive integer, so it should be safe to construct a URL from it.
                 let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
-                URLOpener.openURLIfNotAppExtension(url)
+                URLUtilities.openURLIfNotAppExtension(url)
             },
             onContinueAnywayClick: onContinueAnywayClick
         )
