@@ -22,14 +22,6 @@ class EmptyCustomerInfoTests: TestCase {
 
 class BasicCustomerInfoTests: TestCase {
 
-    private static func date(withDaysAgo days: Int) throws -> Date {
-        return try XCTUnwrap(Calendar.current.date(byAdding: .day, value: days, to: Date()))
-    }
-
-    private static let expiredSubscriptionDate = ISO8601DateFormatter.default.string(
-        // swiftlint:disable:next force_try
-        from: try! BasicCustomerInfoTests.date(withDaysAgo: -1)
-    )
     static let validSubscriberResponse: [String: Any] = [
         "request_date": "2018-10-19T02:40:36Z",
         "request_date_ms": Int64(1563379533946),
@@ -51,6 +43,7 @@ class BasicCustomerInfoTests: TestCase {
             ] as [String: Any],
             "subscriptions": [
                 "onemonth_freetrial": [
+                    "purchase_date": "2100-07-30T02:40:36Z",
                     "expires_date": "2100-08-30T02:40:36Z",
                     "period_type": "normal",
                     "is_sandbox": false
@@ -63,6 +56,7 @@ class BasicCustomerInfoTests: TestCase {
                     "purchase_date": "2018-05-20T06:24:50Z"
                 ],
                 "onemonth": [
+                    "purchase_date": "2000-07-30T02:40:36Z",
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
                     "period_type": "normal",
                     "is_sandbox": false
@@ -103,17 +97,29 @@ class BasicCustomerInfoTests: TestCase {
         ] as [String: Any]
     ]
 
-    static let validTwoProductsJSON = "{" +
-            "\"request_date\": \"2018-05-20T06:24:50Z\"," +
-            "\"subscriber\": {" +
-            "\"first_seen\": \"2018-05-20T06:24:50Z\"," +
-            "\"original_application_version\": \"1.0\"," +
-            "\"original_app_user_id\": \"abcd\"," +
-            "\"other_purchases\": {}," +
-            "\"subscriptions\":{" +
-                "\"product_a\": {\"expires_date\": \"2018-05-27T06:24:50Z\",\"period_type\": \"normal\"}," +
-                "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
-            "}}}"
+    static let validTwoProductsJSON = """
+        {
+            "request_date": "2018-05-20T06:24:50Z",
+            "subscriber": {
+                "first_seen": "2018-05-20T06:24:50Z",
+                "original_application_version": "1.0",
+                "original_app_user_id": "abcd",
+                "other_purchases": {},
+                "subscriptions": {
+                    "product_a": {
+                        "purchase_date": "2018-04-27T06:24:50Z",
+                        "expires_date": "2018-05-27T06:24:50Z",
+                        "period_type": "normal"
+                    },
+                    "product_b": {
+                        "purchase_date": "2018-04-27T05:24:50Z",
+                        "expires_date": "2018-05-27T05:24:50Z",
+                        "period_type": "normal"
+                    }
+                }
+            }
+        }
+        """
 
     private var customerInfo: CustomerInfo!
 
@@ -397,18 +403,22 @@ class BasicCustomerInfoTests: TestCase {
                 ],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1989-08-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "pro.1": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "pro.2": [
+                        "purchase_date": "1990-07-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z",
                         "period_type": "normal"
                     ]
@@ -468,9 +478,11 @@ class BasicCustomerInfoTests: TestCase {
                 ],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1990-08-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
@@ -547,6 +559,7 @@ class BasicCustomerInfoTests: TestCase {
                 "original_app_user_id": "",
                 "subscriptions": [
                     "pro.1": [
+                        "purchase_date": "2018-07-30T02:40:36Z",
                         "expires_date": "2018-12-19T02:40:36Z"
                     ]],
                 "other_purchases": [:] as [String: Any],
@@ -565,6 +578,7 @@ class BasicCustomerInfoTests: TestCase {
                 "original_app_user_id": "",
                 "subscriptions": [
                     "pro.1": [
+                        "purchase_date": "2018-07-30T02:40:36Z",
                         "expires_date": "2018-12-19T02:40:36Z"
                     ]
                 ],
@@ -784,13 +798,16 @@ class BasicCustomerInfoTests: TestCase {
                 "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "twomonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1990-07-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
@@ -828,13 +845,16 @@ class BasicCustomerInfoTests: TestCase {
                 "non_subscriptions": [:] as [String: Any],
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "expires_date": "2100-08-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "twomonth_freetrial": [
+                        "purchase_date": "2100-07-30T02:40:36Z",
                         "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
+                        "purchase_date": "1990-07-30T02:40:36Z",
                         "expires_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
@@ -915,35 +935,6 @@ class BasicCustomerInfoTests: TestCase {
         expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == true
     }
 
-    // MARK: - Private
-
-    private func verifyCopy(
-        of customerInfo: CustomerInfo,
-        onlyModifiesEntitlementVerification newVerification: VerificationResult
-    ) {
-        let copy = customerInfo.copy(with: newVerification)
-        expect(customerInfo) != copy
-
-        expect(copy.entitlements.verification) == newVerification
-
-        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
-        expect(copyWithOriginalVerification) == customerInfo
-    }
-
-    private func verifyCopy(
-        of customerInfo: CustomerInfo,
-        onlyModifiesRequestDate newRequestDate: Date
-    ) {
-        let originalDate = customerInfo.requestDate
-
-        let copy = customerInfo.copy(with: newRequestDate)
-        expect(copy.requestDate) == newRequestDate
-        expect(customerInfo.requestDate) == originalDate
-
-        let copyWithOriginalDate = copy.copy(with: originalDate)
-        expect(copyWithOriginalDate) == customerInfo
-    }
-
 }
 
 extension CustomerInfo {
@@ -957,6 +948,46 @@ extension CustomerInfo {
 
             return nil
         }
+    }
+
+}
+
+private extension BasicCustomerInfoTests {
+
+    static func date(withDaysAgo days: Int) throws -> Date {
+        return try XCTUnwrap(Calendar.current.date(byAdding: .day, value: days, to: Date()))
+    }
+
+    static let expiredSubscriptionDate = ISO8601DateFormatter.default.string(
+        // swiftlint:disable:next force_try
+        from: try! BasicCustomerInfoTests.date(withDaysAgo: -1)
+    )
+
+    func verifyCopy(
+        of customerInfo: CustomerInfo,
+        onlyModifiesEntitlementVerification newVerification: VerificationResult
+    ) {
+        let copy = customerInfo.copy(with: newVerification)
+        expect(customerInfo) != copy
+
+        expect(copy.entitlements.verification) == newVerification
+
+        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
+        expect(copyWithOriginalVerification) == customerInfo
+    }
+
+    func verifyCopy(
+        of customerInfo: CustomerInfo,
+        onlyModifiesRequestDate newRequestDate: Date
+    ) {
+        let originalDate = customerInfo.requestDate
+
+        let copy = customerInfo.copy(with: newRequestDate)
+        expect(copy.requestDate) == newRequestDate
+        expect(customerInfo.requestDate) == originalDate
+
+        let copyWithOriginalDate = copy.copy(with: originalDate)
+        expect(copyWithOriginalDate) == customerInfo
     }
 
 }

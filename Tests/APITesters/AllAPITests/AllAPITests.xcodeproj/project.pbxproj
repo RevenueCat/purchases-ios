@@ -123,6 +123,9 @@
 		2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; };
 		2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */; };
+		35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */; };
+		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -346,6 +349,9 @@
 		2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ReceiptParser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionInfoAPI.swift; sourceTree = "<group>"; };
+		35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCSubscriptionInfoAPI.h; sourceTree = "<group>"; };
+		35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSubscriptionInfoAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -460,6 +466,8 @@
 		2D4C613E2C5AD30400A29FD2 /* ObjcAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */,
+				35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */,
 				2D4C61732C5AD31900A29FD2 /* main.m */,
 				2D4C61582C5AD31600A29FD2 /* RCAttributionAPI.h */,
 				2D4C614C2C5AD31500A29FD2 /* RCAttributionAPI.m */,
@@ -533,6 +541,7 @@
 		2D4C61B42C5AD61800A29FD2 /* SwiftAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */,
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
 				2D4C61D42C5AD62900A29FD2 /* ConfigurationAPI.swift */,
@@ -643,6 +652,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4C61402C5AD30400A29FD2 /* ObjcAPITester.h in Headers */,
+				35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -980,6 +990,7 @@
 				2D4C617C2C5AD31A00A29FD2 /* RCStoreKitVersionAPI.m in Sources */,
 				2D4C61902C5AD31A00A29FD2 /* main.m in Sources */,
 				2D4C61932C5AD31A00A29FD2 /* RCPurchasesAPI.m in Sources */,
+				35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */,
 				2D4C618C2C5AD31A00A29FD2 /* RCPurchasesDiagnosticsAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -995,6 +1006,7 @@
 				2D4C61DA2C5AD62A00A29FD2 /* RefundRequestStatusAPI.swift in Sources */,
 				2D4C61F52C5AD62A00A29FD2 /* PromotionalOfferAPI.swift in Sources */,
 				2D4C61E92C5AD62A00A29FD2 /* StoreProductAPI.swift in Sources */,
+				3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */,
 				2D4C61EA2C5AD62A00A29FD2 /* StorefrontAPI.swift in Sources */,
 				2D4C61E42C5AD62A00A29FD2 /* main.swift in Sources */,
 				2D4C61E62C5AD62A00A29FD2 /* StoreProductDiscountAPI.swift in Sources */,

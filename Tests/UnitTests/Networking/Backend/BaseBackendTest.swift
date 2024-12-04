@@ -151,6 +151,7 @@ extension BaseBackendTests {
             "original_app_user_id": "",
             "subscriptions": [
                 "onemonth_freetrial": [
+                    "purchase_date": "2017-07-30T02:40:36Z",
                     "expires_date": "2017-08-30T02:40:36Z"
                 ]
             ]

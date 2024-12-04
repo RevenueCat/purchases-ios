@@ -49,7 +49,7 @@ extension CustomerInfoResponse {
 
         @IgnoreDecodeErrors<PeriodType>
         var periodType: PeriodType
-        var purchaseDate: Date?
+        var purchaseDate: Date
         var originalPurchaseDate: Date?
         var expiresDate: Date?
         @IgnoreDecodeErrors<Store>
@@ -62,12 +62,15 @@ extension CustomerInfoResponse {
         var ownershipType: PurchaseOwnershipType
         var productPlanIdentifier: String?
         var metadata: [String: String]?
+        var gracePeriodExpiresDate: Date?
+        var refundedAt: Date?
+        var storeTransactionId: String?
 
     }
 
     struct Transaction {
 
-        var purchaseDate: Date?
+        var purchaseDate: Date
         var originalPurchaseDate: Date?
         var transactionIdentifier: String?
         var storeTransactionIdentifier: String?
@@ -174,7 +177,7 @@ extension CustomerInfoResponse.Subscriber {
 extension CustomerInfoResponse.Transaction {
 
     init(
-        purchaseDate: Date?,
+        purchaseDate: Date,
         originalPurchaseDate: Date?,
         transactionIdentifier: String?,
         storeTransactionIdentifier: String?,
@@ -202,14 +205,15 @@ extension CustomerInfoResponse.Subscription {
 
     init(
         periodType: PeriodType = .defaultValue,
-        purchaseDate: Date? = nil,
+        purchaseDate: Date,
         originalPurchaseDate: Date? = nil,
         expiresDate: Date? = nil,
         store: Store = .defaultValue,
         isSandbox: Bool,
         unsubscribeDetectedAt: Date? = nil,
         billingIssuesDetectedAt: Date? = nil,
-        ownershipType: PurchaseOwnershipType = .defaultValue
+        ownershipType: PurchaseOwnershipType = .defaultValue,
+        storeTransactionId: String? = nil
     ) {
         self.periodType = periodType
         self.purchaseDate = purchaseDate
@@ -220,6 +224,7 @@ extension CustomerInfoResponse.Subscription {
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.ownershipType = ownershipType
+        self.storeTransactionId = storeTransactionId
     }
 
     var asTransaction: CustomerInfoResponse.Transaction {

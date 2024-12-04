@@ -594,8 +594,9 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     func testGetsUpdatedSubscriberInfoAfterPost() {
         var dateComponent = DateComponents()
         dateComponent.month = 1
+        let today = Date()
         let futureDateString = ISO8601DateFormatter()
-            .string(from: Calendar.current.date(byAdding: dateComponent, to: Date())!)
+            .string(from: Calendar.current.date(byAdding: dateComponent, to: today)!)
 
         let getCustomerInfoPath: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
 
@@ -606,6 +607,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                 "original_app_user_id": "ORIGINAL",
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2024-11-25T00:05:54Z",
                         "expires_date": futureDateString
                     ]
                 ]
@@ -619,9 +621,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                 "original_app_user_id": "UPDATED",
                 "subscriptions": [
                     "onemonth_freetrial": [
+                        "purchase_date": "2024-11-25T00:05:54Z",
                         "expires_date": futureDateString
                     ],
                     "twomonth_awesome": [
+                        "purchase_date": "2024-11-25T00:05:54Z",
                         "expires_date": futureDateString
                     ]
                 ]
