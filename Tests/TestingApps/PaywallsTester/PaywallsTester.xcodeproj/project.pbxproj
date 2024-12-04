@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -86,6 +86,7 @@
 
 /* Begin PBXFileReference section */
 		2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
+		4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTesterTests.swift; sourceTree = "<group>"; };
 		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F0B5EA12A97CDAC00DB0FC9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F102E262A840ECC0059EED6 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
@@ -152,10 +153,6 @@
 		FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaywallsTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		FA29FBA92CCAA79800DA1976 /* PaywallsTesterTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PaywallsTesterTests; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		4F6BED972A26A64200CD9322 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -178,6 +175,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4D2E84DC2D00EDA100C639D9 /* PaywallsTesterTests */ = {
+			isa = PBXGroup;
+			children = (
+				4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */,
+			);
+			path = PaywallsTesterTests;
+			sourceTree = "<group>";
+		};
 		4F34FF682A60AEE300AADF11 /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -194,7 +199,7 @@
 				773C13462CB5865400219E42 /* Local.xcconfig */,
 				4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */,
 				4FC046BB2A572E3700A28BCF /* PaywallsTester */,
-				FA29FBA92CCAA79800DA1976 /* PaywallsTesterTests */,
+				4D2E84DC2D00EDA100C639D9 /* PaywallsTesterTests */,
 				4F6BED9B2A26A64200CD9322 /* Products */,
 				4F6BEDCC2A26A68E00CD9322 /* Frameworks */,
 			);
@@ -409,9 +414,6 @@
 			);
 			dependencies = (
 				FA29FBAD2CCAA79800DA1976 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				FA29FBA92CCAA79800DA1976 /* PaywallsTesterTests */,
 			);
 			name = PaywallsTesterTests;
 			packageProductDependencies = (
