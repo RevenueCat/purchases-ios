@@ -74,6 +74,14 @@ enum URLUtilities {
 
 }
 
+extension URL {
+
+    var isDeeplink: Bool {
+        !(scheme?.hasPrefix("http") ?? false)
+    }
+
+}
+
 private extension URLUtilities {
 
     static var isAppExtension: Bool {
