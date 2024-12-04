@@ -29,7 +29,9 @@ public typealias ProductIdentifier = String
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
-    @objc public var activeSubscriptions: Set<ProductIdentifier> { self.activeKeys(dates: self.expirationDatesByProductId) }
+    @objc public var activeSubscriptions: Set<ProductIdentifier> {
+        self.activeKeys(dates: self.expirationDatesByProductId)
+    }
 
     /// All product identifiers purchases by the user regardless of expiration.
     @objc public let allPurchasedProductIdentifiers: Set<ProductIdentifier>
