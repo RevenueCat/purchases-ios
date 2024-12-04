@@ -12,6 +12,7 @@
 //  Created by Madeline Beyl on 7/9/21.
 //
 
+// swiftlint:disable file_length
 import Foundation
 
 /**
