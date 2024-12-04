@@ -77,7 +77,12 @@ enum URLUtilities {
 extension URL {
 
     var isDeeplink: Bool {
-        !(scheme?.hasPrefix("http") ?? false)
+        switch scheme?.lowercased() {
+        case "http", "https":
+            return false
+        default:
+            return true
+        }
     }
 
 }
