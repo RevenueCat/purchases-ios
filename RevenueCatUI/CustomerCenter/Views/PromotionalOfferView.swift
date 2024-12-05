@@ -111,7 +111,9 @@ struct PromotionalOfferView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .shadow(radius: 10)
             } else {
-                EmptyView()
+                Color.clear
+                    // keep the same size as the image would have taken to ensure layout still looks good
+                    .frame(width: 100, height: 100)
             }
         }
     }
