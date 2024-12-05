@@ -762,14 +762,16 @@ jobs:
   run-test-ios-15:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      # Needs to be 15.2.0 because if not running on Swift 5.9, the tests fail
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
-      - set-maximum-duration
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 15.5
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
