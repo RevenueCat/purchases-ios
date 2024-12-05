@@ -40,12 +40,13 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
-        store: PaywallEventStoreType
+        store: PaywallEventStoreType,
+        appSessionID: UUID = UUID()
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
-        self.appSessionID = UUID()
+        self.appSessionID = appSessionID
     }
 
     func resetAppSessionID() {

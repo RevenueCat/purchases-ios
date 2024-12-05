@@ -25,6 +25,7 @@ class PaywallEventsManagerTests: TestCase {
     private var userProvider: MockCurrentUserProvider!
     private var store: MockPaywallEventStore!
     private var manager: PaywallEventsManager!
+    private var appSessionID = UUID()
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -37,7 +38,8 @@ class PaywallEventsManagerTests: TestCase {
         self.manager = .init(
             internalAPI: self.api,
             userProvider: self.userProvider,
-            store: self.store
+            store: self.store,
+            appSessionID: self.appSessionID
         )
     }
 
@@ -292,8 +294,8 @@ private extension PaywallEventsManagerTests {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,
-                                   appSessionID: UUID(),
-                                   eventDiscriminator: "impression"))
+                                   appSessionID: self.appSessionID,
+                                   eventDiscriminator: nil))
     }
 
 }
