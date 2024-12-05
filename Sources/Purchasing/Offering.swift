@@ -310,8 +310,7 @@ extension Offering {
     }
 
     /// - Returns: The `metadata` value associated to `key` for the expected `Decodable` type,
-    /// or `nil` if not found.
-    /// - Throws: Error if the content couldn't be deserialized to the expected type.
+    /// or `nil` if not found or if the content couldn't be deserialized to the expected type..
     /// - Note: This decodes JSON using `JSONDecoder.KeyDecodingStrategy.convertFromSnakeCase`.
     public func getMetadataValue<T: Decodable>(for key: String) -> T? {
         guard let value = self.metadata[key] else { return nil }
