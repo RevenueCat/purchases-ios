@@ -17,12 +17,12 @@ import Foundation
 final class PostPaywallEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
-    private let request: PaywallEventsRequest
+    private let request: EventsRequest
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
-        request: PaywallEventsRequest,
+        request: EventsRequest,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request
@@ -45,3 +45,6 @@ final class PostPaywallEventsOperation: NetworkOperation {
     }
 
 }
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostPaywallEventsOperation: @unchecked Sendable {}

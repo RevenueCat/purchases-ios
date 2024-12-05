@@ -232,6 +232,14 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        self.unimplemented()
+    }
+
+    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
+        self.unimplemented()
+    }
+
     func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.unimplemented()
     }
@@ -419,7 +427,18 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
+        self.unimplemented()
+    }
+
+    func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
         self.unimplemented()
     }
 
@@ -466,4 +485,40 @@ extension MockPurchases: PurchasesSwiftType {
     }
 
     #endif
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct
+    ) async throws -> [WinBackOffer] {
+        self.unimplemented()
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package
+    ) async throws -> [WinBackOffer] {
+        self.unimplemented()
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    ) {
+        self.unimplemented()
+    }
+
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    ) {
+       self.unimplemented()
+    }
+
+      func redeemWebPurchase(
+        _ webPurchaseRedemption: WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult {
+        self.unimplemented()
+    }
 }

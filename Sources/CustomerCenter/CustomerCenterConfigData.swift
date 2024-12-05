@@ -74,6 +74,7 @@ public struct CustomerCenterConfigData {
             case defaultBody = "default_body"
             case defaultSubject = "default_subject"
             case dismiss = "dismiss"
+            case unknown = "unknown"
             case updateWarningTitle = "update_warning_title"
             case updateWarningDescription = "update_warning_description"
             case updateWarningUpdate = "update_warning_update"
@@ -82,12 +83,18 @@ public struct CustomerCenterConfigData {
             case appleSubscriptionManage = "apple_subscription_manage"
             case googleSubscriptionManage = "google_subscription_manage"
             case amazonSubscriptionManage = "amazon_subscription_manage"
+            case webSubscriptionManage = "web_subscription_manage"
             case platformMismatch = "platform_mismatch"
             case goingToCheckPurchases = "going_to_check_purchases"
             case checkPastPurchases = "check_past_purchases"
             case purchasesRecovered = "purchases_recovered"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
             case purchasesNotRecovered = "purchases_not_recovered"
+            case manageSubscription = "manage_subscription"
+            case youHavePromo = "you_have_promo"
+            case youHaveLifetime = "you_have_lifetime"
+            case free = "free"
+            case never = "never"
 
             var defaultValue: String {
                 switch self {
@@ -144,6 +151,8 @@ public struct CustomerCenterConfigData {
                     return "Support Request"
                 case .dismiss:
                     return "Dismiss"
+                case .unknown:
+                    return "Unknown"
                 case .updateWarningTitle:
                     return "Update available"
                 case .updateWarningDescription:
@@ -157,11 +166,26 @@ public struct CustomerCenterConfigData {
                 case .pleaseContactSupportToManage:
                     return "Please contact support to manage your subscription."
                 case .appleSubscriptionManage:
-                    return "You can manage your subscription by using the App Store app on an Apple device."
+                    return "You have an active subscription from the Apple App Store. " +
+                    "You can manage your subscription by using the App Store app on an Apple device."
                 case .googleSubscriptionManage:
-                    return "You can manage your subscription by using the Play Store app on an Android device"
+                    return "You have an active subscription from the Google Play Store"
                 case .amazonSubscriptionManage:
-                    return "You can manage your subscription in the Amazon Appstore app on an Amazon device."
+                    return "You have an active subscription from the Amazon Appstore. " +
+                    "You can manage your subscription in the Amazon Appstore app."
+                case .webSubscriptionManage:
+                    return "You have an active subscription that was created on the web." +
+                    " You can manage your subscription by visiting your account."
+                case .manageSubscription:
+                    return "Manage your subscription"
+                case .youHavePromo:
+                    return "You’ve been granted a subscription that doesn’t renew"
+                case .youHaveLifetime:
+                    return "Your active lifetime subscription"
+                case .free:
+                    return "Free"
+                case .never:
+                    return "Never"
                 }
             }
 
@@ -177,15 +201,21 @@ public struct CustomerCenterConfigData {
 
         public let id: String
         public let title: String
+        public let url: URL?
+        public let openMethod: OpenMethod?
         public let type: PathType
         public let detail: PathDetail?
 
         public init(id: String,
                     title: String,
+                    url: URL? = nil,
+                    openMethod: OpenMethod? = nil,
                     type: PathType,
                     detail: PathDetail?) {
             self.id = id
             self.title = title
+            self.url = url
+            self.openMethod = openMethod
             self.type = type
             self.detail = detail
         }
@@ -203,6 +233,7 @@ public struct CustomerCenterConfigData {
             case refundRequest = "REFUND_REQUEST"
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
+            case customUrl = "CUSTOM_URL"
             case unknown
 
             init(from rawValue: String) {
@@ -215,8 +246,28 @@ public struct CustomerCenterConfigData {
                     self = .changePlans
                 case "CANCEL":
                     self = .cancel
+                case "CUSTOM_URL":
+                    self = .customUrl
                 default:
                     self = .unknown
+                }
+            }
+
+        }
+
+        public enum OpenMethod: String {
+
+            case inApp = "IN_APP"
+            case external = "EXTERNAL"
+
+            init?(from rawValue: String?) {
+                switch rawValue {
+                case "IN_APP":
+                    self = .inApp
+                case "EXTERNAL":
+                    self = .external
+                default:
+                    return nil
                 }
             }
 
@@ -228,12 +279,18 @@ public struct CustomerCenterConfigData {
             public let eligible: Bool
             public let title: String
             public let subtitle: String
+            public let productMapping: [String: String]
 
-            public init(iosOfferId: String, eligible: Bool, title: String, subtitle: String) {
+            public init(iosOfferId: String,
+                        eligible: Bool,
+                        title: String,
+                        subtitle: String,
+                        productMapping: [String: String]) {
                 self.iosOfferId = iosOfferId
                 self.eligible = eligible
                 self.title = title
                 self.subtitle = subtitle
+                self.productMapping = productMapping
             }
 
         }
@@ -389,7 +446,7 @@ extension CustomerCenterConfigData.Screen {
         self.type = ScreenType(from: response.type.rawValue)
         self.title = response.title
         self.subtitle = response.subtitle
-        self.paths = response.paths.map { CustomerCenterConfigData.HelpPath(from: $0) }
+        self.paths = response.paths.compactMap { CustomerCenterConfigData.HelpPath(from: $0) }
     }
 
 }
@@ -425,10 +482,23 @@ extension CustomerCenterConfigData.Localization {
 
 extension CustomerCenterConfigData.HelpPath {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath) {
+    init?(from response: CustomerCenterConfigResponse.HelpPath) {
         self.id = response.id
         self.title = response.title
         self.type = CustomerCenterConfigData.HelpPath.PathType(from: response.type.rawValue)
+        if self.type == .customUrl {
+            if let responseUrl = response.url,
+               let url = URL(string: responseUrl),
+               let openMethod = CustomerCenterConfigData.HelpPath.OpenMethod(from: response.openMethod?.rawValue) {
+                self.url = url
+                self.openMethod = openMethod
+            } else {
+                return nil
+            }
+        } else {
+            self.url = nil
+            self.openMethod = nil
+        }
         if let promotionalOfferResponse = response.promotionalOffer {
             self.detail = .promotionalOffer(PromotionalOffer(from: promotionalOfferResponse))
         } else if let feedbackSurveyResponse = response.feedbackSurvey {
@@ -447,6 +517,7 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
         self.eligible = response.eligible
         self.title = response.title
         self.subtitle = response.subtitle
+        self.productMapping = response.productMapping
     }
 
 }

@@ -1353,6 +1353,86 @@ class SubscriberAttributesManagerTests: TestCase {
         checkDeviceIdentifiersAreNotSet()
     }
     // endregion
+    // region FirebaseAppInstanceID
+    func testSetTenjinAnalyticsInstallationID() throws {
+        let tenjinAnalyticsInstallationID = "tenjinAnalyticsInstallationID"
+
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(tenjinAnalyticsInstallationID,
+                                                                          appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$tenjinId"
+        expect(receivedAttribute.value) == tenjinAnalyticsInstallationID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetSetTenjinAnalyticsInstallationIDSetsEmptyIfNil() throws {
+        let tenjinAnalyticsInstallationID = "tenjinAnalyticsInstallationID"
+
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(tenjinAnalyticsInstallationID,
+                                                                          appUserID: "kratos")
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$tenjinId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetTenjinAnalyticsInstallationIDSkipsIfSameValue() {
+        let tenjinAnalyticsInstallationID = "tenjinAnalyticsInstallationID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(
+            withKey: "$tenjinId",
+            value: tenjinAnalyticsInstallationID
+        )
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(tenjinAnalyticsInstallationID,
+                                                                          appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetTenjinAnalyticsInstallationIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let tenjinAnalyticsInstallationID = "tenjinAnalyticsInstallationID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$tenjinId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(tenjinAnalyticsInstallationID,
+                                                                          appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$tenjinId"
+        expect(receivedAttribute.value) == tenjinAnalyticsInstallationID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetTenjinAnalyticsInstallationIDDoesNotSetDeviceIdentifiers() {
+        let tenjinAnalyticsInstallationID = "tenjinAnalyticsInstallationID"
+        self.subscriberAttributesManager.setTenjinAnalyticsInstallationID(tenjinAnalyticsInstallationID,
+                                                                          appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
     // region Media source
     func testSetMediaSource() {
         let mediaSource = "mediaSource"

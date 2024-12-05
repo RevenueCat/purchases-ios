@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */; };
+		1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */; };
+		1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
 		2D4C60E62C5AD1BC00A29FD2 /* AllAPITestsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C60E52C5AD1BC00A29FD2 /* AllAPITestsTests.swift */; };
 		2D4C60E72C5AD1BC00A29FD2 /* AllAPITests.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -121,6 +123,9 @@
 		2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; };
 		2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */; };
+		35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */; };
+		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -208,6 +213,8 @@
 
 /* Begin PBXFileReference section */
 		1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
+		1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchasesAPI.swift; sourceTree = "<group>"; };
+		1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResultAPI.swift; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C60DB2C5AD1BC00A29FD2 /* AllAPITests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AllAPITests.h; sourceTree = "<group>"; };
 		2D4C60E02C5AD1BC00A29FD2 /* AllAPITestsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AllAPITestsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -342,6 +349,9 @@
 		2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ReceiptParser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionInfoAPI.swift; sourceTree = "<group>"; };
+		35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCSubscriptionInfoAPI.h; sourceTree = "<group>"; };
+		35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSubscriptionInfoAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -456,6 +466,8 @@
 		2D4C613E2C5AD30400A29FD2 /* ObjcAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */,
+				35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */,
 				2D4C61732C5AD31900A29FD2 /* main.m */,
 				2D4C61582C5AD31600A29FD2 /* RCAttributionAPI.h */,
 				2D4C614C2C5AD31500A29FD2 /* RCAttributionAPI.m */,
@@ -529,6 +541,7 @@
 		2D4C61B42C5AD61800A29FD2 /* SwiftAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */,
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
 				2D4C61D42C5AD62900A29FD2 /* ConfigurationAPI.swift */,
@@ -538,6 +551,7 @@
 				2D4C61C12C5AD62800A29FD2 /* EntitlementInfosAPI.swift */,
 				2D4C61D52C5AD62900A29FD2 /* ErrorCodesAPI.swift */,
 				2D4C61C02C5AD62800A29FD2 /* IntroEligibilityAPI.swift */,
+				1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */,
 				2D4C61C42C5AD62800A29FD2 /* main.swift */,
 				2D4C61D22C5AD62900A29FD2 /* NonSubscriptionTransactionAPI.swift */,
 				2D4C61CF2C5AD62900A29FD2 /* OfferingAPI.swift */,
@@ -581,6 +595,7 @@
 			isa = PBXGroup;
 			children = (
 				2D4C622D2C5ADA6700A29FD2 /* PaywallViewAPI.swift */,
+				1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */,
 				2D4C622B2C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift */,
 				2D4C622C2C5ADA6700A29FD2 /* main.swift */,
 				2D4C62232C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.h */,
@@ -637,6 +652,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4C61402C5AD30400A29FD2 /* ObjcAPITester.h in Headers */,
+				35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -974,6 +990,7 @@
 				2D4C617C2C5AD31A00A29FD2 /* RCStoreKitVersionAPI.m in Sources */,
 				2D4C61902C5AD31A00A29FD2 /* main.m in Sources */,
 				2D4C61932C5AD31A00A29FD2 /* RCPurchasesAPI.m in Sources */,
+				35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */,
 				2D4C618C2C5AD31A00A29FD2 /* RCPurchasesDiagnosticsAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -989,6 +1006,7 @@
 				2D4C61DA2C5AD62A00A29FD2 /* RefundRequestStatusAPI.swift in Sources */,
 				2D4C61F52C5AD62A00A29FD2 /* PromotionalOfferAPI.swift in Sources */,
 				2D4C61E92C5AD62A00A29FD2 /* StoreProductAPI.swift in Sources */,
+				3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */,
 				2D4C61EA2C5AD62A00A29FD2 /* StorefrontAPI.swift in Sources */,
 				2D4C61E42C5AD62A00A29FD2 /* main.swift in Sources */,
 				2D4C61E62C5AD62A00A29FD2 /* StoreProductDiscountAPI.swift in Sources */,
@@ -1004,6 +1022,7 @@
 				2D4C61F22C5AD62A00A29FD2 /* PurchasesAPI.swift in Sources */,
 				2D4C61F12C5AD62A00A29FD2 /* PresentedOfferingContextAPI.swift in Sources */,
 				2D4C61D92C5AD62A00A29FD2 /* TestStoreProductAPI.swift in Sources */,
+				1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */,
 				2D4C61F32C5AD62A00A29FD2 /* VerificationResultAPI.swift in Sources */,
 				2D4C61E72C5AD62A00A29FD2 /* SubscriptionPeriodAPI.swift in Sources */,
 				2D4C61DB2C5AD62A00A29FD2 /* PurchasesReceiptParserAPI.swift in Sources */,
@@ -1033,6 +1052,7 @@
 			files = (
 				2D4C622F2C5ADA6700A29FD2 /* main.swift in Sources */,
 				2D4C62302C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift in Sources */,
+				1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */,
 				2D4C622E2C5ADA6700A29FD2 /* PaywallViewAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

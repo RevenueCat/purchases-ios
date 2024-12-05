@@ -544,6 +544,18 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
+    /**
+     * Constructs an Error with the ``ErrorCode/featureNotSupportedWithStoreKit1`` code.
+     *
+     * - Note: This error is used  when trying to use a feature that isn't supported
+     * by StoreKit 1 when the SDK is running in StoreKit 1 mode.
+     */
+    static func featureNotSupportedWithStoreKit1Error(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .featureNotSupportedWithStoreKit1,
+                                fileName: fileName, functionName: functionName, line: line)
+    }
 }
 
 extension ErrorUtils {
@@ -665,7 +677,11 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
                 .featureNotAvailableInCustomEntitlementsComputationMode,
-                .signatureVerificationFailed:
+                .signatureVerificationFailed,
+                .featureNotSupportedWithStoreKit1,
+                .invalidWebPurchaseToken,
+                .alreadyRedeemedWebPurchaseToken,
+                .expiredWebPurchaseToken:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,

@@ -124,6 +124,10 @@ class BasePurchasesTests: TestCase {
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
+        self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.webPurchaseRedemptionHelper = .init(backend: self.backend,
+                                                 identityManager: self.identityManager,
+                                                 customerInfoManager: self.customerInfoManager)
 
         self.addTeardownBlock {
             weak var purchases = self.purchases
@@ -186,6 +190,8 @@ class BasePurchasesTests: TestCase {
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
 
     // swiftlint:disable:next weak_delegate
@@ -261,7 +267,10 @@ class BasePurchasesTests: TestCase {
             offeringsManager: self.mockOfferingsManager,
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
-            storeMessagesHelper: self.mockStoreMessagesHelper
+            storeMessagesHelper: self.mockStoreMessagesHelper,
+            winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
+            paywallEventsManager: self.paywallEventsManager,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,
@@ -507,6 +516,9 @@ extension BasePurchasesTests {
     }
 }
 
+extension BasePurchasesTests.MockBackend: @unchecked Sendable {}
+extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
+
 private extension BasePurchasesTests {
 
     func clearReferences() {
@@ -542,6 +554,7 @@ private extension BasePurchasesTests {
         self.deviceCache = nil
         self.paywallCache = nil
         self.paywallEventsManager = nil
+        self.webPurchaseRedemptionHelper = nil
         self.purchases = nil
     }
 

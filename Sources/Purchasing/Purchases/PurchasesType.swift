@@ -354,6 +354,50 @@ public protocol PurchasesType: AnyObject {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
+     * Initiates a purchase.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter params: The ``PurchaseParams`` instance with the configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `true`.
+     */
+    @objc(params:withCompletion:)
+    func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock)
+
+    /**
+     * Initiates a purchase.
+     *
+     * - Important: Call this method when a user has decided to purchase a product.
+     * Only call this in direct response to user input.
+     *
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
+     *
+     * - Note: You do not need to finish the transaction yourself after this, ``Purchases`` will
+     * handle this for you.
+     *
+     * - Parameter params: The ``PurchaseParams`` instance with extra configuration options for this purchase.
+     * Check the ``PurchaseParams`` documentation for more information.
+     *
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
+     *
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
+     */
+    func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData
+
+    /**
      * Invalidates the cache for customer information.
      *
      * Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
@@ -675,6 +719,34 @@ public protocol PurchasesType: AnyObject {
     /// - ``StoreProduct/discounts``
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer]
 
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
+     *
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    )
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    )
+
     #endif
 
     #if os(iOS) || VISION_OS
@@ -858,6 +930,20 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
+
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``.
+     *
+     * - Parameter webPurchaseRedemption: WebPurchaseRedemption object previously parsed from
+     * a URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     * - Parameter completion: The completion block to be called with the updated CustomerInfo
+     * on a successful redemption, or the error if not.
+     * - Seealso: ``Purchases/redeemWebPurchase(_:)``
+     */
+    @objc func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    )
 
     // MARK: - Deprecated
 
@@ -1076,6 +1162,42 @@ public protocol PurchasesSwiftType: AnyObject {
     func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
+
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     *
+     * - Parameter webPurchaseRedemption: Deep link previously parsed from a
+     * URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     */
+    func redeemWebPurchase(
+        _ webPurchaseRedemption: WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided product.
+     *
+     * - Parameter product: The product to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forProduct product: StoreProduct
+    ) async throws -> [WinBackOffer]
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package
+    ) async throws -> [WinBackOffer]
+    #endif
 
 }
 

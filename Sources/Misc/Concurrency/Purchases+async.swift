@@ -93,6 +93,16 @@ extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+    func purchaseAsync(_ params: PurchaseParams) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            purchase(params,
+                     completion: { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+            })
+        }
+    }
+
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in
             syncPurchases { customerInfo, error in

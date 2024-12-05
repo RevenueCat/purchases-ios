@@ -20,6 +20,10 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
+    var isSandbox: Bool {
+        return Purchases.shared.isSandbox
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         try await Purchases.shared.customerInfo()
     }
@@ -32,6 +36,20 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
                           product: StoreProduct) async throws -> PromotionalOffer {
         try await Purchases.shared.promotionalOffer(forProductDiscount: discount,
                                                     product: product)
+    }
+
+    func purchase(
+        product: StoreProduct,
+        promotionalOffer: PromotionalOffer
+    ) async throws -> PurchaseResultData {
+        try await Purchases.shared.purchase(
+            product: product,
+            promotionalOffer: promotionalOffer
+        )
+    }
+
+    func track(customerCenterEvent: CustomerCenterEvent) {
+        Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
 
 }

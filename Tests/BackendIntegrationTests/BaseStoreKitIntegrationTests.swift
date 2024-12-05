@@ -152,12 +152,35 @@ extension BaseStoreKitIntegrationTests {
     @discardableResult
     func purchaseMonthlyProduct(
         allowOfflineEntitlements: Bool = false,
+        metadata: [String: String]? = nil,
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let logger = TestLogHandler()
 
-        let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+        let data: PurchaseResultData
+
+        #if ENABLE_TRANSACTION_METADATA
+        if let metadata = metadata {
+            let product = try await self.monthlyPackage.storeProduct
+
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            let params = PurchaseParams.Builder(product: product)
+                .with(metadata: metadata)
+                .build()
+            data = try await self.purchases.purchase(params)
+            #else
+            data = try await self.purchases.purchase(product: product)
+            #endif
+
+        } else {
+            let product = try await self.monthlyPackage.storeProduct
+            data = try await self.purchases.purchase(product: product)
+        }
+        #else
+        let product = try await self.monthlyPackage.storeProduct
+        data = try await self.purchases.purchase(product: product)
+        #endif
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,

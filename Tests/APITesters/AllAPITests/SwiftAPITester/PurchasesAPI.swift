@@ -78,7 +78,8 @@ func checkPurchasesEnums() {
     switch storeMessageType! {
     case .billingIssue,
          .priceIncreaseConsent,
-         .generic:
+         .generic,
+         .winBackOffer:
         print(storeMessageType!)
     @unknown default:
         fatalError()
@@ -86,6 +87,7 @@ func checkPurchasesEnums() {
 }
 
 private func checkStaticMethods() {
+    let url: URL = URL(string: "https://example.com")!
     let logHandler: (LogLevel, String) -> Void = { _, _ in }
     Purchases.logHandler = logHandler
 
@@ -100,6 +102,14 @@ private func checkStaticMethods() {
 
     print(canI, version, logLevel, proxyUrl!, forceUniversalAppStore, simulatesAskToBuyInSandbox,
           sharedPurchases, isPurchasesConfigured)
+}
+
+private func checkExtensions() {
+    let url: URL = URL(string: "https://example.com")!
+
+    let webPurchaseRedemption: WebPurchaseRedemption? = url.asWebPurchaseRedemption
+
+    print(webPurchaseRedemption!)
 }
 
 private func checkTypealiases(
@@ -137,6 +147,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let discount: StoreProductDiscount! = nil
     let pack: Package! = nil
     let offer: PromotionalOffer! = nil
+    let winBackOffer: WinBackOffer! = nil
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
@@ -155,6 +166,35 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack,
                        promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    var packageParamsBuilder = PurchaseParams.Builder(package: pack)
+        .with(promotionalOffer: offer)
+
+    #if ENABLE_TRANSACTION_METADATA
+    packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
+    #endif
+
+    if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        packageParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
+    }
+    let packageParams = packageParamsBuilder.build()
+
+    var productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
+        .with(promotionalOffer: offer)
+
+    #if ENABLE_TRANSACTION_METADATA
+    productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
+    #endif
+
+    if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        productParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
+    }
+    let productParams = productParamsBuilder.build()
+
+    purchases.purchase(packageParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(productParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    #endif
 
     purchases.invalidateCustomerInfoCache()
 
@@ -230,6 +270,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let stp: StoreProduct! = nil
     let discount: StoreProductDiscount! = nil
     let offer: PromotionalOffer! = nil
+    let webPurchaseRedemption: WebPurchaseRedemption! = nil
 
     do {
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
@@ -248,13 +289,22 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
-        let _: [StoreProduct] = await purchases.products([])
+        let storeProducts : [StoreProduct] = await purchases.products([])
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
                                                                                       promotionalOffer: offer)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
+
+        var params = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+
+        #if ENABLE_TRANSACTION_METADATA
+        params = params.with(metadata: ["foo":"bar"])
+        #endif
+
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params.build())
+
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()
@@ -264,6 +314,27 @@ private func checkAsyncMethods(purchases: Purchases) async {
             let result = try await StoreKit.Product.products(for: [""]).first!.purchase()
             let _: StoreTransaction? = try await purchases.recordPurchase(result)
         }
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            let winBackOffersForProduct: [WinBackOffer] = try await purchases.eligibleWinBackOffers(
+                forProduct: storeProducts.first!
+            )
+
+            purchases.eligibleWinBackOffers(
+                forProduct: storeProducts.first!
+            ) { (winBackOffers: [WinBackOffer]?, error: PublicError?) in
+                return
+            }
+
+            let winBackOffersForPackage: [WinBackOffer] = try await purchases.eligibleWinBackOffers(forPackage: pack)
+            purchases.eligibleWinBackOffers(
+                forPackage: pack
+            ) { (winBackOffers: [WinBackOffer]?, error: PublicError?) in
+                return
+            }
+        }
+        #endif
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
@@ -278,10 +349,35 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
+
+        let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
+            webPurchaseRedemption
+        )
     } catch {}
 }
 
+func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bool {
+    switch result {
+    case let .success(customerInfo):
+        let _: CustomerInfo = customerInfo
+        return true
+    case let .error(error):
+        let _: PublicError = error
+        return true
+    case .invalidToken:
+        return true
+    case .alreadyRedeemed:
+        return true
+    case let .expired(obfuscatedEmail):
+        let _: String = obfuscatedEmail
+        return true
+    }
+}
+
 func checkNonAsyncMethods(_ purchases: Purchases) {
+    let webPurchaseRedemption: WebPurchaseRedemption! = nil
+    let redemptionCompletion: ((CustomerInfo?, PublicError?) -> Void)! = nil
+
     #if os(iOS) || VISION_OS
     if #available(iOS 15.0, *) {
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
@@ -293,6 +389,18 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     if #available(iOS 16.0, *) {
         purchases.showStoreMessages { }
         purchases.showStoreMessages(for: [StoreMessageType.generic]) { }
+    }
+    #endif
+
+    purchases.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption, completion: redemptionCompletion)
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        purchases.getProducts([""]) { (products: [StoreProduct]) in
+            purchases.eligibleWinBackOffers(
+                forProduct: products.first!
+            ) { (winBackOffers: [WinBackOffer]?, error: Error?) in }
+        }
     }
     #endif
 }

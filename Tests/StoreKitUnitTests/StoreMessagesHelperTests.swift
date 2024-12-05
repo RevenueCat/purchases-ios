@@ -102,6 +102,25 @@ class StoreMessagesHelperTests: TestCase {
         expect(message2.displayCallCount) == 1
     }
 
+    func testShowingStoreMessagesDoesntMarkUnshownMessagesAsShown() async throws {
+        self.createHelper(showStoreMessagesAutomatically: false)
+
+        let message1 = MockStoreMessage(reason: .generic)
+        let message2 = MockStoreMessage(reason: .priceIncreaseConsent)
+
+        try await self.waitForDeferredMessages(messages: [message1, message2])
+
+        await self.helper.showStoreMessages(types: Set([StoreMessageType.generic]))
+
+        expect(message1.displayCallCount) == 1
+        expect(message2.displayCallCount) == 0
+
+        await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
+
+        expect(message1.displayCallCount) == 1
+        expect(message2.displayCallCount) == 1
+    }
+
 }
 
 @available(iOS 16.0, *)
@@ -128,6 +147,15 @@ private final class MockStoreMessage: StoreMessage {
     var reason: Message.Reason { self._reason.value }
     private let _reason: Box<Message.Reason>
 
+    // swiftlint:disable:next legacy_hashing
+    var hashValue: Int {
+        var hasher = Hasher()
+        hasher.combine(self._reason.value)
+        hasher.combine(self._displayCalled.value)
+        hasher.combine(self._displayCallCount.value)
+        return hasher.finalize()
+    }
+
     init(reason: Message.Reason) {
         self._reason = .init(reason)
     }
@@ -143,7 +171,6 @@ private final class MockStoreMessage: StoreMessage {
         self._displayCalled.value = true
         self._displayCallCount.modify { $0 += 1 }
     }
-
 }
 
 @available(iOS 16.0, *)

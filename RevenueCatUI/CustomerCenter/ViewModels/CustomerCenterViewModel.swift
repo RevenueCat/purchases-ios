@@ -26,17 +26,17 @@ import RevenueCat
     // We fail open.
     private static let defaultAppIsLatestVersion = true
 
-    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
     typealias CurrentVersionFetcher = () -> String?
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    private(set) var hasSubscriptions: Bool = false
+    private(set) var hasActiveProducts: Bool = false
     @Published
-    private(set) var subscriptionsAreFromApple: Bool = false
+    private(set) var hasAppleEntitlement: Bool = false
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     // @PublicForExternalTesting
     @Published
@@ -68,7 +68,6 @@ import RevenueCat
         return state != .notLoaded && configuration != nil
     }
 
-    private var customerInfoFetcher: CustomerInfoFetcher
     private let currentVersionFetcher: CurrentVersionFetcher
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
@@ -76,48 +75,39 @@ import RevenueCat
 
     init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
-        customerInfoFetcher: @escaping CustomerInfoFetcher = {
-            guard Purchases.isConfigured else { throw PaywallError.purchasesNotConfigured }
-            return try await Purchases.shared.customerInfo()
-        },
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        }
+        },
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()
     ) {
         self.state = .notLoaded
-        self.customerInfoFetcher = customerInfoFetcher
         self.currentVersionFetcher = currentVersionFetcher
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.purchasesProvider = purchasesProvider
     }
 
     #if DEBUG
 
     convenience init(
-        hasSubscriptions: Bool = false,
-        areSubscriptionsFromApple: Bool = false
+        hasActiveProducts: Bool = false,
+        hasAppleEntitlement: Bool = false
     ) {
         self.init(customerCenterActionHandler: nil)
-        self.hasSubscriptions = hasSubscriptions
-        self.subscriptionsAreFromApple = areSubscriptionsFromApple
+        self.hasActiveProducts = hasActiveProducts
+        self.hasAppleEntitlement = hasAppleEntitlement
         self.state = .success
     }
 
     #endif
 
-    func loadHasSubscriptions() async {
+    func loadHasActivePurchases() async {
         do {
-            // swiftlint:disable:next todo
-            // TODO: support non-consumables
-            let customerInfo = try await self.customerInfoFetcher()
-            let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
-
-            let subscriptionsAreFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
-                entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
-                customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
-            })
-
-            self.hasSubscriptions = hasSubscriptions
-            self.subscriptionsAreFromApple = subscriptionsAreFromApple
+            let customerInfo = try await purchasesProvider.customerInfo()
+            self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
+                                customerInfo.nonSubscriptions.count > 0
+            self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in
+                entitlement.value.store == .appStore
+            }
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -145,10 +135,17 @@ import RevenueCat
         }
     }
 
-    func onAppUpdateClick() {
-        // swiftlint:disable:next todo
-        // TODO: implement opening the App Store
+    func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
+        let isSandbox = purchasesProvider.isSandbox
+        let eventData = CustomerCenterEvent.Data(locale: .current,
+                                                 darkMode: darkMode,
+                                                 isSandbox: isSandbox,
+                                                 displayMode: displayMode)
+        let event = CustomerCenterEvent.impression(CustomerCenterEvent.CreationData(), eventData)
+
+        purchasesProvider.track(customerCenterEvent: event)
     }
+
 }
 
 fileprivate extension String {

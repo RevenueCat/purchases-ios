@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import XCTest
 
 @testable import RevenueCat
 
@@ -90,14 +91,25 @@ class MockOperationDispatcher: OperationDispatcher {
         if self.forwardToOriginalDispatchOnWorkerThread {
             super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
         } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
-            let semaphore = DispatchSemaphore(value: 0)
+            // We want to wait for the async task to finish before leaving this function
+            // Use a dispatch group to wait for the async task to finish    
+            let dispatchGroup = DispatchGroup()
+            dispatchGroup.enter()
 
-            Task<Void, Never> {
-                await block()
-                semaphore.signal()
+            // Execute the async task on a background queue to avoid blocking
+            DispatchQueue.global(qos: .userInitiated).async {
+                Task {
+                    await block()
+                    dispatchGroup.leave()
+                }
             }
 
-            semaphore.wait()
+            // Ensure we wait for the async task to finish
+            // and fail if it takes too long
+            let result = dispatchGroup.wait(timeout: .now() + .seconds(10))
+            if result == .timedOut {
+                XCTFail("Dispatch on worker thread timed out")
+            }
         }
     }
 
@@ -123,3 +135,5 @@ class MockOperationDispatcher: OperationDispatcher {
     }
 
 }
+
+extension MockOperationDispatcher: @unchecked Sendable {}

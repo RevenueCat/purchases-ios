@@ -48,6 +48,7 @@
     switch (paymentMode) {
         case RCDiscountTypeIntroductory:
         case RCDiscountTypePromotional:
+        case RCDiscountTypeWinBack:
             break;
     }
 }

@@ -10,102 +10,14 @@
 //  OfferingsResponse.swift
 //
 //  Created by Nacho Soto on 3/31/22.
-// swiftlint:disable nesting identifier_name missing_docs
 
 import Foundation
-
-#if PAYWALL_COMPONENTS
-
-public struct PaywallComponentsData: Codable, Equatable, Sendable {
-
-    public struct ComponentsConfig: Codable, Equatable, Sendable {
-
-        public var components: [PaywallComponent]
-
-        public init(components: [PaywallComponent]) {
-            self.components = components
-        }
-
-    }
-
-    public enum LocalizationData: Codable, Equatable, Sendable {
-        case string(String), image(PaywallComponent.ThemeImageUrls)
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let stringValue = try? container.decode(String.self) {
-                self = .string(stringValue)
-            } else if let imageValue = try? container.decode(PaywallComponent.ThemeImageUrls.self) {
-                self = .image(imageValue)
-            } else {
-                throw DecodingError.typeMismatch(
-                    LocalizationData.self,
-                    DecodingError.Context(codingPath: decoder.codingPath,
-                                          debugDescription: "Wrong type for LocalizationData")
-                )
-            }
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .string(let stringValue):
-                try container.encode(stringValue)
-            case .image(let imageValue):
-                try container.encode(imageValue)
-            }
-        }
-    }
-
-    public var templateName: String
-
-    /// The base remote URL where assets for this paywall are stored.
-    public var assetBaseURL: URL
-
-    /// The revision identifier for this paywall.
-    public var revision: Int {
-        get { return self._revision }
-        set { self._revision = newValue }
-    }
-
-    public var componentsConfig: ComponentsConfig
-    public var componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
-    public var defaultLocale: String
-
-    @DefaultDecodable.Zero
-    internal private(set) var _revision: Int = 0
-
-    private enum CodingKeys: String, CodingKey {
-        case templateName
-        case componentsConfig
-        case componentsLocalizations
-        case defaultLocale
-        case assetBaseURL = "assetBaseUrl"
-        case _revision = "revision"
-    }
-
-    public init(templateName: String,
-                assetBaseURL: URL,
-                componentsConfig: ComponentsConfig,
-                componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
-                revision: Int,
-                defaultLocaleIdentifier: String) {
-        self.templateName = templateName
-        self.assetBaseURL = assetBaseURL
-        self.componentsConfig = componentsConfig
-        self.componentsLocalizations = componentsLocalizations
-        self._revision = revision
-        self.defaultLocale = defaultLocaleIdentifier
-    }
-
-}
-
-#endif
 
 struct OfferingsResponse {
 
     struct Offering {
 
+        // swiftlint:disable:next nesting
         struct Package {
 
             let identifier: String

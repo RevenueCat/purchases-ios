@@ -31,29 +31,38 @@ enum CustomerCenterConfigTestData {
                             .init(
                                 id: "1",
                                 title: "Didn't receive purchase",
+                                url: nil,
+                                openMethod: nil,
                                 type: .missingPurchase,
                                 detail: nil
                             ),
                             .init(
                                 id: "2",
                                 title: "Request a refund",
+                                url: nil,
+                                openMethod: nil,
                                 type: .refundRequest,
                                 detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
                                     iosOfferId: "offer_id",
                                     eligible: true,
                                     title: "title",
-                                    subtitle: "subtitle"
+                                    subtitle: "subtitle",
+                                    productMapping: ["monthly": "offer_id"]
                                 ))
                             ),
                             .init(
                                 id: "3",
                                 title: "Change plans",
+                                url: nil,
+                                openMethod: nil,
                                 type: .changePlans,
                                 detail: nil
                             ),
                             .init(
                                 id: "4",
                                 title: "Cancel subscription",
+                                url: nil,
+                                openMethod: nil,
                                 type: .cancel,
                                 detail: .feedbackSurvey(.init(
                                     title: "Why are you cancelling?",
@@ -86,6 +95,8 @@ enum CustomerCenterConfigTestData {
                             .init(
                                 id: "9q9719171o",
                                 title: "Check purchases",
+                                url: nil,
+                                openMethod: nil,
                                 type: .missingPurchase,
                                 detail: nil
                             )
@@ -117,24 +128,30 @@ enum CustomerCenterConfigTestData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static let subscriptionInformationMonthlyRenewing: SubscriptionInformation = .init(
+    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
         title: "Basic",
         durationTitle: "Monthly",
-        price: "$4.99",
-        expirationDateString: "June 1st, 2024",
+        explanation: .earliestRenewal,
+        price: .paid("$4.99"),
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
         willRenew: true,
         productIdentifier: "product_id",
-        active: true
+        active: true,
+        store: .appStore
     )
 
-    static let subscriptionInformationYearlyExpiring: SubscriptionInformation = .init(
+    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
         title: "Basic",
         durationTitle: "Yearly",
-        price: "$49.99",
-        expirationDateString: "June 1st, 2024",
+        explanation: .earliestRenewal,
+        price: .paid("$49.99"),
+        expirationOrRenewal: .init(label: .expires,
+                                   date: .date("June 1st, 2024")),
         willRenew: false,
         productIdentifier: "product_id",
-        active: true
+        active: true,
+        store: .appStore
     )
 
 }

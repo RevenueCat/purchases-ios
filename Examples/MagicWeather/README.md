@@ -8,8 +8,8 @@ Sign up for a free RevenueCat account [here](https://www.revenuecat.com).
 
 This sample uses:
 
-- Xcode 13.4.1
-- iOS 14
+- Xcode 15.3
+- iOS 15
 - Swift 5
 
 See minimum platform version requirements for RevenueCat's *Purchases* SDK [here](https://github.com/RevenueCat/purchases-ios/blob/main/Package.swift#L65).
@@ -19,11 +19,12 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 | Feature                          | Sample Project Location                   |
 | -------------------------------- | ----------------------------------------- |
 | 🕹 Configuring the *Purchases* SDK  | [Lifecycle/AppDelegate.swift](MagicWeather/Sources/Lifecycle/AppDelegate.swift) |
-| 💰 Building a basic paywall         | [Controllers/PaywallViewController.swift](MagicWeather/Sources/Controllers/PaywallViewController.swift) |
-| 🔐 Checking subscription status     | [Controllers/WeatherViewController.swift](MagicWeather/Sources/Controllers/WeatherViewController.swift#L36) |
-| 🤑 Restoring transactions           | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L112) |
-| 👥 Identifying the user             | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L56) |
-| 🚪 Logging out the user             | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L86) |
+| 💰 Building a basic paywall         | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#144) |
+| 💰 Building a targeted paywall         | [Controllers/WeatherViewController.swift](MagicWeather/Sources/Controllers/WeatherViewController.swift#53) |
+| 🔐 Checking subscription status     | [Controllers/WeatherViewController.swift](MagicWeather/Sources/Controllers/WeatherViewController.swift#L38) |
+| 🤑 Restoring transactions           | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L116) |
+| 👥 Identifying the user             | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L73) |
+| 🚪 Logging out the user             | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L96) |
 
 ## Setup & Run
 
@@ -38,6 +39,7 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
     - Attach the product to an [entitlement](https://docs.revenuecat.com/docs/entitlements#creating-an-entitlement), e.g. `premium`.
     - Attach the product to a [package](https://docs.revenuecat.com/docs/entitlements#adding-packages) (e.g. `Annual`) inside an [offering](https://docs.revenuecat.com/docs/entitlements#creating-an-offering) (e.g. `sale` or `default`).
 - Get your [API key](https://docs.revenuecat.com/docs/authentication#obtaining-api-keys) from your RevenueCat project.
+- Create a [Paywall](https://www.revenuecat.com/docs/tools/paywalls) for your default offering.
 
 ### Steps to Run
 1. Download or clone this repository

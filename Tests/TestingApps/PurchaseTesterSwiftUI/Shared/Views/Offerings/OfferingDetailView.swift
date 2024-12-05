@@ -32,6 +32,7 @@ struct OfferingDetailView: View {
         @Binding var isPurchasing: Bool
 
         @EnvironmentObject private var observerModeManager: ObserverModeManager
+        @EnvironmentObject private var customerData: RevenueCatCustomerData
         @State private var eligibility: IntroEligibilityStatus? = nil
         
         @State private var error: Error?
@@ -133,15 +134,41 @@ struct OfferingDetailView: View {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            let result = try await Purchases.shared.purchase(package: self.package)
+            let result: PurchaseResultData
+            if let metadata = customerData.metadata {
+                #if ENABLE_TRANSACTION_METADATA
+                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                #else
+                let params = PurchaseParams.Builder(package: package).build()
+                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
+                print("⚠️ Warning - Metadata will not be sent with the purchase")
+                #endif
+                result = try await Purchases.shared.purchase(params)
+            } else {
+                result = try await Purchases.shared.purchase(package: self.package)
+            }
             self.completedPurchase(result)
+
         }
         
         private func purchaseAsProduct() async throws {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            let result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+            let result: PurchaseResultData
+            if let metadata = customerData.metadata {
+                #if ENABLE_TRANSACTION_METADATA
+                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                #else
+                let params = PurchaseParams.Builder(package: package).build()
+                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
+                print("⚠️ Warning - Metadata will not be sent with the purchase")
+                #endif
+                result = try await Purchases.shared.purchase(params)
+            } else {
+                result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+            }
+
             self.completedPurchase(result)
         }
 

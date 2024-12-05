@@ -1,0 +1,43 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Headers-Hash" : "X-Is-Sandbox:sha256:b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+    "X-Is-Debug-Build" : "true",
+    "X-Is-Sandbox" : "true",
+    "X-Nonce" : "MTIzNDU2Nzg5MGFi",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Post-Params-Hash" : "app_user_id,fetch_token,app_transaction:sha256:be95d3a1d4c00357de2696c1a4546be1d0312dbee67feee8a971f01f8ac4b729",
+    "X-Preferred-Locales" : "en_EN",
+    "X-Retry-Count" : "0",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        }
+      },
+      "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
+      "initiation_source" : "purchase",
+      "is_restore" : false,
+      "observer_mode" : false
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

@@ -318,3 +318,5 @@ class MockDeviceCache: DeviceCache {
     }
 
 }
+
+extension MockDeviceCache: @unchecked Sendable {}

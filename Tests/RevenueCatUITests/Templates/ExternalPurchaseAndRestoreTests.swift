@@ -43,7 +43,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -93,7 +93,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -143,7 +143,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -193,7 +193,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -223,7 +223,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -272,7 +272,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
+        _ = try PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
@@ -298,7 +298,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
 
-        try PaywallView(configuration: config).addToHierarchy()
+        _ = try PaywallView(configuration: config).addToHierarchy()
 
         do {
             _ = try await purchasHandler.purchase(package: Self.package)
@@ -316,7 +316,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
 
-        try PaywallView(configuration: config).addToHierarchy()
+        _ = try PaywallView(configuration: config).addToHierarchy()
 
         do {
             _ = try await purchasHandler.restorePurchases()
@@ -339,7 +339,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
 
-        try PaywallView(configuration: config).addToHierarchy()
+        _ = try PaywallView(configuration: config).addToHierarchy()
 
         // expect a warning logged to the console
         _ = try await purchasHandler.restorePurchases()

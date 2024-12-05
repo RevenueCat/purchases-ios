@@ -68,3 +68,5 @@ class MockInMemoryCachedOfferings<T: Offerings>: InMemoryCachedObject<Offerings>
     }
 
 }
+
+extension MockInMemoryCachedOfferings: @unchecked Sendable {}

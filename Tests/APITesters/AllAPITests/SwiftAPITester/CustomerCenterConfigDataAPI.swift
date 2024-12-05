@@ -27,10 +27,17 @@ func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
 func checkHelpPath(_ path: CustomerCenterConfigData.HelpPath) {
     let id: String = path.id
     let title: String = path.title
+    let url: URL? = path.url
+    let openMethod: CustomerCenterConfigData.HelpPath.OpenMethod? = path.openMethod
     let type: CustomerCenterConfigData.HelpPath.PathType = path.type
     let detail: CustomerCenterConfigData.HelpPath.PathDetail? = path.detail
 
-    let _: CustomerCenterConfigData.HelpPath = .init(id: id, title: title, type: type, detail: detail)
+    let _: CustomerCenterConfigData.HelpPath = .init(id: id,
+                                                     title: title,
+                                                     url: url,
+                                                     openMethod: openMethod,
+                                                     type: type,
+                                                     detail: detail)
 }
 
 func checkHelpPathDetail(_ detail: CustomerCenterConfigData.HelpPath.PathDetail) {
@@ -49,11 +56,13 @@ func checkPromotionalOffer(_ offer: CustomerCenterConfigData.HelpPath.Promotiona
     let eligible: Bool = offer.eligible
     let title: String = offer.title
     let subtitle: String = offer.subtitle
+    let productMapping: [String: String] = offer.productMapping
 
     let _: CustomerCenterConfigData.HelpPath.PromotionalOffer = .init(iosOfferId: iosOfferId,
                                                                       eligible: eligible,
                                                                       title: title,
-                                                                      subtitle: subtitle)
+                                                                      subtitle: subtitle,
+                                                                      productMapping: productMapping)
 }
 
 func checkFeedbackSurvey(_ survey: CustomerCenterConfigData.HelpPath.FeedbackSurvey) {

@@ -27,6 +27,7 @@ import SwiftUI
 class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
+    let paths: [CustomerCenterConfigData.HelpPath]
 
     @Published
     var showRestoreAlert: Bool = false
@@ -36,6 +37,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var loadingPath: CustomerCenterConfigData.HelpPath?
     @Published
     var promotionalOfferData: PromotionalOfferData?
+    @Published
+    var inAppBrowserURL: IdentifiableURL?
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -50,22 +53,21 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     @Published
-    private(set) var subscriptionInformation: SubscriptionInformation?
+    private(set) var purchaseInformation: PurchaseInformation?
     @Published
-    private(set) var refundRequestStatusMessage: String?
+    private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var purchasesProvider: ManageSubscriptionsPurchaseType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
-    @Environment(\.localization)
-    private var localization
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
          purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
         self.screen = screen
+        self.paths = screen.filteredPaths
         self.purchasesProvider = purchasesProvider
         self.customerCenterActionHandler = customerCenterActionHandler
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
@@ -73,13 +75,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     init(screen: CustomerCenterConfigData.Screen,
-         subscriptionInformation: SubscriptionInformation,
+         purchaseInformation: PurchaseInformation,
          customerCenterActionHandler: CustomerCenterActionHandler?,
-         refundRequestStatusMessage: String? = nil) {
+         refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
-        self.subscriptionInformation = subscriptionInformation
+        self.paths = screen.filteredPaths
+        self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
-        self.refundRequestStatusMessage = refundRequestStatusMessage
+        self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
         state = .success
@@ -87,36 +90,26 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     func loadScreen() async {
         do {
-            try await loadSubscriptionInformation()
+            try await loadPurchaseInformation()
             self.state = .success
         } catch {
             self.state = .error(error)
         }
     }
 
-    private func loadSubscriptionInformation() async throws {
+    private func loadPurchaseInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
 
         guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
-              let subscribedProduct = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
+              let product = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
         else {
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
 
-        // swiftlint:disable:next todo
-        // TODO: support non-consumables
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        self.subscriptionInformation = SubscriptionInformation(
-            title: subscribedProduct.localizedTitle,
-            durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
-            price: subscribedProduct.localizedPriceString,
-            expirationDateString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
-            willRenew: currentEntitlement.willRenew,
-            productIdentifier: currentEntitlement.productIdentifier,
-            active: currentEntitlement.isActive
-        )
+        let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
+                                                      subscribedProduct: product)
+        self.purchaseInformation = purchaseInformation
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
@@ -154,8 +147,45 @@ class ManageSubscriptionsViewModel: ObservableObject {
             self.loadingPath = nil
         }
     }
+
+    func onDismissInAppBrowser() {
+        self.inAppBrowserURL = nil
+    }
 #endif
 
+}
+
+struct IdentifiableURL: Identifiable {
+
+    var id: String {
+        return url.absoluteString
+    }
+
+    let url: URL
+
+}
+
+// MARK: - Promotional Offer Sheet Dismissal Handling
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension ManageSubscriptionsViewModel {
+
+    /// Function responsible for handling the user's action on the PromotionalOfferView
+    func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        // Clear the promotional offer data to dismiss the sheet
+        self.promotionalOfferData = nil
+
+        if userAction.shouldTerminateCurrentPathFlow {
+            self.loadingPath = nil
+        } else {
+            if let loadingPath = loadingPath {
+                await self.onPathSelected(path: loadingPath)
+                self.loadingPath = nil
+            }
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -165,28 +195,22 @@ class ManageSubscriptionsViewModel: ObservableObject {
 private extension ManageSubscriptionsViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
+    // swiftlint:disable:next cyclomatic_complexity
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
         case .refundRequest:
             do {
-                guard let subscriptionInformation = self.subscriptionInformation else { return }
-                let productId = subscriptionInformation.productIdentifier
+                guard let purchaseInformation = self.purchaseInformation else { return }
+                let productId = purchaseInformation.productIdentifier
                 self.customerCenterActionHandler?(.refundRequestStarted(productId))
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
+                self.refundRequestStatus = status
                 self.customerCenterActionHandler?(.refundRequestCompleted(status))
-                switch status {
-                case .error:
-                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundErrorGeneric)
-                case .success:
-                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundGranted)
-                case .userCancelled:
-                    self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundCanceled)
-                }
             } catch {
+                self.refundRequestStatus = .error
                 self.customerCenterActionHandler?(.refundRequestCompleted(.error))
-                self.refundRequestStatusMessage = localization.commonLocalizedString(for: .refundErrorGeneric)
             }
         case .changePlans, .cancel:
             do {
@@ -194,6 +218,22 @@ private extension ManageSubscriptionsViewModel {
                 try await purchasesProvider.showManageSubscriptions()
             } catch {
                 self.state = .error(error)
+            }
+        case .customUrl:
+            guard let url = path.url,
+                  let openMethod = path.openMethod else {
+                Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
+                return
+            }
+            switch openMethod {
+            case .external,
+                _ where !url.isWebLink:
+                URLUtilities.openURLIfNotAppExtension(url)
+            case .inApp:
+                self.inAppBrowserURL = .init(url: url)
+            @unknown default:
+                Logger.warning(Strings.could_not_determine_type_of_custom_url)
+                URLUtilities.openURLIfNotAppExtension(url)
             }
         default:
             break
@@ -224,6 +264,20 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         await Purchases.shared.products(productIdentifiers)
+    }
+
+}
+
+private extension CustomerCenterConfigData.Screen {
+
+    var filteredPaths: [CustomerCenterConfigData.HelpPath] {
+        return self.paths.filter { path in
+            #if targetEnvironment(macCatalyst)
+                return path.type == .refundRequest
+            #else
+                return path.type != .unknown
+            #endif
+        }
     }
 
 }

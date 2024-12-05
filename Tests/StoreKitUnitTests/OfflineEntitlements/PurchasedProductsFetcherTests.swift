@@ -56,16 +56,16 @@ class PurchasedProductsFetcherTests: BasePurchasedProductsFetcherTests {
         expect(product.productIdentifier) == transaction.productID
 
         expect(subscription.periodType) == .trial
-        expect(subscription.purchaseDate).to(beCloseToNow())
-        expect(subscription.originalPurchaseDate).to(beCloseToNow())
-        expect(subscription.expiresDate).to(beCloseToDate(expiration))
+        expect(subscription.purchaseDate) == transaction.purchaseDate
+        expect(subscription.originalPurchaseDate) == transaction.originalPurchaseDate
+        expect(subscription.expiresDate) == transaction.expirationDate
         expect(subscription.store) == .appStore
         expect(subscription.isSandbox) == self.sandboxDetector.isSandbox
         expect(subscription.ownershipType) == .purchased
 
-        expect(entitlement.expiresDate).to(beCloseToDate(expiration))
+        expect(entitlement.expiresDate) == transaction.expirationDate
         expect(entitlement.productIdentifier) == transaction.productID
-        expect(entitlement.purchaseDate).to(beCloseToNow())
+        expect(entitlement.purchaseDate) == transaction.purchaseDate
     }
 
     func testTwoPurchasedProduct() async throws {

@@ -110,8 +110,8 @@ struct IconView_Previews: PreviewProvider {
 
     static var previews: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))]) {
-            ForEach(PaywallIcon.allCases, id: \.rawValue) { icon in
-                Self.icon(icon, Self.colors.randomElement()!)
+            ForEach(Array(PaywallIcon.allCases.enumerated()), id: \.element.rawValue) { index, icon in
+                Self.icon(icon, Self.colors[index % Self.colors.count])
             }
         }
     }

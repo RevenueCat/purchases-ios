@@ -18,6 +18,8 @@ import SwiftUI
 
 #if os(iOS)
 
+/// Warning: This is currently in beta and subject to change.
+///
 /// A SwiftUI view for displaying a customer support common tasks
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
@@ -30,27 +32,24 @@ public struct CustomerCenterView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
-    private var localization: CustomerCenterConfigData.Localization
-    private var appearance: CustomerCenterConfigData.Appearance
-    private var supportInformation: CustomerCenterConfigData.Support?
+
+    private let mode: CustomerCenterPresentationMode
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the customer center.
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+                mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
-        self.localization = .default
-        self.appearance = .default
+        self.mode = mode
     }
 
     fileprivate init(viewModel: CustomerCenterViewModel,
-                     localization: CustomerCenterConfigData.Localization = .default,
-                     appearance: CustomerCenterConfigData.Appearance = .default) {
+                     mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue: viewModel)
-        self.localization = localization
-        self.appearance = appearance
+        self.mode = mode
     }
 
     // swiftlint:disable:next missing_docs
@@ -70,6 +69,9 @@ public struct CustomerCenterView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .task {
+            self.trackImpression()
+        }
         .environmentObject(self.viewModel)
     }
 
@@ -83,15 +85,15 @@ private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
         if !viewModel.isLoaded {
-            await viewModel.loadHasSubscriptions()
+            await viewModel.loadHasActivePurchases()
             await viewModel.loadCustomerCenterConfig()
         }
     }
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasSubscriptions {
-            if viewModel.subscriptionsAreFromApple,
+        if viewModel.hasActiveProducts {
+            if viewModel.hasAppleEntitlement,
                let screen = configuration.screens[.management] {
                 if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
                     AppUpdateWarningView(
@@ -110,18 +112,30 @@ private extension CustomerCenterView {
                 WrongPlatformView()
             }
         } else {
-            NoSubscriptionsView(configuration: configuration)
+            if let screen = configuration.screens[.noActive] {
+                ManageSubscriptionsView(screen: screen,
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+            } else {
+                // Fallback with a restore button
+                NoSubscriptionsView(configuration: configuration)
+            }
         }
     }
 
     @ViewBuilder
     func destinationView(configuration: CustomerCenterConfigData) -> some View {
-        let accentColor = Color.from(colorInformation: self.appearance.accentColor, for: self.colorScheme)
+        let accentColor = Color.from(colorInformation: configuration.appearance.accentColor,
+                                     for: self.colorScheme)
 
         CompatibilityNavigationStack {
             destinationContent(configuration: configuration)
         }
         .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+    }
+
+    func trackImpression() {
+        viewModel.trackImpression(darkMode: self.colorScheme == .dark,
+                                  displayMode: self.mode)
     }
 
 }
@@ -135,7 +149,7 @@ private extension CustomerCenterView {
 struct CustomerCenterView_Previews: PreviewProvider {
 
    static var previews: some View {
-       let viewModel = CustomerCenterViewModel(hasSubscriptions: false, areSubscriptionsFromApple: false)
+       let viewModel = CustomerCenterViewModel(hasActiveProducts: false, hasAppleEntitlement: false)
        CustomerCenterView(viewModel: viewModel)
    }
 

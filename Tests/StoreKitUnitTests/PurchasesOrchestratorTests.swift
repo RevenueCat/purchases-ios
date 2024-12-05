@@ -29,11 +29,20 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseWithInvalidPromotionalOfferSignatureFails() async throws
 
+    // MARK: - PurchaseParams
+
+    func testPurchaseWithPurchaseParamsPostsReceipt() async throws
+
+    func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws
 
     func testPurchaseFailureRemembersPresentedPaywall() async throws
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSyncsPaywallEvents() async throws
 
     // MARK: - AdServices and Attributes
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws

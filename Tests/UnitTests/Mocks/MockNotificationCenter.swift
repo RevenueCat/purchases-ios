@@ -60,4 +60,30 @@ class MockNotificationCenter: NotificationCenter {
             }
         }
     }
+
+    func fireApplicationDidEnterBackgroundNotification() {
+        fireNotification(SystemInfo.applicationDidEnterBackgroundNotification)
+    }
+
+    func fireApplicationWillEnterForegroundNotification() {
+        fireNotification(SystemInfo.applicationWillEnterForegroundNotification)
+    }
+
+    private func fireNotification(_ notificationName: NSNotification.Name) {
+        for (observer, selector, name, object) in self.observers {
+            var notification: NSNotification?
+            if let name = name, name == notificationName {
+                notification = NSNotification(name: name, object: object)
+                _ = observer.value?.perform(selector, with: notification)
+            }
+        }
+
+        for (block, name, object) in self.observersWithBlock {
+            if let name = name, name == notificationName {
+                block(Notification(name: name, object: object))
+            }
+        }
+    }
 }
+
+extension MockNotificationCenter: @unchecked Sendable {}

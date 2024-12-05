@@ -46,10 +46,8 @@ enum PurchaseStrings {
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
-    case purchasing_product(StoreProduct)
-    case purchasing_product_from_package(StoreProduct, Package)
-    case purchasing_product_with_offer(StoreProduct, PromotionalOffer.SignedData)
-    case purchasing_product_from_package_with_offer(StoreProduct, Package, PromotionalOffer.SignedData)
+    case purchasing_product(StoreProduct, Package?, PromotionalOffer.SignedData?, [String: String]?)
+
     case purchased_product(productIdentifier: String)
     case product_purchase_failed(productIdentifier: String, error: Error)
     case skpayment_missing_from_skpaymenttransaction
@@ -202,19 +200,19 @@ extension PurchaseStrings: LogMessage {
         case .purchases_synced:
             return "Purchases synced."
 
-        case let .purchasing_product(product):
-            return "Purchasing Product '\(product.productIdentifier)'"
-
-        case let .purchasing_product_from_package(product, package):
-            return "Purchasing Product '\(product.productIdentifier)' from package " +
-            "in Offering '\(package.presentedOfferingContext.offeringIdentifier)'"
-
-        case let .purchasing_product_with_offer(product, discount):
-            return "Purchasing Product '\(product.productIdentifier)' with Offer '\(discount.identifier)'"
-
-        case let .purchasing_product_from_package_with_offer(product, package, discount):
-            return "Purchasing Product '\(product.productIdentifier)' from package in Offering " +
-            "'\(package.presentedOfferingContext.offeringIdentifier)' with Offer '\(discount.identifier)'"
+        case let .purchasing_product(product, package, discount, metadata):
+            var message = "Purchasing Product '\(product.productIdentifier)'"
+            if let package = package {
+                message += " from package in Offering " +
+                "'\(package.presentedOfferingContext.offeringIdentifier)'"
+            }
+            if let discount = discount {
+                message += " with Offer '\(discount.identifier)'"
+            }
+            if let metadata = metadata {
+                message += " with metadata: \(metadata)"
+            }
+            return message
 
         case let .purchased_product(productIdentifier):
             return "Purchased product - '\(productIdentifier)'"

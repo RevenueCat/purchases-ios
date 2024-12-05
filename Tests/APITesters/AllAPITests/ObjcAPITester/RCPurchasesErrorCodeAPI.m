@@ -57,6 +57,7 @@
         case RCAPIEndpointBlocked:
         case RCInvalidPromotionalOfferError:
         case RCOfflineConnectionError:
+        case RCFeatureNotSupportedWithStoreKit1:
         case RCSignatureVerificationFailed:
             NSLog(@"%ld", (long)errCode);
         case RCFeatureNotAvailableInCustomEntitlementsComputationMode:

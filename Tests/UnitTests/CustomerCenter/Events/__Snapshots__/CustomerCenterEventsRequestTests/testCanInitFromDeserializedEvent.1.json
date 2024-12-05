@@ -1,0 +1,13 @@
+{
+  "app_session_id" : "83164C05-2BDC-4807-8918-A4105F727DEB",
+  "app_user_id" : "test-user",
+  "dark_mode" : true,
+  "display_mode" : "full_screen",
+  "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
+  "is_sandbox" : true,
+  "locale" : "en_US",
+  "revision_id" : 1,
+  "timestamp" : 1694029328000,
+  "type" : "customer_center_impression",
+  "version" : 1
+}

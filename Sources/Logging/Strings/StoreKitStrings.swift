@@ -37,6 +37,8 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_promotional_offer_option(String)
 
+    case sk2_purchasing_added_winback_offer_option(String)
+
     case sk2_purchasing_added_uuid_option(UUID)
 
     case sk2_unknown_product_type(String)
@@ -61,6 +63,8 @@ enum StoreKitStrings {
 
     case sk2_observing_transaction_updates
 
+    case sk2_observing_purchase_intents
+
     case sk2_unknown_environment(String)
 
     case sk2_error_encoding_receipt(Error)
@@ -72,6 +76,8 @@ enum StoreKitStrings {
     case sk2_app_transaction_unavailable
 
     case sk2_unverified_transaction(identifier: String, Error)
+
+    case sk2_unverified_renewal_info(productIdentifier: String)
 
     case sk2_receipt_missing_purchase(transactionId: String)
 
@@ -124,6 +130,9 @@ extension StoreKitStrings: LogMessage {
         case let .sk2_purchasing_added_promotional_offer_option(discountIdentifier):
             return "Adding Product.PurchaseOption for discount '\(discountIdentifier)'"
 
+        case let .sk2_purchasing_added_winback_offer_option(winBackOfferID):
+            return "Adding Product.PurchaseOption for win-back offer with ID '\(winBackOfferID)'"
+
         case let .sk2_purchasing_added_uuid_option(uuid):
             return "Adding Product.PurchaseOption for .appAccountToken '\(uuid)'"
 
@@ -168,6 +177,9 @@ extension StoreKitStrings: LogMessage {
         case .sk2_observing_transaction_updates:
             return "Observing StoreKit.Transaction.updates"
 
+        case .sk2_observing_purchase_intents:
+            return "Observing StoreKit.PurchaseIntent.intents"
+
         case let .sk2_unknown_environment(environment):
             return "Unrecognized StoreKit Environment: \(environment)"
 
@@ -185,6 +197,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_unverified_transaction(id, error):
             return "Found unverified transaction with ID: '\(id)' Error: '\(error)'"
+
+        case let .sk2_unverified_renewal_info(productIdentifier):
+            return "Found unverified renewal info for product with identifier: '\(productIdentifier)'"
 
         case let .sk2_receipt_missing_purchase(transactionId):
             return "SK2 receipt is still missing transaction with id '\(transactionId)'"

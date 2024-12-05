@@ -28,7 +28,8 @@ class FeedbackSurveyViewModel: ObservableObject {
     var feedbackSurveyData: FeedbackSurveyData
 
     @Published
-    var loadingState: String?
+    var loadingOption: String?
+
     @Published
     var promotionalOfferData: PromotionalOfferData?
 
@@ -54,32 +55,54 @@ class FeedbackSurveyViewModel: ObservableObject {
         self.customerCenterActionHandler = customerCenterActionHandler
     }
 
-    func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async {
+    func handleAction(
+        for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
+        dismissView: () -> Void
+    ) async {
         if let customerCenterActionHandler = self.customerCenterActionHandler {
             customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
         }
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
-            self.loadingState = option.id
+            self.loadingOption = option.id
             let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
             switch result {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
                 self.feedbackSurveyData.onOptionSelected()
-                self.loadingState = nil
+                self.loadingOption = nil
             }
         } else {
             self.feedbackSurveyData.onOptionSelected()
+            dismissView()
         }
     }
+}
 
-    func handleSheetDismiss() {
-        self.feedbackSurveyData.onOptionSelected()
-        self.loadingState = nil
+// MARK: - Promotional Offer Sheet Dismissal Handling
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension FeedbackSurveyViewModel {
+
+    /// Function responsible for handling the user's action on the PromotionalOfferView
+    func handleDismissPromotionalOfferView(
+        _ userAction: PromotionalOfferViewAction,
+        dismissView: () -> Void
+    ) async {
+        // Clear the promotional offer data to dismiss the sheet
+        self.promotionalOfferData = nil
+        self.loadingOption = nil
+
+        if !userAction.shouldTerminateCurrentPathFlow {
+            self.feedbackSurveyData.onOptionSelected()
+        }
+
+        dismissView()
     }
-
 }
 
 #endif
