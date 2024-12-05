@@ -107,13 +107,13 @@ struct PromotionalOfferView: View {
                 Image(uiImage: appIcon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 100, height: 100)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .frame(width: 70, height: 70)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .shadow(radius: 10)
             } else {
                 Color.clear
                     // keep a size similar to what the image would have occuppied so layout looks correct
-                    .frame(width: 100, height: 50)
+                    .frame(width: 70, height: 50)
             }
         }
     }
