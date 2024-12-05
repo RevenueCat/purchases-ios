@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+// swiftlint:disable file_length
+
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -346,6 +348,87 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
+
+        stackAlignmentAndDistributionPreviews()
+    }
+
+    @ViewBuilder
+    static func stackAlignmentAndDistributionPreviews() -> some View {
+        let dimensions: [PaywallComponent.Dimension] = [
+            .horizontal(.top, .start),
+            .horizontal(.center, .center),
+            .horizontal(.bottom, .end),
+            .horizontal(.top, .spaceAround),
+            .horizontal(.center, .spaceBetween),
+            .horizontal(.bottom, .spaceEvenly),
+            .vertical(.leading, .start),
+            .vertical(.center, .center),
+            .vertical(.trailing, .end),
+            .vertical(.leading, .spaceAround),
+            .vertical(.center, .spaceBetween),
+            .vertical(.trailing, .spaceEvenly)
+        ]
+        ForEach(dimensions, id: \.self) { dimension in
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! StackComponentViewModel(
+                    component: PaywallComponent.StackComponent(
+                        components: innerStacks(dimension: dimension),
+                        dimension: dimension,
+                        size: .init(width: .fill, height: .fixed(150)),
+                        spacing: 10,
+                        backgroundColor: .init(light: .hex("#ff0000")),
+                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                    ),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    )
+                ),
+                onDismiss: {}
+            )
+            .previewRequiredEnvironmentProperties()
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName(displayName(dimension: dimension))
+        }
+    }
+
+    static func displayName(dimension: PaywallComponent.Dimension) -> String {
+        switch dimension {
+        case .vertical(let horizontalAlignment, let flexDistribution):
+            return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue))"
+        case .horizontal(let verticalAlignment, let flexDistribution):
+            return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue))"
+        case .zlayer:
+            return ""
+        @unknown default:
+            return ""
+        }
+    }
+
+    static func innerStacks(dimension: PaywallComponent.Dimension) -> [PaywallComponent] {
+        var sizes: [PaywallComponent.Size]
+        switch dimension {
+        case .vertical:
+            sizes = [
+                .init(width: .fixed(100), height: .fixed(20)),
+                .init(width: .fixed(50), height: .fixed(20)),
+                .init(width: .fixed(70), height: .fixed(20))
+            ]
+        case .horizontal:
+            sizes = [
+                .init(width: .fixed(20), height: .fixed(100)),
+                .init(width: .fixed(20), height: .fixed(50)),
+                .init(width: .fixed(20), height: .fixed(70))
+            ]
+        case .zlayer:
+            sizes = []
+        @unknown default:
+            sizes = []
+        }
+        return sizes.map { size in
+            .stack(.init(components: [], size: size, backgroundColor: .init(light: .hex("#ffcc00"))))
+        }
     }
 
 }
