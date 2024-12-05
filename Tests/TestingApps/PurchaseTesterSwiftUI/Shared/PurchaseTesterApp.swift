@@ -80,8 +80,8 @@ struct PurchaseTesterApp: App {
                             alertMessage = "RevenueCat errored redeeming deep link: \(error.localizedDescription)"
                         case .invalidToken:
                             alertMessage = "The provided purchase redemption token is invalid."
-                        case .alreadyRedeemed:
-                            alertMessage = "RevenueCat purchase link was already redeemed."
+                        case .purchaseBelongsToOtherUser:
+                            alertMessage = "RevenueCat purchase belongs to other user."
                         case let .expired(obfuscatedEmail):
                             alertMessage = "RevenueCat purchase link expired. Email " +
                                 "was sent to \(obfuscatedEmail)"

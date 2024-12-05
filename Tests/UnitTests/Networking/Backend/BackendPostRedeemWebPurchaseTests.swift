@@ -77,9 +77,9 @@ class BackendPostRedeemWebPurchaseTests: BaseBackendTests {
         ))
     }
 
-    func testPostRedeemWebPurchaseReturnsAlreadyRedeemedTokenError() {
-        let backendErrorCode = BackendErrorCode.webPurchaseAlreadyRedeemed
-        let message = "Already redeeemed."
+    func testPostRedeemWebPurchaseReturnsPurchaseBelongsToOtherUserError() {
+        let backendErrorCode = BackendErrorCode.purchaseBelongsToOtherUser
+        let message = "Purchase belongs to other user."
         let errorResponse = ErrorResponse(code: backendErrorCode,
                                           originalCode: backendErrorCode.rawValue,
                                           message: message)
@@ -97,9 +97,9 @@ class BackendPostRedeemWebPurchaseTests: BaseBackendTests {
         expect(result).to(beFailure())
 
         let error: PurchasesError? = result?.error?.asPurchasesError
-        expect(error?.errorCode).to(equal(ErrorCode.alreadyRedeemedWebPurchaseToken.rawValue))
+        expect(error?.errorCode).to(equal(ErrorCode.purchaseBelongsToOtherUser.rawValue))
         expect(error?.localizedDescription).to(equal(
-            "The link you provided has already been redeemed. Already redeeemed."
+            "The web purchase already belongs to other user. Purchase belongs to other user."
         ))
     }
 

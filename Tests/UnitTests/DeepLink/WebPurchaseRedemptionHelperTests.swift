@@ -90,18 +90,18 @@ class WebPurchaseRedemptionHelperTests: TestCase {
         expect(receivedExpectedError) == true
     }
 
-    func testHandleRedeemWebPurchaseAlreadyRedeemed() async throws {
-        self.redeemWebPurchaseAPI.stubbedPostRedeemWebPurchaseResult = .failure(.webPurchaseAlreadyRedeemed)
+    func testHandleRedeemWebPurchaseBelongsToOtherUser() async throws {
+        self.redeemWebPurchaseAPI.stubbedPostRedeemWebPurchaseResult = .failure(.purchaseBelongsToOtherUser)
 
         let result = await self.helper.handleRedeemWebPurchase(redemptionToken: "test-redemption-token")
 
         var receivedExpectedError: Bool = false
 
         switch result {
-        case .alreadyRedeemed:
+        case .purchaseBelongsToOtherUser:
             receivedExpectedError = true
         default:
-            XCTFail("Should be a already redeemed error.")
+            XCTFail("Should be a purchase belongs to other user error.")
         }
 
         expect(receivedExpectedError) == true

@@ -52,7 +52,7 @@ struct PaywallsPreview: App {
                         message = "Web purchase redemption failed: \(error.localizedDescription)"
                     case .invalidToken:
                         message = "Web purchase redemption failed due to invalid token"
-                    case .alreadyRedeemed:
+                    case .purchaseBelongsToOtherUser:
                         message = "Redemption link has already been redeemed. Cannot be redeemed again."
                     case let .expired(obfuscatedEmail):
                         message = "Redemption link expired. A new one has been sent to \(obfuscatedEmail)"

@@ -230,12 +230,12 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
     func testRedeemWebPurchaseWiresResultAppropriately() async {
         self.setUpOrchestrator()
 
-        self.webPurchaseRedemptionHelper.stubbedHandleRedeemWebPurchaseResult = .alreadyRedeemed
+        self.webPurchaseRedemptionHelper.stubbedHandleRedeemWebPurchaseResult = .purchaseBelongsToOtherUser
 
         var expectedResultCalled = false
         let result = await self.orchestrator.redeemWebPurchase(.init(redemptionToken: "test-redemption-token"))
         switch result {
-        case .alreadyRedeemed:
+        case .purchaseBelongsToOtherUser:
             expectedResultCalled = true
         default:
             XCTFail("Unexpected result: \(result)")

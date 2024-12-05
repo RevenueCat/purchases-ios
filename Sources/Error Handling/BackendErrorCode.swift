@@ -44,7 +44,7 @@ enum BackendErrorCode: Int, Error {
     case invalidSubscriberAttributesBody = 7264
     case purchasedProductMissingInAppleReceipt = 7712
     case invalidWebRedemptionToken = 7849
-    case webPurchaseAlreadyRedeemed = 7852
+    case purchaseBelongsToOtherUser = 7852
     case expiredWebRedemptionToken = 7853
 
     /**
@@ -123,8 +123,8 @@ extension BackendErrorCode {
             return .unknownBackendError
         case .invalidWebRedemptionToken:
             return .invalidWebPurchaseToken
-        case .webPurchaseAlreadyRedeemed:
-            return .alreadyRedeemedWebPurchaseToken
+        case .purchaseBelongsToOtherUser:
+            return .purchaseBelongsToOtherUser
         case .expiredWebRedemptionToken:
             return .expiredWebPurchaseToken
         case .unknownError:

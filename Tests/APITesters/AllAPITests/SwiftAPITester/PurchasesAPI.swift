@@ -366,7 +366,7 @@ func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bo
         return true
     case .invalidToken:
         return true
-    case .alreadyRedeemed:
+    case .purchaseBelongsToOtherUser:
         return true
     case let .expired(obfuscatedEmail):
         let _: String = obfuscatedEmail

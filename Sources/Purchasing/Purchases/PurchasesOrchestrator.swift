@@ -277,9 +277,9 @@ final class PurchasesOrchestrator {
                 let userInfo: [String: Any] = [:]
                 let error = PurchasesError(error: .invalidWebPurchaseToken, userInfo: userInfo)
                 completion(nil, error.asPublicError)
-            case .alreadyRedeemed:
+            case .purchaseBelongsToOtherUser:
                 let userInfo: [String: Any] = [:]
-                let error = PurchasesError(error: .alreadyRedeemedWebPurchaseToken, userInfo: userInfo)
+                let error = PurchasesError(error: .purchaseBelongsToOtherUser, userInfo: userInfo)
                 completion(nil, error.asPublicError)
             case let .expired(obfuscatedEmail):
                 let userInfo: [NSError.UserInfoKey: Any] = [

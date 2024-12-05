@@ -188,8 +188,8 @@ class ErrorCodeTests: TestCase {
                                               expectedRawValue: 39)
     }
 
-    func testAlreadyRedeemedWebPurchaseTokenError() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .alreadyRedeemedWebPurchaseToken,
+    func testPurchaseBelongsToOtherUserError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .purchaseBelongsToOtherUser,
                                               expectedRawValue: 40)
     }
 
