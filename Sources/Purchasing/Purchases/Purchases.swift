@@ -1880,7 +1880,7 @@ private extension Purchases {
     @objc func applicationDidEnterBackground() {
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-//        self.purchasesOrchestrator.postPaywallEventsIfNeeded()
+        self.purchasesOrchestrator.postPaywallEventsIfNeeded()
         #endif
     }
 
