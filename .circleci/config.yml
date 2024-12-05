@@ -528,7 +528,7 @@ jobs:
   spm-revenuecat-ui-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '15.4.0'
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
