@@ -680,7 +680,7 @@ private extension ErrorUtils {
                 .signatureVerificationFailed,
                 .featureNotSupportedWithStoreKit1,
                 .invalidWebPurchaseToken,
-                .alreadyRedeemedWebPurchaseToken,
+                .purchaseBelongsToOtherUser,
                 .expiredWebPurchaseToken:
                 Logger.error(
                     localizedDescription,

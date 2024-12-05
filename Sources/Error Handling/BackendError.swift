@@ -27,7 +27,7 @@ enum BackendError: Error, Equatable {
     case invalidAppleSubscriptionKey(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
     case invalidWebRedemptionToken
-    case webPurchaseAlreadyRedeemed
+    case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
 
 }
@@ -131,8 +131,8 @@ extension BackendError: PurchasesErrorConvertible {
             let code = BackendErrorCode.invalidWebRedemptionToken
             return ErrorUtils.backendError(withBackendCode: code,
                                            originalBackendErrorCode: code.rawValue)
-        case .webPurchaseAlreadyRedeemed:
-            let code = BackendErrorCode.webPurchaseAlreadyRedeemed
+        case .purchaseBelongsToOtherUser:
+            let code = BackendErrorCode.purchaseBelongsToOtherUser
             return ErrorUtils.backendError(withBackendCode: code,
                                            originalBackendErrorCode: code.rawValue)
         case let .expiredWebRedemptionToken(obfuscatedEmail):
@@ -181,7 +181,7 @@ extension BackendError {
              .missingCachedCustomerInfo,
              .unexpectedBackendResponse,
              .invalidWebRedemptionToken,
-             .webPurchaseAlreadyRedeemed,
+             .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken:
             return nil
         }
@@ -203,7 +203,7 @@ extension BackendError {
                 .missingTransactionProductIdentifier,
                 .missingCachedCustomerInfo,
                 .invalidWebRedemptionToken,
-                .webPurchaseAlreadyRedeemed,
+                .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken:
             return nil
 

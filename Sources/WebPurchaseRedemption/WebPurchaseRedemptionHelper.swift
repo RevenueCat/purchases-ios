@@ -50,8 +50,8 @@ actor WebPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType {
                     switch purchasesError.errorCode {
                     case ErrorCode.invalidWebPurchaseToken.rawValue:
                         continuation.resume(returning: .invalidToken)
-                    case ErrorCode.alreadyRedeemedWebPurchaseToken.rawValue:
-                        continuation.resume(returning: .alreadyRedeemed)
+                    case ErrorCode.purchaseBelongsToOtherUser.rawValue:
+                        continuation.resume(returning: .purchaseBelongsToOtherUser)
                     case ErrorCode.expiredWebPurchaseToken.rawValue:
                         guard let obfuscatedEmail = purchasesError.userInfo[ErrorDetails.obfuscatedEmailKey] as? String
                         else {
