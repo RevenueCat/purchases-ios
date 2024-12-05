@@ -503,12 +503,23 @@ struct LoadedOfferingPaywallView: View {
 
         if self.displayCloseButton {
             NavigationView {
-                view
-                    .toolbar {
-                        self.makeToolbar(
-                            color: self.getCloseButtonColor(configuration: configuration)
-                        )
-                    }
+                // Prevents navigation bar from being showing as translucent
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    view
+                        .toolbar {
+                            self.makeToolbar(
+                                color: self.getCloseButtonColor(configuration: configuration)
+                            )
+                        }
+                        .toolbarBackground(.hidden, for: .navigationBar)
+                } else {
+                    view
+                        .toolbar {
+                            self.makeToolbar(
+                                color: self.getCloseButtonColor(configuration: configuration)
+                            )
+                        }
+                }
             }
             .navigationViewStyle(.stack)
         } else {
