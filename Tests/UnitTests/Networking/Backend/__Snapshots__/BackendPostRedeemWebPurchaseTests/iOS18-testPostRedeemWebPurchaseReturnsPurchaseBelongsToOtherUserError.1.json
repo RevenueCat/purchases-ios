@@ -22,10 +22,10 @@
   },
   "request" : {
     "body" : {
-      "app_user_id" : "old id 2",
-      "new_app_user_id" : "new id"
+      "app_user_id" : "test-user-id",
+      "redemption_token" : "test-redemption-token"
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/subscribers/identify"
+    "url" : "https://api.revenuecat.com/v1/subscribers/redeem_purchase"
   }
 }

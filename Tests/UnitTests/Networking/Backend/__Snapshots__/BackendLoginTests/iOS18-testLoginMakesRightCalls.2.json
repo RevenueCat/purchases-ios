@@ -22,7 +22,7 @@
   },
   "request" : {
     "body" : {
-      "app_user_id" : "old id 2",
+      "app_user_id" : "old id",
       "new_app_user_id" : "new id"
     },
     "method" : "POST",
