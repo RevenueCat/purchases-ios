@@ -40,7 +40,8 @@ extension EventsRequest {
         var locale: String
         var isSandbox: Bool
         var displayMode: CustomerCenterPresentationMode
-        var revisionId: Int
+        // We don't support revisions in the backend yet so hardcoding to 1 for now
+        let revisionId: Int = 1
 
         init(id: String?,
              version: Int,
@@ -94,8 +95,7 @@ extension EventsRequest {
                 darkMode: data.darkMode,
                 locale: data.localeIdentifier,
                 isSandbox: data.isSandbox,
-                displayMode: data.displayMode,
-                revisionId: 1
+                displayMode: data.displayMode
             )
         }
 
