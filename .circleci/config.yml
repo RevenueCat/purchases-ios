@@ -688,7 +688,7 @@ jobs:
   run-test-ios-15:
     executor:
       name: macos-executor
-      xcode_version: '16.0.0'
+      xcode_version: '15.4.0'
 
     steps:
       - checkout
