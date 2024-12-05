@@ -112,21 +112,30 @@ struct PromotionalOfferView: View {
                     .shadow(radius: 10)
             } else {
                 Color.clear
-                    // keep the same size as the image would have taken to ensure layout still looks good
-                    .frame(width: 100, height: 100)
+                    // keep a size similar to what the image would have occuppied so layout looks correct
+                    .frame(width: 100, height: 50)
             }
         }
     }
 
     private enum AppIconHelper {
         static func getAppIcon() -> UIImage? {
+            if let image = UIImage(named: "AppIcon") { return image }
+
             guard let iconsDictionary = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
                   let primaryIcons = iconsDictionary["CFBundlePrimaryIcon"] as? [String: Any],
-                  let iconFiles = primaryIcons["CFBundleIconFiles"] as? [String],
-                  let lastIcon = iconFiles.last else {
+                  let iconFiles = primaryIcons["CFBundleIconFiles"] as? [String] else {
                 return nil
             }
-            return UIImage(named: lastIcon)
+
+            // Try to load the @3x version explicitly if available
+            let highestResolutionIcon = iconFiles.last { $0.contains("@3x") } ?? iconFiles.last
+
+            if let highestResolutionIcon = highestResolutionIcon {
+                return UIImage(named: highestResolutionIcon)
+            }
+
+            return nil
         }
     }
 }
