@@ -21,8 +21,11 @@
     "X-Version" : "4.0.0"
   },
   "request" : {
-    "body" : null,
-    "method" : "GET",
-    "url" : "https://api.revenuecat.com/v1/customercenter/user_id_2"
+    "body" : {
+      "app_user_id" : "test-user-id",
+      "redemption_token" : "test-redemption-token"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/redeem_purchase"
   }
 }
