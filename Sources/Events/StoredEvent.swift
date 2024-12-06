@@ -20,8 +20,9 @@ struct StoredEvent {
     private(set) var userID: String
     private(set) var feature: Feature
     private(set) var appSessionID: UUID?
+    private(set) var eventDiscriminator: String?
 
-    init?<T: Encodable>(event: T, userID: String, feature: Feature, appSessionID: UUID?) {
+    init?<T: Encodable>(event: T, userID: String, feature: Feature, appSessionID: UUID?, eventDiscriminator: String?) {
         guard let encodedJSON = try? event.encodedJSON else {
             return nil
         }
@@ -30,6 +31,7 @@ struct StoredEvent {
         self.userID = userID
         self.feature = feature
         self.appSessionID = appSessionID
+        self.eventDiscriminator = eventDiscriminator
     }
 
 }
@@ -53,6 +55,7 @@ extension StoredEvent: Codable {
         case userID = "userId"
         case feature
         case appSessionID = "appSessionId"
+        case eventDiscriminator = "eventDiscriminator"
 
     }
 
@@ -88,6 +91,10 @@ extension StoredEvent: Codable {
         if let appSessionID = try container.decodeIfPresent(UUID.self, forKey: .appSessionID) {
             self.appSessionID = appSessionID
         }
+
+        if let eventDiscriminator = try container.decodeIfPresent(String.self, forKey: .eventDiscriminator) {
+            self.eventDiscriminator = eventDiscriminator
+        }
     }
 
 }
@@ -96,7 +103,9 @@ extension StoredEvent: Equatable {
 
     static func == (lhs: StoredEvent, rhs: StoredEvent) -> Bool {
         guard lhs.userID == rhs.userID,
-              lhs.feature == rhs.feature else {
+              lhs.feature == rhs.feature,
+              lhs.appSessionID == rhs.appSessionID,
+              lhs.eventDiscriminator == rhs.eventDiscriminator else {
             return false
         }
 

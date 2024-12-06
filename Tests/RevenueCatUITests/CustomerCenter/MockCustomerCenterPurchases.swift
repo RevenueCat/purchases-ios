@@ -55,8 +55,8 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
 
     var trackCallCount = 0
     var trackError: Error?
-    var trackedEvents: [CustomerCenterEvent] = []
-    func track(customerCenterEvent: CustomerCenterEvent) {
+    var trackedEvents: [CustomerCenterEventType] = []
+    func track(customerCenterEvent: any CustomerCenterEventType) {
         trackCallCount += 1
         trackedEvents.append(customerCenterEvent)
     }

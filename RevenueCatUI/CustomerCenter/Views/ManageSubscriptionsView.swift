@@ -82,9 +82,8 @@ struct ManageSubscriptionsView: View {
 
                     if let purchaseInformation = self.viewModel.purchaseInformation {
                         Section {
-                            SubscriptionDetailsView(
-                                purchaseInformation: purchaseInformation,
-                                refundRequestStatus: self.viewModel.refundRequestStatus)
+                            SubscriptionDetailsView(purchaseInformation: purchaseInformation,
+                                                    refundRequestStatus: self.viewModel.refundRequestStatus)
                         }
                         Section {
                             ManageSubscriptionsButtonsView(viewModel: self.viewModel,

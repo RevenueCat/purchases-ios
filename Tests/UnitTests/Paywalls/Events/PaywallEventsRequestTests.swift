@@ -28,10 +28,7 @@ class PaywallEventsRequestTests: TestCase {
 
     func testImpressionEvent() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
-                                                           userID: Self.userID,
-                                                           feature: .paywalls,
-                                                           appSessionID: Self.appSessionID))
+        let storedEvent = try Self.createStoredEvent(from: event)
         let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -39,22 +36,15 @@ class PaywallEventsRequestTests: TestCase {
 
     func testCancelEvent() throws {
         let event = PaywallEvent.cancel(Self.eventCreationData, Self.eventData)
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
-                                                           userID: Self.userID,
-                                                           feature: .paywalls,
-                                                           appSessionID: Self.appSessionID))
+        let storedEvent = try Self.createStoredEvent(from: event)
         let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
-        let event = PaywallEvent.close(Self.eventCreationData,
-                                       Self.eventData)
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
-                                                           userID: Self.userID,
-                                                           feature: .paywalls,
-                                                           appSessionID: Self.appSessionID))
+        let event = PaywallEvent.close(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredEvent(from: event)
         let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -79,7 +69,8 @@ class PaywallEventsRequestTests: TestCase {
         let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent,
                                                     userID: expectedUserID,
                                                     feature: .paywalls,
-                                                    appSessionID: Self.appSessionID))
+                                                    appSessionID: Self.appSessionID,
+                                                    eventDiscriminator: "impression"))
         let serializedEvent = try StoredEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
@@ -92,12 +83,25 @@ class PaywallEventsRequestTests: TestCase {
 
     // MARK: -
 
-    private static let eventCreationData: PaywallEvent.CreationData = .init(
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallEventsRequestTests {
+
+    static func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+        return try XCTUnwrap(.init(event: event,
+                                   userID: Self.userID,
+                                   feature: .paywalls,
+                                   appSessionID: Self.appSessionID,
+                                   eventDiscriminator: "impression"))
+    }
+
+    static let eventCreationData: PaywallEvent.CreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
         date: .init(timeIntervalSince1970: 1694029328)
     )
 
-    private static let eventData: PaywallEvent.Data = .init(
+    static let eventData: PaywallEvent.Data = .init(
         offeringIdentifier: "offering",
         paywallRevision: 0,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
@@ -106,8 +110,8 @@ class PaywallEventsRequestTests: TestCase {
         darkMode: true
     )
 
-    private static let userID = "Jack Shepard"
+    static let userID = "Jack Shepard"
 
-    private static let appSessionID = UUID(uuidString: "83164C05-2BDC-4807-8918-A4105F727DEB")
+    static let appSessionID = UUID(uuidString: "83164C05-2BDC-4807-8918-A4105F727DEB")
 
 }

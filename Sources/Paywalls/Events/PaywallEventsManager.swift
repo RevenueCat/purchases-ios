@@ -40,12 +40,13 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
-        store: PaywallEventStoreType
+        store: PaywallEventStoreType,
+        appSessionID: UUID = UUID()
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
-        self.appSessionID = UUID()
+        self.appSessionID = appSessionID
     }
 
     func resetAppSessionID() {
@@ -56,7 +57,8 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         guard let event: StoredEvent = .init(event: featureEvent,
                                              userID: self.userProvider.currentAppUserID,
                                              feature: featureEvent.feature,
-                                             appSessionID: self.appSessionID) else {
+                                             appSessionID: self.appSessionID,
+                                             eventDiscriminator: featureEvent.eventDiscriminator) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }

@@ -141,7 +141,7 @@ import RevenueCat
                                                  darkMode: darkMode,
                                                  isSandbox: isSandbox,
                                                  displayMode: displayMode)
-        let event = CustomerCenterEvent.impression(CustomerCenterEvent.CreationData(), eventData)
+        let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
 
         purchasesProvider.track(customerCenterEvent: event)
     }

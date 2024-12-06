@@ -27,30 +27,20 @@ class StoredEventSerializerTests: TestCase {
 
     func testEncodeImpressionEvent() throws {
         let originalEvent = PaywallEvent.impression(.random(), .random())
-        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
-                                                     userID: Self.userID,
-                                                     feature: .paywalls,
-                                                     appSessionID: UUID()))
-
+        let event = try Self.createStoredEvent(from: originalEvent)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
         let originalEvent = PaywallEvent.cancel(.random(), .random())
-        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
-                                                     userID: Self.userID,
-                                                     feature: .paywalls,
-                                                     appSessionID: UUID()))
+        let event = try Self.createStoredEvent(from: originalEvent)
 
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
         let originalEvent = PaywallEvent.close(.random(), .random())
-        let event: StoredEvent = try XCTUnwrap(.init(event: originalEvent,
-                                                     userID: Self.userID,
-                                                     feature: .paywalls,
-                                                     appSessionID: UUID()))
+        let event = try Self.createStoredEvent(from: originalEvent)
 
         expect(try event.encodeAndDecode()) == event
     }
@@ -71,10 +61,7 @@ class StoredEventSerializerTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent,
-                                                    userID: expectedUserID,
-                                                    feature: .paywalls,
-                                                    appSessionID: UUID()))
+        let storedEvent = try Self.createStoredEvent(from: paywallEvent, expectedUserID: expectedUserID)
         let serializedEvent = try StoredEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
@@ -85,9 +72,20 @@ class StoredEventSerializerTests: TestCase {
         expect(decodedPaywallEvent) == paywallEvent
     }
 
-    // MARK: -
+}
 
-    private static let userID = UUID().uuidString
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension StoredEventSerializerTests {
+
+    static let userID = UUID().uuidString
+
+    static func createStoredEvent(from event: PaywallEvent, expectedUserID: String = userID) throws -> StoredEvent {
+        return try XCTUnwrap(.init(event: event,
+                                   userID: expectedUserID,
+                                   feature: .paywalls,
+                                   appSessionID: UUID(),
+                                   eventDiscriminator: "impression"))
+    }
 
 }
 
