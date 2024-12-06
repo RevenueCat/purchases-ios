@@ -14,8 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if os(iOS)
-#if canImport(UIKit)
+#if canImport(UIKit) && os(iOS)
 
 /// Warning: This is currently in beta and subject to change.
 ///
@@ -48,5 +47,4 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
     }
 }
 
-#endif
 #endif
