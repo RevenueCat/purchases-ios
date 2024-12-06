@@ -102,6 +102,7 @@ struct PromotionalOfferView: View {
     }
 
     private struct AppIconView: View {
+
         var body: some View {
             if let appIcon = AppIconHelper.getAppIcon() {
                 Image(uiImage: appIcon)
@@ -116,27 +117,21 @@ struct PromotionalOfferView: View {
                     .frame(width: 70, height: 50)
             }
         }
+
     }
 
     private enum AppIconHelper {
-        static func getAppIcon() -> UIImage? {
-            if let image = UIImage(named: "AppIcon") { return image }
 
+        static func getAppIcon() -> UIImage? {
             guard let iconsDictionary = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
                   let primaryIcons = iconsDictionary["CFBundlePrimaryIcon"] as? [String: Any],
-                  let iconFiles = primaryIcons["CFBundleIconFiles"] as? [String] else {
+                  let iconFiles = primaryIcons["CFBundleIconFiles"] as? [String],
+                  let lastIcon = iconFiles.last else {
                 return nil
             }
-
-            // Try to load the @3x version explicitly if available
-            let highestResolutionIcon = iconFiles.last { $0.contains("@3x") } ?? iconFiles.last
-
-            if let highestResolutionIcon = highestResolutionIcon {
-                return UIImage(named: highestResolutionIcon)
-            }
-
-            return nil
+            return UIImage(named: lastIcon)
         }
+
     }
 }
 
