@@ -315,17 +315,13 @@ extension Offering {
     public func getMetadataValue<T: Decodable>(for key: String) -> T? {
         guard let value = self.metadata[key] else { return nil }
 
-        if JSONSerialization.isValidJSONObject(value) {
-            do {
-                let data = try JSONSerialization.data(withJSONObject: value)
-                return try JSONDecoder.default.decode(
-                                T.self,
-                                jsonData: data,
-                                logErrors: true
-                            )
-            } catch {
-                return nil
-            }
+        if JSONSerialization.isValidJSONObject(value),
+            let data = try? JSONSerialization.data(withJSONObject: value) {
+            return try? JSONDecoder.default.decode(
+                            T.self,
+                            jsonData: data,
+                            logErrors: true
+                        )
         } else if let value = value as? T {
             return value
         } else {
