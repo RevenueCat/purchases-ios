@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -58,7 +58,18 @@
 		88DFC1932BCF490400273B6D /* OfferingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1922BCF490400273B6D /* OfferingsResponse.swift */; };
 		88DFC1942BCF490400273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1912BCF490400273B6D /* PaywallsResponse.swift */; };
 		88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1952BCF4A4300273B6D /* MockData.swift */; };
+		FA29FBB22CCAA7A500DA1976 /* SnapshottingTests in Frameworks */ = {isa = PBXBuildFile; productRef = FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FA29FBAC2CCAA79800DA1976 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4F6BED922A26A64200CD9322 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F6BED992A26A64200CD9322;
+			remoteInfo = PaywallsTester;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		4F6BEDD72A26A68E00CD9322 /* Embed Frameworks */ = {
@@ -75,6 +86,7 @@
 
 /* Begin PBXFileReference section */
 		2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
+		4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTesterTests.swift; sourceTree = "<group>"; };
 		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F0B5EA12A97CDAC00DB0FC9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F102E262A840ECC0059EED6 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
@@ -138,6 +150,7 @@
 		88DFC1912BCF490400273B6D /* PaywallsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsResponse.swift; sourceTree = "<group>"; };
 		88DFC1922BCF490400273B6D /* OfferingsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsResponse.swift; sourceTree = "<group>"; };
 		88DFC1952BCF4A4300273B6D /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
+		FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaywallsTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,9 +164,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FA29FBA52CCAA79800DA1976 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA29FBB22CCAA7A500DA1976 /* SnapshottingTests in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4D2E84DC2D00EDA100C639D9 /* PaywallsTesterTests */ = {
+			isa = PBXGroup;
+			children = (
+				4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */,
+			);
+			path = PaywallsTesterTests;
+			sourceTree = "<group>";
+		};
 		4F34FF682A60AEE300AADF11 /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -170,6 +199,7 @@
 				773C13462CB5865400219E42 /* Local.xcconfig */,
 				4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */,
 				4FC046BB2A572E3700A28BCF /* PaywallsTester */,
+				4D2E84DC2D00EDA100C639D9 /* PaywallsTesterTests */,
 				4F6BED9B2A26A64200CD9322 /* Products */,
 				4F6BEDCC2A26A68E00CD9322 /* Frameworks */,
 			);
@@ -179,6 +209,7 @@
 			isa = PBXGroup;
 			children = (
 				4F6BED9A2A26A64200CD9322 /* PaywallsTester.app */,
+				FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -371,6 +402,27 @@
 			productReference = 4F6BED9A2A26A64200CD9322 /* PaywallsTester.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FA29FBA72CCAA79800DA1976 /* PaywallsTesterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FA29FBAE2CCAA79800DA1976 /* Build configuration list for PBXNativeTarget "PaywallsTesterTests" */;
+			buildPhases = (
+				FA29FBA42CCAA79800DA1976 /* Sources */,
+				FA29FBA52CCAA79800DA1976 /* Frameworks */,
+				FA29FBA62CCAA79800DA1976 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FA29FBAD2CCAA79800DA1976 /* PBXTargetDependency */,
+			);
+			name = PaywallsTesterTests;
+			packageProductDependencies = (
+				FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */,
+			);
+			productName = PaywallsTesterTests;
+			productReference = FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -378,11 +430,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
+				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					4F6BED992A26A64200CD9322 = {
 						CreatedOnToolsVersion = 14.3;
+					};
+					FA29FBA72CCAA79800DA1976 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 4F6BED992A26A64200CD9322;
 					};
 				};
 			};
@@ -402,12 +458,14 @@
 			);
 			mainGroup = 4F6BED912A26A64200CD9322;
 			packageReferences = (
+				FA29FBA12CCAA76E00DA1976 /* XCRemoteSwiftPackageReference "SnapshotPreviews" */,
 			);
 			productRefGroup = 4F6BED9B2A26A64200CD9322 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				4F6BED992A26A64200CD9322 /* PaywallsTester */,
+				FA29FBA72CCAA79800DA1976 /* PaywallsTesterTests */,
 			);
 		};
 /* End PBXProject section */
@@ -420,6 +478,13 @@
 				4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */,
 				880B2AF22BEC2D62006B9393 /* Preprocessor.sh in Resources */,
 				4F4557E22A6FFE6A00160521 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA29FBA62CCAA79800DA1976 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -478,7 +543,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FA29FBA42CCAA79800DA1976 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FA29FBAD2CCAA79800DA1976 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F6BED992A26A64200CD9322 /* PaywallsTester */;
+			targetProxy = FA29FBAC2CCAA79800DA1976 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		4F4557E42A6FFE6A00160521 /* Localizable.strings */ = {
@@ -709,6 +789,54 @@
 			};
 			name = Release;
 		};
+		FA29FBAF2CCAA79800DA1976 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallsTesterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PaywallsTester.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PaywallsTester";
+			};
+			name = Debug;
+		};
+		FA29FBB02CCAA79800DA1976 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallsTesterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PaywallsTester.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PaywallsTester";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -730,7 +858,27 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		FA29FBAE2CCAA79800DA1976 /* Build configuration list for PBXNativeTarget "PaywallsTesterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA29FBAF2CCAA79800DA1976 /* Debug */,
+				FA29FBB02CCAA79800DA1976 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FA29FBA12CCAA76E00DA1976 /* XCRemoteSwiftPackageReference "SnapshotPreviews" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/EmergeTools/SnapshotPreviews";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.16;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		4F4EE7D12A5731E800D7EAE1 /* RevenueCat */ = {
@@ -740,6 +888,11 @@
 		4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCatUI;
+		};
+		FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FA29FBA12CCAA76E00DA1976 /* XCRemoteSwiftPackageReference "SnapshotPreviews" */;
+			productName = SnapshottingTests;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
