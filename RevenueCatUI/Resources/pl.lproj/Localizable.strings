@@ -3,7 +3,7 @@
 "Privacy" = "Prywatność";
 "Privacy policy" = "Polityka prywatności";
 "Purchases restored successfully!" = "Pomyślnie przywrócono zakupy!";
-"Restore" = "Przywrócić";
+"Restore" = "Przywróć";
 "Restore purchases" = "Przywróć zakupy";
 "Terms" = "Warunki";
 "Terms and conditions" = "Regulamin";
@@ -15,7 +15,7 @@
 "Weekly" = "Co tydzień";
 "Lifetime" = "Dożywotni";
 "%d%% off" = "%d%% zniżki";
-"Continue" = "Kontynuować";
+"Continue" = "Kontynuuj";
 "Default_offer_details_with_intro_offer" = "Rozpocznij okres próbny {{ sub_offer_duration }}, a następnie {{ total_price_and_per_month }}.";
 "free_trial_period" = "%@ za darmo";
 "pay_as_you_go_period" = "%@ przez %@";
