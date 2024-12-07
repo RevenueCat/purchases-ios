@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -59,6 +59,7 @@
 		88DFC1942BCF490400273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1912BCF490400273B6D /* PaywallsResponse.swift */; };
 		88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1952BCF4A4300273B6D /* MockData.swift */; };
 		FA29FBB22CCAA7A500DA1976 /* SnapshottingTests in Frameworks */ = {isa = PBXBuildFile; productRef = FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */; };
+		FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -151,6 +152,7 @@
 		88DFC1922BCF490400273B6D /* OfferingsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsResponse.swift; sourceTree = "<group>"; };
 		88DFC1952BCF4A4300273B6D /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 		FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaywallsTesterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterUIKitView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -287,6 +289,7 @@
 		88DFC12C2BC7306100273B6D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */,
 				88DFC1872BCF39AF00273B6D /* Login */,
 				88DFC18F2BCF48B000273B6D /* AppList.swift */,
 				88B438092BDB0A28000AF27C /* PaywallForID.swift */,
@@ -539,6 +542,7 @@
 				88DFC1412BC73D9D00273B6D /* HTTPRequest.swift in Sources */,
 				88DFC1462BC7443B00273B6D /* ErrorResponse.swift in Sources */,
 				88DFC1402BC73D9D00273B6D /* HTTPStatusCode.swift in Sources */,
+				FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

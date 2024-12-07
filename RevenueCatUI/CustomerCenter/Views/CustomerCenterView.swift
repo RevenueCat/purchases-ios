@@ -39,6 +39,7 @@ public struct CustomerCenterView: View {
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the customer center.
+    ///   - mode: The presentation mode for the customer center. Defaults to `.default`
     public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
                 mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue:
