@@ -115,6 +115,7 @@ private extension CustomerCenterView {
         } else {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
+                                        purchaseInformation: nil,
                                         customerCenterActionHandler: viewModel.customerCenterActionHandler)
             } else {
                 // Fallback with a restore button

@@ -106,7 +106,7 @@ import RevenueCat
                 return
             }
 
-            let activeSubscriptions: [Transaction] = customerInfo.subscriptions.values
+            let activeSubscriptions: [Transaction] = customerInfo.subscriptionsByProductIdentifier.values
                 .filter(\.isActive)
                 .sorted(by: {
                     guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {

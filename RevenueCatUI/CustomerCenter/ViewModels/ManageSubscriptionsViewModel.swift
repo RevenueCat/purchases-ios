@@ -75,7 +75,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation,
+         purchaseInformation: PurchaseInformation?,
          customerCenterActionHandler: CustomerCenterActionHandler?,
          refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen

@@ -37,7 +37,7 @@ struct ManageSubscriptionsView: View {
     private let customerCenterActionHandler: CustomerCenterActionHandler?
 
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation,
+         purchaseInformation: PurchaseInformation?,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
@@ -151,20 +151,6 @@ struct ManageSubscriptionsView: View {
             $0.navigationTitle(self.viewModel.screen.title).navigationBarTitleDisplayMode(.inline)
         })
 
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension ManageSubscriptionsView {
-
-    func loadInformationIfNeeded() async {
-        if !self.viewModel.isLoaded {
-            await viewModel.loadScreen()
-        }
     }
 
 }
