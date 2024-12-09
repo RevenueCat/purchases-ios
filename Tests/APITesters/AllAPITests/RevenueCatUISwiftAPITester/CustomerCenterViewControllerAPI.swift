@@ -12,8 +12,7 @@ import RevenueCatUI
 #if canImport(UIKit) && os(iOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 func checkCustomerCenterViewControllerAPI(
-    customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-    mode: CustomerCenterPresentationMode = .default
+    customerCenterActionHandler: CustomerCenterActionHandler? = nil
 ) {
     let _ = CustomerCenterViewController()
     let _ = CustomerCenterViewController(customerCenterActionHandler: customerCenterActionHandler)
