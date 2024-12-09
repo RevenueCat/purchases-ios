@@ -28,7 +28,7 @@ extension EventsRequest {
 
     }
 
-    class CustomerCenterEventBase {
+    class CustomerCenterEventBaseRequest {
 
         let id: String?
         let version: Int
@@ -66,7 +66,7 @@ extension EventsRequest {
         }
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        static func createBase(from storedEvent: StoredEvent) -> CustomerCenterEventBase? {
+        static func createBase(from storedEvent: StoredEvent) -> CustomerCenterEventBaseRequest? {
             guard let appSessionID = storedEvent.appSessionID else {
                 Logger.error(Strings.paywalls.event_missing_app_session_id)
                 return nil
@@ -85,7 +85,7 @@ extension EventsRequest {
             let creationData = customerCenterEvent.creationData
             let data = customerCenterEvent.data
 
-            return CustomerCenterEventBase(
+            return CustomerCenterEventBaseRequest(
                 id: creationData.id.uuidString,
                 version: version,
                 type: customerCenterEvent.eventType,
@@ -102,7 +102,7 @@ extension EventsRequest {
         private static let version: Int = 1
     }
 
-    final class CustomerCenterEventSurveyOptionChosen {
+    final class CustomerCenterAnswerSubmittedEventRequest {
 
         let id: String?
         let version: Int
@@ -155,7 +155,7 @@ extension EventsRequest {
         }
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        static func create(from storedEvent: StoredEvent) -> CustomerCenterEventSurveyOptionChosen? {
+        static func create(from storedEvent: StoredEvent) -> CustomerCenterAnswerSubmittedEventRequest? {
             guard let appSessionID = storedEvent.appSessionID else {
                 Logger.error(Strings.paywalls.event_missing_app_session_id)
                 return nil
@@ -174,7 +174,7 @@ extension EventsRequest {
             let creationData = customerCenterEvent.creationData
             let data = customerCenterEvent.data
 
-            return CustomerCenterEventSurveyOptionChosen(
+            return CustomerCenterAnswerSubmittedEventRequest(
                 id: creationData.id.uuidString,
                 version: version,
                 appUserID: storedEvent.userID,
@@ -214,7 +214,7 @@ private extension CustomerCenterEvent {
 // MARK: - Codable
 
 extension EventsRequest.CustomerCenterEventType: Encodable {}
-extension EventsRequest.CustomerCenterEventBase: Encodable {
+extension EventsRequest.CustomerCenterEventBaseRequest: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -234,7 +234,7 @@ extension EventsRequest.CustomerCenterEventBase: Encodable {
 
 }
 
-extension EventsRequest.CustomerCenterEventSurveyOptionChosen: Encodable {
+extension EventsRequest.CustomerCenterAnswerSubmittedEventRequest: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 

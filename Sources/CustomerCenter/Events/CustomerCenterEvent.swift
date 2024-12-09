@@ -22,6 +22,13 @@ extension CustomerCenterEventType {
 
 }
 
+enum CustomerCenterEventDiscriminator: String {
+
+    case lifecycle = "lifecycle"
+    case answerSubmitted = "answer_submitted"
+
+}
+
 /// Data that represents a customer center event creation.
 public struct CustomerCenterEventCreationData {
 
@@ -42,7 +49,7 @@ public struct CustomerCenterEventCreationData {
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 
-    var eventDiscriminator: String? { "lifecycle" }
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
 
     /// The Customer Center was displayed.
     case impression(CustomerCenterEventCreationData, Data)
@@ -52,7 +59,7 @@ public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
 
-    var eventDiscriminator: String? { "survey_option_chosen" }
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
 
     /// A feedback survey was completed with a particular option.
     case answerSubmitted(CustomerCenterEventCreationData, Data)
