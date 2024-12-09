@@ -300,13 +300,10 @@ import Foundation
 
 extension Offering {
 
-    /// - Returns: The `metadata` value associated to `key` for the expected type,
+    /// - Returns: The `metadata` value associated to `key` for the expected `Decodable` type,
     /// or `default` if not found or it's not the expected type.
-    public func getMetadataValue<T>(for key: String, default: T) -> T {
-        guard let rawValue = self.metadata[key], let value = rawValue as? T else {
-            return `default`
-        }
-        return value
+    public func getMetadataValue<T: Decodable>(for key: String, default: T) -> T {
+        return getMetadataValue(for: key) ?? `default`
     }
 
     /// - Returns: The `metadata` value associated to `key` for the expected `Decodable` type,
