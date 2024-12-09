@@ -70,10 +70,13 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsApple() async {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
-                                                customerInfoFetcher: {
-            return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
-        })
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.customerInfoResult = .success(CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions)
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            purchasesProvider: mockPurchases
+        )
 
         await viewModel.loadHasActivePurchases()
 
@@ -83,10 +86,13 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsGoogle() async {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
-                                                customerInfoFetcher: {
-            return await CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
-        })
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.customerInfoResult = .success(CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions)
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            purchasesProvider: mockPurchases
+        )
 
         await viewModel.loadHasActivePurchases()
 
@@ -96,10 +102,13 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsNonActive() async {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
-                                                customerInfoFetcher: {
-            return await CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
-        })
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.customerInfoResult = .success(CustomerCenterViewModelTests.customerInfoWithoutSubscriptions)
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            purchasesProvider: mockPurchases
+        )
 
         await viewModel.loadHasActivePurchases()
 
@@ -109,10 +118,13 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsFailure() async {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
-                                                customerInfoFetcher: {
-            throw TestError(message: "An error occurred")
-        })
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.customerInfoResult = .failure(error)
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            purchasesProvider: mockPurchases
+        )
 
         await viewModel.loadHasActivePurchases()
 
@@ -178,6 +190,31 @@ class CustomerCenterViewModelTests: TestCase {
 
                 expect(viewModel.appIsLatestVersion) == expectedAppIsLatestVersion
             }
+        }
+    }
+
+    func testTrackImpression() throws {
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.isSandbox = true
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            purchasesProvider: mockPurchases
+        )
+
+        let darkMode = true
+        let displayMode: CustomerCenterPresentationMode = .fullScreen
+
+        viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
+
+        expect(mockPurchases.trackedEvents.count) == 1
+        let trackedEvent = try XCTUnwrap(mockPurchases.trackedEvents.first)
+
+        expect(trackedEvent.data.darkMode) == darkMode
+        expect(trackedEvent.data.displayMode) == displayMode
+        expect(trackedEvent.data.localeIdentifier) == Locale.current.identifier
+        expect(trackedEvent.data.isSandbox) == true
+        if case .impression = trackedEvent {} else {
+            fail("Expected an impression event")
         }
     }
 

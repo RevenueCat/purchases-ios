@@ -7,18 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventSerializer.swift
+//  StoredEventSerializer.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum PaywallEventSerializer {
+enum StoredEventSerializer {
 
     private struct FailedEncodingEventError: Error {}
 
-    /// Encodes a `PaywallEvent` in a format suitable to be stored by `PaywallEventStore`.
+    /// Encodes a ``StoredEvent`` in a format suitable to be stored by `PaywallEventStore`.
     static func encode(_ event: StoredEvent) throws -> String {
         let data = try JSONEncoder.default.encode(value: event)
 
@@ -26,7 +26,7 @@ enum PaywallEventSerializer {
             .orThrow(FailedEncodingEventError())
     }
 
-    /// Decodes a `StoredEvent`.
+    /// Decodes a ``StoredEvent``.
     static func decode(_ event: String) throws -> StoredEvent {
         return try JSONDecoder.default.decode(jsonData: event.asData)
     }

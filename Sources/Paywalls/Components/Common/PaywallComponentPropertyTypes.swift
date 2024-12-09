@@ -43,6 +43,18 @@ public extension PaywallComponent {
         public let heicLowRes: URL
     }
 
+    struct GradientPoint: Codable, Sendable, Hashable, Equatable {
+
+        public let color: ColorHex
+        public let percent: Int
+
+        public init(color: ColorHex, percent: Int) {
+            self.color = color
+            self.percent = percent
+        }
+
+    }
+
     struct ColorScheme: Codable, Sendable, Hashable, Equatable {
 
         public init(light: ColorInfo, dark: ColorInfo? = nil) {
@@ -59,6 +71,8 @@ public extension PaywallComponent {
 
         case hex(ColorHex)
         case alias(String)
+        case linear(Int, [GradientPoint])
+        case radial([GradientPoint])
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -70,6 +84,13 @@ public extension PaywallComponent {
             case .alias(let alias):
                 try container.encode(ColorInfoTypes.alias.rawValue, forKey: .type)
                 try container.encode(alias, forKey: .value)
+            case .linear(let degrees, let points):
+                try container.encode(ColorInfoTypes.linear.rawValue, forKey: .type)
+                try container.encode(degrees, forKey: .degrees)
+                try container.encode(points, forKey: .points)
+            case .radial(let points):
+                try container.encode(ColorInfoTypes.radial.rawValue, forKey: .type)
+                try container.encode(points, forKey: .points)
             }
         }
 
@@ -84,6 +105,13 @@ public extension PaywallComponent {
             case .alias:
                 let value = try container.decode(String.self, forKey: .value)
                 self = .alias(value)
+            case .linear:
+                let points = try container.decode([GradientPoint].self, forKey: .points)
+                let degrees = try container.decode(Int.self, forKey: .degrees)
+                self = .linear(degrees, points)
+            case .radial:
+                let points = try container.decode([GradientPoint].self, forKey: .points)
+                self = .radial(points)
             }
         }
 
@@ -92,6 +120,8 @@ public extension PaywallComponent {
 
             case type
             case value
+            case degrees
+            case points
 
         }
 
@@ -100,6 +130,8 @@ public extension PaywallComponent {
 
             case hex
             case alias
+            case linear
+            case radial
 
         }
 

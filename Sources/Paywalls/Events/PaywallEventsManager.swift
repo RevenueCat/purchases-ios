@@ -16,12 +16,14 @@ import Foundation
 protocol PaywallEventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func track(paywallEvent: PaywallEvent) async
+    func track(featureEvent: FeatureEvent) async
 
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushEvents(count: Int) async throws -> Int
+
+    func resetAppSessionID() async
 
 }
 
@@ -31,6 +33,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
     private let store: PaywallEventStoreType
+    private var appSessionID: UUID
 
     private var flushInProgress = false
 
@@ -42,12 +45,18 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
+        self.appSessionID = UUID()
     }
 
-    func track(paywallEvent: PaywallEvent) async {
-        guard let event: StoredEvent = .init(event: AnyEncodable(paywallEvent),
+    func resetAppSessionID() {
+        self.appSessionID = UUID()
+    }
+
+    func track(featureEvent: FeatureEvent) async {
+        guard let event: StoredEvent = .init(event: featureEvent,
                                              userID: self.userProvider.currentAppUserID,
-                                             feature: .paywalls) else {
+                                             feature: featureEvent.feature,
+                                             appSessionID: self.appSessionID) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }

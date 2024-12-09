@@ -12,7 +12,13 @@
 //  Created by Madeline Beyl on 7/9/21.
 //
 
+// swiftlint:disable file_length
 import Foundation
+
+/**
+ An identifier used to identify a product.
+ */
+public typealias ProductIdentifier = String
 
 /**
  A container for the most recent customer info returned from `Purchases`.
@@ -24,10 +30,12 @@ import Foundation
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
-    @objc public var activeSubscriptions: Set<String> { self.activeKeys(dates: self.expirationDatesByProductId) }
+    @objc public var activeSubscriptions: Set<ProductIdentifier> {
+        self.activeKeys(dates: self.expirationDatesByProductId)
+    }
 
     /// All product identifiers purchases by the user regardless of expiration.
-    @objc public let allPurchasedProductIdentifiers: Set<String>
+    @objc public let allPurchasedProductIdentifiers: Set<ProductIdentifier>
 
     /// Returns the latest expiration date of all products, nil if there are none.
     @objc public var latestExpirationDate: Date? {
@@ -89,19 +97,19 @@ import Foundation
     @objc public let originalApplicationVersion: String?
 
     /// Dictionary of all subscription product identifiers and their subscription info
-    @objc public let subscriptions: [String: SubscriptionInfo]
+    @objc public let subscriptionsByProductIdentifier: [ProductIdentifier: SubscriptionInfo]
 
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
     /// - Returns:  The expiration date for `productIdentifier`, `nil` if product never purchased
-    @objc public func expirationDate(forProductIdentifier productIdentifier: String) -> Date? {
+    @objc public func expirationDate(forProductIdentifier productIdentifier: ProductIdentifier) -> Date? {
         return expirationDatesByProductId[productIdentifier] ?? nil
     }
 
     /// Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for subscription product
     /// - Returns: The purchase date for `productIdentifier`, `nil` if product never purchased
-    @objc public func purchaseDate(forProductIdentifier productIdentifier: String) -> Date? {
+    @objc public func purchaseDate(forProductIdentifier productIdentifier: ProductIdentifier) -> Date? {
         return purchaseDatesByProductId[productIdentifier] ?? nil
     }
 
@@ -146,6 +154,8 @@ import Foundation
 
         let verificationResult = self.entitlements.verification.debugDescription
 
+        let subscriptionsDescription = self.subscriptionsByProductIdentifier.mapValues { $0.description }
+
         return """
             <\(String(describing: CustomerInfo.self)):
             originalApplicationVersion=\(self.originalApplicationVersion ?? ""),
@@ -153,6 +163,7 @@ import Foundation
             activeEntitlements=\(activeEntitlementsDescription),
             activeSubscriptions=\(activeSubsDescription),
             nonSubscriptions=\(self.nonSubscriptions),
+            subscriptions=\(subscriptionsDescription),
             requestDate=\(String(describing: self.requestDate)),
             firstSeen=\(String(describing: self.firstSeen)),
             originalAppUserId=\(self.originalAppUserId),
@@ -212,7 +223,8 @@ import Foundation
         self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
             .union(self.nonSubscriptions.map { $0.productIdentifier })
 
-        self.subscriptions = Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
+        self.subscriptionsByProductIdentifier =
+        Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
             (key, SubscriptionInfo(
                 productIdentifier: key,
                 purchaseDate: subscriptionData.purchaseDate,

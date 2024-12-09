@@ -45,6 +45,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     private var paywallEventsManager: PaywallEventsManagerType!
+    var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockPaywallEventsManager: MockPaywallEventsManager {
@@ -118,6 +119,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.notificationCenter = MockNotificationCenter()
+        let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
+                                                  mockDeviceCache: self.deviceCache)
+        self.webPurchaseRedemptionHelper = MockWebPurchaseRedemptionHelper()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
@@ -189,7 +193,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager)
+            paywallEventsManager: self.paywallEventsManager,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
@@ -226,7 +231,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             diagnosticsSynchronizer: diagnosticsSynchronizer,
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager
+            paywallEventsManager: self.paywallEventsManager,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }

@@ -182,6 +182,17 @@ import RevenueCat
         }
     }
 
+    func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
+        let isSandbox = purchasesProvider.isSandbox
+        let eventData = CustomerCenterEvent.Data(locale: .current,
+                                                 darkMode: darkMode,
+                                                 isSandbox: isSandbox,
+                                                 displayMode: displayMode)
+        let event = CustomerCenterEvent.impression(CustomerCenterEvent.CreationData(), eventData)
+
+        purchasesProvider.track(customerCenterEvent: event)
+    }
+
 }
 
 fileprivate extension String {

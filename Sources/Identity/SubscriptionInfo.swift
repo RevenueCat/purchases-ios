@@ -17,7 +17,7 @@ import Foundation
 @objc(RCSubscriptionInfo) public final class SubscriptionInfo: NSObject {
 
     /// The product identifier.
-    @objc public let productIdentifier: String
+    @objc public let productIdentifier: ProductIdentifier
 
     /// Date when the last subscription period started.
     @objc public let purchaseDate: Date

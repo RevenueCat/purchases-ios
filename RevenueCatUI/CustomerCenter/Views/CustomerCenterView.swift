@@ -33,17 +33,23 @@ public struct CustomerCenterView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    private let mode: CustomerCenterPresentationMode
+
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the customer center.
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+                mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
+        self.mode = mode
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel) {
+    fileprivate init(viewModel: CustomerCenterViewModel,
+                     mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue: viewModel)
+        self.mode = mode
     }
 
     // swiftlint:disable:next missing_docs
@@ -62,6 +68,9 @@ public struct CustomerCenterView: View {
         }
         .task {
             await loadInformationIfNeeded()
+        }
+        .task {
+            self.trackImpression()
         }
         .environmentObject(self.viewModel)
     }
@@ -104,7 +113,13 @@ private extension CustomerCenterView {
                 WrongPlatformView(purchaseInformation: purchaseInformation)
             }
         } else {
-            NoSubscriptionsView(configuration: configuration)
+            if let screen = configuration.screens[.noActive] {
+                ManageSubscriptionsView(screen: screen,
+                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+            } else {
+                // Fallback with a restore button
+                NoSubscriptionsView(configuration: configuration)
+            }
         }
     }
 
@@ -117,6 +132,11 @@ private extension CustomerCenterView {
             destinationContent(configuration: configuration)
         }
         .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+    }
+
+    func trackImpression() {
+        viewModel.trackImpression(darkMode: self.colorScheme == .dark,
+                                  displayMode: self.mode)
     }
 
 }

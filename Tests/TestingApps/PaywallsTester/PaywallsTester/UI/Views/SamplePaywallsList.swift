@@ -169,6 +169,14 @@ struct SamplePaywallsList: View {
                 }
             }
             #endif
+
+            #if DEBUG && !os(watchOS)
+            if #available(iOS 16.0, macOS 13.0, *) {
+                Section("Debug") {
+                    DebugView()
+                }
+            }
+            #endif
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)

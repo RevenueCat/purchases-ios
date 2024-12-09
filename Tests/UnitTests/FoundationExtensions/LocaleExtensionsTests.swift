@@ -40,8 +40,13 @@ class LocaleExtensionsTests: TestCase {
                 // Fixed in iOS 17 on Xcode 15
                 expect(Locale(identifier: "").rc_languageCode).to(beNil())
             } else {
-                // Broken in iOS 16 on Xcode 15
-                expect(Locale(identifier: "").rc_languageCode) == "en"
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    // Broken in iOS 16 on Xcode 15
+                    expect(Locale(identifier: "").rc_languageCode) == "en"
+                } else {
+                    // iOS 15 on Xcode 15
+                    expect(Locale(identifier: "").rc_languageCode).to(beNil())
+                }
             }
         #else
             expect(Locale(identifier: "").rc_languageCode).to(beNil())
@@ -61,8 +66,13 @@ class LocaleExtensionsTests: TestCase {
                 // Fixed in iOS 17 on Xcode 15
                 expect(Locale(identifier: "").removingRegion).to(beNil())
             } else {
-                // Broken in iOS 16 on Xcode 15
-                expect(Locale(identifier: "").removingRegion?.identifier) == "en"
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    // Broken in iOS 16 on Xcode 15
+                    expect(Locale(identifier: "").removingRegion?.identifier) == "en"
+                } else {
+                    // iOS 15 on Xcode 15
+                    expect(Locale(identifier: "").removingRegion).to(beNil())
+                }
             }
         #else
             expect(Locale(identifier: "").removingRegion).to(beNil())

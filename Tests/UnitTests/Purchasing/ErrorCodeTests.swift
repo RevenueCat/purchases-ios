@@ -183,8 +183,23 @@ class ErrorCodeTests: TestCase {
                                               expectedRawValue: 38)
     }
 
+    func testInvalidWebPurchaseTokenError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .invalidWebPurchaseToken,
+                                              expectedRawValue: 39)
+    }
+
+    func testPurchaseBelongsToOtherUserError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .purchaseBelongsToOtherUser,
+                                              expectedRawValue: 40)
+    }
+
+    func testExpiredWebPurchaseTokenError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .expiredWebPurchaseToken,
+                                              expectedRawValue: 41)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(38))
+        expect(ErrorCode.allCases).to(haveCount(41))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

@@ -175,6 +175,36 @@ extension PaywallComponent.HorizontalAlignment {
 
 }
 
+extension PaywallComponent.FlexDistribution {
+
+    var verticalFrameAlignment: SwiftUI.Alignment {
+        switch self {
+        case .start:
+            return .top
+        case .center:
+            return .center
+        case .end:
+            return .bottom
+        default:
+            return .top
+        }
+    }
+
+    var horizontalFrameAlignment: SwiftUI.Alignment {
+        switch self {
+        case .start:
+            return .leading
+        case .center:
+            return .center
+        case .end:
+            return .trailing
+        default:
+            return .leading
+        }
+    }
+
+}
+
 extension PaywallComponent.Padding {
     var edgeInsets: EdgeInsets {
             EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
@@ -202,8 +232,26 @@ extension PaywallComponent.ColorInfo {
         case .alias:
             // WIP: Need to implement this when we actually have alias implemented
             return fallback
+        case .linear, .radial:
+            return fallback
         }
     }
+
+    func toGradient() -> Gradient {
+        switch self {
+        case .hex, .alias:
+            return Gradient(colors: [.clear])
+        case .linear(_, let points), .radial(let points):
+            let stops = points.map { point in
+                Gradient.Stop(
+                    color: point.color.toColor(fallback: Color.clear),
+                    location: CGFloat(point.percent)/100
+                )
+            }
+            return Gradient(stops: stops)
+        }
+    }
+
 }
 
 extension PaywallComponent.ColorHex {
@@ -269,6 +317,17 @@ extension PaywallComponent.ColorScheme {
                 return UIColor(lightModeColor.toColor(fallback: Color.clear))
             }
         })
+    }
+
+    func effectiveColor(for colorScheme: ColorScheme) -> PaywallComponent.ColorInfo {
+        switch colorScheme {
+        case .light:
+            return light
+        case .dark:
+            return dark ?? light
+        @unknown default:
+            return light
+        }
     }
 
 }

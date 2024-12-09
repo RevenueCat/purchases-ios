@@ -317,6 +317,14 @@ class ErrorResponseTests: TestCase {
         expect(result.attributeErrors).to(beEmpty())
     }
 
+    func testErrorWithPurchaseRedemptionError() throws {
+        let result = try self.decode(Self.withPurchaseRedemptionError)
+
+        expect(result.code) == .expiredWebRedemptionToken
+        expect(result.message) == "The link has expired."
+        expect(result.purchaseRedemptionErrorInfo?.obfuscatedEmail) == "t***@r******t.com"
+    }
+
 }
 
 private extension ErrorResponseTests {
@@ -389,6 +397,15 @@ private extension ErrorResponseTests {
         {
         "code": 7224,
         "message": "Invalid auth token."
+        }
+        """
+    static let withPurchaseRedemptionError = """
+        {
+        "code": 7853,
+        "message": "The link has expired.",
+        "purchase_redemption_error_info": {
+           "obfuscated_email": "t***@r******t.com"
+        }
         }
         """
 

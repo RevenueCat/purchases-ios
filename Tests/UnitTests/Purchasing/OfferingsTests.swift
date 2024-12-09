@@ -410,6 +410,18 @@ class OfferingsTests: TestCase {
         let wrongMetadataType = offeringA.getMetadataValue(for: "string", default: 5.5)
         expect(wrongMetadataType) == 5.5
 
+        let intWithoutDefault: Int? = offeringA.getMetadataValue(for: "int")
+        expect(intWithoutDefault) == 5
+
+        let doubleWithoutDefault: Double? = offeringA.getMetadataValue(for: "double")
+        expect(doubleWithoutDefault) == 5.5
+
+        let boolWithoutDefault: Bool? = offeringA.getMetadataValue(for: "boolean")
+        expect(boolWithoutDefault) == true
+
+        let stringWithoutDefault: String? = offeringA.getMetadataValue(for: "string")
+        expect(stringWithoutDefault) == "five"
+
         struct Data: Decodable, Equatable {
             var number: Int
         }

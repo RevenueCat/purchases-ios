@@ -62,6 +62,12 @@ struct PromotionalOfferView: View {
 
             VStack {
                 if self.viewModel.error == nil {
+
+                    AppIconView()
+                        .padding(.top, 100)
+                        .padding(.bottom)
+                        .padding(.horizontal)
+
                     PromotionalOfferHeaderView(viewModel: self.viewModel)
 
                     Spacer()
@@ -94,6 +100,39 @@ struct PromotionalOfferView: View {
     ) {
         self.onDismissPromotionalOfferView(action) // Forward results to parent view
     }
+
+    private struct AppIconView: View {
+
+        var body: some View {
+            if let appIcon = AppIconHelper.getAppIcon() {
+                Image(uiImage: appIcon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 70, height: 70)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .shadow(radius: 10)
+            } else {
+                Color.clear
+                    // keep a size similar to what the image would have occuppied so layout looks correct
+                    .frame(width: 70, height: 50)
+            }
+        }
+
+    }
+
+    private enum AppIconHelper {
+
+        static func getAppIcon() -> UIImage? {
+            guard let iconsDictionary = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
+                  let primaryIcons = iconsDictionary["CFBundlePrimaryIcon"] as? [String: Any],
+                  let iconFiles = primaryIcons["CFBundleIconFiles"] as? [String],
+                  let lastIcon = iconFiles.last else {
+                return nil
+            }
+            return UIImage(named: lastIcon)
+        }
+
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -110,7 +149,6 @@ struct PromotionalOfferHeaderView: View {
     private(set) var viewModel: PromotionalOfferViewModel
 
     private let spacing: CGFloat = 30
-    private let topPadding: CGFloat = 150
     private let horizontalPadding: CGFloat = 40
 
     var body: some View {
@@ -121,7 +159,7 @@ struct PromotionalOfferHeaderView: View {
                     .font(.title)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
-                    .padding(.top, topPadding)
+                    .padding(.top)
 
                 Text(details.subtitle)
                     .font(.body)

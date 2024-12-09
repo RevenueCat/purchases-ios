@@ -511,7 +511,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager
+                    paywallEventsManager: paywallEventsManager,
+                    webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
+                                                                             identityManager: identityManager,
+                                                                             customerInfoManager: customerInfoManager)
                 )
             } else {
                 return .init(
@@ -534,7 +537,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager
+                    paywallEventsManager: paywallEventsManager,
+                    webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
+                                                                             identityManager: identityManager,
+                                                                             customerInfoManager: customerInfoManager)
                 )
             }
         }()
@@ -753,9 +759,17 @@ extension Purchases {
 
 public extension Purchases {
 
+    /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
+    /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
+    @objc internal static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
+        return DeepLinkParser.parseAsWebPurchaseRedemption(url)
+    }
+
     @objc var appUserID: String { self.identityManager.currentAppUserID }
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
+
+    @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
 
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
@@ -820,6 +834,10 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await self.paywallEventsManager?.resetAppSessionID()
+            }
         }
     }
 
@@ -851,6 +869,10 @@ public extension Purchases {
                     }
                 }
                 return
+            }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {
@@ -1219,11 +1241,25 @@ public extension Purchases {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
         }
     }
+
+    /// Warning: This is currently experimental and subject to change.
+    func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    ) {
+        self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption,
+                                                     completion: completion)
+    }
+
+    /// Warning: This is currently experimental and subject to change.
+    func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
+        return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
+    }
 }
 
 // swiftlint:enable missing_docs
 
-// MARK: - Paywalls
+// MARK: - Paywalls & Customer Center
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 public extension Purchases {
@@ -1231,7 +1267,14 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
-        await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
+        await self.paywallEventsManager?.track(featureEvent: paywallEvent)
+    }
+
+    /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
+    func track(customerCenterEvent: CustomerCenterEvent) {
+        operationDispatcher.dispatchOnWorkerThread {
+            await self.paywallEventsManager?.track(featureEvent: customerCenterEvent)
+        }
     }
 
     /// Used by `RevenueCatUI` to download customer center data
@@ -1758,10 +1801,6 @@ internal extension Purchases {
         return self.productsManager.requestTimeout
     }
 
-    var isSandbox: Bool {
-        return self.systemInfo.isSandbox
-    }
-
     var observerMode: Bool {
         return self.systemInfo.observerMode
     }
@@ -1973,6 +2012,20 @@ extension Purchases {
     }
 
     /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    public func eligibleWinBackOffers(
+        forPackage package: Package
+    ) async throws -> [WinBackOffer] {
+        return try await self.eligibleWinBackOffers(forProduct: package.storeProduct)
+    }
+
+    /**
      * Returns the win-back offers that the subscriber is eligible for on the provided product.
      *
      * - Parameter product: The product to check for eligible win-back offers.
@@ -1996,6 +2049,26 @@ extension Purchases {
                     completion(nil, publicError)
                 }
             }
+        }
+    }
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    @objc public func eligibleWinBackOffers(
+        forPackage package: Package,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    ) {
+        self.eligibleWinBackOffers(
+            forProduct: package.storeProduct
+        ) { winBackOffers, error in
+            completion(winBackOffers, error)
         }
     }
 }

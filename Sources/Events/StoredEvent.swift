@@ -16,19 +16,20 @@ import Foundation
 /// Contains the necessary information for storing and sending events.
 struct StoredEvent {
 
-    private(set) var encodedEvent: AnyEncodable
+    private(set) var encodedEvent: String
     private(set) var userID: String
     private(set) var feature: Feature
+    private(set) var appSessionID: UUID?
 
-    init?<T: Encodable>(event: T, userID: String, feature: Feature) {
-        guard let data = try? JSONEncoder.default.encode(value: event),
-              let dictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+    init?<T: Encodable>(event: T, userID: String, feature: Feature, appSessionID: UUID?) {
+        guard let encodedJSON = try? event.encodedJSON else {
             return nil
         }
 
-        self.encodedEvent = AnyEncodable(dictionary)
+        self.encodedEvent = encodedJSON
         self.userID = userID
         self.feature = feature
+        self.appSessionID = appSessionID
     }
 
 }
@@ -36,6 +37,7 @@ struct StoredEvent {
 enum Feature: String, Codable {
 
     case paywalls
+    case customerCenter
 
 }
 
@@ -50,19 +52,41 @@ extension StoredEvent: Codable {
         case encodedEvent = "event"
         case userID = "userId"
         case feature
+        case appSessionID = "appSessionId"
 
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.encodedEvent = try container.decode(AnyEncodable.self, forKey: .encodedEvent)
+        // Try to decode as string first (new format)
+        if let jsonString = try? container.decode(String.self, forKey: .encodedEvent) {
+            self.encodedEvent = jsonString
+        } else {
+            // Fall back to old format (direct dictionary)
+            if let oldEvent = try? container.decode(AnyEncodable.self, forKey: .encodedEvent),
+               let jsonString = try? oldEvent.encodedJSON {
+                self.encodedEvent = jsonString
+            } else {
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: [CodingKeys.encodedEvent],
+                        debugDescription: "Could not convert old format to JSON string"
+                    )
+                )
+            }
+        }
+
         self.userID = try container.decode(String.self, forKey: .userID)
         if let featureString = try container.decodeIfPresent(String.self, forKey: .feature),
            let feature = Feature(rawValue: featureString) {
             self.feature = feature
         } else {
             self.feature = .paywalls
+        }
+
+        if let appSessionID = try container.decodeIfPresent(UUID.self, forKey: .appSessionID) {
+            self.appSessionID = appSessionID
         }
     }
 
@@ -71,14 +95,20 @@ extension StoredEvent: Codable {
 extension StoredEvent: Equatable {
 
     static func == (lhs: StoredEvent, rhs: StoredEvent) -> Bool {
-        guard let lhsValue = lhs.encodedEvent.value as? [String: Any],
-              let rhsValue = rhs.encodedEvent.value as? [String: Any] else {
+        guard lhs.userID == rhs.userID,
+              lhs.feature == rhs.feature else {
             return false
         }
 
-        return lhs.userID == rhs.userID &&
-               lhs.feature == rhs.feature &&
-               (lhsValue as NSDictionary).isEqual(to: rhsValue)
+        // Compare decoded events instead of raw JSON strings
+        guard let lhsData = lhs.encodedEvent.data(using: .utf8),
+              let rhsData = rhs.encodedEvent.data(using: .utf8),
+              let lhsDict = try? JSONSerialization.jsonObject(with: lhsData) as? [String: Any],
+              let rhsDict = try? JSONSerialization.jsonObject(with: rhsData) as? [String: Any] else {
+            return false
+        }
+
+        return NSDictionary(dictionary: lhsDict).isEqual(rhsDict)
     }
 
 }

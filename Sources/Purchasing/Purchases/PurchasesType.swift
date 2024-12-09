@@ -733,6 +733,20 @@ public protocol PurchasesType: AnyObject {
         completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
     )
 
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Parameter completion: A completion block that is called with the eligible win-back
+     * offers for the provided product.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package,
+        completion: @escaping @Sendable ([WinBackOffer]?, PublicError?) -> Void
+    )
+
     #endif
 
     #if os(iOS) || VISION_OS
@@ -916,6 +930,20 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings?
+
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``.
+     *
+     * - Parameter webPurchaseRedemption: WebPurchaseRedemption object previously parsed from
+     * a URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     * - Parameter completion: The completion block to be called with the updated CustomerInfo
+     * on a successful redemption, or the error if not.
+     * - Seealso: ``Purchases/redeemWebPurchase(_:)``
+     */
+    @objc func redeemWebPurchase(
+        webPurchaseRedemption: WebPurchaseRedemption,
+        completion: @escaping (CustomerInfo?, PublicError?) -> Void
+    )
 
     // MARK: - Deprecated
 
@@ -1135,6 +1163,16 @@ public protocol PurchasesSwiftType: AnyObject {
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
 
+    /**
+     * Redeems a web purchase previously parsed from a deep link with ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     *
+     * - Parameter webPurchaseRedemption: Deep link previously parsed from a
+     * URL using ``Purchases/parseAsWebPurchaseRedemption(_:)``
+     */
+    func redeemWebPurchase(
+        _ webPurchaseRedemption: WebPurchaseRedemption
+    ) async -> WebPurchaseRedemptionResult
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /**
      * Returns the win-back offers that the subscriber is eligible for on the provided product.
@@ -1147,7 +1185,20 @@ public protocol PurchasesSwiftType: AnyObject {
     func eligibleWinBackOffers(
         forProduct product: StoreProduct
     ) async throws -> [WinBackOffer]
+
+    /**
+     * Returns the win-back offers that the subscriber is eligible for on the provided package.
+     *
+     * - Parameter package: The package to check for eligible win-back offers.
+     * - Returns: The win-back offers on the given product that a subscriber is eligible for.
+     * - Important: Win-back offers are only supported when the SDK is running with StoreKit 2 enabled.
+     */
+    @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+    func eligibleWinBackOffers(
+        forPackage package: Package
+    ) async throws -> [WinBackOffer]
     #endif
+
 }
 
 // MARK: -

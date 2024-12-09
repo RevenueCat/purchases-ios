@@ -310,20 +310,21 @@ extension Offering {
     }
 
     /// - Returns: The `metadata` value associated to `key` for the expected `Decodable` type,
-    /// or `nil` if not found.
-    /// - Throws: Error if the content couldn't be deserialized to the expected type.
+    /// or `nil` if not found or if the content couldn't be deserialized to the expected type.
     /// - Note: This decodes JSON using `JSONDecoder.KeyDecodingStrategy.convertFromSnakeCase`.
     public func getMetadataValue<T: Decodable>(for key: String) -> T? {
-        do {
-            guard let value = self.metadata[key] else { return nil }
-            let data = try JSONSerialization.data(withJSONObject: value)
+        guard let value = self.metadata[key] else { return nil }
 
-            return try JSONDecoder.default.decode(
-                T.self,
-                jsonData: data,
-                logErrors: true
-            )
-        } catch {
+        if JSONSerialization.isValidJSONObject(value),
+            let data = try? JSONSerialization.data(withJSONObject: value) {
+            return try? JSONDecoder.default.decode(
+                            T.self,
+                            jsonData: data,
+                            logErrors: true
+                        )
+        } else if let value = value as? T {
+            return value
+        } else {
             return nil
         }
     }

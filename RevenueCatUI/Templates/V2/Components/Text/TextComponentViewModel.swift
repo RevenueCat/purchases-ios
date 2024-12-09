@@ -157,7 +157,7 @@ struct TextComponentStyle {
     let visible: Bool
     let text: String
     let fontWeight: Font.Weight
-    let color: Color
+    let color: PaywallComponent.ColorScheme
     let fontSize: Font
     let horizontalAlignment: Alignment
     let textAlignment: TextAlignment
@@ -182,7 +182,7 @@ struct TextComponentStyle {
         self.visible = visible
         self.text = text
         self.fontWeight = fontWeight.fontWeight
-        self.color = color.toDynamicColor()
+        self.color = color
 
         // WIP: Take into account the fontFamily mapping
         self.fontSize = fontSize.font
