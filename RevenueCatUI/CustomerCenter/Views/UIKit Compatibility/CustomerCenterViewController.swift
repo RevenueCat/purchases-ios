@@ -16,7 +16,17 @@ import SwiftUI
 
 #if canImport(UIKit) && os(iOS)
 
-/// A UIKit ViewController for displaying a customer support common tasks
+/// Use the Customer Center in your app to help your customers manage common support tasks.
+///
+/// Customer Center is a self-service UI that can be added to your app to help
+/// your customers manage their subscriptions on their own. With it, you can prevent
+/// churn with pre-emptive promotional offers, capture actionable customer data with
+/// exit feedback prompts, and lower support volumes for common inquiries — all
+/// without any help from your support team.
+///
+/// The `CustomerCenterViewController` can be used to integrate the Customer Center directly in your app with UIKit.
+///
+/// For more information, see the [Customer Center docs](https://www.revenuecat.com/docs/tools/customer-center).
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

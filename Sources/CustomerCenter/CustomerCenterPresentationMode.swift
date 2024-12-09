@@ -18,10 +18,10 @@ import Foundation
 /// Presentation options to use with the [presentCustomerCenter](x-source-tag://presentCustomerCenter) View modifiers.
 public enum CustomerCenterPresentationMode {
 
-    /// Customer center presented using SwiftUI's `.sheet`.
+    /// Customer Center presented using SwiftUI's `.sheet`.
     case sheet
 
-    /// Customer center presented using SwiftUI's `.fullScreenCover`.
+    /// Customer Center presented using SwiftUI's `.fullScreenCover`.
     case fullScreen
 
 }
