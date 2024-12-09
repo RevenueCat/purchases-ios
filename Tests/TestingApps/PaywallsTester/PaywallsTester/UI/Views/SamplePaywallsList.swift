@@ -89,6 +89,10 @@ struct SamplePaywallsList: View {
             )
         case .customerCenter:
             CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
+        case .uiKitCustomerCenter:
+            CustomerCenterUIKitView(
+                customerCenterActionHandler: self.handleCustomerCenterAction
+            )
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
             PaywallView(configuration: .init(
@@ -160,6 +164,12 @@ struct SamplePaywallsList: View {
                     self.display = .customerCenter
                 } label: {
                     TemplateLabel(name: "SwiftUI", icon: "person.fill.questionmark")
+                }
+
+                Button {
+                    self.display = .uiKitCustomerCenter
+                } label: {
+                    TemplateLabel(name: "UIKit Customer Center", icon: "person.fill.questionmark")
                 }
 
                 Button {
@@ -263,6 +273,7 @@ private extension SamplePaywallsList {
         case missingPaywall
         case unrecognizedPaywall
         case customerCenter
+        case uiKitCustomerCenter
         #if PAYWALL_COMPONENTS
         case componentPaywall(PaywallComponentsData)
         #endif
@@ -296,6 +307,8 @@ extension SamplePaywallsList.Display: Identifiable {
         case .componentPaywall:
             return "component-paywall"
         #endif
+        case .uiKitCustomerCenter:
+            return "customer-center-uikit"
         }
     }
 
