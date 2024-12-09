@@ -45,8 +45,9 @@ class InternalAPI {
             return
         }
 
+        let request = EventsRequest(events: events)
         let operation = PostPaywallEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
-                                                   request: .init(events: events),
+                                                   request: request,
                                                    responseHandler: completion)
 
         self.backendConfig.operationQueue.addOperation(operation)

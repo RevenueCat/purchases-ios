@@ -33,6 +33,8 @@ struct FeedbackSurveyView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.customerCenterPresentationMode)
+    private var mode: CustomerCenterPresentationMode
 
     @Binding
     private var isPresented: Bool
@@ -57,6 +59,8 @@ struct FeedbackSurveyView: View {
                     onOptionSelected: { option in
                         await self.viewModel.handleAction(
                             for: option,
+                            darkMode: self.colorScheme == .dark,
+                            displayMode: self.mode,
                             dismissView: self.dismissView
                         )
                     },
