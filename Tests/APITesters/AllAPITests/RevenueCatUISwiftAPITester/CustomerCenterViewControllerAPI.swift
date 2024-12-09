@@ -17,10 +17,5 @@ func checkCustomerCenterViewControllerAPI(
 ) {
     let _ = CustomerCenterViewController()
     let _ = CustomerCenterViewController(customerCenterActionHandler: customerCenterActionHandler)
-    let _ = CustomerCenterViewController(mode: mode)
-    let _ = CustomerCenterViewController(
-        customerCenterActionHandler: customerCenterActionHandler,
-        mode: mode
-    )
 }
 #endif
