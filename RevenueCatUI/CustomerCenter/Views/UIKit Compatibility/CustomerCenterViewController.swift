@@ -16,9 +16,7 @@ import SwiftUI
 
 #if canImport(UIKit) && os(iOS)
 
-/// Warning: This is currently in beta and subject to change.
-///
-/// A SwiftUI view for displaying a customer support common tasks
+/// A UIKit ViewController for displaying a customer support common tasks
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -28,15 +26,12 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
     /// Create a view controller to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
-    ///   from the customer center.
-    ///   - mode: The presentation mode for the customer center. Defaults to `.default`
+    ///   from the Customer Center.
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-        mode: CustomerCenterPresentationMode = .default
+        customerCenterActionHandler: CustomerCenterActionHandler? = nil
     ) {
         let view = CustomerCenterView(
-            customerCenterActionHandler: customerCenterActionHandler,
-            mode: mode
+            customerCenterActionHandler: customerCenterActionHandler
         )
         super.init(rootView: view)
     }
