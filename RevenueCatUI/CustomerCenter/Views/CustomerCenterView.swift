@@ -18,7 +18,7 @@ import SwiftUI
 
 #if os(iOS)
 
-/// Use the Customer Center in your app to help your customers manage their subscriptions on their own.
+/// Use the Customer Center in your app to help your customers manage common support tasks.
 ///
 /// Customer Center is a self-service UI that can be added to your app to help
 /// your customers manage their subscriptions on their own. With it, you can prevent

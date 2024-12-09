@@ -1277,7 +1277,7 @@ public extension Purchases {
         }
     }
 
-    /// Used by `RevenueCatUI` to download customer center data
+    /// Used by `RevenueCatUI` to download Customer Center data
     func loadCustomerCenter() async throws -> CustomerCenterConfigData {
         let response = try await Async.call { completion in
             self.backend.customerCenterConfig.getCustomerCenterConfig(appUserID: self.appUserID,
