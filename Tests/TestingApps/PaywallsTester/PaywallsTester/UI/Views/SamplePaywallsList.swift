@@ -91,8 +91,7 @@ struct SamplePaywallsList: View {
             CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
         case .uiKitCustomerCenter:
             CustomerCenterUIKitView(
-                customerCenterActionHandler: self.handleCustomerCenterAction,
-                presentationMode: .sheet
+                customerCenterActionHandler: self.handleCustomerCenterAction
             )
         #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):

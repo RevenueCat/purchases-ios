@@ -14,12 +14,10 @@ import RevenueCatUI
 struct CustomerCenterUIKitView: UIViewControllerRepresentable {
     
     let customerCenterActionHandler: (CustomerCenterAction) -> Void
-    let presentationMode: CustomerCenterPresentationMode
 
     func makeUIViewController(context: Context) -> CustomerCenterViewController {
         CustomerCenterViewController(
-            customerCenterActionHandler: self.customerCenterActionHandler,
-            mode: self.presentationMode
+            customerCenterActionHandler: self.customerCenterActionHandler
         )
     }
     
