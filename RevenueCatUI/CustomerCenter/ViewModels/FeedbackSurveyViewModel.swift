@@ -62,7 +62,7 @@ class FeedbackSurveyViewModel: ObservableObject {
         dismissView: () -> Void
     ) async {
         if let customerCenterActionHandler = self.customerCenterActionHandler {
-            trackSurveyOptionChosen(option: option, darkMode: darkMode, displayMode: displayMode)
+            trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
             customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
         }
 
@@ -115,22 +115,22 @@ extension FeedbackSurveyViewModel {
 @available(watchOS, unavailable)
 private extension FeedbackSurveyViewModel {
 
-    func trackSurveyOptionChosen(option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
-                                 darkMode: Bool,
-                                 displayMode: CustomerCenterPresentationMode) {
+    func trackSurveyAnswerSubmitted(option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
+                                    darkMode: Bool,
+                                    displayMode: CustomerCenterPresentationMode) {
         let isSandbox = purchasesProvider.isSandbox
-        let surveyOptionData = CustomerCenterSurveyOptionChosenEvent.Data(locale: .current,
-                                                                          darkMode: darkMode,
-                                                                          isSandbox: isSandbox,
-                                                                          displayMode: displayMode,
-                                                                          path: feedbackSurveyData.path.type,
-                                                                          url: feedbackSurveyData.path.url,
-                                                                          surveyOptionID: option.id,
-                                                                          surveyOptionTitleKey: option.title,
-                                                                          additionalContext: nil,
-                                                                          revisionID: 0)
-        let event = CustomerCenterSurveyOptionChosenEvent.surveyOptionChosen(CustomerCenterEventCreationData(),
-                                                                             surveyOptionData)
+        let surveyOptionData = CustomerCenterAnswerSubmittedEvent.Data(locale: .current,
+                                                                       darkMode: darkMode,
+                                                                       isSandbox: isSandbox,
+                                                                       displayMode: displayMode,
+                                                                       path: feedbackSurveyData.path.type,
+                                                                       url: feedbackSurveyData.path.url,
+                                                                       surveyOptionID: option.id,
+                                                                       surveyOptionTitleKey: option.title,
+                                                                       additionalContext: nil,
+                                                                       revisionID: 0)
+        let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(CustomerCenterEventCreationData(),
+                                                                       surveyOptionData)
         purchasesProvider.track(customerCenterEvent: event)
     }
 

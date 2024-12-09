@@ -24,7 +24,7 @@ extension EventsRequest {
     enum CustomerCenterEventType: String {
 
         case impression = "customer_center_impression"
-        case surveyOptionChosen = "customer_center_survey_option_chosen"
+        case answerSubmitted = "customer_center_survey_option_chosen"
 
     }
 
@@ -138,7 +138,7 @@ extension EventsRequest {
              revisionId: Int) {
             self.id = id
             self.version = version
-            self.type = .surveyOptionChosen
+            self.type = .answerSubmitted
             self.appUserID = appUserID
             self.appSessionID = appSessionID
             self.timestamp = timestamp
@@ -165,7 +165,7 @@ extension EventsRequest {
                 Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
                 return nil
             }
-            guard let customerCenterEvent = try? JSONDecoder.default.decode(CustomerCenterSurveyOptionChosenEvent.self,
+            guard let customerCenterEvent = try? JSONDecoder.default.decode(CustomerCenterAnswerSubmittedEvent.self,
                                                                             from: jsonData) else {
                 Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
                 return nil

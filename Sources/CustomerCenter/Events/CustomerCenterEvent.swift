@@ -50,12 +50,12 @@ public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 }
 
 /// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterSurveyOptionChosenEvent: FeatureEvent, CustomerCenterEventType {
+public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
 
     var eventDiscriminator: String? { "survey_option_chosen" }
 
     /// A feedback survey was completed with a particular option.
-    case surveyOptionChosen(CustomerCenterEventCreationData, Data)
+    case answerSubmitted(CustomerCenterEventCreationData, Data)
 
 }
 
@@ -91,9 +91,9 @@ extension CustomerCenterEvent {
 
 }
 
-extension CustomerCenterSurveyOptionChosenEvent {
+extension CustomerCenterAnswerSubmittedEvent {
 
-    /// The content of a ``CustomerCenterSurveyOptionChosenEvent``.
+    /// The content of a ``CustomerCenterAnswerSubmittedEvent``.
     public struct Data {
 
         // swiftlint:disable missing_docs
@@ -159,19 +159,19 @@ extension CustomerCenterEvent {
 
 }
 
-extension CustomerCenterSurveyOptionChosenEvent {
+extension CustomerCenterAnswerSubmittedEvent {
 
     /// - Returns: the underlying ``CustomerCenterEventCreationData-swift.struct`` for this event.
     public var creationData: CustomerCenterEventCreationData {
         switch self {
-        case let .surveyOptionChosen(creationData, _): return creationData
+        case let .answerSubmitted(creationData, _): return creationData
         }
     }
 
-    /// - Returns: the underlying ``CustomerCenterSurveyOptionChosenEvent/Data-swift.struct`` for this event.
+    /// - Returns: the underlying ``CustomerCenterAnswerSubmittedEvent/Data-swift.struct`` for this event.
     public var data: Data {
         switch self {
-        case let .surveyOptionChosen(_, surveyData): return surveyData
+        case let .answerSubmitted(_, surveyData): return surveyData
         }
     }
 
@@ -208,7 +208,7 @@ extension CustomerCenterEvent: Equatable, Codable, Sendable {}
 
 extension CustomerCenterBaseData: Equatable, Codable, Sendable {}
 
-extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendable {
+extension CustomerCenterAnswerSubmittedEvent.Data: Equatable, Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -224,4 +224,4 @@ extension CustomerCenterSurveyOptionChosenEvent.Data: Equatable, Codable, Sendab
 
 }
 
-extension CustomerCenterSurveyOptionChosenEvent: Equatable, Codable, Sendable {}
+extension CustomerCenterAnswerSubmittedEvent: Equatable, Codable, Sendable {}
