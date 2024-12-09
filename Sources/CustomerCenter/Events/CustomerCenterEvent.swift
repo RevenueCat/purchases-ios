@@ -18,7 +18,7 @@ public enum CustomerCenterEvent: FeatureEvent {
 
     // swiftlint:disable type_name
 
-    /// An identifier that represents a customer center event.
+    /// An identifier that represents a Customer Center event.
     public typealias ID = UUID
 
     // swiftlint:enable type_name
