@@ -132,6 +132,12 @@ struct CustomerCenterConfigResponse {
     struct Support {
 
         let email: String
+        let shouldWarnCustomerToUpdate: Bool?
+
+//        enum CodingKeys: String, CodingKey {
+//            case email = "email"
+//            case shouldWarnCustomerToUpdate = "should_warn_customer_to_update"
+//        }
 
     }
 
