@@ -38,9 +38,14 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
     private(set) var purchasesProvider: CustomerCenterPurchasesType
 
+    var shouldShowAppUpdateWarning: Bool {
+        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? false)
+    }
+
     /// Whether or not the user needs to update their app version to contact support.
     var appUpdateRequiredToContactSupport: Bool {
-        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? false)
+        // For now, we're using the same flag as the app update warning.
+        return self.shouldShowAppUpdateWarning
     }
 
     // @PublicForExternalTesting
