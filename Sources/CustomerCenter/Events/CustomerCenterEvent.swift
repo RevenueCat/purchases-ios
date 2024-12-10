@@ -13,46 +13,56 @@
 
 import Foundation
 
-/// An event to be sent by the `RevenueCatUI` SDK.
-public enum CustomerCenterEvent: FeatureEvent {
+/// A protocol that represents a customer center event.
+public protocol CustomerCenterEventType {}
 
-    // swiftlint:disable type_name
+extension CustomerCenterEventType {
 
-    /// An identifier that represents a customer center event.
-    public typealias ID = UUID
-
-    // swiftlint:enable type_name
-
-    /// An identifier that represents a paywall session.
-    public typealias SessionID = UUID
-
-    var feature: Feature {
-        return .customerCenter
-    }
-
-    /// The Customer Center was displayed.
-    case impression(CreationData, Data)
+    var feature: Feature { .customerCenter }
 
 }
 
-extension CustomerCenterEvent {
+enum CustomerCenterEventDiscriminator: String {
 
-    /// The creation data of a ``CustomerCenterEvent``.
-    public struct CreationData {
+    case lifecycle = "lifecycle"
+    case answerSubmitted = "answer_submitted"
 
-        // swiftlint:disable missing_docs
-        public var id: ID
-        public var date: Date
+}
 
-        public init(
-            id: ID = .init(),
-            date: Date = .init()
-        ) {
-            self.id = id
-            self.date = date
-        }
+/// Data that represents a customer center event creation.
+public struct CustomerCenterEventCreationData {
 
+    let id: UUID
+    let date: Date
+
+    // swiftlint:disable:next missing_docs
+    public init(
+        id: UUID = .init(),
+        date: Date = .init()
+    ) {
+        self.id = id
+        self.date = date
     }
+
+}
+
+/// An event to be sent by the `RevenueCatUI` SDK.
+public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
+
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
+
+    /// The Customer Center was displayed.
+    case impression(CustomerCenterEventCreationData, Data)
+
+}
+
+/// An event to be sent by the `RevenueCatUI` SDK.
+public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
+
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
+
+    /// A feedback survey was completed with a particular option.
+    case answerSubmitted(CustomerCenterEventCreationData, Data)
 
 }
 
@@ -62,10 +72,12 @@ extension CustomerCenterEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        public var localeIdentifier: String
-        public var darkMode: Bool
-        public var isSandbox: Bool
-        public var displayMode: CustomerCenterPresentationMode
+        public var localeIdentifier: String { base.localeIdentifier }
+        public var darkMode: Bool { base.darkMode }
+        public var isSandbox: Bool { base.isSandbox }
+        public var displayMode: CustomerCenterPresentationMode { base.displayMode }
+
+        private let base: CustomerCenterBaseData
 
         public init(
             locale: Locale,
@@ -73,10 +85,62 @@ extension CustomerCenterEvent {
             isSandbox: Bool,
             displayMode: CustomerCenterPresentationMode
         ) {
-            self.localeIdentifier = locale.identifier
-            self.darkMode = darkMode
-            self.isSandbox = isSandbox
-            self.displayMode = displayMode
+            self.base = CustomerCenterBaseData(
+                locale: locale,
+                darkMode: darkMode,
+                isSandbox: isSandbox,
+                displayMode: displayMode
+            )
+        }
+        // swiftlint:enable missing_docs
+
+    }
+
+}
+
+extension CustomerCenterAnswerSubmittedEvent {
+
+    /// The content of a ``CustomerCenterAnswerSubmittedEvent``.
+    public struct Data {
+
+        // swiftlint:disable missing_docs
+        public var localeIdentifier: String { base.localeIdentifier }
+        public var darkMode: Bool { base.darkMode }
+        public var isSandbox: Bool { base.isSandbox }
+        public var displayMode: CustomerCenterPresentationMode { base.displayMode }
+        public let path: CustomerCenterConfigData.HelpPath.PathType
+        public let url: URL?
+        public let surveyOptionID: String
+        public let surveyOptionTitleKey: String
+        public let additionalContext: String?
+        public let revisionID: Int
+
+        private let base: CustomerCenterBaseData
+
+        public init(
+            locale: Locale,
+            darkMode: Bool,
+            isSandbox: Bool,
+            displayMode: CustomerCenterPresentationMode,
+            path: CustomerCenterConfigData.HelpPath.PathType,
+            url: URL?,
+            surveyOptionID: String,
+            surveyOptionTitleKey: String,
+            additionalContext: String? = nil,
+            revisionID: Int
+        ) {
+            self.base = CustomerCenterBaseData(
+                locale: locale,
+                darkMode: darkMode,
+                isSandbox: isSandbox,
+                displayMode: displayMode
+            )
+            self.path = path
+            self.url = url
+            self.surveyOptionID = surveyOptionID
+            self.surveyOptionTitleKey = surveyOptionTitleKey
+            self.additionalContext = additionalContext
+            self.revisionID = revisionID
         }
         // swiftlint:enable missing_docs
 
@@ -86,8 +150,8 @@ extension CustomerCenterEvent {
 
 extension CustomerCenterEvent {
 
-    /// - Returns: the underlying ``CustomerCenterEvent/CreationData-swift.struct`` for this event.
-    public var creationData: CreationData {
+    /// - Returns: the underlying ``CustomerCenterEventCreationData-swift.struct`` for this event.
+    public var creationData: CustomerCenterEventCreationData {
         switch self {
         case let .impression(creationData, _): return creationData
         }
@@ -102,8 +166,69 @@ extension CustomerCenterEvent {
 
 }
 
+extension CustomerCenterAnswerSubmittedEvent {
+
+    /// - Returns: the underlying ``CustomerCenterEventCreationData-swift.struct`` for this event.
+    public var creationData: CustomerCenterEventCreationData {
+        switch self {
+        case let .answerSubmitted(creationData, _): return creationData
+        }
+    }
+
+    /// - Returns: the underlying ``CustomerCenterAnswerSubmittedEvent/Data-swift.struct`` for this event.
+    public var data: Data {
+        switch self {
+        case let .answerSubmitted(_, surveyData): return surveyData
+        }
+    }
+
+}
+
+private struct CustomerCenterBaseData {
+
+    // swiftlint:disable missing_docs
+    public let localeIdentifier: String
+    public let darkMode: Bool
+    public let isSandbox: Bool
+    public let displayMode: CustomerCenterPresentationMode
+
+    public init(
+        locale: Locale,
+        darkMode: Bool,
+        isSandbox: Bool,
+        displayMode: CustomerCenterPresentationMode
+    ) {
+        self.localeIdentifier = locale.identifier
+        self.darkMode = darkMode
+        self.isSandbox = isSandbox
+        self.displayMode = displayMode
+    }
+    // swiftlint:enable missing_docs
+
+}
+
 // MARK: -
 
-extension CustomerCenterEvent.CreationData: Equatable, Codable, Sendable {}
+extension CustomerCenterEventCreationData: Equatable, Codable, Sendable {}
 extension CustomerCenterEvent.Data: Equatable, Codable, Sendable {}
 extension CustomerCenterEvent: Equatable, Codable, Sendable {}
+
+extension CustomerCenterBaseData: Equatable, Codable, Sendable {}
+
+extension CustomerCenterAnswerSubmittedEvent.Data: Equatable, Codable, Sendable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case base
+        case path
+        case url
+        case surveyOptionID = "surveyOptionId"
+        case surveyOptionTitleKey = "surveyOptionTitleKey"
+        case additionalContext = "additionalContext"
+        case revisionID = "revisionId"
+
+    }
+
+}
+
+extension CustomerCenterAnswerSubmittedEvent: Equatable, Codable, Sendable {}

@@ -36,6 +36,6 @@ protocol CustomerCenterPurchasesType: Sendable {
         promotionalOffer: PromotionalOffer
     ) async throws -> PurchaseResultData
 
-    func track(customerCenterEvent: CustomerCenterEvent)
+    func track(customerCenterEvent: any CustomerCenterEventType)
 
 }

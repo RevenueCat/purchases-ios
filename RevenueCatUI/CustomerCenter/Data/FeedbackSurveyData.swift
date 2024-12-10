@@ -25,11 +25,14 @@ import RevenueCat
 class FeedbackSurveyData: ObservableObject {
 
     var configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
+    var path: CustomerCenterConfigData.HelpPath
     var onOptionSelected: (() -> Void)
 
     init(configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey,
+         path: CustomerCenterConfigData.HelpPath,
          onOptionSelected: @escaping (() -> Void)) {
         self.configuration = configuration
+        self.path = path
         self.onOptionSelected = onOptionSelected
     }
 
