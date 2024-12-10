@@ -101,34 +101,35 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasActiveProducts {
-            if viewModel.hasAppleEntitlement,
-               let screen = configuration.screens[.management] {
-                if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
-                    AppUpdateWarningView(
-                        productId: productId,
-                        onContinueAnywayClick: {
-                            withAnimation {
-                                ignoreAppUpdateWarning = true
-                            }
-                        }
-                    )
-                } else {
-                    ManageSubscriptionsView(screen: screen,
-                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
-                }
-            } else {
-                WrongPlatformView()
-            }
-        } else {
-            if let screen = configuration.screens[.noActive] {
-                ManageSubscriptionsView(screen: screen,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
-            } else {
-                // Fallback with a restore button
-                NoSubscriptionsView(configuration: configuration)
-            }
-        }
+        WrongPlatformView()
+//        if viewModel.hasActiveProducts {
+//            if viewModel.hasAppleEntitlement,
+//               let screen = configuration.screens[.management] {
+//                if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
+//                    AppUpdateWarningView(
+//                        productId: productId,
+//                        onContinueAnywayClick: {
+//                            withAnimation {
+//                                ignoreAppUpdateWarning = true
+//                            }
+//                        }
+//                    )
+//                } else {
+//                    ManageSubscriptionsView(screen: screen,
+//                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
+//                }
+//            } else {
+//                WrongPlatformView()
+//            }
+//        } else {
+//            if let screen = configuration.screens[.noActive] {
+//                ManageSubscriptionsView(screen: screen,
+//                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+//            } else {
+//                // Fallback with a restore button
+//                NoSubscriptionsView(configuration: configuration)
+//            }
+//        }
     }
 
     @ViewBuilder
