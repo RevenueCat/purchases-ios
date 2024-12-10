@@ -22,9 +22,6 @@ extension CustomerCenterEventType {
 
 }
 
-/// An identifier that represents a Customer Center event.
-public typealias ID = UUID
-
 enum CustomerCenterEventDiscriminator: String {
 
     case lifecycle = "lifecycle"
