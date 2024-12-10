@@ -59,7 +59,7 @@ public enum CustomerCenterEvent: FeatureEvent, CustomerCenterEventType {
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum CustomerCenterAnswerSubmittedEvent: FeatureEvent, CustomerCenterEventType {
 
-    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.lifecycle.rawValue }
+    var eventDiscriminator: String? { CustomerCenterEventDiscriminator.answerSubmitted.rawValue }
 
     /// A feedback survey was completed with a particular option.
     case answerSubmitted(CustomerCenterEventCreationData, Data)
