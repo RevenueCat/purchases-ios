@@ -44,7 +44,7 @@ import RevenueCat
 
     /// Whether or not the user needs to update their app version to contact support.
     var appUpdateRequiredToContactSupport: Bool {
-        // For now, we're using the same flag as the app update warning.
+        // We're intentionally using the same flag as the app update warning.
         return self.shouldShowAppUpdateWarning
     }
 
