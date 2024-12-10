@@ -102,6 +102,7 @@ extension EventsRequest {
         private static let version: Int = 1
     }
 
+    // swiftlint:disable:next type_name
     final class CustomerCenterAnswerSubmittedEventRequest {
 
         let id: String?

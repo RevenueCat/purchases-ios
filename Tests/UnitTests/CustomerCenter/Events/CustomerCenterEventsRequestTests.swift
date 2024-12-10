@@ -28,12 +28,13 @@ class CustomerCenterEventsRequestTests: TestCase {
 
     func testImpressionEvent() throws {
         let event = CustomerCenterEvent.impression(Self.eventCreationData, Self.eventData)
+        let eventDiscriminator: String = CustomerCenterEventDiscriminator.lifecycle.rawValue
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
                                                            feature: .customerCenter,
                                                            appSessionID: Self.appSessionID,
-                                                           eventDiscriminator: "lifecycle"))
-        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBase.createBase(from: storedEvent))
+                                                           eventDiscriminator: eventDiscriminator))
+        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBaseRequest.createBase(from: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -63,7 +64,8 @@ class CustomerCenterEventsRequestTests: TestCase {
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .customerCenter
 
-        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBase.createBase(from: deserializedEvent))
+        let requestEvent =
+        try XCTUnwrap(EventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
