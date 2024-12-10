@@ -47,8 +47,16 @@ public struct CustomerCenterView: View {
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-                mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
+        self.init(customerCenterActionHandler: customerCenterActionHandler, mode: .default)
+    }
+
+    /// Create a view to handle common customer support tasks
+    /// - Parameters:
+    ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
+    ///   from the Customer Center.
+    init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+         mode: CustomerCenterPresentationMode) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.mode = mode
@@ -71,6 +79,7 @@ public struct CustomerCenterView: View {
                         .environment(\.localization, configuration.localization)
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.supportInformation, configuration.support)
+                        .environment(\.customerCenterPresentationMode, self.mode)
                 }
             }
         }

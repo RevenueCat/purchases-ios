@@ -30,6 +30,10 @@ public enum PaywallEvent: FeatureEvent {
         return .paywalls
     }
 
+    var eventDiscriminator: String? {
+        return nil
+    }
+
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 
@@ -57,6 +61,7 @@ extension PaywallEvent {
             self.id = id
             self.date = date
         }
+        // swiftlint:enable missing_docs
 
     }
 

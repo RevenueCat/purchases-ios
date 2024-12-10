@@ -285,7 +285,8 @@ private extension StoredEvent {
         return .init(event: event,
                      userID: UUID().uuidString,
                      feature: .paywalls,
-                     appSessionID: UUID())!
+                     appSessionID: UUID(),
+                     eventDiscriminator: "impression")!
     }
 
 }
