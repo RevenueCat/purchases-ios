@@ -84,16 +84,15 @@ import RevenueCat
     }
 
 #if DEBUG
-    //
-    //    convenience init(
-    //        hasActiveProducts: Bool = false,
-    //        hasAppleEntitlement: Bool = false
-    //    ) {
-    //        self.init(customerCenterActionHandler: nil)
-    //        self.hasActiveProducts = hasActiveProducts
-    //        self.appleManagement = appleManagement
-    //        self.state = .success
-    //    }
+
+        convenience init(
+            hasActiveProducts: Bool = false,
+            hasAppleEntitlement: Bool = false
+        ) {
+            self.init(customerCenterActionHandler: nil)
+            self.purchaseInformation = purchaseInformation
+            self.state = .success
+        }
 
 #endif
 
