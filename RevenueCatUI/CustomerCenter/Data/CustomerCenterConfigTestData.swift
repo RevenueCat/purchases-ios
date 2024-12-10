@@ -116,7 +116,7 @@ enum CustomerCenterConfigTestData {
             ),
             support: .init(
                 email: "test-support@revenuecat.com",
-                shouldWarnCustomerToUpdate: true
+                shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
