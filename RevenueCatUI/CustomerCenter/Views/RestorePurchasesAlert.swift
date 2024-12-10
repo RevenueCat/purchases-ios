@@ -83,7 +83,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
                 case .purchasesNotFound:
                     let message = Text(localization.commonLocalizedString(for: .purchasesNotRecovered))
-                    if let url = supportURL {
+                    if let url = supportURL, !customerCenterViewModel.appUpdateRequiredToContactSupport {
                         return Alert(title: Text(""),
                                      message: message,
                                      primaryButton: .default(

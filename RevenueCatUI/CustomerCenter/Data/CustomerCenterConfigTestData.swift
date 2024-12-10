@@ -111,7 +111,7 @@ enum CustomerCenterConfigTestData {
                     "back": "Back"
                 ]
             ),
-            support: .init(email: "test-support@revenuecat.com"),
+            support: .init(email: "test-support@revenuecat.com", shouldWarnCustomerToUpdate: true),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
         )

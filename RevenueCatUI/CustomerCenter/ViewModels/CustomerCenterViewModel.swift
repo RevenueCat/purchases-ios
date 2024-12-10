@@ -38,6 +38,11 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
     private(set) var purchasesProvider: CustomerCenterPurchasesType
 
+    /// Whether or not the user needs to update their app version to contact support.
+    var appUpdateRequiredToContactSupport: Bool {
+        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? false)
+    }
+
     // @PublicForExternalTesting
     @Published
     var state: CustomerCenterViewState {
