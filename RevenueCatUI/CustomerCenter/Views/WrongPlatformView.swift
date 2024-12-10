@@ -32,6 +32,9 @@ struct WrongPlatformView: View {
     @State
     private var subscriptionInformation: PurchaseInformation?
 
+    @EnvironmentObject
+    private var customerCenterViewModel: CustomerCenterViewModel
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -80,7 +83,7 @@ struct WrongPlatformView: View {
                     }
                 }
             }
-            if let url = supportURL {
+            if let url = supportURL, !customerCenterViewModel.appUpdateRequiredToContactSupport {
                 Section {
                     AsyncButton {
                         openURL(url)
