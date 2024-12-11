@@ -57,10 +57,10 @@
     {
       "identity" : "snapshotpreviews",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/EmergeTools/SnapshotPreviews",
+      "location" : "https://github.com/EmergeTools/SnapshotPreviews.git",
       "state" : {
-        "revision" : "cdbf9cc5cb63a88f1329b958428f9706a6af557e",
-        "version" : "0.10.18"
+        "revision" : "e29969072e600518867af25d4d2acd0d1d2ffd5f",
+        "version" : "0.10.20"
       }
     },
     {
