@@ -116,6 +116,7 @@ struct RestorePurchasesAlert: ViewModifier {
                 onUpdateAppClick()
             } label: {
                 Text(localization.commonLocalizedString(for: .updateWarningUpdate))
+                    .bold()
             }
         }
 
