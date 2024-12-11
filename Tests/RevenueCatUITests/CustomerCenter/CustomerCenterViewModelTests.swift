@@ -189,7 +189,7 @@ class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.productIdentifier) == productId
     }
 
-    func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsOneEntitlement() async throws {
+    func testShouldShowEarliestExpiringSubscriptionEvenWhenUserHasLifetimeAndSubscriptions() async throws {
         // Arrange
         let yearlyProduct = (
             id: "com.revenuecat.yearly",
@@ -270,30 +270,30 @@ class CustomerCenterViewModelTests: TestCase {
         }
     }
 
-    func testShouldShowLifetime_whenUserHasLifetimeAndSubscriptionsOneEntitlement() async throws {
+    func testShouldShowClosestExpiring_whenUserHasLifetimeAndSubscriptions() async throws {
         let productIdLifetime = "com.revenuecat.simpleapp.lifetime"
         let productIdMonthly = "com.revenuecat.simpleapp.monthly"
         let productIdYearly = "com.revenuecat.simpleapp.yearly"
         let purchaseDateLifetime = "2024-11-21T16:04:20Z"
         let purchaseDateMonthly = "2024-11-21T16:04:39Z"
         let purchaseDateYearly = "2024-11-21T16:04:45Z"
-        let expirationDateMonthly = "2024-11-28T16:04:39Z"
-        let expirationDateYearly = "2025-11-21T16:04:45Z"
+        let expirationDateMonthly = "3024-11-28T16:04:39Z"
+        let expirationDateYearly = "3025-11-21T16:04:45Z"
 
-        let products = [
-            PurchaseInformationFixtures.product(id: productIdLifetime,
-                                                title: "lifetime",
-                                                duration: nil,
-                                                price: 29.99),
-            PurchaseInformationFixtures.product(id: productIdMonthly,
-                                                title: "monthly",
-                                                duration: .month,
-                                                price: 2.99),
-            PurchaseInformationFixtures.product(id: productIdYearly,
-                                                title: "yearly",
-                                                duration: .year,
-                                                price: 29.99)
-        ]
+        let lifetimeProduct = PurchaseInformationFixtures.product(id: productIdLifetime,
+                                                                  title: "lifetime",
+                                                                  duration: nil,
+                                                                  price: 29.99)
+        let monthlyProduct = PurchaseInformationFixtures.product(id: productIdMonthly,
+                                                                 title: "monthly",
+                                                                 duration: .month,
+                                                                 price: 2.99)
+        let yearlyProduct = PurchaseInformationFixtures.product(id: productIdYearly,
+                                                                title: "yearly",
+                                                                duration: .year,
+                                                                price: 29.99)
+
+        let products = [lifetimeProduct, monthlyProduct, yearlyProduct]
 
         // Test both possible subscription array orders
         let subscriptionOrders = [
@@ -346,12 +346,12 @@ class CustomerCenterViewModelTests: TestCase {
             expect(viewModel.state) == .success
 
             let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
-            expect(purchaseInformation.title) == "lifetime"
-            expect(purchaseInformation.durationTitle).to(beNil())
-            expect(purchaseInformation.price) == .paid("$29.99")
-            expect(purchaseInformation.productIdentifier) == productIdLifetime
+            expect(purchaseInformation.title) == "monthly"
+            expect(purchaseInformation.durationTitle) == "1 month"
+            expect(purchaseInformation.price) == .paid("$2.99")
+            expect(purchaseInformation.productIdentifier) == productIdMonthly
 
-            expect(purchaseInformation.expirationOrRenewal?.date) == .never
+            expect(purchaseInformation.expirationOrRenewal?.date) == .date(reformat(ISO8601Date: expirationDateMonthly))
         }
     }
 
@@ -578,7 +578,7 @@ class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadPurchaseInformation()
 
         expect(viewModel.purchaseInformation).to(beNil())
-        expect(viewModel.state) == .error(CustomerCenterError.couldNotFindSubscriptionInformation)
+        expect(viewModel.state) == .success
     }
 
     func testLoadScreenFailure() async {
