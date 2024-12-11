@@ -70,6 +70,21 @@ class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.isLoaded) == true
     }
 
+    func testLoadPurchaseInformationAlwaysRefreshesCustomerInfo() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadPurchaseInformation()
+
+        expect(mockPurchases.customerInfoFetchPolicy) == .fetchCurrent
+    }
+
     func testLoadHasSubscriptionsApple() async throws {
         let mockPurchases =
         MockCustomerCenterPurchases(customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions)
