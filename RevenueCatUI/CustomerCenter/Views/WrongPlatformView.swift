@@ -66,10 +66,10 @@ struct WrongPlatformView: View {
                      managementURL: URL?,
                      subscriptionInformation: PurchaseInformation,
                      screen: CustomerCenterConfigData.Screen) {
-        self.store = store
+        self.screen = screen
+        self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
         self._subscriptionInformation = State(initialValue: subscriptionInformation)
-        self.screen = screen
     }
 
     var body: some View {
