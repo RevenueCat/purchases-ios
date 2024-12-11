@@ -132,6 +132,7 @@ struct CustomerCenterConfigResponse {
     struct Support {
 
         let email: String
+        let shouldWarnCustomerToUpdate: Bool?
 
     }
 

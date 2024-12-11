@@ -22,6 +22,7 @@ import XCTest
 
 #if os(iOS)
 
+// swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -732,6 +733,55 @@ class CustomerCenterViewModelTests: TestCase {
         if case .impression = trackedEvent {} else {
             fail("Expected an impression event")
         }
+    }
+
+    func testShouldShowAppUpdateWarningsTrue() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let latestVersion = "3.0.0"
+        let currentVersion = "2.0.0"
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            currentVersionFetcher: { return currentVersion },
+            purchasesProvider: mockPurchases
+        )
+        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+            lastPublishedAppVersion: latestVersion,
+            shouldWarnCustomerToUpdate: true
+        )
+
+        expect(viewModel.shouldShowAppUpdateWarnings).to(beTrue())
+    }
+
+    func testShouldShowAppUpdateWarningsFalse() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let latestVersion = "3.0.0"
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            currentVersionFetcher: { return latestVersion },
+            purchasesProvider: mockPurchases
+        )
+        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+            lastPublishedAppVersion: latestVersion,
+            shouldWarnCustomerToUpdate: true
+        )
+
+        expect(viewModel.shouldShowAppUpdateWarnings).to(beFalse())
+    }
+
+    func testShouldShowAppUpdateWarningsFalseIfBlockedByConfig() {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let latestVersion = "3.0.0"
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            currentVersionFetcher: { return latestVersion },
+            purchasesProvider: mockPurchases
+        )
+        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+            lastPublishedAppVersion: latestVersion,
+            shouldWarnCustomerToUpdate: false
+        )
+
+        expect(viewModel.shouldShowAppUpdateWarnings).to(beFalse())
     }
 
 }

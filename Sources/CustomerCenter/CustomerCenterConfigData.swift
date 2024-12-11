@@ -412,9 +412,14 @@ public struct CustomerCenterConfigData {
     public struct Support {
 
         public let email: String
+        public let shouldWarnCustomerToUpdate: Bool
 
-        public init(email: String) {
+        public init(
+            email: String,
+            shouldWarnCustomerToUpdate: Bool
+        ) {
             self.email = email
+            self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
         }
 
     }
@@ -550,6 +555,7 @@ extension CustomerCenterConfigData.Support {
 
     init(from response: CustomerCenterConfigResponse.Support) {
         self.email = response.email
+        self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
     }
 
 }

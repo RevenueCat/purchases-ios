@@ -35,6 +35,14 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
     private(set) var purchasesProvider: CustomerCenterPurchasesType
 
+    @Published
+    private(set) var onUpdateAppClick: (() -> Void)?
+
+    /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
+    var shouldShowAppUpdateWarnings: Bool {
+        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
+    }
+
     // @PublicForExternalTesting
     @Published
     var state: CustomerCenterViewState {
@@ -130,6 +138,13 @@ import RevenueCat
 
     func loadCustomerCenterConfig() async throws {
         self.configuration = try await Purchases.shared.loadCustomerCenter()
+        if let productId = configuration?.productId {
+            self.onUpdateAppClick = {
+                // productId is a positive integer, so it should be safe to construct a URL from it.
+                let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
+                URLUtilities.openURLIfNotAppExtension(url)
+            }
+        }
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {

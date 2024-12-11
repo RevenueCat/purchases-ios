@@ -20,7 +20,10 @@ enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
-    static func customerCenterData(lastPublishedAppVersion: String?) -> CustomerCenterConfigData {
+    static func customerCenterData(
+        lastPublishedAppVersion: String?,
+        shouldWarnCustomerToUpdate: Bool = false
+    ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [.management:
                     .init(
@@ -111,7 +114,10 @@ enum CustomerCenterConfigTestData {
                     "back": "Back"
                 ]
             ),
-            support: .init(email: "test-support@revenuecat.com"),
+            support: .init(
+                email: "test-support@revenuecat.com",
+                shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate
+            ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
         )

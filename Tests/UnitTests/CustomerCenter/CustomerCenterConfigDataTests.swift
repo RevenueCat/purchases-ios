@@ -106,7 +106,10 @@ class CustomerCenterConfigDataTests: TestCase {
                     )
                 ],
                 localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
-                support: .init(email: "support@example.com")
+                support: .init(
+                    email: "support@example.com",
+                    shouldWarnCustomerToUpdate: false
+                )
             ),
             lastPublishedAppVersion: "1.2.3",
             itunesTrackId: 123
@@ -178,6 +181,8 @@ class CustomerCenterConfigDataTests: TestCase {
 
         expect(configData.lastPublishedAppVersion) == "1.2.3"
         expect(configData.productId) == 123
+
+        expect(configData.support.shouldWarnCustomerToUpdate) == false
     }
 
     func testUnknownValuesHandling() throws {
