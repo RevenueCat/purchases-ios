@@ -159,21 +159,4 @@ private extension CustomerCenterView {
 
 }
 
-#if DEBUG
-
-// @available(iOS 15.0, *)
-// @available(macOS, unavailable)
-// @available(tvOS, unavailable)
-// @available(watchOS, unavailable)
-// struct CustomerCenterView_Previews: PreviewProvider {
-
-//   static var previews: some View {
-//       let viewModel = CustomerCenterViewModel(hasActiveProducts: false, hasAppleEntitlement: false)
-//       CustomerCenterView(viewModel: viewModel)
-//   }
-//
-// }
-
-#endif
-
 #endif
