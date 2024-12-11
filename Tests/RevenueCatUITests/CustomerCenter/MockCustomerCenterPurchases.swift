@@ -50,7 +50,10 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         self.beginRefundShouldFail = beginRefundShouldFail
     }
 
+    var customerInfoFetchPolicy: CacheFetchPolicy?
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.CustomerInfo {
+        customerInfoFetchPolicy = fetchPolicy
+
         if let customerInfoError {
             throw customerInfoError
         }
