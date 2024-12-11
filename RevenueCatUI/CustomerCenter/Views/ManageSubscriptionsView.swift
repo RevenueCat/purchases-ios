@@ -41,8 +41,8 @@ struct ManageSubscriptionsView: View {
          customerCenterActionHandler: CustomerCenterActionHandler?) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
-            purchaseInformation: purchaseInformation,
-            customerCenterActionHandler: customerCenterActionHandler)
+            customerCenterActionHandler: customerCenterActionHandler,
+            purchaseInformation: purchaseInformation)
         self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
     }
 
@@ -163,8 +163,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success)
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
                                         customerCenterActionHandler: nil)
@@ -176,8 +176,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-                    customerCenterActionHandler: nil)
+                    customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
