@@ -99,7 +99,7 @@ import RevenueCat
 
     func loadPurchaseInformation() async {
         do {
-            let customerInfo = try await purchasesProvider.customerInfo()
+            let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
             let hasActiveProducts =
             !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 

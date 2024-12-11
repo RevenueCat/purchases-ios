@@ -41,7 +41,7 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) async -> Result<PromotionalOfferData, Error> {
         do {
-            let customerInfo = try await self.purchasesProvider.customerInfo()
+            let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .default)
 
             let subscribedProduct = try await getActiveSubscription(customerInfo)
             let discount = try findDiscount(for: subscribedProduct,

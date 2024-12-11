@@ -24,8 +24,10 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return Purchases.shared.isSandbox
     }
 
-    func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        try await Purchases.shared.customerInfo()
+    func customerInfo(
+        fetchPolicy: CacheFetchPolicy
+    ) async throws -> RevenueCat.CustomerInfo {
+        try await Purchases.shared.customerInfo(fetchPolicy: fetchPolicy)
     }
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
