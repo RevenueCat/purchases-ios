@@ -83,6 +83,20 @@ import RevenueCat
         self.purchasesProvider = purchasesProvider
     }
 
+    #if DEBUG
+
+    convenience init(
+        purchaseInformation: PurchaseInformation,
+        configuration: CustomerCenterConfigData
+    ) {
+        self.init(customerCenterActionHandler: nil)
+        self.purchaseInformation = purchaseInformation
+        self.configuration = configuration
+        self.state = .success
+    }
+
+    #endif
+
     func loadPurchaseInformation() async {
         do {
             let customerInfo = try await purchasesProvider.customerInfo()
@@ -144,28 +158,6 @@ import RevenueCat
 
         purchasesProvider.track(customerCenterEvent: event)
     }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-fileprivate extension CustomerCenterViewModel {
-
-#if DEBUG
-
-    convenience init(
-        purchaseInformation: PurchaseInformation,
-        configuration: CustomerCenterConfigData
-    ) {
-        self.init(customerCenterActionHandler: nil)
-        self.purchaseInformation = purchaseInformation
-        self.configuration = configuration
-        self.state = .success
-    }
-
-#endif
 
 }
 
