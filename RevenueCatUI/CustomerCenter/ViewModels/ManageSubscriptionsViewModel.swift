@@ -48,10 +48,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    var isLoaded: Bool {
-        return state != .notLoaded
-    }
-
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
     @Published
@@ -64,28 +60,18 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
+         purchaseInformation: PurchaseInformation? = nil,
+         refundRequestStatus: RefundRequestStatus? = nil,
          purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-        self.screen = screen
-        self.paths = screen.filteredPaths
-        self.purchasesProvider = purchasesProvider
-        self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
-        self.state = .notLoaded
-    }
-
-    init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
         self.paths = screen.filteredPaths
         self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
-        state = .success
+        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+        self.state = .success
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
