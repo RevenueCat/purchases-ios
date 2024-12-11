@@ -21,24 +21,47 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurchasesType {
 
+    let customerInfo: CustomerInfo
+    let customerInfoError: Error?
+    // StoreProducts keyed by productIdentifier.
+    let products: [String: RevenueCat.StoreProduct]
+    let showManageSubscriptionsError: Error?
+    let beginRefundShouldFail: Bool
+
     var isSandbox: Bool = false
 
-    var customerInfoCallCount = 0
-    var customerInfoFetchPolicy: CacheFetchPolicy?
-    var customerInfoResult: Result<CustomerInfo, Error> = .failure(NSError(domain: "", code: -1))
-    func customerInfo(
-        fetchPolicy: CacheFetchPolicy
-    ) async throws -> CustomerInfo {
-        self.customerInfoFetchPolicy = fetchPolicy
-        customerInfoCallCount += 1
-        return try customerInfoResult.get()
+    init(
+        customerInfo: CustomerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+        customerInfoError: Error? = nil,
+        products: [RevenueCat.StoreProduct] =
+        [PurchaseInformationFixtures.product(id: "com.revenuecat.product",
+                                             title: "title",
+                                             duration: .month,
+                                             price: 2.99)],
+        showManageSubscriptionsError: Error? = nil,
+        beginRefundShouldFail: Bool = false
+    ) {
+        self.customerInfo = customerInfo
+        self.customerInfoError = customerInfoError
+        self.products = Dictionary(uniqueKeysWithValues: products.map({ product in
+            (product.productIdentifier, product)
+        }))
+        self.showManageSubscriptionsError = showManageSubscriptionsError
+        self.beginRefundShouldFail = beginRefundShouldFail
     }
 
-    var productsCallCount = 0
-    var productsResult: [StoreProduct] = []
-    func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
-        productsCallCount += 1
-        return productsResult
+
+    func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoError {
+            throw customerInfoError
+        }
+        return customerInfo
+    }
+
+    func products(_ productIdentifiers: [String]) async -> [RevenueCat.StoreProduct] {
+        return productIdentifiers.compactMap { productIdentifier in
+            products[productIdentifier]
+        }
     }
 
     var promotionalOfferCallCount = 0

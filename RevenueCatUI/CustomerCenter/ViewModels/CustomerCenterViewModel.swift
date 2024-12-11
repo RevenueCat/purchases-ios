@@ -23,17 +23,14 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor class CustomerCenterViewModel: ObservableObject {
-    // We fail open.
+
     private static let defaultAppIsLatestVersion = true
 
     typealias CurrentVersionFetcher = () -> String?
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
-
     @Published
-    private(set) var hasActiveProducts: Bool = false
-    @Published
-    private(set) var hasAppleEntitlement: Bool = false
+    private(set) var purchaseInformation: PurchaseInformation?
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
     private(set) var purchasesProvider: CustomerCenterPurchasesType
@@ -61,7 +58,7 @@ import RevenueCat
             }
 
             self.appIsLatestVersion = currentVersion >= latestVersion
-      }
+        }
     }
 
     var isLoaded: Bool {
@@ -89,25 +86,41 @@ import RevenueCat
     #if DEBUG
 
     convenience init(
-        hasActiveProducts: Bool = false,
-        hasAppleEntitlement: Bool = false
+        purchaseInformation: PurchaseInformation,
+        configuration: CustomerCenterConfigData
     ) {
         self.init(customerCenterActionHandler: nil)
-        self.hasActiveProducts = hasActiveProducts
-        self.hasAppleEntitlement = hasAppleEntitlement
+        self.purchaseInformation = purchaseInformation
+        self.configuration = configuration
         self.state = .success
     }
 
     #endif
 
-    func loadHasActivePurchases() async {
+    func loadPurchaseInformation() async {
         do {
             let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
-            self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
-                                customerInfo.nonSubscriptions.count > 0
-            self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in
-                entitlement.value.store == .appStore
+            let hasActiveProducts =
+            !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
+
+            if !hasActiveProducts {
+                self.purchaseInformation = nil
+                self.state = .success
+                return
             }
+
+            guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
+                Logger.warning(Strings.could_not_find_subscription_information)
+                self.purchaseInformation = nil
+                throw CustomerCenterError.couldNotFindSubscriptionInformation
+            }
+
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+
+            self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
+                                                                           entitlement: entitlement)
+
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -144,6 +157,60 @@ import RevenueCat
         let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
 
         purchasesProvider.track(customerCenterEvent: event)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private extension CustomerCenterViewModel {
+
+    func findActiveTransaction(customerInfo: CustomerInfo) -> Transaction? {
+        let activeSubscriptions = customerInfo.subscriptionsByProductIdentifier.values
+            .filter(\.isActive)
+            .sorted(by: {
+                guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
+                    return $0.expiresDate != nil
+                }
+                return date1 < date2
+            })
+
+        let (activeAppleSubscriptions, otherActiveSubscriptions) = (
+            activeSubscriptions.filter { $0.store == .appStore },
+            activeSubscriptions.filter { $0.store != .appStore }
+        )
+
+        let (appleNonSubscriptions, otherNonSubscriptions) = (
+            customerInfo.nonSubscriptions.filter { $0.store == .appStore },
+            customerInfo.nonSubscriptions.filter { $0.store != .appStore }
+        )
+
+        return activeAppleSubscriptions.first ??
+        appleNonSubscriptions.first ??
+        otherActiveSubscriptions.first ??
+        otherNonSubscriptions.first
+    }
+
+    func createPurchaseInformation(for transaction: Transaction,
+                                   entitlement: EntitlementInfo?) async throws -> PurchaseInformation {
+        if transaction.store == .appStore {
+            guard let product = await purchasesProvider.products([transaction.productIdentifier]).first else {
+                Logger.warning(Strings.could_not_find_subscription_information)
+                throw CustomerCenterError.couldNotFindSubscriptionInformation
+            }
+            return PurchaseInformation(
+                entitlement: entitlement,
+                subscribedProduct: product,
+                transaction: transaction
+            )
+        } else {
+            return PurchaseInformation(
+                entitlement: entitlement,
+                transaction: transaction
+            )
+        }
     }
 
 }

@@ -30,14 +30,18 @@ class CustomerInfoFixtures {
             self.id = id
             self.json = """
             {
+                "auto_resume_date": null,
                 "billing_issues_detected_at": null,
                 "expires_date": "\(expirationDate)",
                 "grace_period_expires_date": null,
                 "is_sandbox": true,
                 "original_purchase_date": "\(purchaseDate)",
+                "ownership_type": "PURCHASED",
                 "period_type": "intro",
                 "purchase_date": "\(purchaseDate)",
+                "refunded_at": null,
                 "store": "\(store)",
+                "store_transaction_id": "0",
                 "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null")
             }
             """
@@ -55,6 +59,7 @@ class CustomerInfoFixtures {
             self.json = """
             {
                 "expires_date": \(expirationDate != nil ? "\"\(expirationDate!)\"" : "null"),
+                "grace_period_expires_date": null,
                 "product_identifier": "\(productId)",
                 "purchase_date": "\(purchaseDate)"
             }
@@ -75,8 +80,10 @@ class CustomerInfoFixtures {
             {
                 "id": "\(id)",
                 "is_sandbox": true,
+                "original_purchase_date": "\(purchaseDate)",
                 "purchase_date": "\(purchaseDate)",
-                "store": "\(store)"
+                "store": "\(store)",
+                "store_transaction_id": "123"
             }
             """
         }
