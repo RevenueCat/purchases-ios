@@ -23,7 +23,9 @@ protocol CustomerCenterPurchasesType: Sendable {
     var isSandbox: Bool { get }
 
     @Sendable
-    func customerInfo() async throws -> CustomerInfo
+    func customerInfo(
+        fetchPolicy: CacheFetchPolicy
+    ) async throws -> CustomerInfo
 
     @Sendable
     func products(_ productIdentifiers: [String]) async -> [StoreProduct]

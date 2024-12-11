@@ -102,7 +102,7 @@ import RevenueCat
 
     func loadHasActivePurchases() async {
         do {
-            let customerInfo = try await purchasesProvider.customerInfo()
+            let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
             self.hasActiveProducts = customerInfo.activeSubscriptions.count > 0 ||
                                 customerInfo.nonSubscriptions.count > 0
             self.hasAppleEntitlement = customerInfo.entitlements.active.contains { entitlement in

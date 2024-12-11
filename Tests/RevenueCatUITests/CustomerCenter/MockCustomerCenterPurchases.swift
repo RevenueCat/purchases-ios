@@ -24,8 +24,12 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     var isSandbox: Bool = false
 
     var customerInfoCallCount = 0
+    var customerInfoFetchPolicy: CacheFetchPolicy?
     var customerInfoResult: Result<CustomerInfo, Error> = .failure(NSError(domain: "", code: -1))
-    func customerInfo() async throws -> CustomerInfo {
+    func customerInfo(
+        fetchPolicy: CacheFetchPolicy
+    ) async throws -> CustomerInfo {
+        self.customerInfoFetchPolicy = fetchPolicy
         customerInfoCallCount += 1
         return try customerInfoResult.get()
     }
