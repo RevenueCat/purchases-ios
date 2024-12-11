@@ -57,83 +57,86 @@ struct RestorePurchasesAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .confirmationDialog(
-                alertTitle(),
+            .modifier(AlertTypeModifier(
                 isPresented: $isPresented,
-                actions: {
-                    switch alertType {
-                    case .purchasesRecovered:
-                        PurchasesRecoveredActions()
-                    case .purchasesNotFound:
-                        PurchasesNotFoundActions()
-                    case .restorePurchases:
-                        RestorePurchasesActions()
-                    }
-                },
-                message: {
-                    Text(alertMessage())
-                }
+                alertType: alertType,
+                title: alertTitle(),
+                message: alertMessage(),
+                actions: alertActions()
+            ))
+    }
+
+    struct AlertAction: Identifiable {
+        let id = UUID()
+        let title: String
+        let role: ButtonRole?
+        let action: () -> Void
+    }
+
+    // swiftlint:disable:next function_body_length
+    private func alertActions() -> [AlertAction] {
+        switch alertType {
+        case .purchasesRecovered:
+            return [
+                AlertAction(
+                    title: localization.commonLocalizedString(for: .dismiss),
+                    role: .cancel,
+                    action: dismissAlert
+                )
+            ]
+
+        case .purchasesNotFound:
+            var actions: [AlertAction] = []
+
+            if let onUpdateAppClick = customerCenterViewModel.onUpdateAppClick,
+               customerCenterViewModel.shouldShowAppUpdateWarnings {
+                actions.append(
+                    AlertAction(
+                        title: localization.commonLocalizedString(for: .updateWarningUpdate),
+                        role: nil,
+                        action: onUpdateAppClick
+                    )
+                )
+            }
+
+            if let url = supportURL {
+                actions.append(
+                    AlertAction(
+                        title: localization.commonLocalizedString(for: .contactSupport),
+                        role: nil,
+                        action: { Task { openURL(url) } }
+                    )
+                )
+            }
+
+            actions.append(
+                AlertAction(
+                    title: localization.commonLocalizedString(for: .dismiss),
+                    role: .cancel,
+                    action: dismissAlert
+                )
             )
-    }
 
-    // MARK: - Actions
-    @ViewBuilder
-    // swiftlint:disable:next identifier_name
-    private func RestorePurchasesActions() -> some View {
-        Button {
-            Task {
-                let alertType = await self.customerCenterViewModel.performRestore()
-                self.setAlertType(alertType)
-            }
-        } label: {
-            Text(localization.commonLocalizedString(for: .checkPastPurchases))
-        }
+            return actions
 
-        Button(role: .cancel) {
-            dismissAlert()
-        } label: {
-            Text(localization.commonLocalizedString(for: .cancel))
-        }
-    }
-
-    @ViewBuilder
-    // swiftlint:disable:next identifier_name
-    private func PurchasesRecoveredActions() -> some View {
-        Button(role: .cancel) {
-            dismissAlert()
-        } label: {
-            Text(localization.commonLocalizedString(for: .dismiss))
-        }
-    }
-
-    @ViewBuilder
-    // swiftlint:disable:next identifier_name
-    private func PurchasesNotFoundActions() -> some View {
-
-        if let onUpdateAppClick = customerCenterViewModel.onUpdateAppClick,
-           customerCenterViewModel.shouldShowAppUpdateWarnings {
-            Button {
-                onUpdateAppClick()
-            } label: {
-                Text(localization.commonLocalizedString(for: .updateWarningUpdate))
-                    .bold()
-            }
-        }
-
-        if let url = supportURL {
-            Button {
-                Task {
-                    openURL(url)
-                }
-            } label: {
-                Text(localization.commonLocalizedString(for: .contactSupport))
-            }
-        }
-
-        Button(role: .cancel) {
-            dismissAlert()
-        } label: {
-            Text(localization.commonLocalizedString(for: .dismiss))
+        case .restorePurchases:
+            return [
+                AlertAction(
+                    title: localization.commonLocalizedString(for: .checkPastPurchases),
+                    role: nil,
+                    action: {
+                        Task {
+                            let alertType = await customerCenterViewModel.performRestore()
+                            setAlertType(alertType)
+                        }
+                    }
+                ),
+                AlertAction(
+                    title: localization.commonLocalizedString(for: .cancel),
+                    role: .cancel,
+                    action: dismissAlert
+                )
+            ]
         }
     }
 
@@ -167,6 +170,56 @@ struct RestorePurchasesAlert: ViewModifier {
     private func dismissAlert() {
         self.alertType = .restorePurchases
         dismiss()
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct AlertTypeModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    let alertType: RestorePurchasesAlert.AlertType
+    let title: String
+    let message: String
+    let actions: [RestorePurchasesAlert.AlertAction]
+
+    func body(content: Content) -> some View {
+        if actions.count < 3 {
+            content.alert(
+                title,
+                isPresented: $isPresented,
+                actions: {
+                    ForEach(actions) { action in
+                        Button(role: action.role) {
+                            action.action()
+                        } label: {
+                            Text(action.title)
+                        }
+                    }
+                },
+                message: {
+                    Text(message)
+                }
+            )
+        } else {
+            content.confirmationDialog(
+                title,
+                isPresented: $isPresented,
+                actions: {
+                    ForEach(actions) { action in
+                        Button(role: action.role) {
+                            action.action()
+                        } label: {
+                            Text(action.title)
+                        }
+                    }
+                },
+                message: {
+                    Text(message)
+                }
+            )
+        }
     }
 }
 
