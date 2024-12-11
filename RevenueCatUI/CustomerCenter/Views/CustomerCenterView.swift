@@ -87,6 +87,9 @@ public struct CustomerCenterView: View {
             await loadInformationIfNeeded()
         }
         .task {
+#if DEBUG
+            guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+#endif
             self.trackImpression()
         }
         .environmentObject(self.viewModel)
@@ -102,15 +105,15 @@ private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
         if !viewModel.isLoaded {
-            await viewModel.loadHasActivePurchases()
+            await viewModel.loadPurchaseInformation()
             await viewModel.loadCustomerCenterConfig()
         }
     }
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasActiveProducts {
-            if viewModel.hasAppleEntitlement,
+        if let purchaseInformation = viewModel.purchaseInformation {
+            if purchaseInformation.store == .appStore,
                let screen = configuration.screens[.management] {
                 if let productId = configuration.productId, !ignoreAppUpdateWarning && !viewModel.appIsLatestVersion {
                     AppUpdateWarningView(
@@ -123,16 +126,19 @@ private extension CustomerCenterView {
                     )
                 } else {
                     ManageSubscriptionsView(screen: screen,
+                                            purchaseInformation: purchaseInformation,
                                             customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 }
             } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(screen: screen)
+                WrongPlatformView(screen: screen,
+                                  purchaseInformation: purchaseInformation)
             } else {
-                WrongPlatformView()
+                WrongPlatformView(purchaseInformation: purchaseInformation)
             }
         } else {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
+                                        purchaseInformation: nil,
                                         customerCenterActionHandler: viewModel.customerCenterActionHandler)
             } else {
                 // Fallback with a restore button
@@ -167,10 +173,14 @@ private extension CustomerCenterView {
 @available(watchOS, unavailable)
 struct CustomerCenterView_Previews: PreviewProvider {
 
-   static var previews: some View {
-       let viewModel = CustomerCenterViewModel(hasActiveProducts: false, hasAppleEntitlement: false)
-       CustomerCenterView(viewModel: viewModel)
-   }
+    static var previews: some View {
+        let purchaseInformationApple =
+        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
+                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+        CustomerCenterView(viewModel: viewModelApple)
+            .previewDisplayName("Monthly Apple")
+    }
 
 }
 

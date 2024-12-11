@@ -30,7 +30,7 @@ struct WrongPlatformView: View {
     @State
     private var managementURL: URL?
     @State
-    private var subscriptionInformation: PurchaseInformation?
+    private var purchaseInformation: PurchaseInformation
 
     private let screen: CustomerCenterConfigData.Screen?
 
@@ -54,31 +54,27 @@ struct WrongPlatformView: View {
                                                     body: body)
     }
 
-    init() {
-        self.screen = nil
-    }
-
-    init(screen: CustomerCenterConfigData.Screen) {
+    init(screen: CustomerCenterConfigData.Screen? = nil,
+         purchaseInformation: PurchaseInformation) {
         self.screen = screen
+        self._purchaseInformation = State(initialValue: purchaseInformation)
     }
 
     fileprivate init(store: Store,
                      managementURL: URL?,
-                     subscriptionInformation: PurchaseInformation,
+                     purchaseInformation: PurchaseInformation,
                      screen: CustomerCenterConfigData.Screen) {
         self.screen = screen
         self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
-        self._subscriptionInformation = State(initialValue: subscriptionInformation)
+        self._purchaseInformation = State(initialValue: purchaseInformation)
     }
 
     var body: some View {
         List {
-            if let subscriptionInformation = self.subscriptionInformation {
-                Section {
-                    SubscriptionDetailsView(purchaseInformation: subscriptionInformation,
-                                            refundRequestStatus: nil)
-                }
+            Section {
+                SubscriptionDetailsView(purchaseInformation: purchaseInformation,
+                                        refundRequestStatus: nil)
             }
             if let managementURL = self.managementURL {
                 Section {
@@ -98,7 +94,6 @@ struct WrongPlatformView: View {
                     }
                 }
             }
-
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
@@ -110,36 +105,10 @@ struct WrongPlatformView: View {
         })
         .task {
             if store == nil {
-                if let customerInfo = try? await Purchases.shared.customerInfo(),
-                   let entitlement = customerInfo.entitlements.active.first?.value {
-                    self.store = entitlement.store
+                if let customerInfo = try? await Purchases.shared.customerInfo() {
                     self.managementURL = customerInfo.managementURL
-                    self.subscriptionInformation = PurchaseInformation(entitlement: entitlement)
                 }
             }
-        }
-    }
-
-    private func humanReadableInstructions(for store: Store?) -> String {
-        let defaultContactSupport = localization.commonLocalizedString(for: .pleaseContactSupportToManage)
-
-        if let store {
-            switch store {
-            case .appStore, .macAppStore:
-                return localization.commonLocalizedString(for: .appleSubscriptionManage)
-            case .playStore:
-                return localization.commonLocalizedString(for: .googleSubscriptionManage)
-            case .stripe, .rcBilling:
-                return localization.commonLocalizedString(for: .webSubscriptionManage)
-            case .external, .promotional, .unknownStore:
-                return defaultContactSupport
-            case .amazon:
-                return localization.commonLocalizedString(for: .amazonSubscriptionManage)
-            @unknown default:
-                return defaultContactSupport
-            }
-        } else {
-            return defaultContactSupport
         }
     }
 
@@ -197,7 +166,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
                 WrongPlatformView(
                     store: data.store,
                     managementURL: data.managementURL,
-                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo),
+                    purchaseInformation: getPurchaseInformation(for: data.customerInfo),
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
@@ -206,7 +175,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
     }
 
     private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
-        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value)
+        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value,
+                                   transaction: customerInfo.subscriptionsByProductIdentifier.values.first!)
     }
 
 }

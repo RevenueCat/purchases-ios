@@ -48,10 +48,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    var isLoaded: Bool {
-        return state != .notLoaded
-    }
-
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
     @Published
@@ -64,52 +60,18 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
+         purchaseInformation: PurchaseInformation? = nil,
+         refundRequestStatus: RefundRequestStatus? = nil,
          purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-        self.screen = screen
-        self.paths = screen.filteredPaths
-        self.purchasesProvider = purchasesProvider
-        self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
-        self.state = .notLoaded
-    }
-
-    init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         refundRequestStatus: RefundRequestStatus? = nil) {
         self.screen = screen
         self.paths = screen.filteredPaths
         self.purchaseInformation = purchaseInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.refundRequestStatus = refundRequestStatus
         self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
-        state = .success
-    }
-
-    func loadScreen() async {
-        do {
-            try await loadPurchaseInformation()
-            self.state = .success
-        } catch {
-            self.state = .error(error)
-        }
-    }
-
-    private func loadPurchaseInformation() async throws {
-        let customerInfo = try await purchasesProvider.customerInfo()
-
-        guard let currentEntitlement = customerInfo.earliestExpiringAppStoreEntitlement(),
-              let product = await purchasesProvider.products([currentEntitlement.productIdentifier]).first
-        else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
-
-        let purchaseInformation = PurchaseInformation(entitlement: currentEntitlement,
-                                                      subscribedProduct: product)
-        self.purchaseInformation = purchaseInformation
+        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+        self.state = .success
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)

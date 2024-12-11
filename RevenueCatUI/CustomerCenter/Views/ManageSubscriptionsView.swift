@@ -37,9 +37,12 @@ struct ManageSubscriptionsView: View {
     private let customerCenterActionHandler: CustomerCenterActionHandler?
 
     init(screen: CustomerCenterConfigData.Screen,
+         purchaseInformation: PurchaseInformation?,
          customerCenterActionHandler: CustomerCenterActionHandler?) {
-        let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: customerCenterActionHandler)
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: screen,
+            customerCenterActionHandler: customerCenterActionHandler,
+            purchaseInformation: purchaseInformation)
         self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
     }
 
@@ -77,52 +80,46 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         ZStack {
-            if self.viewModel.isLoaded {
-                List {
+            List {
 
-                    if let purchaseInformation = self.viewModel.purchaseInformation {
-                        Section {
-                            SubscriptionDetailsView(purchaseInformation: purchaseInformation,
-                                                    refundRequestStatus: self.viewModel.refundRequestStatus)
-                        }
-                        Section {
-                            ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                           loadingPath: self.$viewModel.loadingPath)
-                        } header: {
-                            if let subtitle = self.viewModel.screen.subtitle {
-                                Text(subtitle)
-                                    .textCase(nil)
-                            }
-                        }
-                    } else {
-                        let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
-
-                        Section {
-                            CompatibilityContentUnavailableView(
-                                self.viewModel.screen.title,
-                                systemImage: "exclamationmark.triangle.fill",
-                                description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                            )
-                        }
-
-                        Section {
-                            ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                           loadingPath: self.$viewModel.loadingPath)
+                if let purchaseInformation = self.viewModel.purchaseInformation {
+                    Section {
+                        SubscriptionDetailsView(
+                            purchaseInformation: purchaseInformation,
+                            refundRequestStatus: self.viewModel.refundRequestStatus)
+                    }
+                    Section {
+                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                       loadingPath: self.$viewModel.loadingPath)
+                    } header: {
+                        if let subtitle = self.viewModel.screen.subtitle {
+                            Text(subtitle)
+                                .textCase(nil)
                         }
                     }
+                } else {
+                    let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
 
+                    Section {
+                        CompatibilityContentUnavailableView(
+                            self.viewModel.screen.title,
+                            systemImage: "exclamationmark.triangle.fill",
+                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                        )
+                    }
+
+                    Section {
+                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                       loadingPath: self.$viewModel.loadingPath)
+                    }
                 }
-            } else {
-                TintedProgressView()
+
             }
         }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton()
             }
-        }
-        .task {
-            await loadInformationIfNeeded()
         }
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(
@@ -154,20 +151,6 @@ struct ManageSubscriptionsView: View {
 
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension ManageSubscriptionsView {
-
-    func loadInformationIfNeeded() async {
-        if !self.viewModel.isLoaded {
-            await viewModel.loadScreen()
-        }
-    }
-
-}
-
 #if DEBUG
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
@@ -180,8 +163,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success)
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
                                         customerCenterActionHandler: nil)
@@ -193,8 +176,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-                    customerCenterActionHandler: nil)
+                    customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
