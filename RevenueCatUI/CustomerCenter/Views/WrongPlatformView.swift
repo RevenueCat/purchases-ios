@@ -34,6 +34,8 @@ struct WrongPlatformView: View {
 
     @EnvironmentObject
     private var customerCenterViewModel: CustomerCenterViewModel
+  
+    private let screen: CustomerCenterConfigData.Screen?
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -56,11 +58,18 @@ struct WrongPlatformView: View {
     }
 
     init() {
+        self.screen = nil
+    }
+
+    init(screen: CustomerCenterConfigData.Screen) {
+        self.screen = screen
     }
 
     fileprivate init(store: Store,
                      managementURL: URL?,
-                     subscriptionInformation: PurchaseInformation) {
+                     subscriptionInformation: PurchaseInformation,
+                     screen: CustomerCenterConfigData.Screen) {
+        self.screen = screen
         self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
         self._subscriptionInformation = State(initialValue: subscriptionInformation)
@@ -99,8 +108,9 @@ struct WrongPlatformView: View {
                 DismissCircleButton()
             }
         }
-        .navigationTitle("How can we help?")
-        .navigationBarTitleDisplayMode(.inline)
+        .applyIf(self.screen?.title != nil, apply: {
+            $0.navigationTitle(self.screen!.title).navigationBarTitleDisplayMode(.inline)
+        })
         .task {
             if store == nil {
                 if let customerInfo = try? await Purchases.shared.customerInfo(),
@@ -190,7 +200,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
                 WrongPlatformView(
                     store: data.store,
                     managementURL: data.managementURL,
-                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo)
+                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo),
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
             }

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */; };
+		4D5E92D92D09B09B0067D908 /* SnapshotTestingStub in Frameworks */ = {isa = PBXBuildFile; productRef = 4D5E92D82D09B09B0067D908 /* SnapshotTestingStub */; };
 		4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F102E262A840ECC0059EED6 /* CustomPaywall.swift */; };
 		4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC046BF2A572E3700A28BCF /* Assets.xcassets */; };
 		4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F34FF622A60AD9A00AADF11 /* AppContentView.swift */; };
@@ -58,7 +59,6 @@
 		88DFC1932BCF490400273B6D /* OfferingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1922BCF490400273B6D /* OfferingsResponse.swift */; };
 		88DFC1942BCF490400273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1912BCF490400273B6D /* PaywallsResponse.swift */; };
 		88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1952BCF4A4300273B6D /* MockData.swift */; };
-		FA29FBB22CCAA7A500DA1976 /* SnapshottingTests in Frameworks */ = {isa = PBXBuildFile; productRef = FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */; };
 		FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */; };
 /* End PBXBuildFile section */
 
@@ -88,6 +88,7 @@
 /* Begin PBXFileReference section */
 		2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
 		4D2E84DB2D00EDA100C639D9 /* PaywallsTesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsTesterTests.swift; sourceTree = "<group>"; };
+		4D5E92F82D09B21B0067D908 /* SnapshotTestingStub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SnapshotTestingStub; sourceTree = "<group>"; };
 		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F0B5EA12A97CDAC00DB0FC9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F102E262A840ECC0059EED6 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
@@ -170,7 +171,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA29FBB22CCAA7A500DA1976 /* SnapshottingTests in Frameworks */,
+				4D5E92D92D09B09B0067D908 /* SnapshotTestingStub in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +203,7 @@
 				4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */,
 				4FC046BB2A572E3700A28BCF /* PaywallsTester */,
 				4D2E84DC2D00EDA100C639D9 /* PaywallsTesterTests */,
+				4D5E92F82D09B21B0067D908 /* SnapshotTestingStub */,
 				4F6BED9B2A26A64200CD9322 /* Products */,
 				4F6BEDCC2A26A68E00CD9322 /* Frameworks */,
 			);
@@ -420,7 +422,7 @@
 			);
 			name = PaywallsTesterTests;
 			packageProductDependencies = (
-				FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */,
+				4D5E92D82D09B09B0067D908 /* SnapshotTestingStub */,
 			);
 			productName = PaywallsTesterTests;
 			productReference = FA29FBA82CCAA79800DA1976 /* PaywallsTesterTests.xctest */;
@@ -461,7 +463,6 @@
 			);
 			mainGroup = 4F6BED912A26A64200CD9322;
 			packageReferences = (
-				FA29FBA12CCAA76E00DA1976 /* XCRemoteSwiftPackageReference "SnapshotPreviews" */,
 			);
 			productRefGroup = 4F6BED9B2A26A64200CD9322 /* Products */;
 			projectDirPath = "";
@@ -873,18 +874,11 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		FA29FBA12CCAA76E00DA1976 /* XCRemoteSwiftPackageReference "SnapshotPreviews" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/EmergeTools/SnapshotPreviews";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.10.16;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
+		4D5E92D82D09B09B0067D908 /* SnapshotTestingStub */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SnapshotTestingStub;
+		};
 		4F4EE7D12A5731E800D7EAE1 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCat;
@@ -892,11 +886,6 @@
 		4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCatUI;
-		};
-		FA29FBB12CCAA7A500DA1976 /* SnapshottingTests */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FA29FBA12CCAA76E00DA1976 /* XCRemoteSwiftPackageReference "SnapshotPreviews" */;
-			productName = SnapshottingTests;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
