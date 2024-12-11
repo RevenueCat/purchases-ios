@@ -83,20 +83,7 @@ import RevenueCat
         self.purchasesProvider = purchasesProvider
     }
 
-#if DEBUG
-
-        convenience init(
-            hasActiveProducts: Bool = false,
-            hasAppleEntitlement: Bool = false
-        ) {
-            self.init(customerCenterActionHandler: nil)
-            self.purchaseInformation = purchaseInformation
-            self.state = .success
-        }
-
-#endif
-
-    func loadHasActivePurchases() async {
+    func loadPurchaseInformation() async {
         do {
             let customerInfo = try await purchasesProvider.customerInfo()
             let hasActiveProducts =
