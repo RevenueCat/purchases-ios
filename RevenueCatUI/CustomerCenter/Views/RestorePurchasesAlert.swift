@@ -90,7 +90,7 @@ struct RestorePurchasesAlert: ViewModifier {
         }
 
         Button(role: .cancel) {
-            self.isPresented = false
+            dismissAlert()
         } label: {
             Text(localization.commonLocalizedString(for: .cancel))
         }
@@ -100,7 +100,7 @@ struct RestorePurchasesAlert: ViewModifier {
     // swiftlint:disable:next identifier_name
     private func PurchasesRecoveredActions() -> some View {
         Button(role: .cancel) {
-            self.isPresented = false
+            dismissAlert()
         } label: {
             Text(localization.commonLocalizedString(for: .dismiss))
         }
@@ -131,7 +131,7 @@ struct RestorePurchasesAlert: ViewModifier {
         }
 
         Button(role: .cancel) {
-            self.isPresented = false
+            dismissAlert()
         } label: {
             Text(localization.commonLocalizedString(for: .dismiss))
         }
@@ -162,6 +162,11 @@ struct RestorePurchasesAlert: ViewModifier {
         case .restorePurchases:
             return localization.commonLocalizedString(for: .goingToCheckPurchases)
         }
+    }
+
+    private func dismissAlert() {
+        self.alertType = .restorePurchases
+        dismiss()
     }
 }
 
