@@ -43,7 +43,7 @@ import RevenueCat
 
     /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
     var shouldShowAppUpdateWarnings: Bool {
-        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? false)
+        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
     }
 
     // @PublicForExternalTesting

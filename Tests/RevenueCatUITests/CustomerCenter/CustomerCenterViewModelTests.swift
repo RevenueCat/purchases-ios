@@ -262,7 +262,7 @@ class CustomerCenterViewModelTests: TestCase {
         )
         viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
             lastPublishedAppVersion: latestVersion,
-            shouldWarnCustomerToUpdate: true
+            shouldWarnCustomerToUpdate: false
         )
 
         expect(viewModel.shouldShowAppUpdateWarnings).to(beFalse())

@@ -555,7 +555,7 @@ extension CustomerCenterConfigData.Support {
 
     init(from response: CustomerCenterConfigResponse.Support) {
         self.email = response.email
-        self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? false
+        self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
     }
 
 }
