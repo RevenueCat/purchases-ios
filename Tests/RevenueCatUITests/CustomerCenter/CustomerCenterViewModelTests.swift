@@ -219,7 +219,7 @@ class CustomerCenterViewModelTests: TestCase {
         }
     }
 
-    func testAppUpdateRequiredToContactSupportTrue() {
+    func testShouldShowAppUpdateWarningsTrue() {
         let mockPurchases = MockCustomerCenterPurchases()
         let latestVersion = "3.0.0"
         let currentVersion = "2.0.0"
@@ -233,10 +233,10 @@ class CustomerCenterViewModelTests: TestCase {
             shouldWarnCustomerToUpdate: true
         )
 
-        expect(viewModel.appUpdateRequiredToContactSupport).to(beTrue())
+        expect(viewModel.shouldShowAppUpdateWarnings).to(beTrue())
     }
 
-    func testAppUpdateRequiredToContactSupportFalse() {
+    func testShouldShowAppUpdateWarningsFalse() {
         let mockPurchases = MockCustomerCenterPurchases()
         let latestVersion = "3.0.0"
         let viewModel = CustomerCenterViewModel(
@@ -249,10 +249,10 @@ class CustomerCenterViewModelTests: TestCase {
             shouldWarnCustomerToUpdate: true
         )
 
-        expect(viewModel.appUpdateRequiredToContactSupport).to(beFalse())
+        expect(viewModel.shouldShowAppUpdateWarnings).to(beFalse())
     }
 
-    func testAppUpdateRequiredToContactSupportReturnsFalseIfBlockedByConfig() {
+    func testShouldShowAppUpdateWarningsFalseIfBlockedByConfig() {
         let mockPurchases = MockCustomerCenterPurchases()
         let latestVersion = "3.0.0"
         let viewModel = CustomerCenterViewModel(
@@ -265,7 +265,7 @@ class CustomerCenterViewModelTests: TestCase {
             shouldWarnCustomerToUpdate: true
         )
 
-        expect(viewModel.appUpdateRequiredToContactSupport).to(beFalse())
+        expect(viewModel.shouldShowAppUpdateWarnings).to(beFalse())
     }
 
 }

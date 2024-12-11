@@ -83,7 +83,7 @@ struct WrongPlatformView: View {
                     }
                 }
             }
-            if let url = supportURL, !customerCenterViewModel.appUpdateRequiredToContactSupport {
+            if let url = supportURL {
                 Section {
                     AsyncButton {
                         openURL(url)

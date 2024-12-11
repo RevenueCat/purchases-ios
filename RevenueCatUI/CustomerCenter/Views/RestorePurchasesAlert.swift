@@ -57,56 +57,111 @@ struct RestorePurchasesAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .alert(isPresented: $isPresented) {
-                switch self.alertType {
-                case .restorePurchases:
-                    return Alert(
-                        title: Text(localization.commonLocalizedString(for: .restorePurchases)),
-                        message: Text(localization.commonLocalizedString(for: .goingToCheckPurchases)),
-                        primaryButton: .default(Text(localization.commonLocalizedString(for: .checkPastPurchases)),
-                                                action: {
-                                                    Task {
-                                                        let alertType =
-                                                        await self.customerCenterViewModel.performRestore()
-                                                        self.setAlertType(alertType)
-                                                    }
-                                                }),
-                        secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .cancel)))
-                    )
-
-                case .purchasesRecovered:
-                    return Alert(title: Text(localization.commonLocalizedString(for: .purchasesRecovered)),
-                                 message: Text(localization.commonLocalizedString(for: .purchasesRecoveredExplanation)),
-                                 dismissButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
-                        dismiss()
-                    })
-
-                case .purchasesNotFound:
-                    let message = Text(localization.commonLocalizedString(for: .purchasesNotRecovered))
-                    if let url = supportURL, !customerCenterViewModel.appUpdateRequiredToContactSupport {
-                        return Alert(title: Text(""),
-                                     message: message,
-                                     primaryButton: .default(
-                                        Text(localization.commonLocalizedString(for: .contactSupport))
-                                     ) {
-                                         Task {
-                                             openURL(url)
-                                         }
-                                     },
-                                     secondaryButton: .cancel(Text(localization.commonLocalizedString(for: .dismiss))) {
-                                         dismiss()
-                                     })
-                    } else {
-                        return Alert(title: Text(""),
-                                     message: message,
-                                     dismissButton: .default(Text(localization.commonLocalizedString(for: .dismiss))) {
-                                         dismiss()
-                                     })
+            .confirmationDialog(
+                alertTitle(),
+                isPresented: $isPresented,
+                actions: {
+                    switch alertType {
+                    case .purchasesRecovered:
+                        PurchasesRecoveredActions()
+                    case .purchasesNotFound:
+                        PurchasesNotFoundActions()
+                    case .restorePurchases:
+                        RestorePurchasesActions()
                     }
+                },
+                message: {
+                    Text(alertMessage())
                 }
-            }
+            )
     }
 
+    // MARK: - Actions
+    @ViewBuilder
+    // swiftlint:disable:next identifier_name
+    private func RestorePurchasesActions() -> some View {
+        Button {
+            Task {
+                let alertType = await self.customerCenterViewModel.performRestore()
+                self.setAlertType(alertType)
+            }
+        } label: {
+            Text(localization.commonLocalizedString(for: .checkPastPurchases))
+        }
+
+        Button(role: .cancel) {
+            self.isPresented = false
+        } label: {
+            Text(localization.commonLocalizedString(for: .cancel))
+        }
+    }
+
+    @ViewBuilder
+    // swiftlint:disable:next identifier_name
+    private func PurchasesRecoveredActions() -> some View {
+        Button(role: .cancel) {
+            self.isPresented = false
+        } label: {
+            Text(localization.commonLocalizedString(for: .dismiss))
+        }
+    }
+
+    @ViewBuilder
+    // swiftlint:disable:next identifier_name
+    private func PurchasesNotFoundActions() -> some View {
+
+        if let onUpdateAppClick = customerCenterViewModel.onUpdateAppClick,
+           customerCenterViewModel.shouldShowAppUpdateWarnings {
+            Button {
+                onUpdateAppClick()
+            } label: {
+                Text(localization.commonLocalizedString(for: .updateWarningUpdate))
+            }
+        }
+
+        if let url = supportURL {
+            Button {
+                Task {
+                    openURL(url)
+                }
+            } label: {
+                Text(localization.commonLocalizedString(for: .contactSupport))
+            }
+        }
+
+        Button(role: .cancel) {
+            self.isPresented = false
+        } label: {
+            Text(localization.commonLocalizedString(for: .dismiss))
+        }
+    }
+
+    // MARK: - Strings
+    private func alertTitle() -> String {
+        switch self.alertType {
+        case .purchasesRecovered:
+            return localization.commonLocalizedString(for: .purchasesRecovered)
+        case .purchasesNotFound:
+            return ""
+        case .restorePurchases:
+            return localization.commonLocalizedString(for: .restorePurchases)
+        }
+    }
+
+    private func alertMessage() -> String {
+        switch self.alertType {
+        case .purchasesRecovered:
+            return localization.commonLocalizedString(for: .purchasesRecoveredExplanation)
+        case .purchasesNotFound:
+            var message = localization.commonLocalizedString(for: .purchasesNotRecovered)
+            if customerCenterViewModel.shouldShowAppUpdateWarnings {
+                message += "\n\n" + localization.commonLocalizedString(for: .updateWarningDescription)
+            }
+            return message
+        case .restorePurchases:
+            return localization.commonLocalizedString(for: .goingToCheckPurchases)
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

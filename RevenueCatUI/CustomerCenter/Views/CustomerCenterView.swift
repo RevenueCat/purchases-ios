@@ -104,10 +104,10 @@ private extension CustomerCenterView {
         if viewModel.hasActiveProducts {
             if viewModel.hasAppleEntitlement,
                let screen = configuration.screens[.management] {
-                if let productId = configuration.productId,
-                    !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarning {
+                if let onUpdateAppClick = viewModel.onUpdateAppClick,
+                    !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarnings {
                     AppUpdateWarningView(
-                        productId: productId,
+                        onUpdateAppClick: onUpdateAppClick,
                         onContinueAnywayClick: {
                             withAnimation {
                                 ignoreAppUpdateWarning = true
