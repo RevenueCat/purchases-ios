@@ -21,6 +21,9 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ErrorView: View {
 
+    @Environment(\.locale)
+    private var locale
+
     var body: some View {
         VStack(spacing: 20) {
             let errorMessage: String = Localization.localizedBundle(self.locale)

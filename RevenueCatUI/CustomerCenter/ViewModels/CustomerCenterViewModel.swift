@@ -61,10 +61,6 @@ import RevenueCat
         }
     }
 
-    var isLoaded: Bool {
-        return state != .notLoaded && configuration != nil
-    }
-
     private let currentVersionFetcher: CurrentVersionFetcher
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
@@ -97,8 +93,17 @@ import RevenueCat
 
     #endif
 
-    func loadPurchaseInformation() async {
+    func loadScreen() async {
         do {
+            try await self.loadPurchaseInformation()
+            try await self.loadCustomerCenterConfig()
+            self.state = .success
+        } catch {
+            self.state = .error(error)
+        }
+    }
+
+    func loadPurchaseInformation() async throws {
             let customerInfo = try await purchasesProvider.customerInfo()
             let hasActiveProducts =
             !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
@@ -120,19 +125,10 @@ import RevenueCat
 
             self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
                                                                            entitlement: entitlement)
-
-            self.state = .success
-        } catch {
-            self.state = .error(error)
-        }
     }
 
-    func loadCustomerCenterConfig() async {
-        do {
-            self.configuration = try await Purchases.shared.loadCustomerCenter()
-        } catch {
-            self.state = .error(error)
-        }
+    func loadCustomerCenterConfig() async throws {
+        self.configuration = try await Purchases.shared.loadCustomerCenter()
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
