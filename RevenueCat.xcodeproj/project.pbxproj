@@ -1651,6 +1651,7 @@
 		4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSK2Tests.swift; sourceTree = "<group>"; };
 		4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSK1Tests.swift; sourceTree = "<group>"; };
 		4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorCommonTests.swift; sourceTree = "<group>"; };
+		4D4CADED2D09B06C004E85B7 /* SnapshotTestingStub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SnapshotTestingStub; sourceTree = "<group>"; };
 		4D6ABB0B2AF13F9400BB2A08 /* StoreKit2Receipt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKit2Receipt.swift; sourceTree = "<group>"; };
 		4D6ABB0D2AF13FB100BB2A08 /* StoreEnvironment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreEnvironment.swift; sourceTree = "<group>"; };
 		4D6ABB0F2AF13FBD00BB2A08 /* SK2AppTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SK2AppTransaction.swift; sourceTree = "<group>"; };
@@ -3028,6 +3029,7 @@
 				2DD500402C519EB4009C19B7 /* ci_scripts */,
 				2DD5008E2C519EB4009C19B7 /* PaywallsTester */,
 				4D6F4BE62CFE2FAB00353AF6 /* PaywallsTesterTests */,
+				4D4CADED2D09B06C004E85B7 /* SnapshotTestingStub */,
 				2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */,
 				2DD500902C519EB4009C19B7 /* PaywallsTester.xcworkspace */,
 				2DD500912C519EB4009C19B7 /* Postprocessor.sh */,

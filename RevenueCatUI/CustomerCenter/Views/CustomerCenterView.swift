@@ -126,6 +126,8 @@ private extension CustomerCenterView {
                                             purchaseInformation: purchaseInformation,
                                             customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 }
+            } else if let screen = configuration.screens[.management] {
+                WrongPlatformView(screen: screen)
             } else {
                 WrongPlatformView(purchaseInformation: purchaseInformation)
             }

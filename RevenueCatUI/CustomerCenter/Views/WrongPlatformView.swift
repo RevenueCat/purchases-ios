@@ -32,6 +32,8 @@ struct WrongPlatformView: View {
     @State
     private var purchaseInformation: PurchaseInformation
 
+    private let screen: CustomerCenterConfigData.Screen?
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -53,12 +55,19 @@ struct WrongPlatformView: View {
     }
 
     init(purchaseInformation: PurchaseInformation) {
+        self.screen = nil
         self._purchaseInformation = State(initialValue: purchaseInformation)
+    }
+
+    init(screen: CustomerCenterConfigData.Screen) {
+        self.screen = screen
     }
 
     fileprivate init(store: Store,
                      managementURL: URL?,
-                     purchaseInformation: PurchaseInformation) {
+                     purchaseInformation: PurchaseInformation,
+                     screen: CustomerCenterConfigData.Screen) {
+        self.screen = screen
         self._store = State(initialValue: store)
         self._managementURL = State(initialValue: managementURL)
         self._purchaseInformation = State(initialValue: purchaseInformation)
@@ -94,8 +103,9 @@ struct WrongPlatformView: View {
                 DismissCircleButton()
             }
         }
-        .navigationTitle("How can we help?")
-        .navigationBarTitleDisplayMode(.inline)
+        .applyIf(self.screen?.title != nil, apply: {
+            $0.navigationTitle(self.screen!.title).navigationBarTitleDisplayMode(.inline)
+        })
         .task {
             if store == nil {
                 if let customerInfo = try? await Purchases.shared.customerInfo() {
@@ -159,7 +169,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
                 WrongPlatformView(
                     store: data.store,
                     managementURL: data.managementURL,
-                    purchaseInformation: getPurchaseInformation(for: data.customerInfo)
+                    purchaseInformation: getPurchaseInformation(for: data.customerInfo),
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
             }
