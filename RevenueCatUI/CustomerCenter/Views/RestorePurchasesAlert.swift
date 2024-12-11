@@ -57,28 +57,23 @@ struct RestorePurchasesAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .modifier(AlertTypeModifier(
-                isPresented: $isPresented,
-                alertType: alertType,
-                title: alertTitle(),
-                message: alertMessage(),
-                actions: alertActions()
-            ))
-    }
-
-    struct AlertAction: Identifiable {
-        let id = UUID()
-        let title: String
-        let role: ButtonRole?
-        let action: () -> Void
+            .modifier(
+                AlertOrConfirmationDialog(
+                    isPresented: $isPresented,
+                    alertType: alertType,
+                    title: alertTitle(),
+                    message: alertMessage(),
+                    actions: alertActions()
+                )
+            )
     }
 
     // swiftlint:disable:next function_body_length
-    private func alertActions() -> [AlertAction] {
+    private func alertActions() -> [AlertOrConfirmationDialog.AlertAction] {
         switch alertType {
         case .purchasesRecovered:
             return [
-                AlertAction(
+                AlertOrConfirmationDialog.AlertAction(
                     title: localization.commonLocalizedString(for: .dismiss),
                     role: .cancel,
                     action: dismissAlert
@@ -86,12 +81,12 @@ struct RestorePurchasesAlert: ViewModifier {
             ]
 
         case .purchasesNotFound:
-            var actions: [AlertAction] = []
+            var actions: [AlertOrConfirmationDialog.AlertAction] = []
 
             if let onUpdateAppClick = customerCenterViewModel.onUpdateAppClick,
                customerCenterViewModel.shouldShowAppUpdateWarnings {
                 actions.append(
-                    AlertAction(
+                    AlertOrConfirmationDialog.AlertAction(
                         title: localization.commonLocalizedString(for: .updateWarningUpdate),
                         role: nil,
                         action: onUpdateAppClick
@@ -101,7 +96,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
             if let url = supportURL {
                 actions.append(
-                    AlertAction(
+                    AlertOrConfirmationDialog.AlertAction(
                         title: localization.commonLocalizedString(for: .contactSupport),
                         role: nil,
                         action: { Task { openURL(url) } }
@@ -110,7 +105,7 @@ struct RestorePurchasesAlert: ViewModifier {
             }
 
             actions.append(
-                AlertAction(
+                AlertOrConfirmationDialog.AlertAction(
                     title: localization.commonLocalizedString(for: .dismiss),
                     role: .cancel,
                     action: dismissAlert
@@ -121,7 +116,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
         case .restorePurchases:
             return [
-                AlertAction(
+                AlertOrConfirmationDialog.AlertAction(
                     title: localization.commonLocalizedString(for: .checkPastPurchases),
                     role: nil,
                     action: {
@@ -131,7 +126,7 @@ struct RestorePurchasesAlert: ViewModifier {
                         }
                     }
                 ),
-                AlertAction(
+                AlertOrConfirmationDialog.AlertAction(
                     title: localization.commonLocalizedString(for: .cancel),
                     role: .cancel,
                     action: dismissAlert
@@ -177,12 +172,25 @@ struct RestorePurchasesAlert: ViewModifier {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-private struct AlertTypeModifier: ViewModifier {
+
+/// This modifier is used to show either an Alert or ConfirmationDialog depending on the number of actions to avoid
+/// SwiftUI logging the following warning about confirmation dialogs requiring actionable choices:
+/// "A confirmation dialog was created without any actions. Confirmation dialogs should always provide
+/// users with an actionable choice. Consider using an alert if there is no action that can be taken
+/// in response to your presentation."
+private struct AlertOrConfirmationDialog: ViewModifier {
     @Binding var isPresented: Bool
     let alertType: RestorePurchasesAlert.AlertType
     let title: String
     let message: String
-    let actions: [RestorePurchasesAlert.AlertAction]
+    let actions: [AlertAction]
+
+    struct AlertAction: Identifiable {
+        let id = UUID()
+        let title: String
+        let role: ButtonRole?
+        let action: () -> Void
+    }
 
     func body(content: Content) -> some View {
         if actions.count < 3 {
