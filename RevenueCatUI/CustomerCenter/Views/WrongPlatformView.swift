@@ -32,6 +32,8 @@ struct WrongPlatformView: View {
     @State
     private var subscriptionInformation: PurchaseInformation?
 
+    private let screen: CustomerCenterConfigData.Screen?
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
@@ -53,14 +55,21 @@ struct WrongPlatformView: View {
     }
 
     init() {
+        self.screen = nil
+    }
+
+    init(screen: CustomerCenterConfigData.Screen) {
+        self.screen = screen
     }
 
     fileprivate init(store: Store,
                      managementURL: URL?,
-                     subscriptionInformation: PurchaseInformation) {
-        self._store = State(initialValue: store)
+                     subscriptionInformation: PurchaseInformation,
+                     screen: CustomerCenterConfigData.Screen) {
+        self.store = store
         self._managementURL = State(initialValue: managementURL)
         self._subscriptionInformation = State(initialValue: subscriptionInformation)
+        self.screen = screen
     }
 
     var body: some View {
@@ -96,8 +105,9 @@ struct WrongPlatformView: View {
                 DismissCircleButton()
             }
         }
-        .navigationTitle("How can we help?")
-        .navigationBarTitleDisplayMode(.inline)
+        .applyIf(self.screen?.title != nil, apply: {
+            $0.navigationTitle(self.screen!.title).navigationBarTitleDisplayMode(.inline)
+        })
         .task {
             if store == nil {
                 if let customerInfo = try? await Purchases.shared.customerInfo(),
@@ -187,7 +197,8 @@ struct WrongPlatformView_Previews: PreviewProvider {
                 WrongPlatformView(
                     store: data.store,
                     managementURL: data.managementURL,
-                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo)
+                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo),
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
             }

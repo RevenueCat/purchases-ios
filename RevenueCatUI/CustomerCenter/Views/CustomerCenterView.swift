@@ -125,6 +125,8 @@ private extension CustomerCenterView {
                     ManageSubscriptionsView(screen: screen,
                                             customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 }
+            } else if let screen = configuration.screens[.management] {
+                WrongPlatformView(screen: screen)
             } else {
                 WrongPlatformView()
             }
