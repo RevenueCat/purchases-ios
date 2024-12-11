@@ -21,12 +21,14 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ErrorView: View {
 
-    var errorMessage: String
-
     var body: some View {
         VStack(spacing: 20) {
+            let errorMessage: String = Localization.localizedBundle(self.locale)
+                .localizedString(forKey: "Something went wrong",
+                                 value: "Something went wrong",
+                                 table: nil)
             CompatibilityContentUnavailableView(
-                errorMessage,
+                String(errorMessage),
                 systemImage: "exclamationmark.triangle.fill",
                 description: nil
             )
@@ -47,9 +49,7 @@ struct ErrorView: View {
 struct ErrorView_Previews: PreviewProvider {
 
     static var previews: some View {
-        ErrorView(errorMessage: "Something went wrong")
-        .padding()
-
+        ErrorView()
     }
 }
 #endif
