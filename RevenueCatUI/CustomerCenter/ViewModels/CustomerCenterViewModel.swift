@@ -38,6 +38,7 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
     private(set) var purchasesProvider: CustomerCenterPurchasesType
 
+    @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
     /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
