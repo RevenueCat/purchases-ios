@@ -78,7 +78,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
-            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey) { [weak self] in
+            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
+                                                         path: path) { [weak self] in
                 Task {
                     await self?.onPathSelected(path: path)
                 }

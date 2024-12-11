@@ -76,7 +76,9 @@ struct APIKeyDashboardList: View {
                             // Need to wait for the paywall sheet to be dismissed before presenting again.
                             // We cannot modify the presented paywall in-place because the paywall components are
                             // cached in a @StateObject on initialization time.
+                            #if DEBUG
                             await Task.sleep(seconds: 1)
+                            #endif
                             self.presentedPaywall = .init(offering: offering, mode: .default)
                         }
                     }

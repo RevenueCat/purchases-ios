@@ -14,5 +14,6 @@
 protocol FeatureEvent: Encodable, Sendable {
 
     var feature: Feature { get }
+    var eventDiscriminator: String? { get }
 
 }

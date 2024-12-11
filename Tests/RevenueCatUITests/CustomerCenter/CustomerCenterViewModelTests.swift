@@ -661,7 +661,7 @@ class CustomerCenterViewModelTests: TestCase {
         viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
 
         expect(mockPurchases.trackedEvents.count) == 1
-        let trackedEvent = try XCTUnwrap(mockPurchases.trackedEvents.first)
+        let trackedEvent = try XCTUnwrap(mockPurchases.trackedEvents.first as? CustomerCenterEvent)
 
         expect(trackedEvent.data.darkMode) == darkMode
         expect(trackedEvent.data.displayMode) == displayMode
