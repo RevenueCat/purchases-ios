@@ -189,7 +189,54 @@ class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.productIdentifier) == productId
     }
 
-    func testShouldShowEarliestExpiringSubscriptionEvenWhenUserHasLifetimeAndSubscriptions() async throws {
+    func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionAndNoEntitlement() async throws {
+        // Arrange
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+        let products = [PurchaseInformationFixtures.product(id: productId,
+                                                            title: "title",
+                                                            duration: .month,
+                                                            price: 2.99)]
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [
+                CustomerInfoFixtures.Subscription(
+                    id: productId,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+            ]
+        )
+
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+                                                purchasesProvider: MockCustomerCenterPurchases(
+                                                    customerInfo: customerInfo,
+                                                    products: products
+                                                ))
+
+        // Act
+        await viewModel.loadPurchaseInformation()
+
+        // Assert
+        expect(viewModel.state) == .success
+
+        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        expect(purchaseInformation.title) == "title"
+        expect(purchaseInformation.durationTitle) == "1 month"
+
+        expect(purchaseInformation.price) == .paid("$2.99")
+
+        let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDate))
+
+        expect(purchaseInformation.productIdentifier) == productId
+    }
+
+    func testShouldShowEarliestExpiringSubscription() async throws {
         // Arrange
         let yearlyProduct = (
             id: "com.revenuecat.yearly",
