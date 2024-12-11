@@ -34,7 +34,7 @@ struct WrongPlatformView: View {
 
     @EnvironmentObject
     private var customerCenterViewModel: CustomerCenterViewModel
-  
+
     private let screen: CustomerCenterConfigData.Screen?
 
     @Environment(\.localization)
