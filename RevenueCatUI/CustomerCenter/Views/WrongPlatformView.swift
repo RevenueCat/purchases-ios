@@ -54,13 +54,10 @@ struct WrongPlatformView: View {
                                                     body: body)
     }
 
-    init(purchaseInformation: PurchaseInformation) {
-        self.screen = nil
-        self._purchaseInformation = State(initialValue: purchaseInformation)
-    }
-
-    init(screen: CustomerCenterConfigData.Screen) {
+    init(screen: CustomerCenterConfigData.Screen? = nil,
+         purchaseInformation: PurchaseInformation) {
         self.screen = screen
+        self._purchaseInformation = State(initialValue: purchaseInformation)
     }
 
     fileprivate init(store: Store,

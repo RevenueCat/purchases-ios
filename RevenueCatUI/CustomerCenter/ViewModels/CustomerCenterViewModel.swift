@@ -83,19 +83,35 @@ import RevenueCat
         self.purchasesProvider = purchasesProvider
     }
 
+    #if DEBUG
+
+    convenience init(
+        purchaseInformation: PurchaseInformation,
+        configuration: CustomerCenterConfigData
+    ) {
+        self.init(customerCenterActionHandler: nil)
+        self.purchaseInformation = purchaseInformation
+        self.configuration = configuration
+        self.state = .success
+    }
+
+    #endif
+
     func loadPurchaseInformation() async {
         do {
             let customerInfo = try await purchasesProvider.customerInfo()
             let hasActiveProducts =
-            customerInfo.activeSubscriptions.count > 0 || customerInfo.nonSubscriptions.count > 0
+            !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
             if !hasActiveProducts {
+                self.purchaseInformation = nil
                 self.state = .success
                 return
             }
 
             guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
                 Logger.warning(Strings.could_not_find_subscription_information)
+                self.purchaseInformation = nil
                 throw CustomerCenterError.couldNotFindSubscriptionInformation
             }
 

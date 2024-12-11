@@ -87,6 +87,9 @@ public struct CustomerCenterView: View {
             await loadInformationIfNeeded()
         }
         .task {
+#if DEBUG
+            guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+#endif
             self.trackImpression()
         }
         .environmentObject(self.viewModel)
@@ -127,7 +130,8 @@ private extension CustomerCenterView {
                                             customerCenterActionHandler: viewModel.customerCenterActionHandler)
                 }
             } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(screen: screen)
+                WrongPlatformView(screen: screen,
+                                  purchaseInformation: purchaseInformation)
             } else {
                 WrongPlatformView(purchaseInformation: purchaseInformation)
             }
@@ -160,5 +164,26 @@ private extension CustomerCenterView {
     }
 
 }
+
+#if DEBUG
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct CustomerCenterView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        let purchaseInformationApple =
+        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
+                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+        CustomerCenterView(viewModel: viewModelApple)
+            .previewDisplayName("Monthly Apple")
+    }
+
+}
+
+#endif
 
 #endif
