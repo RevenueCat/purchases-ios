@@ -1491,5 +1491,4 @@ workflows:
       - api-tests
       - deploy-purchase-tester:
           dry_run: true
-      - emerge_purchases_ui_snapshot_tests
 
