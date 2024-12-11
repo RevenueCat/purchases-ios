@@ -108,69 +108,70 @@ struct WrongPlatformView: View {
 }
 
 #if DEBUG
-//
-// @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @available(macOS, unavailable)
-// @available(tvOS, unavailable)
-// @available(watchOS, unavailable)
-// struct WrongPlatformView_Previews: PreviewProvider {
-//
-//    private struct PreviewData {
-//        let store: Store
-//        let managementURL: URL?
-//        let customerInfo: CustomerInfo
-//        let displayName: String
-//    }
-//
-//    private static let previewCases: [PreviewData] = [
-//        .init(store: .playStore,
-//              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
-//              customerInfo: CustomerInfoFixtures.customerInfoWithGoogleSubscriptions,
-//              displayName: "Play Store"),
-//        .init(store: .rcBilling,
-//              managementURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
-//              customerInfo: CustomerInfoFixtures.customerInfoWithRCBillingSubscriptions,
-//              displayName: "RCBilling"),
-//        .init(store: .stripe,
-//              managementURL: nil,
-//              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
-//              displayName: "Stripe"),
-//        .init(store: .external,
-//              managementURL: nil,
-//              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
-//              displayName: "External"),
-//        .init(store: .promotional,
-//              managementURL: nil,
-//              customerInfo: CustomerInfoFixtures.customerInfoWithPromotional,
-//              displayName: "Promotional"),
-//        .init(store: .promotional,
-//              managementURL: nil,
-//              customerInfo: CustomerInfoFixtures.customerInfoWithLifetimePromotional,
-//              displayName: "Promotional Lifetime"),
-//        .init(store: .amazon,
-//              managementURL: nil,
-//              customerInfo: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions,
-//              displayName: "Amazon")
-//    ]
-//
-//    static var previews: some View {
-//        Group {
-//            ForEach(previewCases, id: \.displayName) { data in
-//                WrongPlatformView(
-//                    store: data.store,
-//                    managementURL: data.managementURL,
-//                    subscriptionInformation: getPurchaseInformation(for: data.customerInfo)
-//                )
-//                .previewDisplayName(data.displayName)
-//            }
-//        }
-//    }
-//
-//    private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
-//        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value)
-//    }
-//
-// }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct WrongPlatformView_Previews: PreviewProvider {
+
+    private struct PreviewData {
+        let store: Store
+        let managementURL: URL?
+        let customerInfo: CustomerInfo
+        let displayName: String
+    }
+
+    private static let previewCases: [PreviewData] = [
+        .init(store: .playStore,
+              managementURL: URL(string: "https://play.google.com/store/account/subscriptions"),
+              customerInfo: CustomerInfoFixtures.customerInfoWithGoogleSubscriptions,
+              displayName: "Play Store"),
+        .init(store: .rcBilling,
+              managementURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
+              customerInfo: CustomerInfoFixtures.customerInfoWithRCBillingSubscriptions,
+              displayName: "RCBilling"),
+        .init(store: .stripe,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
+              displayName: "Stripe"),
+        .init(store: .external,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,
+              displayName: "External"),
+        .init(store: .promotional,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithPromotional,
+              displayName: "Promotional"),
+        .init(store: .promotional,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithLifetimePromotional,
+              displayName: "Promotional Lifetime"),
+        .init(store: .amazon,
+              managementURL: nil,
+              customerInfo: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions,
+              displayName: "Amazon")
+    ]
+
+    static var previews: some View {
+        Group {
+            ForEach(previewCases, id: \.displayName) { data in
+                WrongPlatformView(
+                    store: data.store,
+                    managementURL: data.managementURL,
+                    purchaseInformation: getPurchaseInformation(for: data.customerInfo)
+                )
+                .previewDisplayName(data.displayName)
+            }
+        }
+    }
+
+    private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
+        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value,
+                                   transaction: customerInfo.subscriptionsByProductIdentifier.values.first!)
+    }
+
+}
 
 #endif
 
