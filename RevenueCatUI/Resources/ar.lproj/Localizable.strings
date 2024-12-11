@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ خلال %@";
 "pay_up_front_period" = "%@ مقابل %@";
 "then_price_per_period" = "ثم %@";
+"Something went wrong" = "هناك خطأ ما";

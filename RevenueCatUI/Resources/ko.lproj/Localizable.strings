@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ 동안 %@";
 "pay_up_front_period" = "%@ 에 %@";
 "then_price_per_period" = "그런 다음 %@";
+"Something went wrong" = "문제가 발생했습니다";

@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ κατά τη διάρκεια %@";
 "pay_up_front_period" = "%@ για %@";
 "then_price_per_period" = "μετά %@";
+"Something went wrong" = "Κάτι πήγε στραβά";

@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ semasa %@";
 "pay_up_front_period" = "%@ untuk %@";
 "then_price_per_period" = "kemudian %@";
+"Something went wrong" = "Ada sesuatu yang tidak kena";

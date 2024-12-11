@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ במהלך %@";
 "pay_up_front_period" = "%@ עבור %@";
 "then_price_per_period" = "לאחר מכן %@";
+"Something went wrong" = "משהו השתבש";

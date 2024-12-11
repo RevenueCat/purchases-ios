@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ 在 %@";
 "pay_up_front_period" = "%@ 為 %@";
 "then_price_per_period" = "然後 %@";
+"Something went wrong" = "發生錯誤";

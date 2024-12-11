@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ के दौरान %@";
 "pay_up_front_period" = "%@ के लिए %@";
 "then_price_per_period" = "फिर %@";
+"Something went wrong" = "कुछ गलत हो गया";

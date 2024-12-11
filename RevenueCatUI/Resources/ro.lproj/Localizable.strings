@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ pe durata %@";
 "pay_up_front_period" = "%@ pentru %@";
 "then_price_per_period" = "apoi %@";
+"Something went wrong" = "Ceva n-a mers bine";

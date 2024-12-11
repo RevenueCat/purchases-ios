@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ tijdens %@";
 "pay_up_front_period" = "%@ voor %@";
 "then_price_per_period" = "dan %@";
+"Something went wrong" = "Er is iets misgegaan";

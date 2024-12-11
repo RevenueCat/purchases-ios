@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ の期間 %@";
 "pay_up_front_period" = "%@ で %@";
 "then_price_per_period" = "次に %@";
+"Something went wrong" = "問題が発生しました";

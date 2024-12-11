@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ počas %@";
 "pay_up_front_period" = "%@ za %@";
 "then_price_per_period" = "potom %@";
+"Something went wrong" = "Niečo sa pokazilo";

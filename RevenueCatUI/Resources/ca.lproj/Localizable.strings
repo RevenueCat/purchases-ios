@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ durant %@";
 "pay_up_front_period" = "%@ per %@";
 "then_price_per_period" = "després %@";
+"Something went wrong" = "Alguna cosa ha anat malament";
