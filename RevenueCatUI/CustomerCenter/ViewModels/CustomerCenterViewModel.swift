@@ -155,8 +155,8 @@ import RevenueCat
         do {
             let customerInfo = try await Purchases.shared.restorePurchases()
             self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
-            let hasEntitlements = customerInfo.entitlements.active.count > 0
-            return hasEntitlements ? .purchasesRecovered : .purchasesNotFound
+            let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
+            return hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
             self.customerCenterActionHandler?(.restoreFailed(error))
             return .purchasesNotFound
