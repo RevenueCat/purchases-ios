@@ -69,10 +69,6 @@ import RevenueCat
         }
     }
 
-    var isLoaded: Bool {
-        return state != .notLoaded && configuration != nil
-    }
-
     private let currentVersionFetcher: CurrentVersionFetcher
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
@@ -105,46 +101,11 @@ import RevenueCat
 
     #endif
 
-    func loadPurchaseInformation() async {
+    func loadScreen() async {
         do {
-            let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
-            let hasActiveProducts =
-            !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-
-            if !hasActiveProducts {
-                self.purchaseInformation = nil
-                self.state = .success
-                return
-            }
-
-            guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
-                Logger.warning(Strings.could_not_find_subscription_information)
-                self.purchaseInformation = nil
-                throw CustomerCenterError.couldNotFindSubscriptionInformation
-            }
-
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
-
-            self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
-                                                                           entitlement: entitlement)
-
+            try await self.loadPurchaseInformation()
+            try await self.loadCustomerCenterConfig()
             self.state = .success
-        } catch {
-            self.state = .error(error)
-        }
-    }
-
-    func loadCustomerCenterConfig() async {
-        do {
-            self.configuration = try await Purchases.shared.loadCustomerCenter()
-            if let productId = configuration?.productId {
-                self.onUpdateAppClick = {
-                    // productId is a positive integer, so it should be safe to construct a URL from it.
-                    let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
-                    URLUtilities.openURLIfNotAppExtension(url)
-                }
-            }
         } catch {
             self.state = .error(error)
         }
@@ -153,7 +114,7 @@ import RevenueCat
     func performRestore() async -> RestorePurchasesAlert.AlertType {
         self.customerCenterActionHandler?(.restoreStarted)
         do {
-            let customerInfo = try await Purchases.shared.restorePurchases()
+            let customerInfo = try await purchasesProvider.restorePurchases()
             self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
             return hasPurchases ? .purchasesRecovered : .purchasesNotFound
@@ -181,6 +142,42 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
+
+    func loadPurchaseInformation() async throws {
+            let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+
+            let hasActiveProducts =
+            !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
+
+            if !hasActiveProducts {
+                self.purchaseInformation = nil
+                self.state = .success
+                return
+            }
+
+            guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
+                Logger.warning(Strings.could_not_find_subscription_information)
+                self.purchaseInformation = nil
+                throw CustomerCenterError.couldNotFindSubscriptionInformation
+            }
+
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+
+            self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
+                                                                           entitlement: entitlement)
+    }
+
+    func loadCustomerCenterConfig() async throws {
+        self.configuration = try await purchasesProvider.loadCustomerCenter()
+        if let productId = configuration?.productId {
+            self.onUpdateAppClick = {
+                // productId is a positive integer, so it should be safe to construct a URL from it.
+                let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
+                URLUtilities.openURLIfNotAppExtension(url)
+            }
+        }
+    }
 
     func findActiveTransaction(customerInfo: CustomerInfo) -> Transaction? {
         let activeSubscriptions = customerInfo.subscriptionsByProductIdentifier.values

@@ -39,7 +39,10 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
                                              duration: .month,
                                              price: 2.99)],
         showManageSubscriptionsError: Error? = nil,
-        beginRefundShouldFail: Bool = false
+        beginRefundShouldFail: Bool = false,
+        customerCenterConfigData: CustomerCenterConfigData = CustomerCenterConfigTestData.customerCenterData(
+            lastPublishedAppVersion: "2.0.0"
+        )
     ) {
         self.customerInfo = customerInfo
         self.customerInfoError = customerInfoError
@@ -48,6 +51,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         }))
         self.showManageSubscriptionsError = showManageSubscriptionsError
         self.beginRefundShouldFail = beginRefundShouldFail
+        self.loadCustomerCenterResult = .success(customerCenterConfigData)
     }
 
     var customerInfoFetchPolicy: CacheFetchPolicy?
@@ -88,5 +92,19 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func track(customerCenterEvent: any CustomerCenterEventType) {
         trackCallCount += 1
         trackedEvents.append(customerCenterEvent)
+    }
+
+    var loadCustomerCenterCallCount = 0
+    var loadCustomerCenterResult: Result<CustomerCenterConfigData, Error> = .failure(NSError(domain: "", code: -1))
+    func loadCustomerCenter() async throws -> CustomerCenterConfigData {
+        loadCustomerCenterCallCount += 1
+        return try loadCustomerCenterResult.get()
+    }
+
+    var restorePurchasesCallCount = 0
+    var restorePurchasesResult: Result<CustomerInfo, Error> = .failure(NSError(domain: "", code: -1))
+    func restorePurchases() async throws -> CustomerInfo {
+        restorePurchasesCallCount += 1
+        return try restorePurchasesResult.get()
     }
 }

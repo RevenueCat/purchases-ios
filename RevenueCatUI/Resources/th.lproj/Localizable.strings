@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ ในช่วง %@";
 "pay_up_front_period" = "%@ สำหรับ %@";
 "then_price_per_period" = "จากนั้น %@";
+"Something went wrong" = "มีบางอย่างผิดพลาด";

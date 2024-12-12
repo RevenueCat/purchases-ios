@@ -71,15 +71,20 @@ public struct CustomerCenterView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         Group {
-            if !self.viewModel.isLoaded {
+            switch self.viewModel.state {
+            case .error:
+                ErrorView()
+            case .notLoaded:
                 TintedProgressView()
-            } else {
+            case .success:
                 if let configuration = self.viewModel.configuration {
                     destinationView(configuration: configuration)
                         .environment(\.localization, configuration.localization)
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.supportInformation, configuration.support)
                         .environment(\.customerCenterPresentationMode, self.mode)
+                } else {
+                    TintedProgressView()
                 }
             }
         }
@@ -104,9 +109,8 @@ public struct CustomerCenterView: View {
 private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
-        if !viewModel.isLoaded {
-            await viewModel.loadPurchaseInformation()
-            await viewModel.loadCustomerCenterConfig()
+        if viewModel.state == .notLoaded {
+            await viewModel.loadScreen()
         }
     }
 

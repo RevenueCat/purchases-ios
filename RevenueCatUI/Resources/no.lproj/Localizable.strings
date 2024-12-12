@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ i løpet av %@";
 "pay_up_front_period" = "%@ for %@";
 "then_price_per_period" = "deretter %@";
+"Something went wrong" = "Noe gikk galt";

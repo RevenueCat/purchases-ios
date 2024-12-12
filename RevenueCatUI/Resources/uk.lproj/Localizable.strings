@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ протягом %@";
 "pay_up_front_period" = "%@ за %@";
 "then_price_per_period" = "потім %@";
+"Something went wrong" = "Щось пішло не так";

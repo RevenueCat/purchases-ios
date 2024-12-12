@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ trong %@";
 "pay_up_front_period" = "%@ cho %@";
 "then_price_per_period" = "sau %@";
+"Something went wrong" = "Đã xảy ra lỗi";

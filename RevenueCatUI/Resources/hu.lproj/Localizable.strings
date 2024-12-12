@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ során %@";
 "pay_up_front_period" = "%@ ért %@";
 "then_price_per_period" = "majd %@";
+"Something went wrong" = "Valami elromlott";

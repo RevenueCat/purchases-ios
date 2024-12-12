@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ aikana %@";
 "pay_up_front_period" = "%@ hinnalla %@";
 "then_price_per_period" = "sitten %@";
+"Something went wrong" = "Jotain meni pieleen";

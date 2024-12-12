@@ -54,4 +54,12 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
 
+    func loadCustomerCenter() async throws -> CustomerCenterConfigData {
+        try await Purchases.shared.loadCustomerCenter()
+    }
+
+    func restorePurchases() async throws -> CustomerInfo {
+        try await Purchases.shared.restorePurchases()
+    }
+
 }

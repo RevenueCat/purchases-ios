@@ -21,3 +21,4 @@
 "pay_as_you_go_period" = "%@ tijekom %@";
 "pay_up_front_period" = "%@ za %@";
 "then_price_per_period" = "zatim %@";
+"Something went wrong" = "Nešto je pošlo po zlu";
