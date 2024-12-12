@@ -13,7 +13,7 @@
 //  Created by Cesar de la Vega on 11/6/24.
 //
 
-// swiftlint:disable file_length type_body_length function_body_length
+// swiftlint:disable type_body_length function_body_length
 
 import Nimble
 import RevenueCat
@@ -81,21 +81,22 @@ class CustomerCenterViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         expect(mockPurchases.customerInfoFetchPolicy) == .fetchCurrent
     }
 
-    func testLoadHasSubscriptionsApple() async throws {
-        let mockPurchases =
-        MockCustomerCenterPurchases(customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions)
+    func testLoadAppleSubscriptions() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+        )
 
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
         )
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
         expect(purchaseInformation.store) == .appStore
@@ -103,15 +104,16 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsGoogle() async throws {
-        let mockPurchases =
-        MockCustomerCenterPurchases(customerInfo: CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions)
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
+        )
 
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
         )
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
         expect(purchaseInformation.store) == .playStore
@@ -119,15 +121,16 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadHasSubscriptionsNonActive() async throws {
-        let mockPurchases =
-        MockCustomerCenterPurchases(customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions)
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
+        )
 
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
             purchasesProvider: mockPurchases
         )
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.state) == .success
@@ -141,7 +144,7 @@ class CustomerCenterViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         expect(viewModel.purchaseInformation).to(beNil())
         switch viewModel.state {
@@ -187,7 +190,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                 ))
 
         // Act
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         // Assert
         expect(viewModel.state) == .success
@@ -234,7 +237,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                 ))
 
         // Act
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         // Assert
         expect(viewModel.state) == .success
@@ -314,7 +317,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                     ))
 
             // Act
-            try await viewModel.loadPurchaseInformation()
+            await viewModel.loadScreen()
 
             // Assert
             expect(viewModel.state) == .success
@@ -404,7 +407,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                         products: products
                                                     ))
 
-            try await viewModel.loadPurchaseInformation()
+            await viewModel.loadScreen()
 
             expect(viewModel.state) == .success
 
@@ -455,7 +458,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                     products: products
                                                 ))
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         expect(viewModel.state) == .success
 
@@ -530,7 +533,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                     ))
 
             // Act
-            try await viewModel.loadPurchaseInformation()
+            await viewModel.loadScreen()
 
             // Assert
             expect(viewModel.state) == .success
@@ -613,7 +616,7 @@ class CustomerCenterViewModelTests: TestCase {
                                                     ))
 
             // Act
-            try await viewModel.loadPurchaseInformation()
+            await viewModel.loadScreen()
 
             // Assert
             expect(viewModel.state) == .success
@@ -638,7 +641,7 @@ class CustomerCenterViewModelTests: TestCase {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
                                                 purchasesProvider: mockPurchases)
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.state) == .success
@@ -649,7 +652,7 @@ class CustomerCenterViewModelTests: TestCase {
         let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
                                                 purchasesProvider: mockPurchases)
 
-        try await viewModel.loadPurchaseInformation()
+        await viewModel.loadScreen()
 
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.state) == .error(error)

@@ -40,4 +40,8 @@ protocol CustomerCenterPurchasesType: Sendable {
 
     func track(customerCenterEvent: any CustomerCenterEventType)
 
+    func loadCustomerCenter() async throws -> CustomerCenterConfigData
+
+    func restorePurchases() async throws -> CustomerInfo
+
 }
