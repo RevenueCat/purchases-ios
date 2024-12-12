@@ -181,6 +181,13 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                #if PAYWALL_COMPONENTS
+                .onAppear {
+                    if let errorInfo = paywall.offering.paywallComponentsData?.errorInfo {
+                        print("Paywall V2 Error:", errorInfo.debugDescription)
+                    }
+                }
+                #endif
         }
     }
 
