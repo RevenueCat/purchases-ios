@@ -57,83 +57,81 @@ struct RestorePurchasesAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .confirmationDialog(
-                alertTitle(),
-                isPresented: $isPresented,
-                actions: {
-                    switch alertType {
-                    case .purchasesRecovered:
-                        PurchasesRecoveredActions()
-                    case .purchasesNotFound:
-                        PurchasesNotFoundActions()
-                    case .restorePurchases:
-                        RestorePurchasesActions()
-                    }
-                },
-                message: {
-                    Text(alertMessage())
-                }
+            .modifier(
+                AlertOrConfirmationDialog(
+                    isPresented: $isPresented,
+                    alertType: alertType,
+                    title: alertTitle(),
+                    message: alertMessage(),
+                    actions: alertActions()
+                )
             )
     }
 
-    // MARK: - Actions
-    @ViewBuilder
-    // swiftlint:disable:next identifier_name
-    private func RestorePurchasesActions() -> some View {
-        Button {
-            Task {
-                let alertType = await self.customerCenterViewModel.performRestore()
-                self.setAlertType(alertType)
+    // swiftlint:disable:next function_body_length
+    private func alertActions() -> [AlertOrConfirmationDialog.AlertAction] {
+        switch alertType {
+        case .purchasesRecovered:
+            return [
+                AlertOrConfirmationDialog.AlertAction(
+                    title: localization.commonLocalizedString(for: .dismiss),
+                    role: .cancel,
+                    action: dismissAlert
+                )
+            ]
+
+        case .purchasesNotFound:
+            var actions: [AlertOrConfirmationDialog.AlertAction] = []
+
+            if let onUpdateAppClick = customerCenterViewModel.onUpdateAppClick,
+               customerCenterViewModel.shouldShowAppUpdateWarnings {
+                actions.append(
+                    AlertOrConfirmationDialog.AlertAction(
+                        title: localization.commonLocalizedString(for: .updateWarningUpdate),
+                        role: nil,
+                        action: onUpdateAppClick
+                    )
+                )
             }
-        } label: {
-            Text(localization.commonLocalizedString(for: .checkPastPurchases))
-        }
 
-        Button(role: .cancel) {
-            dismissAlert()
-        } label: {
-            Text(localization.commonLocalizedString(for: .cancel))
-        }
-    }
-
-    @ViewBuilder
-    // swiftlint:disable:next identifier_name
-    private func PurchasesRecoveredActions() -> some View {
-        Button(role: .cancel) {
-            dismissAlert()
-        } label: {
-            Text(localization.commonLocalizedString(for: .dismiss))
-        }
-    }
-
-    @ViewBuilder
-    // swiftlint:disable:next identifier_name
-    private func PurchasesNotFoundActions() -> some View {
-
-        if let onUpdateAppClick = customerCenterViewModel.onUpdateAppClick,
-           customerCenterViewModel.shouldShowAppUpdateWarnings {
-            Button {
-                onUpdateAppClick()
-            } label: {
-                Text(localization.commonLocalizedString(for: .updateWarningUpdate))
-                    .bold()
+            if let url = supportURL {
+                actions.append(
+                    AlertOrConfirmationDialog.AlertAction(
+                        title: localization.commonLocalizedString(for: .contactSupport),
+                        role: nil,
+                        action: { Task { openURL(url) } }
+                    )
+                )
             }
-        }
 
-        if let url = supportURL {
-            Button {
-                Task {
-                    openURL(url)
-                }
-            } label: {
-                Text(localization.commonLocalizedString(for: .contactSupport))
-            }
-        }
+            actions.append(
+                AlertOrConfirmationDialog.AlertAction(
+                    title: localization.commonLocalizedString(for: .dismiss),
+                    role: .cancel,
+                    action: dismissAlert
+                )
+            )
 
-        Button(role: .cancel) {
-            dismissAlert()
-        } label: {
-            Text(localization.commonLocalizedString(for: .dismiss))
+            return actions
+
+        case .restorePurchases:
+            return [
+                AlertOrConfirmationDialog.AlertAction(
+                    title: localization.commonLocalizedString(for: .checkPastPurchases),
+                    role: nil,
+                    action: {
+                        Task {
+                            let alertType = await customerCenterViewModel.performRestore()
+                            setAlertType(alertType)
+                        }
+                    }
+                ),
+                AlertOrConfirmationDialog.AlertAction(
+                    title: localization.commonLocalizedString(for: .cancel),
+                    role: .cancel,
+                    action: dismissAlert
+                )
+            ]
         }
     }
 
@@ -167,6 +165,69 @@ struct RestorePurchasesAlert: ViewModifier {
     private func dismissAlert() {
         self.alertType = .restorePurchases
         dismiss()
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+
+/// This modifier is used to show either an Alert or ConfirmationDialog depending on the number of actions to avoid
+/// SwiftUI logging the following warning about confirmation dialogs requiring actionable choices:
+/// "A confirmation dialog was created without any actions. Confirmation dialogs should always provide
+/// users with an actionable choice. Consider using an alert if there is no action that can be taken
+/// in response to your presentation."
+private struct AlertOrConfirmationDialog: ViewModifier {
+    @Binding var isPresented: Bool
+    let alertType: RestorePurchasesAlert.AlertType
+    let title: String
+    let message: String
+    let actions: [AlertAction]
+
+    struct AlertAction: Identifiable {
+        let id = UUID()
+        let title: String
+        let role: ButtonRole?
+        let action: () -> Void
+    }
+
+    func body(content: Content) -> some View {
+        if actions.count < 3 {
+            content.alert(
+                title,
+                isPresented: $isPresented,
+                actions: {
+                    ForEach(actions) { action in
+                        Button(role: action.role) {
+                            action.action()
+                        } label: {
+                            Text(action.title)
+                        }
+                    }
+                },
+                message: {
+                    Text(message)
+                }
+            )
+        } else {
+            content.confirmationDialog(
+                title,
+                isPresented: $isPresented,
+                actions: {
+                    ForEach(actions) { action in
+                        Button(role: action.role) {
+                            action.action()
+                        } label: {
+                            Text(action.title)
+                        }
+                    }
+                },
+                message: {
+                    Text(message)
+                }
+            )
+        }
     }
 }
 
