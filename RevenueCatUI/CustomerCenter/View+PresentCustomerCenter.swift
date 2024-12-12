@@ -25,8 +25,6 @@ import SwiftUI
 #endif
 extension View {
 
-    /// Warning: This is currently in beta and subject to change.
-    ///
     /// Presents the ``CustomerCenter``.
     /// Example:
     /// ```swift
