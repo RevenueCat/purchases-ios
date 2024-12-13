@@ -91,7 +91,16 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+    static let serverHostURL: URL = {
+        let locale = Locale.current
+        let region = locale.region?.identifier ?? ""
+
+        let isChineseUser = "CN" == region
+
+        return isChineseUser
+            ? URL(string: "https://api.revenuecat.cn")!
+            : URL(string: "https://api.revenuecat.com")!
+    }()
 
     var authenticated: Bool {
         switch self {
