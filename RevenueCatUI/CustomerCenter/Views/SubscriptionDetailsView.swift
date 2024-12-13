@@ -102,7 +102,7 @@ struct SubscriptionDetailsView: View {
         case .success:
             return localization.commonLocalizedString(for: .refundGranted)
         case .userCancelled:
-            return localization.commonLocalizedString(for: .refundCanceled)
+            return nil
         @unknown default:
             return nil
         }
