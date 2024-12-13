@@ -67,6 +67,7 @@ public struct CustomerCenterConfigData {
             case refundErrorGeneric = "refund_error_generic"
             case refundGranted = "refund_granted"
             case refundStatus = "refund_status"
+            case refundRequested = "refund_requested"
             case subEarliestExpiration = "sub_earliest_expiration"
             case subEarliestRenewal = "sub_earliest_renewal"
             case subExpired = "sub_expired"
@@ -135,6 +136,8 @@ public struct CustomerCenterConfigData {
                     return "An error occurred while processing the refund request. Please try again."
                 case .refundGranted:
                     return "Refund granted successfully!"
+                case .refundRequested:
+                    return "Refund requested"
                 case .refundStatus:
                     return "Refund status"
                 case .subEarliestExpiration:
