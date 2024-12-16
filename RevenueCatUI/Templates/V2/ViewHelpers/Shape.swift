@@ -81,11 +81,11 @@ struct ShapeModifier: ViewModifier {
                                     bottomRight: radiuses?.bottomRight)
         case .pill:
             content
-                .clipShape(Capsule())
+                .clipShape(Capsule(style: .circular))
                 .applyIfLet(self.border, apply: { view, border in
                     view.overlay(
-                        Capsule()
-                            .stroke(border.color, lineWidth: border.width)
+                        Capsule(style: .circular)
+                            .strokeBorder(border.color, lineWidth: border.width)
                     )
                 })
         case .concave:
@@ -115,19 +115,28 @@ extension View {
                 let bottomLeft = bottomLeft,
                 let bottomRight = bottomRight,
                 topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
-                    self
-                        .applyIf(topLeft > 0) {
-                            $0.clipShape(SingleRoundedCornerShape(radius: topLeft, corners: [.topLeft]))
-                        }
-                        .applyIf(topRight > 0) {
-                            $0.clipShape(SingleRoundedCornerShape(radius: topLeft, corners: [.topRight]))
-                        }
-                        .applyIf(bottomLeft > 0) {
-                            $0.clipShape(SingleRoundedCornerShape(radius: topLeft, corners: [.bottomLeft]))
-                        }
-                        .applyIf(bottomRight > 0) {
-                            $0.clipShape(SingleRoundedCornerShape(radius: topLeft, corners: [.bottomRight]))
-                        }
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    self.clipShape(UnevenRoundedRectangle(
+                        topLeadingRadius: topLeft,
+                        bottomLeadingRadius: bottomLeft,
+                        bottomTrailingRadius: bottomRight,
+                        topTrailingRadius: topRight,
+                        style: .circular
+                    ))
+                } else {
+                    self.applyIf(topLeft > 0) {
+                        $0.clipShape(SingleRoundedCornerShape(radius: topLeft, corners: [.topLeft]))
+                    }
+                    .applyIf(topRight > 0) {
+                        $0.clipShape(SingleRoundedCornerShape(radius: topRight, corners: [.topRight]))
+                    }
+                    .applyIf(bottomLeft > 0) {
+                        $0.clipShape(SingleRoundedCornerShape(radius: bottomLeft, corners: [.bottomLeft]))
+                    }
+                    .applyIf(bottomRight > 0) {
+                        $0.clipShape(SingleRoundedCornerShape(radius: bottomRight, corners: [.bottomRight]))
+                    }
+                }
             } else {
                 self
             }
@@ -146,19 +155,31 @@ extension View {
         Group {
             if let color = color, let width = width, width > 0 {
                 if let topLeft = topLeft,
-                    let topRight = topRight,
-                    let bottomLeft = bottomLeft,
-                    let bottomRight = bottomRight,
-                    topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
-                        self.overlay(
+                   let topRight = topRight,
+                   let bottomLeft = bottomLeft,
+                   let bottomRight = bottomRight,
+                   topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
+                    self.overlay {
+                        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                            UnevenRoundedRectangle(
+                                topLeadingRadius: topLeft,
+                                bottomLeadingRadius: bottomLeft,
+                                bottomTrailingRadius: bottomRight,
+                                topTrailingRadius: topRight,
+                                style: .circular
+                            )
+                            .strokeBorder(color, lineWidth: width)
+                        } else {
                             BorderRoundedCornerShape(
                                 topLeft: topLeft,
                                 topRight: topRight,
                                 bottomLeft: bottomLeft,
                                 bottomRight: bottomRight
                             )
+                            .inset(by: width/2)
                             .stroke(color, lineWidth: width)
-                        )
+                        }
+                    }
                 } else {
                     self
                         .border(color, width: width)
@@ -185,41 +206,67 @@ private struct SingleRoundedCornerShape: Shape {
     }
 }
 
-private struct BorderRoundedCornerShape: Shape {
+private struct BorderRoundedCornerShape: InsettableShape {
     var topLeft: CGFloat
     var topRight: CGFloat
     var bottomLeft: CGFloat
     var bottomRight: CGFloat
+    var insetAmount: CGFloat = 0
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
 
-        let maxY = rect.maxY - 1
+        // Adjust rect for insets
+        let insetRect = rect.insetBy(dx: insetAmount, dy: insetAmount)
+
+        // Adjust corner radii for insets
+        let adjustedTopLeft = max(0, topLeft - insetAmount)
+        let adjustedTopRight = max(0, topRight - insetAmount)
+        let adjustedBottomLeft = max(0, bottomLeft - insetAmount)
+        let adjustedBottomRight = max(0, bottomRight - insetAmount)
 
         // Start from the top-left corner
-        path.move(to: CGPoint(x: rect.minX + topLeft, y: rect.minY))
+        path.move(to: CGPoint(x: insetRect.minX + adjustedTopLeft, y: insetRect.minY))
 
         // Top edge and top-right corner
-        path.addLine(to: CGPoint(x: rect.maxX - topRight, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY + topRight),
-                          control: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: insetRect.maxX - adjustedTopRight, y: insetRect.minY))
+        path.addArc(center: CGPoint(x: insetRect.maxX - adjustedTopRight, y: insetRect.minY + adjustedTopRight),
+                    radius: adjustedTopRight,
+                    startAngle: .degrees(-90),
+                    endAngle: .degrees(0),
+                    clockwise: false)
 
         // Right edge and bottom-right corner
-        path.addLine(to: CGPoint(x: rect.maxX, y: maxY - bottomRight))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX - bottomRight, y: maxY),
-                          control: CGPoint(x: rect.maxX, y: maxY))
+        path.addLine(to: CGPoint(x: insetRect.maxX, y: insetRect.maxY - adjustedBottomRight))
+        path.addArc(center: CGPoint(x: insetRect.maxX - adjustedBottomRight, y: insetRect.maxY - adjustedBottomRight),
+                    radius: adjustedBottomRight,
+                    startAngle: .degrees(0),
+                    endAngle: .degrees(90),
+                    clockwise: false)
 
         // Bottom edge and bottom-left corner
-        path.addLine(to: CGPoint(x: rect.minX + bottomLeft, y: maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.minX, y: maxY - bottomLeft),
-                          control: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: insetRect.minX + adjustedBottomLeft, y: insetRect.maxY))
+        path.addArc(center: CGPoint(x: insetRect.minX + adjustedBottomLeft, y: insetRect.maxY - adjustedBottomLeft),
+                    radius: adjustedBottomLeft,
+                    startAngle: .degrees(90),
+                    endAngle: .degrees(180),
+                    clockwise: false)
 
         // Left edge and top-left corner
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topLeft))
-        path.addQuadCurve(to: CGPoint(x: rect.minX + topLeft, y: rect.minY),
-                          control: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: insetRect.minX, y: insetRect.minY + adjustedTopLeft))
+        path.addArc(center: CGPoint(x: insetRect.minX + adjustedTopLeft, y: insetRect.minY + adjustedTopLeft),
+                    radius: adjustedTopLeft,
+                    startAngle: .degrees(180),
+                    endAngle: .degrees(270),
+                    clockwise: false)
 
         return path
+    }
+
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var shape = self
+        shape.insetAmount += amount
+        return shape
     }
 }
 
