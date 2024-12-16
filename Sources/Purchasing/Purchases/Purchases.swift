@@ -1597,13 +1597,7 @@ extension Purchases: PurchasesOrchestratorDelegate {
      */
     func readyForPromotedProduct(_ product: StoreProduct,
                                  purchase startPurchase: @escaping StartPurchaseBlock) {
-        OperationDispatcher.dispatchOnMainActor {
-            self.delegate?.purchases?(
-                self,
-                readyForPromotedProduct: product,
-                purchase: startPurchase
-            )
-        }
+        self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS

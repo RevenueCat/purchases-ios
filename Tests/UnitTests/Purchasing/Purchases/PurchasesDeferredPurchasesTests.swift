@@ -42,12 +42,6 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
                                                                shouldAddStorePayment: payment,
                                                                for: self.product)
 
-        waitUntil { completed in
-            if self.purchasesDelegate.makeDeferredPurchase != nil {
-                completed()
-            }
-        }
-
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
         expect(self.storeKit1Wrapper.payment).to(beNil())
 
@@ -64,12 +58,6 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
         _ = try self.storeKit1WrapperDelegate.storeKit1Wrapper(storeKit1Wrapper,
                                                                shouldAddStorePayment: payment,
                                                                for: self.product)
-
-        waitUntil { completed in
-            if self.purchasesDelegate.makeDeferredPurchase != nil {
-                completed()
-            }
-        }
 
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
         expect(self.storeKit1Wrapper.payment).to(beNil())
@@ -99,7 +87,7 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
                                                                shouldAddStorePayment: payment,
                                                                for: self.product)
 
-        expect(self.purchasesDelegate.promoProduct).toEventually(equal(StoreProduct(sk1Product: self.product)))
+        expect(self.purchasesDelegate.promoProduct) == StoreProduct(sk1Product: self.product)
     }
 
     func testShouldAddStorePaymentReturnsFalseForNilProductIdentifier() throws {
@@ -189,9 +177,10 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
             for: self.product
         )
 
-        expect(self.purchasesDelegate.makeDeferredPurchase).toEventuallyNot(beNil())
-        expect(self.purchasesDelegate.promoProduct).toEventually(equal(StoreProduct(sk1Product: self.product)))
-        expect(self.purchasesDelegate.makeDeferredPurchase).toEventuallyNot(beNil())
+        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
+
+        expect(self.purchasesDelegate.promoProduct) == StoreProduct(sk1Product: self.product)
+        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
     }
 
 }
