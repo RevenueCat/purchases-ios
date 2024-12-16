@@ -216,11 +216,8 @@ private struct BorderRoundedCornerShape: InsettableShape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
 
-        // Inset the bottom border to avoid overlapping with a sibling component
-        let newRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.maxY - 1)
-
         // Adjust rect for insets
-        let insetRect = newRect.insetBy(dx: insetAmount, dy: insetAmount)
+        let insetRect = rect.insetBy(dx: insetAmount, dy: insetAmount)
 
         // Adjust corner radii for insets
         let adjustedTopLeft = max(0, topLeft - insetAmount)
