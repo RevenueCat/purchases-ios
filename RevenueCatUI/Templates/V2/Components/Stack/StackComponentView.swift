@@ -97,6 +97,7 @@ struct StackComponentView: View {
             // Without compositingGroup(), the shadow is applied to the stack's children as well.
             view.compositingGroup().shadow(shadow: shadow)
         }
+        .badge(style.badge, textComponentViewModel: viewModel.badgeTextViewModel)
         .padding(style.margin)
     }
 
@@ -455,7 +456,8 @@ fileprivate extension StackComponentViewModel {
 
         try self.init(
             component: component,
-            viewModels: viewModels
+            viewModels: viewModels,
+            localizationProvider: localizationProvider
         )
     }
 
