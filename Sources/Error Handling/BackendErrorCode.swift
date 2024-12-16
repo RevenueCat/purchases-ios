@@ -39,9 +39,13 @@ enum BackendErrorCode: Int, Error {
     case playStoreGenericError = 7231
     case userIneligibleForPromoOffer = 7232
     case invalidAppleSubscriptionKey = 7234
+    case couldNotCreateAlias = 7255
+    case invalidAppUserId = 7256
     case subscriptionNotFoundForCustomer = 7259
     case invalidSubscriberAttributes = 7263
     case invalidSubscriberAttributesBody = 7264
+    case requestAlreadyInProgress = 7638
+    case subscriberAttributesAreBeingUpdated = 7629
     case purchasedProductMissingInAppleReceipt = 7712
     case invalidWebRedemptionToken = 7849
     case purchaseBelongsToOtherUser = 7852
@@ -103,7 +107,8 @@ extension BackendErrorCode {
         case .invalidPaymentModeOrIntroPriceNotProvided,
              .productIdForGoogleReceiptNotProvided:
             return .purchaseInvalidError
-        case .emptyAppUserId:
+        case .emptyAppUserId,
+             .invalidAppUserId:
             return .invalidAppUserIdError
         case .invalidAppleSubscriptionKey:
             return .invalidAppleSubscriptionKeyError
@@ -112,6 +117,11 @@ extension BackendErrorCode {
         case .invalidSubscriberAttributes,
              .invalidSubscriberAttributesBody:
             return .invalidSubscriberAttributesError
+        case .couldNotCreateAlias:
+            return .configurationError
+        case .requestAlreadyInProgress,
+             .subscriberAttributesAreBeingUpdated:
+            return .operationAlreadyInProgressForProductError
         case .unknownBackendError,
              .playStoreInvalidPackageName,
              .playStoreQuotaExceeded,
