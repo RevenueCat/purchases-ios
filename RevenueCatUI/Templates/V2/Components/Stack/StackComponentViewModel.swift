@@ -23,8 +23,8 @@ class StackComponentViewModel {
 
     private let component: PaywallComponent.StackComponent
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
-    let badgeTextViewModel: TextComponentViewModel?
 
+    let badgeTextViewModel: TextComponentViewModel?
     let viewModels: [PaywallComponentViewModel]
 
     init(
@@ -151,7 +151,7 @@ struct StackComponentStyle {
         self.shape = shape?.shape
         self.border = border?.border
         self.shadow = shadow?.shadow
-        self.badge = badge?.badge(parentShape: self.shape)
+        self.badge = badge?.badge(stackShape: self.shape)
     }
 
     var vstackStrategy: StackStrategy {
@@ -235,7 +235,7 @@ private extension PaywallComponent.Shadow {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Badge {
 
-    func badge(parentShape: ShapeModifier.Shape?) -> BadgeModifier.BadgeInfo? {
+    func badge(stackShape: ShapeModifier.Shape?) -> BadgeModifier.BadgeInfo? {
         BadgeModifier.BadgeInfo(
             style: self.style,
             alignment: self.alignment,
@@ -249,7 +249,7 @@ private extension PaywallComponent.Badge {
             horizontalAlignment: self.horizontalAlignment,
             color: self.color,
             backgroundColor: self.backgroundColor,
-            parentShape: parentShape
+            stackShape: stackShape
         )
     }
 

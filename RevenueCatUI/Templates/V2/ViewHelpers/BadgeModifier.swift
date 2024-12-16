@@ -37,7 +37,7 @@ struct BadgeModifier: ViewModifier {
         let horizontalAlignment: PaywallComponent.HorizontalAlignment
         let color: PaywallComponent.ColorScheme
         let backgroundColor: PaywallComponent.ColorScheme
-        let parentShape: ShapeModifier.Shape?
+        let stackShape: ShapeModifier.Shape?
     }
 
     func body(content: Content) -> some View {
@@ -234,28 +234,28 @@ fileprivate extension View {
                         bottomRight: corners?.bottomRight))
                 case .topLeading:
                     return .rectangle(.init(
-                        topLeft: radiusInfo(shape: badge.parentShape)?.topLeft,
+                        topLeft: radiusInfo(shape: badge.stackShape)?.topLeft,
                         topRight: 0,
                         bottomLeft: 0,
                         bottomRight: corners?.bottomRight))
                 case .topTrailing:
                     return .rectangle(.init(
                         topLeft: 0.0,
-                        topRight: radiusInfo(shape: badge.parentShape)?.topRight,
+                        topRight: radiusInfo(shape: badge.stackShape)?.topRight,
                         bottomLeft: corners?.bottomLeft,
                         bottomRight: 0))
                 case .bottomLeading:
                     return .rectangle(.init(
                         topLeft: 0.0,
                         topRight: corners?.topRight,
-                        bottomLeft: radiusInfo(shape: badge.parentShape)?.bottomLeft,
+                        bottomLeft: radiusInfo(shape: badge.stackShape)?.bottomLeft,
                         bottomRight: 0))
                 case .bottomTrailing:
                     return .rectangle(.init(
                         topLeft: corners?.topLeft,
                         topRight: 0,
                         bottomLeft: 0,
-                        bottomRight: radiusInfo(shape: badge.parentShape)?.bottomRight))
+                        bottomRight: radiusInfo(shape: badge.stackShape)?.bottomRight))
                 }
             }
         case .nested, .overlaid:
@@ -263,7 +263,7 @@ fileprivate extension View {
         }
     }
 
-    // Helper to extract the RadiusInfo from a rectable shape
+    // Helper to extract the RadiusInfo from a rectanle shape
     private func radiusInfo(shape: ShapeModifier.Shape?) -> ShapeModifier.RadiusInfo? {
         switch shape {
         case .rectangle(let radius):
@@ -354,7 +354,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                 horizontalAlignment: .center,
                 color: .init(light: .hex("#000000")),
                 backgroundColor: .init(light: .hex("#FA8072")),
-                parentShape: .rectangle(.init(topLeft: 12.0, topRight: 12, bottomLeft: 12, bottomRight: 12))
+                stackShape: .rectangle(.init(topLeft: 12.0, topRight: 12, bottomLeft: 12, bottomRight: 12))
             ),
             // swiftlint:disable:next force_try
             textComponentViewModel: try! TextComponentViewModel(
