@@ -3290,7 +3290,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)eligiblePromotionalOffersForProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(NSArray<RCPromotionalOffer *> * _Nonnull))completionHandler;
 - (void)showManageSubscriptionsWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completion SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
 - (void)showManageSubscriptionsWithCompletionHandler:(void (^ _Nonnull)(NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0) SWIFT_AVAILABILITY(tvos,unavailable) SWIFT_AVAILABILITY(watchos,unavailable);
-/// Warning: This is currently experimental and subject to change.
 - (void)redeemWebPurchaseWithWebPurchaseRedemption:(RCWebPurchaseRedemption * _Nonnull)webPurchaseRedemption completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 @end
 
@@ -4045,7 +4044,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", 
 
 
 /// Class representing a web redemption deep link that can be redeemed by the SDK.
-/// Warning: This is currently experimental and subject to change.
 /// seealso:
 /// <code>Purchases/redeemWebPurchase(_:)</code>
 SWIFT_CLASS_NAMED("WebPurchaseRedemption")
