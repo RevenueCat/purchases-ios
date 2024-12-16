@@ -49,13 +49,6 @@ struct ShapeModifier: ViewModifier {
         let bottomLeft: CGFloat?
         let bottomRight: CGFloat?
 
-        init(topLeft: Double? = nil, topRight: Double? = nil, bottomLeft: Double? = nil, bottomRight: Double? = nil) {
-            self.topLeft = topLeft.flatMap { CGFloat($0) }
-            self.topRight = topRight.flatMap { CGFloat($0) }
-            self.bottomLeft = bottomLeft.flatMap { CGFloat($0) }
-            self.bottomRight = bottomRight.flatMap { CGFloat($0) }
-        }
-
     }
 
     var border: BorderInfo?

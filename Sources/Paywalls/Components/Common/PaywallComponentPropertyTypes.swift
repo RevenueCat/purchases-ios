@@ -392,7 +392,7 @@ public extension PaywallComponent {
 
     }
 
-    enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
+    enum TwoDimensionAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case center
         case leading
@@ -458,6 +458,31 @@ public extension PaywallComponent {
             self.x = x
             self.y = y
         }
+
+    }
+
+    enum BadgeStyle: String, Codable, Sendable, Hashable, Equatable {
+
+        case edgeToEdge = "edge_to_edge"
+        case overlaid = "overlaid"
+        case nested = "nested"
+
+    }
+
+    struct Badge: Codable, Sendable, Hashable, Equatable {
+
+        public let style: BadgeStyle
+        public let alignment: TwoDimensionAlignment
+        public let shape: Shape
+        public let padding: Padding
+        public let margin: Padding
+        public let textLid: String
+        public let fontName: String?
+        public let fontWeight: FontWeight
+        public let fontSize: FontSize
+        public let horizontalAlignment: HorizontalAlignment
+        public let color: ColorScheme
+        public let backgroundColor: ColorScheme
 
     }
 

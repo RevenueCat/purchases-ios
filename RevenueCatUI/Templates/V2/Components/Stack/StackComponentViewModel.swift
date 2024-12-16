@@ -24,17 +24,37 @@ class StackComponentViewModel {
     private let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
+    let badgeTextViewModel: TextComponentViewModel?
 
     let viewModels: [PaywallComponentViewModel]
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        localizationProvider: LocalizationProvider
     ) throws {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
+
+        if let badge = component.badge {
+            badgeTextViewModel = try TextComponentViewModel(
+                localizationProvider: localizationProvider,
+                component: PaywallComponent.TextComponent(
+                    text: badge.textLid,
+                    fontName: badge.fontName,
+                    fontWeight: badge.fontWeight,
+                    color: badge.color,
+                    padding: badge.padding,
+                    margin: .zero,
+                    fontSize: badge.fontSize,
+                    horizontalAlignment: badge.horizontalAlignment
+                )
+            )
+        } else {
+            badgeTextViewModel = nil
+        }
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
@@ -64,7 +84,8 @@ class StackComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             shape: partial?.shape ?? self.component.shape,
             border: partial?.border ?? self.component.border,
-            shadow: partial?.shadow ?? self.component.shadow
+            shadow: partial?.shadow ?? self.component.shadow,
+            badge: partial?.badge ?? self.component.badge
         )
 
         apply(style)
@@ -109,6 +130,7 @@ struct StackComponentStyle {
     let shape: ShapeModifier.Shape?
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
+    let badge: BadgeModifier.BadgeInfo?
 
     init(
         uiConfigProvider: UIConfigProvider,
@@ -121,7 +143,8 @@ struct StackComponentStyle {
         margin: PaywallComponent.Padding,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
-        shadow: PaywallComponent.Shadow?
+        shadow: PaywallComponent.Shadow?,
+        badge: PaywallComponent.Badge?
     ) {
         self.visible = visible
         self.dimension = dimension
@@ -133,6 +156,7 @@ struct StackComponentStyle {
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.badge = badge?.badge(parentShape: self.shape)
     }
 
     var vstackStrategy: StackStrategy {
@@ -168,7 +192,7 @@ struct StackComponentStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Shape {
 
-    var shape: ShapeModifier.Shape? {
+    var shape: ShapeModifier.Shape {
         switch self {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
@@ -208,6 +232,29 @@ private extension PaywallComponent.Shadow {
             radius: self.radius,
             x: self.x,
             y: self.y
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Badge {
+
+    func badge(parentShape: ShapeModifier.Shape?) -> BadgeModifier.BadgeInfo? {
+        BadgeModifier.BadgeInfo(
+            style: self.style,
+            alignment: self.alignment,
+            shape: self.shape.shape,
+            padding: self.padding,
+            margin: self.margin,
+            textLid: self.textLid,
+            fontName: self.fontName,
+            fontWeight: self.fontWeight,
+            fontSize: self.fontSize,
+            horizontalAlignment: self.horizontalAlignment,
+            color: self.color,
+            backgroundColor: self.backgroundColor,
+            parentShape: parentShape
         )
     }
 
