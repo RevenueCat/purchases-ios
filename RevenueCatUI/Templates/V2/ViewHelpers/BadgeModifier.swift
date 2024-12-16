@@ -53,15 +53,6 @@ struct BadgeModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func text(badge: BadgeModifier.BadgeInfo, textComponentViewModel: TextComponentViewModel) -> some View {
-        VStack {
-            TextComponentView(viewModel: textComponentViewModel)
-                .backgroundStyle(badge.backgroundColor.backgroundStyle)
-                .shape(border: nil, shape: effectiveShape(badge: badge))
-        }
-    }
-
-    @ViewBuilder
     func apply(badge: BadgeModifier.BadgeInfo, textComponentViewModel: TextComponentViewModel) -> some View {
         switch badge.style {
         case .edgeToEdge:
@@ -69,7 +60,11 @@ fileprivate extension View {
         case .overlaid:
             self.overlay(
                 VStack(alignment: .leading) {
-                    self.text(badge: badge, textComponentViewModel: textComponentViewModel)
+                    VStack {
+                        TextComponentView(viewModel: textComponentViewModel)
+                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                    }
                         .fixedSize()
                         .padding(effectiveMargin(badge: badge).edgeInsets)
                         .alignmentGuide(
@@ -81,7 +76,11 @@ fileprivate extension View {
         case .nested:
             self.overlay(
                 VStack(alignment: .leading) {
-                    self.text(badge: badge, textComponentViewModel: textComponentViewModel)
+                    VStack {
+                        TextComponentView(viewModel: textComponentViewModel)
+                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                    }
                         .fixedSize()
                         .padding(effectiveMargin(badge: badge).edgeInsets)
                 }
@@ -92,6 +91,7 @@ fileprivate extension View {
 
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     private func appleBadgeEdgeToEdge(
         badge: BadgeModifier.BadgeInfo,
         textComponentViewModel: TextComponentViewModel) -> some View {
@@ -99,7 +99,11 @@ fileprivate extension View {
         case .bottom:
             self.background(
                 VStack(alignment: .leading) {
-                    self.text(badge: badge, textComponentViewModel: textComponentViewModel)
+                    VStack {
+                        TextComponentView(viewModel: textComponentViewModel)
+                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                    }
                         .alignmentGuide(.bottom) { dim in dim[VerticalAlignment.top] }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
@@ -117,7 +121,11 @@ fileprivate extension View {
         case .top:
             self.background(
                 VStack(alignment: .leading) {
-                    self.text(badge: badge, textComponentViewModel: textComponentViewModel)
+                    VStack {
+                        TextComponentView(viewModel: textComponentViewModel)
+                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                    }
                         .alignmentGuide(.top) { dim in dim[VerticalAlignment.bottom] }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
@@ -135,7 +143,11 @@ fileprivate extension View {
         case .bottomLeading, .bottomTrailing, .topLeading, .topTrailing:
             self.overlay(
                 VStack(alignment: .leading) {
-                    self.text(badge: badge, textComponentViewModel: textComponentViewModel)
+                    VStack {
+                        TextComponentView(viewModel: textComponentViewModel)
+                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                    }
                         .fixedSize()
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
