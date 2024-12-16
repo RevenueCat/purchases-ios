@@ -134,7 +134,7 @@ public struct CustomerCenterConfigData {
                 case .refundErrorGeneric:
                     return "An error occurred while processing the refund request. Please try again."
                 case .refundGranted:
-                    return "Refund granted successfully!"
+                    return "Refund requested"
                 case .refundStatus:
                     return "Refund status"
                 case .subEarliestExpiration:
