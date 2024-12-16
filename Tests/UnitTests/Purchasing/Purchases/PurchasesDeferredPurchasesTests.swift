@@ -26,6 +26,7 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
     }
 
     private var product: MockSK1Product!
+    private let timeoutInterval = DispatchTimeInterval(TimeInterval(4))
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -42,7 +43,7 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
                                                                shouldAddStorePayment: payment,
                                                                for: self.product)
 
-        waitUntil { completed in
+        waitUntil(timeout: timeoutInterval) { completed in
             if self.purchasesDelegate.makeDeferredPurchase != nil {
                 completed()
             }
@@ -65,7 +66,7 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
                                                                shouldAddStorePayment: payment,
                                                                for: self.product)
 
-        waitUntil { completed in
+        waitUntil(timeout: timeoutInterval) { completed in
             if self.purchasesDelegate.makeDeferredPurchase != nil {
                 completed()
             }
