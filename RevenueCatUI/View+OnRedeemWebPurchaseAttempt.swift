@@ -31,8 +31,6 @@ extension View {
     /// ```
     /// - Note: If the SDK is not configured when the URL is received, the URL will be ignored
     /// - Note: If you need to control better when to perform the redemption, see our docs for examples.
-    ///
-    /// Warning: This is currently experimental and subject to change.
     public func onWebPurchaseRedemptionAttempt(
         perform completion: @escaping @Sendable (WebPurchaseRedemptionResult) -> Void
     ) -> some View {

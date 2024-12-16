@@ -14,7 +14,6 @@
 import Foundation
 
 /// Represents the result of a web purchase redemption
-/// Warning: This is currently experimental and subject to change.
 /// 
 /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
 public enum WebPurchaseRedemptionResult: Sendable {
