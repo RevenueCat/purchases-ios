@@ -19,7 +19,7 @@ import Foundation
 func RCTestAssert(
     _ condition: @autoclosure () -> Bool,
     _ message: @autoclosure () -> String,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line
 ) {
     #if DEBUG
@@ -32,7 +32,7 @@ func RCTestAssert(
 @inline(__always)
 func RCTestAssertNotMainThread(
     function: StaticString = #function,
-    file: StaticString = #file,
+    file: StaticString = #fileID,
     line: UInt = #line
 ) {
     #if DEBUG
