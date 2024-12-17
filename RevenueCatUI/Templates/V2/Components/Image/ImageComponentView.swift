@@ -31,7 +31,10 @@ struct ImageComponentView: View {
 
     @Environment(\.screenCondition)
     private var screenCondition
-
+    
+    @Environment(\.colorScheme)
+    private var colorScheme
+    
     let viewModel: ImageComponentViewModel
 
     var body: some View {
@@ -48,17 +51,38 @@ struct ImageComponentView: View {
                 darkUrl: style.darkUrl,
                 darkLowResUrl: style.darkLowResUrl
             ) { (image, size) in
-                renderImage(image, size, with: style)
+                self.renderImage(image, size, with: style)
             }
             .size(style.size)
             .clipped()
         }
     }
+    
+    private func aspectRatio(style: ImageComponentStyle) -> Double {
+        let (width, height) = self.imageSize(style: style)
+        return Double(width) / Double(height)
+    }
+    
+    private func imageSize(style: ImageComponentStyle) -> (width: Int, height: Int) {
+        switch self.colorScheme {
+        case .light:
+            return (style.widthLight, style.heightLight)
+        case .dark:
+            return (style.widthDark ?? style.widthLight, style.heightDark ?? style.heightLight)
+        @unknown default:
+            return (style.widthLight, style.heightLight)
+        }
+    }
 
     private func renderImage(_ image: Image, _ size: CGSize, with style: ImageComponentStyle) -> some View {
         image
-            .resizable()
-            .aspectRatio(contentMode: style.contentMode)
+            .fitToAspect(
+                self.aspectRatio(style: style),
+                contentMode: style.contentMode
+            )
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+            // TODO: Need to replace this gradient with the better one
             .overlay(
                 LinearGradient(
                     gradient: Gradient(colors: style.gradientColors),
@@ -66,6 +90,8 @@ struct ImageComponentView: View {
                     endPoint: .bottom
                 )
             )
+            // TODO: this needs more shapes and borders
+            // TODO: this might also need dropshadow
             .shape(border: nil,
                    shape: style.shape)
     }
@@ -92,6 +118,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
+                                width: 1,
+                                height: 1,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
@@ -118,6 +146,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
+                                width: 1,
+                                height: 1,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
@@ -144,6 +174,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
+                                width: 1,
+                                height: 1,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
@@ -173,6 +205,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
+                                width: 1,
+                                height: 1,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl

@@ -33,7 +33,7 @@ private struct FitToAspectRatio: ViewModifier {
 
     func body(content: Content) -> some View {
         Color.clear
-            .aspectRatio(self.aspectRatio, contentMode: .fit)
+            .aspectRatio(self.aspectRatio, contentMode: self.contentMode) // DONT COMMIT THIS YET PLEASE
             .overlay(
                 content.aspectRatio(nil, contentMode: self.contentMode)
             )
