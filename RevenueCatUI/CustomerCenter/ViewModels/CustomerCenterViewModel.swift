@@ -209,7 +209,7 @@ private extension CustomerCenterViewModel {
                                    entitlement: EntitlementInfo?) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
-                return PurchaseInformation(
+                return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
                     transaction: transaction
