@@ -663,6 +663,7 @@ final class PurchasesOrchestrator {
             return try await product.purchase(options: options)
         }
         #else
+        // Use purchase(options:) for macOS and watchOS
         return try await product.purchase(options: options)
         #endif
     }
