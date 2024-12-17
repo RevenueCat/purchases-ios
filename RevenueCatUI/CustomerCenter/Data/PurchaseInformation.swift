@@ -203,9 +203,6 @@ extension PurchaseInformation {
                 // to make sure that this is being built with an Xcode version >=15.0.
                 #if compiler(>=6.0)
                 guard let renewalPrice = renewalInfo.renewalPrice as? NSNumber else { return nil }
-                #else
-                return nil
-                #endif
 
                 guard let currencyCode = product.currencyCode else { return nil }
 
@@ -216,6 +213,9 @@ extension PurchaseInformation {
                 guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
 
                 return .paid(formattedPrice)
+                #else
+                return nil
+                #endif
             }
         } else {
             return nil
