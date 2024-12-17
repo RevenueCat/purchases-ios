@@ -195,7 +195,8 @@ public typealias ProductIdentifier = String
 
     fileprivate init(
         data: Contents,
-        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default
+        sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+        subscriptionRenewalInfos: [String: SubscriptionRenewalInfo] = [:]
     ) {
         let response = data.response
         let subscriber = response.subscriber
@@ -239,7 +240,8 @@ public typealias ProductIdentifier = String
                 periodType: subscriptionData.periodType,
                 refundedAt: subscriptionData.refundedAt,
                 storeTransactionId: subscriptionData.storeTransactionId,
-                requestDate: response.requestDate
+                requestDate: response.requestDate,
+                renewalInfo: subscriptionRenewalInfos[key]
             ))
         })
     }

@@ -73,6 +73,10 @@ import StoreKit
     /// Whether the subscription will renew at the next billing period.
     @objc public let willRenew: Bool
 
+    /// Information about the renewal of the subscription.
+    /// Currently only supports iOS subscriptions from this app when using StoreKit2.
+    @objc public let renewalInfo: SubscriptionRenewalInfo?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -86,7 +90,8 @@ import StoreKit
          periodType: PeriodType,
          refundedAt: Date?,
          storeTransactionId: String?,
-         requestDate: Date) {
+         requestDate: Date,
+         renewalInfo: SubscriptionRenewalInfo?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -105,7 +110,7 @@ import StoreKit
                                                                      store: store,
                                                                      unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                                      billingIssueDetectedAt: billingIssuesDetectedAt)
-
+        self.renewalInfo = renewalInfo
         super.init()
     }
 
