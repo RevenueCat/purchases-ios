@@ -197,7 +197,16 @@ extension PurchaseInformation {
             case .unverified:
                 return nil
             case .verified(let renewalInfo):
+
+                // renewalInfo.renewalPrice was introduced in iOS 18.0 and backdeployed through iOS 15.0
+                // However, Xcode versions <15.0 don't have the symbols, so we need to check the compiler version
+                // to make sure that this is being built with an Xcode version >=15.0.
+                #if compiler(>=6.0)
                 guard let renewalPrice = renewalInfo.renewalPrice as? NSNumber else { return nil }
+                #else
+                return nil
+                #endif
+
                 guard let currencyCode = product.currencyCode else { return nil }
 
                 let formatter = NumberFormatter()
@@ -225,15 +234,23 @@ extension PurchaseInformation {
         // macOS 13.0 check is required for the compiler despite the function being marked
         // as unavailable on macOS
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+
+            // renewalInfo.currency was introduced in iOS 18.0 and backdeployed through iOS 16.0
+            // However, Xcode versions <15.0 don't have the symbols, so we need to check the compiler version
+            // to make sure that this is being built with an Xcode version >=15.0.
+            #if compiler(>=6.0)
             guard let currency = renewalInfo.currency else { return nil }
             if currency.isISOCurrency {
                 return currency.identifier
             } else {
                 return nil
             }
+            #else
+            return nil
+            #endif
         } else {
             if #available(macOS 12.0, tvOS 15.0, *) {
-                #if os(visionOS)
+                #if os(visionOS) || compiler(<6.0)
                 return nil
                 #else
                 return renewalInfo.currencyCode
