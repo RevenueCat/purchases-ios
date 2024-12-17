@@ -12,6 +12,7 @@
 //  Created by Cesar de la Vega on 21/11/24.
 
 import Foundation
+import StoreKit
 
 /// Subscription purchases of the Customer
 @objc(RCSubscriptionInfo) public final class SubscriptionInfo: NSObject {
@@ -132,3 +133,75 @@ import Foundation
 }
 
 extension SubscriptionInfo: Sendable {}
+
+// MARK: - SubscriptionRenewalInfo
+
+/// A class that provides information about the renewal details of a subscription.
+///
+/// `SubscriptionRenewalInfo` contains details about the subscription's renewal status,
+/// including the renewal product, date, price, and currency. This is typically used to display
+/// information to users about their upcoming subscription renewals.
+///
+/// - Note: SubscriptionRenewalInfo currently only supports iOS subscriptions purchased
+/// in this app when using StoreKit2.
+@objc(RCSubscriptionRenewalInfo)
+public final class SubscriptionRenewalInfo: NSObject, Sendable {
+
+    /// Whether the subscription will renew automatically.
+    @objc public let willAutoRenew: Bool // RenewalInfo.willAutoRenew
+
+    /// The product ID of the product that will renew
+    @objc public let renewingProductIdentifier: String? // RenewalInfo.autoRenewPreference
+
+    /// The renewal date of the subscription.
+    @objc public let renewalDate: Date? // RenewalInfo.renewalDate
+
+    /// The renewal price of the subscription, in the currency used by the store.
+    @objc public let renewalPrice: NSDecimalNumber? // RenewalInfo.renewalPrice
+
+    /// The ISO 4217 currency code for the renewal price.
+    @objc public let currencyCode: String? // RenewalInfo.currency
+
+    /// A localized display price for the renewal price, including the currency symbol.
+    /// // RenewalInfo.renewalPrice + RenewalInfo.renewalCurrency with a number formatter
+    public func renewalDisplayPrice() -> String? {
+        guard let renewalPrice = self.renewalPrice else {
+            return nil
+        }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = self.currencyCode
+
+        // Return the formatted string
+        return formatter.string(from: renewalPrice)
+    }
+
+    internal init(
+        willAutoRenew: Bool,
+        renewingProductIdentifier: String?,
+        renewalDate: Date?,
+        renewalPrice: NSDecimalNumber?,
+        currencyCode: String?
+    ) {
+        self.willAutoRenew = willAutoRenew
+        self.renewingProductIdentifier = renewingProductIdentifier
+        self.renewalDate = renewalDate
+        self.renewalPrice = renewalPrice
+        self.currencyCode = currencyCode
+    }
+
+}
+
+@available(iOSApplicationExtension 15.0, *)
+extension StoreKit.Product.SubscriptionInfo.RenewalInfo {
+    func toSubscriptionRenewalInfo() -> SubscriptionRenewalInfo {
+        return SubscriptionRenewalInfo(
+            willAutoRenew: self.willAutoRenew,
+            renewingProductIdentifier: self.autoRenewPreference,
+            renewalDate: self.renewalDate,
+            renewalPrice: self.renewalPrice as NSDecimalNumber?,
+            currencyCode: self.currencyCode
+        )
+    }
+}
