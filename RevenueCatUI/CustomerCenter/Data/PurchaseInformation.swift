@@ -230,7 +230,6 @@ extension PurchaseInformation {
         fromRenewalInfo renewalInfo: Product.SubscriptionInfo.RenewalInfo,
         locale: Locale = Locale.current
     ) -> String? {
-        let currencyCode: String
         // macOS 13.0 check is required for the compiler despite the function being marked
         // as unavailable on macOS
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
