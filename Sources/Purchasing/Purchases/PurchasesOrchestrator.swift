@@ -655,6 +655,11 @@ final class PurchasesOrchestrator {
         return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
                                           options: options)
         #elseif os(iOS)
+        // We've gotten reports that some SK2 purchases on iOS 18.2+ are failing with an error
+        // from StoreKit saying that it can't find the scene to present the sheet over.
+        // Posts on the Apple developer forums suggest that calling `purchase(confirmIn:options:)`
+        // when possible can avoid the issue.
+        // https://forums.developer.apple.com/forums/thread/768410
         if let currentScene = try? await self.systemInfo.currentWindowScene.session.scene,
            #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, *),
            systemInfo.isOperatingSystemAtLeast(
