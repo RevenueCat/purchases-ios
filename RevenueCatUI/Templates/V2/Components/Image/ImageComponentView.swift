@@ -31,10 +31,10 @@ struct ImageComponentView: View {
 
     @Environment(\.screenCondition)
     private var screenCondition
-    
+
     @Environment(\.colorScheme)
     private var colorScheme
-    
+
     let viewModel: ImageComponentViewModel
 
     var body: some View {
@@ -57,12 +57,12 @@ struct ImageComponentView: View {
             .clipped()
         }
     }
-    
+
     private func aspectRatio(style: ImageComponentStyle) -> Double {
         let (width, height) = self.imageSize(style: style)
         return Double(width) / Double(height)
     }
-    
+
     private func imageSize(style: ImageComponentStyle) -> (width: Int, height: Int) {
         switch self.colorScheme {
         case .light:
@@ -82,7 +82,7 @@ struct ImageComponentView: View {
             )
             .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
-            // TODO: Need to replace this gradient with the better one
+            // WIP: Need to replace this gradient with the better one
             .overlay(
                 LinearGradient(
                     gradient: Gradient(colors: style.gradientColors),
@@ -90,8 +90,8 @@ struct ImageComponentView: View {
                     endPoint: .bottom
                 )
             )
-            // TODO: this needs more shapes and borders
-            // TODO: this might also need dropshadow
+            // WIP: this needs more shapes and borders
+            // WIP: this might also need dropshadow
             .shape(border: nil,
                    shape: style.shape)
     }
