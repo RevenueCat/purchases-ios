@@ -656,7 +656,14 @@ final class PurchasesOrchestrator {
                                           options: options)
         #elseif os(iOS)
         if let currentScene = try? await self.systemInfo.currentWindowScene.session.scene,
-           #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, *) {
+           #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, *),
+           systemInfo.isOperatingSystemAtLeast(
+            OperatingSystemVersion(
+                majorVersion: 18,
+                minorVersion: 2,
+                patchVersion: 0
+            )
+           ) {
             return try await product.purchase(confirmIn: currentScene,
                                               options: options)
         } else {
