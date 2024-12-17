@@ -215,7 +215,9 @@ private extension CustomerCenterViewModel {
                     transaction: transaction
                 )
             } else {
-                Logger.warning(Strings.could_not_find_product_loading_without_product_information(transaction.productIdentifier))
+                Logger.warning(
+                    Strings.could_not_find_product_loading_without_product_information(transaction.productIdentifier)
+                )
 
                 return PurchaseInformation(
                     entitlement: entitlement,

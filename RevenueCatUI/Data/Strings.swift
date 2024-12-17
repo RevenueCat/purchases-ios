@@ -214,7 +214,8 @@ extension Strings: CustomStringConvertible {
             return "Could not determine the type of custom URL, the URL will be opened externally."
 
         case .active_product_is_not_apple_loading_without_product_information(let store):
-            return "Active product for user is not an Apple subscription (\(store)). Loading without product information."
+            return "Active product for user is not an Apple subscription (\(store))." +
+            " Loading without product information."
 
         case .could_not_find_product_loading_without_product_information(let product):
             return "Could not find product with id \(product). Loading without product information."
