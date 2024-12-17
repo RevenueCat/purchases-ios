@@ -19,7 +19,7 @@ enum Logger {
 
     static func verbose(
         _ text: CustomStringConvertible,
-        file: String = #file,
+        file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
@@ -35,7 +35,7 @@ enum Logger {
 
     static func debug(
         _ text: CustomStringConvertible,
-        file: String = #file,
+        file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
@@ -50,7 +50,7 @@ enum Logger {
 
     static func warning(
         _ text: CustomStringConvertible,
-        file: String = #file,
+        file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
@@ -65,7 +65,7 @@ enum Logger {
 
     static func error(
         _ text: CustomStringConvertible,
-        file: String = #file,
+        file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
@@ -81,7 +81,7 @@ enum Logger {
     private static func log(
         _ text: CustomStringConvertible,
         _ level: LogLevel,
-        file: String = #file,
+        file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
