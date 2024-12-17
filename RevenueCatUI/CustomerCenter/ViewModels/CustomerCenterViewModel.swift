@@ -208,21 +208,29 @@ private extension CustomerCenterViewModel {
     func createPurchaseInformation(for transaction: Transaction,
                                    entitlement: EntitlementInfo?) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
-            guard let product = await purchasesProvider.products([transaction.productIdentifier]).first else {
-                Logger.warning(Strings.could_not_find_subscription_information)
-                throw CustomerCenterError.couldNotFindSubscriptionInformation
+            if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
+                return PurchaseInformation(
+                    entitlement: entitlement,
+                    subscribedProduct: product,
+                    transaction: transaction
+                )
+            } else {
+                Logger.warning(
+                    Strings.could_not_find_product_loading_without_product_information(transaction.productIdentifier)
+                )
+
+                return PurchaseInformation(
+                    entitlement: entitlement,
+                    transaction: transaction
+                )
             }
-            return PurchaseInformation(
-                entitlement: entitlement,
-                subscribedProduct: product,
-                transaction: transaction
-            )
-        } else {
-            return PurchaseInformation(
-                entitlement: entitlement,
-                transaction: transaction
-            )
         }
+        Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
+
+        return PurchaseInformation(
+            entitlement: entitlement,
+            transaction: transaction
+        )
     }
 
 }
