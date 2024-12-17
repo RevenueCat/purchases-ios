@@ -654,7 +654,7 @@ final class PurchasesOrchestrator {
         #if VISION_OS
         return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
                                           options: options)
-        #else
+        #elseif os(iOS) || os(tvOS)
         if let currentScene = try? await self.systemInfo.currentWindowScene.session.scene,
            #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, *) {
             return try await product.purchase(confirmIn: currentScene,
@@ -662,6 +662,8 @@ final class PurchasesOrchestrator {
         } else {
             return try await product.purchase(options: options)
         }
+        #else
+        return try await product.purchase(options: options)
         #endif
     }
 
