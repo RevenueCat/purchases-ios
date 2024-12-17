@@ -155,6 +155,7 @@ extension PurchaseInformation {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
     static func purchaseInformationUsingRenewalInfo(
         entitlement: EntitlementInfo? = nil,
         subscribedProduct: StoreProduct,
