@@ -78,7 +78,8 @@ struct ImageComponentView: View {
         image
             .fitToAspect(
                 self.aspectRatio(style: style),
-                contentMode: style.contentMode
+                contentMode: style.contentMode,
+                containerContentMode: style.contentMode
             )
             .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
