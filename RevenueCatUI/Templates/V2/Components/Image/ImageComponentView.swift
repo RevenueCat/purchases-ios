@@ -119,8 +119,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
-                                width: 1,
-                                height: 1,
+                                width: 750,
+                                height: 530,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
@@ -147,8 +147,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
-                                width: 1,
-                                height: 1,
+                                width: 750,
+                                height: 530,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
@@ -175,8 +175,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
-                                width: 1,
-                                height: 1,
+                                width: 750,
+                                height: 530,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
@@ -206,8 +206,8 @@ struct ImageComponentView_Previews: PreviewProvider {
                     component: .init(
                         source: .init(
                             light: .init(
-                                width: 1,
-                                height: 1,
+                                width: 750,
+                                height: 530,
                                 original: catUrl,
                                 heic: catUrl,
                                 heicLowRes: catUrl
