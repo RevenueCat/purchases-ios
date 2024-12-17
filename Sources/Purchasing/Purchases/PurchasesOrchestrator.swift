@@ -654,12 +654,15 @@ final class PurchasesOrchestrator {
         #if VISION_OS
         return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
                                           options: options)
-        #elseif os(iOS)
+        #elseif os(iOS) && compiler(>=5.9)
         // We've gotten reports that some SK2 purchases on iOS 18.2+ are failing with an error
         // from StoreKit saying that it can't find the scene to present the sheet over.
         // Posts on the Apple developer forums suggest that calling `purchase(confirmIn:options:)`
         // when possible can avoid the issue.
         // https://forums.developer.apple.com/forums/thread/768410
+        //
+        // We check for Swift compilier 5.9+ since the `purchase(confirmIn:options:)` method was
+        // introduced with iOS 17.0, which first shipped with Xcode 15/Swift compiler 5.9.
         if let currentScene = try? await self.systemInfo.currentWindowScene.session.scene,
            #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, *),
            systemInfo.isOperatingSystemAtLeast(
