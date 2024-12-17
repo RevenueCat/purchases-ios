@@ -635,6 +635,56 @@ class CustomerCenterViewModelTests: TestCase {
         }
     }
 
+    func testShouldShowActiveSubscription_withoutProductInformation() async throws {
+        // If product can't load because maybe it's from another app in same project
+
+        let productId = "com.revenuecat.product"
+        let purchaseDate = "2022-04-12T00:03:28Z"
+        let expirationDate = "2062-04-12T00:03:35Z"
+
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [
+                CustomerInfoFixtures.Subscription(
+                    id: productId,
+                    store: "app_store",
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ],
+            entitlements: [
+                CustomerInfoFixtures.Entitlement(
+                    entitlementId: "premium",
+                    productId: productId,
+                    purchaseDate: purchaseDate,
+                    expirationDate: expirationDate
+                )
+            ]
+        )
+
+        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+                                                purchasesProvider: MockCustomerCenterPurchases(
+                                                    customerInfo: customerInfo,
+                                                    products: []
+                                                ))
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+
+        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        expect(purchaseInformation.title).to(beNil())
+        expect(purchaseInformation.durationTitle).to(beNil())
+        expect(purchaseInformation.explanation) == .earliestRenewal
+        expect(purchaseInformation.store) == .appStore
+        expect(purchaseInformation.price) == .unknown
+
+        let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDate))
+
+        expect(purchaseInformation.productIdentifier) == productId
+    }
+
     func testLoadScreenNoActiveSubscription() async throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
