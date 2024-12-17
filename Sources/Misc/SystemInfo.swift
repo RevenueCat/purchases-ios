@@ -234,7 +234,7 @@ extension SystemInfo {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS 13.0, *)
+    @available(tvOS, unavailable)
     @MainActor
     var currentWindowScene: UIWindowScene {
         get throws {
