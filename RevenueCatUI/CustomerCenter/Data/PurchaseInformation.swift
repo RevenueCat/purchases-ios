@@ -173,10 +173,11 @@ extension PurchaseInformation {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
     private static func extractPriceDetailsFromRenwalInfo(
         forProduct product: StoreProduct
     ) async -> PriceDetails? {
-        if #available(macOS 12.0, tvOS 15.0, *) {
+        if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, watchOSApplicationExtension 8.0, *) {
             guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
                 // If StoreKit.Product.subscription is nil, then the product isn't a subscription
                 // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
@@ -226,13 +227,14 @@ extension PurchaseInformation {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
     private static func currencyCode(
         fromRenewalInfo renewalInfo: Product.SubscriptionInfo.RenewalInfo,
         locale: Locale = Locale.current
     ) -> String? {
         // macOS 13.0 check is required for the compiler despite the function being marked
         // as unavailable on macOS
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
 
             // renewalInfo.currency was introduced in iOS 18.0 and backdeployed through iOS 16.0
             // However, Xcode versions <15.0 don't have the symbols, so we need to check the compiler version
@@ -248,7 +250,7 @@ extension PurchaseInformation {
             return nil
             #endif
         } else {
-            if #available(macOS 12.0, tvOS 15.0, *) {
+            if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
                 #if os(visionOS) || compiler(<6.0)
                 return nil
                 #else
