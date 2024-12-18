@@ -22,7 +22,7 @@ class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
     func renewalInfo(
         for product: RevenueCat.StoreProduct
     ) async -> Product.SubscriptionInfo.RenewalInfo? {
-        if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, watchOSApplicationExtension 8.0, *) {
+        if #available(watchOSApplicationExtension 8.0, *) {
             guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
                 // If StoreKit.Product.subscription is nil, then the product isn't a subscription
                 // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.

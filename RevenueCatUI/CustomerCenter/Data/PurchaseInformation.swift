@@ -170,7 +170,7 @@ extension PurchaseInformation {
         forProduct product: StoreProduct,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) async -> PriceDetails? {
-        if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, watchOSApplicationExtension 8.0, *) {
+        if #available(watchOSApplicationExtension 8.0, *) {
             guard let renewalInfo = await customerCenterStoreKitUtilities.renewalInfo(for: product) else {
                 return nil
             }
