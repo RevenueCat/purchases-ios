@@ -227,7 +227,7 @@ class SystemInfo {
 
 }
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || os(tvOS) || VISION_OS
 extension SystemInfo {
 
     @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
@@ -244,7 +244,7 @@ extension SystemInfo {
         }
     }
 
-    @available(iOS 15.0, *)
+    @available(iOS 15.0, tvOS 15.0, *)
     @MainActor
     var currentViewController: UIViewController {
         get throws {
