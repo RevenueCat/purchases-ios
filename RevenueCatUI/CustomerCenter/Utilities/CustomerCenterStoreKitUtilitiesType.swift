@@ -16,12 +16,8 @@ import StoreKit
 
 import RevenueCat
 
+@available(iOS 15.0, *)
 protocol CustomerCenterStoreKitUtilitiesType {
 
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(watchOSApplicationExtension, unavailable)
     func renewalInfo(for product: StoreProduct) async -> StoreKit.Product.SubscriptionInfo.RenewalInfo?
 }
