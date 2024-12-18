@@ -22,31 +22,27 @@ class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
     func renewalInfo(
         for product: RevenueCat.StoreProduct
     ) async -> Product.SubscriptionInfo.RenewalInfo? {
-        if #available(watchOSApplicationExtension 8.0, *) {
-            guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
-                // If StoreKit.Product.subscription is nil, then the product isn't a subscription
-                // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
-                return nil
-            }
-
-            guard let purchaseSubscriptionStatus = statuses.first(where: {
-                do {
-                    return try $0.transaction.payloadValue.ownershipType == .purchased
-                } catch {
-                    return false
-                }
-            }) else {
-                return nil
-            }
-
-            switch purchaseSubscriptionStatus.renewalInfo {
-            case .unverified:
-                return nil
-            case .verified(let renewalInfo):
-                return renewalInfo
-            }
-        } else {
+        guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
+            // If StoreKit.Product.subscription is nil, then the product isn't a subscription
+            // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
             return nil
+        }
+
+        guard let purchaseSubscriptionStatus = statuses.first(where: {
+            do {
+                return try $0.transaction.payloadValue.ownershipType == .purchased
+            } catch {
+                return false
+            }
+        }) else {
+            return nil
+        }
+
+        switch purchaseSubscriptionStatus.renewalInfo {
+        case .unverified:
+            return nil
+        case .verified(let renewalInfo):
+            return renewalInfo
         }
     }
 }

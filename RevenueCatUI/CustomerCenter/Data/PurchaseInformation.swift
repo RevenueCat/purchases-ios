@@ -170,28 +170,24 @@ extension PurchaseInformation {
         forProduct product: StoreProduct,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) async -> PriceDetails? {
-        if #available(watchOSApplicationExtension 8.0, *) {
-            guard let renewalInfo = await customerCenterStoreKitUtilities.renewalInfo(for: product) else {
-                return nil
-            }
-
-            #if compiler(>=6.0)
-            guard let renewalPrice = renewalInfo.renewalPrice as? NSNumber else { return nil }
-            guard let currencyCode = product.currencyCode else { return nil }
-
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.currencyCode = currencyCode
-
-            guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
-
-            return .paid(formattedPrice)
-            #else
-            return nil
-            #endif
-        } else {
+        guard let renewalInfo = await customerCenterStoreKitUtilities.renewalInfo(for: product) else {
             return nil
         }
+
+#if compiler(>=6.0)
+        guard let renewalPrice = renewalInfo.renewalPrice as? NSNumber else { return nil }
+        guard let currencyCode = product.currencyCode else { return nil }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+
+        guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
+
+        return .paid(formattedPrice)
+#else
+        return nil
+#endif
     }
 
     @available(iOS 15.0, *)
