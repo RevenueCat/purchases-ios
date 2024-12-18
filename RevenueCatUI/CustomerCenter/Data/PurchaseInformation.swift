@@ -138,7 +138,7 @@ struct PurchaseInformation {
 
 extension PurchaseInformation {
 
-    /// Provides detailed information about a user's purchase, including entitlement and renewal price.
+    /// Provides detailed information about a user's purchase, including  renewal price.
     ///
     /// This function fetches the renewal price details for the given product asynchronously from
     /// StoreKit 2 and constructs a `PurchaseInformation` object with the provided
@@ -176,49 +176,28 @@ extension PurchaseInformation {
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     private static func extractPriceDetailsFromRenwalInfo(
-        forProduct product: StoreProduct
+        forProduct product: StoreProduct,
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) async -> PriceDetails? {
         if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, watchOSApplicationExtension 8.0, *) {
-            guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
-                // If StoreKit.Product.subscription is nil, then the product isn't a subscription
-                // If statuses is empty, the subscriber was never subscribed to a product in the subscription group.
+            guard let renewalInfo = await customerCenterStoreKitUtilities.renewalInfo(for: product) else {
                 return nil
             }
 
-            guard let purchaseSubscriptionStatus = statuses.first(where: {
-                do {
-                    return try $0.transaction.payloadValue.ownershipType == .purchased
-                } catch {
-                    return false
-                }
-            }) else {
-                return nil
-            }
+            #if compiler(>=6.0)
+            guard let renewalPrice = renewalInfo.renewalPrice as? NSNumber else { return nil }
+            guard let currencyCode = product.currencyCode else { return nil }
 
-            switch purchaseSubscriptionStatus.renewalInfo {
-            case .unverified:
-                return nil
-            case .verified(let renewalInfo):
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = currencyCode
 
-                // renewalInfo.renewalPrice was introduced in iOS 18.0 and backdeployed through iOS 15.0
-                // However, Xcode versions <15.0 don't have the symbols, so we need to check the compiler version
-                // to make sure that this is being built with an Xcode version >=15.0.
-                #if compiler(>=6.0)
-                guard let renewalPrice = renewalInfo.renewalPrice as? NSNumber else { return nil }
+            guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
 
-                guard let currencyCode = product.currencyCode else { return nil }
-
-                let formatter = NumberFormatter()
-                formatter.numberStyle = .currency
-                formatter.currencyCode = currencyCode
-
-                guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
-
-                return .paid(formattedPrice)
-                #else
-                return nil
-                #endif
-            }
+            return .paid(formattedPrice)
+            #else
+            return nil
+            #endif
         } else {
             return nil
         }
