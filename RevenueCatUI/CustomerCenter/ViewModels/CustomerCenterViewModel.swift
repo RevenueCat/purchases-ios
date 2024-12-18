@@ -34,6 +34,7 @@ import RevenueCat
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
     private(set) var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
@@ -79,12 +80,14 @@ import RevenueCat
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         },
-        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
         self.customerCenterActionHandler = customerCenterActionHandler
         self.purchasesProvider = purchasesProvider
+        self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
 
     #if DEBUG
@@ -212,7 +215,8 @@ private extension CustomerCenterViewModel {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
-                    transaction: transaction
+                    transaction: transaction,
+                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
                 )
             } else {
                 Logger.warning(

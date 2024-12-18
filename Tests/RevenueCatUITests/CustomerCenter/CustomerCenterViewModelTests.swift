@@ -837,6 +837,44 @@ class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.shouldShowAppUpdateWarnings).to(beFalse())
     }
 
+    func testPurchaseInformationIsStillLoadedIfRenewalInfoCantBeFetched() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo).to(beNil())
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.purchaseInformation).toNot(beNil())
+        expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
+    }
+
+    func testPurchaseInformationUsesInfoFromRenewalInfoWhenAvailable() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = 5
+
+        let viewModel = CustomerCenterViewModel(
+            customerCenterActionHandler: nil,
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo).to(equal(5))
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.purchaseInformation?.price).to(equal(.paid("$5.00")))
+        expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

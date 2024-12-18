@@ -19,7 +19,15 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
-    func renewalInfo(
+    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> Decimal? {
+        guard let renewalInfo = await renewalInfo(for: product) else {
+            return nil
+        }
+
+        return renewalInfo.renewalPrice
+    }
+
+    private func renewalInfo(
         for product: RevenueCat.StoreProduct
     ) async -> Product.SubscriptionInfo.RenewalInfo? {
         guard let statuses = try? await product.sk2Product?.subscription?.status, !statuses.isEmpty else {
