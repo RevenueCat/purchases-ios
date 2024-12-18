@@ -1,6 +1,7 @@
-## RevenueCat SDK
-### 🐞 Bugfixes
-* Revert "Always call readyForPromotedProduct on the main actor" (#4599) via Will Taylor (@fire-at-will)
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix loading Customer Center when entitlement is granted by another Apple app (#4603) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* [Paywalls] Fix issues with rounded corners and borders (#4594) via Mark Villacampa (@MarkVillacampa)
+* Use #fileID instead of #file to avoid including the full path in the compiled binary (#4605) via Mark Villacampa (@MarkVillacampa)
