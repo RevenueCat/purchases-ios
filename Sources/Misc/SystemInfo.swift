@@ -244,6 +244,17 @@ extension SystemInfo {
         }
     }
 
+    @available(iOS 15.0, *)
+    @MainActor
+    var currentViewController: UIViewController {
+        get throws {
+            let viewController = self.sharedUIApplication?.currentViewController
+
+            return try viewController
+                .orThrow(ErrorUtils.storeProblemError(withMessage: "Failed to get UIViewController"))
+        }
+    }
+
 }
 #endif
 

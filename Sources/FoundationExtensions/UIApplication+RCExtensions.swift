@@ -38,6 +38,27 @@ extension UIApplication {
         return scenes.first as? UIWindowScene
     }
 
+    @available(iOS 15.0, *)
+    var currentViewController: UIViewController? {
+        guard let rootViewController = currentWindowScene?.keyWindow?.rootViewController else {
+            return nil
+        }
+        return getTopViewController(from: rootViewController)
+    }
+
+    private func getTopViewController(from viewController: UIViewController) -> UIViewController? {
+        if let presentedViewController = viewController.presentedViewController {
+            return getTopViewController(from: presentedViewController)
+        } else if let navigationController = viewController as? UINavigationController {
+            return navigationController.visibleViewController
+        } else if let tabBarController = viewController as? UITabBarController {
+            if let selected = tabBarController.selectedViewController {
+                return getTopViewController(from: selected)
+            }
+        }
+        return viewController
+    }
+
 }
 
 #endif
