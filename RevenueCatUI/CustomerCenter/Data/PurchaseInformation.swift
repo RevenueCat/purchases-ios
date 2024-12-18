@@ -150,12 +150,7 @@ extension PurchaseInformation {
     ///   - transaction: The transaction information for the purchase.
     /// - Returns: A `PurchaseInformation` object containing the purchase details, including the renewal price.
     ///
-    /// - Availability: iOS 15.0+
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(watchOSApplicationExtension, unavailable)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     static func purchaseInformationUsingRenewalInfo(
         entitlement: EntitlementInfo? = nil,
         subscribedProduct: StoreProduct,
@@ -170,11 +165,7 @@ extension PurchaseInformation {
         )
     }
 
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(watchOSApplicationExtension, unavailable)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private static func extractPriceDetailsFromRenwalInfo(
         forProduct product: StoreProduct,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
