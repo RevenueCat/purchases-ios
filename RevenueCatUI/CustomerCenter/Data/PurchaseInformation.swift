@@ -138,7 +138,7 @@ struct PurchaseInformation {
 
 extension PurchaseInformation {
 
-    /// Provides detailed information about a user's purchase, including  renewal price.
+    /// Provides detailed information about a user's purchase, including renewal price.
     ///
     /// This function fetches the renewal price details for the given product asynchronously from
     /// StoreKit 2 and constructs a `PurchaseInformation` object with the provided
