@@ -50,10 +50,9 @@ extension UIApplication {
             return getTopViewController(from: presentedViewController)
         } else if let navigationController = viewController as? UINavigationController {
             return navigationController.visibleViewController
-        } else if let tabBarController = viewController as? UITabBarController {
-            if let selected = tabBarController.selectedViewController {
-                return getTopViewController(from: selected)
-            }
+        } else if let tabBarController = viewController as? UITabBarController,
+                  let selected = tabBarController.selectedViewController {
+            return getTopViewController(from: selected)
         }
         return viewController
     }
