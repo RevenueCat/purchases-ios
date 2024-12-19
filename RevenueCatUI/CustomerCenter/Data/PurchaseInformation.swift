@@ -15,6 +15,7 @@
 
 import Foundation
 import RevenueCat
+import StoreKit
 
 // swiftlint:disable nesting
 struct PurchaseInformation {
@@ -47,6 +48,7 @@ struct PurchaseInformation {
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
+         renewalPrice: PriceDetails? = nil,
          dateFormatter: DateFormatter = DateFormatter()) {
         dateFormatter.dateStyle = .medium
 
@@ -60,7 +62,11 @@ struct PurchaseInformation {
             self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
             self.productIdentifier = entitlement.productIdentifier
             self.store = entitlement.store
-            self.price = entitlement.priceBestEffort(product: subscribedProduct)
+            if let renewalPrice {
+                self.price = renewalPrice
+            } else {
+                self.price = entitlement.priceBestEffort(product: subscribedProduct)
+            }
         } else {
             switch transaction.type {
             case .subscription(let isActive, let willRenew, let expiresDate):
@@ -81,8 +87,15 @@ struct PurchaseInformation {
 
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
-            self.price = transaction.store == .promotional ? .free
-                : (subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown)
+            if transaction.store == .promotional {
+                self.price = .free
+            } else {
+                if let renewalPrice {
+                    self.price = renewalPrice
+                } else {
+                    self.price = subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown
+                }
+            }
         }
     }
 
@@ -122,6 +135,60 @@ struct PurchaseInformation {
 
 }
 // swiftlint:enable nesting
+
+extension PurchaseInformation {
+
+    /// Provides detailed information about a user's purchase, including renewal price.
+    ///
+    /// This function fetches the renewal price details for the given product asynchronously from
+    /// StoreKit 2 and constructs a `PurchaseInformation` object with the provided
+    /// transaction, entitlement, and subscribed product details.
+    ///
+    /// - Parameters:
+    ///   - entitlement: Optional entitlement information associated with the purchase.
+    ///   - subscribedProduct: The product the user has subscribed to, represented as a `StoreProduct`.
+    ///   - transaction: The transaction information for the purchase.
+    /// - Returns: A `PurchaseInformation` object containing the purchase details, including the renewal price.
+    ///
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    static func purchaseInformationUsingRenewalInfo(
+        entitlement: EntitlementInfo? = nil,
+        subscribedProduct: StoreProduct,
+        transaction: Transaction,
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+    ) async -> PurchaseInformation {
+        let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
+            forProduct: subscribedProduct,
+            customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+        )
+        return PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: subscribedProduct,
+            transaction: transaction,
+            renewalPrice: renewalPriceDetails
+        )
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    private static func extractPriceDetailsFromRenewalInfo(
+        forProduct product: StoreProduct,
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+    ) async -> PriceDetails? {
+        guard let renewalPriceDetails = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
+            for: product
+        ) else {
+            return nil
+        }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = renewalPriceDetails.currencyCode
+
+        guard let formattedPrice = formatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
+
+        return .paid(formattedPrice)
+    }
+}
 
 fileprivate extension EntitlementInfo {
 
