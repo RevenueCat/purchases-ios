@@ -157,7 +157,7 @@ extension PurchaseInformation {
         transaction: Transaction,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
     ) async -> PurchaseInformation {
-        let renewalPriceDetails = await Self.extractPriceDetailsFromRenwalInfo(
+        let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
             customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
         )
