@@ -32,6 +32,8 @@ private enum Template5Preview {
     static let catImage = PaywallComponent.ImageComponent(
         source: .init(
             light: .init(
+                width: 750,
+                height: 530,
                 original: catUrl,
                 heic: catUrl,
                 heicLowRes: catUrl

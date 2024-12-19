@@ -34,7 +34,8 @@ struct RootView: View {
             StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: onDismiss)
         }.applyIfLet(viewModel.stickyFooterViewModel) { stackView, stickyFooterViewModel in
             stackView
-                .safeAreaInset(edge: .bottom) {
+                // Using overlay because safeAreaInsert with fixedSize
+                .overlay(
                     StackComponentView(
                         viewModel: stickyFooterViewModel.stackViewModel,
                         onDismiss: onDismiss,
@@ -45,7 +46,10 @@ struct RootView: View {
                             trailing: 0
                         )
                     )
-                }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .edgesIgnoringSafeArea(.bottom),
+                    alignment: .bottom
+                )
                 // First we ensure our footer draws in the bottom safe area. Then we add additional padding, so its
                 // background shows in that same bottom safe area.
                 .ignoresSafeArea(edges: .bottom)

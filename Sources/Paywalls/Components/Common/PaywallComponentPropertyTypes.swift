@@ -32,12 +32,16 @@ public extension PaywallComponent {
 
     struct ImageUrls: Codable, Sendable, Hashable, Equatable {
 
-        public init(original: URL, heic: URL, heicLowRes: URL) {
+        public init(width: Int, height: Int, original: URL, heic: URL, heicLowRes: URL) {
+            self.width = width
+            self.height = height
             self.original = original
             self.heic = heic
             self.heicLowRes = heicLowRes
         }
 
+        public let width: Int
+        public let height: Int
         public let original: URL
         public let heic: URL
         public let heicLowRes: URL

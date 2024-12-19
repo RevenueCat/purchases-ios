@@ -49,7 +49,7 @@ struct TextComponentView: View {
         ) { style in
             Group {
                 if style.visible {
-                    Text(style.text)
+                    Text(.init(style.text))
                         .font(style.fontSize)
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)

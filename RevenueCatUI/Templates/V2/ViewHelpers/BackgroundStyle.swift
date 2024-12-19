@@ -170,11 +170,15 @@ struct BackgrounDStyle_Previews: PreviewProvider {
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
+                    width: 750,
+                    height: 530,
                     original: lightUrl,
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 ),
                 dark: .init(
+                    width: 1024,
+                    height: 853,
                     original: darkUrl,
                     heic: darkUrl,
                     heicLowRes: darkUrl
@@ -187,11 +191,15 @@ struct BackgrounDStyle_Previews: PreviewProvider {
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
+                    width: 750,
+                    height: 530,
                     original: lightUrl,
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 ),
                 dark: .init(
+                    width: 1024,
+                    height: 853,
                     original: darkUrl,
                     heic: darkUrl,
                     heicLowRes: darkUrl
