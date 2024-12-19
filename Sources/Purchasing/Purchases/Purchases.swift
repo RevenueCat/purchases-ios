@@ -33,11 +33,18 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
+#if swift(>=5.5) && canImport(_Concurrency)
 public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?,
                                                                 CustomerInfo?,
                                                                 PublicError?,
                                                                 Bool) -> Void
-
+#else
+// OS versions that don't support Swift Concurrency can't have references to Swift Concurrency types like @MainActor
+public typealias PurchaseCompletedBlock = (StoreTransaction?,
+                                           CustomerInfo?,
+                                           PublicError?,
+                                           Bool) -> Void
+#endif
 /**
  Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``
  */
