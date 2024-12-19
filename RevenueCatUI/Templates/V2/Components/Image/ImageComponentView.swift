@@ -82,6 +82,7 @@ struct ImageComponentView: View {
                 containerContentMode: style.contentMode
             )
             .frame(maxWidth: .infinity)
+            // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             // WIP: Need to replace this gradient with the better one
             .overlay(
