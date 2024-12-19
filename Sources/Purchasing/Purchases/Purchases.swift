@@ -1597,7 +1597,16 @@ extension Purchases: PurchasesOrchestratorDelegate {
      */
     func readyForPromotedProduct(_ product: StoreProduct,
                                  purchase startPurchase: @escaping StartPurchaseBlock) {
-        self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
+
+        if self.systemInfo.storeKitVersion == .storeKit1 {
+            OperationDispatcher.default.dispatchOnMainThread {
+                self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
+            }
+        } else {
+            OperationDispatcher.default.dispatchOnMainActor {
+                self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
+            }
+        }
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
