@@ -170,7 +170,7 @@ extension PurchaseInformation {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-    private static func extractPriceDetailsFromRenwalInfo(
+    private static func extractPriceDetailsFromRenewalInfo(
         forProduct product: StoreProduct,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
     ) async -> PriceDetails? {
