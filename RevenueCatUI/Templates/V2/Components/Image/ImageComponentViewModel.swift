@@ -118,6 +118,10 @@ extension LocalizedImagePartial {
 struct ImageComponentStyle {
 
     let visible: Bool
+    let widthLight: Int
+    let heightLight: Int
+    let widthDark: Int?
+    let heightDark: Int?
     let url: URL
     let lowResUrl: URL?
     let darkUrl: URL?
@@ -136,6 +140,10 @@ struct ImageComponentStyle {
         gradientColors: [PaywallComponent.ColorHex]? = nil
     ) {
         self.visible = visible
+        self.widthLight = source.light.width
+        self.heightLight = source.light.height
+        self.widthDark = source.dark?.width
+        self.heightDark = source.dark?.height
         self.url = source.light.heic
         self.lowResUrl = source.light.heicLowRes
         self.darkUrl = source.dark?.heic

@@ -17,10 +17,14 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension Image {
 
-    func fitToAspect(_ aspectRatio: Double, contentMode: SwiftUI.ContentMode) -> some View {
+    func fitToAspect(_ aspectRatio: Double,
+                     contentMode: SwiftUI.ContentMode,
+                     containerContentMode: SwiftUI.ContentMode? = nil) -> some View {
         self.resizable()
             .scaledToFill()
-            .modifier(FitToAspectRatio(aspectRatio: aspectRatio, contentMode: contentMode))
+            .modifier(FitToAspectRatio(aspectRatio: aspectRatio,
+                                       contentMode: contentMode,
+                                       containerContentMode: containerContentMode))
     }
 
 }
@@ -30,10 +34,15 @@ private struct FitToAspectRatio: ViewModifier {
 
     let aspectRatio: Double
     let contentMode: SwiftUI.ContentMode
+    let containerContentMode: SwiftUI.ContentMode?
+
+    private let paywallsV1ContainerContentMode: SwiftUI.ContentMode = .fit
 
     func body(content: Content) -> some View {
         Color.clear
-            .aspectRatio(self.aspectRatio, contentMode: .fit)
+            .aspectRatio(
+                self.aspectRatio,
+                contentMode: self.containerContentMode ?? self.paywallsV1ContainerContentMode)
             .overlay(
                 content.aspectRatio(nil, contentMode: self.contentMode)
             )
