@@ -180,7 +180,6 @@ extension PurchaseInformation {
             return nil
         }
 
-#if compiler(>=6.0)
         guard let currencyCode = product.currencyCode else { return nil }
 
         let formatter = NumberFormatter()
@@ -190,9 +189,6 @@ extension PurchaseInformation {
         guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
 
         return .paid(formattedPrice)
-#else
-        return nil
-#endif
     }
 }
 

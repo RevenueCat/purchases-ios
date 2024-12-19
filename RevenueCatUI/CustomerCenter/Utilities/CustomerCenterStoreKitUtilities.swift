@@ -20,11 +20,16 @@ import RevenueCat
 class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
     func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> Decimal? {
+
+        #if compiler(>=6.0)
         guard let renewalInfo = await renewalInfo(for: product) else {
             return nil
         }
 
         return renewalInfo.renewalPrice
+        #else
+        return nil
+        #endif
     }
 
     private func renewalInfo(
