@@ -52,15 +52,11 @@ class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
             return nil
             #endif
         } else {
-            if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, watchOSApplicationExtension 8.0, *) {
-                #if os(visionOS) || compiler(<6.0)
-                return nil
-                #else
-                return renewalInfo.currencyCode
-                #endif
-            } else {
-                return nil
-            }
+            #if os(visionOS) || compiler(<6.0)
+            return nil
+            #else
+            return renewalInfo.currencyCode
+            #endif
         }
     }
 
