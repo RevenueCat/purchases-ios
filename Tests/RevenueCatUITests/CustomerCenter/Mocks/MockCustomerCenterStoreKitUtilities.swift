@@ -20,9 +20,9 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
-    var returnRenewalPriceFromRenewalInfo: Decimal?
+    var returnRenewalPriceFromRenewalInfo: (price: Decimal, currencyCode: String)?
     var renewalPriceFromRenewalInfoCallCount = 0
-    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> Decimal? {
+    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> (price: Decimal, currencyCode: String)? {
         renewalPriceFromRenewalInfoCallCount += 1
         return returnRenewalPriceFromRenewalInfo
     }

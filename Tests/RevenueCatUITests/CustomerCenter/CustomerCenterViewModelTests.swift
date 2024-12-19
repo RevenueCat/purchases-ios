@@ -859,7 +859,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testPurchaseInformationUsesInfoFromRenewalInfoWhenAvailable() async {
         let mockPurchases = MockCustomerCenterPurchases()
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = 5
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
 
         let viewModel = CustomerCenterViewModel(
             customerCenterActionHandler: nil,
@@ -868,7 +868,7 @@ class CustomerCenterViewModelTests: TestCase {
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
         )
 
-        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo).to(equal(5))
+        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo).to(equal((5, "USD")))
 
         await viewModel.loadScreen()
 

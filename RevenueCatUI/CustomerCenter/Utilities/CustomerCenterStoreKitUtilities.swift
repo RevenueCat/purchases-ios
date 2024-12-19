@@ -19,17 +19,49 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
-    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> Decimal? {
+    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> (price: Decimal, currencyCode: String)? {
 
         #if compiler(>=6.0)
-        guard let renewalInfo = await renewalInfo(for: product) else {
-            return nil
-        }
+        guard let renewalInfo = await renewalInfo(for: product) else { return nil }
+        guard let renewalPrice = renewalInfo.renewalPrice else { return nil }
+        guard let currencyCode = currencyCode(fromRenewalInfo: renewalInfo) else { return nil }
 
-        return renewalInfo.renewalPrice
+        return (renewalPrice, currencyCode)
         #else
         return nil
         #endif
+    }
+
+    private func currencyCode(
+        fromRenewalInfo renewalInfo: Product.SubscriptionInfo.RenewalInfo,
+        locale: Locale = Locale.current
+    ) -> String? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, watchOSApplicationExtension 9.0, *) {
+
+            // renewalInfo.currency was introduced in iOS 18.0 and backdeployed through iOS 16.0
+            // However, Xcode versions <15.0 don't have the symbols, so we need to check the compiler version
+            // to make sure that this is being built with an Xcode version >=15.0.
+            #if compiler(>=6.0)
+            guard let currency = renewalInfo.currency else { return nil }
+            if currency.isISOCurrency {
+                return currency.identifier
+            } else {
+                return nil
+            }
+            #else
+            return nil
+            #endif
+        } else {
+            if #available(macOS 12.0, tvOS 15.0, watchOS 8.0, watchOSApplicationExtension 8.0, *) {
+                #if os(visionOS) || compiler(<6.0)
+                return nil
+                #else
+                return renewalInfo.currencyCode
+                #endif
+            } else {
+                return nil
+            }
+        }
     }
 
     private func renewalInfo(

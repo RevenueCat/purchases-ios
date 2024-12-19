@@ -174,19 +174,17 @@ extension PurchaseInformation {
         forProduct product: StoreProduct,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
     ) async -> PriceDetails? {
-        guard let renewalPrice = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
+        guard let renewalPriceDetails = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
             for: product
-        ) as? NSNumber else {
+        ) else {
             return nil
         }
 
-        guard let currencyCode = product.currencyCode else { return nil }
-
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
+        formatter.currencyCode = renewalPriceDetails.currencyCode
 
-        guard let formattedPrice = formatter.string(from: renewalPrice) else { return nil }
+        guard let formattedPrice = formatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
 
         return .paid(formattedPrice)
     }
