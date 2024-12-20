@@ -19,6 +19,10 @@ import StoreKitTest
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+// Despite only supporting StoreKit 2 on iOS 16.0+, we still need to test observer mode
+// purchase detection on iOS 15.0+ because it's possible for a customer to make purchases
+// with StoreKit 2 on iOS 15, and we support detecting those purchases through
+// observer mode.
 // swiftlint:disable type_name
 class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
