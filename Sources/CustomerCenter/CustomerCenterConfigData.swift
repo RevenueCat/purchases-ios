@@ -122,7 +122,7 @@ public struct CustomerCenterConfigData {
                 case .billingCycle:
                     return "Billing cycle"
                 case .currentPrice:
-                    return "Current price"
+                    return "Price"
                 case .expired:
                     return "Expired"
                 case .expires:
