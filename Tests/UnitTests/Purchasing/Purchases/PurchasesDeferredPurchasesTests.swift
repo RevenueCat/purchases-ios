@@ -177,6 +177,12 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
             for: self.product
         )
 
+        waitUntil { completed in
+            if self.purchasesDelegate.makeDeferredPurchase != nil {
+                completed()
+            }
+        }
+
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
 
         expect(self.purchasesDelegate.promoProduct) == StoreProduct(sk1Product: self.product)
