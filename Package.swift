@@ -27,6 +27,9 @@ var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
         ?? []
 }()
 
+// DO NOT MERGE: this is only for paywalls-v2-beta branch
+additionalCompilerFlags += [.define("PAYWALL_COMPONENTS")]
+
 var ciCompilerFlags: [PackageDescription.SwiftSetting] = [
     // REPLACE_WITH_DEFINES_HERE
 ]
