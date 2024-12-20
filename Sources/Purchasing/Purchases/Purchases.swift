@@ -1599,10 +1599,13 @@ extension Purchases: PurchasesOrchestratorDelegate {
                                  purchase startPurchase: @escaping StartPurchaseBlock) {
 
         if self.systemInfo.storeKitVersion == .storeKit1 {
+            // Calling the delegate method on the main actor causes test failures on iOS 14-16, so instead
+            // we dispatch to the main thread, which doesn't cause the failures.
             OperationDispatcher.default.dispatchOnMainThread {
                 self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
             }
         } else {
+            // Ensure that the delegate method is called on the main actor for StoreKit 2.
             OperationDispatcher.default.dispatchOnMainActor {
                 self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
             }
