@@ -31,6 +31,7 @@ public extension PaywallComponent {
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
+        public let badge: Badge?
 
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
@@ -45,6 +46,7 @@ public extension PaywallComponent {
             shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
+            badge: Badge? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.components = components
@@ -58,6 +60,7 @@ public extension PaywallComponent {
             self.shape = shape
             self.border = border
             self.shadow = shadow
+            self.badge = badge
             self.overrides = overrides
         }
 
@@ -75,6 +78,7 @@ public extension PaywallComponent {
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
+        public let badge: Badge?
 
         public init(
             visible: Bool? = true,
@@ -86,7 +90,8 @@ public extension PaywallComponent {
             margin: Padding? = nil,
             shape: Shape? = nil,
             border: Border? = nil,
-            shadow: Shadow? = nil
+            shadow: Shadow? = nil,
+            badge: Badge? = nil
         ) {
             self.visible = visible
             self.size = size
@@ -98,6 +103,7 @@ public extension PaywallComponent {
             self.shape = shape
             self.border = border
             self.shadow = shadow
+            self.badge = badge
         }
 
     }
