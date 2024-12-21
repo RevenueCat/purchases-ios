@@ -39,10 +39,18 @@ extension UIApplication {
 
     @available(iOS 15.0, tvOS 15.0, *)
     var currentViewController: UIViewController? {
-        guard let rootViewController = currentWindowScene?.keyWindow?.rootViewController else {
+        var rootViewController = currentWindowScene?.keyWindow?.rootViewController
+
+        if rootViewController == nil {
+            // Fallback for application extensions where scenes are not supported
+            rootViewController = (value(forKey: "keyWindow") as? UIWindow)?.rootViewController
+        }
+
+        guard let resolvedRootViewController = rootViewController else {
             return nil
         }
-        return getTopViewController(from: rootViewController)
+
+        return getTopViewController(from: resolvedRootViewController)
     }
 
     private func getTopViewController(from viewController: UIViewController) -> UIViewController? {
