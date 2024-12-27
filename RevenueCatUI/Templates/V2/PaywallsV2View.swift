@@ -37,12 +37,20 @@ struct PaywallsV2View: View {
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @StateObject
     private var paywallStateManager: PaywallStateManager
 
+    private let paywallComponentsData: PaywallComponentsData
+    private let offering: Offering
     private let onDismiss: () -> Void
 
     public init(
@@ -52,6 +60,8 @@ struct PaywallsV2View: View {
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void
     ) {
+        self.paywallComponentsData = paywallComponentsData
+        self.offering = offering
         self.onDismiss = onDismiss
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
@@ -84,6 +94,18 @@ struct PaywallsV2View: View {
             )
             .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
             .environmentObject(self.introOfferEligibilityContext)
+            .disabled(self.purchaseHandler.actionInProgress)
+            .onAppear {
+                self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData()
+                )
+            }
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onChangeOf(self.purchaseHandler.purchased) { purchased in
+                if purchased {
+                    self.onDismiss()
+                }
+            }
             .task {
                 await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
             }
@@ -91,6 +113,17 @@ struct PaywallsV2View: View {
             // WIP: Need to use fallback paywall
             Text("Error creating paywall")
         }
+    }
+
+    private func createEventData() -> PaywallEvent.Data {
+        return .init(
+            offering: self.offering,
+            paywallComponentsData: self.paywallComponentsData,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .current,
+            darkMode: self.colorScheme == .dark
+        )
     }
 
 }
