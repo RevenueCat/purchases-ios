@@ -34,8 +34,6 @@ struct RestorePurchasesAlert: ViewModifier {
 
     @State
     private var alertType: AlertType = .restorePurchases
-    @Environment(\.dismiss)
-    private var dismiss
     @Environment(\.localization)
     private var localization
     @Environment(\.supportInformation)
@@ -164,7 +162,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
     private func dismissAlert() {
         self.alertType = .restorePurchases
-        dismiss()
+        self.isPresented = false
     }
 }
 
