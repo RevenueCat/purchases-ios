@@ -99,18 +99,37 @@ extension PaywallComponent: Codable {
         if let type = ComponentType(rawValue: typeString) {
             self = try Self.decodeType(from: decoder, type: type)
         } else {
-            // If `typeString` is unknown, try to decode the fallback
+            if !container.contains(.fallback) {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode unknown type "\(typeString)" without a fallback.
+                      """
+                )
+                throw DecodingError.dataCorrupted(context)
+            }
+
             do {
+                // If `typeString` is unknown, try to decode the fallback
                 self = try container.decode(PaywallComponent.self, forKey: .fallback)
+            } catch DecodingError.valueNotFound {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode unknown type "\(typeString)" without a fallback.
+                      """
+                )
+                throw DecodingError.dataCorrupted(context)
             } catch {
-                // Re-throw or wrap the error with a custom DecodingError
                 let context = DecodingError.Context(
                     codingPath: container.codingPath,
                     debugDescription:
                       """
                       Failed to decode fallback for unknown type "\(typeString)".
-                      Original error: \(error)
-                      """
+                      """,
+                    underlyingError: error
                 )
                 throw DecodingError.dataCorrupted(context)
             }
