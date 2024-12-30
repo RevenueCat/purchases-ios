@@ -51,6 +51,7 @@ extension PaywallComponent: Codable {
     enum CodingKeys: String, CodingKey {
 
         case type
+        case fallback
 
     }
 
@@ -90,27 +91,71 @@ extension PaywallComponent: Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(ComponentType.self, forKey: .type)
 
+        // Decode the raw string for the `type` field
+        let typeString = try container.decode(String.self, forKey: .type)
+
+        // Attempt to convert raw string into our `ComponentType` enum
+        if let type = ComponentType(rawValue: typeString) {
+            self = try Self.decodeType(from: decoder, type: type)
+        } else {
+            if !container.contains(.fallback) {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode unknown type "\(typeString)" without a fallback.
+                      """
+                )
+                throw DecodingError.dataCorrupted(context)
+            }
+
+            do {
+                // If `typeString` is unknown, try to decode the fallback
+                self = try container.decode(PaywallComponent.self, forKey: .fallback)
+            } catch DecodingError.valueNotFound {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode unknown type "\(typeString)" without a fallback.
+                      """
+                )
+                throw DecodingError.dataCorrupted(context)
+            } catch {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode fallback for unknown type "\(typeString)".
+                      """,
+                    underlyingError: error
+                )
+                throw DecodingError.dataCorrupted(context)
+            }
+        }
+    }
+
+    private static func decodeType(from decoder: Decoder, type: ComponentType) throws -> PaywallComponent {
         switch type {
         case .text:
-            self = .text(try TextComponent(from: decoder))
+            return .text(try TextComponent(from: decoder))
         case .image:
-            self = .image(try ImageComponent(from: decoder))
+            return .image(try ImageComponent(from: decoder))
         case .spacer:
-            self = .spacer(try SpacerComponent(from: decoder))
+            return .spacer(try SpacerComponent(from: decoder))
         case .stack:
-            self = .stack(try StackComponent(from: decoder))
+            return .stack(try StackComponent(from: decoder))
         case .linkButton:
-            self = .linkButton(try LinkButtonComponent(from: decoder))
+            return .linkButton(try LinkButtonComponent(from: decoder))
         case .button:
-            self = .button(try ButtonComponent(from: decoder))
+            return .button(try ButtonComponent(from: decoder))
         case .package:
-            self = .package(try PackageComponent(from: decoder))
+            return .package(try PackageComponent(from: decoder))
         case .purchaseButton:
-            self = .purchaseButton(try PurchaseButtonComponent(from: decoder))
+            return .purchaseButton(try PurchaseButtonComponent(from: decoder))
         case .stickyFooter:
-            self = .stickyFooter(try StickyFooterComponent(from: decoder))
+            return .stickyFooter(try StickyFooterComponent(from: decoder))
         }
     }
 
