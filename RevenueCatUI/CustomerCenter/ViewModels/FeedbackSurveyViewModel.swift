@@ -64,6 +64,8 @@ class FeedbackSurveyViewModel: ObservableObject {
         if let customerCenterActionHandler = self.customerCenterActionHandler {
             trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
             customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
+            // TODO: update to send English text, not title
+            customerCenterActionHandler(.feedbackSurveyCompleted(option.id, option.title))
         }
 
         if let promotionalOffer = option.promotionalOffer,
