@@ -1,11 +1,11 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* add `fr_FR` localization (#4624) via Andy Boedo (@aboedo)
+
 ## RevenueCatUI SDK
 ### Paywallv2
 #### 🐞 Bugfixes
-* [Paywalls V2] Fix current offering and sticky footer (#4617) via Josh Holtz (@joshdholtz)
-### Customer Center
-#### 🐞 Bugfixes
-* Use SK2 RenewalInfo to get renewal prices & currency (#4608) via Will Taylor (@fire-at-will)
+* [Paywalls V2] Fix analytics and dismiss (#4620) via Josh Holtz (@joshdholtz)
 
 ### 🔄 Other Changes
-* Add Comment to StoreKit2ObserverModePurchaseDetectorTests (#4614) via Will Taylor (@fire-at-will)
-* Fixing text, image, and footer render issues (#4607) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Added fallback components (#4621) via Josh Holtz (@joshdholtz)
