@@ -112,13 +112,24 @@ struct PurchaseRow: View {
             if let gracePeriodExpiresDate = subscriptionInfo.gracePeriodExpiresDate {
                 LabelValueRow(label: "Grace Period Expires At:", value: formattedDate(gracePeriodExpiresDate))
             }
-            LabelValueRow(label: "Ownership Type:", value: "\(subscriptionInfo.ownershipType.rawValue)")
-            LabelValueRow(label: "Period Type:", value: "\(subscriptionInfo.periodType.rawValue)")
+            if subscriptionInfo.ownershipType != .unknown {
+                LabelValueRow(
+                    label: "Ownership Type:",
+                    value: subscriptionInfo.ownershipType == .purchased
+                    ? "Direct purchase" : "Shared through family member"
+                )
+            }
+            if subscriptionInfo.periodType != .normal {
+                LabelValueRow(
+                    label: "Period Type:",
+                    value: subscriptionInfo.periodType == .intro ? "Introductory Price" : "Trial Period"
+                )
+            }
             if let refundedAt = subscriptionInfo.refundedAt {
                 LabelValueRow(label: "Refunded At:", value: formattedDate(refundedAt))
             }
             if let storeTransactionId = subscriptionInfo.storeTransactionId {
-                LabelValueRow(label: "Store Transaction ID:", value: storeTransactionId)
+                LabelValueRow(label: "Transaction ID:", value: storeTransactionId)
             }
             LabelValueRow(label: "Active:", value: subscriptionInfo.isActive ? "Yes" : "No")
             LabelValueRow(label: "Will Renew:", value: subscriptionInfo.willRenew ? "Yes" : "No")
