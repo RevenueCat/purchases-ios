@@ -55,8 +55,8 @@ extension View {
         self.modifier(LayerShadowModifier(
             shape: shape,
             color: shadow.color,
-            x: shadow.x,
-            y: shadow.y,
+            xOffset: shadow.x,
+            yOffset: shadow.y,
             blur: shadow.radius * 2,
             spread: 0
         ))
@@ -68,7 +68,7 @@ struct LayerShadowModifier: ViewModifier {
     let shape: any Shape
     let color: Color
     let xOffset: CGFloat
-    let yLayerShadowModifier: CGFloat
+    let yOffset: CGFloat
     let blur: CGFloat
     let spread: CGFloat
 
@@ -79,8 +79,8 @@ struct LayerShadowModifier: ViewModifier {
                     let rect = geometry.frame(in: .local)
                     LayerShadowView(shape: shape,
                                     color: color,
-                                    xLayerShadowModifier: xLayerShadowModifier,
-                                    yLayerShadowModifier: yLayerShadowModifier,
+                                    xOffset: xOffset,
+                                    yOffset: yOffset,
                                     blur: blur,
                                     spread: spread,
                                     rect: rect)
@@ -113,7 +113,7 @@ private struct LayerShadowView: UIViewRepresentable {
         view.backgroundColor = .clear
         view.layer.shadowColor = UIColor(color).cgColor
         view.layer.shadowOpacity = 1
-        view.layer.shadowOffset = CGSize(width: x, height: y)
+        view.layer.shadowOffset = CGSize(width: xOffset, height: yOffset)
         view.layer.shadowRadius = blur / 2
 
         // Create path for the shape
@@ -143,7 +143,7 @@ private struct LayerShadowView: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {
         uiView.layer.shadowColor = UIColor(color).cgColor
         uiView.layer.shadowOpacity = 1
-        uiView.layer.shadowOffset = CGSize(width: x, height: y)
+        uiView.layer.shadowOffset = CGSize(width: xOffset, height: yOffset)
         uiView.layer.shadowRadius = blur / 2
 
         // Update shadow path
