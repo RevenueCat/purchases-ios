@@ -34,7 +34,6 @@ struct OfferingsResponse {
         var metadata: [String: AnyDecodable]
 
         #if PAYWALL_COMPONENTS
-        // components
         var paywallComponents: PaywallComponentsData?
         #endif
 
@@ -55,6 +54,10 @@ struct OfferingsResponse {
     let offerings: [Offering]
     let placements: Placements?
     let targeting: Targeting?
+
+    #if PAYWALL_COMPONENTS
+    let uiConfig: UIConfig?
+    #endif
 }
 
 extension OfferingsResponse {
