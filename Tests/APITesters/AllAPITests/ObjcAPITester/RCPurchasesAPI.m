@@ -124,6 +124,8 @@ NSURL *url;
     [p setKeyword: @""];
     [p setCreative: nil];
     [p setCreative: @""];
+    RCWebPurchaseRedemption *webPurchaseRedemption2 = [RCPurchases parseAsWebPurchaseRedemption:url];
+    RCWebPurchaseRedemption *webPurchaseRedemption3 = [RCPurchases parseUrlStringAsWebPurchaseRedemption:@""];
 
     [p getCustomerInfoWithFetchPolicy:RCCacheFetchPolicyFetchCurrent completion:^(RCCustomerInfo *customerInfo,
                                                                                   NSError *error) {}];

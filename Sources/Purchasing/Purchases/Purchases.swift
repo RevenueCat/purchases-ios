@@ -154,6 +154,21 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      */
     @objc public static func canMakePayments() -> Bool { StoreKit1Wrapper.canMakePayments() }
 
+    /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
+    /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
+    @objc public static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
+        return DeepLinkParser.parseAsWebPurchaseRedemption(url)
+    }
+
+    /// Parses a deep link URL string to verify it's a RevenueCat web purchase redemption link
+    /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
+    @objc public static func parseUrlStringAsWebPurchaseRedemption(_ urlString: String) -> WebPurchaseRedemption? {
+        guard let url = URL(string: urlString) else {
+            return nil
+        }
+        return DeepLinkParser.parseAsWebPurchaseRedemption(url)
+    }
+
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
      *
@@ -758,12 +773,6 @@ extension Purchases {
 // MARK: Identity
 
 public extension Purchases {
-
-    /// Parses a deep link URL to verify it's a RevenueCat web purchase redemption link
-    /// - Seealso: ``Purchases/redeemWebPurchase(_:)``
-    @objc internal static func parseAsWebPurchaseRedemption(_ url: URL) -> WebPurchaseRedemption? {
-        return DeepLinkParser.parseAsWebPurchaseRedemption(url)
-    }
 
     @objc var appUserID: String { self.identityManager.currentAppUserID }
 
