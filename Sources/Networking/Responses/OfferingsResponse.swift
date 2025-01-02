@@ -54,10 +54,8 @@ struct OfferingsResponse {
     let offerings: [Offering]
     let placements: Placements?
     let targeting: Targeting?
-
-    #if PAYWALL_COMPONENTS
     let uiConfig: UIConfig?
-    #endif
+
 }
 
 extension OfferingsResponse {

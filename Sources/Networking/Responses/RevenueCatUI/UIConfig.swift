@@ -111,4 +111,10 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
 }
 
+#else
+
+public struct UIConfig: Codable, Equatable, Sendable {
+    
+}
+
 #endif
