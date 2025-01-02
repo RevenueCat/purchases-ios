@@ -93,13 +93,37 @@ struct PurchaseRow: View {
         VStack(alignment: .leading, spacing: 5) {
             LabelValueRow(label: "Product ID:", value: subscriptionInfo.productIdentifier)
             LabelValueRow(label: "Purchase Date:", value: formattedDate(subscriptionInfo.purchaseDate))
-            if let originalPurchaseDate = subscriptionInfo.originalPurchaseDate {
-                LabelValueRow(label: "Original Purchase Date:", value: formattedDate(originalPurchaseDate))
+
+            if subscriptionInfo.isActive {
+                if let originalPurchaseDate = subscriptionInfo.originalPurchaseDate,
+                   originalPurchaseDate != subscriptionInfo.purchaseDate {
+                    LabelValueRow(label: "Renewed On:", value: formattedDate(originalPurchaseDate))
+                }
             }
+
             if let expiresDate = subscriptionInfo.expiresDate {
-                LabelValueRow(label: "Expires Date:", value: formattedDate(expiresDate))
+                let label = subscriptionInfo.willRenew ? "Next Renewal Date:" : "Expires Date:"
+                LabelValueRow(label: label, value: formattedDate(expiresDate))
             }
-            LabelValueRow(label: "Store:", value: "\(subscriptionInfo.store.rawValue)")
+
+            LabelValueRow(label: "Active:", value: subscriptionInfo.isActive ? "Yes" : "No")
+
+            LabelValueRow(
+                label: "Store:",
+                value: {
+                    switch subscriptionInfo.store {
+                    case .appStore: return "Apple App Store"
+                    case .macAppStore: return "Mac App Store"
+                    case .playStore: return "Google Play Store"
+                    case .stripe: return "Stripe"
+                    case .promotional: return "Promotional"
+                    case .amazon: return "Amazon Store"
+                    case .rcBilling: return "Web"
+                    case .external: return "External Purchases"
+                    case .unknownStore: return "Unknown Store"
+                    }
+                }()
+            )
             #if DEBUG
             LabelValueRow(label: "Sandbox Mode:", value: subscriptionInfo.isSandbox ? "Yes" : "No")
             #endif
@@ -131,8 +155,6 @@ struct PurchaseRow: View {
             if let storeTransactionId = subscriptionInfo.storeTransactionId {
                 LabelValueRow(label: "Transaction ID:", value: storeTransactionId)
             }
-            LabelValueRow(label: "Active:", value: subscriptionInfo.isActive ? "Yes" : "No")
-            LabelValueRow(label: "Will Renew:", value: subscriptionInfo.willRenew ? "Yes" : "No")
         }
         .padding(.vertical, 5)
     }
