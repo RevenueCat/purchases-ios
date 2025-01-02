@@ -10,6 +10,9 @@
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
+		03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D2F2D240C3E009BCA61 /* UIConfig.swift */; };
+		03A98D322D2441B8009BCA61 /* PaywallDataDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */; };
+		03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */; };
 		1E2F910B2CC8FE5600BDB016 /* ContactSupportUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F910A2CC8FE5600BDB016 /* ContactSupportUtilities.swift */; };
 		1E2F911B2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */; };
 		1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */; };
@@ -1242,6 +1245,9 @@
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
+		03A98D2F2D240C3E009BCA61 /* UIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfig.swift; sourceTree = "<group>"; };
+		03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallDataDecodingTests.swift; sourceTree = "<group>"; };
+		03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigDecodingTests.swift; sourceTree = "<group>"; };
 		1E2F910A2CC8FE5600BDB016 /* ContactSupportUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilities.swift; sourceTree = "<group>"; };
 		1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilitiesTests.swift; sourceTree = "<group>"; };
 		1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRedemptionStrings.swift; sourceTree = "<group>"; };
@@ -2444,6 +2450,15 @@
 				FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */,
 			);
 			path = StoreKit2;
+			sourceTree = "<group>";
+		};
+		03A98D2E2D240C2D009BCA61 /* RevenueCatUI */ = {
+			isa = PBXGroup;
+			children = (
+				03A98D2F2D240C3E009BCA61 /* UIConfig.swift */,
+				2C9107EF2CE2ED8300189565 /* PaywallComponentsData.swift */,
+			);
+			path = RevenueCatUI;
 			sourceTree = "<group>";
 		};
 		1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */ = {
@@ -4210,6 +4225,8 @@
 				5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */,
 				5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */,
 				574A2F3E282D75E300150D40 /* OfferingsDecodingTests.swift */,
+				03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */,
+				03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */,
 				574A2F4E282D7B9E00150D40 /* PostOfferDecodingTests.swift */,
 				5766C61F282DA3D50067D886 /* GetIntroEligibilityDecodingTests.swift */,
 				57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */,
@@ -4273,11 +4290,11 @@
 		57D5412C27F63108004CC35C /* Responses */ = {
 			isa = PBXGroup;
 			children = (
+				03A98D2E2D240C2D009BCA61 /* RevenueCatUI */,
 				3592E88D2C2ED5B200D7F91D /* CustomerCenterConfigResponse.swift */,
 				5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */,
 				5766C621282DAA700067D886 /* GetIntroEligibilityResponse.swift */,
 				57D5412D27F6311C004CC35C /* OfferingsResponse.swift */,
-				2C9107EF2CE2ED8300189565 /* PaywallComponentsData.swift */,
 				574A2F4A282D7AEA00150D40 /* PostOfferResponse.swift */,
 				57488A7E29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift */,
 			);
@@ -6017,6 +6034,7 @@
 				4D2C7D0B2CC40A35002562BC /* PurchaseParams.swift in Sources */,
 				9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */,
 				5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */,
+				03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */,
 				B34605D1279A6E600031CA74 /* CustomerAPI.swift in Sources */,
 				35D159D12BC492E4004D8061 /* DiagnosticsHTTPRequestPath.swift in Sources */,
 				2DDF41A224F6F331005BC22D /* ProductsManager.swift in Sources */,
@@ -6253,6 +6271,7 @@
 				57E6C27E29723F9E001AFE98 /* SigningTests.swift in Sources */,
 				574A2F3F282D75E300150D40 /* OfferingsDecodingTests.swift in Sources */,
 				35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift in Sources */,
+				03A98D322D2441B8009BCA61 /* PaywallDataDecodingTests.swift in Sources */,
 				4F8DDB692AAA9189000188F2 /* OperationDispatcherTests.swift in Sources */,
 				57FFD2512922DBED00A9A878 /* MockStoreTransaction.swift in Sources */,
 				57CB2A7A29CCC61600C91439 /* CustomerInfoResponseHandlerTests.swift in Sources */,
@@ -6283,6 +6302,7 @@
 				351B51A726D450D400BD2BD7 /* SystemInfoTests.swift in Sources */,
 				5733B1A827FFBCC800EC2045 /* BackendErrorTests.swift in Sources */,
 				4FFFE6C82AA9467800B2955C /* PaywallEventsManagerTests.swift in Sources */,
+				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
 				351B515626D44B2300BD2BD7 /* MockNotificationCenter.swift in Sources */,
 				351B515226D44AF000BD2BD7 /* MockReceiptFetcher.swift in Sources */,
 				351B51C226D450E800BD2BD7 /* ProductRequestDataTests.swift in Sources */,

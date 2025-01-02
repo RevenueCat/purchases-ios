@@ -98,7 +98,8 @@ private extension OfferingsManagerStoreKitTests {
                       ])
             ],
             placements: nil,
-            targeting: nil
+            targeting: nil,
+            uiConfig: nil
         )
     }
 

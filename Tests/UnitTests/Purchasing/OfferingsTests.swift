@@ -115,7 +115,8 @@ class OfferingsTests: TestCase {
                           ])
                 ],
                 placements: nil,
-                targeting: nil
+                targeting: nil,
+                uiConfig: nil
             )
         )
 
@@ -150,7 +151,8 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
@@ -207,7 +209,8 @@ class OfferingsTests: TestCase {
                                         "placement_name": "offering_b",
                                         "placement_name_with_nil": nil
                                       ])),
-                    targeting: .init(revision: 1, ruleId: "abc123")
+                    targeting: .init(revision: 1, ruleId: "abc123"),
+                    uiConfig: nil
                 )
             )
         )
@@ -279,7 +282,8 @@ class OfferingsTests: TestCase {
                                         "placement_name": "offering_b",
                                         "placement_name_with_nil": nil
                                       ])),
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
@@ -314,7 +318,8 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: .init(revision: 1, ruleId: "abc123")
+                    targeting: .init(revision: 1, ruleId: "abc123"),
+                    uiConfig: nil
                 )
             )
         )
@@ -386,7 +391,8 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
@@ -524,7 +530,8 @@ class OfferingsTests: TestCase {
                       ])
             ],
             placements: nil,
-            targeting: nil
+            targeting: nil,
+            uiConfig: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
@@ -565,7 +572,8 @@ private extension OfferingsTests {
                               ])
                     ],
                     placements: nil,
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
