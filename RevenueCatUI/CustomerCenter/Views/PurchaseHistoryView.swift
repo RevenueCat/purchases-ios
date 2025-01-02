@@ -27,6 +27,8 @@ struct PurchaseHistoryView: View {
                 if let info = customerInfo {
                     // Active Subscriptions Section
                     if !info.activeSubscriptions.isEmpty {
+
+                        // todo: add the price from the backend
                         Section(header: Text("Active Subscriptions")) {
                             ForEach(Array(info.subscriptionsByProductIdentifier), id: \.self.key) { _, subscription in
                                 PurchaseRow(subscriptionInfo: subscription)
@@ -35,20 +37,11 @@ struct PurchaseHistoryView: View {
                     }
 
                     // Non-Subscription Purchases Section
-//                    if !info.nonSubscriptions.isEmpty {
-//                        Section(header: Text("Non-Subscription Purchases")) {
-//                            ForEach(info.nonSubscriptions, id: \.transactionIdentifier) { transaction in
-//                                PurchaseRow(
-//                                    title: "Purchase: \(transaction.productIdentifier)",
-//                                    description: "Purchased on \(dateFormatter.string(from: transaction.purchaseDate))",
-//                                    price: "$4.99" // Placeholder price
-//                                    purchaseDate: transaction.purchaseDate
-//                                )
-//                            }
-//                        }
-//                    }
+                    // todo: add information for non subscriptions
+                    // and get product type and other info directly from StoreKit or backend
 
                     // Account Details Section
+                    // todo: make these easy to copy
                     Section(header: Text("Account Details")) {
                         LabelValueRow(label: "Date when app was first purchased:", value: dateFormatter.string(from: info.originalPurchaseDate!))
                         LabelValueRow(label: "App User ID", value: info.originalAppUserId)
