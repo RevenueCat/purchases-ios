@@ -81,13 +81,16 @@ struct ManageSubscriptionsView: View {
     var content: some View {
         ZStack {
             List {
-
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     Section {
-                        SubscriptionDetailsView(
-                            purchaseInformation: purchaseInformation,
-                            refundRequestStatus: self.viewModel.refundRequestStatus)
+                        NavigationLink(destination: PurchaseHistoryView()) {
+                            SubscriptionDetailsView(
+                                purchaseInformation: purchaseInformation,
+                                refundRequestStatus: self.viewModel.refundRequestStatus
+                            )
+                        }
                     }
+
                     Section {
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
                                                        loadingPath: self.$viewModel.loadingPath)
@@ -113,9 +116,9 @@ struct ManageSubscriptionsView: View {
                                                        loadingPath: self.$viewModel.loadingPath)
                     }
                 }
-
             }
         }
+
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton()
