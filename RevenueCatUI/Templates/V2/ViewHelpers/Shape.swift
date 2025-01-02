@@ -76,17 +76,23 @@ struct ShapeModifier: ViewModifier {
         switch self.shape {
         case .rectangle(let radiusInfo):
             let shape = self.effectiveRectangleShape(radiusInfo: radiusInfo)
+            let effectiveShape = shape ?? Rectangle().eraseToAnyInsettableShape()
             content
                 .backgroundStyle(background)
-                .clipShape(shape)
+                // We want to clip only in case there is a non-Rectangle shape
+                // or if there's a border, otherwise we let the background color
+                // extend behind the safe areas
+                .applyIfLet(shape) { view, shape in
+                    view.clipShape(shape)
+                }
                 .applyIfLet(border) { view, border in
-                    view.overlay {
-                        shape.strokeBorder(border.color, lineWidth: border.width)
+                    view.clipShape(effectiveShape).overlay {
+                        effectiveShape.strokeBorder(border.color, lineWidth: border.width)
                     }
                 }
                 .applyIfLet(shadow) { view, shadow in
                     view.overlay {
-                        view.shadow(shadow: shadow, shape: shape)
+                        view.shadow(shadow: shadow, shape: effectiveShape)
                     }
                 }
         case .pill:
@@ -112,7 +118,7 @@ struct ShapeModifier: ViewModifier {
         }
     }
 
-    func effectiveRectangleShape(radiusInfo: RadiusInfo?) -> AnyInsettableShape {
+    func effectiveRectangleShape(radiusInfo: RadiusInfo?) -> AnyInsettableShape? {
         if let topLeft = radiusInfo?.topLeft,
            let topRight = radiusInfo?.topRight,
            let bottomLeft = radiusInfo?.bottomLeft,
@@ -135,7 +141,7 @@ struct ShapeModifier: ViewModifier {
                 ).eraseToAnyInsettableShape()
             }
         } else {
-            Rectangle().eraseToAnyInsettableShape()
+            nil
         }
     }
 
