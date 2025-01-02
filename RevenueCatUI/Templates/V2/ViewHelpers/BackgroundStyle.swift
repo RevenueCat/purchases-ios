@@ -30,10 +30,10 @@ struct BackgroundStyleModifier: ViewModifier {
     var colorScheme
 
     var backgroundStyle: BackgroundStyle?
-    var uiConfigProvider: UIConfigProvider
+    var uiConfigProvider: UIConfigProvider?
 
     func body(content: Content) -> some View {
-        if let backgroundStyle {
+        if let backgroundStyle, let uiConfigProvider {
             content
                 .apply(backgroundStyle: backgroundStyle, colorScheme: colorScheme, uiConfigProvider: uiConfigProvider)
         } else {
@@ -96,7 +96,7 @@ fileprivate extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, uiConfigProvider: UIConfigProvider) -> some View {
+    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, uiConfigProvider: UIConfigProvider?) -> some View {
         self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle, uiConfigProvider: uiConfigProvider))
     }
 

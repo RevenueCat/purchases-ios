@@ -49,9 +49,122 @@ struct ShadowModifier: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
     func shadow(
-        shadow: ShadowModifier.ShadowInfo
+        shadow: ShadowModifier.ShadowInfo,
+        shape: some Shape = Rectangle()
     ) -> some View {
-        self.modifier(ShadowModifier(shadow: shadow))
+        self.modifier(LayerShadowModifier(
+            shape: shape,
+            color: shadow.color,
+            x: shadow.x,
+            y: shadow.y,
+            blur: shadow.radius * 2,
+            spread: 0
+        ))
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct LayerShadowModifier: ViewModifier {
+    let shape: any Shape
+    let color: Color
+    let xOffset: CGFloat
+    let yLayerShadowModifier: CGFloat
+    let blur: CGFloat
+    let spread: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                GeometryReader { geometry in
+                    let rect = geometry.frame(in: .local)
+                    LayerShadowView(shape: shape,
+                                    color: color,
+                                    xLayerShadowModifier: xLayerShadowModifier,
+                                    yLayerShadowModifier: yLayerShadowModifier,
+                                    blur: blur,
+                                    spread: spread,
+                                    rect: rect)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+    }
+}
+
+// Using the .shadow() modified to add a drop shadow in SwiftUI has multiple downsides:
+// - The shadow is applied to all children views (can be worked around with .compositingGroup())
+// - The `.compositingGroup()` workaround stops working if the view has less than 100% opacity.
+// - The shadow inherits the opacity of the view, making it impossible to have a translucent
+//   or transparent view with a 100% opacity shadow.
+//
+// ShadowUIView tries to work around these limitations by rendering the shadow in a backing UIView,
+// and using a Shape to mask off the inner part of the shadow.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct LayerShadowView: UIViewRepresentable {
+    let shape: any Shape
+    let color: Color
+    let xOffset: CGFloat
+    let yOffset: CGFloat
+    let blur: CGFloat
+    let spread: CGFloat
+    let rect: CGRect
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.layer.shadowColor = UIColor(color).cgColor
+        view.layer.shadowOpacity = 1
+        view.layer.shadowOffset = CGSize(width: x, height: y)
+        view.layer.shadowRadius = blur / 2
+
+        // Create path for the shape
+        let path = shape.path(in: rect)
+        let shadowPath = path.cgPath
+
+        // Create expanded path for shadow with spread
+        let expandedRect = rect.insetBy(dx: -spread, dy: -spread)
+        let expandedPath = shape.path(in: expandedRect).cgPath
+        view.layer.shadowPath = expandedPath
+
+        // Create mask to cut out inner shape
+        let maskRect = rect.insetBy(dx: -spread - blur * 2 - abs(xOffset),
+                                    dy: -spread - blur * 2 - abs(yOffset))
+        let maskPath = UIBezierPath(rect: maskRect)
+        let innerPath = UIBezierPath(cgPath: shadowPath)
+        maskPath.append(innerPath.reversing())
+
+        let maskLayer = CAShapeLayer()
+        maskLayer.path = maskPath.cgPath
+        maskLayer.fillRule = .evenOdd
+        view.layer.mask = maskLayer
+
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        uiView.layer.shadowColor = UIColor(color).cgColor
+        uiView.layer.shadowOpacity = 1
+        uiView.layer.shadowOffset = CGSize(width: x, height: y)
+        uiView.layer.shadowRadius = blur / 2
+
+        // Update shadow path
+        let expandedRect = rect.insetBy(dx: -spread, dy: -spread)
+        let expandedPath = shape.path(in: expandedRect).cgPath
+        uiView.layer.shadowPath = expandedPath
+
+        // Update mask
+        let path = shape.path(in: rect)
+        let shadowPath = path.cgPath
+
+        let maskRect = rect.insetBy(dx: -spread - blur * 2 - abs(xOffset),
+                                    dy: -spread - blur * 2 - abs(yOffset))
+        let maskPath = UIBezierPath(rect: maskRect)
+        let innerPath = UIBezierPath(cgPath: shadowPath)
+        maskPath.append(innerPath.reversing())
+
+        let maskLayer = CAShapeLayer()
+        maskLayer.path = maskPath.cgPath
+        maskLayer.fillRule = .evenOdd
+        uiView.layer.mask = maskLayer
     }
 }
 
