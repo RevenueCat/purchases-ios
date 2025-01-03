@@ -90,13 +90,13 @@ struct LayerShadowModifier: ViewModifier {
     }
 }
 
-// Using the .shadow() modified to add a drop shadow in SwiftUI has multiple downsides:
+// Using the .shadow() modifier to add a drop shadow in SwiftUI has multiple downsides:
 // - The shadow is applied to all children views (can be worked around with .compositingGroup())
 // - The `.compositingGroup()` workaround stops working if the view has less than 100% opacity.
 // - The shadow inherits the opacity of the view, making it impossible to have a translucent
 //   or transparent view with a 100% opacity shadow.
 //
-// ShadowUIView tries to work around these limitations by rendering the shadow in a backing UIView,
+// LayerShadowView tries to work around these limitations by rendering the shadow in a backing UIView,
 // and using a Shape to mask off the inner part of the shadow.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LayerShadowView: UIViewRepresentable {
