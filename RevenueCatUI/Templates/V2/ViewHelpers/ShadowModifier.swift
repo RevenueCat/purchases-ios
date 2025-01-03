@@ -48,10 +48,6 @@ struct ShadowModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func shadow(shadow: ShadowModifier.ShadowInfo) -> some View {
-        self.modifier(ShadowModifier(shadow: shadow))
-    }
-
     func shadow(
         shadow: ShadowModifier.ShadowInfo,
         shape: some Shape
@@ -185,7 +181,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 0))
+                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 0), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -197,7 +193,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.vertical, 10)
                 .padding(.horizontal, 20)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 0))
+                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 0), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -210,7 +206,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.blue, radius: 10, x: 0, y: 0))
+                .shadow(shadow: .init(color: Color.blue, radius: 10, x: 0, y: 0), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -223,7 +219,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.black, radius: 10, x: 20, y: 0))
+                .shadow(shadow: .init(color: Color.black, radius: 10, x: 20, y: 0), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -236,7 +232,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 20))
+                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 20), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -249,7 +245,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.black, radius: 10, x: 20, y: 20))
+                .shadow(shadow: .init(color: Color.black, radius: 10, x: 20, y: 20), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -262,7 +258,7 @@ struct Shadow_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .compositingGroup()
-                .shadow(shadow: .init(color: Color.black, radius: 0, x: 20, y: 20))
+                .shadow(shadow: .init(color: Color.black, radius: 0, x: 20, y: 20), shape: Rectangle())
                 .padding()
         }
         .previewLayout(.sizeThatFits)
