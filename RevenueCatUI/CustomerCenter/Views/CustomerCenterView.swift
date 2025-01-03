@@ -42,30 +42,40 @@ public struct CustomerCenterView: View {
     private var colorScheme
 
     private let mode: CustomerCenterPresentationMode
+    private let isInNavigationStack: Bool
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
-        self.init(customerCenterActionHandler: customerCenterActionHandler, mode: .default)
+    ///   - isInNavigationStack: Whether this view is already inside a navigation stack
+    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+                isInNavigationStack: Bool = false) {
+        self.init(customerCenterActionHandler: customerCenterActionHandler,
+                  mode: .default,
+                  isInNavigationStack: isInNavigationStack)
     }
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
+    ///   - mode: The presentation mode for the Customer Center
+    ///   - isInNavigationStack: Whether this view is already inside a navigation stack
     init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-         mode: CustomerCenterPresentationMode) {
+         mode: CustomerCenterPresentationMode,
+         isInNavigationStack: Bool = false) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.mode = mode
+        self.isInNavigationStack = isInNavigationStack
     }
 
     fileprivate init(viewModel: CustomerCenterViewModel,
                      mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.mode = mode
+        self.isInNavigationStack = false
     }
 
     // swiftlint:disable:next missing_docs
@@ -157,7 +167,7 @@ private extension CustomerCenterView {
         let accentColor = Color.from(colorInformation: configuration.appearance.accentColor,
                                      for: self.colorScheme)
 
-        CompatibilityNavigationStack {
+        CompatibilityNavigationStack(isInNavigationStack: isInNavigationStack) {
             destinationContent(configuration: configuration)
         }
         .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })

@@ -24,9 +24,18 @@ import SwiftUI
 struct CompatibilityNavigationStack<Content: View>: View {
 
     @ViewBuilder var content: Content
+    let isInNavigationStack: Bool
+
+    init(isInNavigationStack: Bool = false,
+         @ViewBuilder content: () -> Content) {
+        self.isInNavigationStack = isInNavigationStack
+        self.content = content()
+    }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
+        if isInNavigationStack {
+            content
+        } else if #available(iOS 16.0, *) {
             NavigationStack {
                 content
             }
