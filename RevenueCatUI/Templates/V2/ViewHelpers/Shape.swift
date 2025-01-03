@@ -17,10 +17,11 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
+// swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ShapeModifier: ViewModifier {
 
-    struct BorderInfo {
+    struct BorderInfo: Hashable {
 
         let color: Color
         let width: CGFloat
@@ -32,7 +33,7 @@ struct ShapeModifier: ViewModifier {
 
     }
 
-    enum Shape {
+    enum Shape: Hashable {
 
         case rectangle(RadiusInfo?)
         case pill
@@ -41,7 +42,7 @@ struct ShapeModifier: ViewModifier {
 
     }
 
-    struct RadiusInfo {
+    struct RadiusInfo: Hashable {
 
         let topLeft: CGFloat?
         let topRight: CGFloat?
@@ -92,9 +93,7 @@ struct ShapeModifier: ViewModifier {
                     }
                 }
                 .applyIfLet(shadow) { view, shadow in
-                    view.overlay {
-                        view.shadow(shadow: shadow, shape: effectiveShape)
-                    }
+                    view.shadow(shadow: shadow, shape: effectiveShape)
                 }
         case .pill:
             let shape = Capsule(style: .circular)
@@ -106,9 +105,7 @@ struct ShapeModifier: ViewModifier {
                         shape.strokeBorder(border.color, lineWidth: border.width)
                     }
                 }.applyIfLet(shadow) { view, shadow in
-                    view.overlay {
-                        view.shadow(shadow: shadow, shape: shape)
-                    }
+                    view.shadow(shadow: shadow, shape: shape)
                 }
         case .concave:
             // WIP: Need to implement
@@ -263,7 +260,91 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CornerBorder_Previews: PreviewProvider {
 
+    static func previewName(shape: ShapeModifier.Shape? = nil,
+                            border: ShapeModifier.BorderInfo? = nil,
+                            shadow: ShadowModifier.ShadowInfo? = nil,
+                            background: BackgroundStyle? = nil) -> String {
+        var name: [String] = []
+        switch shape {
+        case .pill: name.append("Pill")
+        case .rectangle: name.append("Rectangle")
+        case .none, .concave, .convex: break
+        }
+
+        if border != nil { name.append("Border") }
+        if shadow != nil { name.append("Shadow") }
+
+        switch background {
+        case .color: name.append("Color")
+        case .image: name.append("Image")
+        case .none: break
+        }
+
+        return name.joined(separator: " - ")
+    }
+
+    static let lightUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+
     static var previews: some View {
+        let shapes: [ShapeModifier.Shape?] = [
+            .pill,
+            .rectangle(.init(topLeft: 0, topRight: 5, bottomLeft: 10, bottomRight: 0)),
+            nil
+        ]
+
+        let borders: [ShapeModifier.BorderInfo?] = [
+            .init(color: .black, width: 1),
+            nil
+        ]
+
+        let backgrounds: [BackgroundStyle?] = [
+            .color(.init(light: .hex("#FFDE2180"))),
+            .color(
+                .init(
+                    light: .linear(30, [
+                        .init(color: "#000055", percent: 0),
+                        .init(color: "#ffffff", percent: 100)
+                    ])
+                  )
+             ),
+            .image(.init(
+                light: .init(
+                    width: 750,
+                    height: 530,
+                    original: lightUrl,
+                    heic: lightUrl,
+                    heicLowRes: lightUrl
+                )
+            )),
+            nil
+        ]
+
+        let shadows: [ShadowModifier.ShadowInfo?] = [
+            .init(color: .black, radius: 3, x: 2, y: 2),
+            nil
+        ]
+
+        ForEach(backgrounds, id: \.self) { background in
+            VStack {
+                ForEach(shapes, id: \.self) { shape in
+                    ForEach(borders, id: \.self) { border in
+                        ForEach(shadows, id: \.self) { shadow in
+                            VStack {
+                                Text(previewName(shape: shape, border: border, shadow: shadow))
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 20)
+                            }
+                            .shape(border: border, shape: shape, shadow: shadow, background: background)
+                            .padding(5)
+                        }
+                    }
+                }
+            }
+            .background(.blue)
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName(previewName(background: background))
+        }
+
         // Equal Radius - No Border
         VStack {
             Text("Hello")
