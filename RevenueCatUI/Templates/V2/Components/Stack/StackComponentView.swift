@@ -90,13 +90,10 @@ struct StackComponentView: View {
         }
         .padding(style.padding)
         .padding(additionalPadding)
-        .backgroundStyle(style.backgroundStyle)
         .shape(border: style.border,
-               shape: style.shape)
-        .applyIfLet(style.shadow) { view, shadow in
-            // Without compositingGroup(), the shadow is applied to the stack's children as well.
-            view.compositingGroup().shadow(shadow: shadow)
-        }
+               shape: style.shape,
+               shadow: style.shadow,
+               background: style.backgroundStyle)
         .padding(style.margin)
     }
 

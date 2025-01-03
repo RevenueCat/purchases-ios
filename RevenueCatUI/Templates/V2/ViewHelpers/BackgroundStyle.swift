@@ -16,7 +16,7 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-enum BackgroundStyle {
+enum BackgroundStyle: Hashable {
 
     case color(PaywallComponent.ColorScheme)
     case image(PaywallComponent.ThemeImageUrls)
