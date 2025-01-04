@@ -211,7 +211,7 @@ private enum Template5Preview {
         spacing: 20,
         backgroundColor: nil
     )
-    
+
     static let paywallComponents: Offering.PaywallComponents = .init(
         uiConfig: .init(
             app: .init(

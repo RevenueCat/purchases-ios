@@ -27,14 +27,23 @@ import Foundation
  * - ``Package``
  */
 @objc(RCOffering) public final class Offering: NSObject {
-    
+
     #if PAYWALL_COMPONENTS
 
+    /// Initialize a ``PaywallComponents``
     public struct PaywallComponents {
-        
+
+        /**
+         Paywall components configuration defined in RevenueCat dashboard.
+         */
         public let uiConfig: UIConfig
+
+        /**
+         Paywall components configuration defined in RevenueCat dashboard.
+         */
         public let data: PaywallComponentsData
-        
+
+        /// Initialize a ``PaywallComponents``.
         public init(uiConfig: UIConfig, data: PaywallComponentsData) {
             self.uiConfig = uiConfig
             self.data = data
