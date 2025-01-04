@@ -29,7 +29,7 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
                 .init(color: "#090979ff", percent: 35),
                 .init(color: "#216c32ff", percent: 100)
             ]),
-            "thirdary": .radial([
+            "tertiary": .radial([
                 .init(color: "#032400ff", percent: 0),
                 .init(color: "#090979ff", percent: 35),
                 .init(color: "#216c32ff", percent: 100)
@@ -48,10 +48,10 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
             ]
         ]))
 
-        expect(uiConfig.mapping.variables).to(equal([
+        expect(uiConfig.variableConfig.variableCompatibilityMap).to(equal([
             "new var": "guaranteed var"
         ]))
-        expect(uiConfig.mapping.functions).to(equal([
+        expect(uiConfig.variableConfig.functionCompatibilityMap).to(equal([
             "new fun": "guaranteed fun"
         ]))
     }

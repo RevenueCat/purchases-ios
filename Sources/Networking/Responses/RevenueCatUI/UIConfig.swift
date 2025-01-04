@@ -43,9 +43,8 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     public enum FontInfo: Codable, Sendable, Hashable {
 
-        // Other platforms support types like "google_fonts"
-        // This will only support "name" for now
         case name(String)
+        case googleFonts(String)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -53,6 +52,9 @@ public struct UIConfig: Codable, Equatable, Sendable {
             switch self {
             case .name(let name):
                 try container.encode(FontInfoTypes.name.rawValue, forKey: .type)
+                try container.encode(name, forKey: .value)
+            case .googleFonts(let name):
+                try container.encode(FontInfoTypes.googleFonts.rawValue, forKey: .type)
                 try container.encode(name, forKey: .value)
             }
         }
@@ -65,6 +67,9 @@ public struct UIConfig: Codable, Equatable, Sendable {
             case .name:
                 let value = try container.decode(String.self, forKey: .value)
                 self = .name(value)
+            case .googleFonts:
+                let value = try container.decode(String.self, forKey: .value)
+                self = .googleFonts(value)
             }
         }
 
@@ -80,33 +85,37 @@ public struct UIConfig: Codable, Equatable, Sendable {
         private enum FontInfoTypes: String, Decodable {
 
             case name
+            case googleFonts
 
         }
 
     }
 
-    public struct MappingConfig: Codable, Equatable, Sendable {
+    public struct VariableConfig: Codable, Equatable, Sendable {
 
-        public var variables: [String: String]
-        public var functions: [String: String]
+        public var variableCompatibilityMap: [String: String]
+        public var functionCompatibilityMap: [String: String]
 
-        public init(variables: [String: String], functions: [String: String]) {
-            self.variables = variables
-            self.functions = functions
+        public init(
+            variableCompatibilityMap: [String: String],
+            functionCompatibilityMap: [String: String]
+        ) {
+            self.variableCompatibilityMap = variableCompatibilityMap
+            self.functionCompatibilityMap = functionCompatibilityMap
         }
 
     }
 
     public var app: AppConfig
     public var localizations: [String: [String: String]]
-    public var mapping: MappingConfig
+    public var variableConfig: VariableConfig
 
     public init(app: AppConfig,
                 localizations: [String: [String: String]],
-                mapping: MappingConfig) {
+                variableConfig: VariableConfig) {
         self.app = app
         self.localizations = localizations
-        self.mapping = mapping
+        self.variableConfig = variableConfig
     }
 
 }

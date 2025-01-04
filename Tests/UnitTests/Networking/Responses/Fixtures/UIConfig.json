@@ -23,7 +23,7 @@
                     }
                 ]
             },
-            "thirdary": {
+            "tertiary": {
                 "type": "radial",
                 "points": [
                     {
@@ -64,11 +64,11 @@
             "monthly": "mensual"
         }
     },
-    "mapping": {
-        "variables": {
+    "variable_config": {
+        "variable_compatibility_map": {
             "new var": "guaranteed var"
         },
-        "functions": {
+        "function_compatibility_map": {
             "new fun": "guaranteed fun"
         }
     }
