@@ -46,15 +46,20 @@ import Foundation
     @objc public var metadata: [String: Any] { self._metadata.data }
 
     /**
-    Paywall configuration defined in RevenueCat dashboard.
+     Paywall configuration defined in RevenueCat dashboard.
      */
     public let paywall: PaywallData?
 
     #if PAYWALL_COMPONENTS
     /**
-    Paywall components configuration defined in RevenueCat dashboard.
+     Paywall components configuration defined in RevenueCat dashboard.
      */
     public let paywallComponentsData: PaywallComponentsData?
+
+    /**
+     Configurations needed for RevenueCat UI defined in RevenueCat dashboard.
+     */
+    public let uiConfig: UIConfig?
     #endif
 
     /**
@@ -153,6 +158,7 @@ import Foundation
             metadata: metadata,
             paywall: nil,
             paywallComponentsData: nil,
+            uiConfig: nil,
             availablePackages: availablePackages
         )
         #else
@@ -174,6 +180,7 @@ import Foundation
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponentsData: PaywallComponentsData? = nil,
+        uiConfig: UIConfig? = nil,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
@@ -182,6 +189,7 @@ import Foundation
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
         self.paywallComponentsData = paywallComponentsData
+        self.uiConfig = uiConfig
 
         var foundPackages: [PackageType: Package] = [:]
 

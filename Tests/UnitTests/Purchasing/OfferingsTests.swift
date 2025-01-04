@@ -60,7 +60,8 @@ class OfferingsTests: TestCase {
                 packages: [
                     .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
                     .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual")
-                ])
+                ]),
+            uiConfig: nil
         )
 
         expect(offering).to(beNil())
@@ -85,7 +86,8 @@ class OfferingsTests: TestCase {
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
                         .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual"),
                         .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
-                    ])
+                    ]),
+                uiConfig: nil
             )
         )
 
