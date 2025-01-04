@@ -363,7 +363,10 @@ extension Offering: Identifiable {
 
 }
 
+#if PAYWALL_COMPONENTS
 extension Offering.PaywallComponents: Sendable {}
+#endif
+
 extension Offering: Sendable {}
 
 // MARK: - Private
