@@ -27,6 +27,22 @@ import Foundation
  * - ``Package``
  */
 @objc(RCOffering) public final class Offering: NSObject {
+    
+    #if PAYWALL_COMPONENTS
+
+    public struct PaywallComponents {
+        
+        public let uiConfig: UIConfig
+        public let data: PaywallComponentsData
+        
+        public init(uiConfig: UIConfig, data: PaywallComponentsData) {
+            self.uiConfig = uiConfig
+            self.data = data
+        }
+
+    }
+
+    #endif
 
     /**
      Unique identifier defined in RevenueCat dashboard.
@@ -54,12 +70,7 @@ import Foundation
     /**
      Paywall components configuration defined in RevenueCat dashboard.
      */
-    public let paywallComponentsData: PaywallComponentsData?
-
-    /**
-     Configurations needed for RevenueCat UI defined in RevenueCat dashboard.
-     */
-    public let uiConfig: UIConfig?
+    public let paywallComponents: PaywallComponents?
     #endif
 
     /**
@@ -157,8 +168,7 @@ import Foundation
             serverDescription: serverDescription,
             metadata: metadata,
             paywall: nil,
-            paywallComponentsData: nil,
-            uiConfig: nil,
+            paywallComponents: nil,
             availablePackages: availablePackages
         )
         #else
@@ -179,8 +189,7 @@ import Foundation
         serverDescription: String,
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
-        paywallComponentsData: PaywallComponentsData? = nil,
-        uiConfig: UIConfig? = nil,
+        paywallComponents: PaywallComponents? = nil,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
@@ -188,8 +197,7 @@ import Foundation
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
-        self.paywallComponentsData = paywallComponentsData
-        self.uiConfig = uiConfig
+        self.paywallComponents = paywallComponents
 
         var foundPackages: [PackageType: Package] = [:]
 
@@ -346,6 +354,7 @@ extension Offering: Identifiable {
 
 }
 
+extension Offering.PaywallComponents: Sendable {}
 extension Offering: Sendable {}
 
 // MARK: - Private

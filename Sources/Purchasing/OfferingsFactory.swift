@@ -53,12 +53,21 @@ class OfferingsFactory {
         }
 
         #if PAYWALL_COMPONENTS
+        let paywallComponents: Offering.PaywallComponents? = {
+            if let uiConfig, let paywallComponents = offering.paywallComponents {
+                return .init(
+                    uiConfig: uiConfig,
+                    data: paywallComponents
+                )
+            }
+            return nil
+        }()
+        
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
                         paywall: offering.paywall,
-                        paywallComponentsData: offering.paywallComponents,
-                        uiConfig: uiConfig,
+                        paywallComponents: paywallComponents,
                         availablePackages: availablePackages)
         #else
         return Offering(identifier: offering.identifier,

@@ -42,17 +42,19 @@
             }
         },
         "fonts": {
-            "ios": {
-                "type": "name",
-                "value": "SF Pro"
-            },
-            "android": {
-                "type": "name",
-                "value": "Roboto"
-            },
-            "web": {
-                "type": "google_fonts",
-                "value": "Gothic"
+            "primary": {
+                "ios": {
+                    "type": "name",
+                    "value": "SF Pro"
+                },
+                "android": {
+                    "type": "name",
+                    "value": "Roboto"
+                },
+                "web": {
+                    "type": "google_fonts",
+                    "value": "Gothic"
+                }
             }
         }
     },

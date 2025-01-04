@@ -35,9 +35,9 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
                 .init(color: "#216c32ff", percent: 100)
             ])
         ]))
-        expect(uiConfig.app.fonts).to(equal(
-            .init(ios: .name("SF Pro"))
-        ))
+        expect(uiConfig.app.fonts).to(equal([
+            "primary": .init(ios: .name("SF Pro"))
+        ]))
 
         expect(uiConfig.localizations).to(equal([
             "en_US": [

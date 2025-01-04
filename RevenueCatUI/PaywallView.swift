@@ -253,9 +253,9 @@ public struct PaywallView: View {
         )
 
         #if PAYWALL_COMPONENTS
-        if let componentData = offering.paywallComponentsData {
+        if let paywallComponents = offering.paywallComponents {
             PaywallsV2View(
-                paywallComponentsData: componentData,
+                paywallComponents: paywallComponents,
                 offering: offering,
                 introEligibilityChecker: .default(),
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,

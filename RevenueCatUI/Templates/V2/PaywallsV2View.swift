@@ -50,17 +50,19 @@ struct PaywallsV2View: View {
     private var paywallStateManager: PaywallStateManager
 
     private let paywallComponentsData: PaywallComponentsData
+    private let uiConfig: UIConfig
     private let offering: Offering
     private let onDismiss: () -> Void
 
     public init(
-        paywallComponentsData: PaywallComponentsData,
+        paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void
     ) {
-        self.paywallComponentsData = paywallComponentsData
+        self.paywallComponentsData = paywallComponents.data
+        self.uiConfig = paywallComponents.uiConfig
         self.offering = offering
         self.onDismiss = onDismiss
         self._introOfferEligibilityContext = .init(
@@ -76,8 +78,8 @@ struct PaywallsV2View: View {
         self._paywallStateManager = .init(
             wrappedValue: .init(state: Self.createPaywallState(
                 componentsConfig: componentsConfig,
-                componentsLocalizations: paywallComponentsData.componentsLocalizations,
-                defaultLocale: paywallComponentsData.defaultLocale,
+                componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                defaultLocale: paywallComponents.data.defaultLocale,
                 offering: offering,
                 introEligibilityChecker: introEligibilityChecker,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
