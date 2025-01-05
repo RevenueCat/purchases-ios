@@ -80,6 +80,7 @@ struct PaywallsV2View: View {
                 componentsConfig: componentsConfig,
                 componentsLocalizations: paywallComponents.data.componentsLocalizations,
                 defaultLocale: paywallComponents.data.defaultLocale,
+                uiConfig: paywallComponents.uiConfig,
                 offering: offering,
                 introEligibilityChecker: introEligibilityChecker,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
@@ -177,6 +178,7 @@ fileprivate extension PaywallsV2View {
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         defaultLocale: String,
+        uiConfig: UIConfig,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool
@@ -188,11 +190,14 @@ fileprivate extension PaywallsV2View {
         )
 
         do {
+            let uiConfigProvider = UIConfigProvider(uiConfig: uiConfig)
+
             let factory = ViewModelFactory()
             let root = try factory.toRootViewModel(
                 componentsConfig: componentsConfig,
                 offering: offering,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
 
             // WIP: Maybe re-enable this later or add some warnings

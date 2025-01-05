@@ -24,13 +24,19 @@ class ImageComponentViewModel {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     private let localizationProvider: LocalizationProvider
+    private let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.ImageComponent
 
     private let imageInfo: PaywallComponent.ThemeImageUrls
     private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
 
-    init(localizationProvider: LocalizationProvider, component: PaywallComponent.ImageComponent) throws {
+    init(
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
+        component: PaywallComponent.ImageComponent
+    ) throws {
         self.localizationProvider = localizationProvider
+        self.uiConfigProvider = uiConfigProvider
         self.component = component
 
         if let overrideSourceLid = component.overrideSourceLid {

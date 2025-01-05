@@ -21,6 +21,27 @@ import SwiftUI
 
 // swiftlint:disable identifier_name
 
+enum PreviewUIConfig {
+
+    static func make(
+        colors: [String: PaywallComponent.ColorInfo] = [:],
+        fonts: [String: UIConfig.FontsConfig] = [:]
+    ) -> UIConfig {
+        return .init(
+            app: .init(
+                colors: colors,
+                fonts: fonts
+            ),
+            localizations: [:],
+            variableConfig: .init(
+                variableCompatibilityMap: [:],
+                functionCompatibilityMap: [:]
+            )
+        )
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PreviewRequiredEnvironmentProperties: ViewModifier {
 

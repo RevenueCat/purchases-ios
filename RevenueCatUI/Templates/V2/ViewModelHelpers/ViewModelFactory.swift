@@ -24,11 +24,13 @@ struct ViewModelFactory {
     func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider
     ) throws -> RootViewModel {
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
             localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
             offering: offering
         )
 
@@ -36,6 +38,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -56,42 +59,46 @@ struct ViewModelFactory {
         component: PaywallComponent,
         packageValidator: PackageValidator,
         offering: Offering,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
             return .text(
-                try TextComponentViewModel(localizationProvider: localizationProvider, component: component)
+                try TextComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
             )
         case .image(let component):
             return .image(
-                try ImageComponentViewModel(localizationProvider: localizationProvider, component: component)
-            )
-        case .spacer(let component):
-            return .spacer(
-                SpacerComponentViewModel(component: component)
+                try ImageComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
             )
         case .stack(let component):
             let viewModels = try component.components.map { component in
-                try self.toViewModel(component: component,
-                                     packageValidator: packageValidator,
-                                     offering: offering,
-                                     localizationProvider: localizationProvider)
+                try self.toViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    offering: offering,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider
+                )
             }
 
             return .stack(
                 try StackComponentViewModel(component: component,
                                             viewModels: viewModels)
             )
-        case .linkButton(let component):
-            return .linkButton(
-                try LinkButtonComponentViewModel(component: component,
-                                                 localizationProvider: localizationProvider)
-            )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -107,6 +114,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -125,6 +133,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -135,6 +144,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -150,6 +160,7 @@ struct ViewModelFactory {
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
         localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
         offering: Offering
     ) throws -> StackComponentViewModel {
         let viewModels = try component.components.map { component in
@@ -157,7 +168,8 @@ struct ViewModelFactory {
                 component: component,
                 packageValidator: packageValidator,
                 offering: offering,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
         }
 

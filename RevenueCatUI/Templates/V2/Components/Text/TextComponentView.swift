@@ -50,7 +50,7 @@ struct TextComponentView: View {
             Group {
                 if style.visible {
                     Text(.init(style.text))
-                        .font(style.fontSize)
+                        .font(style.font)
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(style.textAlignment)
@@ -70,6 +70,7 @@ struct TextComponentView: View {
 
 #if DEBUG
 
+// swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
 
@@ -84,6 +85,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))
@@ -94,7 +96,100 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
 
-        // Default
+        // Custom Font
+        VStack {
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        text: "id_1",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: .headingXXL
+                    )
+                )
+            )
+
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "primary": .init(ios: .name("Chalkduster"))
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        fontName: "primary",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: .headingXXL
+                    )
+                )
+            )
+
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "primary": .init(ios: .name("Chalkduster"))
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        fontName: "This font name is not configured",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: .headingXXL
+                    )
+                )
+            )
+
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "primary": .init(ios: .name("This Font Does Not Exist"))
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        fontName: "primary",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: .headingXXL
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Custom Font")
+
+        // Gradient
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
@@ -104,6 +199,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     color: PaywallComponent.ColorScheme(
@@ -136,6 +232,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     fontName: nil,
@@ -169,6 +266,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -210,6 +308,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_2": .string("Showing medium condition")
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -240,6 +339,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_2": .string("SHOULDN'T SHOW MEDIUM")
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -271,6 +371,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         )
                     ]
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))

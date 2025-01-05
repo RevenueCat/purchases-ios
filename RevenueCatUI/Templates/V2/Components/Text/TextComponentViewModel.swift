@@ -20,13 +20,19 @@ import SwiftUI
 class TextComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
+    private let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.TextComponent
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
-    init(localizationProvider: LocalizationProvider, component: PaywallComponent.TextComponent) throws {
+    init(
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
+        component: PaywallComponent.TextComponent
+    ) throws {
         self.localizationProvider = localizationProvider
+        self.uiConfigProvider = uiConfigProvider
         self.component = component
         self.text = try localizationProvider.localizedStrings.string(key: component.text)
 
@@ -51,8 +57,9 @@ class TextComponentViewModel {
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
-
         let text = localizedPartial?.text ?? self.text
+
+        let fontFamily = self.uiConfigProvider.getFontFamily(for: partial?.fontName ?? self.component.fontName)
 
         let style = TextComponentStyle(
             visible: partial?.visible ?? true,
@@ -61,7 +68,7 @@ class TextComponentViewModel {
                 packageContext: packageContext,
                 locale: self.localizationProvider.locale
             ),
-            fontFamily: partial?.fontName ?? self.component.fontName,
+            fontFamily: fontFamily,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
@@ -158,7 +165,7 @@ struct TextComponentStyle {
     let text: String
     let fontWeight: Font.Weight
     let color: PaywallComponent.ColorScheme
-    let fontSize: Font
+    let font: Font
     let horizontalAlignment: Alignment
     let textAlignment: TextAlignment
     let backgroundStyle: BackgroundStyle?
@@ -185,7 +192,7 @@ struct TextComponentStyle {
         self.color = color
 
         // WIP: Take into account the fontFamily mapping
-        self.fontSize = fontSize.font
+        self.font = fontSize.makeFont(familyName: fontFamily)
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment

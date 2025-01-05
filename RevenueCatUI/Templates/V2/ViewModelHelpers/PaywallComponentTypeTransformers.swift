@@ -18,8 +18,8 @@ import SwiftUI
 
 extension PaywallComponent.FontSize {
 
-    var font: Font {
-        return Font(self.uiFont)
+    func makeFont(familyName: String?) -> Font {
+        return Font(self.makeUIFont(familyName: familyName))
     }
 
     private var textStyle: UIFont.TextStyle {
@@ -36,7 +36,8 @@ extension PaywallComponent.FontSize {
         }
     }
 
-    private var uiFont: UIFont {
+    // swiftlint:disable cyclomatic_complexity
+    private func makeUIFont(familyName: String?) -> UIFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -51,8 +52,21 @@ extension PaywallComponent.FontSize {
         case .bodyS: fontSize = 13
         }
 
-        // Create a UIFont and apply dynamic type scaling
-        let baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        // Create the base font, with fallback to the system font
+        let baseFont: UIFont
+        if let familyName = familyName {
+            if let customFont = UIFont(name: familyName, size: fontSize) {
+                baseFont = customFont
+            } else {
+                // Log a warning about the missing custom font
+                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            }
+        } else {
+            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        }
+
+        // Apply dynamic type scaling
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
     }
 
