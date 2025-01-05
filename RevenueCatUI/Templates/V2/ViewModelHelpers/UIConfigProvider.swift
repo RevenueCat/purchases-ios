@@ -34,6 +34,7 @@ struct UIConfigProvider {
             return fontFamily
         case .googleFonts:
             // Not supported on this platform (yet)
+            Logger.warning("Google Fonts are not supported on this platform")
             return nil
         @unknown default:
             return nil
