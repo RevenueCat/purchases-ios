@@ -60,7 +60,8 @@ class OfferingsTests: TestCase {
                 packages: [
                     .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
                     .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual")
-                ])
+                ]),
+            uiConfig: nil
         )
 
         expect(offering).to(beNil())
@@ -85,7 +86,8 @@ class OfferingsTests: TestCase {
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
                         .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual"),
                         .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
-                    ])
+                    ]),
+                uiConfig: nil
             )
         )
 
@@ -115,7 +117,8 @@ class OfferingsTests: TestCase {
                           ])
                 ],
                 placements: nil,
-                targeting: nil
+                targeting: nil,
+                uiConfig: nil
             )
         )
 
@@ -150,7 +153,8 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
@@ -207,7 +211,8 @@ class OfferingsTests: TestCase {
                                         "placement_name": "offering_b",
                                         "placement_name_with_nil": nil
                                       ])),
-                    targeting: .init(revision: 1, ruleId: "abc123")
+                    targeting: .init(revision: 1, ruleId: "abc123"),
+                    uiConfig: nil
                 )
             )
         )
@@ -279,7 +284,8 @@ class OfferingsTests: TestCase {
                                         "placement_name": "offering_b",
                                         "placement_name_with_nil": nil
                                       ])),
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
@@ -314,7 +320,8 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: .init(revision: 1, ruleId: "abc123")
+                    targeting: .init(revision: 1, ruleId: "abc123"),
+                    uiConfig: nil
                 )
             )
         )
@@ -386,7 +393,8 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )
@@ -524,7 +532,8 @@ class OfferingsTests: TestCase {
                       ])
             ],
             placements: nil,
-            targeting: nil
+            targeting: nil,
+            uiConfig: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
@@ -565,7 +574,8 @@ private extension OfferingsTests {
                               ])
                     ],
                     placements: nil,
-                    targeting: nil
+                    targeting: nil,
+                    uiConfig: nil
                 )
             )
         )

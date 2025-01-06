@@ -137,6 +137,21 @@ private enum Template1Preview {
         backgroundColor: nil
     )
 
+    static let paywallComponents: Offering.PaywallComponents = .init(
+        uiConfig: .init(
+            app: .init(
+                colors: [:],
+                fonts: [:]
+            ),
+            localizations: [:],
+            variableConfig: .init(
+                variableCompatibilityMap: [:],
+                functionCompatibilityMap: [:]
+            )
+        ),
+        data: data
+    )
+
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
@@ -181,7 +196,7 @@ struct Template1Preview_Previews: PreviewProvider {
 
         // Template 1
         PaywallsV2View(
-            paywallComponentsData: Template1Preview.data,
+            paywallComponents: Template1Preview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
                             availablePackages: [package]),
