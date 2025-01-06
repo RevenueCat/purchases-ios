@@ -231,55 +231,105 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("3 months"))
     }
 
-//    func testProductOfferPrice() {
-//        let result = variableHandler.processVariables(
-//            in: "{{ product.offer_price }}",
-//            with: TestData.monthlyPackage,
-//            locale: locale,
-//            localizations: localizations["en_US"]!
-//        )
-//        expect(result).to(equal("4.99"))
-//    }
-//
-//    func testProductOfferPricePerDay() {
-//        let result = variableHandler.processVariables(
-//            in: "{{ product.offer_price_per_day }}",
-//            with: TestData.monthlyPackage,
-//            locale: locale,
-//            localizations: localizations["en_US"]!
-//        )
-//        expect(result).to(equal("0.17"))
-//    }
-//
-//    func testProductOfferPricePerWeek() {
-//        let result = variableHandler.processVariables(
-//            in: "{{ product.offer_price_per_week }}",
-//            with: TestData.monthlyPackage,
-//            locale: locale,
-//            localizations: localizations["en_US"]!
-//        )
-//        expect(result).to(equal("1.24"))
-//    }
-//
-//    func testProductOfferPricePerMonth() {
-//        let result = variableHandler.processVariables(
-//            in: "{{ product.offer_price_per_month }}",
-//            with: TestData.monthlyPackage,
-//            locale: locale,
-//            localizations: localizations["en_US"]!
-//        )
-//        expect(result).to(equal("4.99"))
-//    }
-//
-//    func testProductOfferPricePerYear() {
-//        let result = variableHandler.processVariables(
-//            in: "{{ product.offer_price_per_year }}",
-//            with: TestData.monthlyPackage,
-//            locale: locale,
-//            localizations: localizations["en_US"]!
-//        )
-//        expect(result).to(equal("59.88"))
-//    }
+    func testProductFreeOfferPrice() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testProductFreeOfferPricePerDay() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testProductFreeOfferPricePerWeek() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_week }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testProductFreeOfferPricePerMonth() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testProductFreeOfferPricePerYear() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_year }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.00"))
+    }
+    
+    func testProductPayUpFrontOfferPrice() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testProductPayUpFrontOfferPricePerDay() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_day }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.28"))
+    }
+
+    func testProductPayUpFrontOfferPricePerWeek() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_week }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testProductPayUpFrontOfferPricePerMonth() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testProductPayUpFrontOfferPricePerYear() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_year }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$1.99"))
+    }
 
     func testProductOfferPeriod() {
         let result = variableHandler.processVariables(

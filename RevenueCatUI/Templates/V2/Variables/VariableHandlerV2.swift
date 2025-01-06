@@ -298,19 +298,35 @@ extension VariablesV2 {
     }
 
     func productOfferPricePerDay(package: Package) -> String {
-        return ""
+        guard let price = package.storeProduct.introductoryDiscount?.pricePerDay, let formatter = package.storeProduct.priceFormatter else {
+            return ""
+        }
+        
+        return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 
     func productOfferPricePerWeek(package: Package) -> String {
-        return ""
+        guard let price = package.storeProduct.introductoryDiscount?.pricePerWeek, let formatter = package.storeProduct.priceFormatter else {
+            return ""
+        }
+        
+        return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 
     func productOfferPricePerMonth(package: Package) -> String {
-        return ""
+        guard let price = package.storeProduct.introductoryDiscount?.pricePerMonth, let formatter = package.storeProduct.priceFormatter else {
+            return ""
+        }
+        
+        return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 
     func productOfferPricePerYear(package: Package) -> String {
-        return ""
+        guard let price = package.storeProduct.introductoryDiscount?.pricePerYear, let formatter = package.storeProduct.priceFormatter else {
+            return ""
+        }
+        
+        return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 
     func productOfferPeriod(package: Package, localizations: [String: String]) -> String {
