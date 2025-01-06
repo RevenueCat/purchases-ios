@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890802D2B76450069677B /* VariableHandlerV2.swift */; };
+		030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
@@ -1237,6 +1239,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
+		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
@@ -2440,6 +2444,22 @@
 				FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */,
 			);
 			path = StoreKit2;
+			sourceTree = "<group>";
+		};
+		0308907F2D2B76340069677B /* Variables */ = {
+			isa = PBXGroup;
+			children = (
+				030890802D2B76450069677B /* VariableHandlerV2.swift */,
+			);
+			path = Variables;
+			sourceTree = "<group>";
+		};
+		030890822D2B77DD0069677B /* PaywallsV2 */ = {
+			isa = PBXGroup;
+			children = (
+				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
+			);
+			path = PaywallsV2;
 			sourceTree = "<group>";
 		};
 		03A98D2E2D240C2D009BCA61 /* RevenueCatUI */ = {
@@ -4714,6 +4734,7 @@
 		887A62242C1D168B00E1A461 /* RevenueCatUITests */ = {
 			isa = PBXGroup;
 			children = (
+				030890822D2B77DD0069677B /* PaywallsV2 */,
 				3544DA6B2C2C848E00704E9D /* CustomerCenter */,
 				887A612D2C1D168B00E1A461 /* Data */,
 				887A61362C1D168B00E1A461 /* Helpers */,
@@ -4755,6 +4776,7 @@
 			children = (
 				88B1BAE32C813A3C001B7EE5 /* PaywallsV2View.swift */,
 				2C7457492CEA6B06004ACE52 /* EnvironmentObjects */,
+				0308907F2D2B76340069677B /* Variables */,
 				2C7457442CEA652B004ACE52 /* ViewHelpers */,
 				2C7457452CEA653A004ACE52 /* ViewModelHelpers */,
 				2C7457432CEA6470004ACE52 /* Components */,
@@ -6652,6 +6674,7 @@
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
+				030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */,
 				887A606F2C1D037000E1A461 /* PaywallData+Validation.swift in Sources */,
 				88A543DF2C37A45B0039C6A5 /* TemplatePackageSetting.swift in Sources */,
 				3546355D2C391F38001D7E85 /* PromotionalOfferViewModel.swift in Sources */,
@@ -6699,6 +6722,7 @@
 				887A63412C1D177800E1A461 /* BaseSnapshotTest.swift in Sources */,
 				887A63422C1D177800E1A461 /* ImageLoaderTests.swift in Sources */,
 				887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */,
+				030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */,
 				FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */,
 				887A63442C1D177800E1A461 /* PaywallFooterTests.swift in Sources */,
 				887A63452C1D177800E1A461 /* PaywallViewEventsTests.swift in Sources */,

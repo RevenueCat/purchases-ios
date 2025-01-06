@@ -51,6 +51,7 @@ public struct TestStoreProduct {
     public var localizedTitle: String
     public var price: Decimal
     public var localizedPriceString: String
+    public var localizedPricePerDay: String?
     public var localizedPricePerWeek: String?
     public var localizedPricePerMonth: String?
     public var localizedPricePerYear: String?
