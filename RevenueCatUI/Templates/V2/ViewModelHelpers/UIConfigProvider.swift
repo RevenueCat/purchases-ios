@@ -24,6 +24,14 @@ struct UIConfigProvider {
         self.uiConfig = uiConfig
     }
 
+    func getColor(for name: String?) -> PaywallComponent.ColorInfo? {
+        guard let name else {
+            return nil
+        }
+
+        return self.uiConfig.app.colors[name]
+    }
+
     func getFontFamily(for name: String?) -> String? {
         guard let name, let fontInfo = self.uiConfig.app.fonts[name]?.ios else {
             return nil

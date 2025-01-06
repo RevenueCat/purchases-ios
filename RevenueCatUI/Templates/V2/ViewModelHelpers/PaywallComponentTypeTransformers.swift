@@ -58,7 +58,6 @@ extension PaywallComponent.FontSize {
             if let customFont = UIFont(name: familyName, size: fontSize) {
                 baseFont = customFont
             } else {
-                // Log a warning about the missing custom font
                 Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
                 baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
             }
@@ -239,13 +238,23 @@ extension PaywallComponent.FitMode {
 
 extension PaywallComponent.ColorInfo {
 
-    func toColor(fallback: Color) -> Color {
+    func toColor(fallback: Color, uiConfigProvider: UIConfigProvider) -> Color {
         switch self {
         case .hex(let hex):
             return hex.toColor(fallback: fallback)
-        case .alias:
-            // WIP: Need to implement this when we actually have alias implemented
-            return fallback
+        case .alias(let alias):
+            guard let aliasColor = uiConfigProvider.getColor(for: alias) else {
+                Logger.warning("Aliased color '\(alias)' does not exist.")
+                return fallback
+            }
+
+            // Alias should never have an alias
+            // Using fallback so recursion doesn't happen
+            if case .alias = aliasColor {
+                return fallback
+            }
+
+            return aliasColor.toColor(fallback: fallback, uiConfigProvider: uiConfigProvider)
         case .linear, .radial:
             return fallback
         }
@@ -313,10 +322,10 @@ extension PaywallComponent.ColorHex {
 extension PaywallComponent.ColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func toDynamicColor() -> Color {
+    func toDynamicColor(uiConfigProvider: UIConfigProvider) -> Color {
 
         guard let darkModeColor = self.dark else {
-            return light.toColor(fallback: Color.clear)
+            return light.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider)
         }
 
         let lightModeColor = light
@@ -324,11 +333,11 @@ extension PaywallComponent.ColorScheme {
         return Color(UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .light, .unspecified:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
+                return UIColor(lightModeColor.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider))
             case .dark:
-                return UIColor(darkModeColor.toColor(fallback: Color.clear))
+                return UIColor(darkModeColor.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider))
             @unknown default:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
+                return UIColor(lightModeColor.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider))
             }
         })
     }

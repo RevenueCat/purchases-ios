@@ -23,27 +23,48 @@ struct ForegroundColorSchemeModifier: ViewModifier {
     var colorScheme
 
     var foregroundColorScheme: PaywallComponent.ColorScheme
+    var uiConfigProvider: UIConfigProvider
 
     func body(content: Content) -> some View {
-        content.foregroundColorScheme(foregroundColorScheme, colorScheme: colorScheme)
+        content.foregroundColorScheme(
+            self.foregroundColorScheme,
+            colorScheme: self.colorScheme,
+            uiConfigProvider: self.uiConfigProvider
+        )
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func foregroundColorScheme(_ colorScheme: PaywallComponent.ColorScheme) -> some View {
-        self.modifier(ForegroundColorSchemeModifier(foregroundColorScheme: colorScheme))
+    func foregroundColorScheme(
+        _ colorScheme: PaywallComponent.ColorScheme,
+        uiConfigProvider: UIConfigProvider
+    ) -> some View {
+        self.modifier(ForegroundColorSchemeModifier(foregroundColorScheme: colorScheme,
+                                                    uiConfigProvider: uiConfigProvider))
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
     @ViewBuilder
-    func foregroundColorScheme(_ color: PaywallComponent.ColorScheme, colorScheme: ColorScheme) -> some View {
+    func foregroundColorScheme(
+        _ color: PaywallComponent.ColorScheme,
+        colorScheme: ColorScheme,
+        uiConfigProvider: UIConfigProvider
+    ) -> some View {
         switch color.effectiveColor(for: colorScheme) {
         case .hex, .alias:
-            self.foregroundColor(color.toDynamicColor())
+            let color = color.toDynamicColor(uiConfigProvider: uiConfigProvider)
+
+            // Only apply foreground color if not clear
+            // This is a way to
+            if color != Color.clear {
+                self.foregroundColor(color)
+            } else {
+                self
+            }
         case .linear(let degrees, _):
             self.overlay {
                 GradientView(

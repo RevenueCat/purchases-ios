@@ -92,7 +92,8 @@ struct ViewModelFactory {
 
             return .stack(
                 try StackComponentViewModel(component: component,
-                                            viewModels: viewModels)
+                                            viewModels: viewModels,
+                                            uiConfigProvider: uiConfigProvider)
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
@@ -175,7 +176,8 @@ struct ViewModelFactory {
 
         return try StackComponentViewModel(
             component: component,
-            viewModels: viewModels
+            viewModels: viewModels,
+            uiConfigProvider: uiConfigProvider
         )
     }
 

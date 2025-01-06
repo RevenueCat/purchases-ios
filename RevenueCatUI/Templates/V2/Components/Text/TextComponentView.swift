@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
+// swiftlint:disable file_length
+
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -54,10 +56,10 @@ struct TextComponentView: View {
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(style.textAlignment)
-                        .foregroundColorScheme(style.color)
+                        .foregroundColorScheme(style.color, uiConfigProvider: self.viewModel.uiConfigProvider)
                         .padding(style.padding)
                         .size(style.size, alignment: style.horizontalAlignment)
-                        .backgroundStyle(style.backgroundStyle)
+                        .backgroundStyle(style.backgroundStyle, uiConfigProvider: self.viewModel.uiConfigProvider)
                         .padding(style.margin)
                 } else {
                     EmptyView()
@@ -188,6 +190,60 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font")
+
+        // Custom Color
+        VStack {
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Red bg, yellow fg")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        colors: [
+                            "primary": .hex("#ff0000"),
+                            "secondary": .hex("#ffcc00")
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        color: .init(light: .alias("secondary")),
+                        backgroundColor: .init(light: .alias("primary")),
+                        fontSize: .headingXXL
+                    )
+                )
+            )
+
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Clear bg and default fg")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        colors: [
+                            "primary": .hex("#ff0000"),
+                            "secondary": .hex("#ffcc00")
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        color: .init(light: .alias("not a thing")),
+                        backgroundColor: .init(light: .alias("also not a thing")),
+                        fontSize: .headingXXL
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Custom Color")
 
         // Gradient
         TextComponentView(
