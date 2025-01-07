@@ -449,7 +449,8 @@ fileprivate extension StackComponentViewModel {
                 component: component,
                 packageValidator: validator,
                 offering: offering,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
             )
         }
 

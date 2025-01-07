@@ -152,6 +152,7 @@ fileprivate extension PurchaseButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             localizationProvider: localizationProvider,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering
         )
 

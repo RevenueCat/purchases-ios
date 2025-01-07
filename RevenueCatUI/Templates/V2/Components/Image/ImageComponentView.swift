@@ -117,6 +117,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -145,6 +146,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -173,6 +175,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -204,6 +207,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
