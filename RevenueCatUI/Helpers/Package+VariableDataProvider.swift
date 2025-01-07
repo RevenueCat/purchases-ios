@@ -30,7 +30,7 @@ extension Package: VariableDataProvider {
             return self.storeProduct.localizedPriceString
         }
     }
-    
+
     func localizedPricePerDay(showZeroDecimalPlacePrices: Bool = false) -> String {
         guard let price = self.storeProduct.localizedPricePerDay else {
             Logger.warning(Strings.package_not_subscription(self))

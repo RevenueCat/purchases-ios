@@ -206,7 +206,7 @@ public extension StoreProduct {
     @objc(price) var priceDecimalNumber: NSDecimalNumber {
         return self.price as NSDecimalNumber
     }
-    
+
     /// Calculates the price of this subscription product per day.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
