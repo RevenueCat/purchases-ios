@@ -53,7 +53,7 @@
 		2C7457882CEDF7C0004ACE52 /* BackgroundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */; };
 		2C74578A2CEE314F004ACE52 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457892CEE314C004ACE52 /* Background.swift */; };
 		2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */; };
-		2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */; };
+		2C7F0AD62B8EEF7B00381179 /* RateLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7F0AD42B8EEF0B00381179 /* RateLimiterTests.swift */; };
 		2C8EC6DB2CCC23B700D6CCF8 /* Template5Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DA2CCC23B700D6CCF8 /* Template5Preview.swift */; };
 		2C8EC6DD2CCC7C5B00D6CCF8 /* PackageValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */; };
 		2C8EC6DF2CCD27A500D6CCF8 /* PartialComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */; };
@@ -1287,7 +1287,7 @@
 		2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStyle.swift; sourceTree = "<group>"; };
 		2C7457892CEE314C004ACE52 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		2C7F0AD22B8EEB4600381179 /* RateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiter.swift; sourceTree = "<group>"; };
-		2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterRests.swift; sourceTree = "<group>"; };
+		2C7F0AD42B8EEF0B00381179 /* RateLimiterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimiterTests.swift; sourceTree = "<group>"; };
 		2C8EC6AE2CCBD33E00D6CCF8 /* ButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentTests.swift; sourceTree = "<group>"; };
 		2C8EC6DA2CCC23B700D6CCF8 /* Template5Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template5Preview.swift; sourceTree = "<group>"; };
 		2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidator.swift; sourceTree = "<group>"; };
@@ -3510,7 +3510,7 @@
 				5712BE9129241F7900A83F15 /* TimingUtilTests.swift */,
 				4F8DDB682AAA9189000188F2 /* OperationDispatcherTests.swift */,
 				4FEF41AC2B4F301800CD699F /* MacAppStoreDetectorTests.swift */,
-				2C7F0AD42B8EEF0B00381179 /* RateLimiterRests.swift */,
+				2C7F0AD42B8EEF0B00381179 /* RateLimiterTests.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -6339,7 +6339,7 @@
 				1EFA950D2CDB6B6500CA5951 /* BackendPostRedeemWebPurchaseTests.swift in Sources */,
 				35C05DC82BC8510000109308 /* DiagnosticsTrackerTests.swift in Sources */,
 				35C272A12BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */,
-				2C7F0AD62B8EEF7B00381179 /* RateLimiterRests.swift in Sources */,
+				2C7F0AD62B8EEF7B00381179 /* RateLimiterTests.swift in Sources */,
 				FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */,
 				356E2DE82CD3CF930055AABB /* StoredEventTests.swift in Sources */,
 				351B513F26D4496000BD2BD7 /* MockIdentityManager.swift in Sources */,
