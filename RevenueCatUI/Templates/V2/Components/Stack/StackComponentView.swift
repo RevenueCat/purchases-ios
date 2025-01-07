@@ -90,7 +90,7 @@ struct StackComponentView: View {
         }
         .padding(style.padding)
         .padding(additionalPadding)
-        .backgroundStyle(style.backgroundStyle)
+        .backgroundStyle(style.backgroundStyle, uiConfigProvider: self.viewModel.uiConfigProvider)
         .shape(border: style.border,
                shape: style.shape)
         .applyIfLet(style.shadow) { view, shadow in
@@ -456,7 +456,8 @@ fileprivate extension StackComponentViewModel {
 
         try self.init(
             component: component,
-            viewModels: viewModels
+            viewModels: viewModels,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

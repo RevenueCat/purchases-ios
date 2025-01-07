@@ -22,16 +22,19 @@ private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 class StackComponentViewModel {
 
     private let component: PaywallComponent.StackComponent
+    let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
 
     init(
         component: PaywallComponent.StackComponent,
-        viewModels: [PaywallComponentViewModel]
+        viewModels: [PaywallComponentViewModel],
+        uiConfigProvider: UIConfigProvider
     ) throws {
         self.component = component
         self.viewModels = viewModels
+        self.uiConfigProvider = uiConfigProvider
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
@@ -51,6 +54,7 @@ class StackComponentViewModel {
         )
 
         let style = StackComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
@@ -107,6 +111,7 @@ struct StackComponentStyle {
     let shadow: ShadowModifier.ShadowInfo?
 
     init(
+        uiConfigProvider: UIConfigProvider,
         visible: Bool,
         dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
@@ -126,8 +131,8 @@ struct StackComponentStyle {
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
-        self.border = border?.border
-        self.shadow = shadow?.shadow
+        self.border = border?.border(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
     }
 
     var vstackStrategy: StackStrategy {
@@ -185,9 +190,9 @@ private extension PaywallComponent.Shape {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Border {
 
-    var border: ShapeModifier.BorderInfo? {
-        ShapeModifier.BorderInfo(
-            color: self.color.toDynamicColor(),
+    func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
+        return ShapeModifier.BorderInfo(
+            color: self.color.toDynamicColor(uiConfigProvider: uiConfigProvider),
             width: self.width
         )
     }
@@ -197,9 +202,9 @@ private extension PaywallComponent.Border {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Shadow {
 
-    var shadow: ShadowModifier.ShadowInfo? {
-        ShadowModifier.ShadowInfo(
-            color: self.color.toDynamicColor(),
+    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+        return ShadowModifier.ShadowInfo(
+            color: self.color.toDynamicColor(uiConfigProvider: uiConfigProvider),
             radius: self.radius,
             x: self.x,
             y: self.y

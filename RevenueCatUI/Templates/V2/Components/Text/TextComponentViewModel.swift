@@ -20,7 +20,7 @@ import SwiftUI
 class TextComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
-    private let uiConfigProvider: UIConfigProvider
+    let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.TextComponent
 
     private let text: String
