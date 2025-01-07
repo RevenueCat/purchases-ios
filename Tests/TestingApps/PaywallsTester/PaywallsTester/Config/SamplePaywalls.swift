@@ -44,7 +44,6 @@ final class SamplePaywallLoader {
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
-            paywallComponentsData: components,
             availablePackages: self.packages
         )
     }
