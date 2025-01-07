@@ -251,6 +251,7 @@ extension PaywallComponent.ColorInfo {
             // Alias should never have an alias
             // Using fallback so recursion doesn't happen
             if case .alias = aliasColor {
+                Logger.warning("Aliased color '\(alias)' has an aliased value which is not allowed.")
                 return fallback
             }
 

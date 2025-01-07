@@ -24,11 +24,7 @@ struct UIConfigProvider {
         self.uiConfig = uiConfig
     }
 
-    func getColor(for name: String?) -> PaywallComponent.ColorInfo? {
-        guard let name else {
-            return nil
-        }
-
+    func getColor(for name: String) -> PaywallComponent.ColorInfo? {
         return self.uiConfig.app.colors[name]
     }
 

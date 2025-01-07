@@ -58,8 +58,8 @@ fileprivate extension View {
         case .hex, .alias:
             let color = color.toDynamicColor(uiConfigProvider: uiConfigProvider)
 
-            // Only apply foreground color if not clear
-            // This is a way to
+            // Do not apply a clear text color
+            // Use the default color
             if color != Color.clear {
                 self.foregroundColor(color)
             } else {
