@@ -18,8 +18,19 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
 
-    let discountRelativeToMostExpensivePerMonth: Double?
-    let showZeroDecimalPlacePrices: Bool
+    private let showZeroDecimalPlacePrices: Bool
+    private let discountRelativeToMostExpensivePerMonth: Double?
+    private let dateProvider: () -> Date
+
+    init(
+        discountRelativeToMostExpensivePerMonth: Double?,
+        showZeroDecimalPlacePrices: Bool,
+        dateProvider: @escaping () -> Date = { Date() }
+    ) {
+        self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
+        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.dateProvider = dateProvider
+    }
 
     func processVariables(
         in text: String,
@@ -35,7 +46,8 @@ struct VariableHandlerV2 {
                 package: package,
                 locale: locale,
                 localizations: localizations,
-                discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth
+                discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
+                date: self.dateProvider()
             )
 
             return processedVariable.flatMap {
@@ -105,7 +117,8 @@ extension VariablesV2 {
     func process(package: Package,
                  locale: Locale,
                  localizations: [String: String],
-                 discountRelativeToMostExpensivePerMonth: Double?) -> String {
+                 discountRelativeToMostExpensivePerMonth: Double?,
+                 date: Date) -> String {
         switch self {
         case .productCurrencyCode:
             return self.productCurrencyCode(package: package)
@@ -166,7 +179,7 @@ extension VariablesV2 {
         case .productOfferPeriodWithUnit:
             return self.productOfferPeriodWithUnit(package: package, localizations: localizations)
         case .productOfferEndDate:
-            return self.productOfferEndDate(package: package)
+            return self.productOfferEndDate(package: package, locale: locale, date: date)
         case .productSecondaryOfferPrice:
             return self.productSecondaryOfferPrice(package: package)
         case .productSecondaryOfferPeriod:
@@ -473,8 +486,21 @@ extension VariablesV2 {
         return String(format: localizedFormat, period.value)
     }
 
-    func productOfferEndDate(package: Package) -> String {
-        return ""
+    func productOfferEndDate(package: Package, locale: Locale, date: Date) -> String {
+        guard let discount = package.storeProduct.introductoryDiscount else {
+            return ""
+        }
+
+        let daysFromToday = discount.subscriptionPeriod.periodInUnit(unit: .day)
+
+        let calendar = Calendar.current
+        let futureDate = calendar.date(byAdding: .day, value: daysFromToday, to: date)!
+
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.locale = locale
+
+        return formatter.string(from: futureDate)
     }
 
     func productSecondaryOfferPrice(package: Package) -> String {

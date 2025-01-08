@@ -48,7 +48,12 @@ class VariableHandlerV2Test: TestCase {
 
     let variableHandler = VariableHandlerV2(
         discountRelativeToMostExpensivePerMonth: nil,
-        showZeroDecimalPlacePrices: false
+        showZeroDecimalPlacePrices: false,
+        dateProvider: {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.date(from: "2024-12-12")!
+        }
     )
 
     func testProductCurrencyCode() {
@@ -402,15 +407,15 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("1 week"))
     }
 
-//    func testProductOfferEndDate() {
-//        let result = variableHandler.processVariables(
-//            in: "{{ product.offer_end_date }}",
-//            with: TestData.packageWithIntroOffer,
-//            locale: locale,
-//            localizations: localizations["en_US"]!
-//        )
-//        expect(result).to(equal("2025-01-31"))
-//    }
+    func testProductOfferEndDate() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_end_date }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("December 19, 2024"))
+    }
 
     func testProductSecondaryOfferPrice() {
         let result = variableHandler.processVariables(
