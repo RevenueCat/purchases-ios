@@ -499,7 +499,7 @@ extension VariablesV2 {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.locale = locale
-
+        
         return formatter.string(from: futureDate)
     }
 
