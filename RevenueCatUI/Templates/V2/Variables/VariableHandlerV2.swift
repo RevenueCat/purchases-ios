@@ -20,21 +20,24 @@ struct VariableHandlerV2 {
 
     let discountRelativeToMostExpensivePerMonth: Double?
     let showZeroDecimalPlacePrices: Bool
+    let variableMapping: [String: String]
+    let functionMapping: [String: String]
+    let locale: Locale
+    let localizations: [String: String]
+    let packages: [Package]
 
     func processVariables(
         in text: String,
-        with package: Package,
-        locale: Locale,
-        localizations: [String: String]
+        with package: Package
     ) -> String {
-        let whisker = Whisker(template: text) { variableRaw, functionRaw in
-            let variable = VariablesV2(rawValue: variableRaw)
-            let function = functionRaw.flatMap { FunctionsV2(rawValue: $0) }
+        let whisker = Whisker(template: text) { variableRaw, functionRaw, params in
+            let variable = self.findVariable(variableRaw)
+            let function = functionRaw.flatMap { self.findFunction($0) }
 
             let processedVariable = variable?.process(
                 package: package,
-                locale: locale,
-                localizations: localizations,
+                locale: self.locale,
+                localizations: self.localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth
             )
 
@@ -44,6 +47,50 @@ struct VariableHandlerV2 {
         }
 
         return whisker.render()
+    }
+    
+    private func findVariable(_ variableRaw: String) -> VariablesV2? {
+        guard let originalVariable = VariablesV2(rawValue: variableRaw) else {
+            
+            let backSupportedVariableRaw = self.variableMapping[variableRaw]
+            
+            guard let backSupportedVariableRaw else {
+                Logger.error("Paywall variable '\(variableRaw)' is not supported and no backward compatible replacement found.")
+                return nil
+            }
+            
+            guard let backSupportedVariable = VariablesV2(rawValue: backSupportedVariableRaw) else {
+                Logger.error("Paywall variable '\(variableRaw)' is not supported and could not find backward compatible '\(backSupportedVariableRaw)'.")
+                return nil
+            }
+            
+            Logger.warning("Paywall variable '\(variableRaw)' is not supported. Using backward compatible '\(backSupportedVariableRaw)' instead.")
+            return backSupportedVariable
+        }
+        
+        return originalVariable
+    }
+    
+    private func findFunction(_ functionRaw: String) -> FunctionsV2? {
+        guard let originalFunction = FunctionsV2(rawValue: functionRaw) else {
+            
+            let backSupportedFunctionRaw = self.functionMapping[functionRaw]
+            
+            guard let backSupportedFunctionRaw else {
+                Logger.error("Paywall function '\(functionRaw)' is not supported and no backward compatible replacement found.")
+                return nil
+            }
+            
+            guard let backSupportedFunction = FunctionsV2(rawValue: backSupportedFunctionRaw) else {
+                Logger.error("Paywall variable '\(functionRaw)' is not supported and could not find backward compatible '\(backSupportedFunctionRaw)'.")
+                return nil
+            }
+            
+            Logger.warning("Paywall function '\(functionRaw)' is not supported. Using backward compatible '\(backSupportedFunction)' instead.")
+            return backSupportedFunction
+        }
+        
+        return originalFunction
     }
 
 }
@@ -611,37 +658,339 @@ extension FunctionsV2 {
 
 }
 
+import Foundation
+
 struct Whisker {
-
-    // swiftlint:disable:next force_try
-    private static let regex = try! NSRegularExpression(pattern: "\\{\\{\\s*(.*?)\\s*\\}\\}")
-
     let template: String
-    let resolve: (String, String?) -> String?
+    let resolve: (String, String?, [Any]?) -> String?
 
     func render() -> String {
+        // Updated regex to allow dots in variable names
+        let regex = try! NSRegularExpression(pattern: "\\{\\{\\s*([\\w\\.]+)(?:\\s*\\|\\s*([^\\}]+))?\\s*\\}\\}")
         var result = template
-        let matches = Self.regex.matches(in: template, range: NSRange(template.startIndex..., in: template))
+        let matches = regex.matches(in: template, range: NSRange(template.startIndex..., in: template))
 
         for match in matches.reversed() {
-            guard let range = Range(match.range(at: 1), in: template) else { continue }
-            let expression = String(template[range])
+            // Extract variable
+            guard let variableRange = Range(match.range(at: 1), in: template) else { continue }
+            let variable = String(template[variableRange])
 
-            // Split the expression into variable and filter parts
-            let parts = expression.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
-            let variable = parts[0]
-            let filter = parts.count > 1 ? parts[1] : nil
-
-            // Use the single callback to resolve the variable and apply the filter
-            if let resolvedValue = resolve(variable, filter) {
-                // Replace the full match range in the result
-                if let fullRange = Range(match.range, in: result) {
-                    result.replaceSubrange(fullRange, with: "\(resolvedValue)")
+            // Extract functions and parameters (optional)
+            let functions: [(String, [Any]?)] = {
+                if let range = Range(match.range(at: 2), in: template) {
+                    let functionsString = String(template[range])
+                    return functionsString.split(separator: "|").map { functionPart in
+                        let parts = functionPart.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                        let functionName = parts[0]
+                        let params: [Any]? = parts.count > 1 ? parts[1].split(separator: ",").map { param in
+                            let trimmed = param.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if let intVal = Int(trimmed) {
+                                return intVal
+                            } else if let doubleVal = Double(trimmed) {
+                                return doubleVal
+                            } else if trimmed.hasPrefix("\"") && trimmed.hasSuffix("\"") {
+                                return trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                            } else {
+                                return trimmed
+                            }
+                        } : nil
+                        return (functionName, params)
+                    }
                 }
+                return []
+            }()
+
+            // Resolve the value using the callback
+            var resolvedValue: String? = resolve(variable, nil, nil)
+            for (function, params) in functions {
+                if let value = resolvedValue {
+                    resolvedValue = resolve(value, function, params)
+                }
+            }
+
+            // Replace the full match range in the result
+            if let resolvedValue = resolvedValue, let fullRange = Range(match.range, in: result) {
+                result.replaceSubrange(fullRange, with: resolvedValue)
             }
         }
 
         return result
     }
+}
 
+typealias TemplateFunction = (inout [String: Any], [Any]) -> Any
+
+enum TemplateNode {
+    case text(String)
+    case variable(String)
+    case functionChain(String, functions: [(name: String, arguments: [String])])
+    case forLoop(variable: String, collection: String, body: [TemplateNode])
+    case ifCondition(expression: String, body: [TemplateNode], elseBody: [TemplateNode])
+    case packageBlock(packageId: String, body: [TemplateNode]) // Scoped block node
+}
+
+struct TemplateParser {
+    func parse(template: String) -> [TemplateNode] {
+        var nodes: [TemplateNode] = []
+        let regex = try! NSRegularExpression(pattern: "\\{\\{.*?\\}\\}|\\{%.*?%\\}", options: [])
+
+        
+        var lastIndex = template.startIndex
+        var stack: [(type: String, body: [TemplateNode], elseBody: [TemplateNode]?)] = []
+
+        regex.enumerateMatches(in: template, range: NSRange(template.startIndex..<template.endIndex, in: template)) { match, _, _ in
+            guard let match = match else { return }
+            let range = Range(match.range, in: template)!
+            
+            if lastIndex < range.lowerBound {
+                let text = String(template[lastIndex..<range.lowerBound])
+                if stack.isEmpty {
+                    nodes.append(.text(text))
+                } else if stack[stack.count - 1].elseBody == nil {
+                    stack[stack.count - 1].body.append(.text(text))
+                } else {
+                    stack[stack.count - 1].elseBody?.append(.text(text))
+                }
+            }
+            
+            let tag = String(template[range])
+            if tag.hasPrefix("{%") && tag.hasSuffix("%}") {
+                let content = tag.dropFirst(2).dropLast(2).trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                if content.hasPrefix("if ") {
+                    // Start an if-condition block
+                    let condition = content.dropFirst(3).trimmingCharacters(in: .whitespaces)
+                    stack.append((type: "if:\(condition)", body: [], elseBody: nil))
+                } else if content == "else" {
+                    // Handle else block
+                    if var last = stack.popLast(), last.type.starts(with: "if:") {
+                        stack.append((type: last.type, body: last.body, elseBody: []))
+                    }
+                } else if content == "endif" {
+                    // End the if-condition block
+                    if let last = stack.popLast(), last.type.starts(with: "if:") {
+                        let condition = last.type.dropFirst(3) // Remove "if:"
+                        let ifBlock = TemplateNode.ifCondition(expression: String(condition), body: last.body, elseBody: last.elseBody ?? [])
+                        if stack.isEmpty {
+                            nodes.append(ifBlock)
+                        } else if stack[stack.count - 1].elseBody == nil {
+                            stack[stack.count - 1].body.append(ifBlock)
+                        } else {
+                            stack[stack.count - 1].elseBody?.append(ifBlock)
+                        }
+                    }
+                } else if content.hasPrefix("package:") {
+                    // Start a package block
+                    let packageId = content.dropFirst(8).trimmingCharacters(in: .whitespacesAndNewlines)
+                        .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+                    stack.append((type: "package:\(packageId)", body: [], elseBody: nil))
+                } else if content == "endpackage" {
+                    // End the package block
+                    if let last = stack.popLast(), last.type.starts(with: "package:") {
+                        let packageId = last.type.split(separator: ":").dropFirst().joined(separator: ":")
+                        let packageBlock = TemplateNode.packageBlock(packageId: packageId, body: last.body)
+                        if stack.isEmpty {
+                            nodes.append(packageBlock)
+                        } else if stack[stack.count - 1].elseBody == nil {
+                            stack[stack.count - 1].body.append(packageBlock)
+                        } else {
+                            stack[stack.count - 1].elseBody?.append(packageBlock)
+                        }
+                    }
+                }
+            } else if tag.hasPrefix("{{") && tag.hasSuffix("}}") {
+                let content = tag.dropFirst(2).dropLast(2).trimmingCharacters(in: .whitespacesAndNewlines)
+
+                if content.contains("|") {
+                    // Handle piped functions
+                    let parts = content.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
+                    let variable = parts.first!
+                    let functions = parts.dropFirst().map { part -> (name: String, arguments: [String]) in
+                        if let colonIndex = part.firstIndex(of: ":") {
+                            let name = String(part[..<colonIndex]).trimmingCharacters(in: .whitespaces)
+                            let args = part[colonIndex...].dropFirst().split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                            return (name, args)
+                        } else {
+                            return (part, [])
+                        }
+                    }
+                    if stack.isEmpty {
+                        nodes.append(.functionChain(variable, functions: functions))
+                    } else if stack[stack.count - 1].elseBody == nil {
+                        stack[stack.count - 1].body.append(.functionChain(variable, functions: functions))
+                    } else {
+                        stack[stack.count - 1].elseBody?.append(.functionChain(variable, functions: functions))
+                    }
+                } else {
+                    // Handle simple variables
+                    if stack.isEmpty {
+                        nodes.append(.variable(content))
+                    } else if stack[stack.count - 1].elseBody == nil {
+                        stack[stack.count - 1].body.append(.variable(content))
+                    } else {
+                        stack[stack.count - 1].elseBody?.append(.variable(content))
+                    }
+                }
+            }
+            
+            lastIndex = range.upperBound
+        }
+        
+        if lastIndex < template.endIndex {
+            let text = String(template[lastIndex..<template.endIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty { // Only append non-empty text nodes
+                if stack.isEmpty {
+                    nodes.append(.text(text))
+                } else if stack[stack.count - 1].elseBody == nil {
+                    stack[stack.count - 1].body.append(.text(text))
+                } else {
+                    stack[stack.count - 1].elseBody?.append(.text(text))
+                }
+            }
+        }
+        
+        return nodes
+    }
+}
+
+
+struct TemplateRenderer {
+    let functions: [String: TemplateFunction]
+    let packageResolver: (String) -> [String: Any]?
+
+    func render(nodes: [TemplateNode], context: inout [String: Any]) -> String {
+        var output = ""
+
+        for node in nodes {
+            switch node {
+            case .text(let text):
+                output += text
+            case .variable(let variable):
+                if let value = resolveVariable(variable, in: context) {
+                    output += "\(value)"
+                }
+            case .packageBlock(let packageId, let body):
+                if let resolvedProduct = packageResolver(packageId) {
+                    var scopedContext = context
+                    scopedContext["product"] = resolvedProduct
+                    output += render(nodes: body, context: &scopedContext)
+                }
+            case .functionChain(let variable, let functions):
+                var value: Any = resolveVariable(variable, in: context) ?? variable
+                for function in functions {
+                    if let funcImplementation = self.functions[function.name] {
+                        let args = function.arguments.map { arg in resolveVariable(arg, in: context) ?? arg }
+                        value = funcImplementation(&context, [value] + args)
+                    } else {
+                        print("Warning: Function '\(function.name)' not found.")
+                    }
+                }
+                output += "\(value)"
+            case .forLoop(let variable, let collection, let body):
+                if let items = resolveVariable(collection, in: context) as? [Any] {
+                    for item in items {
+                        var newContext = context
+                        newContext[variable] = item
+                        output += render(nodes: body, context: &newContext)
+                    }
+                }
+            case .ifCondition(let expression, let body, let elseBody):
+                if evaluate(expression: expression, context: context) {
+                    output += render(nodes: body, context: &context)
+                } else {
+                    output += render(nodes: elseBody, context: &context)
+                }
+            }
+        }
+
+        return output
+    }
+
+    private func resolveVariable(_ variable: String, in context: [String: Any]) -> Any? {
+        let keys = variable.split(separator: ".").map(String.init)
+        var currentValue: Any? = context
+
+        for key in keys {
+            if let dictionary = currentValue as? [String: Any] {
+                currentValue = dictionary[key]
+            } else {
+                return nil
+            }
+        }
+        return currentValue
+    }
+    
+    private func evaluate(expression: String, context: [String: Any]) -> Bool {
+        let components = expression.split(separator: " ", maxSplits: 2)
+        guard components.count == 3 else {
+            print("Invalid expression format: \(expression)")
+            return false
+        }
+
+        let lhs = resolveVariable(String(components[0]), in: context)
+        let op = components[1]
+        let rhs = components[2].trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "'", with: "")
+
+        switch op {
+        case "==":
+            if let lhsBool = lhs as? Bool {
+                return lhsBool == (rhs == "true")
+            }
+            return "\(lhs ?? "")" == rhs
+        case "!=":
+            if let lhsBool = lhs as? Bool {
+                return lhsBool != (rhs == "true")
+            }
+            return "\(lhs ?? "")" != rhs
+        case ">":
+            if let lhsInt = lhs as? Int, let rhsInt = Int(rhs) {
+                return lhsInt > rhsInt
+            }
+        case "<":
+            if let lhsInt = lhs as? Int, let rhsInt = Int(rhs) {
+                return lhsInt < rhsInt
+            }
+        default:
+            print("Unsupported operator: \(op)")
+            return false
+        }
+        return false
+    }
+
+}
+
+struct Liquid {
+    private let parser: TemplateParser
+    private let renderer: TemplateRenderer
+    
+    init(functions: [String: TemplateFunction] = [:], packageResolver: @escaping (String) -> [String: Any]?) {
+        self.parser = TemplateParser()
+        self.renderer = TemplateRenderer(functions: functions, packageResolver: packageResolver)
+    }
+    
+    func render(template: String, context: inout [String: Any]) -> String {
+            let nodes = parser.parse(template: template)
+            let rawOutput = renderer.render(nodes: nodes, context: &context)
+            return collapseEmptyLines(rawOutput) // Clean up empty lines
+        }
+
+        private func collapseEmptyLines(_ output: String) -> String {
+            let lines = output.split(separator: "\n", omittingEmptySubsequences: false)
+            var result = [String]()
+            var previousWasEmpty = false
+
+            for line in lines {
+                if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                    if !previousWasEmpty {
+                        result.append("") // Add a single empty line
+                    }
+                    previousWasEmpty = true
+                } else {
+                    result.append(String(line))
+                    previousWasEmpty = false
+                }
+            }
+
+            return result.joined(separator: "\n")
+        }
 }

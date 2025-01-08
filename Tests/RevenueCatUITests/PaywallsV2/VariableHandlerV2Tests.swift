@@ -20,7 +20,7 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class VariableHandlerV2Test: TestCase {
 
-    let localizations = [
+    static let localizations = [
         "en_US": [
             "weekly": "weekly",
             "week": "week",
@@ -43,20 +43,26 @@ class VariableHandlerV2Test: TestCase {
             "month": "month"
         ]
     ]
+    
+    static let variableMapping: [String: String] = [:]
+    static let functionMapping: [String: String] = [:]
 
-    let locale = Locale(identifier: "en_US")
+    static let locale = Locale(identifier: "en_US")
 
     let variableHandler = VariableHandlerV2(
         discountRelativeToMostExpensivePerMonth: nil,
-        showZeroDecimalPlacePrices: false
+        showZeroDecimalPlacePrices: false,
+        variableMapping: variableMapping,
+        functionMapping: functionMapping,
+        locale: locale,
+        localizations: localizations["en_US"]!,
+        packages: []
     )
 
     func testProductCurrencyCode() {
         let result = variableHandler.processVariables(
             in: "{{ product.currency_code }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
 
         expect(result).to(equal("USD"))
@@ -65,9 +71,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductCurrencySymbol() {
         let result = variableHandler.processVariables(
             in: "{{ product.currency_symbol }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$"))
     }
@@ -75,9 +79,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodly() {
         let result = variableHandler.processVariables(
             in: "{{ product.periodly }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("monthly"))
     }
@@ -85,9 +87,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.price }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$6.99"))
     }
@@ -95,9 +95,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerPeriod() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_period }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$6.99/month"))
     }
@@ -105,9 +103,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_period_abbreviated }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$6.99/mo"))
     }
@@ -115,9 +111,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_day }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$0.23"))
     }
@@ -125,9 +119,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerWeek() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_week }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$1.61"))
     }
@@ -135,9 +127,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerMonth() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_month }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$6.99"))
     }
@@ -145,9 +135,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPricePerYear() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_year }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("$83.88"))
     }
@@ -155,9 +143,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriod() {
         let result = variableHandler.processVariables(
             in: "{{ product.period }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("month"))
     }
@@ -165,9 +151,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_abbreviated }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("mo"))
     }
@@ -175,9 +159,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodInDays() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_in_days }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("30"))
     }
@@ -185,9 +167,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodInWeeks() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_in_weeks }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("4"))
     }
@@ -195,9 +175,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodInMonths() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_in_months }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("1"))
     }
@@ -205,9 +183,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodInYears() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_in_years }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("0"))
     }
@@ -215,9 +191,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodWithUnit1Month() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_with_unit }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("1 month"))
     }
@@ -225,9 +199,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPeriodWithUnit3Months() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_with_unit }}",
-            with: TestData.threeMonthPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.threeMonthPackage
         )
         expect(result).to(equal("3 months"))
     }
@@ -235,9 +207,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductFreeOfferPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("free"))
     }
@@ -245,9 +215,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductFreeOfferPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_day }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("free"))
     }
@@ -255,9 +223,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductFreeOfferPricePerWeek() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_week }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("free"))
     }
@@ -265,9 +231,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductFreeOfferPricePerMonth() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_month }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal(""))
     }
@@ -275,9 +239,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductFreeOfferPricePerYear() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_year }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal(""))
     }
@@ -285,9 +247,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPayUpFrontOfferPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price }}",
-            with: TestData.packageWithIntroOfferPayUpFront,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOfferPayUpFront
         )
         expect(result).to(equal("$1.99"))
     }
@@ -295,9 +255,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPayUpFrontOfferPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_day }}",
-            with: TestData.packageWithIntroOfferPayUpFront,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOfferPayUpFront
         )
         expect(result).to(equal("$0.28"))
     }
@@ -305,9 +263,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPayUpFrontOfferPricePerWeek() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_week }}",
-            with: TestData.packageWithIntroOfferPayUpFront,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOfferPayUpFront
         )
         expect(result).to(equal("$1.99"))
     }
@@ -315,9 +271,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPayUpFrontOfferPricePerMonth() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_month }}",
-            with: TestData.packageWithIntroOfferPayUpFront,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOfferPayUpFront
         )
         expect(result).to(equal(""))
     }
@@ -325,9 +279,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductPayUpFrontOfferPricePerYear() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_year }}",
-            with: TestData.packageWithIntroOfferPayUpFront,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOfferPayUpFront
         )
         expect(result).to(equal(""))
     }
@@ -335,9 +287,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriod() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("week"))
     }
@@ -345,9 +295,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period_abbreviated }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("wk"))
     }
@@ -355,9 +303,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriodInDays() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period_in_days }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("7"))
     }
@@ -365,9 +311,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriodInWeeks() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period_in_weeks }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("1"))
     }
@@ -375,9 +319,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriodInMonths() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period_in_months }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal(""))
     }
@@ -385,9 +327,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriodInYears() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period_in_years }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal(""))
     }
@@ -395,9 +335,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductOfferPeriodWithUnit() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_period_with_unit }}",
-            with: TestData.packageWithIntroOffer,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.packageWithIntroOffer
         )
         expect(result).to(equal("1 week"))
     }
@@ -415,9 +353,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductSecondaryOfferPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.secondary_offer_price }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal(""))
     }
@@ -425,9 +361,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductSecondaryOfferPeriod() {
         let result = variableHandler.processVariables(
             in: "{{ product.secondary_offer_period }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal(""))
     }
@@ -435,9 +369,7 @@ class VariableHandlerV2Test: TestCase {
     func testProductSecondaryOfferPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.secondary_offer_period_abbreviated }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal(""))
     }
@@ -445,16 +377,84 @@ class VariableHandlerV2Test: TestCase {
     func testProductRelativeDiscount() {
         let variableHandler = VariableHandlerV2(
             discountRelativeToMostExpensivePerMonth: 0.3,
-            showZeroDecimalPlacePrices: false
+            showZeroDecimalPlacePrices: false,
+            variableMapping: Self.variableMapping,
+            functionMapping: Self.functionMapping,
+            locale: Self.locale,
+            localizations: Self.localizations["en_US"]!,
+            packages: []
         )
 
         let result = variableHandler.processVariables(
             in: "{{ product.relative_discount }}",
-            with: TestData.monthlyPackage,
-            locale: locale,
-            localizations: localizations["en_US"]!
+            with: TestData.monthlyPackage
         )
         expect(result).to(equal("30%"))
     }
+    
+    func testLiquid() {
+        let packageResolver: (String) -> [String: Any]? = { packageId in
+            return nil
+        }
+        
+        let functions: [String: TemplateFunction] = [
+            "uppercase": { _, args in
+                guard let str = args.first as? String else { return "" }
+                return str.uppercased()
+            },
+        ]
 
+        var context: [String: Any] = [
+            "product": [
+                "store_product_name": "Premium Pro",
+                "price_per_period": "$9.99/mo",
+                "has_free_trial": false
+            ]
+        ]
+
+        let liquid = Liquid(functions: functions, packageResolver: packageResolver)
+
+        let template = """
+        {% if product.has_free_trial == true %}
+        You got a free trial {{ product.price_per_period }}
+        {% else %}
+        You do not have a free trial {{ product.price_per_period }}
+        {% endif %}
+        """
+
+        let output = liquid.render(template: template, context: &context)
+        print(output)
+    }
+
+    
+    func testLiquid2() {
+        let packageResolver: (String) -> [String: Any]? = { packageId in
+            let products = [
+                "basic": ["price": 9.99, "name": "Basic Package"],
+                "premium": ["price": 19.99, "name": "Premium Package"]
+            ]
+            return products[packageId]
+        }
+
+        let functions: [String: TemplateFunction] = [:]
+
+        var context: [String: Any] = [:]
+
+        let liquid = Liquid(functions: functions, packageResolver: packageResolver)
+
+        let template = """
+        {% package: "basic" %}
+        Product: {{ product.name }}
+        Price: {{ product.price }}
+        {% endpackage %}
+
+        {% package: "premium" %}
+        Product: {{ product.name }}
+        Price: {{ product.price }}
+        {% endpackage %}
+        """
+
+        let output = liquid.render(template: template, context: &context)
+        print(output)
+    }
 }
