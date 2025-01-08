@@ -22,25 +22,31 @@ class VariableHandlerV2Test: TestCase {
 
     let localizations = [
         "en_US": [
-            "weekly": "weekly",
+            "day": "day",
+            "daily": "daily",
+            "day_short": "day",
             "week": "week",
-            "wk": "wk",
-            "monthly": "monthly",
+            "weekly": "weekly",
+            "week_short": "wk",
             "month": "month",
-            "mo": "mo",
-            "%d day": "%d day",
-            "%d days": "%d days",
-            "%d week": "%d week",
-            "%d weeks": "%d weeks",
-            "%d month": "%d month",
-            "%d months": "%d months",
-            "%d year": "%d year",
-            "%d years": "%d years",
-            "%d%%": "%d%%",
-            "free": "free"
-        ],
-        "es_ES": [
-            "month": "month"
+            "monthly": "monthly",
+            "month_short": "mo",
+            "year": "year",
+            "yearly": "yearly",
+            "year_short": "yr",
+            "annual": "annual",
+            "annually": "annually",
+            "annual_short": "yr",
+            "free": "free",
+            "percent": "%d%%",
+            "num_day": "%d day",
+            "num_week": "%d week",
+            "num_month": "%d month",
+            "num_year": "%d year",
+            "num_days": "%d days",
+            "num_weeks": "%d weeks",
+            "num_months": "%d months",
+            "num_years": "%d years"
         ]
     ]
 

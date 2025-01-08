@@ -61,6 +61,35 @@ struct VariableHandlerV2 {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum VariableLocalizationKey: String {
+    case day = "day"
+    case daily = "daily"
+    case dayShort = "day_short"
+    case week = "week"
+    case weekly = "weekly"
+    case weekShort = "week_short"
+    case month = "month"
+    case monthly = "monthly"
+    case monthShort = "month_short"
+    case year = "year"
+    case yearly = "yearly"
+    case yearShort = "year_short"
+    case annual = "annual"
+    case annually = "annually"
+    case annualShort = "annual_short"
+    case free = "free"
+    case percent = "percent"
+    case numDay = "num_day"
+    case numWeek = "num_week"
+    case numMonth = "num_month"
+    case numYear = "num_year"
+    case numDays = "num_days"
+    case numWeeks = "num_weeks"
+    case numMonths = "num_months"
+    case numYears = "num_years"
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum VariablesV2: String {
 
     case productCurrencyCode = "product.currency_code"
@@ -230,13 +259,13 @@ extension VariablesV2 {
         let value: String
         switch period.unit {
         case .day:
-            value = "daily"
+            value = VariableLocalizationKey.daily.rawValue
         case .week:
-            value = "weekly"
+            value = VariableLocalizationKey.weekly.rawValue
         case .month:
-            value = "monthly"
+            value = VariableLocalizationKey.monthly.rawValue
         case .year:
-            value = "yearly"
+            value = VariableLocalizationKey.yearly.rawValue
         }
 
         return localizations[value] ?? ""
@@ -324,7 +353,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations["free"] ?? ""
+            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
         }
 
         return discount.localizedPriceString
@@ -340,7 +369,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations["free"] ?? ""
+            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerDay, let formatter = package.storeProduct.priceFormatter else {
@@ -360,7 +389,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations["free"] ?? ""
+            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerWeek, let formatter = package.storeProduct.priceFormatter else {
@@ -380,7 +409,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations["free"] ?? ""
+            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerMonth, let formatter = package.storeProduct.priceFormatter else {
@@ -400,7 +429,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations["free"] ?? ""
+            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerYear, let formatter = package.storeProduct.priceFormatter else {
@@ -526,7 +555,7 @@ extension VariablesV2 {
             return ""
         }
 
-        guard let localizedFormat = localizations["%d%%"] else {
+        guard let localizedFormat = localizations[VariableLocalizationKey.percent.rawValue] else {
             return ""
         }
 
@@ -558,39 +587,53 @@ private extension VariablesV2 {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension SubscriptionPeriod {
 
     var periodLocalizationKey: String {
         switch self.unit {
         case .day:
-            return "day"
+            return VariableLocalizationKey.day.rawValue
         case .week:
-            return "week"
+            return VariableLocalizationKey.week.rawValue
         case .month:
-            return "month"
+            return VariableLocalizationKey.month.rawValue
         case .year:
-            return "year"
+            return VariableLocalizationKey.year.rawValue
         }
     }
 
     var periodAbbreviatedLocalizationKey: String {
         switch self.unit {
         case .day:
-            return "d"
+            return VariableLocalizationKey.dayShort.rawValue
         case .week:
-            return "wk"
+            return VariableLocalizationKey.weekShort.rawValue
         case .month:
-            return "mo"
+            return VariableLocalizationKey.monthShort.rawValue
         case .year:
-            return "yr"
+            return VariableLocalizationKey.yearShort.rawValue
         }
     }
 
     var unitPeriodLocalizationKey: String {
-        if self.value == 1 {
-            return "%d \(periodLocalizationKey)"
-        } else {
-            return "%d \(periodLocalizationKey)s"
+        switch (self.value, self.unit) {
+        case (1, .day):
+            return VariableLocalizationKey.numDay.rawValue
+        case (1, .week):
+            return VariableLocalizationKey.numWeek.rawValue
+        case (1, .month):
+            return VariableLocalizationKey.numMonth.rawValue
+        case (1, .year):
+            return VariableLocalizationKey.numYear.rawValue
+        case (_, .day):
+            return VariableLocalizationKey.numDays.rawValue
+        case (_, .week):
+            return VariableLocalizationKey.numWeeks.rawValue
+        case (_, .month):
+            return VariableLocalizationKey.numMonths.rawValue
+        case (_, .year):
+            return VariableLocalizationKey.numYears.rawValue
         }
     }
 
