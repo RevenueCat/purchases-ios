@@ -484,4 +484,34 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("30%"))
     }
 
+    func testFunctionUppercase() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period | uppercase }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("MONTH"))
+    }
+
+    func testFunctionLowercase() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period | lowercase }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("month"))
+    }
+
+    func testFunctionCapitalize() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period | capitalize }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Month"))
+    }
+
 }
