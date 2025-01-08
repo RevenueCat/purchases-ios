@@ -17,7 +17,6 @@ internal final class RateLimiter: @unchecked Sendable {
     private let lock = Lock()
     private var timestamps: [Date?]
     private var index: Int = 0
-    
     private let maxCallsInclusive: Int
 
     let maxCalls: Int
