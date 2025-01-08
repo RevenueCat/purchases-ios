@@ -32,6 +32,8 @@ struct NoSubscriptionsView: View {
     private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.openURL)
+    var openURL
     @State
     private var showRestoreAlert: Bool = false
 
@@ -58,6 +60,8 @@ struct NoSubscriptionsView: View {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)
+                
+                ContactSupportButton(support: configuration.support)
             }
 
         }

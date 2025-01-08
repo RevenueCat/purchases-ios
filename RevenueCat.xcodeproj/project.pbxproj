@@ -764,6 +764,7 @@
 		77BA1AB32CCBB6EE009BF0EA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB22CCBB6EE009BF0EA /* RootView.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
+		875481962D2F1EB100D5CEAD /* ContactSupportButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 875481952D2F1EB100D5CEAD /* ContactSupportButton.swift */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		887A60672C1D037000E1A461 /* PaywallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC72C1D037000E1A461 /* PaywallError.swift */; };
@@ -2016,6 +2017,7 @@
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		875481952D2F1EB100D5CEAD /* ContactSupportButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportButton.swift; sourceTree = "<group>"; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCatUIDev.h; sourceTree = "<group>"; };
@@ -3604,6 +3606,7 @@
 				C3AD12BB2C6EA69D00A4F86F /* SubscriptionDetailsView.swift */,
 				77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */,
 				352304892D0A0F2B003971A4 /* ErrorView.swift */,
+				875481952D2F1EB100D5CEAD /* ContactSupportButton.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6580,6 +6583,7 @@
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,
 				887A60892C1D037000E1A461 /* PaywallPurchasesType.swift in Sources */,
 				2C8EC71B2CCDD43900D6CCF8 /* ComponentViewState.swift in Sources */,
+				875481962D2F1EB100D5CEAD /* ContactSupportButton.swift in Sources */,
 				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
 				3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */,
 				887A60C22C1D037000E1A461 /* ErrorDisplay.swift in Sources */,

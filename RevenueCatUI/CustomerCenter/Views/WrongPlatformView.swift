@@ -48,15 +48,6 @@ struct WrongPlatformView: View {
     @Environment(\.openURL)
     private var openURL
 
-    private var supportURL: URL? {
-        guard let supportInformation = self.supportInformation else { return nil }
-        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
-        let body = supportInformation.calculateBody(self.localization)
-        return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
-                                                    subject: subject,
-                                                    body: body)
-    }
-
     init(screen: CustomerCenterConfigData.Screen? = nil,
          purchaseInformation: PurchaseInformation) {
         self.screen = screen
@@ -88,14 +79,9 @@ struct WrongPlatformView: View {
                     }
                 }
             }
-            if let url = supportURL {
-                Section {
-                    AsyncButton {
-                        openURL(url)
-                    } label: {
-                        Text(localization.commonLocalizedString(for: .contactSupport))
-                    }
-                }
+
+            Section {
+                ContactSupportButton(support: supportInformation)
             }
         }
         .toolbar {
