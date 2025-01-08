@@ -752,11 +752,11 @@ struct Whisker {
 
             // Split the expression into variable and filter parts
             let parts = expression.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
-            let variable = parts[0]
-            let filter = parts.count > 1 ? parts[1] : nil
+            let variablePart = parts[0]
+            let functionPart = parts.count > 1 ? parts[1] : nil
 
-            // Use the single callback to resolve the variable and apply the filter
-            if let resolvedValue = resolve(variable, filter) {
+            // Use the single callback to resolve the variable and apply the function
+            if let resolvedValue = resolve(variablePart, functionPart) {
                 // Replace the full match range in the result
                 if let fullRange = Range(match.range, in: result) {
                     result.replaceSubrange(fullRange, with: "\(resolvedValue)")

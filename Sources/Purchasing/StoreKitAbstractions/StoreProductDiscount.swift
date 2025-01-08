@@ -301,28 +301,28 @@ extension StoreProductDiscount: Identifiable {
 
 public extension StoreProductDiscount {
 
-    /// Calculates the price of this subscription product per day.
+    /// Calculates the approximate price of this subscription product per day.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerDay: NSDecimalNumber? {
         return self.subscriptionPeriod.pricePerDay(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
-    /// Calculates the price of this subscription product per week.
+    /// Calculates the approximate price of this subscription product per week.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerWeek: NSDecimalNumber? {
         return self.subscriptionPeriod.pricePerWeek(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
-    /// Calculates the price of this subscription product per month.
+    /// Calculates the approximate price of this subscription product per month.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerMonth: NSDecimalNumber? {
         return self.subscriptionPeriod.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
-    /// Calculates the price of this subscription product per year.
+    /// Calculates the approximate price of this subscription product per year.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerYear: NSDecimalNumber? {
