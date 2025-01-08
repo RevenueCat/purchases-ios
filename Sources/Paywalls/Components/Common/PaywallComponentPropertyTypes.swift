@@ -218,7 +218,7 @@ public extension PaywallComponent {
 
             switch type {
             case .rectangle:
-                let value = try container.decode(CornerRadiuses.self, forKey: .corners)
+                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
                 self = .rectangle(value)
             case .pill:
                 self = .pill
