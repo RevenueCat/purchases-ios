@@ -32,7 +32,35 @@ enum PreviewUIConfig {
                 colors: colors,
                 fonts: fonts
             ),
-            localizations: [:],
+            localizations: [
+                "en_US": [
+                    "day": "day",
+                    "daily": "daily",
+                    "day_short": "day",
+                    "week": "week",
+                    "weekly": "weekly",
+                    "week_short": "wk",
+                    "month": "month",
+                    "monthly": "monthly",
+                    "month_short": "mo",
+                    "year": "year",
+                    "yearly": "yearly",
+                    "year_short": "yr",
+                    "annual": "annual",
+                    "annually": "annually",
+                    "annual_short": "yr",
+                    "free": "free",
+                    "percent": "%d%%",
+                    "num_day": "%d day",
+                    "num_week": "%d week",
+                    "num_month": "%d month",
+                    "num_year": "%d year",
+                    "num_days": "%d days",
+                    "num_weeks": "%d weeks",
+                    "num_months": "%d months",
+                    "num_years": "%d years"
+                ]
+            ],
             variableConfig: .init(
                 variableCompatibilityMap: [:],
                 functionCompatibilityMap: [:]

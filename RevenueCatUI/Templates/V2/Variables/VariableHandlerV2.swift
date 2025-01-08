@@ -559,7 +559,7 @@ extension VariablesV2 {
             return ""
         }
 
-        let percent = Int(discountRelativeToMostExpensivePerMonth * 100)
+        let percent = Int((discountRelativeToMostExpensivePerMonth * 100).rounded(.toNearestOrAwayFromZero))
         return String(format: localizedFormat, percent)
     }
 
