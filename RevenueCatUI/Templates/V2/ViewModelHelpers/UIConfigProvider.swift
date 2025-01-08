@@ -45,6 +45,15 @@ struct UIConfigProvider {
         }
     }
 
+    func getLocalizations(for locale: Locale) -> [String: String] {
+        guard let localizations = self.uiConfig.localizations[locale.identifier] else {
+            Logger.error("Could not find localizations for '\(locale.identifier)'")
+            return [:]
+        }
+
+        return localizations
+    }
+
 }
 
 #endif

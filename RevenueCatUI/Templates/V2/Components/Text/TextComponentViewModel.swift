@@ -66,7 +66,8 @@ class TextComponentViewModel {
             text: Self.processText(
                 text,
                 packageContext: packageContext,
-                locale: self.localizationProvider.locale
+                locale: self.localizationProvider.locale,
+                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
             fontFamily: fontFamily,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
@@ -82,7 +83,53 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    private static func processText(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
+    private static func processText(_ text: String,
+                                    packageContext: PackageContext,
+                                    locale: Locale,
+                                    localizations: [String: String]) -> String {
+        let processedWithV2 = Self.processTextV2(
+            text,
+            packageContext: packageContext,
+            locale: locale,
+            localizations: localizations
+        )
+        // Note: This is temporary while in closed beta and shortly after
+        let processedWithV2AndV1 = Self.processTextV1(
+            processedWithV2,
+            packageContext: packageContext,
+            locale: locale
+        )
+
+        return processedWithV2AndV1
+    }
+
+    private static func processTextV2(_ text: String,
+                                      packageContext: PackageContext,
+                                      locale: Locale,
+                                      localizations: [String: String]) -> String {
+        guard let package = packageContext.package else {
+            return text
+        }
+
+        let discount = Self.discount(
+            from: package.storeProduct.pricePerMonth?.doubleValue,
+            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+        )
+
+        let handler = VariableHandlerV2(
+            discountRelativeToMostExpensivePerMonth: discount,
+            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
+        )
+
+        return handler.processVariables(
+            in: text,
+            with: package,
+            locale: locale,
+            localizations: localizations
+        )
+    }
+
+    private static func processTextV1(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
         guard let package = packageContext.package else {
             return text
         }
