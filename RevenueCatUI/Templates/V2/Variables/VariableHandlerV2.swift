@@ -77,16 +77,32 @@ private enum VariableLocalizationKey: String {
     case annual = "annual"
     case annually = "annually"
     case annualShort = "annual_short"
-    case free = "free"
+    case freePrice = "free_price"
     case percent = "percent"
-    case numDay = "num_day"
-    case numWeek = "num_week"
-    case numMonth = "num_month"
-    case numYear = "num_year"
-    case numDays = "num_days"
-    case numWeeks = "num_weeks"
-    case numMonths = "num_months"
-    case numYears = "num_years"
+    case numDayZero = "num_day_zero"
+    case numDayOne = "num_day_one"
+    case numDayTwo = "num_day_two"
+    case numDayFew = "num_day_few"
+    case numDayMany = "num_day_many"
+    case numDayOther = "num_day_other"
+    case numWeekZero = "num_week_zero"
+    case numWeekOne = "num_week_one"
+    case numWeekTwo = "num_week_two"
+    case numWeekFew = "num_week_few"
+    case numWeekMany = "num_week_many"
+    case numWeekOther = "num_week_other"
+    case numMonthZero = "num_month_zero"
+    case numMonthOne = "num_month_one"
+    case numMonthTwo = "num_month_two"
+    case numMonthFew = "num_month_few"
+    case numMonthMany = "num_month_many"
+    case numMonthOther = "num_month_other"
+    case numYearZero = "num_year_zero"
+    case numYearOne = "num_year_one"
+    case numYearTwo = "num_year_two"
+    case numYearFew = "num_year_few"
+    case numYearMany = "num_year_many"
+    case numYearOther = "num_year_other"
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -353,7 +369,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
+            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
         return discount.localizedPriceString
@@ -369,7 +385,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
+            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerDay, let formatter = package.storeProduct.priceFormatter else {
@@ -389,7 +405,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
+            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerWeek, let formatter = package.storeProduct.priceFormatter else {
@@ -409,7 +425,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
+            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerMonth, let formatter = package.storeProduct.priceFormatter else {
@@ -429,7 +445,7 @@ extension VariablesV2 {
         }
 
         if isFree(discount) {
-            return localizations[VariableLocalizationKey.free.rawValue] ?? ""
+            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
         guard let price = discount.pricePerYear, let formatter = package.storeProduct.priceFormatter else {
@@ -618,22 +634,60 @@ extension SubscriptionPeriod {
 
     var unitPeriodLocalizationKey: String {
         switch (self.value, self.unit) {
+        // Zero
+        case (0, .day):
+            return VariableLocalizationKey.numDayZero.rawValue
+        case (0, .week):
+            return VariableLocalizationKey.numWeekZero.rawValue
+        case (0, .month):
+            return VariableLocalizationKey.numMonthZero.rawValue
+        case (0, .year):
+            return VariableLocalizationKey.numYearZero.rawValue
+        // One
         case (1, .day):
-            return VariableLocalizationKey.numDay.rawValue
+            return VariableLocalizationKey.numDayOne.rawValue
         case (1, .week):
-            return VariableLocalizationKey.numWeek.rawValue
+            return VariableLocalizationKey.numWeekOne.rawValue
         case (1, .month):
-            return VariableLocalizationKey.numMonth.rawValue
+            return VariableLocalizationKey.numMonthOne.rawValue
         case (1, .year):
-            return VariableLocalizationKey.numYear.rawValue
+            return VariableLocalizationKey.numYearOne.rawValue
+        // Two
+        case (2, .day):
+            return VariableLocalizationKey.numDayTwo.rawValue
+        case (2, .week):
+            return VariableLocalizationKey.numWeekTwo.rawValue
+        case (2, .month):
+            return VariableLocalizationKey.numMonthTwo.rawValue
+        case (2, .year):
+            return VariableLocalizationKey.numYearTwo.rawValue
+        // Few
+        case (3...4, .day):
+            return VariableLocalizationKey.numDayFew.rawValue
+        case (3...4, .week):
+            return VariableLocalizationKey.numWeekFew.rawValue
+        case (3...4, .month):
+            return VariableLocalizationKey.numMonthFew.rawValue
+        case (3...4, .year):
+            return VariableLocalizationKey.numYearFew.rawValue
+        // Many
+        case (5...10, .day):
+            return VariableLocalizationKey.numDayMany.rawValue
+        case (5...10, .week):
+            return VariableLocalizationKey.numWeekMany.rawValue
+        case (5...10, .month):
+            return VariableLocalizationKey.numMonthMany.rawValue
+        case (5...10, .year):
+            return VariableLocalizationKey.numYearMany.rawValue
+        // Other
         case (_, .day):
-            return VariableLocalizationKey.numDays.rawValue
+            return VariableLocalizationKey.numDayOther.rawValue
         case (_, .week):
-            return VariableLocalizationKey.numWeeks.rawValue
+            return VariableLocalizationKey.numWeekOther.rawValue
         case (_, .month):
-            return VariableLocalizationKey.numMonths.rawValue
+            return VariableLocalizationKey.numMonthOther.rawValue
         case (_, .year):
-            return VariableLocalizationKey.numYears.rawValue
+            return VariableLocalizationKey.numYearOther.rawValue
         }
     }
 
