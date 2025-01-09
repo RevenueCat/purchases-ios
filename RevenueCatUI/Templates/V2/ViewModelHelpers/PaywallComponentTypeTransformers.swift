@@ -220,7 +220,10 @@ extension PaywallComponent.FlexDistribution {
 
 extension PaywallComponent.Padding {
     var edgeInsets: EdgeInsets {
-            EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
+            EdgeInsets(top: top ?? 0,
+                       leading: leading ?? 0,
+                       bottom: bottom ?? 0,
+                       trailing: trailing ?? 0)
         }
 
 }
