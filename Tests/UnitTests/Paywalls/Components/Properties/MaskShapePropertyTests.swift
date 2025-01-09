@@ -4,7 +4,7 @@ import XCTest
 
 #if PAYWALL_COMPONENTS
 
-class MaskShapeComponentTests: TestCase {
+class MaskShapePropertyTests: TestCase {
 
     func testRectangleNoCorners() throws {
         let json = """

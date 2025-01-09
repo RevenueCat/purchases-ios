@@ -250,14 +250,17 @@ public extension PaywallComponent {
     }
 
     struct Padding: Codable, Sendable, Hashable, Equatable {
-        
-        public init(top: Double?, bottom: Double?, leading: Double?, trailing: Double?) {
+
+        public init(top: Double?,
+                    bottom: Double?,
+                    leading: Double?,
+                    trailing: Double?) {
             self.top = top
             self.bottom = bottom
             self.leading = leading
             self.trailing = trailing
         }
-        
+
         public let top: Double?
         public let bottom: Double?
         public let leading: Double?
@@ -270,20 +273,20 @@ public extension PaywallComponent {
 
     struct CornerRadiuses: Codable, Sendable, Hashable, Equatable {
 
-        public init(topLeading: Double,
-                    topTrailing: Double,
-                    bottomLeading: Double,
-                    bottomTrailing: Double) {
+        public init(topLeading: Double?,
+                    topTrailing: Double?,
+                    bottomLeading: Double?,
+                    bottomTrailing: Double?) {
             self.topLeading = topLeading
             self.topTrailing = topTrailing
             self.bottomLeading = bottomLeading
             self.bottomTrailing = bottomTrailing
         }
 
-        public let topLeading: Double
-        public let topTrailing: Double
-        public let bottomLeading: Double
-        public let bottomTrailing: Double
+        public let topLeading: Double?
+        public let topTrailing: Double?
+        public let bottomLeading: Double?
+        public let bottomTrailing: Double?
 
         public static let `default` = CornerRadiuses(topLeading: 0,
                                                      topTrailing: 0,
