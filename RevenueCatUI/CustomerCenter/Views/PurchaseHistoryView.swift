@@ -22,36 +22,34 @@ struct PurchaseHistoryView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationView {
-            List {
-                if let info = customerInfo {
-                    // Active Subscriptions Section
-                    if !info.activeSubscriptions.isEmpty {
+        List {
+            if let info = customerInfo {
+                // Active Subscriptions Section
+                if !info.activeSubscriptions.isEmpty {
 
-                        // todo: add the price from the backend
-                        Section(header: Text("Active Subscriptions")) {
-                            ForEach(Array(info.subscriptionsByProductIdentifier), id: \.self.key) { _, subscription in
-                                PurchaseRow(subscriptionInfo: subscription)
-                            }
+                    // todo: add the price from the backend
+                    Section(header: Text("Active Subscriptions")) {
+                        ForEach(Array(info.subscriptionsByProductIdentifier), id: \.self.key) { _, subscription in
+                            PurchaseRow(subscriptionInfo: subscription)
                         }
                     }
+                }
 
-                    // Non-Subscription Purchases Section
-                    // todo: add information for non subscriptions
-                    // and get product type and other info directly from StoreKit or backend
+                // Non-Subscription Purchases Section
+                // todo: add information for non subscriptions
+                // and get product type and other info directly from StoreKit or backend
 
-                    // Account Details Section
-                    // todo: make these easy to copy
-                    Section(header: Text("Account Details")) {
-                        LabelValueRow(label: "Date when app was first purchased:", value: dateFormatter.string(from: info.originalPurchaseDate!))
-                        LabelValueRow(label: "App User ID", value: info.originalAppUserId)
-                    }
+                // Account Details Section
+                // todo: make these easy to copy
+                Section(header: Text("Account Details")) {
+                    LabelValueRow(label: "Date when app was first purchased:", value: dateFormatter.string(from: info.originalPurchaseDate!))
+                    LabelValueRow(label: "App User ID", value: info.originalAppUserId)
                 }
             }
-            .navigationTitle("Purchase History")
-            .listStyle(InsetGroupedListStyle())
-            .onAppear(perform: fetchCustomerInfo)
         }
+        .navigationTitle("Purchase History")
+        .listStyle(InsetGroupedListStyle())
+        .onAppear(perform: fetchCustomerInfo)
     }
 
     private func expirationDescription(for productId: String, in info: CustomerInfo) -> String {
@@ -181,7 +179,9 @@ struct LabelValueRow: View {
 @available(iOS 15.0, *)
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
-        PurchaseHistoryView()
+        CompatibilityNavigationStack {
+            PurchaseHistoryView()
+        }
     }
 }
 #endif
