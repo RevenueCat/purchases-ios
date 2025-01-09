@@ -64,14 +64,17 @@ struct ShapeModifier: ViewModifier {
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
 
-    init(border: BorderInfo? = nil,
+    init(border: BorderInfo?,
          shape: Shape?,
-         shadow: ShadowModifier.ShadowInfo? = nil,
-         background: BackgroundStyle? = nil) {
+         shadow: ShadowModifier.ShadowInfo?,
+         background: BackgroundStyle?,
+         uiConfigProvider: UIConfigProvider?
+    ) {
         self.border = border
         self.shape = shape ?? .rectangle(nil)
         self.shadow = shadow
         self.background = background
+        self.uiConfigProvider = uiConfigProvider
     }
 
     func body(content: Content) -> some View {
@@ -249,7 +252,8 @@ extension View {
                 border: border,
                 shape: shape,
                 shadow: shadow,
-                background: background
+                background: background,
+                uiConfigProvider: uiConfigProvider
             )
         )
     }
