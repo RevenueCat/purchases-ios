@@ -259,6 +259,15 @@ public extension Purchases {
         self.attribution.setCreative(creative)
     }
 
+    @available(iOS, deprecated, renamed: "purchase(_:completion:)")
+    @available(tvOS, deprecated, renamed: "purchase(_:completion:)")
+    @available(watchOS, deprecated, renamed: "purchase(_:completion:)")
+    @available(macOS, deprecated, renamed: "purchase(_:completion:)")
+    @available(macCatalyst, deprecated, renamed: "purchase(_:completion:)")
+    @objc(params:withCompletion:)
+    func purchaseWithParams(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+        self.purchase(params, completion: completion)
+    }
 }
 
 public extension StoreProduct {
