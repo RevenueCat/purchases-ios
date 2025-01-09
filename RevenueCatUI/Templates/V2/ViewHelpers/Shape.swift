@@ -338,7 +338,12 @@ struct CornerBorder_Previews: PreviewProvider {
                                     .padding(.vertical, 10)
                                     .padding(.horizontal, 20)
                             }
-                            .shape(border: border, shape: shape, shadow: shadow, background: background)
+                            .shape(border: border,
+                                   shape: shape,
+                                   shadow: shadow,
+                                   background: background,
+                                   uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                            )
                             .padding(5)
                         }
                     }
