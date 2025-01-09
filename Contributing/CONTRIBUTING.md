@@ -51,10 +51,16 @@ We use fastlane 🚀 for all our automation, including setting up out dev enviro
 $brew install fastlane
 ```
 
+Install gem dependencies
+
+```bash
+$bundle install --frozen
+```
+
 ##### Run the setup lane.
 
 ```bash
-$fastlane setup_dev
+$bundle exec fastlane setup_dev
 ```
 
 This installs [Homebrew](https://brew.sh/), and then [SwiftLint](https://github.com/realm/SwiftLint). After, it links in our pre-commit hook to run swiftlint. That saves you time so you don't have to wait for our CI to do it ⏱.

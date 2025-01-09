@@ -125,6 +125,7 @@ platform :ios do
     else
       UI.message("Linking pre-commit script 🔗")
       Dir.chdir ".." do
+        Dir.mkdir(".git/hooks")
         sh("ln -s -f ../../scripts/pre-commit.sh .git/hooks/pre-commit")
       end
     end
