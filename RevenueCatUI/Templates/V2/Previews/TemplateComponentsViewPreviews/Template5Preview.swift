@@ -70,19 +70,6 @@ private enum Template5Preview {
         horizontalAlignment: .leading
     )
 
-    static let packages: [PaywallComponent.PackageComponent] = [
-            makePackage(packageID: "weekly",
-                        nameTextLid: "weekly_name",
-                        detailTextLid: "weekly_detail"),
-            makePackage(packageID: "non_existant_package",
-                        nameTextLid: "non_existant_name",
-                        detailTextLid: "non_existant_detail"),
-            makePackage(packageID: "monthly",
-                        nameTextLid: "monthly_name",
-                        detailTextLid: "monthly_detail",
-                        isSelectedByDefault: true)
-        ]
-
     static func makePackage(
         packageID: String,
         nameTextLid: String,
@@ -131,31 +118,138 @@ private enum Template5Preview {
         )
     }
 
-    static let packagesStack = PaywallComponent.StackComponent(
-        components: [
-            .package(makePackage(packageID: PreviewMock.weeklyPackage.identifier,
-                                 nameTextLid: "weekly_name",
-                                 detailTextLid: "weekly_detail")),
-            .package(makePackage(packageID: "non_existant_package",
-                                 nameTextLid: "non_existant_name",
-                                 detailTextLid: "non_existant_detail")),
-            .package(makePackage(packageID: PreviewMock.monthlyPackage.identifier,
-                                 nameTextLid: "monthly_name",
-                                 detailTextLid: "monthly_detail",
-                                 isSelectedByDefault: true)),
-            .text(.init(
-                text: "package_terms",
-                color: .init(light: .hex("#999999")),
-                fontSize: 13
-            ))
-        ],
-        dimension: .vertical(.center, .start),
-        spacing: 10,
-        backgroundColor: nil,
-        margin: .init(top: 20,
-                      bottom: 0,
-                      leading: 0,
-                      trailing: 0)
+    static func makePackagesStack(prefix: String) -> PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .package(makePackage(packageID: PreviewMock.weeklyPackage.identifier,
+                                     nameTextLid: "\(prefix)_weekly_name",
+                                     detailTextLid: "\(prefix)_weekly_detail")),
+                .package(makePackage(packageID: "non_existant_package",
+                                     nameTextLid: "\(prefix)_non_existant_name",
+                                     detailTextLid: "\(prefix)_non_existant_detail")),
+                .package(makePackage(packageID: PreviewMock.monthlyPackage.identifier,
+                                     nameTextLid: "\(prefix)_monthly_name",
+                                     detailTextLid: "\(prefix)_monthly_detail",
+                                     isSelectedByDefault: true)),
+                .text(.init(
+                    text: "package_terms",
+                    color: .init(light: .hex("#999999")),
+                    fontSize: 13
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            spacing: 10,
+            backgroundColor: nil,
+            margin: .init(top: 20,
+                          bottom: 0,
+                          leading: 0,
+                          trailing: 0)
+        )
+    }
+    
+    static let tabs = PaywallComponent.tabs(
+        .init(
+            controlStack: .init(
+                components: [],
+                dimension: .horizontal(.center, .start),
+                size: .init(width: .fit, height: .fit),
+                backgroundColor: .init(light: .hex("#fdccbe")),
+                padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
+                shape: .pill
+            ),
+            tabs: [
+                // Tab 1
+                .init(
+                    tabStack: .init(
+                        components: [
+                            .stack(.init(
+                                components: [
+                                    .text(.init(
+                                        text: "tab_1_button",
+                                        fontWeight: .bold,
+                                        color: .init(light: .hex("#000000")),
+                                        size: .init(width: .fit, height: .fit),
+                                        fontSize: 16
+                                    ))
+                                ],
+                                dimension: .horizontal(.center, .start),
+                                size: .init(width: .fit, height: .fit),
+                                padding: .init(top: 5, bottom: 5, leading: 10, trailing: 10),
+                                shape: .pill,
+                                overrides: .init(
+                                    states: .init(
+                                        selected: .init(
+                                            backgroundColor: .init(light: .hex("#e89d89"))
+                                        )
+                                    )
+                                )
+                            ))
+                        ],
+                        dimension: .horizontal(.center, .center),
+                        size: .init(width: .fit, height: .fit)
+                    ),
+                    contentStack: .init(
+                        components: [
+                            .text(.init(
+                                text: "tab_1_button",
+                                fontWeight: .bold,
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit),
+                                fontSize: 16
+                            )),
+                            .tabControl(.init()),
+                            .stack(makePackagesStack(prefix: "standard"))
+                        ],
+                        dimension: .vertical(.center, .center)
+                    )
+                ),
+                // Tab 2
+                .init(
+                    tabStack: .init(
+                        components: [
+                            .stack(.init(
+                                components: [
+                                    .text(.init(
+                                        text: "tab_2_button",
+                                        fontWeight: .bold,
+                                        color: .init(light: .hex("#000000")),
+                                        size: .init(width: .fit, height: .fit),
+                                        fontSize: 16
+                                    ))
+                                ],
+                                dimension: .horizontal(.center, .start),
+                                size: .init(width: .fit, height: .fit),
+                                padding: .init(top: 5, bottom: 5, leading: 10, trailing: 10),
+                                shape: .pill,
+                                overrides: .init(
+                                    states: .init(
+                                        selected: .init(
+                                            backgroundColor: .init(light: .hex("#e89d89"))
+                                        )
+                                    )
+                                )
+                            ))
+                        ],
+                        dimension: .horizontal(.center, .center),
+                        size: .init(width: .fit, height: .fit)
+                    ),
+                    contentStack: .init(
+                        components: [
+                            .text(.init(
+                                text: "tab_2_button",
+                                fontWeight: .bold,
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit),
+                                fontSize: 13
+                            )),
+                            .tabControl(.init()),
+                            .stack(makePackagesStack(prefix: "premium"))
+                        ],
+                        dimension: .vertical(.center, .center)
+                    )
+                )
+            ]
+        )
     )
 
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
@@ -193,7 +287,7 @@ private enum Template5Preview {
         components: [
             .text(title),
             .text(body),
-            .stack(packagesStack),
+            tabs,
             .stack(purchaseButtonStack)
         ],
         dimension: .vertical(.leading, .start),
@@ -249,15 +343,26 @@ private enum Template5Preview {
             "cta": .string("Continue for {{ price_per_period }}"),
             "cta_intro": .string("Claim Free Trial"),
 
-            // Packages
-            "weekly_name": .string("{{ sub_period }} {{ sub_relative_discount }}"),
-            "weekly_detail": .string("Get for {{ total_price_and_per_month }}"),
-            "monthly_name": .string("{{ sub_period }} {{ sub_relative_discount }}"),
-            "monthly_detail": .string("Get for {{ total_price_and_per_month }}"),
-            "non_existant_name": .string("THIS SHOULDN'T SHOW"),
-            "non_existant_detail": .string("THIS SHOULDN'T SHOW"),
+            // Basic Packages
+            "standard_weekly_name": .string("Standard {{ sub_period }} {{ sub_relative_discount }}"),
+            "standard_weekly_detail": .string("Get for {{ total_price_and_per_month }}"),
+            "standard_monthly_name": .string("Standard {{ sub_period }} {{ sub_relative_discount }}"),
+            "standard_monthly_detail": .string("Get for {{ total_price_and_per_month }}"),
+            "standard_non_existant_name": .string("THIS SHOULDN'T SHOW"),
+            "standard_non_existant_detail": .string("THIS SHOULDN'T SHOW"),
+            
+            // Pro Packages
+            "premium_weekly_name": .string("Premium {{ sub_period }} {{ sub_relative_discount }}"),
+            "premium_weekly_detail": .string("Get for {{ total_price_and_per_month }}"),
+            "premium_monthly_name": .string("Premium {{ sub_period }} {{ sub_relative_discount }}"),
+            "premium_monthly_detail": .string("Get for {{ total_price_and_per_month }}"),
+            "premium_non_existant_name": .string("THIS SHOULDN'T SHOW"),
+            "premium_non_existant_detail": .string("THIS SHOULDN'T SHOW"),
 
-            "package_terms": .string("Recurring billing. Cancel anytime.")
+            "package_terms": .string("Recurring billing. Cancel anytime."),
+            
+            "tab_1_button": .string("Standard "),
+            "tab_2_button": .string("Premium"),
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"

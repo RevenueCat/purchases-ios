@@ -91,7 +91,7 @@ struct TabsComponentView_Previews: PreviewProvider {
         .init(
             controlStack: .init(
                 components: [],
-                dimension: .vertical(.center, .start),
+                dimension: .horizontal(.center, .start),
                 size: .init(width: .fit, height: .fit),
                 backgroundColor: .init(light: .hex("#dedede"))
             ),
@@ -102,20 +102,29 @@ struct TabsComponentView_Previews: PreviewProvider {
                         components: [
                             .text(.init(
                                 text: "tab_1_button",
-                                color: .init(light: .hex("#000000")))),
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            ))
                         ],
                         dimension: .horizontal(.center, .center),
                         size: .init(width: .fit, height: .fit)
                     ),
-                    contentStack: .init(components: [
-                        .text(.init(
-                            text: "tab_1_text_1",
-                            color: .init(light: .hex("#000000")))),
-                        .tabControl(.init()),
-                        .text(.init(
-                            text: "tab_1_text_2",
-                            color: .init(light: .hex("#000000"))))
-                    ])
+                    contentStack: .init(
+                        components: [
+                            .text(.init(
+                                text: "tab_1_text_1",
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            )),
+                            .tabControl(.init()),
+                            .text(.init(
+                                text: "tab_1_text_2",
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            ))
+                        ],
+                        dimension: .vertical(.center, .center)
+                    )
                 ),
                 // Tab 2
                 .init(
@@ -123,20 +132,29 @@ struct TabsComponentView_Previews: PreviewProvider {
                         components: [
                             .text(.init(
                                 text: "tab_2_button",
-                                color: .init(light: .hex("#000000")))),
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            ))
                         ],
                         dimension: .horizontal(.center, .center),
                         size: .init(width: .fit, height: .fit)
                     ),
-                    contentStack: .init(components: [
-                        .text(.init(
-                            text: "tab_2_text_1",
-                            color: .init(light: .hex("#000000")))),
-                        .tabControl(.init()),
-                        .text(.init(
-                            text: "tab_2_text_2",
-                            color: .init(light: .hex("#000000"))))
-                    ])
+                    contentStack: .init(
+                        components: [
+                            .text(.init(
+                                text: "tab_2_text_1",
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            )),
+                            .tabControl(.init()),
+                            .text(.init(
+                                text: "tab_2_text_2",
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            ))
+                        ],
+                        dimension: .vertical(.center, .center)
+                    )
                 ),
                 // Tab 3
                 .init(
@@ -144,20 +162,29 @@ struct TabsComponentView_Previews: PreviewProvider {
                         components: [
                             .text(.init(
                                 text: "tab_3_button",
-                                color: .init(light: .hex("#000000")))),
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            )),
                         ],
                         dimension: .horizontal(.center, .center),
                         size: .init(width: .fit, height: .fit)
                     ),
-                    contentStack: .init(components: [
-                        .text(.init(
-                            text: "tab_3_text_1",
-                            color: .init(light: .hex("#000000")))),
-                        .tabControl(.init()),
-                        .text(.init(
-                            text: "tab_3_text_2",
-                            color: .init(light: .hex("#000000"))))
-                    ])
+                    contentStack: .init(
+                        components: [
+                            .text(.init(
+                                text: "tab_3_text_1",
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            )),
+                            .tabControl(.init()),
+                            .text(.init(
+                                text: "tab_3_text_2",
+                                color: .init(light: .hex("#000000")),
+                                size: .init(width: .fit, height: .fit)
+                            ))
+                        ],
+                        dimension: .vertical(.center, .center)
+                    )
                 )
             ]
         )
@@ -172,9 +199,10 @@ struct TabsComponentView_Previews: PreviewProvider {
                     components: [
                         tabs
                     ],
+                    dimension: .vertical(.center, .start),
                     size: .init(
                         width: .fill,
-                        height: .fit
+                        height: .fill
                     ),
                     backgroundColor: .init(light: .hex("#ffffff"))
                 ),
@@ -196,7 +224,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             onDismiss: {}
         )
         .previewRequiredEnvironmentProperties()
-        .previewLayout(.sizeThatFits)
+        .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }
 }

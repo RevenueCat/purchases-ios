@@ -37,8 +37,8 @@ struct TabControlComponentView: View {
 
     private let viewModel: TabControlComponentViewModel
     let onDismiss: () -> Void
-    
-    init(viewModel:  TabControlComponentViewModel, onDismiss: @escaping () -> Void) {
+
+    init(viewModel: TabControlComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
     }
@@ -56,6 +56,7 @@ struct TabControlComponentView: View {
                                 viewModel: tabStack,
                                 onDismiss: self.onDismiss
                             )
+                            .environment(\.componentViewState, tabControlContext.selectedIndex == index ? .selected : .default)
                         }
                     )))
                 }),
