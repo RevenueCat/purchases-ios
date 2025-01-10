@@ -20,6 +20,8 @@ public enum PaywallComponent: PaywallComponentBase {
     case package(PackageComponent)
     case purchaseButton(PurchaseButtonComponent)
     case stickyFooter(StickyFooterComponent)
+    case tabs(TabsComponent)
+    case tabControl(TabControlComponent)
 
     public enum ComponentType: String, Codable, Sendable {
 
@@ -30,6 +32,8 @@ public enum PaywallComponent: PaywallComponentBase {
         case package
         case purchaseButton = "purchase_button"
         case stickyFooter = "sticky_footer"
+        case tabs
+        case tabControl
 
     }
 
@@ -75,6 +79,12 @@ extension PaywallComponent: Codable {
             try component.encode(to: encoder)
         case .stickyFooter(let component):
             try container.encode(ComponentType.stickyFooter, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabs(let component):
+            try container.encode(ComponentType.tabs, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControl(let component):
+            try container.encode(ComponentType.tabControl, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -142,6 +152,10 @@ extension PaywallComponent: Codable {
             return .purchaseButton(try PurchaseButtonComponent(from: decoder))
         case .stickyFooter:
             return .stickyFooter(try StickyFooterComponent(from: decoder))
+        case .tabs:
+            return .tabs(try TabsComponent(from: decoder))
+        case .tabControl:
+            return .tabControl(try TabControlComponent(from: decoder))
         }
     }
 

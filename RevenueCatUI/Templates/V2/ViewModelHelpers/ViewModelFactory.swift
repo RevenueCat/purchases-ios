@@ -167,6 +167,48 @@ struct ViewModelFactory {
                     stackViewModel: stackViewModel
                 )
             )
+        case .tabs(let component):
+            let controlStackViewModel = try toStackViewModel(
+                component: component.controlStack,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+            
+            let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
+                return try .init(
+                    tab: tab,
+                    tabStackViewModel: try toStackViewModel(
+                        component: tab.tabStack,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        offering: offering
+                    ),
+                    contentStackViewModel: try toStackViewModel(
+                        component: tab.contentStack,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        offering: offering
+                    ),
+                    uiConfigProvider: uiConfigProvider
+                )
+            }
+            
+            return .tabs(
+                try TabsComponentViewModel(
+                    component: component,
+                    controlStackViewModel: controlStackViewModel,
+                    tabViewModels: tabViewModels,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControl(let component):
+            return .tabControl(
+                try TabControlComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
         }
     }
 
