@@ -373,7 +373,7 @@ public protocol PurchasesType: AnyObject {
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @objc(params:withCompletion:)
+    @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock)
 
     /**
