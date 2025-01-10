@@ -124,7 +124,7 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
-            // This alignment positions the inner VStack horizontally.
+            // This alignment positions the inner VStack horizontally and vertically
             .size(style.size,
                   horizontalAlignment: distribution.horizontalFrameAlignment,
                   verticalAlignment: distribution.verticalFrameAlignment)
@@ -161,6 +161,7 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
+            // This alignment positions the inner VStack horizontally and vertically
             .size(style.size,
                   horizontalAlignment: distribution.horizontalFrameAlignment,
                   verticalAlignment: distribution.verticalFrameAlignment)
