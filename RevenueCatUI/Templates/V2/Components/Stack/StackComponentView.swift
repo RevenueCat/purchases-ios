@@ -69,6 +69,10 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                // This alignment positions the inner VStack horizontally and vertically
+                .size(style.size,
+                      horizontalAlignment: distribution.horizontalFrameAlignment,
+                      verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
                 HorizontalStack(
                     style: style,
@@ -77,6 +81,10 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                // This alignment positions the inner VStack horizontally and vertically
+                .size(style.size,
+                      horizontalAlignment: distribution.horizontalFrameAlignment,
+                      verticalAlignment: distribution.verticalFrameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
@@ -124,10 +132,6 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
-            // This alignment positions the inner VStack horizontally and vertically
-            .size(style.size,
-                  horizontalAlignment: distribution.horizontalFrameAlignment,
-                  verticalAlignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
@@ -161,10 +165,6 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
-            // This alignment positions the inner VStack horizontally and vertically
-            .size(style.size,
-                  horizontalAlignment: distribution.horizontalFrameAlignment,
-                  verticalAlignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,
