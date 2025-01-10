@@ -125,10 +125,8 @@ NSURL *url;
     [p setCreative: nil];
     [p setCreative: @""];
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    if (@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)) {
-        RCPurchaseParams *packageParams;
-        [p params:packageParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
-    }
+    RCPurchaseParams *purchaseParams;
+    [p params:purchaseParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     #endif
 
     [p getCustomerInfoWithFetchPolicy:RCCacheFetchPolicyFetchCurrent completion:^(RCCustomerInfo *customerInfo,
