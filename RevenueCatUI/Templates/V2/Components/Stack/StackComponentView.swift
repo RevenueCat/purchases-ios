@@ -69,8 +69,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                // This alignment positions the inner VStack horizontally.
-                .size(style.size, alignment: horizontalAlignment.frameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
                 HorizontalStack(
                     style: style,
@@ -79,8 +77,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                // This alignment positions the inner HStack vertically.
-                .size(style.size, alignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
@@ -128,9 +124,10 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
-            .applyIf(style.size.height != .fit, apply: { view in
-                view.frame(maxHeight: .infinity, alignment: distribution.verticalFrameAlignment)
-            })
+            // This alignment positions the inner VStack horizontally.
+            .size(style.size,
+                  horizontalAlignment: distribution.horizontalFrameAlignment,
+                  verticalAlignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
@@ -164,9 +161,9 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
-            .applyIf(style.size.width != .fit, apply: { view in
-                view.frame(maxWidth: .infinity, alignment: distribution.horizontalFrameAlignment)
-            })
+            .size(style.size,
+                  horizontalAlignment: distribution.horizontalFrameAlignment,
+                  verticalAlignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,
