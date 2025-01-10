@@ -41,34 +41,18 @@ struct CompatibilityContentUnavailableView: View {
             if let description {
                 ContentUnavailableView {
                     Label {
-                        Text(title)
-                            .font(.title2)
-                            .bold()
-                            .fixedSize(horizontal: false, vertical: true)
+                        titleView
                     } icon: {
-                        Image(systemName: systemImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 48, height: 48)
-                            .foregroundStyle(.secondary)
-                            .padding()
+                        iconView
                     }
                 }
                 description: { description }
             } else {
                 ContentUnavailableView {
                     Label {
-                        Text(title)
-                            .font(.title2)
-                            .bold()
-                            .fixedSize(horizontal: false, vertical: true)
+                        titleView
                     } icon: {
-                        Image(systemName: systemImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 48, height: 48)
-                            .foregroundStyle(.secondary)
-                            .padding()
+                        iconView
                     }
                 }
             }
@@ -82,16 +66,8 @@ struct CompatibilityContentUnavailableView: View {
             #endif
         } else {
             VStack {
-                Image(systemName: systemImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 48, height: 48)
-                    .foregroundStyle(.secondary)
-                    .padding()
-
-                Text(title)
-                    .font(.title2)
-                    .bold()
+                iconView
+                titleView
 
                 if let description {
                     description
@@ -101,6 +77,22 @@ struct CompatibilityContentUnavailableView: View {
             }.frame(maxHeight: .infinity)
         }
 
+    }
+    
+    private var titleView: some View {
+        Text(title)
+            .font(.title2)
+            .bold()
+            .fixedSize(horizontal: false, vertical: true)
+    }
+    
+    private var iconView: some View {
+        Image(systemName: systemImage)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 48, height: 48)
+            .foregroundStyle(.secondary)
+            .padding()
     }
 }
 
