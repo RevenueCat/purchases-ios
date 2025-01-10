@@ -128,6 +128,9 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
+            .applyIf(style.size.height != .fit, apply: { view in
+                view.frame(maxHeight: .infinity, alignment: distribution.verticalFrameAlignment)
+            })
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
@@ -161,6 +164,9 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
+            .applyIf(style.size.width != .fit, apply: { view in
+                view.frame(maxWidth: .infinity, alignment: distribution.horizontalFrameAlignment)
+            })
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,
