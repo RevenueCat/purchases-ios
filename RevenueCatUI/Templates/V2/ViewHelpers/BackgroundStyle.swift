@@ -21,7 +21,7 @@ enum BackgroundStyle: Hashable {
     case color(DisplayableColorScheme)
     case image(PaywallComponent.ThemeImageUrls)
 
-} 
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BackgroundStyleModifier: ViewModifier {

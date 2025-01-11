@@ -30,7 +30,6 @@ extension PaywallComponent.Background {
 
 }
 
-
 struct DisplayableColorScheme: Equatable, Hashable {
 
     init(light: DisplayableColorInfo, dark: DisplayableColorInfo? = nil) {
@@ -44,19 +43,20 @@ struct DisplayableColorScheme: Equatable, Hashable {
 }
 
 enum DisplayableColorInfo: Codable, Sendable, Hashable {
-    
+
     case hex(PaywallComponent.ColorHex)
     case linear(Int, [PaywallComponent.GradientPoint])
     case radial([PaywallComponent.GradientPoint])
-    
+
 }
 
 extension DisplayableColorScheme {
 
-    static func from(colorScheme: PaywallComponent.ColorScheme, uiConfigProvider: UIConfigProvider) throws -> DisplayableColorScheme {
+    static func from(colorScheme: PaywallComponent.ColorScheme,
+                     uiConfigProvider: UIConfigProvider) throws -> DisplayableColorScheme {
         let light = try colorScheme.light.asDisplayable(forLight: true, uiConfigProvider: uiConfigProvider)
         let dark = try colorScheme.dark?.asDisplayable(forLight: false, uiConfigProvider: uiConfigProvider)
-        
+
         return DisplayableColorScheme(light: light, dark: dark)
     }
 
@@ -82,19 +82,19 @@ extension PaywallComponent.ColorInfo {
         case .hex(let hex):
             return .hex(hex)
         case .alias(let name):
-            
+
             let aliasedColorScheme = uiConfigProvider.getColor(for: name)
             let aliasedColorInfo = forLight ? aliasedColorScheme?.light : aliasedColorScheme?.dark
-            
+
             guard let aliasedColorInfo else {
                 Logger.warning("Aliased color '\(name)' does not exist.")
                 fatalError()
             }
-            
+
             switch aliasedColorInfo {
             case .hex(let hex):
                 return .hex(hex)
-            case .alias(_):
+            case .alias(let name):
                 Logger.warning("Aliased color '\(name)' has an aliased value which is not allowed.")
                 fatalError()
             case .linear(let degree, let points):
@@ -108,7 +108,7 @@ extension PaywallComponent.ColorInfo {
             return .radial(points)
         }
     }
-    
+
 }
 
 #endif
