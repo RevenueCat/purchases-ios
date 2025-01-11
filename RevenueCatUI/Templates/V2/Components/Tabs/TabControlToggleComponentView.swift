@@ -39,11 +39,12 @@ struct TabControlToggleComponentView: View {
     let onDismiss: () -> Void
 
     @State
-    private var isOn: Bool = false
+    private var isOn: Bool
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
+        self._isOn = .init(wrappedValue: viewModel.defaultValue)
     }
 
     var body: some View {
@@ -88,5 +89,55 @@ private struct CustomToggleStyle: ToggleStyle {
             }
     }
 }
+
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct TabControlToggleComponentView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        // Off
+        TabControlToggleComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    defaultValue: false,
+                    thumbColorOn: .init(light: .hex("#00ff00")),
+                    thumbColorOff: .init(light: .hex("#ff0000")),
+                    trackColorOn: .init(light: .hex("#dedede")),
+                    trackColorOff: .init(light: .hex("#bebebe"))
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig)
+            ),
+            onDismiss: {}
+        )
+        .padding()
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Off")
+
+        // On
+        TabControlToggleComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    defaultValue: true,
+                    thumbColorOn: .init(light: .hex("#00ff00")),
+                    thumbColorOff: .init(light: .hex("#ff0000")),
+                    trackColorOn: .init(light: .hex("#dedede")),
+                    trackColorOff: .init(light: .hex("#bebebe"))
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig)
+            ),
+            onDismiss: {}
+        )
+        .padding()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("On")
+    }
+
+}
+
+#endif
 
 #endif

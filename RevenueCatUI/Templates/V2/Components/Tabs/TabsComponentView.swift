@@ -444,6 +444,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                             size: .init(width: .fit, height: .fit)
                         )),
                         .tabControlToggle(.init(
+                            defaultValue: false,
                             thumbColorOn: .init(light: .hex("#3d6787")),
                             thumbColorOff: .init(light: .hex("#ffffff")),
                             trackColorOn: .init(light: .hex("#cecece")),

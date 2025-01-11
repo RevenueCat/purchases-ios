@@ -30,6 +30,10 @@ class TabControlToggleComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
     }
 
+    var defaultValue: Bool {
+        return self.component.defaultValue
+    }
+
     var thumbColorOn: Color {
         return self.component.thumbColorOn.toDynamicColor(uiConfigProvider: uiConfigProvider)
     }

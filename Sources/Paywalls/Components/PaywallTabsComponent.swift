@@ -34,16 +34,19 @@ public extension PaywallComponent {
     struct TabControlToggleComponent: PaywallComponentBase {
         let type: ComponentType
 
+        public let defaultValue: Bool
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
         public let trackColorOn: ColorScheme
         public let trackColorOff: ColorScheme
 
-        public init(thumbColorOn: ColorScheme,
+        public init(defaultValue: Bool,
+                    thumbColorOn: ColorScheme,
                     thumbColorOff: ColorScheme,
                     trackColorOn: ColorScheme,
                     trackColorOff: ColorScheme) {
             self.type = .tabControlToggle
+            self.defaultValue = defaultValue
             self.thumbColorOn = thumbColorOn
             self.thumbColorOff = thumbColorOff
             self.trackColorOn = trackColorOn

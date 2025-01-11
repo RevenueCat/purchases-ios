@@ -205,6 +205,7 @@ private enum FamilySharingTogglePreview {
                             )
                         )),
                         .tabControlToggle(.init(
+                            defaultValue: false,
                             thumbColorOn: .init(light: .hex("#e89d89")),
                             thumbColorOff: .init(light: .hex("#ffffff")),
                             trackColorOn: .init(light: .hex("#f2c7bd")),
