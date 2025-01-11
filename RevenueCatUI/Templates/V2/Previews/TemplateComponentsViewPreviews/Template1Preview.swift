@@ -34,7 +34,10 @@ private enum Template1Preview {
             )
         ),
         fitMode: .fit,
-        gradientColors: ["#ffffff00", "#ffffff00", "#ffffffff"]
+        colorOverlay: .init(light: .linear(0, [
+            .init(color: "#ffffff", percent: 0),
+            .init(color: "#ffffff00", percent: 40)
+        ]))
     )
 
     static let title = PaywallComponent.TextComponent(
