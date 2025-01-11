@@ -20,10 +20,10 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct AppConfig: Codable, Equatable, Sendable {
 
-        public var colors: [String: PaywallComponent.ColorInfo]
+        public var colors: [String: PaywallComponent.ColorScheme]
         public var fonts: [String: FontsConfig]
 
-        public init(colors: [String: PaywallComponent.ColorInfo],
+        public init(colors: [String: PaywallComponent.ColorScheme],
                     fonts: [String: FontsConfig]) {
             self.colors = colors
             self.fonts = fonts

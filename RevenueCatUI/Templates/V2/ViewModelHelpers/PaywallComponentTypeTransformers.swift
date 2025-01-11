@@ -239,26 +239,12 @@ extension PaywallComponent.FitMode {
     }
 }
 
-extension PaywallComponent.ColorInfo {
+extension DisplayableColorInfo {
 
-    func toColor(fallback: Color, uiConfigProvider: UIConfigProvider) -> Color {
+    func toColor(fallback: Color) -> Color {
         switch self {
         case .hex(let hex):
             return hex.toColor(fallback: fallback)
-        case .alias(let alias):
-            guard let aliasColor = uiConfigProvider.getColor(for: alias) else {
-                Logger.warning("Aliased color '\(alias)' does not exist.")
-                return fallback
-            }
-
-            // Alias should never have an alias
-            // Using fallback so recursion doesn't happen
-            if case .alias = aliasColor {
-                Logger.warning("Aliased color '\(alias)' has an aliased value which is not allowed.")
-                return fallback
-            }
-
-            return aliasColor.toColor(fallback: fallback, uiConfigProvider: uiConfigProvider)
         case .linear, .radial:
             return fallback
         }
@@ -266,7 +252,7 @@ extension PaywallComponent.ColorInfo {
 
     func toGradient() -> Gradient {
         switch self {
-        case .hex, .alias:
+        case .hex:
             return Gradient(colors: [.clear])
         case .linear(_, let points), .radial(let points):
             let stops = points.map { point in
@@ -323,13 +309,13 @@ extension PaywallComponent.ColorHex {
 
 }
 
-extension PaywallComponent.ColorScheme {
+extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func toDynamicColor(uiConfigProvider: UIConfigProvider) -> Color {
+    func toDynamicColor() -> Color {
 
         guard let darkModeColor = self.dark else {
-            return light.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider)
+            return light.toColor(fallback: Color.clear)
         }
 
         let lightModeColor = light
@@ -337,16 +323,16 @@ extension PaywallComponent.ColorScheme {
         return Color(UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .light, .unspecified:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider))
+                return UIColor(lightModeColor.toColor(fallback: Color.clear))
             case .dark:
-                return UIColor(darkModeColor.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider))
+                return UIColor(darkModeColor.toColor(fallback: Color.clear))
             @unknown default:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear, uiConfigProvider: uiConfigProvider))
+                return UIColor(lightModeColor.toColor(fallback: Color.clear))
             }
         })
     }
 
-    func effectiveColor(for colorScheme: ColorScheme) -> PaywallComponent.ColorInfo {
+    func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
         switch colorScheme {
         case .light:
             return light

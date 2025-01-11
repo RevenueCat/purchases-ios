@@ -24,7 +24,7 @@ import SwiftUI
 enum PreviewUIConfig {
 
     static func make(
-        colors: [String: PaywallComponent.ColorInfo] = [:],
+        colors: [String: PaywallComponent.ColorScheme] = [:],
         fonts: [String: UIConfig.FontsConfig] = [:]
     ) -> UIConfig {
         return .init(
