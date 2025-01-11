@@ -44,16 +44,21 @@ class TabViewModel {
 
     private let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
-
     let stackViewModel: StackComponentViewModel
+    let defaultSelectedPackage: Package?
+    let packages: [Package]
 
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,
+        defaultSelectedPackage: Package?,
+        packages: [Package],
         uiConfigProvider: UIConfigProvider
     ) throws {
         self.tab = tab
         self.stackViewModel = stackViewModel
+        self.defaultSelectedPackage = defaultSelectedPackage
+        self.packages = packages
         self.uiConfigProvider = uiConfigProvider
     }
 

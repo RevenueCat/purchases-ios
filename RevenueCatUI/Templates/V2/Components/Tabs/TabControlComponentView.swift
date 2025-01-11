@@ -36,7 +36,7 @@ struct TabControlComponentView: View {
     private var tabControlContext: TabControlContext
 
     private let viewModel: TabControlComponentViewModel
-    let onDismiss: () -> Void
+    private let onDismiss: () -> Void
 
     init(viewModel: TabControlComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel

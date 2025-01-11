@@ -36,7 +36,7 @@ struct TabControlToggleComponentView: View {
     private var tabControlContext: TabControlContext
 
     private let viewModel: TabControlToggleComponentViewModel
-    let onDismiss: () -> Void
+    private let onDismiss: () -> Void
 
     @State
     private var isOn: Bool

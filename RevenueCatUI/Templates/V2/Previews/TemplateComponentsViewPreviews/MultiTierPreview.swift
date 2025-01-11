@@ -135,14 +135,15 @@ private enum MultiTierPreview {
             components: [
                 .package(makePackage(packageID: weeklyPackageIdentifier,
                                      nameTextLid: "\(prefix)_weekly_name",
-                                     detailTextLid: "\(prefix)_weekly_detail")),
+                                     detailTextLid: "\(prefix)_weekly_detail",
+                                     isSelectedByDefault: isWeeklySelectedByDefault)),
                 .package(makePackage(packageID: "non_existant_package",
                                      nameTextLid: "\(prefix)_non_existant_name",
                                      detailTextLid: "\(prefix)_non_existant_detail")),
                 .package(makePackage(packageID: monthlyPackageIdentifier,
                                      nameTextLid: "\(prefix)_monthly_name",
                                      detailTextLid: "\(prefix)_monthly_detail",
-                                     isSelectedByDefault: true)),
+                                     isSelectedByDefault: isMonthlySelectedByDefault)),
                 .text(.init(
                     text: "package_terms",
                     color: .init(light: .hex("#999999")),
@@ -258,7 +259,7 @@ private enum MultiTierPreview {
                         .stack(makePackagesStack(
                             prefix: "premium",
                             weeklyPackageIdentifier: PreviewMock.weeklyPremiumPackage.packageIdentifier,
-                            isWeeklySelectedByDefault: false,
+                            isWeeklySelectedByDefault: true,
                             monthlyPackageIdentifier: PreviewMock.monthlyPremiumPackage.packageIdentifier,
                             isMonthlySelectedByDefault: false
                         ))

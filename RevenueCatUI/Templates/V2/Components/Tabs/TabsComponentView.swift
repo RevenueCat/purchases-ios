@@ -39,6 +39,29 @@ class TabControlContext: ObservableObject {
 struct TabsComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    private let viewModel: TabsComponentViewModel
+    private let onDismiss: () -> Void
+
+    init(viewModel: TabsComponentViewModel, onDismiss: @escaping () -> Void) {
+        self.viewModel = viewModel
+        self.onDismiss = onDismiss
+    }
+
+    var body: some View {
+        LoadedTabsComponentView(
+            viewModel: self.viewModel,
+            parentPackageContext: self.packageContext,
+            onDismiss: self.onDismiss
+        )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct LoadedTabsComponentView: View {
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
@@ -51,16 +74,21 @@ struct TabsComponentView: View {
     private var screenCondition
 
     private let viewModel: TabsComponentViewModel
-    let onDismiss: () -> Void
+    private let onDismiss: () -> Void
 
     @StateObject
     private var tabControlContext: TabControlContext
+
+    @State
+    private var tierPackageContexts: [PackageContext]
 
     var activeTabViewModel: TabViewModel {
         return self.viewModel.tabViewModels[self.tabControlContext.selectedIndex]
     }
 
-    init(viewModel: TabsComponentViewModel, onDismiss: @escaping () -> Void) {
+    init(viewModel: TabsComponentViewModel,
+         parentPackageContext: PackageContext,
+         onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
 
@@ -70,14 +98,64 @@ struct TabsComponentView: View {
                 tabViewModel.stackViewModel
             })
         ))
+
+        let variableContext = parentPackageContext.variableContext
+        self._tierPackageContexts = .init(initialValue: viewModel.tabViewModels.map({ tvm in
+            return .init(
+                package: tvm.defaultSelectedPackage,
+                variableContext: .init(
+                    packages: tvm.packages,
+                    showZeroDecimalPlacePrices: variableContext.showZeroDecimalPlacePrices
+                )
+            )
+        }))
+    }
+
+    var body: some View {
+        LoadedTabComponentView(
+            stackViewModel: self.activeTabViewModel.stackViewModel,
+            onChange: { context in
+                self.packageContext.update(
+                    package: context.package,
+                    variableContext: context.variableContext
+                )
+            },
+            onDismiss: self.onDismiss
+        )
+        .environmentObject(self.tabControlContext)
+        .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct LoadedTabComponentView: View {
+
+    @EnvironmentObject
+    private var tabPackageContext: PackageContext
+
+    private let stackViewModel: StackComponentViewModel
+    private let onChange: (PackageContext) -> Void
+    private let onDismiss: () -> Void
+
+    init(stackViewModel: StackComponentViewModel,
+         onChange: @escaping (PackageContext) -> Void,
+         onDismiss: @escaping () -> Void) {
+        self.stackViewModel = stackViewModel
+        self.onChange = onChange
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
         StackComponentView(
-            viewModel: self.activeTabViewModel.stackViewModel,
+            viewModel: self.stackViewModel,
             onDismiss: self.onDismiss
         )
-        .environmentObject(self.tabControlContext)
+        .environmentObject(self.tabPackageContext)
+        // Comparing on tabPackageContext.package but sending tabPackageContext to parent
+        .onChangeOf(self.tabPackageContext.package) { _ in
+            self.onChange(self.tabPackageContext)
+        }
     }
 
 }
