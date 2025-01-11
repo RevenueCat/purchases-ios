@@ -10,17 +10,6 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
-//source: ImageScheme | None = None
-//override_source_lid: LocalizationId | None = None
-//color_overlay: ColorSchemes | None = None
-//fit_mode: FitMode | None = None
-//mask_shape: MaskShape | None = None
-//size: Size | None = None
-//padding: Spacing | None = None
-//margin: Spacing | None = None
-//border: Border | None = None
-//shadow: Shadow | None = None
-
 public extension PaywallComponent {
 
     struct ImageComponent: PaywallComponentBase {
