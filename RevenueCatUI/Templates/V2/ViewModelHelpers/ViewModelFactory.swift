@@ -169,23 +169,17 @@ struct ViewModelFactory {
             )
         case .tabs(let component):
             let controlStackViewModel = try toStackViewModel(
-                component: component.controlStack,
+                component: component.control.stack,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
-            
+
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 return try .init(
                     tab: tab,
-                    tabStackViewModel: try toStackViewModel(
-                        component: tab.tabStack,
-                        localizationProvider: localizationProvider,
-                        uiConfigProvider: uiConfigProvider,
-                        offering: offering
-                    ),
-                    contentStackViewModel: try toStackViewModel(
-                        component: tab.contentStack,
+                    stackViewModel: try toStackViewModel(
+                        component: tab.stack,
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         offering: offering
@@ -193,7 +187,7 @@ struct ViewModelFactory {
                     uiConfigProvider: uiConfigProvider
                 )
             }
-            
+
             return .tabs(
                 try TabsComponentViewModel(
                     component: component,
@@ -205,6 +199,28 @@ struct ViewModelFactory {
         case .tabControl(let component):
             return .tabControl(
                 try TabControlComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControlButton(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+            
+            return .tabControlButton(
+                try TabControlButtonComponentViewModel(
+                    component: component,
+                    stackViewModel: stackViewModel,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControlToggle(let component):
+            return .tabControlToggle(
+                try TabControlToggleComponentViewModel(
                     component: component,
                     uiConfigProvider: uiConfigProvider
                 )

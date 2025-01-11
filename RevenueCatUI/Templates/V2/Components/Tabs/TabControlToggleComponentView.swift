@@ -18,7 +18,7 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TabControlComponentView: View {
+struct TabControlToggleComponentView: View {
 
     @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -35,26 +35,25 @@ struct TabControlComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
-    private let viewModel: TabControlComponentViewModel
+    private let viewModel: TabControlToggleComponentViewModel
     let onDismiss: () -> Void
+    
+    @State
+    private var isOn: Bool = false
 
-    init(viewModel: TabControlComponentViewModel, onDismiss: @escaping () -> Void) {
+    init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
     }
 
     var body: some View {
-        StackComponentView(
-            viewModel: self.tabControlContext.controlStackViewModel,
-            onDismiss: self.onDismiss
-        )
+        Toggle("", isOn: $isOn)
+            .labelsHidden()
+        .onChangeOf(self.isOn) { newValue in
+            self.tabControlContext.selectedIndex = newValue ? 1 : 0
+        }
     }
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct GenericViewContainerViewModel {
-    let view: AnyView
 }
 
 #if DEBUG

@@ -17,6 +17,27 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
+    
+    struct TabControlButtonComponent: PaywallComponentBase {
+        let type: ComponentType
+        
+        public let tabIndex: Int
+        public let stack: StackComponent
+
+        public init(tabIndex: Int, stack: StackComponent) {
+            self.type = .tabControlButton
+            self.tabIndex = tabIndex
+            self.stack = stack
+        }
+    }
+    
+    struct TabControlToggleComponent: PaywallComponentBase {
+        let type: ComponentType
+
+        public init() {
+            self.type = .tabControlToggle
+        }
+    }
 
     struct TabControlComponent: PaywallComponentBase {
         let type: ComponentType
@@ -31,14 +52,32 @@ public extension PaywallComponent {
         // swiftlint:disable:next nesting
         public struct Tab: PaywallComponentBase {
 
-            public let tabStack: StackComponent
-            public let contentStack: StackComponent
-            
-            public init(tabStack: PaywallComponent.StackComponent, contentStack: PaywallComponent.StackComponent) {
-                self.tabStack = tabStack
-                self.contentStack = contentStack
+            public let stack: StackComponent
+
+            public init(stack: PaywallComponent.StackComponent) {
+                self.stack = stack
             }
-            
+
+        }
+
+        // swiftlint:disable:next nesting
+        public struct TabControl: Codable, Sendable, Hashable, Equatable {
+
+            // swiftlint:disable:next nesting
+            public enum TabControlType: Codable, Sendable, Hashable, Equatable {
+                case buttons
+                case toggle
+            }
+
+            public let type: TabControlType
+            public let stack: StackComponent
+
+            public init(type: PaywallComponent.TabsComponent.TabControl.TabControlType,
+                        stack: PaywallComponent.StackComponent) {
+                self.type = type
+                self.stack = stack
+            }
+
         }
 
         let type: ComponentType
@@ -50,7 +89,7 @@ public extension PaywallComponent {
         public let border: Border?
         public let shadow: Shadow?
 
-        public let controlStack: StackComponent
+        public let control: TabControl
         public let tabs: [Tab]
 
         public let overrides: ComponentOverrides<PartialTabsComponent>?
@@ -64,7 +103,7 @@ public extension PaywallComponent {
             border: Border? = nil,
             shadow: Shadow? = nil,
 
-            controlStack: StackComponent,
+            control: TabControl,
             tabs: [Tab],
 
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
@@ -78,7 +117,7 @@ public extension PaywallComponent {
             self.border = border
             self.shadow = shadow
 
-            self.controlStack = controlStack
+            self.control = control
             self.tabs = tabs
 
             self.overrides = overrides

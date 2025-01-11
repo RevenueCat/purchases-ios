@@ -45,18 +45,15 @@ class TabViewModel {
     private let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
     
-    let tabStackViewModel: StackComponentViewModel
-    let contentStackViewModel: StackComponentViewModel
+    let stackViewModel: StackComponentViewModel
     
     init(
         tab: PaywallComponent.TabsComponent.Tab,
-        tabStackViewModel: StackComponentViewModel,
-        contentStackViewModel: StackComponentViewModel,
+        stackViewModel: StackComponentViewModel,
         uiConfigProvider: UIConfigProvider
     ) throws {
         self.tab = tab
-        self.tabStackViewModel = tabStackViewModel
-        self.contentStackViewModel = contentStackViewModel
+        self.stackViewModel = stackViewModel
         self.uiConfigProvider = uiConfigProvider
     }
 

@@ -18,7 +18,7 @@ import SwiftUI
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TabControlComponentView: View {
+struct TabControlButtonComponentView: View {
 
     @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -35,26 +35,26 @@ struct TabControlComponentView: View {
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
-    private let viewModel: TabControlComponentViewModel
+    private let viewModel: TabControlButtonComponentViewModel
     let onDismiss: () -> Void
 
-    init(viewModel: TabControlComponentViewModel, onDismiss: @escaping () -> Void) {
+    init(viewModel: TabControlButtonComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
     }
 
     var body: some View {
-        StackComponentView(
-            viewModel: self.tabControlContext.controlStackViewModel,
-            onDismiss: self.onDismiss
-        )
+        Button {
+            self.tabControlContext.selectedIndex = self.viewModel.component.tabIndex
+        } label: {
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss
+            )
+        }
+
     }
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct GenericViewContainerViewModel {
-    let view: AnyView
 }
 
 #if DEBUG
