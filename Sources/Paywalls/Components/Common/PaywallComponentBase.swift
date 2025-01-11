@@ -61,6 +61,7 @@ extension PaywallComponent: Codable {
 
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -148,6 +149,7 @@ extension PaywallComponent: Codable {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private static func decodeType(from decoder: Decoder, type: ComponentType) throws -> PaywallComponent {
         switch type {
         case .text:

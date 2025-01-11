@@ -32,6 +32,7 @@ struct ComponentsView: View {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next cyclomatic_complexity
     func layoutComponents(_ componentViewModels: [PaywallComponentViewModel]) -> some View {
         ForEach(Array(componentViewModels.enumerated()), id: \.offset) { _, item in
             switch item {
@@ -60,9 +61,6 @@ struct ComponentsView: View {
                 TabControlButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .tabControlToggle(let viewModel):
                 TabControlToggleComponentView(viewModel: viewModel, onDismiss: onDismiss)
-                
-            case .genericViewContainer(let viewModel):
-                viewModel.view
             }
         }
     }

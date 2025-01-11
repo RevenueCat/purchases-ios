@@ -18,16 +18,32 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TabControlToggleComponentViewModel {
-    
+
     let component: PaywallComponent.TabControlToggleComponent
     let uiConfigProvider: UIConfigProvider
-    
+
     init(
         component: PaywallComponent.TabControlToggleComponent,
         uiConfigProvider: UIConfigProvider
     ) throws {
         self.component = component
         self.uiConfigProvider = uiConfigProvider
+    }
+
+    var thumbColorOn: Color {
+        return self.component.thumbColorOn.toDynamicColor(uiConfigProvider: uiConfigProvider)
+    }
+
+    var thumbColorOff: Color {
+        return self.component.thumbColorOff.toDynamicColor(uiConfigProvider: uiConfigProvider)
+    }
+
+    var trackColorOn: Color {
+        return self.component.trackColorOn.toDynamicColor(uiConfigProvider: uiConfigProvider)
+    }
+
+    var trackColorOff: Color {
+        return self.component.trackColorOff.toDynamicColor(uiConfigProvider: uiConfigProvider)
     }
 
 }

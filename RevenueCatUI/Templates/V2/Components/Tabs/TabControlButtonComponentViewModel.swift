@@ -18,11 +18,11 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TabControlButtonComponentViewModel {
-    
+
     let component: PaywallComponent.TabControlButtonComponent
     let stackViewModel: StackComponentViewModel
     let uiConfigProvider: UIConfigProvider
-    
+
     init(
         component: PaywallComponent.TabControlButtonComponent,
         stackViewModel: StackComponentViewModel,

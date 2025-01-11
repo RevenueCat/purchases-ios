@@ -17,10 +17,10 @@ import Foundation
 #if PAYWALL_COMPONENTS
 
 public extension PaywallComponent {
-    
+
     struct TabControlButtonComponent: PaywallComponentBase {
         let type: ComponentType
-        
+
         public let tabIndex: Int
         public let stack: StackComponent
 
@@ -30,12 +30,24 @@ public extension PaywallComponent {
             self.stack = stack
         }
     }
-    
+
     struct TabControlToggleComponent: PaywallComponentBase {
         let type: ComponentType
 
-        public init() {
+        public let thumbColorOn: ColorScheme
+        public let thumbColorOff: ColorScheme
+        public let trackColorOn: ColorScheme
+        public let trackColorOff: ColorScheme
+
+        public init(thumbColorOn: ColorScheme,
+                    thumbColorOff: ColorScheme,
+                    trackColorOn: ColorScheme,
+                    trackColorOff: ColorScheme) {
             self.type = .tabControlToggle
+            self.thumbColorOn = thumbColorOn
+            self.thumbColorOff = thumbColorOff
+            self.trackColorOn = trackColorOn
+            self.trackColorOff = trackColorOff
         }
     }
 

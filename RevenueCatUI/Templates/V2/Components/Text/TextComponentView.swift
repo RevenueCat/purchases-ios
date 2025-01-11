@@ -437,8 +437,11 @@ struct TextComponentView_Previews: PreviewProvider {
         )
         .previewRequiredEnvironmentProperties(
             packageContext: .init(
-                package: PreviewMock.annualPackage,
-                variableContext: .init(packages: [PreviewMock.monthlyPackage, PreviewMock.annualPackage])
+                package: PreviewMock.annualStandardPackage,
+                variableContext: .init(packages: [
+                    PreviewMock.monthlyStandardPackage,
+                    PreviewMock.annualStandardPackage
+                ])
             )
         )
         .previewLayout(.sizeThatFits)
@@ -467,8 +470,11 @@ struct TextComponentView_Previews: PreviewProvider {
         )
         .previewRequiredEnvironmentProperties(
             packageContext: .init(
-                package: PreviewMock.annualPackage,
-                variableContext: .init(packages: [PreviewMock.monthlyPackage, PreviewMock.annualPackage])
+                package: PreviewMock.annualStandardPackage,
+                variableContext: .init(packages: [
+                    PreviewMock.monthlyStandardPackage,
+                    PreviewMock.annualStandardPackage
+                ])
             )
         )
         .previewLayout(.sizeThatFits)

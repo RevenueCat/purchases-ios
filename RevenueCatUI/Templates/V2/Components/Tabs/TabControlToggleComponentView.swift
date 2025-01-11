@@ -31,13 +31,13 @@ struct TabControlToggleComponentView: View {
 
     @Environment(\.screenCondition)
     private var screenCondition
-    
+
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
     private let viewModel: TabControlToggleComponentViewModel
     let onDismiss: () -> Void
-    
+
     @State
     private var isOn: Bool = false
 
@@ -48,6 +48,14 @@ struct TabControlToggleComponentView: View {
 
     var body: some View {
         Toggle("", isOn: $isOn)
+            .toggleStyle(
+                CustomToggleStyle(
+                    thumbColorOn: self.viewModel.thumbColorOn,
+                    thumbColorOff: self.viewModel.thumbColorOff,
+                    trackColorOn: self.viewModel.trackColorOn,
+                    trackColorOff: self.viewModel.trackColorOff
+                )
+            )
             .labelsHidden()
         .onChangeOf(self.isOn) { newValue in
             self.tabControlContext.selectedIndex = newValue ? 1 : 0
@@ -56,40 +64,29 @@ struct TabControlToggleComponentView: View {
 
 }
 
-#if DEBUG
+private struct CustomToggleStyle: ToggleStyle {
 
-// swiftlint:disable type_body_length
-//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//struct TabControlComponentView_Previews: PreviewProvider {
-//    
-//    static let tabControlContext = TabControlContext(
-//        controlStackViewModel: try! .init(
-//            component: .init(
-//                components: []),
-//            viewModels: [],
-//            uiConfigProvider: .init(
-//                uiConfig: PreviewUIConfig.make()
-//            )
-//        )
-//    )
-//
-//    static var previews: some View {
-//        // Default
-//        TabControlComponentView(
-//            // swiftlint:disable:next force_try
-//            viewModel: try! .init(
-//                component: .init(),
-//                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
-//            ),
-//            onDismiss: {}
-//        )
-//        .environmentObject(tabControlContext)
-//        .previewRequiredEnvironmentProperties()
-//        .previewLayout(.sizeThatFits)
-//        .previewDisplayName("Default")
-//    }
-//}
+    var thumbColorOn: Color
+    var thumbColorOff: Color
+    var trackColorOn: Color
+    var trackColorOff: Color
 
-#endif
+    func makeBody(configuration: Self.Configuration) -> some View {
+        RoundedRectangle(cornerRadius: 16, style: .circular)
+            .fill(configuration.isOn ? trackColorOn : trackColorOff)
+            .frame(width: 50, height: 30)
+            .overlay(
+                Circle()
+                    .fill(configuration.isOn ? thumbColorOn : thumbColorOff)
+                    .padding(2)
+                    .offset(x: configuration.isOn ? 10 : -10)
+            )
+            .onTapGesture {
+                withAnimation(.smooth(duration: 0.2)) {
+                    configuration.isOn.toggle()
+                }
+            }
+    }
+}
 
 #endif

@@ -31,12 +31,16 @@ struct TabControlButtonComponentView: View {
 
     @Environment(\.screenCondition)
     private var screenCondition
-    
+
     @EnvironmentObject
     private var tabControlContext: TabControlContext
 
     private let viewModel: TabControlButtonComponentViewModel
-    let onDismiss: () -> Void
+    private let onDismiss: () -> Void
+
+    private var selectedState: ComponentViewState {
+        return self.tabControlContext.selectedIndex == self.viewModel.component.tabIndex ? .selected : .default
+    }
 
     init(viewModel: TabControlButtonComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -51,46 +55,11 @@ struct TabControlButtonComponentView: View {
                 viewModel: self.viewModel.stackViewModel,
                 onDismiss: self.onDismiss
             )
+            .environment(\.componentViewState, self.selectedState)
         }
 
     }
 
 }
-
-#if DEBUG
-
-// swiftlint:disable type_body_length
-//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//struct TabControlComponentView_Previews: PreviewProvider {
-//    
-//    static let tabControlContext = TabControlContext(
-//        controlStackViewModel: try! .init(
-//            component: .init(
-//                components: []),
-//            viewModels: [],
-//            uiConfigProvider: .init(
-//                uiConfig: PreviewUIConfig.make()
-//            )
-//        )
-//    )
-//
-//    static var previews: some View {
-//        // Default
-//        TabControlComponentView(
-//            // swiftlint:disable:next force_try
-//            viewModel: try! .init(
-//                component: .init(),
-//                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
-//            ),
-//            onDismiss: {}
-//        )
-//        .environmentObject(tabControlContext)
-//        .previewRequiredEnvironmentProperties()
-//        .previewLayout(.sizeThatFits)
-//        .previewDisplayName("Default")
-//    }
-//}
-
-#endif
 
 #endif

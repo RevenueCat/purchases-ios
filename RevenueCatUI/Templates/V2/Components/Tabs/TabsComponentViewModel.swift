@@ -18,13 +18,13 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TabsComponentViewModel {
-    
+
     private let component: PaywallComponent.TabsComponent
     let uiConfigProvider: UIConfigProvider
-    
+
     let controlStackViewModel: StackComponentViewModel
     let tabViewModels: [TabViewModel]
-    
+
     init(
         component: PaywallComponent.TabsComponent,
         controlStackViewModel: StackComponentViewModel,
@@ -41,12 +41,12 @@ class TabsComponentViewModel {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TabViewModel {
-    
+
     private let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
-    
+
     let stackViewModel: StackComponentViewModel
-    
+
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,

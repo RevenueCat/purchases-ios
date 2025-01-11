@@ -54,7 +54,7 @@ struct ViewModelFactory {
         )
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func toViewModel(
         component: PaywallComponent,
         packageValidator: PackageValidator,
@@ -210,7 +210,7 @@ struct ViewModelFactory {
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
-            
+
             return .tabControlButton(
                 try TabControlButtonComponentViewModel(
                     component: component,
