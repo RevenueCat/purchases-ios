@@ -10,6 +10,17 @@ import Foundation
 
 #if PAYWALL_COMPONENTS
 
+//source: ImageScheme | None = None
+//override_source_lid: LocalizationId | None = None
+//color_overlay: ColorSchemes | None = None
+//fit_mode: FitMode | None = None
+//mask_shape: MaskShape | None = None
+//size: Size | None = None
+//padding: Spacing | None = None
+//margin: Spacing | None = None
+//border: Border | None = None
+//shadow: Shadow | None = None
+
 public extension PaywallComponent {
 
     struct ImageComponent: PaywallComponentBase {
@@ -18,9 +29,13 @@ public extension PaywallComponent {
         public let source: ThemeImageUrls
         public let size: Size
         public let overrideSourceLid: LocalizationKey?
-        public let maskShape: MaskShape?
-        public let gradientColors: [ColorHex]?
         public let fitMode: FitMode
+        public let maskShape: MaskShape?
+        public let colorOverlay: ColorScheme?
+        public let padding: Padding?
+        public let margin: Padding?
+        public let border: Border?
+        public let shadow: Shadow?
 
         public let overrides: ComponentOverrides<PartialImageComponent>?
 
@@ -29,9 +44,12 @@ public extension PaywallComponent {
             size: Size = .init(width: .fill, height: .fit),
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode = .fit,
-            maxHeight: CGFloat? = nil,
             maskShape: MaskShape? = nil,
-            gradientColors: [ColorHex]? = [],
+            colorOverlay: ColorScheme? = nil,
+            padding: Padding? = nil,
+            margin: Padding? = nil,
+            border: Border? = nil,
+            shadow: Shadow? = nil,
             overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
             self.type = .image
@@ -40,7 +58,11 @@ public extension PaywallComponent {
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
             self.maskShape = maskShape
-            self.gradientColors = gradientColors
+            self.colorOverlay = colorOverlay
+            self.padding = padding
+            self.margin = margin
+            self.border = border
+            self.shadow = shadow
             self.overrides = overrides
         }
 
@@ -53,8 +75,12 @@ public extension PaywallComponent {
         public let size: Size?
         public let overrideSourceLid: LocalizationKey?
         public let maskShape: MaskShape?
-        public let gradientColors: [ColorHex]?
         public let fitMode: FitMode?
+        public let colorOverlay: ColorScheme?
+        public let padding: Padding?
+        public let margin: Padding?
+        public let border: Border?
+        public let shadow: Shadow?
 
         public init(
             visible: Bool? = true,
@@ -63,7 +89,11 @@ public extension PaywallComponent {
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode? = nil,
             maskShape: MaskShape? = nil,
-            gradientColors: [ColorHex]? = nil
+            colorOverlay: ColorScheme? = nil,
+            padding: Padding? = nil,
+            margin: Padding? = nil,
+            border: Border? = nil,
+            shadow: Shadow? = nil
         ) {
             self.visible = visible
             self.source = source
@@ -71,7 +101,11 @@ public extension PaywallComponent {
             self.overrideSourceLid = overrideSourceLid
             self.fitMode = fitMode
             self.maskShape = maskShape
-            self.gradientColors = gradientColors
+            self.colorOverlay = colorOverlay
+            self.padding = padding
+            self.margin = margin
+            self.border = border
+            self.shadow = shadow
         }
 
     }
