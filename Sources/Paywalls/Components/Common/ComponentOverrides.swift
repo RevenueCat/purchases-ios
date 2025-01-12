@@ -24,15 +24,18 @@ public extension PaywallComponent {
     struct ComponentOverrides<T: PartialComponent>: PaywallComponentBase {
 
         public init(
+            app: T? = nil,
             introOffer: T? = nil,
             states: PaywallComponent.ComponentStates<T>? = nil,
             conditions: PaywallComponent.ComponentConditions<T>? = nil
         ) {
+            self.app = app
             self.introOffer = introOffer
             self.states = states
             self.conditions = conditions
         }
 
+        public let app: T?
         public let introOffer: T?
         public let states: ComponentStates<T>?
         public let conditions: ComponentConditions<T>?

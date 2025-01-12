@@ -32,6 +32,8 @@ protocol PresentedPartial {
 /// Structure holding override configurations for different presentation states
 struct PresentedOverrides<T: PresentedPartial> {
 
+    /// Override for this app
+    public let app: T?
     /// Override for intro offer state
     public let introOffer: T?
     /// Override for different selection states
@@ -75,12 +77,18 @@ extension PresentedPartial {
         isEligibleForIntroOffer: Bool,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
-        var conditionPartial = buildConditionPartial(for: condition, with: presentedOverrides)
+        // Start with partial for app specific overrides
+        var conditionPartial = Self.combine(nil, with: presentedOverrides?.app)
 
+        // Apply screen conditions (sizes)
+        conditionPartial = buildConditionPartial(conditionPartial, for: condition, with: presentedOverrides)
+
+        // Apply intro offer
         if isEligibleForIntroOffer {
             conditionPartial = Self.combine(conditionPartial, with: presentedOverrides?.introOffer)
         }
 
+        // Apply state
         switch state {
         case .default:
             break
@@ -97,9 +105,10 @@ extension PresentedPartial {
     ///   - presentedOverrides: Override configurations to apply
     /// - Returns: Configured partial component for the given condition
     private static func buildConditionPartial(
+        _ base: Self,
         for conditionType: ScreenCondition,
         with presentedOverrides: PresentedOverrides<Self>?
-    ) -> Self? {
+    ) -> Self {
         let conditions = presentedOverrides?.conditions
         let applicableConditions = conditionType.applicableConditions
             .compactMap { type -> Self? in
@@ -110,7 +119,7 @@ extension PresentedPartial {
                 }
             }
 
-        return applicableConditions.reduce(nil) { partial, next in
+        return applicableConditions.reduce(base) { partial, next in
             Self.combine(partial, with: next)
         }
     }
@@ -149,6 +158,7 @@ extension PaywallComponent.ComponentOverrides {
     /// - Returns: Presented overrides with converted components
     func toPresentedOverrides<P: PresentedPartial>(convert: (T) throws -> P) throws -> PresentedOverrides<P> {
         PresentedOverrides(
+            app: try mapPartial(self.app, using: convert),
             introOffer: try mapPartial(self.introOffer, using: convert),
             states: try self.states.flatMap { states in
                 PresentedStates(

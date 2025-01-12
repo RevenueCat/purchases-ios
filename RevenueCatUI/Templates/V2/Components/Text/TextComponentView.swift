@@ -312,6 +312,33 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
+        
+        // State - App Specific
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world"),
+                        "id_2": .string("Hello, world on iOS app")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: .init(
+                        app: .init(
+                            text: "id_2"
+                        )
+                    )
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("State - App Specific")
 
         // State - Selected
         TextComponentView(
@@ -320,7 +347,8 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string("Hello, world")
+                        "id_1": .string("Hello, world"),
+                        "id_2": .string("THIS SHOULDN'T SHOW")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
@@ -328,8 +356,15 @@ struct TextComponentView_Previews: PreviewProvider {
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
                     overrides: .init(
+                        // None of this should be displayed
+                        app: .init(
+                            text: "id_2",
+                            color: .init(light: .hex("#ffcc00"))
+                        ),
+                        // Selected should override app
                         states: .init(
                             selected: .init(
+                                text: "id_1",
                                 fontWeight: .black,
                                 color: .init(light: .hex("#ff0000")),
                                 backgroundColor: .init(light: .hex("#0000ff")),
