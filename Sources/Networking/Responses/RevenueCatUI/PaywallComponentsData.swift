@@ -42,6 +42,28 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         public let bodyM: Int
         public let bodyS: Int
 
+        public init(headingXXL: Int,
+                    headingXL: Int,
+                    headingL: Int,
+                    headingM: Int,
+                    headingS: Int,
+                    headingXS: Int,
+                    bodyXL: Int,
+                    bodyL: Int,
+                    bodyM: Int,
+                    bodyS: Int) {
+            self.headingXXL = headingXXL
+            self.headingXL = headingXL
+            self.headingL = headingL
+            self.headingM = headingM
+            self.headingS = headingS
+            self.headingXS = headingXS
+            self.bodyXL = bodyXL
+            self.bodyL = bodyL
+            self.bodyM = bodyM
+            self.bodyS = bodyS
+        }
+
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case headingXXL = "heading_xxl"

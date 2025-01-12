@@ -77,6 +77,22 @@ struct TextComponentView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
 
+    static let fontSizeOverridesUIConfigProvider = UIConfigProvider(
+        uiConfig: PreviewUIConfig.make(),
+        fontSizeOverride: .init(
+            headingXXL: 10,
+            headingXL: 12,
+            headingL: 14,
+            headingM: 16,
+            headingS: 18,
+            headingXS: 20,
+            bodyXL: 22,
+            bodyL: 24,
+            bodyM: 26,
+            bodyS: 28
+        )
+    )
+
     static var previews: some View {
         // Default
         TextComponentView(
@@ -265,6 +281,44 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Color")
+
+        // Font Size Override
+        VStack {
+            let data: [(String, PaywallComponent.FontSize)] = [
+                ("Heading XXL - Size 10", .headingXXL),
+                ("Heading XL - Size 12", .headingXL),
+                ("Heading L - Size 14", .headingL),
+                ("Heading M - Size 16", .headingM),
+                ("Heading S - Size 18", .headingS),
+                ("Heading XS - Size 20", .headingXS),
+                ("Body XL - Size 22", .bodyXL),
+                ("Body L - Size 24", .bodyL),
+                ("Body M - Size 26", .bodyM),
+                ("Body S - Size 28", .bodyS)
+            ]
+            ForEach(data, id: \.self.0) { (string, size) in
+                TextComponentView(
+                    // swiftlint:disable:next force_try
+                    viewModel: try! .init(
+                        localizationProvider: .init(
+                            locale: Locale.current,
+                            localizedStrings: [
+                                "id_1": .string(string)
+                            ]
+                        ),
+                        uiConfigProvider: self.fontSizeOverridesUIConfigProvider,
+                        component: .init(
+                            text: "id_1",
+                            color: .init(light: .hex("#000000")),
+                            fontSize: size
+                        )
+                    )
+                )
+            }
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Font Size Overrides")
 
         // Gradient
         TextComponentView(
