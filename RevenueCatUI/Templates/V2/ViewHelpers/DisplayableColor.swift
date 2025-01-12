@@ -54,6 +54,7 @@ extension DisplayableColorScheme {
 
     static func from(colorScheme: PaywallComponent.ColorScheme,
                      uiConfigProvider: UIConfigProvider) throws -> DisplayableColorScheme {
+        //
         let light = try colorScheme.light.asDisplayable(forLight: true, uiConfigProvider: uiConfigProvider)
         let dark = try colorScheme.dark?.asDisplayable(forLight: false, uiConfigProvider: uiConfigProvider)
 
@@ -68,7 +69,7 @@ extension PaywallComponent.ColorScheme {
         do {
             return try DisplayableColorScheme.from(colorScheme: self, uiConfigProvider: uiConfigProvider)
         } catch {
-            // WIP: Fallback clear (FOR NOW)
+            // WIP: Falling back to clear color until move validation into view model initialization
             return DisplayableColorScheme(light: .hex("#ffffff00"))
         }
     }
@@ -79,36 +80,57 @@ extension PaywallComponent.ColorInfo {
 
     func asDisplayable(forLight: Bool, uiConfigProvider: UIConfigProvider) throws -> DisplayableColorInfo {
         switch self {
+        // Directly convert to displayable type
         case .hex(let hex):
             return .hex(hex)
+        case .linear(let degree, let points):
+            return .linear(degree, points)
+        case .radial(let points):
+            return .radial(points)
+
+        // Attempt to look up alias and creat a new color
         case .alias(let name):
 
             let aliasedColorScheme = uiConfigProvider.getColor(for: name)
             let aliasedColorInfo = forLight ? aliasedColorScheme?.light : aliasedColorScheme?.dark
 
             guard let aliasedColorInfo else {
-                Logger.warning("Aliased color '\(name)' does not exist.")
-                fatalError()
+                Logger.error("Aliased color '\(name)' does not exist.")
+                throw PaywallColorError.aliasDoesNotExist(name)
             }
 
             switch aliasedColorInfo {
+            // Direclty convert the alias to displayable type
             case .hex(let hex):
                 return .hex(hex)
-            case .alias(let name):
-                Logger.warning("Aliased color '\(name)' has an aliased value which is not allowed.")
-                fatalError()
             case .linear(let degree, let points):
                 return .linear(degree, points)
             case .radial(let points):
                 return .radial(points)
+
+            // Throwing error if alias has an alias
+            // This should NEVER happen though
+            case .alias(let name):
+                Logger.error("Aliased color '\(name)' has an aliased value which is not allowed.")
+                throw PaywallColorError.aliasedColorIsAliased(name)
             }
-        case .linear(let degree, let points):
-            return .linear(degree, points)
-        case .radial(let points):
-            return .radial(points)
         }
     }
 
+}
+
+enum PaywallColorError: LocalizedError {
+    case aliasDoesNotExist(String)
+    case aliasedColorIsAliased(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .aliasDoesNotExist(let alias):
+            return "Aliased color '\(alias)' does not exist."
+        case .aliasedColorIsAliased(let alias):
+            return "Aliased color '\(alias)' has an aliased value which is not allowed."
+        }
+    }
 }
 
 #endif
