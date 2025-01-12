@@ -312,7 +312,7 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
-        
+
         // State - App Specific
         TextComponentView(
             // swiftlint:disable:next force_try
