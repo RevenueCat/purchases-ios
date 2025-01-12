@@ -32,13 +32,24 @@ extension PaywallComponent.Background {
 
 struct DisplayableColorScheme: Equatable, Hashable {
 
-    init(light: DisplayableColorInfo, dark: DisplayableColorInfo? = nil) {
-        self.light = light
-        self.dark = dark
-    }
+    static let error = DisplayableColorScheme(hasError: true)
 
     let light: DisplayableColorInfo
     let dark: DisplayableColorInfo?
+
+    let hasError: Bool
+
+    init(light: DisplayableColorInfo, dark: DisplayableColorInfo? = nil) {
+        self.light = light
+        self.dark = dark
+        self.hasError = false
+    }
+
+    private init(hasError: Bool) {
+        self.light = .hex("#ffffff00")
+        self.dark = nil
+        self.hasError = true
+    }
 
 }
 
@@ -54,7 +65,6 @@ extension DisplayableColorScheme {
 
     static func from(colorScheme: PaywallComponent.ColorScheme,
                      uiConfigProvider: UIConfigProvider) throws -> DisplayableColorScheme {
-        //
         let light = try colorScheme.light.asDisplayable(forLight: true, uiConfigProvider: uiConfigProvider)
         let dark = try colorScheme.dark?.asDisplayable(forLight: false, uiConfigProvider: uiConfigProvider)
 
@@ -70,7 +80,7 @@ extension PaywallComponent.ColorScheme {
             return try DisplayableColorScheme.from(colorScheme: self, uiConfigProvider: uiConfigProvider)
         } catch {
             // WIP: Falling back to clear color until move validation into view model initialization
-            return DisplayableColorScheme(light: .hex("#ffffff00"))
+            return DisplayableColorScheme.error
         }
     }
 

@@ -55,10 +55,10 @@ fileprivate extension View {
 
             // Do not apply a clear text color
             // Use the default color
-            if color != Color.clear {
-                self.foregroundColor(color)
-            } else {
+            if color.hasError {
                 self
+            } else {
+                self.foregroundColor(color)
             }
         case .linear(let degrees, _):
             self.overlay {
