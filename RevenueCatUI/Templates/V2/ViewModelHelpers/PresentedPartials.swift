@@ -18,7 +18,7 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 /// Protocol defining how partial components can be combined
-protocol PresentedPartial {
+protocol PresentedPartial: Equatable {
 
     /// Combines two partial components, allowing for override behavior
     /// - Parameters:
