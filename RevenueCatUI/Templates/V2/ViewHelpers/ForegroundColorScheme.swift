@@ -51,14 +51,12 @@ fileprivate extension View {
     ) -> some View {
         switch color.effectiveColor(for: colorScheme) {
         case .hex:
-            let color = color.toDynamicColor()
-
             // Do not apply a clear text color
             // Use the default color
             if color.hasError {
                 self
             } else {
-                self.foregroundColor(color)
+                self.foregroundColor(color.toDynamicColor())
             }
         case .linear(let degrees, _):
             self.overlay {
