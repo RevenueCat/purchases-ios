@@ -117,7 +117,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -146,7 +149,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -175,7 +181,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -207,7 +216,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         source: .init(
                             light: .init(

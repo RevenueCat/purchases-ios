@@ -16,10 +16,22 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
+private extension Int {
+    var asCGFloat: CGFloat {
+        return CGFloat(self)
+    }
+}
+
 extension PaywallComponent.FontSize {
 
-    func makeFont(familyName: String?) -> Font {
-        return Font(self.makeUIFont(familyName: familyName))
+    func makeFont(
+        familyName: String?,
+        fontSizeOverrides: PaywallComponentsData.FontSizeOverrides?
+    ) -> Font {
+        return Font(self.makeUIFont(
+            familyName: familyName,
+            fontSizeOverrides: fontSizeOverrides
+        ))
     }
 
     private var textStyle: UIFont.TextStyle {
@@ -37,19 +49,22 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makeUIFont(familyName: String?) -> UIFont {
+    private func makeUIFont(
+        familyName: String?,
+        fontSizeOverrides: PaywallComponentsData.FontSizeOverrides?
+    ) -> UIFont {
         let fontSize: CGFloat
         switch self {
-        case .headingXXL: fontSize = 40
-        case .headingXL: fontSize = 34
-        case .headingL: fontSize = 28
-        case .headingM: fontSize = 24
-        case .headingS: fontSize = 20
-        case .headingXS: fontSize = 16
-        case .bodyXL: fontSize = 18
-        case .bodyL: fontSize = 17
-        case .bodyM: fontSize = 15
-        case .bodyS: fontSize = 13
+        case .headingXXL: fontSize = fontSizeOverrides?.headingXXL.asCGFloat ?? 40
+        case .headingXL: fontSize = fontSizeOverrides?.headingXL.asCGFloat ?? 34
+        case .headingL: fontSize = fontSizeOverrides?.headingL.asCGFloat ?? 28
+        case .headingM: fontSize = fontSizeOverrides?.headingM.asCGFloat ?? 24
+        case .headingS: fontSize = fontSizeOverrides?.headingS.asCGFloat ?? 20
+        case .headingXS: fontSize = fontSizeOverrides?.headingXS.asCGFloat ?? 16
+        case .bodyXL: fontSize = fontSizeOverrides?.bodyXL.asCGFloat ?? 18
+        case .bodyL: fontSize = fontSizeOverrides?.bodyL.asCGFloat ?? 17
+        case .bodyM: fontSize = fontSizeOverrides?.bodyM.asCGFloat ?? 15
+        case .bodyS: fontSize = fontSizeOverrides?.bodyS.asCGFloat ?? 13
         }
 
         // Create the base font, with fallback to the system font

@@ -155,7 +155,10 @@ fileprivate extension ButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             localizationProvider: localizationProvider,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            uiConfigProvider: .init(
+                uiConfig: PreviewUIConfig.make(),
+                fontSizeOverride: nil
+            ),
             offering: offering
         )
 

@@ -122,7 +122,10 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
             packageValidator: packageValidator,
             offering: offering,
             localizationProvider: localizationProvider,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(
+                uiConfig: PreviewUIConfig.make(),
+                fontSizeOverride: nil
+            )
         )
     }
 

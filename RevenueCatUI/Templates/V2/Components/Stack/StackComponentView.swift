@@ -521,14 +521,20 @@ fileprivate extension StackComponentViewModel {
                 packageValidator: validator,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                )
             )
         }
 
         try self.init(
             component: component,
             viewModels: viewModels,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(
+                uiConfig: PreviewUIConfig.make(),
+                fontSizeOverride: nil
+            )
         )
     }
 

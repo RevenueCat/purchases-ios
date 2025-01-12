@@ -19,9 +19,11 @@ import RevenueCat
 struct UIConfigProvider {
 
     private let uiConfig: UIConfig
+    let fontSizeOverride: PaywallComponentsData.FontSizeOverrides?
 
-    init(uiConfig: UIConfig) {
+    init(uiConfig: UIConfig, fontSizeOverride: PaywallComponentsData.FontSizeOverrides?) {
         self.uiConfig = uiConfig
+        self.fontSizeOverride = fontSizeOverride
     }
 
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {

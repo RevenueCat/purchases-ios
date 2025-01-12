@@ -338,11 +338,15 @@ struct CornerBorder_Previews: PreviewProvider {
                                     .padding(.vertical, 10)
                                     .padding(.horizontal, 20)
                             }
-                            .shape(border: border,
-                                   shape: shape,
-                                   shadow: shadow,
-                                   background: background,
-                                   uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                            .shape(
+                                border: border,
+                                shape: shape,
+                                shadow: shadow,
+                                background: background,
+                                uiConfigProvider: .init(
+                                    uiConfig: PreviewUIConfig.make(),
+                                    fontSizeOverride: nil
+                                )
                             )
                             .padding(5)
                         }
@@ -378,9 +382,12 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .shape(
-                    border: .init(color: .blue,
-                                  width: 4),
-                    shape: nil)
+                    border: .init(
+                        color: .blue,
+                        width: 4
+                    ),
+                    shape: nil
+                )
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -394,10 +401,15 @@ struct CornerBorder_Previews: PreviewProvider {
                 .background(.yellow)
                 .shape(
                     border: nil,
-                    shape: .rectangle(.init(topLeft: 8,
-                                            topRight: 0,
-                                            bottomLeft: 0,
-                                            bottomRight: 8)))
+                    shape: .rectangle(
+                        .init(
+                            topLeft: 8,
+                            topRight: 0,
+                            bottomLeft: 0,
+                            bottomRight: 8
+                        )
+                    )
+                )
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -410,12 +422,19 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .shape(
-                    border: .init(color: .blue,
-                                  width: 6),
-                    shape: .rectangle(.init(topLeft: 8,
-                                            topRight: 8,
-                                            bottomLeft: 8,
-                                            bottomRight: 8)))
+                    border: .init(
+                        color: .blue,
+                        width: 6
+                    ),
+                    shape: .rectangle(
+                        .init(
+                            topLeft: 8,
+                            topRight: 8,
+                            bottomLeft: 8,
+                            bottomRight: 8
+                        )
+                    )
+                )
                 .padding()
         }
         .previewLayout(.sizeThatFits)
@@ -428,12 +447,19 @@ struct CornerBorder_Previews: PreviewProvider {
                 .padding(.horizontal, 20)
                 .background(.yellow)
                 .shape(
-                    border: .init(color: .blue,
-                                  width: 6),
-                    shape: .rectangle(.init(topLeft: 8,
-                                            topRight: 0,
-                                            bottomLeft: 0,
-                                            bottomRight: 8)))
+                    border: .init(
+                        color: .blue,
+                        width: 6
+                    ),
+                    shape: .rectangle(
+                        .init(
+                            topLeft: 8,
+                            topRight: 0,
+                            bottomLeft: 0,
+                            bottomRight: 8
+                        )
+                    )
+                )
                 .padding()
         }
         .previewLayout(.sizeThatFits)

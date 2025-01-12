@@ -21,9 +21,39 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public struct ComponentsConfig: Codable, Equatable, Sendable {
 
         public var base: PaywallComponentsConfig
+        public var fontSizeOverrides: FontSizeOverrides?
 
         public init(base: PaywallComponentsConfig) {
             self.base = base
+        }
+
+    }
+
+    public struct FontSizeOverrides: Codable, Equatable, Sendable {
+
+        public let headingXXL: Int
+        public let headingXL: Int
+        public let headingL: Int
+        public let headingM: Int
+        public let headingS: Int
+        public let headingXS: Int
+        public let bodyXL: Int
+        public let bodyL: Int
+        public let bodyM: Int
+        public let bodyS: Int
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case headingXXL = "heading_xxl"
+            case headingXL = "heading_xl"
+            case headingL = "heading_l"
+            case headingM = "heading_m"
+            case headingS = "heading_s"
+            case headingXS = "heading_xs"
+            case bodyXL = "body_xl"
+            case bodyL = "body_l"
+            case bodyM = "body_m"
+            case bodyS = "body_s"
         }
 
     }

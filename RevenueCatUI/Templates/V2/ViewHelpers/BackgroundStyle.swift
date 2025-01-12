@@ -224,7 +224,10 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#ff0000", percent: 0),
                             .init(color: "#E58984", percent: 100)
                         ])
-                    ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                    ).asDisplayable(uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    )
                 ))
             )
             .preferredColorScheme(.dark)
@@ -243,7 +246,10 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#00E519", percent: 0),
                             .init(color: "#9DEAD3", percent: 100)
                         ])
-                    ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                    ).asDisplayable(uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    ))
                 )
             )
             .previewLayout(.sizeThatFits)
@@ -261,7 +267,10 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#ff0000", percent: 0),
                             .init(color: "#E58984", percent: 100)
                         ])
-                      ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                      ).asDisplayable(uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                      ))
                 )
             )
             .preferredColorScheme(.dark)
@@ -281,7 +290,10 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#000000", percent: 0),
                             .init(color: "#ffffff", percent: 100)
                         ])
-                      ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                      ).asDisplayable(uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                      ))
                 )
             )
             .previewLayout(.sizeThatFits)

@@ -88,7 +88,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))
@@ -110,7 +113,10 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Hello, world")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         text: "id_1",
                         color: .init(light: .hex("#000000")),
@@ -128,11 +134,13 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Hello, world")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
-                        fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
-                        ]
-                    )),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(
+                            fonts: [
+                                "primary": .init(ios: .name("Chalkduster"))
+                            ]
+                        ), fontSizeOverride: nil
+                    ),
                     component: .init(
                         text: "id_1",
                         fontName: "primary",
@@ -151,11 +159,14 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Hello, world")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
-                        fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
-                        ]
-                    )),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(
+                            fonts: [
+                                "primary": .init(ios: .name("Chalkduster"))
+                            ]
+                        ),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         text: "id_1",
                         fontName: "This font name is not configured",
@@ -174,11 +185,14 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Hello, world")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
-                        fonts: [
-                            "primary": .init(ios: .name("This Font Does Not Exist"))
-                        ]
-                    )),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(
+                            fonts: [
+                                "primary": .init(ios: .name("This Font Does Not Exist"))
+                            ]
+                        ),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         text: "id_1",
                         fontName: "primary",
@@ -203,12 +217,15 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Red bg, yellow fg")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
-                        colors: [
-                            "primary": .init(light: .hex("#ff0000")),
-                            "secondary": .init(light: .hex("#ffcc00"))
-                        ]
-                    )),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(
+                            colors: [
+                                "primary": .init(light: .hex("#ff0000")),
+                                "secondary": .init(light: .hex("#ffcc00"))
+                            ]
+                        ),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         text: "id_1",
                         color: .init(light: .alias("secondary")),
@@ -227,12 +244,15 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Clear bg and default fg")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
-                        colors: [
-                            "primary": .init(light: .hex("#ff0000")),
-                            "secondary": .init(light: .hex("#ffcc00"))
-                        ]
-                    )),
+                    uiConfigProvider: .init(
+                        uiConfig: PreviewUIConfig.make(
+                            colors: [
+                                "primary": .init(light: .hex("#ff0000")),
+                                "secondary": .init(light: .hex("#ffcc00"))
+                            ]
+                        ),
+                        fontSizeOverride: nil
+                    ),
                     component: .init(
                         text: "id_1",
                         color: .init(light: .alias("not a thing")),
@@ -256,7 +276,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: PaywallComponent.ColorScheme(
@@ -289,7 +312,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     fontName: nil,
@@ -323,7 +349,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_1": .string("Hello, world")
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -365,7 +394,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_2": .string("Showing medium condition")
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -396,7 +428,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         "id_2": .string("SHOULDN'T SHOW MEDIUM")
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
@@ -428,7 +463,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         )
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))
@@ -458,7 +496,10 @@ struct TextComponentView_Previews: PreviewProvider {
                         )
                     ]
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                uiConfigProvider: .init(
+                    uiConfig: PreviewUIConfig.make(),
+                    fontSizeOverride: nil
+                ),
                 component: .init(
                     text: "id_1",
                     color: .init(light: .hex("#000000"))

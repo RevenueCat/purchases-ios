@@ -61,7 +61,10 @@ struct PaywallsV2View: View {
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void
     ) {
-        let uiConfigProvider = UIConfigProvider(uiConfig: paywallComponents.uiConfig)
+        let uiConfigProvider = UIConfigProvider(
+            uiConfig: paywallComponents.uiConfig,
+            fontSizeOverride: paywallComponents.data.componentsConfig.fontSizeOverrides
+        )
 
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider

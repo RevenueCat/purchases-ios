@@ -241,7 +241,10 @@ struct TextComponentStyle {
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.font = fontSize.makeFont(familyName: fontFamily)
+        self.font = fontSize.makeFont(
+            familyName: fontFamily,
+            fontSizeOverrides: uiConfigProvider.fontSizeOverride
+        )
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
