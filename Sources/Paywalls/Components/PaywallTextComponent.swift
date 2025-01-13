@@ -36,7 +36,7 @@ public extension PaywallComponent {
             size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
             margin: Padding = .zero,
-            fontSize: CGFloat = 16, // TODO: Change
+            fontSize: CGFloat = 16,
             horizontalAlignment: HorizontalAlignment = .center,
             overrides: ComponentOverrides<PartialTextComponent>? = nil
         ) {

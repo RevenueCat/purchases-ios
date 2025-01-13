@@ -54,7 +54,7 @@ private enum Template5Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .headingL,
+        fontSize: 28,
         horizontalAlignment: .leading
     )
 
@@ -66,7 +66,7 @@ private enum Template5Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .bodyM,
+        fontSize: 15,
         horizontalAlignment: .leading
     )
 
@@ -146,7 +146,7 @@ private enum Template5Preview {
             .text(.init(
                 text: "package_terms",
                 color: .init(light: .hex("#999999")),
-                fontSize: .bodyS
+                fontSize: 13
             ))
         ],
         dimension: .vertical(.center, .start),
