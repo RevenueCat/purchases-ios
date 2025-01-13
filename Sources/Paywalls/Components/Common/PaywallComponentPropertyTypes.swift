@@ -189,6 +189,54 @@ public extension PaywallComponent {
 
     }
 
+    enum IconBackgroundShape: Codable, Sendable, Hashable, Equatable {
+
+        case rectangle(CornerRadiuses?)
+        case circle
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let corners):
+                try container.encode(ShapeType.rectangle.rawValue, forKey: .type)
+                try container.encode(corners, forKey: .corners)
+            case .circle:
+                try container.encode(ShapeType.circle.rawValue, forKey: .type)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(ShapeType.self, forKey: .type)
+
+            switch type {
+            case .rectangle:
+                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
+                self = .rectangle(value)
+            case .circle:
+                self = .circle
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case corners
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum ShapeType: String, Decodable {
+
+            case rectangle
+            case circle
+
+        }
+
+    }
+
     enum MaskShape: Codable, Sendable, Hashable, Equatable {
 
         case rectangle(CornerRadiuses?)
