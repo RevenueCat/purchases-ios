@@ -78,14 +78,14 @@ struct CompatibilityContentUnavailableView: View {
         }
 
     }
-    
+
     private var titleView: some View {
         Text(title)
             .font(.title2)
             .bold()
             .fixedSize(horizontal: false, vertical: true)
     }
-    
+
     private var iconView: some View {
         Image(systemName: systemImage)
             .resizable()
