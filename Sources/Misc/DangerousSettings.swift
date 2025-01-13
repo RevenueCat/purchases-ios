@@ -62,7 +62,7 @@ import Foundation
      * if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes. 
      */
-    @objc public let testStoreProducts: Bool
+    @objc public let uiPreviewMode: Bool
 
     /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
@@ -110,23 +110,21 @@ import Foundation
     /**
      * Only use a Dangerous Setting if suggested by RevenueCat support team.
      *
-     * - Parameter testStoreProducts: if `true`, the SDK will return a set of mock products instead of the
+     * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes. 
      */
-    public convenience init(testStoreProducts: Bool) {
-        self.init(autoSyncPurchases: false, internalSettings: Internal.default, testStoreProducts: testStoreProducts)
-
+    public convenience init(uiPreviewMode: Bool) {
+        self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
-    /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  testStoreProducts: Bool = false) {
+                  uiPreviewMode: Bool = false) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
-        self.testStoreProducts = testStoreProducts
+        self.uiPreviewMode = uiPreviewMode
     }
 
 }

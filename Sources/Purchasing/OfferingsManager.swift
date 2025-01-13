@@ -193,7 +193,7 @@ private extension OfferingsManager {
             return
         }
 
-        if self.systemInfo.dangerousSettings.testStoreProducts {
+        if self.systemInfo.dangerousSettings.uiPreviewMode {
             let productTypes = [
                 (type: "weekly", price: 1.99, period: SubscriptionPeriod(value: 1, unit: .week)),
                 (type: "monthly", price: 5.99, period: SubscriptionPeriod(value: 1, unit: .month)),
