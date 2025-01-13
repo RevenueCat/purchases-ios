@@ -126,7 +126,7 @@ enum PreviewMock {
         identifier: "monthly_standard",
         packageType: .monthly,
         storeProduct: .init(sk1Product: Product(
-            price: 3.99,
+            price: 4.99,
             unit: .month,
             localizedTitle: "Monthly Standard"
         )),
