@@ -85,140 +85,49 @@ struct IconComponentView: View {
 
 }
 
-//#if DEBUG
-//
-//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//struct IconComponentView_Previews: PreviewProvider {
-//    static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
-//
-//    // Need to wrap in VStack otherwise preview rerenders and images won't show
-//    static var previews: some View {
-//        // Light - Fit
-//        VStack {
-//            ImageComponentView(
-//                // swiftlint:disable:next force_try
-//                viewModel: try! .init(
-//                    localizationProvider: .init(
-//                        locale: Locale.current,
-//                        localizedStrings: [:]
-//                    ),
-//                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-//                    component: .init(
-//                        source: .init(
-//                            light: .init(
-//                                width: 750,
-//                                height: 530,
-//                                original: catUrl,
-//                                heic: catUrl,
-//                                heicLowRes: catUrl
-//                            )
-//                        ),
-//                        fitMode: .fit
-//                    )
-//                )
-//            )
-//        }
-//        .previewRequiredEnvironmentProperties()
-//        .previewLayout(.fixed(width: 400, height: 400))
-//        .previewDisplayName("Light - Fit")
-//
-//        // Light - Fill
-//        VStack {
-//            ImageComponentView(
-//                // swiftlint:disable:next force_try
-//                viewModel: try! .init(
-//                    localizationProvider: .init(
-//                        locale: Locale.current,
-//                        localizedStrings: [:]
-//                    ),
-//                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-//                    component: .init(
-//                        source: .init(
-//                            light: .init(
-//                                width: 750,
-//                                height: 530,
-//                                original: catUrl,
-//                                heic: catUrl,
-//                                heicLowRes: catUrl
-//                            )
-//                        ),
-//                        fitMode: .fill
-//                    )
-//                )
-//            )
-//        }
-//        .previewRequiredEnvironmentProperties()
-//        .previewLayout(.fixed(width: 400, height: 400))
-//        .previewDisplayName("Light - Fill")
-//
-//        // Light - Gradient
-//        VStack {
-//            ImageComponentView(
-//                // swiftlint:disable:next force_try
-//                viewModel: try! .init(
-//                    localizationProvider: .init(
-//                        locale: Locale.current,
-//                        localizedStrings: [:]
-//                    ),
-//                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-//                    component: .init(
-//                        source: .init(
-//                            light: .init(
-//                                width: 750,
-//                                height: 530,
-//                                original: catUrl,
-//                                heic: catUrl,
-//                                heicLowRes: catUrl
-//                            )
-//                        ),
-//                        fitMode: .fill,
-//                        colorOverlay: .init(light: .linear(0, [
-//                            .init(color: "#ffffff", percent: 0),
-//                            .init(color: "#ffffff00", percent: 40)
-//                        ]))
-//                    )
-//                )
-//            )
-//        }
-//        .previewRequiredEnvironmentProperties()
-//        .previewLayout(.fixed(width: 400, height: 400))
-//        .previewDisplayName("Light - Gradient")
-//
-//        // Light - Fit with Rounded Corner
-//        VStack {
-//            ImageComponentView(
-//                // swiftlint:disable:next force_try
-//                viewModel: try! .init(
-//                    localizationProvider: .init(
-//                        locale: Locale.current,
-//                        localizedStrings: [:]
-//                    ),
-//                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-//                    component: .init(
-//                        source: .init(
-//                            light: .init(
-//                                width: 750,
-//                                height: 530,
-//                                original: catUrl,
-//                                heic: catUrl,
-//                                heicLowRes: catUrl
-//                            )
-//                        ),
-//                        fitMode: .fit,
-//                        maskShape: .rectangle(.init(topLeading: 40,
-//                                                    topTrailing: 40,
-//                                                    bottomLeading: 40,
-//                                                    bottomTrailing: 40))
-//                    )
-//                )
-//            )
-//        }
-//        .previewRequiredEnvironmentProperties()
-//        .previewLayout(.fixed(width: 400, height: 400))
-//        .previewDisplayName("Light - Rounded Corner")
-//    }
-//}
-//
-//#endif
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct IconComponentView_Previews: PreviewProvider {
+
+    // Need to wrap in VStack otherwise preview rerenders and images won't show
+    static var previews: some View {
+
+        // Light - Fit
+        VStack {
+            IconComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        baseUrl: "https://paywall-icons.s3.us-east-1.amazonaws.com/icons",
+                        iconName: "star-off",
+                        formats: .init(
+                            svg: "star-off.svg",
+                            png: "star-off.png",
+                            heic: "star-off.heic",
+                            webp: "star-off.webp"
+                        ),
+                        size: .init(width: .fixed(80), height: .fixed(80)),
+                        padding: .zero,
+                        margin: .zero,
+                        color: .init(light: .hex("#ff0000")),
+                        iconBackground: nil
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 100, height: 100))
+        .previewDisplayName("Default")
+
+    }
+}
+
+#endif
 
 #endif

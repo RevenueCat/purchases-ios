@@ -117,7 +117,7 @@ struct IconComponentStyle {
         self.size = size
         self.padding = padding
         self.margin = margin
-        self.color = color.toDynamicColor(uiConfigProvider: uiConfigProvider)
+        self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
         self.iconBackground = iconBackground
     }
 
