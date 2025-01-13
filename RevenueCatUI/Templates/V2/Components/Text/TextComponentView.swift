@@ -114,7 +114,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     component: .init(
                         text: "id_1",
                         color: .init(light: .hex("#000000")),
-                        fontSize: .headingXXL
+                        fontSize: 40
                     )
                 )
             )
@@ -137,7 +137,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         text: "id_1",
                         fontName: "primary",
                         color: .init(light: .hex("#000000")),
-                        fontSize: .headingXXL
+                        fontSize: 40
                     )
                 )
             )
@@ -160,7 +160,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         text: "id_1",
                         fontName: "This font name is not configured",
                         color: .init(light: .hex("#000000")),
-                        fontSize: .headingXXL
+                        fontSize: 40
                     )
                 )
             )
@@ -183,7 +183,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         text: "id_1",
                         fontName: "primary",
                         color: .init(light: .hex("#000000")),
-                        fontSize: .headingXXL
+                        fontSize: 40
                     )
                 )
             )
@@ -213,7 +213,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         text: "id_1",
                         color: .init(light: .alias("secondary")),
                         backgroundColor: .init(light: .alias("primary")),
-                        fontSize: .headingXXL
+                        fontSize: 40
                     )
                 )
             )
@@ -237,7 +237,7 @@ struct TextComponentView_Previews: PreviewProvider {
                         text: "id_1",
                         color: .init(light: .alias("not a thing")),
                         backgroundColor: .init(light: .alias("also not a thing")),
-                        fontSize: .headingXXL
+                        fontSize: 40
                     )
                 )
             )
@@ -271,7 +271,7 @@ struct TextComponentView_Previews: PreviewProvider {
                             .init(color: "#00FDFF", percent: 100)
                         ])
                       ),
-                    fontSize: .headingXXL
+                    fontSize: 40
                 )
             )
         )
@@ -304,7 +304,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                   bottom: 20,
                                   leading: 10,
                                   trailing: 10),
-                    fontSize: .bodyS,
+                    fontSize: 13,
                     horizontalAlignment: .leading
                 )
             )
@@ -341,7 +341,7 @@ struct TextComponentView_Previews: PreviewProvider {
                                               bottom: 10,
                                               leading: 10,
                                               trailing: 10),
-                                fontSize: .headingXL
+                                fontSize: 34
                             )
                         )
                     )

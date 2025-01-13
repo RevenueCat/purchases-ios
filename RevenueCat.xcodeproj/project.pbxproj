@@ -17,6 +17,7 @@
 		03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */; };
 		03A98D382D2AC63B009BCA61 /* UIConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */; };
 		03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F8C2D3311D500297FEC /* DisplayableColor.swift */; };
+		03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C7305A2D35985500297FEC /* TextComponentTests.swift */; };
 		03F446212D2F73240046129A /* StackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446202D2F73210046129A /* StackComponentTests.swift */; };
 		03F446242D2FE0C50046129A /* ShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446232D2FE0C10046129A /* ShapePropertyTests.swift */; };
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
@@ -1256,6 +1257,7 @@
 		03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProvider.swift; sourceTree = "<group>"; };
 		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
+		03C7305A2D35985500297FEC /* TextComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentTests.swift; sourceTree = "<group>"; };
 		03F446202D2F73210046129A /* StackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackComponentTests.swift; sourceTree = "<group>"; };
 		03F446232D2FE0C10046129A /* ShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
@@ -2600,6 +2602,7 @@
 			children = (
 				03F446222D2FE0B90046129A /* Properties */,
 				03F446202D2F73210046129A /* StackComponentTests.swift */,
+				03C7305A2D35985500297FEC /* TextComponentTests.swift */,
 				03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */,
 				2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */,
 				2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */,
@@ -6177,6 +6180,7 @@
 				35272E2226D0048D00F22C3B /* HTTPClientTests.swift in Sources */,
 				2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
 				5766AA5A283D4CAB00FA6091 /* IgnoreHashableTests.swift in Sources */,
+				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,
 				5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */,

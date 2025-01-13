@@ -48,7 +48,7 @@ private enum Template1Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .headingL,
+        fontSize: 28,
         horizontalAlignment: .center
     )
 
@@ -60,7 +60,7 @@ private enum Template1Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .bodyM,
+        fontSize: 15,
         horizontalAlignment: .center
     )
 

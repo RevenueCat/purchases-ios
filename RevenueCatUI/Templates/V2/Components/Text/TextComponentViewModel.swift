@@ -232,7 +232,7 @@ struct TextComponentStyle {
         size: PaywallComponent.Size,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
-        fontSize: PaywallComponent.FontSize,
+        fontSize: CGFloat,
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
         self.visible = visible
@@ -241,7 +241,7 @@ struct TextComponentStyle {
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.font = fontSize.makeFont(familyName: fontFamily)
+        self.font = Self.makeFont(size: fontSize, familyName: fontFamily)
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
@@ -249,6 +249,30 @@ struct TextComponentStyle {
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextComponentStyle {
+
+    static func makeFont(size fontSize: CGFloat, familyName: String?) -> Font {
+        // Create the base font, with fallback to the system font
+        let baseFont: UIFont
+        if let familyName = familyName {
+            if let customFont = UIFont(name: familyName, size: fontSize) {
+                baseFont = customFont
+            } else {
+                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            }
+        } else {
+            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        }
+
+        // Apply dynamic type scaling
+        let uiFont = UIFontMetrics.default.scaledFont(for: baseFont)
+        return Font(uiFont)
     }
 
 }
