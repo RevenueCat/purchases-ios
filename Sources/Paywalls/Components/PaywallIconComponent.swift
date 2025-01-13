@@ -1,8 +1,8 @@
 //
-//  PaywallImageComponent.swift
+//  PaywallIconComponent.swift
 //
 //
-//  Created by Josh Holtz on 6/12/24.
+//  Created by Josh Holtz on 1/12/24.
 //
 // swiftlint:disable missing_docs
 
