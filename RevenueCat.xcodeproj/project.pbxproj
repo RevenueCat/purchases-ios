@@ -20,12 +20,9 @@
 		03C72F672D32184F00297FEC /* TabControlToggleComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F662D32184F00297FEC /* TabControlToggleComponentViewModel.swift */; };
 		03C72F692D32185B00297FEC /* TabControlButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F682D32185B00297FEC /* TabControlButtonComponentView.swift */; };
 		03C72F6B2D32186700297FEC /* TabControlToggleComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F6A2D32186700297FEC /* TabControlToggleComponentView.swift */; };
-<<<<<<< HEAD
 		03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F8C2D3311D500297FEC /* DisplayableColor.swift */; };
 		03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C7305A2D35985500297FEC /* TextComponentTests.swift */; };
-=======
 		03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */; };
->>>>>>> bac951a73 (This is feeling much better)
 		03E37BEA2D30B32200CD9678 /* PaywallTabsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */; };
 		03E37BED2D30B73400CD9678 /* TabsComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BEC2D30B72E00CD9678 /* TabsComponentViewModel.swift */; };
 		03E37BEF2D30B73A00CD9678 /* TabsComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BEE2D30B73800CD9678 /* TabsComponentView.swift */; };
@@ -1269,7 +1266,6 @@
 		03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallDataDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProvider.swift; sourceTree = "<group>"; };
-		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
 		03C72F642D32184900297FEC /* TabControlButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentViewModel.swift; sourceTree = "<group>"; };
 		03C72F662D32184F00297FEC /* TabControlToggleComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlToggleComponentViewModel.swift; sourceTree = "<group>"; };
 		03C72F682D32185B00297FEC /* TabControlButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentView.swift; sourceTree = "<group>"; };
@@ -1277,6 +1273,7 @@
 		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
 		03C7305A2D35985500297FEC /* TextComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentTests.swift; sourceTree = "<group>"; };
 		03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingTogglePreview.swift; sourceTree = "<group>"; };
+		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
 		03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTabsComponent.swift; sourceTree = "<group>"; };
 		03E37BEC2D30B72E00CD9678 /* TabsComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentViewModel.swift; sourceTree = "<group>"; };
 		03E37BEE2D30B73800CD9678 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };

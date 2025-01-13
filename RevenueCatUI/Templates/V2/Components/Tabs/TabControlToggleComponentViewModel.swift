@@ -35,19 +35,27 @@ class TabControlToggleComponentViewModel {
     }
 
     var thumbColorOn: Color {
-        return self.component.thumbColorOn.toDynamicColor(uiConfigProvider: uiConfigProvider)
+        return self.component.thumbColorOn
+            .asDisplayable(uiConfigProvider: uiConfigProvider)
+            .toDynamicColor()
     }
 
     var thumbColorOff: Color {
-        return self.component.thumbColorOff.toDynamicColor(uiConfigProvider: uiConfigProvider)
+        return self.component.thumbColorOff
+            .asDisplayable(uiConfigProvider: uiConfigProvider)
+            .toDynamicColor()
     }
 
     var trackColorOn: Color {
-        return self.component.trackColorOn.toDynamicColor(uiConfigProvider: uiConfigProvider)
+        return self.component.trackColorOn
+            .asDisplayable(uiConfigProvider: uiConfigProvider)
+            .toDynamicColor()
     }
 
     var trackColorOff: Color {
-        return self.component.trackColorOff.toDynamicColor(uiConfigProvider: uiConfigProvider)
+        return self.component.trackColorOff
+            .asDisplayable(uiConfigProvider: uiConfigProvider)
+            .toDynamicColor()
     }
 
 }
