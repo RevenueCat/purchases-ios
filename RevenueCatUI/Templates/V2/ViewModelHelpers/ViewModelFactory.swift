@@ -90,10 +90,22 @@ struct ViewModelFactory {
                 )
             }
 
+            let badgeViewModels = try component.badge?.stack.value.components.map { component in
+                try self.toViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    offering: offering,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider
+                )
+            }
+
             return .stack(
                 try StackComponentViewModel(component: component,
                                             viewModels: viewModels,
-                                            uiConfigProvider: uiConfigProvider)
+                                            badgeViewModels: badgeViewModels ?? [],
+                                            uiConfigProvider: uiConfigProvider,
+                                            localizationProvider: localizationProvider)
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
@@ -177,7 +189,9 @@ struct ViewModelFactory {
         return try StackComponentViewModel(
             component: component,
             viewModels: viewModels,
-            uiConfigProvider: uiConfigProvider
+            badgeViewModels: [],
+            uiConfigProvider: uiConfigProvider,
+            localizationProvider: localizationProvider
         )
     }
 

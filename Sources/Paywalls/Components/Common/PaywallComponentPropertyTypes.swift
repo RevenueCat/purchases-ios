@@ -392,7 +392,7 @@ public extension PaywallComponent {
 
     }
 
-    enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
+    enum TwoDimensionAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case center
         case leading
@@ -461,6 +461,53 @@ public extension PaywallComponent {
 
     }
 
+    enum BadgeStyle: String, Codable, Sendable, Hashable, Equatable {
+
+        case edgeToEdge = "edge_to_edge"
+        case overlaid = "overlaid"
+        case nested = "nested"
+
+    }
+
+    struct Badge: Codable, Sendable, Hashable, Equatable {
+
+        public let style: BadgeStyle
+        public let alignment: TwoDimensionAlignment
+        public let stack: CodableBox<StackComponent>
+
+    }
+
+    // Holds a reference to a `Codable` value.
+    final class CodableBox<T: Codable>: Codable {
+
+        public let value: T
+
+        public init(_ value: T) { self.value = value }
+
+        public required init(from decoder: Decoder) throws {
+            value = try T(from: decoder)
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            try value.encode(to: encoder)
+        }
+
+    }
+
+}
+
+extension PaywallComponent.CodableBox: Sendable where T: Sendable {}
+
+extension PaywallComponent.CodableBox: Equatable where T: Equatable {
+    public static func == (lhs: PaywallComponent.CodableBox<T>, rhs: PaywallComponent.CodableBox<T>) -> Bool {
+        return lhs.value == rhs.value
+    }
+}
+
+extension PaywallComponent.CodableBox: Hashable where T: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+    }
 }
 
 #endif

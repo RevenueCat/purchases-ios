@@ -26,16 +26,19 @@ class StackComponentViewModel {
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
+    let badgeViewModels: [PaywallComponentViewModel]
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
-        uiConfigProvider: UIConfigProvider
+        badgeViewModels: [PaywallComponentViewModel],
+        uiConfigProvider: UIConfigProvider,
+        localizationProvider: LocalizationProvider
     ) throws {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
-
+        self.badgeViewModels = badgeViewModels
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
@@ -55,6 +58,7 @@ class StackComponentViewModel {
 
         let style = StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
+            badgeViewModels: self.badgeViewModels,
             visible: partial?.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
@@ -64,7 +68,8 @@ class StackComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             shape: partial?.shape ?? self.component.shape,
             border: partial?.border ?? self.component.border,
-            shadow: partial?.shadow ?? self.component.shadow
+            shadow: partial?.shadow ?? self.component.shadow,
+            badge: partial?.badge ?? self.component.badge
         )
 
         apply(style)
@@ -109,9 +114,11 @@ struct StackComponentStyle {
     let shape: ShapeModifier.Shape?
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
+    let badge: BadgeModifier.BadgeInfo?
 
     init(
         uiConfigProvider: UIConfigProvider,
+        badgeViewModels: [PaywallComponentViewModel],
         visible: Bool,
         dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
@@ -121,7 +128,8 @@ struct StackComponentStyle {
         margin: PaywallComponent.Padding,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
-        shadow: PaywallComponent.Shadow?
+        shadow: PaywallComponent.Shadow?,
+        badge: PaywallComponent.Badge?
     ) {
         self.visible = visible
         self.dimension = dimension
@@ -133,6 +141,9 @@ struct StackComponentStyle {
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.badge = badge?.badge(stackShape: self.shape,
+                                  badgeViewModels: badgeViewModels,
+                                  uiConfigProvider: uiConfigProvider)
     }
 
     var vstackStrategy: StackStrategy {
@@ -168,7 +179,7 @@ struct StackComponentStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Shape {
 
-    var shape: ShapeModifier.Shape? {
+    var shape: ShapeModifier.Shape {
         switch self {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
@@ -208,6 +219,24 @@ private extension PaywallComponent.Shadow {
             radius: self.radius,
             x: self.x,
             y: self.y
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Badge {
+
+    func badge(stackShape: ShapeModifier.Shape?,
+               badgeViewModels: [PaywallComponentViewModel],
+               uiConfigProvider: UIConfigProvider) -> BadgeModifier.BadgeInfo? {
+        BadgeModifier.BadgeInfo(
+            style: self.style,
+            alignment: self.alignment,
+            stack: self.stack,
+            badgeViewModels: badgeViewModels,
+            stackShape: stackShape,
+            uiConfigProvider: uiConfigProvider
         )
     }
 
