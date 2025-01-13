@@ -20,9 +20,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ImageComponentViewModel {
 
-    @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
-
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.ImageComponent

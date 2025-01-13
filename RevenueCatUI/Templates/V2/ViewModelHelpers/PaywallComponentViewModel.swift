@@ -22,6 +22,7 @@ enum PaywallComponentViewModel {
     case root(RootViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
+    case icon(IconComponentViewModel)
     case stack(StackComponentViewModel)
     case button(ButtonComponentViewModel)
     case package(PackageComponentViewModel)

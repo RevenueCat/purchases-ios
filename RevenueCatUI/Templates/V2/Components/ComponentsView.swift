@@ -41,6 +41,8 @@ struct ComponentsView: View {
                 TextComponentView(viewModel: viewModel)
             case .image(let viewModel):
                 ImageComponentView(viewModel: viewModel)
+            case .icon(let viewModel):
+                IconComponentView(viewModel: viewModel)
             case .stack(let viewModel):
                 StackComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .button(let viewModel):
