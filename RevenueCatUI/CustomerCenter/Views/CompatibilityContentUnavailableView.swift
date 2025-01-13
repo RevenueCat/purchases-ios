@@ -38,24 +38,11 @@ struct CompatibilityContentUnavailableView: View {
 
         if #available(iOS 17.0, *) {
             #if swift(>=5.9)
-            if let description {
-                ContentUnavailableView {
-                    Label {
-                        titleView
-                    } icon: {
-                        iconView
-                    }
-                }
-                description: { description }
-            } else {
-                ContentUnavailableView {
-                    Label {
-                        titleView
-                    } icon: {
-                        iconView
-                    }
-                }
+            ContentUnavailableView {
+                Label { titleView }
+                icon: { iconView }
             }
+            description: { description }
 
             #else
                 // In Xcode 14, any references to ContentUnavailableView would fail to compile since that entity
