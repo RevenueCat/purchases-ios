@@ -42,18 +42,28 @@ public struct CustomerCenterView: View {
     private var colorScheme
 
     private let mode: CustomerCenterPresentationMode
-    private let isInNavigationStack: Bool
+
+    /// A flag indicating whether the view is already embedded in a navigation stack.
+    ///
+    /// - When set to `true`, the view must be part of an existing NavigationStack / NavigationView.
+    /// - When set to `false`, the view is not part of an external NavigationStack / NavigationView and uses
+    /// one internally.
+    private let isEmbeddedInNavigationStack: Bool
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    ///   - isInNavigationStack: Whether this view is already inside a navigation stack
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-                isInNavigationStack: Bool = false) {
-        self.init(customerCenterActionHandler: customerCenterActionHandler,
-                  mode: .default,
-                  isInNavigationStack: isInNavigationStack)
+    ///   - isEmbeddedInNavigationStack: Whether this view is already inside a NavigationStack / NavigationView
+    public init(
+        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        isEmbeddedInNavigationStack: Bool = false
+    ) {
+        self.init(
+            customerCenterActionHandler: customerCenterActionHandler,
+            mode: .default,
+            isEmbeddedInNavigationStack: isEmbeddedInNavigationStack
+        )
     }
 
     /// Create a view to handle common customer support tasks
@@ -61,21 +71,25 @@ public struct CustomerCenterView: View {
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - mode: The presentation mode for the Customer Center
-    ///   - isInNavigationStack: Whether this view is already inside a navigation stack
-    init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-         mode: CustomerCenterPresentationMode,
-         isInNavigationStack: Bool = false) {
+    ///   - isEmbeddedInNavigationStack: Whether this view is already inside a navigation stack
+    init(
+        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        mode: CustomerCenterPresentationMode,
+        isEmbeddedInNavigationStack: Bool = false
+    ) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.mode = mode
-        self.isInNavigationStack = isInNavigationStack
+        self.isEmbeddedInNavigationStack = isEmbeddedInNavigationStack
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel,
-                     mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
+    fileprivate init(
+        viewModel: CustomerCenterViewModel,
+        mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default
+    ) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.mode = mode
-        self.isInNavigationStack = false
+        self.isEmbeddedInNavigationStack = false
     }
 
     // swiftlint:disable:next missing_docs
@@ -167,8 +181,14 @@ private extension CustomerCenterView {
         let accentColor = Color.from(colorInformation: configuration.appearance.accentColor,
                                      for: self.colorScheme)
 
-        CompatibilityNavigationStack(isInNavigationStack: isInNavigationStack) {
-            destinationContent(configuration: configuration)
+        Group {
+            if isEmbeddedInNavigationStack {
+                destinationContent(configuration: configuration)
+            } else {
+                CompatibilityNavigationStack {
+                    destinationContent(configuration: configuration)
+                }
+            }
         }
         .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
     }
