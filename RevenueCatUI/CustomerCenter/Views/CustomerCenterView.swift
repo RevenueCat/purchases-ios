@@ -45,8 +45,8 @@ public struct CustomerCenterView: View {
 
     /// A flag indicating whether the view is already embedded in a navigation stack.
     ///
-    /// - When set to `true`, the view must be part of an existing NavigationStack / NavigationView.
-    /// - When set to `false`, the view is not part of an external NavigationStack / NavigationView and uses
+    /// - When set to `true`, the view must be part of an existing `NavigationStack` / `NavigationView`.
+    /// - When set to `false`, the view is not part of an external `NavigationStack` / `NavigationView` and uses
     /// one internally.
     private let isEmbeddedInNavigationStack: Bool
 
@@ -54,7 +54,7 @@ public struct CustomerCenterView: View {
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    ///   - isEmbeddedInNavigationStack: Whether this view is already inside a NavigationStack / NavigationView
+    ///   - isEmbeddedInNavigationStack: Whether this view is already inside a `NavigationStack` / `NavigationView`
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         isEmbeddedInNavigationStack: Bool = false
