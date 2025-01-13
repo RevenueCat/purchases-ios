@@ -19,12 +19,13 @@ import SwiftUI
 struct SizeModifier: ViewModifier {
 
     var size: PaywallComponent.Size
-    var alignment: Alignment
+    var hortizontalAlignment: Alignment
+    var verticalAlignment: Alignment
 
     func body(content: Content) -> some View {
         content
-            .applyWidth(size.width, alignment: alignment)
-            .applyHeight(size.height, alignment: alignment)
+            .applyWidth(size.width, alignment: hortizontalAlignment)
+            .applyHeight(size.height, alignment: verticalAlignment)
     }
 
 }
@@ -63,8 +64,19 @@ fileprivate extension View {
 
 extension View {
 
-    func size(_ size: PaywallComponent.Size, alignment: Alignment = .center) -> some View {
-        self.modifier(SizeModifier(size: size, alignment: alignment))
+//    func size(_ size: PaywallComponent.Size,
+//              alignment: Alignment = .center) -> some View {
+//        self.modifier(SizeModifier(size: size,
+//                                   hortizontalAlignment: alignment,
+//                                   verticalAlignment: alignment))
+//    }
+
+    func size(_ size: PaywallComponent.Size,
+              horizontalAlignment: Alignment = .center,
+              verticalAlignment: Alignment = .center) -> some View {
+        self.modifier(SizeModifier(size: size,
+                                   hortizontalAlignment: horizontalAlignment,
+                                   verticalAlignment: verticalAlignment))
     }
 
 }

@@ -58,7 +58,8 @@ struct TextComponentView: View {
                         .multilineTextAlignment(style.textAlignment)
                         .foregroundColorScheme(style.color, uiConfigProvider: self.viewModel.uiConfigProvider)
                         .padding(style.padding)
-                        .size(style.size, alignment: style.horizontalAlignment)
+                        .size(style.size,
+                              horizontalAlignment: style.horizontalAlignment)
                         .backgroundStyle(style.backgroundStyle, uiConfigProvider: self.viewModel.uiConfigProvider)
                         .padding(style.margin)
                 } else {
