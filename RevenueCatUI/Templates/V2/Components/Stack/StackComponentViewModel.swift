@@ -25,37 +25,20 @@ class StackComponentViewModel {
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
-    let badgeTextViewModel: TextComponentViewModel?
     let viewModels: [PaywallComponentViewModel]
+    let badgeViewModels: [PaywallComponentViewModel]
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
+        badgeViewModels: [PaywallComponentViewModel],
         uiConfigProvider: UIConfigProvider,
         localizationProvider: LocalizationProvider
     ) throws {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
-
-        if let badge = component.badge {
-            badgeTextViewModel = try TextComponentViewModel(
-                localizationProvider: localizationProvider,
-                component: PaywallComponent.TextComponent(
-                    text: badge.textLid,
-                    fontName: badge.fontName,
-                    fontWeight: badge.fontWeight,
-                    color: badge.color,
-                    padding: badge.padding,
-                    margin: .zero,
-                    fontSize: badge.fontSize,
-                    horizontalAlignment: badge.horizontalAlignment
-                )
-            )
-        } else {
-            badgeTextViewModel = nil
-        }
-
+        self.badgeViewModels = badgeViewModels
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
@@ -75,6 +58,7 @@ class StackComponentViewModel {
 
         let style = StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
+            badgeViewModels: self.badgeViewModels,
             visible: partial?.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
@@ -134,6 +118,7 @@ struct StackComponentStyle {
 
     init(
         uiConfigProvider: UIConfigProvider,
+        badgeViewModels: [PaywallComponentViewModel],
         visible: Bool,
         dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
@@ -156,7 +141,9 @@ struct StackComponentStyle {
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
-        self.badge = badge?.badge(stackShape: self.shape)
+        self.badge = badge?.badge(stackShape: self.shape,
+                                  badgeViewModels: badgeViewModels,
+                                  uiConfigProvider: uiConfigProvider)
     }
 
     var vstackStrategy: StackStrategy {
@@ -240,21 +227,16 @@ private extension PaywallComponent.Shadow {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Badge {
 
-    func badge(stackShape: ShapeModifier.Shape?) -> BadgeModifier.BadgeInfo? {
+    func badge(stackShape: ShapeModifier.Shape?,
+               badgeViewModels: [PaywallComponentViewModel],
+               uiConfigProvider: UIConfigProvider) -> BadgeModifier.BadgeInfo? {
         BadgeModifier.BadgeInfo(
             style: self.style,
             alignment: self.alignment,
-            shape: self.shape.shape,
-            padding: self.padding,
-            margin: self.margin,
-            textLid: self.textLid,
-            fontName: self.fontName,
-            fontWeight: self.fontWeight,
-            fontSize: self.fontSize,
-            horizontalAlignment: self.horizontalAlignment,
-            color: self.color,
-            backgroundColor: self.backgroundColor,
-            stackShape: stackShape
+            stack: self.stack,
+            badgeViewModels: badgeViewModels,
+            stackShape: stackShape,
+            uiConfigProvider: uiConfigProvider
         )
     }
 

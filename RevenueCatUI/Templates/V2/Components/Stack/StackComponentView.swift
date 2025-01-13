@@ -99,7 +99,7 @@ struct StackComponentView: View {
                shadow: style.shadow,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
-        .badge(style.badge, textComponentViewModel: viewModel.badgeTextViewModel)
+        .stackBadge(style.badge)
         .padding(style.margin)
     }
 
@@ -529,6 +529,7 @@ fileprivate extension StackComponentViewModel {
         try self.init(
             component: component,
             viewModels: viewModels,
+            badgeViewModels: [],
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             localizationProvider: localizationProvider
         )

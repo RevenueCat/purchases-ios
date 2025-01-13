@@ -44,10 +44,10 @@ struct ShapeModifier: ViewModifier {
 
     struct RadiusInfo: Hashable {
 
-        let topLeft: CGFloat?
-        let topRight: CGFloat?
-        let bottomLeft: CGFloat?
-        let bottomRight: CGFloat?
+        let topLeft: Double?
+        let topRight: Double?
+        let bottomLeft: Double?
+        let bottomRight: Double?
 
     }
 

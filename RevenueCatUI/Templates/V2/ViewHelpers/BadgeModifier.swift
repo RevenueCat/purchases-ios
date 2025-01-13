@@ -22,27 +22,19 @@ import SwiftUI
 struct BadgeModifier: ViewModifier {
 
     let badge: BadgeInfo?
-    let textComponentViewModel: TextComponentViewModel?
 
     struct BadgeInfo {
         let style: PaywallComponent.BadgeStyle
         let alignment: PaywallComponent.TwoDimensionAlignment
-        let shape: ShapeModifier.Shape
-        let padding: PaywallComponent.Padding
-        let margin: PaywallComponent.Padding
-        let textLid: String
-        let fontName: String?
-        let fontWeight: PaywallComponent.FontWeight
-        let fontSize: PaywallComponent.FontSize
-        let horizontalAlignment: PaywallComponent.HorizontalAlignment
-        let color: PaywallComponent.ColorScheme
-        let backgroundColor: PaywallComponent.ColorScheme
+        let stack: PaywallComponent.CodableBox<PaywallComponent.StackComponent>
+        let badgeViewModels: [PaywallComponentViewModel]
         let stackShape: ShapeModifier.Shape?
+        let uiConfigProvider: UIConfigProvider?
     }
 
     func body(content: Content) -> some View {
-        if let badge = badge, let textComponentViewModel = textComponentViewModel {
-            content.apply(badge: badge, textComponentViewModel: textComponentViewModel)
+        if let badge = badge {
+            content.apply(badge: badge)
         } else {
             content
         }
@@ -53,23 +45,24 @@ struct BadgeModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func apply(badge: BadgeModifier.BadgeInfo, textComponentViewModel: TextComponentViewModel) -> some View {
+    func apply(badge: BadgeModifier.BadgeInfo) -> some View {
         switch badge.style {
         case .edgeToEdge:
-            self.appleBadgeEdgeToEdge(badge: badge, textComponentViewModel: textComponentViewModel)
+            self.applyBadgeEdgeToEdge(badge: badge)
         case .overlaid:
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
-                        TextComponentView(viewModel: textComponentViewModel)
-                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                             uiConfigProvider: badge.uiConfigProvider)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-                        .fixedSize()
-                        .padding(effectiveMargin(badge: badge).edgeInsets)
-                        .alignmentGuide(
-                            effetiveVerticalAlinmentForOverlaidBadge(alignment: badge.alignment.stackAlignment),
-                            computeValue: { dim in dim[VerticalAlignment.center] })
+                    .fixedSize()
+                    .padding(effectiveMargin(badge: badge).edgeInsets)
+                    .alignmentGuide(
+                        effetiveVerticalAlinmentForOverlaidBadge(alignment: badge.alignment.stackAlignment),
+                        computeValue: { dim in dim[VerticalAlignment.center] })
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
@@ -77,14 +70,16 @@ fileprivate extension View {
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
-                        TextComponentView(viewModel: textComponentViewModel)
-                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                             uiConfigProvider: badge.uiConfigProvider)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-                        .fixedSize()
-                        .padding(effectiveMargin(badge: badge).edgeInsets)
+
+                    .fixedSize()
+                    .padding(effectiveMargin(badge: badge).edgeInsets)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
         }
     }
@@ -92,19 +87,18 @@ fileprivate extension View {
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
     // swiftlint:disable:next function_body_length
-    private func appleBadgeEdgeToEdge(
-        badge: BadgeModifier.BadgeInfo,
-        textComponentViewModel: TextComponentViewModel) -> some View {
+    private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo) -> some View {
         switch badge.alignment {
         case .bottom:
             self.background(
                 VStack(alignment: .leading) {
                     VStack {
-                        TextComponentView(viewModel: textComponentViewModel)
-                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                             uiConfigProvider: badge.uiConfigProvider)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-                        .alignmentGuide(.bottom) { dim in dim[VerticalAlignment.top] }
+                    .alignmentGuide(.bottom) { dim in dim[VerticalAlignment.top] }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
@@ -114,7 +108,8 @@ fileprivate extension View {
                         .fill(Color.clear)
                     Rectangle()
                         .fill(Color.clear)
-                        .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                         uiConfigProvider: badge.uiConfigProvider)
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             )
@@ -122,11 +117,12 @@ fileprivate extension View {
             self.background(
                 VStack(alignment: .leading) {
                     VStack {
-                        TextComponentView(viewModel: textComponentViewModel)
-                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                             uiConfigProvider: badge.uiConfigProvider)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-                        .alignmentGuide(.top) { dim in dim[VerticalAlignment.bottom] }
+                    .alignmentGuide(.top) { dim in dim[VerticalAlignment.bottom] }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
@@ -134,7 +130,8 @@ fileprivate extension View {
                 VStack(alignment: .leading, spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
-                        .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                         uiConfigProvider: badge.uiConfigProvider)
                     Rectangle()
                         .fill(Color.clear)
                 }
@@ -144,11 +141,12 @@ fileprivate extension View {
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
-                        TextComponentView(viewModel: textComponentViewModel)
-                            .backgroundStyle(badge.backgroundColor.backgroundStyle)
+                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
+                                             uiConfigProvider: badge.uiConfigProvider)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-                        .fixedSize()
+                    .fixedSize()
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
@@ -183,37 +181,41 @@ fileprivate extension View {
             case .top, .bottom, .center:
                 return .zero
             case .leading, .topLeading, .bottomLeading:
-                return .init(top: 0, bottom: 0, leading: badge.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: 0, leading: badge.stack.value.margin.leading, trailing: 0)
             case .trailing, .topTrailing, .bottomTrailing:
-                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.margin.trailing)
+                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.value.margin.trailing)
             }
         case .nested:
             switch badge.alignment {
             case .center, .leading, .trailing:
                 return .zero
             case .top:
-                return .init(top: badge.margin.top, bottom: 0, leading: 0, trailing: 0)
+                return .init(top: badge.stack.value.margin.top, bottom: 0, leading: 0, trailing: 0)
             case .bottom:
-                return .init(top: 0, bottom: badge.margin.bottom, leading: 0, trailing: 0)
+                return .init(top: 0, bottom: badge.stack.value.margin.bottom, leading: 0, trailing: 0)
             case .topLeading:
-                return .init(top: badge.margin.top, bottom: 0, leading: badge.margin.leading, trailing: 0)
+                return .init(top: badge.stack.value.margin.top, bottom: 0,
+                             leading: badge.stack.value.margin.leading, trailing: 0)
             case .topTrailing:
-                return .init(top: badge.margin.top, bottom: 0, leading: 0, trailing: badge.margin.trailing)
+                return .init(top: badge.stack.value.margin.top, bottom: 0,
+                             leading: 0, trailing: badge.stack.value.margin.trailing)
             case .bottomLeading:
-                return .init(top: 0, bottom: badge.margin.bottom, leading: badge.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: badge.stack.value.margin.bottom,
+                             leading: badge.stack.value.margin.leading, trailing: 0)
             case .bottomTrailing:
-                return .init(top: 0, bottom: badge.margin.bottom, leading: 0, trailing: badge.margin.trailing)
+                return .init(top: 0, bottom: badge.stack.value.margin.bottom,
+                             leading: 0, trailing: badge.stack.value.margin.trailing)
             }
         }
     }
 
     // Helper to calculate the shape of the edge-to-edge badge in trailing/leading positions.
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func effectiveShape(badge: BadgeModifier.BadgeInfo) -> ShapeModifier.Shape? {
         switch badge.style {
         case .edgeToEdge:
-            switch badge.shape {
-            case .pill, .concave, .convex:
+            switch badge.stack.value.shape {
+            case .pill, .none:
                 // Edge-to-edge badge cannot have pill shape
                 return nil
             case .rectangle(let corners):
@@ -222,44 +224,54 @@ fileprivate extension View {
                     return nil
                 case .top:
                     return .rectangle(.init(
-                        topLeft: corners?.topLeft,
-                        topRight: corners?.topRight,
+                        topLeft: corners?.topLeading,
+                        topRight: corners?.topTrailing,
                         bottomLeft: 0,
                         bottomRight: 0))
                 case .bottom:
                     return .rectangle(.init(
                         topLeft: 0,
                         topRight: 0,
-                        bottomLeft: corners?.bottomLeft,
-                        bottomRight: corners?.bottomRight))
+                        bottomLeft: corners?.bottomLeading,
+                        bottomRight: corners?.bottomTrailing))
                 case .topLeading:
                     return .rectangle(.init(
                         topLeft: radiusInfo(shape: badge.stackShape)?.topLeft,
                         topRight: 0,
                         bottomLeft: 0,
-                        bottomRight: corners?.bottomRight))
+                        bottomRight: corners?.bottomTrailing))
                 case .topTrailing:
                     return .rectangle(.init(
                         topLeft: 0.0,
                         topRight: radiusInfo(shape: badge.stackShape)?.topRight,
-                        bottomLeft: corners?.bottomLeft,
+                        bottomLeft: corners?.bottomLeading,
                         bottomRight: 0))
                 case .bottomLeading:
                     return .rectangle(.init(
                         topLeft: 0.0,
-                        topRight: corners?.topRight,
+                        topRight: corners?.topTrailing,
                         bottomLeft: radiusInfo(shape: badge.stackShape)?.bottomLeft,
                         bottomRight: 0))
                 case .bottomTrailing:
                     return .rectangle(.init(
-                        topLeft: corners?.topLeft,
+                        topLeft: corners?.topLeading,
                         topRight: 0,
                         bottomLeft: 0,
                         bottomRight: radiusInfo(shape: badge.stackShape)?.bottomRight))
                 }
             }
         case .nested, .overlaid:
-            return badge.shape
+            switch badge.stack.value.shape {
+            case .rectangle(let radius):
+                return .rectangle(.init(topLeft: radius?.topLeading,
+                                        topRight: radius?.topTrailing,
+                                        bottomLeft: radius?.bottomLeading,
+                                        bottomRight: radius?.bottomTrailing))
+            case .pill:
+                return .pill
+            case .none:
+                return nil
+            }
         }
     }
 
@@ -277,8 +289,8 @@ fileprivate extension View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func badge(_ badge: BadgeModifier.BadgeInfo?, textComponentViewModel: TextComponentViewModel?) -> some View {
-        self.modifier(BadgeModifier(badge: badge, textComponentViewModel: textComponentViewModel))
+    func stackBadge(_ badge: BadgeModifier.BadgeInfo?) -> some View {
+        self.modifier(BadgeModifier(badge: badge))
     }
 }
 
@@ -333,50 +345,64 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
     }
     .padding()
     .padding(.vertical, 34)
-    .backgroundStyle(.color(.init(light: .hex("#ffffff"))))
+    .backgroundStyle(.color(.init(light: .hex("#ffffff"))), uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
     .shape(
         border: .init(color: .blue, width: 10),
         shape: .rectangle(ShapeModifier.RadiusInfo(topLeft: 12.0, topRight: 12, bottomLeft: 12, bottomRight: 12))
     )
     .compositingGroup()
     .shadow(color: Color.black.opacity(0.5), radius: 4, x: 0, y: 4)
-        .badge(
-            BadgeModifier.BadgeInfo(
-                style: style,
-                alignment: alignment,
-                shape: .rectangle(.init(topLeft: 8.0, topRight: 8, bottomLeft: 8, bottomRight: 8)),
+    .stackBadge(
+        BadgeModifier.BadgeInfo(
+            style: style,
+            alignment: alignment,
+            stack: PaywallComponent.CodableBox(PaywallComponent.StackComponent(
+                components: [
+                    PaywallComponent.text(
+                        PaywallComponent.TextComponent(
+                            text: "id_1",
+                            fontName: nil,
+                            fontWeight: .bold,
+                            color: .init(light: .hex("#000000")),
+                            padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
+                            margin: .zero,
+                            fontSize: .bodyS,
+                            horizontalAlignment: .center
+                        )
+                    )
+                ],
+                backgroundColor: .init(light: .hex("#FA8072")),
                 padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                 margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
-                textLid: "id_1",
-                fontName: nil,
-                fontWeight: .bold,
-                fontSize: .bodyS,
-                horizontalAlignment: .center,
-                color: .init(light: .hex("#000000")),
-                backgroundColor: .init(light: .hex("#FA8072")),
-                stackShape: .rectangle(.init(topLeft: 12.0, topRight: 12, bottomLeft: 12, bottomRight: 12))
-            ),
-            // swiftlint:disable:next force_try
-            textComponentViewModel: try! TextComponentViewModel(
-                localizationProvider: .init(
-                    locale: Locale.current,
-                    localizedStrings: [
-                        "id_1": .string("Special Discount\nSave 50%")
-                    ]
-                ),
-                component: PaywallComponent.TextComponent(
-                    text: "id_1",
-                    fontName: nil,
-                    fontWeight: .bold,
-                    color: .init(light: .hex("#000000")),
-                    padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
-                    margin: .zero,
-                    fontSize: .bodyS,
-                    horizontalAlignment: .center
+                shape: .rectangle(.init(topLeading: 8.0, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8))
+            )), badgeViewModels: [
+                .text(
+                    // swiftlint:disable:next force_try
+                    try! TextComponentViewModel(
+                        localizationProvider: .init(
+                            locale: Locale.current,
+                            localizedStrings: [
+                                "id_1": .string("Special Discount\nSave 50%")
+                            ]
+                        ),
+                        uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                        component: PaywallComponent.TextComponent(
+                            text: "id_1",
+                            fontName: nil,
+                            fontWeight: .bold,
+                            color: .init(light: .hex("#000000")),
+                            padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
+                            margin: .zero,
+                            fontSize: .bodyS,
+                            horizontalAlignment: .center
+                        )
+                    )
                 )
-            )
-
+            ],
+            stackShape: .rectangle(.init(topLeft: 12.0, topRight: 12.0, bottomLeft: 12.0, bottomRight: 12.0)),
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
+    )
 }
 
 // As of Xcode 16, there is a limit of 15 views per PreviewProvider.

@@ -473,19 +473,41 @@ public extension PaywallComponent {
 
         public let style: BadgeStyle
         public let alignment: TwoDimensionAlignment
-        public let shape: Shape
-        public let padding: Padding
-        public let margin: Padding
-        public let textLid: String
-        public let fontName: String?
-        public let fontWeight: FontWeight
-        public let fontSize: FontSize
-        public let horizontalAlignment: HorizontalAlignment
-        public let color: ColorScheme
-        public let backgroundColor: ColorScheme
+        public let stack: CodableBox<StackComponent>
 
     }
 
+    // Holds a reference to a `Codable` value.
+    final class CodableBox<T: Codable>: Codable {
+
+        public let value: T
+
+        public init(_ value: T) { self.value = value }
+
+        public required init(from decoder: Decoder) throws {
+            value = try T(from: decoder)
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            try value.encode(to: encoder)
+        }
+
+    }
+
+}
+
+extension PaywallComponent.CodableBox: Sendable where T: Sendable {}
+
+extension PaywallComponent.CodableBox: Equatable where T: Equatable {
+    public static func == (lhs: PaywallComponent.CodableBox<T>, rhs: PaywallComponent.CodableBox<T>) -> Bool {
+        return lhs.value == rhs.value
+    }
+}
+
+extension PaywallComponent.CodableBox: Hashable where T: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+    }
 }
 
 #endif
