@@ -71,6 +71,7 @@ public extension PaywallComponent {
                                                            forKey: .overrides)
 
             // Decode fontSize as CGFloat or fallback to FontSize
+            // This can be removed after 2025-03-01 when we are sure no more paywalls are using this
             if let rawFontSize = try? container.decode(CGFloat.self, forKey: .fontSize) {
                 self.fontSize = rawFontSize
             } else if let fontSizeEnum = try? container.decode(FontSize.self, forKey: .fontSize) {
