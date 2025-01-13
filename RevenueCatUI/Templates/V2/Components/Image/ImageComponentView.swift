@@ -87,11 +87,7 @@ struct ImageComponentView: View {
             // WIP: Need to replace this gradient with the better one
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
-                    Color.clear
-                        .backgroundStyle(
-                            .color(colorOverlay),
-                            uiConfigProvider: viewModel.uiConfigProvider
-                        )
+                    Color.clear.backgroundStyle(.color(colorOverlay))
                 )
             })
             // WIP: this needs more shapes and borders

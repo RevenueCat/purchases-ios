@@ -75,7 +75,8 @@ class ImageComponentViewModel {
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
             border: partial?.border ?? self.component.border,
-            shadow: partial?.shadow ?? self.component.shadow
+            shadow: partial?.shadow ?? self.component.shadow,
+            uiConfigProvider: self.uiConfigProvider
         )
 
         apply(style)
@@ -142,7 +143,7 @@ struct ImageComponentStyle {
     let darkLowResUrl: URL?
     let size: PaywallComponent.Size
     let shape: ShapeModifier.Shape?
-    let colorOverlay: PaywallComponent.ColorScheme?
+    let colorOverlay: DisplayableColorScheme?
     let padding: PaywallComponent.Padding?
     let margin: PaywallComponent.Padding?
     let border: PaywallComponent.Border?
@@ -159,7 +160,8 @@ struct ImageComponentStyle {
         padding: PaywallComponent.Padding? = nil,
         margin: PaywallComponent.Padding? = nil,
         border: PaywallComponent.Border? = nil,
-        shadow: PaywallComponent.Shadow? = nil
+        shadow: PaywallComponent.Shadow? = nil,
+        uiConfigProvider: UIConfigProvider
     ) {
         self.visible = visible
         self.widthLight = source.light.width
@@ -172,7 +174,7 @@ struct ImageComponentStyle {
         self.darkLowResUrl = source.dark?.heicLowRes
         self.size = size
         self.shape = maskShape?.shape
-        self.colorOverlay = colorOverlay
+        self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = padding
         self.margin = margin
         self.border = border
