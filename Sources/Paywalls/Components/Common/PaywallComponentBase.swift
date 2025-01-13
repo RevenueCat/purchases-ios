@@ -15,6 +15,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
     case text(TextComponent)
     case image(ImageComponent)
+    case icon(IconComponent)
     case stack(StackComponent)
     case button(ButtonComponent)
     case package(PackageComponent)
@@ -30,6 +31,7 @@ public enum PaywallComponent: PaywallComponentBase {
 
         case text
         case image
+        case icon
         case stack
         case button
         case package
@@ -71,6 +73,9 @@ extension PaywallComponent: Codable {
             try component.encode(to: encoder)
         case .image(let component):
             try container.encode(ComponentType.image, forKey: .type)
+            try component.encode(to: encoder)
+        case .icon(let component):
+            try container.encode(ComponentType.icon, forKey: .type)
             try component.encode(to: encoder)
         case .stack(let component):
             try container.encode(ComponentType.stack, forKey: .type)
@@ -156,6 +161,8 @@ extension PaywallComponent: Codable {
             return .text(try TextComponent(from: decoder))
         case .image:
             return .image(try ImageComponent(from: decoder))
+        case .icon:
+            return .icon(try IconComponent(from: decoder))
         case .stack:
             return .stack(try StackComponent(from: decoder))
         case .button:
