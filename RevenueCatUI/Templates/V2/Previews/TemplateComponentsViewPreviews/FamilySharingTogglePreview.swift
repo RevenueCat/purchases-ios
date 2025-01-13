@@ -73,7 +73,7 @@ private enum FamilySharingTogglePreview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .headingL,
+        fontSize: 22,
         horizontalAlignment: .leading
     )
 
@@ -85,7 +85,7 @@ private enum FamilySharingTogglePreview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .headingL,
+        fontSize: 22,
         horizontalAlignment: .leading
     )
 
@@ -97,7 +97,7 @@ private enum FamilySharingTogglePreview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .bodyM,
+        fontSize: 14,
         horizontalAlignment: .leading
     )
 
@@ -178,7 +178,7 @@ private enum FamilySharingTogglePreview {
                 .text(.init(
                     text: "package_terms",
                     color: .init(light: .hex("#999999")),
-                    fontSize: .bodyS
+                    fontSize: 13
                 ))
             ],
             dimension: .vertical(.center, .start),
