@@ -83,7 +83,7 @@ struct ShapeModifier: ViewModifier {
             let shape = self.effectiveRectangleShape(radiusInfo: radiusInfo)
             let effectiveShape = shape ?? Rectangle().eraseToAnyInsettableShape()
             content
-                .backgroundStyle(background, uiConfigProvider: uiConfigProvider)
+                .backgroundStyle(background)
                 // We want to clip only in case there is a non-Rectangle shape
                 // or if there's a border, otherwise we let the background color
                 // extend behind the safe areas
@@ -101,7 +101,7 @@ struct ShapeModifier: ViewModifier {
         case .pill:
             let shape = Capsule(style: .circular)
             content
-                .backgroundStyle(background, uiConfigProvider: uiConfigProvider)
+                .backgroundStyle(background)
                 .clipShape(shape)
                 .applyIfLet(border) { view, border in
                     view.overlay {

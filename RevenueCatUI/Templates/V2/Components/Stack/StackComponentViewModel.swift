@@ -127,7 +127,7 @@ struct StackComponentStyle {
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundStyle = backgroundColor?.backgroundStyle
+        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
@@ -192,7 +192,7 @@ private extension PaywallComponent.Border {
 
     func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
         return ShapeModifier.BorderInfo(
-            color: self.color.toDynamicColor(uiConfigProvider: uiConfigProvider),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
             width: self.width
         )
     }
@@ -204,7 +204,7 @@ private extension PaywallComponent.Shadow {
 
     func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
         return ShadowModifier.ShadowInfo(
-            color: self.color.toDynamicColor(uiConfigProvider: uiConfigProvider),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
             radius: self.radius,
             x: self.x,
             y: self.y

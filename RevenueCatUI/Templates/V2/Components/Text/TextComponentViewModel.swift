@@ -62,6 +62,7 @@ class TextComponentViewModel {
         let fontFamily = self.uiConfigProvider.getFontFamily(for: partial?.fontName ?? self.component.fontName)
 
         let style = TextComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? true,
             text: Self.processText(
                 text,
@@ -211,7 +212,7 @@ struct TextComponentStyle {
     let visible: Bool
     let text: String
     let fontWeight: Font.Weight
-    let color: PaywallComponent.ColorScheme
+    let color: DisplayableColorScheme
     let font: Font
     let horizontalAlignment: Alignment
     let textAlignment: TextAlignment
@@ -221,6 +222,7 @@ struct TextComponentStyle {
     let margin: EdgeInsets
 
     init(
+        uiConfigProvider: UIConfigProvider,
         visible: Bool,
         text: String,
         fontFamily: String?,
@@ -236,14 +238,14 @@ struct TextComponentStyle {
         self.visible = visible
         self.text = text
         self.fontWeight = fontWeight.fontWeight
-        self.color = color
+        self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
         self.font = fontSize.makeFont(familyName: fontFamily)
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
-        self.backgroundStyle = backgroundColor?.backgroundStyle
+        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets

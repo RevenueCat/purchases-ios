@@ -56,11 +56,11 @@ struct TextComponentView: View {
                         .fontWeight(style.fontWeight)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(style.textAlignment)
-                        .foregroundColorScheme(style.color, uiConfigProvider: self.viewModel.uiConfigProvider)
+                        .foregroundColorScheme(style.color)
                         .padding(style.padding)
                         .size(style.size,
                               horizontalAlignment: style.horizontalAlignment)
-                        .backgroundStyle(style.backgroundStyle, uiConfigProvider: self.viewModel.uiConfigProvider)
+                        .backgroundStyle(style.backgroundStyle)
                         .padding(style.margin)
                 } else {
                     EmptyView()
@@ -205,8 +205,8 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         colors: [
-                            "primary": .hex("#ff0000"),
-                            "secondary": .hex("#ffcc00")
+                            "primary": .init(light: .hex("#ff0000")),
+                            "secondary": .init(light: .hex("#ffcc00"))
                         ]
                     )),
                     component: .init(
@@ -229,8 +229,8 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         colors: [
-                            "primary": .hex("#ff0000"),
-                            "secondary": .hex("#ffcc00")
+                            "primary": .init(light: .hex("#ff0000")),
+                            "secondary": .init(light: .hex("#ffcc00"))
                         ]
                     )),
                     component: .init(

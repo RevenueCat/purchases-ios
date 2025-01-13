@@ -64,13 +64,6 @@ fileprivate extension View {
 
 extension View {
 
-//    func size(_ size: PaywallComponent.Size,
-//              alignment: Alignment = .center) -> some View {
-//        self.modifier(SizeModifier(size: size,
-//                                   hortizontalAlignment: alignment,
-//                                   verticalAlignment: alignment))
-//    }
-
     func size(_ size: PaywallComponent.Size,
               horizontalAlignment: Alignment = .center,
               verticalAlignment: Alignment = .center) -> some View {
