@@ -29,7 +29,11 @@ struct BadgeModifier: ViewModifier {
         let stack: PaywallComponent.CodableBox<PaywallComponent.StackComponent>
         let badgeViewModels: [PaywallComponentViewModel]
         let stackShape: ShapeModifier.Shape?
-        let uiConfigProvider: UIConfigProvider?
+        let uiConfigProvider: UIConfigProvider
+
+        var backgroundStyle: BackgroundStyle? {
+            stack.value.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        }
     }
 
     func body(content: Content) -> some View {
@@ -54,8 +58,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                             uiConfigProvider: badge.uiConfigProvider)
+                            .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
@@ -71,8 +74,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                             uiConfigProvider: badge.uiConfigProvider)
+                            .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
 
@@ -94,8 +96,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                             uiConfigProvider: badge.uiConfigProvider)
+                            .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
                     .alignmentGuide(.bottom) { dim in dim[VerticalAlignment.top] }
@@ -108,8 +109,7 @@ fileprivate extension View {
                         .fill(Color.clear)
                     Rectangle()
                         .fill(Color.clear)
-                        .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                         uiConfigProvider: badge.uiConfigProvider)
+                        .backgroundStyle(badge.backgroundStyle)
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             )
@@ -118,8 +118,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                             uiConfigProvider: badge.uiConfigProvider)
+                            .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
                     .alignmentGuide(.top) { dim in dim[VerticalAlignment.bottom] }
@@ -130,8 +129,7 @@ fileprivate extension View {
                 VStack(alignment: .leading, spacing: 0) {
                     Rectangle()
                         .fill(Color.clear)
-                        .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                         uiConfigProvider: badge.uiConfigProvider)
+                        .backgroundStyle(badge.backgroundStyle)
                     Rectangle()
                         .fill(Color.clear)
                 }
@@ -142,8 +140,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.stack.value.backgroundColor?.backgroundStyle,
-                                             uiConfigProvider: badge.uiConfigProvider)
+                            .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
@@ -345,7 +342,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
     }
     .padding()
     .padding(.vertical, 34)
-    .backgroundStyle(.color(.init(light: .hex("#ffffff"))), uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+    .backgroundStyle(.color(.init(light: .hex("#ffffff"))).backgroundStyle)
     .shape(
         border: .init(color: .blue, width: 10),
         shape: .rectangle(ShapeModifier.RadiusInfo(topLeft: 12.0, topRight: 12, bottomLeft: 12, bottomRight: 12))
