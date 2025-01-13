@@ -23,17 +23,17 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
         let uiConfig: UIConfig = try self.decodeFixture("UIConfig")
 
         expect(uiConfig.app.colors).to(equal([
-            "primary": .hex("#ffcc00"),
-            "secondary": .linear(45, [
+            "primary": .init(light: .hex("#ffcc00")),
+            "secondary": .init(light: .linear(45, [
                 .init(color: "#032400ff", percent: 0),
                 .init(color: "#090979ff", percent: 35),
                 .init(color: "#216c32ff", percent: 100)
-            ]),
-            "tertiary": .radial([
+            ])),
+            "tertiary": .init(light: .radial([
                 .init(color: "#032400ff", percent: 0),
                 .init(color: "#090979ff", percent: 35),
                 .init(color: "#216c32ff", percent: 100)
-            ])
+            ]))
         ]))
         expect(uiConfig.app.fonts).to(equal([
             "primary": .init(ios: .name("SF Pro"))
