@@ -20,19 +20,7 @@ import SwiftUI
 struct PurchaseLinkView: View {
     @State var productName: String?
     let subscriptionInfo: SubscriptionInfo
-    
-    var dateString: String {
-        guard let expiresDate = subscriptionInfo.expiresDate else {
-            return String(localized: "Purchased on \(formattedDate(subscriptionInfo.purchaseDate))")
-        }
-        
-        guard subscriptionInfo.isActive else {
-            return String(localized: "Expired on \(formattedDate(expiresDate))")
-        }
-        
-        return subscriptionInfo.willRenew ? String(localized: "Renews on \(formattedDate(expiresDate))") : String(localized: "Expires on \(formattedDate(expiresDate))")
-    }
-    
+
     var body: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 4) {
@@ -61,7 +49,19 @@ struct PurchaseLinkView: View {
             }
         }
     }
-    
+
+    private var dateString: String {
+        guard let expiresDate = subscriptionInfo.expiresDate else {
+            return String(localized: "Purchased on \(formattedDate(subscriptionInfo.purchaseDate))")
+        }
+
+        guard subscriptionInfo.isActive else {
+            return String(localized: "Expired on \(formattedDate(expiresDate))")
+        }
+
+        return subscriptionInfo.willRenew ? String(localized: "Renews on \(formattedDate(expiresDate))") : String(localized: "Expires on \(formattedDate(expiresDate))")
+    }
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

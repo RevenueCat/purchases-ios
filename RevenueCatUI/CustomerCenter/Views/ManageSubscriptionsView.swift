@@ -86,12 +86,10 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                Section {
-                    NavigationLink {
-                        PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
-                    } label: {
-                        Text("See all purchases")
-                    }
+                NavigationLink {
+                    PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                } label: {
+                    Text("See all purchases")
                 }
 
                 Section {
