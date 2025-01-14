@@ -14,7 +14,7 @@ public extension PaywallComponent {
 
     final class ImageComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
         public let source: ThemeImageUrls
         public let size: Size
         public let overrideSourceLid: LocalizationKey?

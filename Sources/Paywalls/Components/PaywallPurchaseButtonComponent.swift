@@ -14,7 +14,7 @@ public extension PaywallComponent {
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
         public let stack: PaywallComponent.StackComponent
 
         public init(

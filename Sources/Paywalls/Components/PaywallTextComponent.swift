@@ -13,7 +13,8 @@ import Foundation
 public extension PaywallComponent {
 
     final class TextComponent: PaywallComponentBase {
-        public let type: ComponentType
+        
+        let type: ComponentType
         public let text: LocalizationKey
         public let fontName: String?
         public let fontWeight: FontWeight

@@ -21,7 +21,7 @@ public extension PaywallComponent {
 
     final class PackageComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
         public let packageID: String
         public let isSelectedByDefault: Bool
         public let stack: PaywallComponent.StackComponent

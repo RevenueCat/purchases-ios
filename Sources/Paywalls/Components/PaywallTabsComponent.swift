@@ -20,7 +20,7 @@ public extension PaywallComponent {
 
     final class TabControlButtonComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
         public let tabIndex: Int
         public let stack: StackComponent
 
@@ -43,7 +43,7 @@ public extension PaywallComponent {
 
     final class TabControlToggleComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
         public let defaultValue: Bool
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
@@ -84,7 +84,7 @@ public extension PaywallComponent {
 
     final class TabControlComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
 
         public init() {
             self.type = .tabControl
@@ -144,7 +144,7 @@ public extension PaywallComponent {
             }
         }
 
-        public let type: ComponentType
+        let type: ComponentType
         public let size: Size
         public let padding: Padding
         public let margin: Padding

@@ -78,7 +78,7 @@ public extension PaywallComponent {
             }
         }
 
-        public let type: ComponentType
+        let type: ComponentType
         public let baseUrl: String
         public let iconName: String
         public let formats: Formats

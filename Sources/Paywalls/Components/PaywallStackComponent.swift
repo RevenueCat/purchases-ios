@@ -20,7 +20,7 @@ public extension PaywallComponent {
 
     final class StackComponent: PaywallComponentBase {
 
-        public let type: ComponentType
+        let type: ComponentType
         public let components: [PaywallComponent]
         public let size: Size
         public let spacing: CGFloat?
