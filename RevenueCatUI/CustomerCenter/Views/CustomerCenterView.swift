@@ -46,8 +46,8 @@ public struct CustomerCenterView: View {
     /// A flag indicating whether the view is already embedded in a navigation stack.
     ///
     /// - When set to `true`, the view must be part of an existing `NavigationStack` / `NavigationView`.
-    /// - When set to `false`, the view is not part of an external `NavigationStack` / `NavigationView` and uses
-    /// one internally.
+    /// - When set to `false`, the view is not part of an external `NavigationStack` / `NavigationView`
+    /// and uses one internally.
     private let isEmbeddedInNavigationStack: Bool
 
     /// Create a view to handle common customer support tasks
@@ -57,8 +57,7 @@ public struct CustomerCenterView: View {
     ///   - isEmbeddedInNavigationStack: Whether this view is already inside a `NavigationStack` / `NavigationView`
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-        isEmbeddedInNavigationStack: Bool = false
-    ) {
+        isEmbeddedInNavigationStack: Bool = false) {
         self.init(
             customerCenterActionHandler: customerCenterActionHandler,
             mode: .default,
@@ -75,8 +74,7 @@ public struct CustomerCenterView: View {
     init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         mode: CustomerCenterPresentationMode,
-        isEmbeddedInNavigationStack: Bool = false
-    ) {
+        isEmbeddedInNavigationStack: Bool = false) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.mode = mode
@@ -85,8 +83,7 @@ public struct CustomerCenterView: View {
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,
-        mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default
-    ) {
+        mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.mode = mode
         self.isEmbeddedInNavigationStack = false
