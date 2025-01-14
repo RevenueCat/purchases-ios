@@ -53,6 +53,13 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             switch component {
             case .text:
                 ()
+            case .icon(let icon):
+                guard let baseUrl = URL(string: icon.baseUrl) else {
+                    break
+                }
+
+                urls += icon.formats.imageUrls(base: baseUrl)
+                urls += icon.overrides?.imageUrls(base: baseUrl) ?? []
             case .image(let image):
                 urls += [
                     image.source.light.heicLowRes,
@@ -96,7 +103,31 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 
 }
 
-extension PaywallComponent.ThemeImageUrls {
+extension PaywallComponent.IconComponent.Formats {
+
+    func imageUrls(base: URL) -> [URL] {
+        return [
+            base.appendingPathComponent(heic)
+        ]
+    }
+
+}
+
+extension PaywallComponent.ComponentOverrides where T == PaywallComponent.PartialIconComponent {
+
+    func imageUrls(base: URL) -> [URL] {
+        return [
+            self.introOffer?.formats?.imageUrls(base: base) ?? [],
+            self.states?.selected?.formats?.imageUrls(base: base) ?? [],
+            self.conditions?.compact?.formats?.imageUrls(base: base) ?? [],
+            self.conditions?.medium?.formats?.imageUrls(base: base) ?? [],
+            self.conditions?.expanded?.formats?.imageUrls(base: base) ?? []
+        ].flatMap { $0 }
+    }
+
+}
+
+private extension PaywallComponent.ThemeImageUrls {
 
     var imageUrls: [URL] {
         return [
