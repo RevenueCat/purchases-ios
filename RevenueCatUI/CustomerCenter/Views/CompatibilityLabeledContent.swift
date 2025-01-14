@@ -17,9 +17,6 @@ import SwiftUI
 
 #if os(iOS)
 
-<<<<<<< HEAD
-/// A SwiftUI view for displaying a message about unavailable content
-=======
 /// A SwiftUI view that displays a label and content in a layout that adapts to the iOS version.
 ///
 /// This view is designed to be compatible with both iOS 16.0+ and earlier versions.
@@ -63,7 +60,6 @@ import SwiftUI
 ///     Text("John Doe")
 /// }
 /// ```
->>>>>>> main
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

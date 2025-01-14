@@ -61,8 +61,8 @@ private extension PurchaseHistoryViewModel {
             $0.subscriptionsByProductIdentifier
                 .filter { $0.value.isActive }
                 .values
-                .sorted(by: { s1, s2 in
-                    s1.purchaseDate < s2.purchaseDate
+                .sorted(by: { sub1, sub2 in
+                    sub1.purchaseDate < sub2.purchaseDate
                 })
         } ?? []
 
@@ -70,8 +70,8 @@ private extension PurchaseHistoryViewModel {
             $0.subscriptionsByProductIdentifier
                 .filter { !$0.value.isActive }
                 .values
-                .sorted(by: { s1, s2 in
-                    s1.purchaseDate < s2.purchaseDate
+                .sorted(by: { sub1, sub2 in
+                    sub1.purchaseDate < sub2.purchaseDate
                 })
         } ?? []
     }

@@ -25,27 +25,29 @@ struct PurchaseHistoryView: View {
             if let info = viewModel.customerInfo {
                 if !info.activeSubscriptions.isEmpty {
                     // todo: add the price from the backend
-                    Section(header: Text("Active Subscriptions")) {
+                    Section(header: Text(String(localized: "Active Subscriptions"))) {
                         ForEach(viewModel.activeSubscriptions, id: \.productIdentifier) { activeSubscription in
                             Button {
                                 viewModel.selectedActiveSubscrition = activeSubscription
                             } label: {
                                 PurchaseLinkView(subscriptionInfo: activeSubscription)
                                     .compatibleNavigation(item: $viewModel.selectedActiveSubscrition) {
-                                        PurchaseDetailView(subscriptionInfo: $0)
+                                        PurchaseDetailView(
+                                            viewModel: PurchaseDetailViewModel(subscriptionInfo: $0))
                                     }
                             }
                         }
                     }
 
-                    Section(header: Text("Past Subscriptions")) {
+                    Section(header: Text(String(localized: "Expired Subscriptions"))) {
                         ForEach(viewModel.inactiveSubscriptions, id: \.productIdentifier) { inactiveSubscription in
                             Button {
                                 viewModel.selectedInactiveSubscription = inactiveSubscription
                             } label: {
                                 PurchaseLinkView(subscriptionInfo: inactiveSubscription)
                                     .compatibleNavigation(item: $viewModel.selectedInactiveSubscription) {
-                                        PurchaseDetailView(subscriptionInfo: $0)
+                                        PurchaseDetailView(
+                                            viewModel: PurchaseDetailViewModel(subscriptionInfo: $0))
                                     }
                             }
                         }
@@ -57,7 +59,7 @@ struct PurchaseHistoryView: View {
                 // and get product type and other info directly from StoreKit or backend
 
                 // Account Details Section
-                // TODO: make these easy to copy
+                // todo: make these easy to copy
                 Section(header: Text("Account Details")) {
                     CompatibilityLabeledContent(
                         String(localized: "Date when app was first purchased:"),
@@ -69,20 +71,17 @@ struct PurchaseHistoryView: View {
                         content: info.originalAppUserId
                     )
                     .contextMenu {
-                        Button(action: {
+                        Button {
                             UIPasteboard.general.string = info.originalAppUserId
-                        }) {
+                        } label: {
                             Text("Copy")
                             Image(systemName: "doc.on.clipboard")
                         }
                     }
                 }
-            } else {
-                // TODO: add fallback
-                EmptyView()
             }
         }
-        .navigationTitle("Purchase History")
+        .navigationTitle(String(localized: "Purchase History"))
         .listStyle(.insetGrouped)
         .onAppear {
             Task {
