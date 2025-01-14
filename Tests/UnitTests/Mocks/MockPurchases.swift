@@ -442,6 +442,13 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    @objc(params:withCompletion:)
+    func purchaseWithParams(
+        _ params: PurchaseParams,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
+        self.unimplemented()
+    }
 }
 
 extension MockPurchases: PurchasesSwiftType {
