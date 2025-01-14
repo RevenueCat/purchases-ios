@@ -73,18 +73,31 @@ class IconComponentViewModel {
 
 extension PresentedIconPartial: PresentedPartial {
 
-    static func combine(_ base: Self?, with other: Self?) -> Self {
+    static func combine(
+        _ base: PaywallComponent.PartialIconComponent?,
+        with other: PaywallComponent.PartialIconComponent?
+    ) -> Self {
+
+        let visible = other?.visible ?? base?.visible
+        let baseUrl = other?.baseUrl ?? base?.baseUrl
+        let iconName = other?.iconName ?? base?.iconName
+        let formats = other?.formats ?? base?.formats
+        let size = other?.size ?? base?.size
+        let padding = other?.padding ?? base?.padding
+        let margin = other?.margin ?? base?.margin
+        let color = other?.color ?? base?.color
+        let iconBackground = other?.iconBackground ?? base?.iconBackground
 
         return .init(
-            visible: other?.visible ?? base?.visible,
-            baseUrl: other?.baseUrl ?? base?.baseUrl,
-            iconName: other?.iconName ?? base?.iconName,
-            formats: other?.formats ?? base?.formats,
-            size: other?.size ?? base?.size,
-            padding: other?.padding ?? base?.padding,
-            margin: other?.margin ?? base?.margin,
-            color: other?.color ?? base?.color,
-            iconBackground: other?.iconBackground ?? base?.iconBackground
+            visible: visible,
+            baseUrl: baseUrl,
+            iconName: iconName,
+            formats: formats,
+            size: size,
+            padding: padding,
+            margin: margin,
+            color: color,
+            iconBackground: iconBackground
         )
     }
 

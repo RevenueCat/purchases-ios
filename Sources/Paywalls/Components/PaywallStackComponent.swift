@@ -18,9 +18,9 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct StackComponent: PaywallComponentBase {
+    final class StackComponent: PaywallComponentBase {
 
-        let type: ComponentType
+        public let type: ComponentType
         public let components: [PaywallComponent]
         public let size: Size
         public let spacing: CGFloat?
@@ -63,10 +63,40 @@ public extension PaywallComponent {
             self.badge = badge
             self.overrides = overrides
         }
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(components)
+            hasher.combine(size)
+            hasher.combine(spacing)
+            hasher.combine(backgroundColor)
+            hasher.combine(dimension)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(shape)
+            hasher.combine(border)
+            hasher.combine(shadow)
+            hasher.combine(badge)
+            hasher.combine(overrides)
+        }
 
+        public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.components == rhs.components &&
+                   lhs.size == rhs.size &&
+                   lhs.spacing == rhs.spacing &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.dimension == rhs.dimension &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.shape == rhs.shape &&
+                   lhs.border == rhs.border &&
+                   lhs.shadow == rhs.shadow &&
+                   lhs.badge == rhs.badge &&
+                   lhs.overrides == rhs.overrides
+        }
     }
 
-    struct PartialStackComponent: PartialComponent {
+    final class PartialStackComponent: PartialComponent {
 
         public let visible: Bool?
         public let size: Size?
@@ -106,6 +136,33 @@ public extension PaywallComponent {
             self.badge = badge
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(size)
+            hasher.combine(spacing)
+            hasher.combine(backgroundColor)
+            hasher.combine(dimension)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(shape)
+            hasher.combine(border)
+            hasher.combine(shadow)
+            hasher.combine(badge)
+        }
+
+        public static func == (lhs: PartialStackComponent, rhs: PartialStackComponent) -> Bool {
+            return lhs.visible == rhs.visible &&
+                   lhs.size == rhs.size &&
+                   lhs.spacing == rhs.spacing &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.dimension == rhs.dimension &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.shape == rhs.shape &&
+                   lhs.border == rhs.border &&
+                   lhs.shadow == rhs.shadow &&
+                   lhs.badge == rhs.badge
+        }
     }
 
 }

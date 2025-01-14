@@ -10,7 +10,7 @@
 //  StackComponent.swift
 //
 //  Created by James Borthwick on 2024-08-20.
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting
 
 import Foundation
 
@@ -18,9 +18,9 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct TabControlButtonComponent: PaywallComponentBase {
-        let type: ComponentType
+    final class TabControlButtonComponent: PaywallComponentBase {
 
+        public let type: ComponentType
         public let tabIndex: Int
         public let stack: StackComponent
 
@@ -29,11 +29,21 @@ public extension PaywallComponent {
             self.tabIndex = tabIndex
             self.stack = stack
         }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(tabIndex)
+            hasher.combine(stack)
+        }
+
+        public static func == (lhs: TabControlButtonComponent, rhs: TabControlButtonComponent) -> Bool {
+            return lhs.type == rhs.type && lhs.tabIndex == rhs.tabIndex && lhs.stack == rhs.stack
+        }
     }
 
-    struct TabControlToggleComponent: PaywallComponentBase {
-        let type: ComponentType
+    final class TabControlToggleComponent: PaywallComponentBase {
 
+        public let type: ComponentType
         public let defaultValue: Bool
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
@@ -52,20 +62,46 @@ public extension PaywallComponent {
             self.trackColorOn = trackColorOn
             self.trackColorOff = trackColorOff
         }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(defaultValue)
+            hasher.combine(thumbColorOn)
+            hasher.combine(thumbColorOff)
+            hasher.combine(trackColorOn)
+            hasher.combine(trackColorOff)
+        }
+
+        public static func == (lhs: TabControlToggleComponent, rhs: TabControlToggleComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.defaultValue == rhs.defaultValue &&
+                   lhs.thumbColorOn == rhs.thumbColorOn &&
+                   lhs.thumbColorOff == rhs.thumbColorOff &&
+                   lhs.trackColorOn == rhs.trackColorOn &&
+                   lhs.trackColorOff == rhs.trackColorOff
+        }
     }
 
-    struct TabControlComponent: PaywallComponentBase {
-        let type: ComponentType
+    final class TabControlComponent: PaywallComponentBase {
+
+        public let type: ComponentType
 
         public init() {
             self.type = .tabControl
         }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+        }
+
+        public static func == (lhs: TabControlComponent, rhs: TabControlComponent) -> Bool {
+            return lhs.type == rhs.type
+        }
     }
 
-    struct TabsComponent: PaywallComponentBase {
+    final class TabsComponent: PaywallComponentBase {
 
-        // swiftlint:disable:next nesting
-        public struct Tab: PaywallComponentBase {
+        final public class Tab: PaywallComponentBase {
 
             public let stack: StackComponent
 
@@ -73,13 +109,18 @@ public extension PaywallComponent {
                 self.stack = stack
             }
 
+            public func hash(into hasher: inout Hasher) {
+                hasher.combine(stack)
+            }
+
+            public static func == (lhs: Tab, rhs: Tab) -> Bool {
+                return lhs.stack == rhs.stack
+            }
         }
 
-        // swiftlint:disable:next nesting
-        public struct TabControl: Codable, Sendable, Hashable, Equatable {
+        final public class TabControl: PaywallComponentBase {
 
-            // swiftlint:disable:next nesting
-            public enum TabControlType: Codable, Sendable, Hashable, Equatable {
+            public enum TabControlType: PaywallComponentBase {
                 case buttons
                 case toggle
             }
@@ -93,9 +134,17 @@ public extension PaywallComponent {
                 self.stack = stack
             }
 
+            public func hash(into hasher: inout Hasher) {
+                hasher.combine(type)
+                hasher.combine(stack)
+            }
+
+            public static func == (lhs: TabControl, rhs: TabControl) -> Bool {
+                return lhs.type == rhs.type && lhs.stack == rhs.stack
+            }
         }
 
-        let type: ComponentType
+        public let type: ComponentType
         public let size: Size
         public let padding: Padding
         public let margin: Padding
@@ -138,9 +187,36 @@ public extension PaywallComponent {
             self.overrides = overrides
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(backgroundColor)
+            hasher.combine(shape)
+            hasher.combine(border)
+            hasher.combine(shadow)
+            hasher.combine(control)
+            hasher.combine(tabs)
+            hasher.combine(overrides)
+        }
+
+        public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.size == rhs.size &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.shape == rhs.shape &&
+                   lhs.border == rhs.border &&
+                   lhs.shadow == rhs.shadow &&
+                   lhs.control == rhs.control &&
+                   lhs.tabs == rhs.tabs &&
+                   lhs.overrides == rhs.overrides
+        }
     }
 
-    struct PartialTabsComponent: PartialComponent {
+    final class PartialTabsComponent: PartialComponent {
 
         public let visible: Bool?
         public let size: Size?
@@ -171,6 +247,27 @@ public extension PaywallComponent {
             self.shadow = shadow
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(backgroundColor)
+            hasher.combine(shape)
+            hasher.combine(border)
+            hasher.combine(shadow)
+        }
+
+        public static func == (lhs: PartialTabsComponent, rhs: PartialTabsComponent) -> Bool {
+            return lhs.visible == rhs.visible &&
+                   lhs.size == rhs.size &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.shape == rhs.shape &&
+                   lhs.border == rhs.border &&
+                   lhs.shadow == rhs.shadow
+        }
     }
 
 }

@@ -4,7 +4,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting
 
 import Foundation
 
@@ -12,8 +12,8 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct TextComponent: PaywallComponentBase {
-        let type: ComponentType
+    final class TextComponent: PaywallComponentBase {
+        public let type: ComponentType
         public let text: LocalizationKey
         public let fontName: String?
         public let fontWeight: FontWeight
@@ -54,7 +54,22 @@ public extension PaywallComponent {
             self.overrides = overrides
         }
 
-        public init(from decoder: Decoder) throws {
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case text = "textLid"
+            case fontName
+            case fontWeight
+            case color
+            case fontSize
+            case horizontalAlignment
+            case backgroundColor
+            case size
+            case padding
+            case margin
+            case overrides
+        }
+
+        required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
             self.type = try container.decode(ComponentType.self, forKey: .type)
@@ -67,11 +82,11 @@ public extension PaywallComponent {
             self.size = try container.decode(Size.self, forKey: .size)
             self.padding = try container.decode(Padding.self, forKey: .padding)
             self.margin = try container.decode(Padding.self, forKey: .margin)
-            self.overrides = try container.decodeIfPresent(ComponentOverrides<PartialTextComponent>.self,
-                                                           forKey: .overrides)
+            self.overrides = try container.decodeIfPresent(
+                ComponentOverrides<PartialTextComponent>.self,
+                forKey: .overrides
+            )
 
-            // Decode fontSize as CGFloat or fallback to FontSize
-            // This can be removed after 2025-03-01 when we are sure no more paywalls are using this
             if let rawFontSize = try? container.decode(CGFloat.self, forKey: .fontSize) {
                 self.fontSize = rawFontSize
             } else if let fontSizeEnum = try? container.decode(FontSize.self, forKey: .fontSize) {
@@ -98,13 +113,41 @@ public extension PaywallComponent {
             try container.encode(margin, forKey: .margin)
             try container.encodeIfPresent(overrides, forKey: .overrides)
 
-            // Encode fontSize as CGFloat
             try container.encode(fontSize, forKey: .fontSize)
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(text)
+            hasher.combine(fontName)
+            hasher.combine(fontWeight)
+            hasher.combine(color)
+            hasher.combine(fontSize)
+            hasher.combine(horizontalAlignment)
+            hasher.combine(backgroundColor)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(overrides)
+        }
+
+        public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.text == rhs.text &&
+                   lhs.fontName == rhs.fontName &&
+                   lhs.fontWeight == rhs.fontWeight &&
+                   lhs.color == rhs.color &&
+                   lhs.fontSize == rhs.fontSize &&
+                   lhs.horizontalAlignment == rhs.horizontalAlignment &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.size == rhs.size &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.overrides == rhs.overrides
+        }
     }
 
-    struct PartialTextComponent: PartialComponent {
+    final class PartialTextComponent: PartialComponent {
 
         public let visible: Bool?
         public let text: LocalizationKey?
@@ -143,46 +186,48 @@ public extension PaywallComponent {
             self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
         }
-    }
 
-}
+        private enum CodingKeys: String, CodingKey {
+            case visible
+            case text = "textLid"
+            case fontName
+            case fontWeight
+            case color
+            case fontSize
+            case horizontalAlignment
+            case backgroundColor
+            case size
+            case padding
+            case margin
+        }
 
-extension PaywallComponent.TextComponent {
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(text)
+            hasher.combine(fontName)
+            hasher.combine(fontWeight)
+            hasher.combine(color)
+            hasher.combine(fontSize)
+            hasher.combine(horizontalAlignment)
+            hasher.combine(backgroundColor)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+        }
 
-    enum CodingKeys: String, CodingKey {
-
-        case type
-        case text = "textLid"
-        case fontName
-        case fontWeight
-        case color
-        case fontSize
-        case horizontalAlignment
-        case backgroundColor
-        case size
-        case padding
-        case margin
-
-        case overrides
-
-    }
-
-}
-
-extension PaywallComponent.PartialTextComponent {
-
-    enum CodingKeys: String, CodingKey {
-        case visible
-        case text = "textLid"
-        case fontName
-        case fontWeight
-        case color
-        case fontSize
-        case horizontalAlignment
-        case backgroundColor
-        case size
-        case padding
-        case margin
+        public static func == (lhs: PartialTextComponent, rhs: PartialTextComponent) -> Bool {
+            return lhs.visible == rhs.visible &&
+                   lhs.text == rhs.text &&
+                   lhs.fontName == rhs.fontName &&
+                   lhs.fontWeight == rhs.fontWeight &&
+                   lhs.color == rhs.color &&
+                   lhs.fontSize == rhs.fontSize &&
+                   lhs.horizontalAlignment == rhs.horizontalAlignment &&
+                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.size == rhs.size &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin
+        }
     }
 
 }

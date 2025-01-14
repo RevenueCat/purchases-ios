@@ -4,7 +4,7 @@
 //
 //  Created by Josh Holtz on 1/12/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting
 
 import Foundation
 
@@ -12,10 +12,9 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct IconComponent: PaywallComponentBase {
+    final class IconComponent: PaywallComponentBase {
 
-        // swiftlint:disable:next nesting
-        public struct Formats: PaywallComponentBase {
+        final public class Formats: PaywallComponentBase {
 
             public let svg: String
             public let png: String
@@ -32,10 +31,22 @@ public extension PaywallComponent {
                 self.webp = webp
             }
 
+            public func hash(into hasher: inout Hasher) {
+                hasher.combine(svg)
+                hasher.combine(png)
+                hasher.combine(heic)
+                hasher.combine(webp)
+            }
+
+            public static func == (lhs: Formats, rhs: Formats) -> Bool {
+                return lhs.svg == rhs.svg &&
+                       lhs.png == rhs.png &&
+                       lhs.heic == rhs.heic &&
+                       lhs.webp == rhs.webp
+            }
         }
 
-        // swiftlint:disable:next nesting
-        public struct IconBackground: PaywallComponentBase {
+        final public class IconBackground: PaywallComponentBase {
 
             public let color: ColorScheme
             public let shape: IconBackgroundShape
@@ -52,9 +63,22 @@ public extension PaywallComponent {
                 self.shadow = shadow
             }
 
+            public func hash(into hasher: inout Hasher) {
+                hasher.combine(color)
+                hasher.combine(shape)
+                hasher.combine(border)
+                hasher.combine(shadow)
+            }
+
+            public static func == (lhs: IconBackground, rhs: IconBackground) -> Bool {
+                return lhs.color == rhs.color &&
+                       lhs.shape == rhs.shape &&
+                       lhs.border == rhs.border &&
+                       lhs.shadow == rhs.shadow
+            }
         }
 
-        let type: ComponentType
+        public let type: ComponentType
         public let baseUrl: String
         public let iconName: String
         public let formats: Formats
@@ -89,9 +113,34 @@ public extension PaywallComponent {
             self.overrides = overrides
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(baseUrl)
+            hasher.combine(iconName)
+            hasher.combine(formats)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(color)
+            hasher.combine(iconBackground)
+            hasher.combine(overrides)
+        }
+
+        public static func == (lhs: IconComponent, rhs: IconComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.baseUrl == rhs.baseUrl &&
+                   lhs.iconName == rhs.iconName &&
+                   lhs.formats == rhs.formats &&
+                   lhs.size == rhs.size &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.color == rhs.color &&
+                   lhs.iconBackground == rhs.iconBackground &&
+                   lhs.overrides == rhs.overrides
+        }
     }
 
-    struct PartialIconComponent: PartialComponent {
+    final class PartialIconComponent: PartialComponent {
 
         public let visible: Bool?
         public let baseUrl: String?
@@ -125,6 +174,29 @@ public extension PaywallComponent {
             self.iconBackground = iconBackground
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(baseUrl)
+            hasher.combine(iconName)
+            hasher.combine(formats)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(color)
+            hasher.combine(iconBackground)
+        }
+
+        public static func == (lhs: PartialIconComponent, rhs: PartialIconComponent) -> Bool {
+            return lhs.visible == rhs.visible &&
+                   lhs.baseUrl == rhs.baseUrl &&
+                   lhs.iconName == rhs.iconName &&
+                   lhs.formats == rhs.formats &&
+                   lhs.size == rhs.size &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.color == rhs.color &&
+                   lhs.iconBackground == rhs.iconBackground
+        }
     }
 
 }
