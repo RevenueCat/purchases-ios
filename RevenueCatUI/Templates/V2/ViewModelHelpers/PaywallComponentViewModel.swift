@@ -13,6 +13,7 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
@@ -22,13 +23,17 @@ enum PaywallComponentViewModel {
     case root(RootViewModel)
     case text(TextComponentViewModel)
     case image(ImageComponentViewModel)
-    case spacer(SpacerComponentViewModel)
+    case icon(IconComponentViewModel)
     case stack(StackComponentViewModel)
-    case linkButton(LinkButtonComponentViewModel)
     case button(ButtonComponentViewModel)
     case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
     case stickyFooter(StickyFooterComponentViewModel)
+
+    case tabs(TabsComponentViewModel)
+    case tabControl(TabControlComponentViewModel)
+    case tabControlButton(TabControlButtonComponentViewModel)
+    case tabControlToggle(TabControlToggleComponentViewModel)
 
 }
 

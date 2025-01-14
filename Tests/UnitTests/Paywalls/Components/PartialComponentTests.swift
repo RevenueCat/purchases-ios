@@ -36,7 +36,7 @@ final class PartialComponentTests: TestCase {
             backgroundColor: .init(light: .hex("#FFFFFF")),
             padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
             margin: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
-            fontSize: .bodyM,
+            fontSize: 16,
             horizontalAlignment: .leading
         ), PaywallComponent.PartialTextComponent()),
 

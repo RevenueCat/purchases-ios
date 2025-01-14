@@ -17,7 +17,53 @@ import SwiftUI
 
 #if os(iOS)
 
+<<<<<<< HEAD
 /// A SwiftUI view for displaying a message about unavailable content
+=======
+/// A SwiftUI view that displays a label and content in a layout that adapts to the iOS version.
+///
+/// This view is designed to be compatible with both iOS 16.0+ and earlier versions.
+///
+/// - Parameters:
+///   - label: A closure that returns the label view, typically a `Text` or any other view.
+///   - content: A closure that returns the content view
+///
+/// ## Usage:
+/// ```swift
+/// CompatibilityLabeledContent {
+///     Text("Name:")
+/// } content: {
+///     Text("John Doe")
+/// }
+/// ```
+///
+/// ## Available Initializers:
+/// - `init(_ label: String, content: @escaping () -> Content)` for easy usage with `String` labels.
+/// - `init(_ label: String, content: String)` for cases where both the label and content are strings.
+///
+/// ## iOS 16.0 and higher:
+/// Uses `LabeledContent` to display the label and content in a more advanced and consistent way.
+///
+/// ## Earlier OS versions:
+/// Uses a simple `HStack` to display the label and content, ensuring backward compatibility.
+///
+/// ## Discussion:
+/// Although the `label` is a closure that returns a view (`() -> Label`), it is **not marked with `@ViewBuilder`
+/// intentionally** for backwards compatibility.
+///
+/// If you need to pass multiple views in the label, you can still compose them manually using `HStack` or other layout
+/// views in the closure passed to `label`. For example:
+/// ```swift
+/// CompatibilityLabeledContent("Name") {
+///     HStack {
+///         Text("First Name")
+///         Text("Last Name")
+///     }
+/// } content: {
+///     Text("John Doe")
+/// }
+/// ```
+>>>>>>> main
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

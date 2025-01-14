@@ -121,7 +121,8 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
             component: component,
             packageValidator: packageValidator,
             offering: offering,
-            localizationProvider: localizationProvider
+            localizationProvider: localizationProvider,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

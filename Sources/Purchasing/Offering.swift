@@ -28,6 +28,31 @@ import Foundation
  */
 @objc(RCOffering) public final class Offering: NSObject {
 
+    #if PAYWALL_COMPONENTS
+
+    /// Initialize a ``PaywallComponents``
+    public struct PaywallComponents {
+
+        /**
+         Paywall components configuration defined in RevenueCat dashboard.
+         */
+        public let uiConfig: UIConfig
+
+        /**
+         Paywall components configuration defined in RevenueCat dashboard.
+         */
+        public let data: PaywallComponentsData
+
+        /// Initialize a ``PaywallComponents``.
+        public init(uiConfig: UIConfig, data: PaywallComponentsData) {
+            self.uiConfig = uiConfig
+            self.data = data
+        }
+
+    }
+
+    #endif
+
     /**
      Unique identifier defined in RevenueCat dashboard.
      */
@@ -46,15 +71,15 @@ import Foundation
     @objc public var metadata: [String: Any] { self._metadata.data }
 
     /**
-    Paywall configuration defined in RevenueCat dashboard.
+     Paywall configuration defined in RevenueCat dashboard.
      */
     public let paywall: PaywallData?
 
     #if PAYWALL_COMPONENTS
     /**
-    Paywall components configuration defined in RevenueCat dashboard.
+     Paywall components configuration defined in RevenueCat dashboard.
      */
-    public let paywallComponentsData: PaywallComponentsData?
+    public let paywallComponents: PaywallComponents?
     #endif
 
     /**
@@ -152,7 +177,7 @@ import Foundation
             serverDescription: serverDescription,
             metadata: metadata,
             paywall: nil,
-            paywallComponentsData: nil,
+            paywallComponents: nil,
             availablePackages: availablePackages
         )
         #else
@@ -173,7 +198,7 @@ import Foundation
         serverDescription: String,
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
-        paywallComponentsData: PaywallComponentsData? = nil,
+        paywallComponents: PaywallComponents? = nil,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
@@ -181,7 +206,7 @@ import Foundation
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
-        self.paywallComponentsData = paywallComponentsData
+        self.paywallComponents = paywallComponents
 
         var foundPackages: [PackageType: Package] = [:]
 
@@ -337,6 +362,10 @@ extension Offering: Identifiable {
     public var id: String { return self.identifier }
 
 }
+
+#if PAYWALL_COMPONENTS
+extension Offering.PaywallComponents: Sendable {}
+#endif
 
 extension Offering: Sendable {}
 

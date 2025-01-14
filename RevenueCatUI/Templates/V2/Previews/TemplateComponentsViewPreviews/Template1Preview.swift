@@ -34,7 +34,10 @@ private enum Template1Preview {
             )
         ),
         fitMode: .fit,
-        gradientColors: ["#ffffff00", "#ffffff00", "#ffffffff"]
+        colorOverlay: .init(light: .linear(0, [
+            .init(color: "#ffffff", percent: 0),
+            .init(color: "#ffffff00", percent: 40)
+        ]))
     )
 
     static let title = PaywallComponent.TextComponent(
@@ -45,7 +48,7 @@ private enum Template1Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .headingL,
+        fontSize: 28,
         horizontalAlignment: .center
     )
 
@@ -57,7 +60,7 @@ private enum Template1Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .bodyM,
+        fontSize: 15,
         horizontalAlignment: .center
     )
 
@@ -137,6 +140,21 @@ private enum Template1Preview {
         backgroundColor: nil
     )
 
+    static let paywallComponents: Offering.PaywallComponents = .init(
+        uiConfig: .init(
+            app: .init(
+                colors: [:],
+                fonts: [:]
+            ),
+            localizations: [:],
+            variableConfig: .init(
+                variableCompatibilityMap: [:],
+                functionCompatibilityMap: [:]
+            )
+        ),
+        data: data
+    )
+
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
@@ -181,7 +199,7 @@ struct Template1Preview_Previews: PreviewProvider {
 
         // Template 1
         PaywallsV2View(
-            paywallComponentsData: Template1Preview.data,
+            paywallComponents: Template1Preview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
                             availablePackages: [package]),
