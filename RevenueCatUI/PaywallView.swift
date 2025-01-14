@@ -254,6 +254,23 @@ public struct PaywallView: View {
 
         #if PAYWALL_COMPONENTS
         if let paywallComponents = offering.paywallComponents {
+            // For fallback view
+            let paywall: PaywallData = .createDefault(with: offering.availablePackages,
+                                                      locale: self.locale)
+            let paywallView = LoadedOfferingPaywallView(
+                offering: offering,
+                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                paywall: paywall,
+                template: PaywallData.defaultTemplate,
+                mode: self.mode,
+                fonts: fonts,
+                displayCloseButton: self.displayCloseButton,
+                introEligibility: checker,
+                purchaseHandler: purchaseHandler,
+                locale: self.locale,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+            )
+
             PaywallsV2View(
                 paywallComponents: paywallComponents,
                 offering: offering,
@@ -265,7 +282,8 @@ public struct PaywallView: View {
                         return
                     }
                     onRequestedDismissal()
-                }
+                },
+                fallbackView: paywallView
             )
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)

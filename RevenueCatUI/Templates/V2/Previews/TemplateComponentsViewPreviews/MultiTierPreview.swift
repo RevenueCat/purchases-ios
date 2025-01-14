@@ -397,7 +397,8 @@ struct MultiTierPreview_Previews: PreviewProvider {
                                ]),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
-            onDismiss: { }
+            onDismiss: { },
+            fallbackView: EmptyView()
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))
