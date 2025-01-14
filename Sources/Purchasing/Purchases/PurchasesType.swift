@@ -993,6 +993,9 @@ public protocol PurchasesType: AnyObject {
     func setFirebaseAppInstanceID(_ firebaseAppInstanceID: String?)
     @available(*, deprecated)
     func collectDeviceIdentifiers()
+    @available(*, deprecated)
+    @objc(params:withCompletion:)
+    func purchaseWithParams(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock)
 
     // swiftlint:enable missing_docs
 
