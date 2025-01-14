@@ -18,19 +18,36 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseHistoryView: View {
-    @State private var customerInfo: CustomerInfo?
-    @State private var errorMessage: String?
+    @StateObject var viewModel: PurchaseHistoryViewModel
 
     var body: some View {
         List {
-            if let info = customerInfo {
-                // Active Subscriptions Section
+            if let info = viewModel.customerInfo {
                 if !info.activeSubscriptions.isEmpty {
-
                     // todo: add the price from the backend
                     Section(header: Text("Active Subscriptions")) {
-                        ForEach(Array(info.subscriptionsByProductIdentifier), id: \.self.key) { _, subscription in
-                            PurchaseRow(subscriptionInfo: subscription)
+                        ForEach(viewModel.activeSubscriptions, id: \.productIdentifier) { activeSubscription in
+                            Button {
+                                viewModel.selectedActiveSubscrition = activeSubscription
+                            } label: {
+                                PurchaseLinkView(subscriptionInfo: activeSubscription)
+                                    .compatibleNavigation(item: $viewModel.selectedActiveSubscrition) {
+                                        PurchaseDetailView(subscriptionInfo: $0)
+                                    }
+                            }
+                        }
+                    }
+
+                    Section(header: Text("Past Subscriptions")) {
+                        ForEach(viewModel.inactiveSubscriptions, id: \.productIdentifier) { inactiveSubscription in
+                            Button {
+                                viewModel.selectedInactiveSubscription = inactiveSubscription
+                            } label: {
+                                PurchaseLinkView(subscriptionInfo: inactiveSubscription)
+                                    .compatibleNavigation(item: $viewModel.selectedInactiveSubscription) {
+                                        PurchaseDetailView(subscriptionInfo: $0)
+                                    }
+                            }
                         }
                     }
                 }
@@ -45,11 +62,18 @@ struct PurchaseHistoryView: View {
                     LabelValueRow(label: "Date when app was first purchased:", value: dateFormatter.string(from: info.originalPurchaseDate!))
                     LabelValueRow(label: "App User ID", value: info.originalAppUserId)
                 }
+            } else {
+                // TODO: add fallback
+                EmptyView()
             }
         }
         .navigationTitle("Purchase History")
-        .listStyle(InsetGroupedListStyle())
-        .onAppear(perform: fetchCustomerInfo)
+        .listStyle(.insetGrouped)
+        .onAppear {
+            Task {
+                await viewModel.didAppear()
+            }
+        }
     }
 
     private func expirationDescription(for productId: String, in info: CustomerInfo) -> String {
@@ -60,16 +84,6 @@ struct PurchaseHistoryView: View {
         }
     }
 
-    private func fetchCustomerInfo() {
-        Purchases.shared.getCustomerInfo { (info, error) in
-            if let error = error {
-                self.errorMessage = error.localizedDescription
-            } else {
-                self.customerInfo = info
-            }
-        }
-    }
-
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -77,12 +91,30 @@ struct PurchaseHistoryView: View {
         return formatter
     }
 }
+
 struct PurchaseRow: View {
     let subscriptionInfo: SubscriptionInfo
 
+    @State var productName: String?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
+            LabelValueRow(label: "Product Name:", value: productName ?? "")
+                .onAppear {
+                    Task {
+                        guard
+                            let product = await Purchases.shared.products([subscriptionInfo.productIdentifier]).first
+                        else {
+                            return
+                        }
+
+                        productName = product.localizedTitle
+                    }
+                }
+
+            #if DEBUG
             LabelValueRow(label: "Product ID:", value: subscriptionInfo.productIdentifier)
+            #endif
             LabelValueRow(label: "Purchase Date:", value: formattedDate(subscriptionInfo.purchaseDate))
 
             if subscriptionInfo.isActive {
@@ -115,18 +147,23 @@ struct PurchaseRow: View {
                     }
                 }()
             )
+
             #if DEBUG
             LabelValueRow(label: "Sandbox Mode:", value: subscriptionInfo.isSandbox ? "Yes" : "No")
             #endif
+
             if let unsubscribeDetectedAt = subscriptionInfo.unsubscribeDetectedAt {
                 LabelValueRow(label: "Unsubscribed At:", value: formattedDate(unsubscribeDetectedAt))
             }
+
             if let billingIssuesDetectedAt = subscriptionInfo.billingIssuesDetectedAt {
                 LabelValueRow(label: "Billing Issue Detected At:", value: formattedDate(billingIssuesDetectedAt))
             }
+
             if let gracePeriodExpiresDate = subscriptionInfo.gracePeriodExpiresDate {
                 LabelValueRow(label: "Grace Period Expires At:", value: formattedDate(gracePeriodExpiresDate))
             }
+
             if subscriptionInfo.ownershipType != .unknown {
                 LabelValueRow(
                     label: "Ownership Type:",
@@ -140,12 +177,16 @@ struct PurchaseRow: View {
                     value: subscriptionInfo.periodType == .intro ? "Introductory Price" : "Trial Period"
                 )
             }
+
             if let refundedAt = subscriptionInfo.refundedAt {
                 LabelValueRow(label: "Refunded At:", value: formattedDate(refundedAt))
             }
+
+#if DEBUG
             if let storeTransactionId = subscriptionInfo.storeTransactionId {
                 LabelValueRow(label: "Transaction ID:", value: storeTransactionId)
             }
+#endif
         }
         .padding(.vertical, 5)
     }
@@ -166,6 +207,7 @@ struct LabelValueRow: View {
         HStack {
             Text(label)
                 .font(.subheadline)
+
             Spacer()
             Text(value)
                 .font(.subheadline)
@@ -180,7 +222,7 @@ struct LabelValueRow: View {
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         CompatibilityNavigationStack {
-            PurchaseHistoryView()
+            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
         }
     }
 }

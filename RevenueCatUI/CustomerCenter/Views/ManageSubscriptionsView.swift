@@ -79,42 +79,46 @@ struct ManageSubscriptionsView: View {
 
     @ViewBuilder
     var content: some View {
-        ZStack {
-            List {
-                if let purchaseInformation = self.viewModel.purchaseInformation {
-                    Section {
-                        NavigationLink(destination: PurchaseHistoryView()) {
-                            SubscriptionDetailsView(
-                                purchaseInformation: purchaseInformation,
-                                refundRequestStatus: self.viewModel.refundRequestStatus
-                            )
-                        }
-                    }
+        List {
+            if let purchaseInformation = self.viewModel.purchaseInformation {
+                SubscriptionDetailsView(
+                    purchaseInformation: purchaseInformation,
+                    refundRequestStatus: self.viewModel.refundRequestStatus
+                )
 
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
-                        }
+                Section {
+                    NavigationLink {
+                        PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                    } label: {
+                        Text("See all purchases")
                     }
-                } else {
-                    let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
+                }
 
-                    Section {
-                        CompatibilityContentUnavailableView(
-                            self.viewModel.screen.title,
-                            systemImage: "exclamationmark.triangle.fill",
-                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                        )
+                Section {
+                    ManageSubscriptionsButtonsView(
+                        viewModel: self.viewModel,
+                        loadingPath: self.$viewModel.loadingPath
+                    )
+                } header: {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        Text(subtitle)
+                            .textCase(nil)
                     }
+                }
+            } else {
+                let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
 
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    }
+                Section {
+                    CompatibilityContentUnavailableView(
+                        self.viewModel.screen.title,
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
+
+                Section {
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                   loadingPath: self.$viewModel.loadingPath)
                 }
             }
         }
