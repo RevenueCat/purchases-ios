@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 1/13/25.
 
+import Foundation
+
 #if PAYWALL_COMPONENTS
 
 extension PaywallComponentsData {
@@ -52,9 +54,9 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 ()
             case .image(let image):
                 urls += [
-                    image.source.light.heic,
+//                    image.source.light.heic,
                     image.source.light.heicLowRes,
-                    image.source.dark?.heic,
+//                    image.source.dark?.heic,
                     image.source.dark?.heicLowRes
                 ].compactMap { $0 }
 
@@ -89,9 +91,9 @@ extension PaywallComponent.ThemeImageUrls {
 
     var imageUrls: [URL] {
         return [
-            self.light.heic,
+//            self.light.heic,
             self.light.heicLowRes,
-            self.dark?.heic,
+//            self.dark?.heic,
             self.dark?.heicLowRes
         ].compactMap { $0 }
     }

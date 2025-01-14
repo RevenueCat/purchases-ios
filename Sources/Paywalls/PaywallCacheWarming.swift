@@ -75,7 +75,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             }
         }
 
-
     }
 
 }
@@ -179,9 +178,14 @@ private extension Offerings {
     #if PAYWALL_COMPONENTS
 
     private var allImagesInPaywallsV2: Set<URL> {
+        // Attempting to warm up all offerings for Paywalls V2.
+        // Paywalls V2 paywall are explicitly published so anything that
+        // is here is intended to be displayed.
+        // Also only prewarming low res urls
         return .init(
             self
-                .offeringsToPreWarm
+                .all
+                .values
                 .lazy
                 .compactMap(\.paywallComponents)
                 .flatMap(\.data.allImageURLs)
