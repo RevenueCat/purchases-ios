@@ -81,6 +81,14 @@ struct ViewModelFactory {
                     component: component
                 )
             )
+        case .icon(let component):
+            return .icon(
+                try IconComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
+            )
         case .stack(let component):
             let viewModels = try component.components.map { component in
                 try self.toViewModel(

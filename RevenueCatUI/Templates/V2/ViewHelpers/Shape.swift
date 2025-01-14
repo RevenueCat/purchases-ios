@@ -37,6 +37,7 @@ struct ShapeModifier: ViewModifier {
 
         case rectangle(RadiusInfo?)
         case pill
+        case circle
         case concave
         case convex
 
@@ -93,6 +94,18 @@ struct ShapeModifier: ViewModifier {
                 }
         case .pill:
             let shape = Capsule(style: .circular)
+            content
+                .backgroundStyle(background)
+                .clipShape(shape)
+                .applyIfLet(border) { view, border in
+                    view.overlay {
+                        shape.strokeBorder(border.color, lineWidth: border.width)
+                    }
+                }.applyIfLet(shadow) { view, shadow in
+                    view.shadow(shadow: shadow, shape: shape)
+                }
+        case .circle:
+            let shape = Circle()
             content
                 .backgroundStyle(background)
                 .clipShape(shape)
@@ -264,6 +277,7 @@ struct CornerBorder_Previews: PreviewProvider {
         var name: [String] = []
         switch shape {
         case .pill: name.append("Pill")
+        case .circle: name.append("Circle")
         case .rectangle: name.append("Rectangle")
         case .none, .concave, .convex: break
         }
