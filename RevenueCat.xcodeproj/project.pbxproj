@@ -31,6 +31,7 @@
 		03E37BEF2D30B73A00CD9678 /* TabsComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BEE2D30B73800CD9678 /* TabsComponentView.swift */; };
 		03E37BF12D30B7A100CD9678 /* TabControlComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BF02D30B7A100CD9678 /* TabControlComponentView.swift */; };
 		03E37BF32D30B7AB00CD9678 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BF22D30B7AB00CD9678 /* TabControlComponentViewModel.swift */; };
+		03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */; };
 		03F446212D2F73240046129A /* StackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446202D2F73210046129A /* StackComponentTests.swift */; };
 		03F446242D2FE0C50046129A /* ShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446232D2FE0C10046129A /* ShapePropertyTests.swift */; };
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
@@ -1284,6 +1285,7 @@
 		03E37BEE2D30B73800CD9678 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };
 		03E37BF02D30B7A100CD9678 /* TabControlComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlComponentView.swift; sourceTree = "<group>"; };
 		03E37BF22D30B7AB00CD9678 /* TabControlComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlComponentViewModel.swift; sourceTree = "<group>"; };
+		03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallV2CacheWarming.swift; sourceTree = "<group>"; };
 		03F446202D2F73210046129A /* StackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackComponentTests.swift; sourceTree = "<group>"; };
 		03F446232D2FE0C10046129A /* ShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
@@ -4844,6 +4846,7 @@
 		88AD010B2C740CF400AA1F2B /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */,
 				2CC791612CC0493600FBE120 /* Common */,
 				7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */,
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
@@ -5981,6 +5984,7 @@
 				1ED4CA492CC148CF0021AB8F /* PostRedeemWebPurchaseOperation.swift in Sources */,
 				2D00A41D2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift in Sources */,
 				2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */,
+				03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */,
 				B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */,
 				35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */,
 				B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */,

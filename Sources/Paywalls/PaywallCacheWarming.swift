@@ -74,6 +74,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                 Logger.error(Strings.paywalls.error_prefetching_image(url, error))
             }
         }
+
+
     }
 
 }
@@ -150,7 +152,21 @@ private extension Offerings {
         )
     }
 
+    #if PAYWALL_COMPONENTS
+
     var allImagesInPaywalls: Set<URL> {
+        return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
+    }
+
+    #else
+
+    var allImagesInPaywalls: Set<URL> {
+        return self.allImagesInPaywallsV1
+    }
+
+    #endif
+
+    private var allImagesInPaywallsV1: Set<URL> {
         return .init(
             self
                 .offeringsToPreWarm
@@ -159,6 +175,20 @@ private extension Offerings {
                 .flatMap(\.allImageURLs)
         )
     }
+
+    #if PAYWALL_COMPONENTS
+
+    private var allImagesInPaywallsV2: Set<URL> {
+        return .init(
+            self
+                .offeringsToPreWarm
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allImageURLs)
+        )
+    }
+
+    #endif
 
 }
 
