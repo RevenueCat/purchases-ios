@@ -55,9 +55,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 ()
             case .image(let image):
                 urls += [
-//                    image.source.light.heic,
                     image.source.light.heicLowRes,
-//                    image.source.dark?.heic,
                     image.source.dark?.heicLowRes
                 ].compactMap { $0 }
 
@@ -102,9 +100,7 @@ extension PaywallComponent.ThemeImageUrls {
 
     var imageUrls: [URL] {
         return [
-//            self.light.heic,
             self.light.heicLowRes,
-//            self.dark?.heic,
             self.dark?.heicLowRes
         ].compactMap { $0 }
     }
