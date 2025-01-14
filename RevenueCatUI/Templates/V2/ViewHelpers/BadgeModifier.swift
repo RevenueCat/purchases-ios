@@ -363,7 +363,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                             color: .init(light: .hex("#000000")),
                             padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                             margin: .zero,
-                            fontSize: .bodyS,
+                            fontSize: 13,
                             horizontalAlignment: .center
                         )
                     )
@@ -390,7 +390,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                             color: .init(light: .hex("#000000")),
                             padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                             margin: .zero,
-                            fontSize: .bodyS,
+                            fontSize: 13,
                             horizontalAlignment: .center
                         )
                     )
