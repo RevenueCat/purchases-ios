@@ -48,7 +48,7 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
     /// ```
     ///
     /// - Parameter label: A closure that returns the view to display as the navigation link’s label.
-    public init(_ label: @escaping () -> Label) {
+    public init(label: @escaping () -> Label) {
         self.label = label
     }
 
