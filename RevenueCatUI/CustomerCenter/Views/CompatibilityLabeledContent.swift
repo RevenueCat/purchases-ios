@@ -17,7 +17,7 @@ import SwiftUI
 
 #if os(iOS)
 
-/// A SwiftUI view for displaying a message about unavailable content
+/// A SwiftUI view for displaying labeled content
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
