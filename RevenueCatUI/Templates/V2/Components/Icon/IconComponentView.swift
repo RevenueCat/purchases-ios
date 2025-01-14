@@ -50,6 +50,13 @@ struct IconComponentView: View {
             ) { (image, size) in
                 self.renderImage(image, size, with: style)
             }
+            .padding(style.padding)
+            .shape(border: style.iconBackgroundBorder,
+                   shape: style.iconBackgroundShape,
+                   shadow: style.iconBackgroundShadow,
+                   background: style.iconBackgroundStyle,
+                   uiConfigProvider: self.viewModel.uiConfigProvider)
+            .padding(style.padding)
             .size(style.size)
             .clipped()
         }
@@ -93,7 +100,7 @@ struct IconComponentView_Previews: PreviewProvider {
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
 
-        // Light - Fit
+        // Default
         VStack {
             IconComponentView(
                 // swiftlint:disable:next force_try
@@ -104,13 +111,13 @@ struct IconComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
-                        baseUrl: "https://paywall-icons.s3.us-east-1.amazonaws.com/icons",
-                        iconName: "star-off",
+                        baseUrl: "https://icons.pawwalls.com/icons",
+                        iconName: "pizza",
                         formats: .init(
-                            svg: "star-off.svg",
-                            png: "star-off.png",
-                            heic: "star-off.heic",
-                            webp: "star-off.webp"
+                            svg: "pizza.svg",
+                            png: "pizza.png",
+                            heic: "pizza.heic",
+                            webp: "pizza.webp"
                         ),
                         size: .init(width: .fixed(80), height: .fixed(80)),
                         padding: .zero,
@@ -124,6 +131,45 @@ struct IconComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 100, height: 100))
         .previewDisplayName("Default")
+
+        // Default - Background
+        VStack {
+            IconComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        baseUrl: "https://icons.pawwalls.com/icons",
+                        iconName: "pizza",
+                        formats: .init(
+                            svg: "pizza.svg",
+                            png: "pizza.png",
+                            heic: "pizza.heic",
+                            webp: "pizza.webp"
+                        ),
+                        size: .init(width: .fixed(150), height: .fixed(150)),
+                        padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
+                        margin: .zero,
+                        color: PaywallComponent.ColorScheme(
+                            light: .hex("#ff0000")
+                        ),
+                        iconBackground: PaywallComponent.IconComponent.IconBackground(
+                            color: .init(light: .hex("#ffcc00")),
+                            shape: .circle,
+                            border: .init(color: .init(light: .hex("#ff0000")), width: 5),
+                            shadow: .init(color: .init(light: .hex("#33333399")), radius: 10, x: 5, y: 5)
+                        )
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 200, height: 200))
+        .previewDisplayName("Default - Background")
 
     }
 }

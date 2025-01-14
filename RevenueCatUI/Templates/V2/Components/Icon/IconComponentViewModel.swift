@@ -96,10 +96,17 @@ struct IconComponentStyle {
     let visible: Bool
     let url: URL
     let size: PaywallComponent.Size
-    let padding: PaywallComponent.Padding?
-    let margin: PaywallComponent.Padding?
+    let padding: EdgeInsets
+    let margin: EdgeInsets
     let color: Color
-    let iconBackground: PaywallComponent.IconComponent.IconBackground?
+    let iconBackgroundStyle: BackgroundStyle?
+    let iconBackgroundShape: ShapeModifier.Shape?
+    let iconBackgroundBorder: ShapeModifier.BorderInfo?
+    let iconBackgroundShadow: ShadowModifier.ShadowInfo?
+
+//    shape: PaywallComponent.Shape?,
+//    border: PaywallComponent.Border?,
+//    shadow: PaywallComponent.Shadow?,
 
     init(
         visible: Bool = true,
@@ -113,20 +120,24 @@ struct IconComponentStyle {
         uiConfigProvider: UIConfigProvider
     ) {
         self.visible = visible
-        self.url = URL(string: "\(baseUrl)/\(formats.png)")!
+        self.url = URL(string: "\(baseUrl)/\(formats.heic)")!
         self.size = size
-        self.padding = padding
-        self.margin = margin
+        self.padding = (padding ?? .zero).edgeInsets
+        self.margin = (margin ?? .zero).edgeInsets
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
-        self.iconBackground = iconBackground
+        self.iconBackgroundStyle = iconBackground?.color
+            .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.iconBackgroundShape = iconBackground?.shape.shape
+        self.iconBackgroundBorder = iconBackground?.border?.border(uiConfigProvider: uiConfigProvider)
+        self.iconBackgroundShadow = iconBackground?.shadow?.shadow(uiConfigProvider: uiConfigProvider)
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.MaskShape {
+private extension PaywallComponent.IconBackgroundShape {
 
-    var shape: ShapeModifier.Shape? {
+    var shape: ShapeModifier.Shape {
         switch self {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
@@ -138,13 +149,35 @@ private extension PaywallComponent.MaskShape {
                 )
             }
             return .rectangle(corners)
-        case .pill:
-            return .pill
-        case .concave:
-            return .concave
-        case .convex:
-            return .convex
+        case .circle:
+            return .circle
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Border {
+
+    func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
+        return ShapeModifier.BorderInfo(
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            width: self.width
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Shadow {
+
+    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+        return ShadowModifier.ShadowInfo(
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            radius: self.radius,
+            x: self.x,
+            y: self.y
+        )
     }
 
 }
