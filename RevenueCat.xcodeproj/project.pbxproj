@@ -26,12 +26,12 @@
 		03C72FC22D349BAE00297FEC /* IconComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FC02D349BAE00297FEC /* IconComponentViewModel.swift */; };
 		03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FBF2D349BAE00297FEC /* IconComponentView.swift */; };
 		03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C7305A2D35985500297FEC /* TextComponentTests.swift */; };
+		03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */; };
 		03E37BEA2D30B32200CD9678 /* PaywallTabsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */; };
 		03E37BED2D30B73400CD9678 /* TabsComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BEC2D30B72E00CD9678 /* TabsComponentViewModel.swift */; };
 		03E37BEF2D30B73A00CD9678 /* TabsComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BEE2D30B73800CD9678 /* TabsComponentView.swift */; };
 		03E37BF12D30B7A100CD9678 /* TabControlComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BF02D30B7A100CD9678 /* TabControlComponentView.swift */; };
 		03E37BF32D30B7AB00CD9678 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BF22D30B7AB00CD9678 /* TabControlComponentViewModel.swift */; };
-		03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */; };
 		03F446212D2F73240046129A /* StackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446202D2F73210046129A /* StackComponentTests.swift */; };
 		03F446242D2FE0C50046129A /* ShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446232D2FE0C10046129A /* ShapePropertyTests.swift */; };
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
@@ -1280,12 +1280,12 @@
 		03C72FBF2D349BAE00297FEC /* IconComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconComponentView.swift; sourceTree = "<group>"; };
 		03C72FC02D349BAE00297FEC /* IconComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconComponentViewModel.swift; sourceTree = "<group>"; };
 		03C7305A2D35985500297FEC /* TextComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentTests.swift; sourceTree = "<group>"; };
+		03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallV2CacheWarming.swift; sourceTree = "<group>"; };
 		03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTabsComponent.swift; sourceTree = "<group>"; };
 		03E37BEC2D30B72E00CD9678 /* TabsComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentViewModel.swift; sourceTree = "<group>"; };
 		03E37BEE2D30B73800CD9678 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };
 		03E37BF02D30B7A100CD9678 /* TabControlComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlComponentView.swift; sourceTree = "<group>"; };
 		03E37BF22D30B7AB00CD9678 /* TabControlComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlComponentViewModel.swift; sourceTree = "<group>"; };
-		03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallV2CacheWarming.swift; sourceTree = "<group>"; };
 		03F446202D2F73210046129A /* StackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackComponentTests.swift; sourceTree = "<group>"; };
 		03F446232D2FE0C10046129A /* ShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
