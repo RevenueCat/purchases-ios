@@ -29,7 +29,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-public struct CustomerCenterNavigationLink<Label>: View {
+public struct CustomerCenterNavigationLink<Label: View>: View {
 
     let label: () -> Label
 
@@ -52,23 +52,11 @@ public struct CustomerCenterNavigationLink<Label>: View {
         self.label = label
     }
 
-    /// Initializes the navigation link with a label view provided by an autoclosure.
-    ///
-    /// This initializer offers a more convenient way to pass simple views as labels.
-    ///
-    /// Example:
-    /// ```swift
-    /// CustomerCenterNavigationLink(Text("Customer Center"))
-    /// ```
-    ///
-    /// - Parameter label: An autoclosure that returns the view to display as the navigation link’s label.
-    public init(_ label: @autoclosure @escaping () -> Label) {
-        self.label = label
-    }
-
     /// The content and behavior of the navigation link.
     public var body: some View {
-        NavigationLink(value: CustomerCenterView(isEmbededInNavigation: true)) {
+        NavigationLink {
+            CustomerCenterView(isEmbeddedInNavigationStack: true)
+        } label: {
             label()
         }
     }
