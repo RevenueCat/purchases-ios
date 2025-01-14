@@ -29,6 +29,7 @@ struct ViewModelFactory {
     ) throws -> RootViewModel {
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
+            packageValidator: self.packageValidator,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering
@@ -37,6 +38,7 @@ struct ViewModelFactory {
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
+                packageValidator: self.packageValidator,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -54,7 +56,7 @@ struct ViewModelFactory {
         )
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func toViewModel(
         component: PaywallComponent,
         packageValidator: PackageValidator,
@@ -110,6 +112,7 @@ struct ViewModelFactory {
         case .button(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -126,6 +129,7 @@ struct ViewModelFactory {
         case .package(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -145,6 +149,7 @@ struct ViewModelFactory {
         case .purchaseButton(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -156,6 +161,7 @@ struct ViewModelFactory {
         case .stickyFooter(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -167,11 +173,84 @@ struct ViewModelFactory {
                     stackViewModel: stackViewModel
                 )
             )
+        case .tabs(let component):
+            let controlStackViewModel = try toStackViewModel(
+                component: component.control.stack,
+                packageValidator: packageValidator,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+
+            let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
+                let tabPackageValidator = PackageValidator()
+
+                let stackViewModel = try toStackViewModel(
+                    component: tab.stack,
+                    packageValidator: tabPackageValidator,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+
+                // Merging into entire paywall package validator
+                for (pkg, isSelectedByDefault) in tabPackageValidator.packageInfos {
+                    packageValidator.add(pkg, isSelectedByDefault: isSelectedByDefault)
+                }
+
+                return try .init(
+                    tab: tab,
+                    stackViewModel: stackViewModel,
+                    defaultSelectedPackage: tabPackageValidator.defaultSelectedPackage,
+                    packages: tabPackageValidator.packages,
+                    uiConfigProvider: uiConfigProvider
+                )
+            }
+
+            return .tabs(
+                try TabsComponentViewModel(
+                    component: component,
+                    controlStackViewModel: controlStackViewModel,
+                    tabViewModels: tabViewModels,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControl(let component):
+            return .tabControl(
+                try TabControlComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControlButton(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                packageValidator: packageValidator,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+
+            return .tabControlButton(
+                try TabControlButtonComponentViewModel(
+                    component: component,
+                    stackViewModel: stackViewModel,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControlToggle(let component):
+            return .tabControlToggle(
+                try TabControlToggleComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
         }
     }
 
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
+        packageValidator: PackageValidator,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         offering: Offering

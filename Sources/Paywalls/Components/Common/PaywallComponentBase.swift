@@ -21,6 +21,11 @@ public enum PaywallComponent: PaywallComponentBase {
     case purchaseButton(PurchaseButtonComponent)
     case stickyFooter(StickyFooterComponent)
 
+    case tabs(TabsComponent)
+    case tabControl(TabControlComponent)
+    case tabControlButton(TabControlButtonComponent)
+    case tabControlToggle(TabControlToggleComponent)
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
@@ -30,6 +35,11 @@ public enum PaywallComponent: PaywallComponentBase {
         case package
         case purchaseButton = "purchase_button"
         case stickyFooter = "sticky_footer"
+
+        case tabs
+        case tabControl = "tab_control"
+        case tabControlButton = "tab_control_button"
+        case tabControlToggle = "tab_control_toggle"
 
     }
 
@@ -51,6 +61,7 @@ extension PaywallComponent: Codable {
 
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -75,6 +86,18 @@ extension PaywallComponent: Codable {
             try component.encode(to: encoder)
         case .stickyFooter(let component):
             try container.encode(ComponentType.stickyFooter, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabs(let component):
+            try container.encode(ComponentType.tabs, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControl(let component):
+            try container.encode(ComponentType.tabControl, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControlButton(let component):
+            try container.encode(ComponentType.tabControlButton, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControlToggle(let component):
+            try container.encode(ComponentType.tabControlToggle, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -126,6 +149,7 @@ extension PaywallComponent: Codable {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private static func decodeType(from decoder: Decoder, type: ComponentType) throws -> PaywallComponent {
         switch type {
         case .text:
@@ -142,6 +166,14 @@ extension PaywallComponent: Codable {
             return .purchaseButton(try PurchaseButtonComponent(from: decoder))
         case .stickyFooter:
             return .stickyFooter(try StickyFooterComponent(from: decoder))
+        case .tabs:
+            return .tabs(try TabsComponent(from: decoder))
+        case .tabControl:
+            return .tabControl(try TabControlComponent(from: decoder))
+        case .tabControlButton:
+            return .tabControlButton(try TabControlButtonComponent(from: decoder))
+        case .tabControlToggle:
+            return .tabControlToggle(try TabControlToggleComponent(from: decoder))
         }
     }
 

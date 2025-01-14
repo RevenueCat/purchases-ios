@@ -39,7 +39,11 @@ struct StackComponentView: View {
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
 
-    init(viewModel: StackComponentViewModel, onDismiss: @escaping () -> Void, additionalPadding: EdgeInsets? = nil) {
+    init(
+        viewModel: StackComponentViewModel,
+        onDismiss: @escaping () -> Void,
+        additionalPadding: EdgeInsets? = nil
+    ) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
@@ -506,7 +510,7 @@ struct StackComponentView_Previews: PreviewProvider {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension StackComponentViewModel {
+extension StackComponentViewModel {
 
     convenience init(
         component: PaywallComponent.StackComponent,

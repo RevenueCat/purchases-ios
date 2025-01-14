@@ -21,7 +21,7 @@ class PackageValidator {
 
     typealias PackageInfo = (package: Package, isSelectedByDefault: Bool)
 
-    private var packageInfos: [PackageInfo] = []
+    private(set) var packageInfos: [PackageInfo] = []
 
     func add(_ package: Package, isSelectedByDefault: Bool) {
         self.packageInfos.append((package, isSelectedByDefault))

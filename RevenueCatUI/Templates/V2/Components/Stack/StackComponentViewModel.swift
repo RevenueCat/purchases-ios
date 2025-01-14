@@ -21,7 +21,7 @@ private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
-    private let component: PaywallComponent.StackComponent
+    let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
