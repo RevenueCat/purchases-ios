@@ -12,7 +12,7 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct ImageComponent: PaywallComponentBase {
+    final class ImageComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let source: ThemeImageUrls
@@ -55,9 +55,38 @@ public extension PaywallComponent {
             self.overrides = overrides
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(source)
+            hasher.combine(size)
+            hasher.combine(overrideSourceLid)
+            hasher.combine(fitMode)
+            hasher.combine(maskShape)
+            hasher.combine(colorOverlay)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(border)
+            hasher.combine(shadow)
+            hasher.combine(overrides)
+        }
+
+        public static func == (lhs: ImageComponent, rhs: ImageComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.source == rhs.source &&
+                   lhs.size == rhs.size &&
+                   lhs.overrideSourceLid == rhs.overrideSourceLid &&
+                   lhs.fitMode == rhs.fitMode &&
+                   lhs.maskShape == rhs.maskShape &&
+                   lhs.colorOverlay == rhs.colorOverlay &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.border == rhs.border &&
+                   lhs.shadow == rhs.shadow &&
+                   lhs.overrides == rhs.overrides
+        }
     }
 
-    struct PartialImageComponent: PartialComponent {
+    final class PartialImageComponent: PartialComponent {
 
         public let visible: Bool?
         public let source: ThemeImageUrls?
@@ -97,6 +126,33 @@ public extension PaywallComponent {
             self.shadow = shadow
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+            hasher.combine(source)
+            hasher.combine(size)
+            hasher.combine(overrideSourceLid)
+            hasher.combine(fitMode)
+            hasher.combine(maskShape)
+            hasher.combine(colorOverlay)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(border)
+            hasher.combine(shadow)
+        }
+
+        public static func == (lhs: PartialImageComponent, rhs: PartialImageComponent) -> Bool {
+            return lhs.visible == rhs.visible &&
+                   lhs.source == rhs.source &&
+                   lhs.size == rhs.size &&
+                   lhs.overrideSourceLid == rhs.overrideSourceLid &&
+                   lhs.fitMode == rhs.fitMode &&
+                   lhs.maskShape == rhs.maskShape &&
+                   lhs.colorOverlay == rhs.colorOverlay &&
+                   lhs.padding == rhs.padding &&
+                   lhs.margin == rhs.margin &&
+                   lhs.border == rhs.border &&
+                   lhs.shadow == rhs.shadow
+        }
     }
 
 }

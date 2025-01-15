@@ -19,7 +19,7 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct PackageComponent: PaywallComponentBase {
+    final class PackageComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let packageID: String
@@ -36,6 +36,19 @@ public extension PaywallComponent {
             self.stack = stack
         }
 
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(type)
+            hasher.combine(packageID)
+            hasher.combine(isSelectedByDefault)
+            hasher.combine(stack)
+        }
+
+        public static func == (lhs: PackageComponent, rhs: PackageComponent) -> Bool {
+            return lhs.type == rhs.type &&
+                   lhs.packageID == rhs.packageID &&
+                   lhs.isSelectedByDefault == rhs.isSelectedByDefault &&
+                   lhs.stack == rhs.stack
+        }
     }
 
 }
