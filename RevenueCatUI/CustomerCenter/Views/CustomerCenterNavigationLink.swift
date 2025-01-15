@@ -31,7 +31,7 @@ import SwiftUI
 @available(watchOS, unavailable)
 public struct CustomerCenterNavigationLink<Label: View>: View {
 
-    let label: () -> Label
+    @ViewBuilder let label: () -> Label
 
     /// Initializes the navigation link with a label view provided by a closure.
     ///
