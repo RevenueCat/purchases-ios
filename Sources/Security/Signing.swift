@@ -155,7 +155,7 @@ extension Signing {
         case informational(PublicKey)
         case enforced(PublicKey)
 
-        static let `default`: Self = .disabled
+        static let `default`: Self = .informational(Signing.loadPublicKey())
 
         var publicKey: PublicKey? {
             switch self {
