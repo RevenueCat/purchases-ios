@@ -141,8 +141,8 @@ struct ImageComponentStyle {
     let size: PaywallComponent.Size
     let shape: ShapeModifier.Shape?
     let colorOverlay: DisplayableColorScheme?
-    let padding: PaywallComponent.Padding?
-    let margin: PaywallComponent.Padding?
+    let padding: EdgeInsets
+    let margin: EdgeInsets
     let border: PaywallComponent.Border?
     let shadow: PaywallComponent.Shadow?
     let contentMode: ContentMode
@@ -172,8 +172,8 @@ struct ImageComponentStyle {
         self.size = size
         self.shape = maskShape?.shape
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
-        self.padding = padding
-        self.margin = margin
+        self.padding = (padding ?? .zero).edgeInsets
+        self.margin = (margin ?? .zero).edgeInsets
         self.border = border
         self.shadow = shadow
         self.contentMode = fitMode.contentMode
@@ -196,8 +196,8 @@ private extension PaywallComponent.MaskShape {
                 )
             }
             return .rectangle(corners)
-        case .pill:
-            return .pill
+        case .circle:
+            return .circle
         case .concave:
             return .concave
         case .convex:

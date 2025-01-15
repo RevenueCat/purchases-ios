@@ -119,9 +119,10 @@ struct ShapeModifier: ViewModifier {
         case .concave:
             // WIP: Need to implement
             content
+                .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2))
         case .convex:
-            // WIP: Need to implement
             content
+                .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2))
         }
     }
 
@@ -150,6 +151,119 @@ struct ShapeModifier: ViewModifier {
         } else {
             nil
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConcaveMaskModifier: ViewModifier {
+
+    let curveHeightPercentage: CGFloat
+
+    @State
+    private var size: CGSize = .zero
+
+    func body(content: Content) -> some View {
+        content
+            .onSizeChange { self.size = $0 }
+            .clipShape(
+                ConcaveShape(curveHeightPercentage: curveHeightPercentage, size: size)
+            )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConcaveShape: Shape {
+
+    let curveHeightPercentage: CGFloat
+    let size: CGSize
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        // Start at the top-left corner
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+
+        // Top-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+
+        // Bottom-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+
+        // Create the upward-facing concave curve
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX, y: rect.maxY),
+            control: CGPoint(x: rect.midX, y: rect.maxY - self.curveHeight)
+        )
+
+        // Bottom-left corner
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+
+        path.closeSubpath()
+
+        return path
+    }
+
+    private var curveHeight: CGFloat {
+        // Calculate the curve height as a percentage of the view's height
+        max(0, size.height * curveHeightPercentage)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConvexMaskModifier: ViewModifier {
+
+    let curveHeightPercentage: CGFloat
+
+    @State
+    private var size: CGSize = .zero
+
+    func body(content: Content) -> some View {
+        content
+            .onSizeChange { self.size = $0 }
+            .clipShape(
+                ConvexShape(curveHeightPercentage: curveHeightPercentage, size: size)
+            )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConvexShape: Shape {
+
+    let curveHeightPercentage: CGFloat
+    let size: CGSize
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        // Start at the top-left corner
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+
+        // Top-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+
+        // Bottom-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - curveHeight))
+
+        // Create the concave curve
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX, y: rect.maxY - curveHeight),
+            control: CGPoint(x: rect.midX, y: rect.maxY + curveHeight)
+        )
+
+        // Bottom-left corner
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - curveHeight))
+
+        path.closeSubpath()
+
+        return path
+    }
+
+    private var curveHeight: CGFloat {
+        // Calculate the curve height as a percentage of the view's height
+        max(0, size.height * curveHeightPercentage)
     }
 
 }

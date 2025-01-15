@@ -240,7 +240,7 @@ public extension PaywallComponent {
     enum MaskShape: Codable, Sendable, Hashable, Equatable {
 
         case rectangle(CornerRadiuses?)
-        case pill
+        case circle
         case concave
         case convex
 
@@ -251,8 +251,8 @@ public extension PaywallComponent {
             case .rectangle(let corners):
                 try container.encodeIfPresent(MaskShapeType.rectangle.rawValue, forKey: .type)
                 try container.encode(corners, forKey: .corners)
-            case .pill:
-                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+            case .circle:
+                try container.encode(MaskShapeType.circle.rawValue, forKey: .type)
             case .concave:
                 try container.encode(MaskShapeType.concave.rawValue, forKey: .type)
             case .convex:
@@ -268,8 +268,8 @@ public extension PaywallComponent {
             case .rectangle:
                 let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
                 self = .rectangle(value)
-            case .pill:
-                self = .pill
+            case .circle:
+                self = .circle
             case .concave:
                 self = .concave
             case .convex:
@@ -289,7 +289,7 @@ public extension PaywallComponent {
         private enum MaskShapeType: String, Decodable {
 
             case rectangle
-            case pill
+            case circle
             case concave
             case convex
 

@@ -34,10 +34,7 @@ private enum Template1Preview {
             )
         ),
         fitMode: .fit,
-        colorOverlay: .init(light: .linear(0, [
-            .init(color: "#ffffff", percent: 0),
-            .init(color: "#ffffff00", percent: 40)
-        ]))
+        maskShape: .convex
     )
 
     static let title = PaywallComponent.TextComponent(
