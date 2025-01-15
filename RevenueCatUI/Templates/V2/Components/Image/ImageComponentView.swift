@@ -55,6 +55,11 @@ struct ImageComponentView: View {
             }
             .size(style.size)
             .clipped()
+            .shape(border: nil,
+                   shape: style.shape)
+            .padding(style.padding)
+            // WIP: Add border still
+            .padding(style.margin)
         }
     }
 
@@ -89,11 +94,6 @@ struct ImageComponentView: View {
                     Color.clear.backgroundStyle(.color(colorOverlay))
                 )
             })
-            .shape(border: nil,
-                   shape: style.shape)
-            .padding(style.padding)
-            // WIP: Add border still
-            .padding(style.margin)
     }
 
 }

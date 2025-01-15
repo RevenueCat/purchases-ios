@@ -263,7 +263,7 @@ private struct ConvexShape: Shape {
 
     private var curveHeight: CGFloat {
         // Calculate the curve height as a percentage of the view's height
-        max(0, size.height * curveHeightPercentage)
+        max(0, size.height * curveHeightPercentage) / 2
     }
 
 }

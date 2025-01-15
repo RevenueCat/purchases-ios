@@ -33,7 +33,8 @@ private enum Template1Preview {
                 heicLowRes: catUrl
             )
         ),
-        fitMode: .fit,
+        size: .init(width: .fill, height: .fixed(270)),
+        fitMode: .fill,
         maskShape: .convex
     )
 
