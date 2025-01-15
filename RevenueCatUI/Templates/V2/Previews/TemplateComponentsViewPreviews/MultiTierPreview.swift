@@ -398,7 +398,7 @@ struct MultiTierPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackView: EmptyView()
+            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))

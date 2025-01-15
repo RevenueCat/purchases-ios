@@ -4,7 +4,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs file_length
 
 import RevenueCat
 import SwiftUI
@@ -32,7 +32,52 @@ private struct PaywallState {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallsV2View<Content: View>: View {
+struct DataForV1DefaultPaywall {
+
+    let offering: Offering
+    let activelySubscribedProductIdentifiers: Set<String>
+    let paywall: PaywallData
+    let template: PaywallTemplate
+    let mode: PaywallViewMode
+    let fonts: PaywallFontProvider
+    let displayCloseButton: Bool
+    let introEligibility: TrialOrIntroEligibilityChecker
+    let purchaseHandler: PurchaseHandler
+    let locale: Locale
+    let showZeroDecimalPlacePrices: Bool
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum FallbackContent {
+    case paywallV1View(DataForV1DefaultPaywall)
+    case customView(AnyView)
+
+    @ViewBuilder
+    func view() -> some View {
+        switch self {
+        case .paywallV1View(let data):
+            LoadedOfferingPaywallView(
+                offering: data.offering,
+                activelySubscribedProductIdentifiers: data.activelySubscribedProductIdentifiers,
+                paywall: data.paywall,
+                template: data.template,
+                mode: data.mode,
+                fonts: data.fonts,
+                displayCloseButton: data.displayCloseButton,
+                introEligibility: data.introEligibility,
+                purchaseHandler: data.purchaseHandler,
+                locale: data.locale,
+                showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
+            )
+        case .customView(let view):
+            view
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PaywallsV2View: View {
 
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
@@ -53,7 +98,7 @@ struct PaywallsV2View<Content: View>: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let onDismiss: () -> Void
-    private let fallbackView: Content
+    private let fallbackContent: FallbackContent
 
     public init(
         paywallComponents: Offering.PaywallComponents,
@@ -61,15 +106,15 @@ struct PaywallsV2View<Content: View>: View {
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
-        fallbackView: Content
+        fallbackContent: FallbackContent
     ) {
         let uiConfigProvider = UIConfigProvider(uiConfig: paywallComponents.uiConfig)
 
-        self.fallbackView = fallbackView
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
         self.onDismiss = onDismiss
+        self.fallbackContent = fallbackContent
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
@@ -148,7 +193,7 @@ struct PaywallsV2View<Content: View>: View {
 
         DebugErrorView(
             fullMessage,
-            replacement: self.fallbackView
+            replacement: self.fallbackContent.view()
         )
     }
 
