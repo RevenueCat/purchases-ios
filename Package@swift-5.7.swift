@@ -10,10 +10,10 @@ let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
 var dependencies: [Package.Dependency] = [
-    .package(url: "git@github.com:Quick/Nimble.git", revision: "1f3bde57bde12f5e7b07909848c071e9b73d6edc"),
+    .package(url: "https://github.com/quick/nimble", revision: "1f3bde57bde12f5e7b07909848c071e9b73d6edc"),
     // SST requires iOS 13 starting from version 1.13.0
     .package(
-        url: "git@github.com:pointfreeco/swift-snapshot-testing.git",
+        url: "https://github.com/pointfreeco/swift-snapshot-testing",
         revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
     )
 ]
@@ -64,7 +64,10 @@ let package = Package(
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
-                    dependencies: ["ReceiptParser", "Nimble"],
+                    dependencies: [
+                        "ReceiptParser",
+                        .product(name: "Nimble", package: "nimble")
+                    ],
                     exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
         .target(name: "RevenueCatUI",
@@ -77,7 +80,7 @@ let package = Package(
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
-                        "Nimble",
+                        .product(name: "Nimble", package: "nimble"),
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
