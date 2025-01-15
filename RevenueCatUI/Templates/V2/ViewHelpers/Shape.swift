@@ -193,7 +193,7 @@ private struct ConcaveShape: Shape {
         // Create the upward-facing concave curve
         path.addQuadCurve(
             to: CGPoint(x: rect.minX, y: rect.maxY),
-            control: CGPoint(x: rect.midX, y: rect.maxY - proportionalCurveHeight)
+            control: CGPoint(x: rect.midX, y: rect.maxY - self.curveHeight)
         )
 
         // Bottom-left corner
@@ -204,11 +204,9 @@ private struct ConcaveShape: Shape {
         return path
     }
 
-    private var proportionalCurveHeight: CGFloat {
-        // Calculate the curve height as a proportion of both width and height
-        let baseHeight = size.height * curveHeightPercentage
-        let widthFactor = size.width / size.height
-        return baseHeight * widthFactor
+    private var curveHeight: CGFloat {
+        // Calculate the curve height as a percentage of the view's height
+        max(0, size.height * curveHeightPercentage)
     }
 
 }
