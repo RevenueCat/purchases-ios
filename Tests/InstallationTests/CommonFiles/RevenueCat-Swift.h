@@ -2246,7 +2246,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// \param params The <code>PurchaseParams</code> instance with the configuration options for this purchase.
 /// Check the <code>PurchaseParams</code> documentation for more information.
 ///
-- (void)params:(RCPurchaseParams * _Nonnull)params withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
+- (void)purchaseWithParams:(RCPurchaseParams * _Nonnull)params completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 /// Initiates a purchase.
 /// important:
 /// Call this method when a user has decided to purchase a product.
@@ -2676,6 +2676,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 - (void)setMixpanelDistinctID:(NSString * _Nullable)mixpanelDistinctID SWIFT_DEPRECATED;
 - (void)setFirebaseAppInstanceID:(NSString * _Nullable)firebaseAppInstanceID SWIFT_DEPRECATED;
 - (void)collectDeviceIdentifiers SWIFT_DEPRECATED;
+- (void)params:(RCPurchaseParams * _Nonnull)params withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_DEPRECATED;
 /// Whether transactions should be finished automatically. <code>true</code> by default.
 /// * - Warning: Setting this value to <code>false</code> will prevent the SDK from finishing transactions.
 /// * In this case, you <em>must</em> finish transactions in your app, otherwise they will remain in the queue and
@@ -3062,6 +3063,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)setAd:(NSString * _Nullable)installAd SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setAd' has been renamed to 'attribution.setAd(_:)'");
 - (void)setKeyword:(NSString * _Nullable)keyword SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setKeyword' has been renamed to 'attribution.setKeyword(_:)'");
 - (void)setCreative:(NSString * _Nullable)creative SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'setCreative' has been renamed to 'attribution.setCreative(_:)'");
+- (void)params:(RCPurchaseParams * _Nonnull)params withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion SWIFT_AVAILABILITY(maccatalyst,deprecated=0.0.1,message="'purchaseWithParams' has been renamed to 'purchaseWithParams:completion:'") SWIFT_AVAILABILITY(macos,deprecated=0.0.1,message="'purchaseWithParams' has been renamed to 'purchaseWithParams:completion:'") SWIFT_AVAILABILITY(watchos,deprecated=0.0.1,message="'purchaseWithParams' has been renamed to 'purchaseWithParams:completion:'") SWIFT_AVAILABILITY(tvos,deprecated=0.0.1,message="'purchaseWithParams' has been renamed to 'purchaseWithParams:completion:'") SWIFT_AVAILABILITY(ios,deprecated=0.0.1,message="'purchaseWithParams' has been renamed to 'purchaseWithParams:completion:'");
 @end
 
 @class SKPaymentDiscount;
@@ -3272,7 +3274,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)purchaseWithPackage:(RCPackage * _Nonnull)package completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
 - (void)restorePurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 - (void)restorePurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler;
-- (void)params:(RCPurchaseParams * _Nonnull)params withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
+- (void)purchaseWithParams:(RCPurchaseParams * _Nonnull)params completion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 - (void)purchase:(RCPurchaseParams * _Nonnull)params completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler;
 - (void)invalidateCustomerInfoCache;
 - (void)syncPurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
