@@ -8,6 +8,8 @@
 import RevenueCat
 import SwiftUI
 
+#if os(iOS)
+
 /// A view that provides a navigation link to `CustomerCenterView` with a customizable label.
 ///
 /// This is the **preferred way** to integrate `CustomerCenterView` into your `NavigationStack`,
@@ -31,7 +33,8 @@ import SwiftUI
 @available(watchOS, unavailable)
 public struct CustomerCenterNavigationLink<Label: View>: View {
 
-    @ViewBuilder let label: () -> Label
+    private let customerCenterActionHandler: CustomerCenterActionHandler
+    @ViewBuilder private let label: () -> Label
 
     /// Initializes the navigation link with a label view provided by a closure.
     ///
@@ -48,16 +51,23 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
     /// ```
     ///
     /// - Parameter label: A closure that returns the view to display as the navigation link’s label.
-    public init(@ViewBuilder label: @escaping () -> Label) {
-        self.label = label
-    }
+    public init(
+        customerCenterActionHandler: @escaping CustomerCenterActionHandler,
+        @ViewBuilder label: @escaping () -> Label) {
+            self.customerCenterActionHandler = customerCenterActionHandler
+            self.label = label
+        }
 
     /// The content and behavior of the navigation link.
     public var body: some View {
         NavigationLink {
-            CustomerCenterView(isEmbeddedInNavigationStack: true)
+            CustomerCenterView(
+                customerCenterActionHandler: customerCenterActionHandler,
+                isEmbeddedInNavigationStack: true)
         } label: {
             label()
         }
     }
 }
+
+#endif
