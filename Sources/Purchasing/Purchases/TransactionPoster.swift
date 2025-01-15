@@ -47,6 +47,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     /// Finishes the transaction if not in observer mode.
     /// - Note: `handlePurchasedTransaction` calls this automatically,
     /// this is only required for failed transactions.
+    // todo: main actor here
     func finishTransactionIfNeeded(
         _ transaction: StoreTransactionType,
         completion: @escaping @Sendable @MainActor () -> Void
@@ -121,6 +122,7 @@ final class TransactionPoster: TransactionPosterType {
         }
     }
 
+    // todo: main actor here
     func finishTransactionIfNeeded(
         _ transaction: StoreTransactionType,
         completion: @escaping @Sendable @MainActor () -> Void

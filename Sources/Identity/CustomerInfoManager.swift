@@ -17,6 +17,7 @@ import Foundation
 
 class CustomerInfoManager {
 
+    // todo: remove main actor here
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
 
     private let offlineEntitlementsManager: OfflineEntitlementsManager

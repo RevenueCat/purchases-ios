@@ -30,6 +30,7 @@ class OfflineEntitlementsManager {
         self.systemInfo = systemInfo
     }
 
+    // todo: main actor here
     func updateProductsEntitlementsCacheIfStale(
         isAppBackgrounded: Bool,
         completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
@@ -103,6 +104,7 @@ private extension OfflineEntitlementsManager {
 
 private extension OfflineEntitlementsManager {
 
+    // todo: main actor here
     func dispatchCompletionOnMainThreadIfPossible<Value, Error: Swift.Error>(
         _ completion: (@MainActor @Sendable (Result<Value, Error>) -> Void)?,
         result: Result<Value, Error>

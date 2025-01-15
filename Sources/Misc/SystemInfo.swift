@@ -156,6 +156,7 @@ class SystemInfo {
 
     /// Synchronous API for callers in `@MainActor`.
     /// - Seealso: `isApplicationBackgrounded(completion:)`
+    // todo: main actor here
     @MainActor
     var isApplicationBackgrounded: Bool {
     #if os(iOS) || os(tvOS) || VISION_OS
@@ -274,6 +275,7 @@ private extension SystemInfo {
     // iOS/tvOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
+    // todo: main actor here
     @MainActor
     var isApplicationBackgroundedIOSAndTVOS: Bool {
         if self.isAppExtension {
@@ -287,6 +289,7 @@ private extension SystemInfo {
     #elseif os(watchOS)
 
     @MainActor
+    // todo: main actor here
     var isApplicationBackgroundedWatchOS: Bool {
         var isSingleTargetApplication: Bool {
             return Bundle.main.infoDictionary?.keys.contains("WKApplication") == true

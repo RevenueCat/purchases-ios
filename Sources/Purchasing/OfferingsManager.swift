@@ -39,6 +39,7 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
+    // todo: main actor here
     func offerings(
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
@@ -72,6 +73,7 @@ class OfferingsManager {
         return self.deviceCache.cachedOfferings
     }
 
+    // todo: main actor here
     func updateOfferingsCache(
         appUserID: String,
         isAppBackgrounded: Bool,
@@ -132,6 +134,7 @@ class OfferingsManager {
 
 private extension OfferingsManager {
 
+    // todo: main actor here
     func fetchFromNetwork(
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
@@ -225,6 +228,7 @@ private extension OfferingsManager {
         }
     }
 
+    // todo: main actor here
     func handleOfferingsBackendResult(
         with response: OfferingsResponse,
         appUserID: String,
@@ -255,6 +259,7 @@ private extension OfferingsManager {
         }
     }
 
+    // todo: main actor here
     func handleOfferingsUpdateError(
         _ error: Error,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
@@ -264,6 +269,7 @@ private extension OfferingsManager {
         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .failure(error))
     }
 
+    // todo: main actor here
     func dispatchCompletionOnMainThreadIfPossible<T>(
         _ completion: (@MainActor @Sendable (T) -> Void)?,
         value: T

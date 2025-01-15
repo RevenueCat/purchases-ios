@@ -52,6 +52,7 @@ class OperationDispatcher {
         self.mainQueue.async(execute: block)
     }
 
+    // todo: main actor references need OS check
     func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
         Self.dispatchOnMainActor(block)
     }
@@ -79,6 +80,7 @@ class OperationDispatcher {
 
 extension OperationDispatcher {
 
+    // todo: main actor needs OS check
     static func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
         if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
             Task<Void, Never> { @MainActor in

@@ -27,7 +27,8 @@ class StoreKitRequestFetcher: NSObject {
 
     private let requestFactory: ReceiptRefreshRequestFactory
     private var receiptRefreshRequest: SKRequest?
-    private var receiptRefreshCompletionHandlers: [@MainActor @Sendable () -> Void]
+    // todo: main actor here
+    private var receiptRefreshCompletionHandlers: [@Sendable () -> Void]
     private let operationDispatcher: OperationDispatcher
 
     init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory(),
@@ -38,6 +39,7 @@ class StoreKitRequestFetcher: NSObject {
         self.receiptRefreshCompletionHandlers = []
     }
 
+    // todo: main actor here
     func fetchReceiptData(_ completion: @MainActor @Sendable @escaping () -> Void) {
         self.operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshCompletionHandlers.append(completion)
