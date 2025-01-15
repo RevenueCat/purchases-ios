@@ -139,8 +139,8 @@ struct PaywallsV2View<Content: View>: View {
     func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
         let fullMessage = """
         \(errorMessage)
-        Validate your paywall is correct in the RevenueCat dashboard, update your SDK, 
-        or contact RevenueCat support.
+        Validate your paywall is correct in the RevenueCat dashboard,
+        update your SDK, or contact RevenueCat support.
         View console logs for full detail.
         The displayed paywall contains default configuration.
         This error will be hidden in production.
