@@ -119,9 +119,10 @@ struct ShapeModifier: ViewModifier {
         case .concave:
             // WIP: Need to implement
             content
+                .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2))
         case .convex:
-            // WIP: Need to implement
             content
+                .modifier(ConvexMaskModifier(circleHeightPercentage: 0.2))
         }
     }
 
@@ -150,6 +151,95 @@ struct ShapeModifier: ViewModifier {
         } else {
             nil
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConcaveMaskModifier: ViewModifier {
+
+    let curveHeightPercentage: CGFloat
+
+    @State
+    private var size: CGSize = .zero
+
+    func body(content: Content) -> some View {
+        content
+            .onSizeChange { self.size = $0 }
+            .clipShape(
+                ConcaveShape(curveHeightPercentage: curveHeightPercentage, size: size)
+            )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConcaveShape: Shape {
+
+    let curveHeightPercentage: CGFloat
+    let size: CGSize
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        // Start at the top-left corner
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+
+        // Top-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+
+        // Bottom-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+
+        // Create the upward-facing concave curve
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX, y: rect.maxY),
+            control: CGPoint(x: rect.midX, y: rect.maxY - proportionalCurveHeight)
+        )
+
+        // Bottom-left corner
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+
+        path.closeSubpath()
+
+        return path
+    }
+
+    private var proportionalCurveHeight: CGFloat {
+        // Calculate the curve height as a proportion of both width and height
+        let baseHeight = size.height * curveHeightPercentage
+        let widthFactor = size.width / size.height
+        return baseHeight * widthFactor
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConvexMaskModifier: ViewModifier {
+
+    let circleHeightPercentage: CGFloat
+
+    @State
+    private var size: CGSize = .zero
+
+    func body(content: Content) -> some View {
+        content
+            .onSizeChange { self.size = $0 }
+            .clipShape(
+                Circle()
+                    .scale(self.circleScale)
+                    .offset(y: self.circleOffset)
+            )
+    }
+
+    private var circleScale: CGFloat {
+        // Scale the circle such that its convex part matches the height percentage
+        guard size.height > 0 else { return 1.0 }
+        return 2 * (1.0 + self.circleHeightPercentage) * (size.width / size.height)
+    }
+
+    private var circleOffset: CGFloat {
+        return (((self.size.height * self.circleScale) - self.size.height) / 2.0 * -1)
+            .rounded(.down)
     }
 
 }

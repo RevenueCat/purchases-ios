@@ -229,6 +229,96 @@ struct ImageComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Rounded Corner")
+
+        // Light - Fit with Circle
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        maskShape: .circle
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Circle")
+
+        // Light - Fit with Convex
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        maskShape: .convex
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fill with Convex")
+
+        // Light - Fit with Concave
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        maskShape: .concave
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fit with Concave")
     }
 }
 

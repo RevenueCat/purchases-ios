@@ -196,8 +196,8 @@ private extension PaywallComponent.MaskShape {
                 )
             }
             return .rectangle(corners)
-        case .pill:
-            return .pill
+        case .circle:
+            return .circle
         case .concave:
             return .concave
         case .convex:
