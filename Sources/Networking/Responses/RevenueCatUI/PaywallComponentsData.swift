@@ -141,11 +141,8 @@ extension PaywallComponentsData {
         }
 
         do {
-//            componentsConfig = .init(base: .init(stack: .init(components: []), stickyFooter: nil, background: .color(.init(light: .hex("#ffffff")))))
             componentsConfig = try container.decode(ComponentsConfig.self, forKey: .componentsConfig)
-            print("AFTER DECODING")
         } catch {
-            print("IN CATCH AFTER CODING ERROR")
             errors["componentsConfig"] = .init(error)
             componentsConfig = ComponentsConfig(base: PaywallComponentsConfig(
                 stack: .init(components: []),
