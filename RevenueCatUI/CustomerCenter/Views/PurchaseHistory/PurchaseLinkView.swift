@@ -19,7 +19,7 @@ import SwiftUI
 @available(iOS 15.0, *)
 struct PurchaseLinkView: View {
     @State var productName: String?
-    let subscriptionInfo: SubscriptionInfo
+    let purchaseInfo: PurchaseInfo
 
     var body: some View {
         HStack(spacing: 8) {
@@ -40,7 +40,7 @@ struct PurchaseLinkView: View {
         .onAppear {
             Task {
                 guard
-                    let product = await Purchases.shared.products([subscriptionInfo.productIdentifier]).first
+                    let product = await Purchases.shared.products([purchaseInfo.productIdentifier]).first
                 else {
                     return
                 }
@@ -51,15 +51,17 @@ struct PurchaseLinkView: View {
     }
 
     private var dateString: String {
-        guard let expiresDate = subscriptionInfo.expiresDate else {
-            return String(localized: "Purchased on \(formattedDate(subscriptionInfo.purchaseDate))")
+        guard let expiresDate = purchaseInfo.expiresDate else {
+            return String(localized: "Purchased on \(formattedDate(purchaseInfo.purchaseDate))")
         }
 
-        guard subscriptionInfo.isActive else {
+        guard purchaseInfo.isActive else {
             return String(localized: "Expired on \(formattedDate(expiresDate))")
         }
 
-        return subscriptionInfo.willRenew ? String(localized: "Renews on \(formattedDate(expiresDate))") : String(localized: "Expires on \(formattedDate(expiresDate))")
+        return purchaseInfo.willRenew
+            ? String(localized: "Renews on \(formattedDate(expiresDate))")
+            : String(localized: "Expires on \(formattedDate(expiresDate))")
     }
 
     private func formattedDate(_ date: Date) -> String {

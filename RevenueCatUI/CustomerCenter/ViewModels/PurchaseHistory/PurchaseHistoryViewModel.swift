@@ -26,8 +26,8 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class PurchaseHistoryViewModel: ObservableObject {
 
-    @Published var selectedActiveSubscrition: SubscriptionInfo?
-    @Published var selectedInactiveSubscription: SubscriptionInfo?
+    @Published var selectedPurchase: PurchaseInfo?
+
     @Published var customerInfo: CustomerInfo? {
         didSet {
             updateActiveAndNonActiveSubscriptions()
@@ -35,8 +35,9 @@ final class PurchaseHistoryViewModel: ObservableObject {
     }
     @Published var errorMessage: String?
 
-    var activeSubscriptions: [SubscriptionInfo] = []
-    var inactiveSubscriptions: [SubscriptionInfo] = []
+    var activeSubscriptions: [PurchaseInfo] = []
+    var inactiveSubscriptions: [PurchaseInfo] = []
+    var nonSubscriptions: [PurchaseInfo] = []
 
     func didAppear() async {
         await fetchCustomerInfo()
@@ -52,7 +53,9 @@ private extension PurchaseHistoryViewModel {
                 self.customerInfo = customerInfo
             }
         } catch {
-            self.errorMessage = error.localizedDescription
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -64,6 +67,9 @@ private extension PurchaseHistoryViewModel {
                 .sorted(by: { sub1, sub2 in
                     sub1.purchaseDate < sub2.purchaseDate
                 })
+                .map {
+                    PurchaseInfo.subscription($0)
+                }
         } ?? []
 
         inactiveSubscriptions = customerInfo.map {
@@ -73,6 +79,13 @@ private extension PurchaseHistoryViewModel {
                 .sorted(by: { sub1, sub2 in
                     sub1.purchaseDate < sub2.purchaseDate
                 })
+                .map {
+                    PurchaseInfo.subscription($0)
+                }
+        } ?? []
+
+        nonSubscriptions = customerInfo?.nonSubscriptions.map {
+            .nonSubscription($0)
         } ?? []
     }
 }

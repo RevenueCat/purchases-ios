@@ -26,29 +26,21 @@ struct PurchaseHistoryView: View {
                 if !info.activeSubscriptions.isEmpty {
                     // todo: add the price from the backend
                     Section(header: Text(String(localized: "Active Subscriptions"))) {
-                        ForEach(viewModel.activeSubscriptions, id: \.productIdentifier) { activeSubscription in
+                        ForEach(viewModel.activeSubscriptions) { activeSubscription in
                             Button {
-                                viewModel.selectedActiveSubscrition = activeSubscription
+                                viewModel.selectedPurchase = activeSubscription
                             } label: {
-                                PurchaseLinkView(subscriptionInfo: activeSubscription)
-                                    .compatibleNavigation(item: $viewModel.selectedActiveSubscrition) {
-                                        PurchaseDetailView(
-                                            viewModel: PurchaseDetailViewModel(subscriptionInfo: $0))
-                                    }
+                                PurchaseLinkView(purchaseInfo: activeSubscription)
                             }
                         }
                     }
 
                     Section(header: Text(String(localized: "Expired Subscriptions"))) {
-                        ForEach(viewModel.inactiveSubscriptions, id: \.productIdentifier) { inactiveSubscription in
+                        ForEach(viewModel.inactiveSubscriptions) { inactiveSubscription in
                             Button {
-                                viewModel.selectedInactiveSubscription = inactiveSubscription
+                                viewModel.selectedPurchase = inactiveSubscription
                             } label: {
-                                PurchaseLinkView(subscriptionInfo: inactiveSubscription)
-                                    .compatibleNavigation(item: $viewModel.selectedInactiveSubscription) {
-                                        PurchaseDetailView(
-                                            viewModel: PurchaseDetailViewModel(subscriptionInfo: $0))
-                                    }
+                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
                         }
                     }
@@ -57,6 +49,16 @@ struct PurchaseHistoryView: View {
                 // Non-Subscription Purchases Section
                 // todo: add information for non subscriptions
                 // and get product type and other info directly from StoreKit or backend
+
+                Section(header: Text(String(localized: "Other"))) {
+                    ForEach(viewModel.nonSubscriptions) { inactiveSubscription in
+                        Button {
+                            viewModel.selectedPurchase = inactiveSubscription
+                        } label: {
+                            PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                        }
+                    }
+                }
 
                 // Account Details Section
                 // todo: make these easy to copy
@@ -80,6 +82,10 @@ struct PurchaseHistoryView: View {
                     }
                 }
             }
+        }
+        .compatibleNavigation(item: $viewModel.selectedPurchase) {
+            PurchaseDetailView(
+                viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
         }
         .navigationTitle(String(localized: "Purchase History"))
         .listStyle(.insetGrouped)

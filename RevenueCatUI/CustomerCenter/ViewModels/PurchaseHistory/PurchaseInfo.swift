@@ -1,0 +1,153 @@
+//
+//  PurchaseInfo.swift
+//  RevenueCat
+//
+//  Created by Facundo Menzella on 15/1/25.
+//
+
+#if os(iOS)
+import RevenueCat
+import SwiftUI
+
+@available(iOS 15.0, *)
+enum PurchaseInfo: Identifiable {
+    case subscription(SubscriptionInfo)
+    case nonSubscription(NonSubscriptionTransaction)
+
+    var id: String {
+        productIdentifier
+    }
+
+    var productIdentifier: String {
+        switch self {
+        case let .subscription(info):
+            info.productIdentifier
+        case let .nonSubscription(transaction):
+            transaction.productIdentifier
+        }
+    }
+
+    var isActive: Bool {
+        switch self {
+        case let .subscription(info):
+            info.isActive
+        case let .nonSubscription(transaction):
+            false
+        }
+    }
+
+    var willRenew: Bool {
+        switch self {
+        case let .subscription(info):
+            info.willRenew
+        case let .nonSubscription(transaction):
+            false
+        }
+    }
+
+    var purchaseDate: Date {
+        switch self {
+        case let .subscription(info):
+            info.purchaseDate
+        case let .nonSubscription(transaction):
+            transaction.purchaseDate
+        }
+    }
+
+    var expiresDate: Date? {
+        guard case let .subscription(info) = self else {
+            return nil
+        }
+
+        return info.expiresDate
+    }
+
+    var purchaseDetailItems: [PurchaseDetailItem] {
+        var items: [PurchaseDetailItem] = []
+        switch self {
+        case let .subscription(purchaseInfo):
+            items.append(.status(purchaseInfo.isActive
+                                 ? String(localized: "Active")
+                                 : String(localized: "Inactive")))
+
+            if let expiresDate = purchaseInfo.expiresDate {
+                if purchaseInfo.willRenew {
+                    items.append(.nextRenewalDate(formattedDate(expiresDate)))
+                } else {
+                    items.append(.expiresDate(formattedDate(expiresDate)))
+                }
+            }
+
+            if let unsubscribeDetectedAt = purchaseInfo.unsubscribeDetectedAt {
+                items.append(.unsubscribeDetectedAt(formattedDate(unsubscribeDetectedAt)))
+            }
+
+            if let billingIssuesDetectedAt = purchaseInfo.billingIssuesDetectedAt {
+                items.append(.billingIssuesDetectedAt(formattedDate(billingIssuesDetectedAt)))
+            }
+
+            if let gracePeriodExpiresDate = purchaseInfo.gracePeriodExpiresDate {
+                items.append(.gracePeriodExpiresDate(formattedDate(gracePeriodExpiresDate)))
+            }
+
+            if purchaseInfo.periodType != .normal {
+                items.append(.periodType(
+                    purchaseInfo.periodType == .intro
+                        ? String(localized: "Introductory Price")
+                        : String(localized: "Trial Period"))
+                )
+            }
+
+            if let refundedAt = purchaseInfo.refundedAt {
+                items.append(.refundedAtDate(formattedDate(refundedAt)))
+            }
+
+#if DEBUG
+        items.append(contentsOf: [
+            .store(purchaseInfo.store.localizedName),
+            .productID(purchaseInfo.productIdentifier),
+            .sandbox(purchaseInfo.isSandbox)
+        ])
+
+        if purchaseInfo.isActive {
+            if let originalPurchaseDate = purchaseInfo.originalPurchaseDate,
+               originalPurchaseDate != purchaseInfo.purchaseDate {
+                items.append(.purchaseDate(formattedDate(originalPurchaseDate)))
+            }
+        }
+
+        if let storeTransactionId = purchaseInfo.storeTransactionId {
+            items.append(.transactionID(storeTransactionId))
+        }
+#endif
+
+        case let .nonSubscription(transaction):
+            items.append(.purchaseDate(formattedDate(transaction.purchaseDate)))
+#if DEBUG
+        items.append(contentsOf: [
+            .store(transaction.store.localizedName),
+            .productID(transaction.productIdentifier),
+            .transactionID(transaction.storeTransactionIdentifier)
+        ])
+#endif
+        }
+
+        return items
+    }
+}
+
+@available(iOS 15.0, *)
+private extension PurchaseInfo {
+    static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
+    func formattedDate(_ date: Date) -> String {
+        Self.formatter.string(from: date)
+    }
+}
+
+#endif

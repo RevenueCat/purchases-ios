@@ -7,10 +7,10 @@
 
 import RevenueCat
 
-extension SubscriptionInfo {
+extension Store {
 
-    var localizedStore: String {
-        switch store {
+    var localizedName: String {
+        switch self {
         case .appStore: return "Apple App Store"
         case .macAppStore: return "Mac App Store"
         case .playStore: return "Google Play Store"
