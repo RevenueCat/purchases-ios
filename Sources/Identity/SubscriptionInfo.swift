@@ -72,6 +72,9 @@ import Foundation
     /// Whether the subscription will renew at the next billing period.
     @objc public let willRenew: Bool
 
+    /// Paid price for the subscription
+    @objc public let price: ProductPaidPrice?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -85,7 +88,8 @@ import Foundation
          periodType: PeriodType,
          refundedAt: Date?,
          storeTransactionId: String?,
-         requestDate: Date) {
+         requestDate: Date,
+         price: ProductPaidPrice?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -104,6 +108,7 @@ import Foundation
                                                                      store: store,
                                                                      unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                                      billingIssueDetectedAt: billingIssuesDetectedAt)
+        self.price = price
 
         super.init()
     }

@@ -19,6 +19,7 @@
 @available(watchOS, unavailable)
 enum PurchaseDetailItem: Identifiable {
     case productName(String?)
+    case paidPrice(String?)
     case purchaseDate(String)
     case status(String)
 
@@ -39,6 +40,7 @@ enum PurchaseDetailItem: Identifiable {
     var label: String {
         switch self {
         case .productName: return String(localized: "Product name")
+        case .paidPrice: return String(localized: "Paid price")
         case .purchaseDate:  return String(localized: "Original Download Date")
         case .status: return String(localized: "Status")
         case .nextRenewalDate: return String(localized: "Next Renewal")
@@ -58,6 +60,7 @@ enum PurchaseDetailItem: Identifiable {
     var content: String {
         switch self {
         case let .productName(name): return name ?? "-"
+        case let .paidPrice(price): return price ?? "-"
 
         case .purchaseDate(let value),
                 .expiresDate(let value),

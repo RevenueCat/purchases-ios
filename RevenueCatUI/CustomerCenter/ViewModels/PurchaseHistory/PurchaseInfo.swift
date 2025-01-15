@@ -44,6 +44,19 @@ enum PurchaseInfo: Identifiable {
         }
     }
 
+    var paidPrice: String? {
+        formattedPrice(price)
+    }
+
+    private var price: ProductPaidPrice? {
+        switch self {
+        case let .subscription(info):
+            info.price
+        case let .nonSubscription(transaction):
+            nil
+        }
+    }
+
     var willRenew: Bool {
         switch self {
         case let .subscription(info):
@@ -74,6 +87,10 @@ enum PurchaseInfo: Identifiable {
         var items: [PurchaseDetailItem] = []
         switch self {
         case let .subscription(purchaseInfo):
+            if let price = paidPrice {
+                items.append(.paidPrice(price))
+            }
+
             items.append(.status(purchaseInfo.isActive
                                  ? String(localized: "Active")
                                  : String(localized: "Inactive")))
@@ -155,6 +172,21 @@ private extension PurchaseInfo {
 
     func formattedDate(_ date: Date) -> String {
         Self.formatter.string(from: date)
+    }
+
+    func formattedPrice(_ price: ProductPaidPrice?) -> String? {
+        guard let price else {
+            return nil
+        }
+
+        // Not the most performance, but not thread to mutate the currency
+        // todo: cache based on currency
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.maximumFractionDigits = 2
+        formatter.currencyCode = price.currency
+
+        return formatter.string(from: NSNumber(value: price.amount))
     }
 }
 

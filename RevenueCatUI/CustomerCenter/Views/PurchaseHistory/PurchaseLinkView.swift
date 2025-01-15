@@ -34,6 +34,12 @@ struct PurchaseLinkView: View {
 
             Spacer()
 
+            if let price = purchaseInfo.paidPrice {
+                Text(price)
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+            }
+
             Image(systemName: "chevron.forward")
                 .foregroundStyle(.secondary)
         }
