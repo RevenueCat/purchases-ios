@@ -34,7 +34,7 @@ enum IdentityStrings {
 
     case deleting_attributes_none_found
 
-    case invalidating_cached_customer_info
+    case invalidating_http_cache
 
     case switching_user(newUserID: String)
 
@@ -70,8 +70,8 @@ extension IdentityStrings: LogMessage {
             return "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
         case .deleting_attributes_none_found:
             return "Attempt to delete attributes for user, but there were none to delete"
-        case .invalidating_cached_customer_info:
-            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating cache."
+        case .invalidating_http_cache:
+            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating HTTP cache."
         case let .switching_user(newUserID):
             return "Switching to user '\(newUserID)'."
         case let .switching_user_same_app_user_id(newUserID):
