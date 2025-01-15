@@ -116,6 +116,7 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
         expect(self.mockBackend.invokedClearHTTPClientCaches) == true
         expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == false
 
         self.logger.verifyMessageWasLogged(Strings.identity.invalidating_http_cache, level: .info)
     }
