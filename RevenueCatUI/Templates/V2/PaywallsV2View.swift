@@ -95,12 +95,10 @@ struct PaywallsV2View<Content: View>: View {
 
     public var body: some View {
         if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-            DebugErrorView(
-//                "\(errorInfo)\n" +
-                "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
-                "The displayed paywall contains default configuration.\n" +
-                "This error will be hidden in production.",
-                replacement: self.fallbackView
+            // Show fallback paywall and debug error message that
+            // occurred while decoding the paywall
+            self.fallbackViewWithErrorMessage(
+                "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
             )
         } else {
             switch self.paywallStateManager.state {
@@ -127,10 +125,31 @@ struct PaywallsV2View<Content: View>: View {
                 .task {
                     await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
                 }
-            case .failure:
-                self.fallbackView
+            case .failure(let error):
+                // Show fallback paywall and debug error message that
+                // occurred while validating data and view models
+                self.fallbackViewWithErrorMessage(
+                    "Error validating paywall: \(error.localizedDescription)"
+                )
             }
         }
+    }
+
+    @ViewBuilder
+    func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
+        let fullMessage = """
+        \(errorMessage)
+        Validate your paywall is correct in the RevenueCat dashboard, update your SDK, 
+        or contact RevenueCat support.
+        View console logs for full detail.
+        The displayed paywall contains default configuration.
+        This error will be hidden in production.
+        """
+
+        DebugErrorView(
+            fullMessage,
+            replacement: self.fallbackView
+        )
     }
 
     private func createEventData() -> PaywallEvent.Data {

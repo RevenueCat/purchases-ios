@@ -65,56 +65,43 @@ extension PaywallComponent: Codable {
 
     // swiftlint:disable:next cyclomatic_complexity
     public func encode(to encoder: any Encoder) throws {
-        print("JOSH in start of encode")
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
         case .text(let component):
-            print("JOSH trying to encode: text")
             try container.encode(ComponentType.text, forKey: .type)
             try component.encode(to: encoder)
         case .image(let component):
-            print("JOSH trying to encode: image")
             try container.encode(ComponentType.image, forKey: .type)
             try component.encode(to: encoder)
         case .icon(let component):
-            print("JOSH trying to encode: icon")
             try container.encode(ComponentType.icon, forKey: .type)
             try component.encode(to: encoder)
         case .stack(let component):
-            print("JOSH trying to encode: stack")
             try container.encode(ComponentType.stack, forKey: .type)
             try component.encode(to: encoder)
         case .button(let component):
-            print("JOSH trying to encode: button")
             try container.encode(ComponentType.button, forKey: .type)
             try component.encode(to: encoder)
         case .package(let component):
-            print("JOSH trying to encode: package")
             try container.encode(ComponentType.package, forKey: .type)
             try component.encode(to: encoder)
         case .purchaseButton(let component):
-            print("JOSH trying to encode: purchase button")
             try container.encode(ComponentType.purchaseButton, forKey: .type)
             try component.encode(to: encoder)
         case .stickyFooter(let component):
-            print("JOSH trying to encode: sticky footer")
             try container.encode(ComponentType.stickyFooter, forKey: .type)
             try component.encode(to: encoder)
         case .tabs(let component):
-            print("JOSH trying to encode: tabs")
             try container.encode(ComponentType.tabs, forKey: .type)
             try component.encode(to: encoder)
         case .tabControl(let component):
-            print("JOSH trying to encode: tab control")
             try container.encode(ComponentType.tabControl, forKey: .type)
             try component.encode(to: encoder)
         case .tabControlButton(let component):
-            print("JOSH trying to encode: tab button")
             try container.encode(ComponentType.tabControlButton, forKey: .type)
             try component.encode(to: encoder)
         case .tabControlToggle(let component):
-            print("JOSH trying to encode: tab toggle")
             try container.encode(ComponentType.tabControlToggle, forKey: .type)
             try component.encode(to: encoder)
         }

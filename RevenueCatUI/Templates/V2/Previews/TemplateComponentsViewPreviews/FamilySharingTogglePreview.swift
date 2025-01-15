@@ -10,6 +10,7 @@
 //  TestPaywallPreviews.swift
 //
 //  Created by Josh Holtz on 9/26/24.
+// swiftlint:disable file_length
 
 import Foundation
 import RevenueCat
