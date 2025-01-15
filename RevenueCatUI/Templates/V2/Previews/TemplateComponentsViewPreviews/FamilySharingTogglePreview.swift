@@ -10,6 +10,7 @@
 //  TestPaywallPreviews.swift
 //
 //  Created by Josh Holtz on 9/26/24.
+// swiftlint:disable file_length
 
 import Foundation
 import RevenueCat
@@ -387,7 +388,8 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
                                ]),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
-            onDismiss: { }
+            onDismiss: { },
+            fallbackView: EmptyView()
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))

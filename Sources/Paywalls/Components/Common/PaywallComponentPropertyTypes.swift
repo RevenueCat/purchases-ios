@@ -152,7 +152,7 @@ public extension PaywallComponent {
             switch self {
             case .rectangle(let corners):
                 try container.encode(ShapeType.rectangle.rawValue, forKey: .type)
-                try container.encode(corners, forKey: .corners)
+                try container.encodeIfPresent(corners, forKey: .corners)
             case .pill:
                 try container.encode(ShapeType.pill.rawValue, forKey: .type)
             }
@@ -200,7 +200,7 @@ public extension PaywallComponent {
             switch self {
             case .rectangle(let corners):
                 try container.encode(ShapeType.rectangle.rawValue, forKey: .type)
-                try container.encode(corners, forKey: .corners)
+                try container.encodeIfPresent(corners, forKey: .corners)
             case .circle:
                 try container.encode(ShapeType.circle.rawValue, forKey: .type)
             }
@@ -249,14 +249,14 @@ public extension PaywallComponent {
 
             switch self {
             case .rectangle(let corners):
-                try container.encode(MaskShapeType.rectangle.rawValue, forKey: .type)
+                try container.encodeIfPresent(MaskShapeType.rectangle.rawValue, forKey: .type)
                 try container.encode(corners, forKey: .corners)
             case .pill:
                 try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
             case .concave:
-                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+                try container.encode(MaskShapeType.concave.rawValue, forKey: .type)
             case .convex:
-                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+                try container.encode(MaskShapeType.convex.rawValue, forKey: .type)
             }
         }
 

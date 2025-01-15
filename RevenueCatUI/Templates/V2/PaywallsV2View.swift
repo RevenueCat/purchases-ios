@@ -32,7 +32,7 @@ private struct PaywallState {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallsV2View: View {
+struct PaywallsV2View<Content: View>: View {
 
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
@@ -53,16 +53,19 @@ struct PaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
     private let onDismiss: () -> Void
+    private let fallbackView: Content
 
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        fallbackView: Content
     ) {
         let uiConfigProvider = UIConfigProvider(uiConfig: paywallComponents.uiConfig)
 
+        self.fallbackView = fallbackView
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
@@ -91,34 +94,62 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        switch self.paywallStateManager.state {
-        case .success(let paywallState):
-            LoadedPaywallsV2View(
-                paywallState: paywallState,
-                uiConfigProvider: self.uiConfigProvider,
-                onDismiss: self.onDismiss
+        if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+            // Show fallback paywall and debug error message that
+            // occurred while decoding the paywall
+            self.fallbackViewWithErrorMessage(
+                "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
             )
-            .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-            .environmentObject(self.introOfferEligibilityContext)
-            .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear {
-                self.purchaseHandler.trackPaywallImpression(
-                    self.createEventData()
+        } else {
+            switch self.paywallStateManager.state {
+            case .success(let paywallState):
+                LoadedPaywallsV2View(
+                    paywallState: paywallState,
+                    uiConfigProvider: self.uiConfigProvider,
+                    onDismiss: self.onDismiss
+                )
+                .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                .environmentObject(self.introOfferEligibilityContext)
+                .disabled(self.purchaseHandler.actionInProgress)
+                .onAppear {
+                    self.purchaseHandler.trackPaywallImpression(
+                        self.createEventData()
+                    )
+                }
+                .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                .onChangeOf(self.purchaseHandler.purchased) { purchased in
+                    if purchased {
+                        self.onDismiss()
+                    }
+                }
+                .task {
+                    await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                }
+            case .failure(let error):
+                // Show fallback paywall and debug error message that
+                // occurred while validating data and view models
+                self.fallbackViewWithErrorMessage(
+                    "Error validating paywall: \(error.localizedDescription)"
                 )
             }
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
-            .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                if purchased {
-                    self.onDismiss()
-                }
-            }
-            .task {
-                await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
-            }
-        case .failure:
-            // WIP: Need to use fallback paywall
-            Text("Error creating paywall")
         }
+    }
+
+    @ViewBuilder
+    func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
+        let fullMessage = """
+        \(errorMessage)
+        Validate your paywall is correct in the RevenueCat dashboard,
+        update your SDK, or contact RevenueCat support.
+        View console logs for full detail.
+        The displayed paywall contains default configuration.
+        This error will be hidden in production.
+        """
+
+        DebugErrorView(
+            fullMessage,
+            replacement: self.fallbackView
+        )
     }
 
     private func createEventData() -> PaywallEvent.Data {
