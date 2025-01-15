@@ -255,7 +255,8 @@ public struct PaywallView: View {
 
         #if PAYWALL_COMPONENTS
         if let paywallComponents = offering.paywallComponents {
-            // For fallback view
+
+            // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
                                                       locale: self.locale)
             let paywallView = LoadedOfferingPaywallView(
@@ -272,22 +273,29 @@ public struct PaywallView: View {
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
 
-            PaywallsV2View(
-                paywallComponents: paywallComponents,
-                offering: offering,
-                introEligibilityChecker: .default(),
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                onDismiss: {
-                    guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        self.dismiss()
-                        return
-                    }
-                    onRequestedDismissal()
-                },
-                fallbackView: paywallView
-            )
-            .environmentObject(self.introEligibility)
-            .environmentObject(self.purchaseHandler)
+            switch self.mode {
+            // Show the default/fallback paywall for Paywalls V2 footer views
+            case .footer, .condensedFooter:
+                paywallView
+            // Show the actually V2 paywall for full screen
+            case .fullScreen:
+                PaywallsV2View(
+                    paywallComponents: paywallComponents,
+                    offering: offering,
+                    introEligibilityChecker: .default(),
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    onDismiss: {
+                        guard let onRequestedDismissal = self.onRequestedDismissal else {
+                            self.dismiss()
+                            return
+                        }
+                        onRequestedDismissal()
+                    },
+                    fallbackView: paywallView
+                )
+                .environmentObject(self.introEligibility)
+                .environmentObject(self.purchaseHandler)
+            }
         } else {
 
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
