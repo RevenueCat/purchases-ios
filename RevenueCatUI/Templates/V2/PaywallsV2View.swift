@@ -4,7 +4,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs file_length
 
 import RevenueCat
 import SwiftUI
