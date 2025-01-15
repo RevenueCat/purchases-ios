@@ -79,19 +79,33 @@ class StackComponentViewModel {
 
 extension PresentedStackPartial: PresentedPartial {
 
-    static func combine(_ base: Self?, with other: Self?) -> Self {
+    static func combine(
+        _ base: PaywallComponent.PartialStackComponent?,
+        with other: PaywallComponent.PartialStackComponent?
+    ) -> Self {
+
+        let visible = other?.visible ?? base?.visible
+        let dimension = other?.dimension ?? base?.dimension
+        let size = other?.size ?? base?.size
+        let spacing = other?.spacing ?? base?.spacing
+        let backgroundColor = other?.backgroundColor ?? base?.backgroundColor
+        let padding = other?.padding ?? base?.padding
+        let margin = other?.margin ?? base?.margin
+        let shape = other?.shape ?? base?.shape
+        let border = other?.border ?? base?.border
+        let shadow = other?.shadow ?? base?.shadow
 
         return .init(
-            visible: other?.visible ?? base?.visible,
-            dimension: other?.dimension ?? base?.dimension,
-            size: other?.size ?? base?.size,
-            spacing: other?.spacing ?? base?.spacing,
-            backgroundColor: other?.backgroundColor ?? base?.backgroundColor,
-            padding: other?.padding ?? base?.padding,
-            margin: other?.margin ?? base?.margin,
-            shape: other?.shape ?? base?.shape,
-            border: other?.border ?? base?.border,
-            shadow: other?.shadow ?? base?.shadow
+            visible: visible,
+            dimension: dimension,
+            size: size,
+            spacing: spacing,
+            backgroundColor: backgroundColor,
+            padding: padding,
+            margin: margin,
+            shape: shape,
+            border: border,
+            shadow: shadow
         )
     }
 
