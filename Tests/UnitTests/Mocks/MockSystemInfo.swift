@@ -22,6 +22,7 @@ class MockSystemInfo: SystemInfo {
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
+                     responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      clock: ClockType = TestClock()) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
@@ -30,6 +31,7 @@ class MockSystemInfo: SystemInfo {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   storeKitVersion: storeKitVersion,
+                  responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
                   clock: clock)
     }
