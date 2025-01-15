@@ -34,7 +34,7 @@ private enum Template1Preview {
             )
         ),
         fitMode: .fit,
-        maskShape: .concave
+        maskShape: .convex
     )
 
     static let title = PaywallComponent.TextComponent(
