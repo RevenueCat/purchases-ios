@@ -288,7 +288,7 @@ struct ImageComponentView_Previews: PreviewProvider {
         }
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Light - Fill with Convex")
+        .previewDisplayName("Light - Fit with Convex")
 
         // Light - Fit with Concave
         VStack {

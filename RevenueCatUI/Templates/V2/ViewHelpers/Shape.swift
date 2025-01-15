@@ -122,7 +122,7 @@ struct ShapeModifier: ViewModifier {
                 .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2))
         case .convex:
             content
-                .modifier(ConvexMaskModifier(circleHeightPercentage: 0.2))
+                .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2))
         }
     }
 
@@ -216,7 +216,7 @@ private struct ConcaveShape: Shape {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct ConvexMaskModifier: ViewModifier {
 
-    let circleHeightPercentage: CGFloat
+    let curveHeightPercentage: CGFloat
 
     @State
     private var size: CGSize = .zero
@@ -225,21 +225,47 @@ private struct ConvexMaskModifier: ViewModifier {
         content
             .onSizeChange { self.size = $0 }
             .clipShape(
-                Circle()
-                    .scale(self.circleScale)
-                    .offset(y: self.circleOffset)
+                ConvexShape(curveHeightPercentage: curveHeightPercentage, size: size)
             )
     }
+}
 
-    private var circleScale: CGFloat {
-        // Scale the circle such that its convex part matches the height percentage
-        guard size.height > 0 else { return 1.0 }
-        return 2 * (1.0 + self.circleHeightPercentage) * (size.width / size.height)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct ConvexShape: Shape {
+
+    let curveHeightPercentage: CGFloat
+    let size: CGSize
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        // Start at the top-left corner
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+
+        // Top-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+
+        // Bottom-right corner
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - curveHeight))
+
+        // Create the concave curve
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX, y: rect.maxY - curveHeight),
+            control: CGPoint(x: rect.midX, y: rect.maxY + curveHeight)
+        )
+
+        // Bottom-left corner
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - curveHeight))
+
+        path.closeSubpath()
+
+        return path
     }
 
-    private var circleOffset: CGFloat {
-        return (((self.size.height * self.circleScale) - self.size.height) / 2.0 * -1)
-            .rounded(.down)
+    private var curveHeight: CGFloat {
+        // Calculate the curve height as a percentage of the view's height
+        max(0, size.height * curveHeightPercentage)
     }
 
 }
