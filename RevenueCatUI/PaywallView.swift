@@ -259,26 +259,39 @@ public struct PaywallView: View {
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
                                                       locale: self.locale)
-            let paywallView = LoadedOfferingPaywallView(
-                offering: offering,
-                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                paywall: paywall,
-                template: PaywallData.defaultTemplate,
-                mode: self.mode,
-                fonts: fonts,
-                displayCloseButton: self.displayCloseButton,
-                introEligibility: checker,
-                purchaseHandler: purchaseHandler,
-                locale: self.locale,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-            )
 
             switch self.mode {
             // Show the default/fallback paywall for Paywalls V2 footer views
             case .footer, .condensedFooter:
-                paywallView
+                LoadedOfferingPaywallView(
+                    offering: offering,
+                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                    paywall: paywall,
+                    template: PaywallData.defaultTemplate,
+                    mode: self.mode,
+                    fonts: fonts,
+                    displayCloseButton: self.displayCloseButton,
+                    introEligibility: checker,
+                    purchaseHandler: purchaseHandler,
+                    locale: locale,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
             // Show the actually V2 paywall for full screen
             case .fullScreen:
+                let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
+                    offering: offering,
+                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                    paywall: paywall,
+                    template: PaywallData.defaultTemplate,
+                    mode: self.mode,
+                    fonts: fonts,
+                    displayCloseButton: self.displayCloseButton,
+                    introEligibility: checker,
+                    purchaseHandler: purchaseHandler,
+                    locale: self.locale,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+
                 PaywallsV2View(
                     paywallComponents: paywallComponents,
                     offering: offering,
@@ -291,7 +304,7 @@ public struct PaywallView: View {
                         }
                         onRequestedDismissal()
                     },
-                    fallbackView: paywallView
+                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall)
                 )
                 .environmentObject(self.introEligibility)
                 .environmentObject(self.purchaseHandler)
