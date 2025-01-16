@@ -71,7 +71,7 @@ extension IdentityStrings: LogMessage {
         case .deleting_attributes_none_found:
             return "Attempt to delete attributes for user, but there were none to delete"
         case .invalidating_http_cache:
-            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating HTTP cache."
+            return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating ETag cache."
         case let .switching_user(newUserID):
             return "Switching to user '\(newUserID)'."
         case let .switching_user_same_app_user_id(newUserID):
