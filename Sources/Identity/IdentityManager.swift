@@ -183,8 +183,7 @@ private extension IdentityManager {
 
     func invalidateCachesIfNeeded(appUserID: String) {
         if self.shouldInvalidateCaches(for: appUserID) {
-            Logger.info(Strings.identity.invalidating_cached_customer_info)
-            self.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
+            Logger.info(Strings.identity.invalidating_http_cache)
             self.backend.clearHTTPClientCaches()
         }
     }
