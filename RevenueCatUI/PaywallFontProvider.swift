@@ -26,6 +26,8 @@ public protocol PaywallFontProvider {
 
 }
 
+public struct NewPublicStruct {}
+
 /// Default ``PaywallFontProvider`` which uses the system default font
 /// supporting dynamic type.
 open class DefaultPaywallFontProvider: PaywallFontProvider {
