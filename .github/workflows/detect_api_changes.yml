@@ -1,0 +1,62 @@
+name: 👀 Detect public API changes
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      new:
+        description: 'Branch/tag of the new/updated version'
+        required: true
+      old:
+        description: 'Branch/tag of the old/comparison version'
+        required: true
+      
+jobs:
+
+  build:
+    runs-on: macos-14
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Select latest Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.4'
+        
+    - name: 🚚 Fetch repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+       
+    - name: 👾 Define Diff Versions
+      run: |
+        NEW="${{ env.source }}~${{ env.githubRepo }}"
+        
+        # Release branches get compared to the last tag instead of the target branch
+        if [[ '${{ github.head_ref || env.noTargetBranch }}' == release/* ]]
+        then
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            OLD="$LATEST_TAG~${{ env.githubRepo }}"
+        else
+            OLD="${{ env.target }}~${{ env.githubRepo }}"
+        fi
+        
+        # Providing the output to the environment
+        echo "OLD_VERSION=$OLD" >> $GITHUB_ENV
+        echo "NEW_VERSION=$NEW" >> $GITHUB_ENV
+      env:
+        source: '${{ github.event.inputs.new || github.head_ref }}'
+        target: '${{ github.event.inputs.old || github.event.pull_request.base.ref }}'
+        githubRepo: '${{github.server_url}}/${{github.repository}}.git'
+        noTargetBranch: 'no target branch'
+
+    # The github action automatically posts on a PR
+    # and/or outputs the diff to the $GITHUB_STEP_SUMMARY
+    - name: 🔍 Detect Changes
+      uses: Adyen/adyen-swift-public-api-diff@0.7.0
+      with:
+        platform: "iOS"
+        new: ${{ env.NEW_VERSION }}
+        old: ${{ env.OLD_VERSION }}
