@@ -18,7 +18,7 @@ import Foundation
 class CustomerInfoManager {
 
     // todo: remove main actor here
-    typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
+    typealias CustomerInfoCompletion = @Sendable (Result<CustomerInfo, BackendError>) -> Void
 
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
@@ -90,7 +90,7 @@ class CustomerInfoManager {
             }
 
             if let completion = completion {
-                self.operationDispatcher.dispatchOnMainActor {
+                self.operationDispatcher.dispatchAsyncOnMainThread {
                     completion(result)
                 }
             }
@@ -115,7 +115,7 @@ class CustomerInfoManager {
         }
 
         if let completion = completion {
-            self.operationDispatcher.dispatchOnMainActor {
+            self.operationDispatcher.dispatchAsyncOnMainThread {
                 completion(.success(customerInfo))
             }
         }
@@ -129,7 +129,7 @@ class CustomerInfoManager {
     ) {
         switch fetchPolicy {
         case .fromCacheOnly:
-            self.operationDispatcher.dispatchOnMainActor {
+            self.operationDispatcher.dispatchAsyncOnMainThread {
                 completion?(
                     Result(self.cachedCustomerInfo(appUserID: appUserID), .missingCachedCustomerInfo())
                 )
@@ -150,7 +150,7 @@ class CustomerInfoManager {
                 Logger.debug(Strings.customerInfo.vending_cache)
                 if let completion = completion {
                     completionCalled = true
-                    self.operationDispatcher.dispatchOnMainActor {
+                    self.operationDispatcher.dispatchAsyncOnMainThread {
                         completion(.success(infoFromCache))
                     }
                 }
@@ -176,7 +176,7 @@ class CustomerInfoManager {
                 if let infoFromCache = infoFromCache, !isCacheStale {
                     Logger.debug(Strings.customerInfo.vending_cache)
                     if let completion = completion {
-                        self.operationDispatcher.dispatchOnMainActor {
+                        self.operationDispatcher.dispatchAsyncOnMainThread {
                             completion(.success(infoFromCache))
                         }
                     }
