@@ -50,26 +50,28 @@ struct PurchaseHistoryView: View {
                 // todo: add information for non subscriptions
                 // and get product type and other info directly from StoreKit or backend
 
-                Section(header: Text(String(localized: "Other"))) {
-                    ForEach(viewModel.nonSubscriptions) { inactiveSubscription in
-                        Button {
-                            viewModel.selectedPurchase = inactiveSubscription
-                        } label: {
-                            PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                if !viewModel.nonSubscriptions.isEmpty {
+                    Section(header: Text(String(localized: "Other"))) {
+                        ForEach(viewModel.nonSubscriptions) { inactiveSubscription in
+                            Button {
+                                viewModel.selectedPurchase = inactiveSubscription
+                            } label: {
+                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                            }
                         }
                     }
                 }
 
                 // Account Details Section
                 // todo: make these easy to copy
-                Section(header: Text("Account Details")) {
+                Section(header: Text(String(localized: "Account Details"))) {
                     CompatibilityLabeledContent(
-                        String(localized: "Date when app was first purchased:"),
+                        String(localized: "Date when app was first purchased"),
                         content: dateFormatter.string(from: info.originalPurchaseDate!)
                     )
 
                     CompatibilityLabeledContent(
-                        String(localized: "App User ID"),
+                        String(localized: "User ID"),
                         content: info.originalAppUserId
                     )
                     .contextMenu {
@@ -93,14 +95,6 @@ struct PurchaseHistoryView: View {
             Task {
                 await viewModel.didAppear()
             }
-        }
-    }
-
-    private func expirationDescription(for productId: String, in info: CustomerInfo) -> String {
-        if let expirationDate = info.expirationDate(forProductIdentifier: productId) {
-            return "Expires on \(dateFormatter.string(from: expirationDate))"
-        } else {
-            return "No expiration date available"
         }
     }
 

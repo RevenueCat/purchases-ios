@@ -413,13 +413,16 @@ public struct CustomerCenterConfigData {
 
         public let email: String
         public let shouldWarnCustomerToUpdate: Bool
+        public let displayPurchaseHistoryLink: Bool
 
         public init(
             email: String,
-            shouldWarnCustomerToUpdate: Bool
+            shouldWarnCustomerToUpdate: Bool,
+            displayPurchaseHistoryLink: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
+            self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
         }
 
     }
@@ -556,6 +559,7 @@ extension CustomerCenterConfigData.Support {
     init(from response: CustomerCenterConfigResponse.Support) {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
+        self.displayPurchaseHistoryLink = false
     }
 
 }
