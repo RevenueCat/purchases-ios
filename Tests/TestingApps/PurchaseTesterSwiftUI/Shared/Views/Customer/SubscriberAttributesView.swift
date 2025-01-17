@@ -45,6 +45,7 @@ struct SubscriberAttributesView: View {
         case setMixpanelDistinctID
         case setFirebaseAppInstanceID
         case setTenjinAnalyticsInstallationID
+        case setPostHogUserID
     }
     
     let customerInfo: RevenueCat.CustomerInfo
@@ -158,6 +159,8 @@ struct SubscriberAttributesView: View {
                     Purchases.shared.attribution.setFirebaseAppInstanceID(self.otherValue)
                 case .setTenjinAnalyticsInstallationID:
                     Purchases.shared.attribution.setTenjinAnalyticsInstallationID(self.otherValue)
+                case .setPostHogUserID:
+                    Purchases.shared.attribution.setPostHogUserID(self.otherValue)
                 }
             }
         }

@@ -61,6 +61,9 @@ func checkAttributionAPI() {
     attribution.setTenjinAnalyticsInstallationID("")
     attribution.setTenjinAnalyticsInstallationID(nil)
 
+    attribution.setPostHogUserID("")
+    attribution.setPostHogUserID(nil)
+
     attribution.setMediaSource("")
     attribution.setMediaSource(nil)
 

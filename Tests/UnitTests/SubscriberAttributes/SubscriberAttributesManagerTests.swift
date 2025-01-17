@@ -1433,6 +1433,83 @@ class SubscriberAttributesManagerTests: TestCase {
         checkDeviceIdentifiersAreNotSet()
     }
     // endregion
+    // region PostHogUserID
+    func testSetPostHogUserID() throws {
+        let postHogUserID = "postHogUserID"
+
+        self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$posthogUserId"
+        expect(receivedAttribute.value) == postHogUserID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetPostHogUserIDSetsEmptyIfNil() throws {
+        let postHogUserID = "postHogUserID"
+
+        self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+        self.subscriberAttributesManager.setPostHogUserID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$posthogUserId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetPostHogUserIDSkipsIfSameValue() {
+        let postHogUserID = "postHogUserID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(
+            withKey: "$posthogUserId",
+            value: postHogUserID
+        )
+        self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetPostHogUserIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let postHogUserID = "postHogUserID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(
+            withKey: "$posthogUserId",
+            value: "old_id",
+            isSynced: true,
+            setTime: oldSyncTime
+        )
+
+        self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$posthogUserId"
+        expect(receivedAttribute.value) == postHogUserID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetPostHogUserIDDoesNotSetDeviceIdentifiers() {
+        let postHogUserID = "postHogUserID"
+        self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
     // region Media source
     func testSetMediaSource() {
         let mediaSource = "mediaSource"

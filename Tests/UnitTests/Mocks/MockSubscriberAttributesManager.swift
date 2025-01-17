@@ -225,6 +225,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetTenjinAnalyticsInstallationIDParametersList.append((tenjinAnalyticsInstallationID, appUserID))
     }
 
+    var invokedSetPostHogUserID = false
+    var invokedSetPostHogUserIDCount = 0
+    var invokedSetPostHogUserIDParameters: (postHogUserID: String?, appUserID: String?)?
+    var invokedSetPostHogUserIDParametersList = [(postHogUserID: String?, appUserID: String?)]()
+
+    override func setPostHogUserID(_ postHogUserID: String?, appUserID: String) {
+        invokedSetPostHogUserID = true
+        invokedSetPostHogUserIDCount += 1
+        invokedSetPostHogUserIDParameters = (postHogUserID, appUserID)
+        invokedSetPostHogUserIDParametersList.append((postHogUserID, appUserID))
+    }
+
     var invokedSetMediaSource = false
     var invokedSetMediaSourceCount = 0
     var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?
