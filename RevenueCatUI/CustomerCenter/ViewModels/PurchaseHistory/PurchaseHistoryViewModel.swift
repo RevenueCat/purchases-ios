@@ -30,10 +30,12 @@ final class PurchaseHistoryViewModel: ObservableObject {
 
     @Published var customerInfo: CustomerInfo? {
         didSet {
+            isLoading = false
             updateActiveAndNonActiveSubscriptions()
         }
     }
     @Published var errorMessage: String?
+    @Published var isLoading: Bool = true
 
     var activeSubscriptions: [PurchaseInfo] = []
     var inactiveSubscriptions: [PurchaseInfo] = []

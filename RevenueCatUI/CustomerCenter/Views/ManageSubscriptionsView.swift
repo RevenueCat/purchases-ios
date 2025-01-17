@@ -86,11 +86,13 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                NavigationLink {
-                    PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                Button {
+                    viewModel.showPurchases = true
                 } label: {
                     Text(localization.commonLocalizedString(for: .seeAllPurchases))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
+                .buttonStyle(.plain)
 
                 Section {
                     ManageSubscriptionsButtonsView(
@@ -120,7 +122,9 @@ struct ManageSubscriptionsView: View {
                 }
             }
         }
-
+        .compatibleNavigation(isPresented: $viewModel.showPurchases) {
+            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+        }
         .toolbar {
             ToolbarItem(placement: .compatibleTopBarTrailing) {
                 DismissCircleButton()

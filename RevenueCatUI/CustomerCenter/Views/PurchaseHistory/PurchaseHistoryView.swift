@@ -25,7 +25,9 @@ struct PurchaseHistoryView: View {
 
     var body: some View {
         List {
-            if let info = viewModel.customerInfo {
+            if viewModel.isLoading {
+                ProgressView()
+            } else if let info = viewModel.customerInfo {
                 if !info.activeSubscriptions.isEmpty {
                     Section(header: Text(
                         localization.commonLocalizedString(for: .activeSubscriptions)
@@ -36,6 +38,7 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: activeSubscription)
                             }
+                            .buttonStyle(.plain)
                         }
                     }
 
@@ -48,6 +51,7 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
