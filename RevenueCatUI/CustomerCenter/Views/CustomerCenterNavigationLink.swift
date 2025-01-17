@@ -33,7 +33,7 @@ import SwiftUI
 @available(watchOS, unavailable)
 public struct CustomerCenterNavigationLink<Label: View>: View {
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
+    private let customerCenterActionHandler: CustomerCenterActionHandler
     @ViewBuilder private let label: () -> Label
 
     /// Initializes the navigation link with a label view provided by a closure.
@@ -52,7 +52,7 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
     ///
     /// - Parameter label: A closure that returns the view to display as the navigation link’s label.
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: @escaping CustomerCenterActionHandler,
         @ViewBuilder label: @escaping () -> Label) {
             self.customerCenterActionHandler = customerCenterActionHandler
             self.label = label
