@@ -19,13 +19,19 @@ import SwiftUI
 @available(iOS 15.0, *)
 struct PurchaseDetailView: View {
 
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @StateObject var viewModel: PurchaseDetailViewModel
 
     var body: some View {
         List {
             Section {
                 ForEach(viewModel.items) { detailItem in
-                    CompatibilityLabeledContent(detailItem.label, content: detailItem.content)
+                    CompatibilityLabeledContent(
+                        localization.commonLocalizedString(for: detailItem.label),
+                        content: content(detailItem: detailItem)
+                    )
                 }
             } footer: {
                 if let ownership = viewModel.localizedOwnership {
@@ -39,6 +45,37 @@ struct PurchaseDetailView: View {
             Task {
                 await viewModel.didAppear()
             }
+        }
+    }
+
+    func content(detailItem: PurchaseDetailItem) -> String {
+        switch detailItem {
+        case let .productName(name):
+            return name
+
+        case let .paidPrice(price):
+            return price ?? "-"
+
+        case .status(let value),
+                .periodType(let value):
+            return localization.commonLocalizedString(for: value)
+
+        case .purchaseDate(let value),
+                .expiresDate(let value),
+                .nextRenewalDate(let value),
+                .unsubscribeDetectedAt(let value),
+                .billingIssuesDetectedAt(let value),
+                .gracePeriodExpiresDate(let value),
+                .refundedAtDate(let value),
+                .store(let value),
+                .productID(let value),
+                .transactionID(let value):
+            return value
+
+        case .sandbox(let value):
+            return value
+            ? localization.commonLocalizedString(for: .yes)
+            : localization.commonLocalizedString(for: .no)
         }
     }
 }

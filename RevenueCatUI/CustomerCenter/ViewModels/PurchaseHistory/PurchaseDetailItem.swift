@@ -13,22 +13,26 @@
 //  Created by Facundo Menzella on 14/1/25.
 //
 
+import RevenueCat
+
+typealias CSCommonLocalizedString = CustomerCenterConfigData.Localization.CommonLocalizedString
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 enum PurchaseDetailItem: Identifiable {
-    case productName(String?)
+    case productName(String)
     case paidPrice(String?)
     case purchaseDate(String)
-    case status(String)
+    case status(CSCommonLocalizedString)
 
     case nextRenewalDate(String)
     case expiresDate(String)
     case unsubscribeDetectedAt(String)
     case billingIssuesDetectedAt(String)
     case gracePeriodExpiresDate(String)
-    case periodType(String)
+    case periodType(CSCommonLocalizedString)
     case refundedAtDate(String)
 
     // DEBUG only
@@ -37,47 +41,23 @@ enum PurchaseDetailItem: Identifiable {
     case sandbox(Bool)
     case transactionID(String)
 
-    var label: String {
+    var label: CSCommonLocalizedString {
         switch self {
-        case .productName: return String(localized: "Product name")
-        case .paidPrice: return String(localized: "Paid price")
-        case .purchaseDate:  return String(localized: "Original Download Date")
-        case .status: return String(localized: "Status")
-        case .nextRenewalDate: return String(localized: "Next Renewal")
-        case .expiresDate: return String(localized: "Expires")
-        case .unsubscribeDetectedAt: return String(localized: "Unsubscribed At")
-        case .billingIssuesDetectedAt: return String(localized: "Billing Issue Detected At")
-        case .gracePeriodExpiresDate: return String(localized: "Grace Period Expires At")
-        case .periodType: return String(localized: "Period Type")
-        case .refundedAtDate: return String(localized: "Refunded At")
-        case .store: return String(localized: "Store")
-        case .productID: return String(localized: "Product ID")
-        case .sandbox: return String(localized: "Sandbox")
-        case .transactionID: return String(localized: "TransactionID")
-        }
-    }
-
-    var content: String {
-        switch self {
-        case let .productName(name): return name ?? "-"
-        case let .paidPrice(price): return price ?? "-"
-
-        case .purchaseDate(let value),
-                .expiresDate(let value),
-                .nextRenewalDate(let value),
-                .unsubscribeDetectedAt(let value),
-                .billingIssuesDetectedAt(let value),
-                .gracePeriodExpiresDate(let value),
-                .status(let value),
-                .periodType(let value),
-                .refundedAtDate(let value),
-                .store(let value),
-                .productID(let value),
-                .transactionID(let value):
-            return value
-
-        case .sandbox(let value):
-            return value ? "Yes" : "No"
+        case .productName: return .productName
+        case .paidPrice: return .paidPrice
+        case .purchaseDate: return .originalDownloadDate
+        case .status: return .status
+        case .nextRenewalDate: return .nextRenewalDate
+        case .expiresDate: return .expires
+        case .unsubscribeDetectedAt: return .unsubscribedAt
+        case .billingIssuesDetectedAt: return .billingIssueDetectedAt
+        case .gracePeriodExpiresDate: return .gracePeriodExpiresAt
+        case .periodType: return .periodType
+        case .refundedAtDate: return .refundedAt
+        case .store: return .store
+        case .productID: return .productID
+        case .sandbox: return .sandbox
+        case .transactionID: return .transactionID
         }
     }
 
@@ -91,6 +71,6 @@ enum PurchaseDetailItem: Identifiable {
     }
 
     var id: String {
-        label
+        label.rawValue
     }
 }

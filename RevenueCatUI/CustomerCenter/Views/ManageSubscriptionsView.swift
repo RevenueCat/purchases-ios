@@ -89,7 +89,7 @@ struct ManageSubscriptionsView: View {
                 NavigationLink {
                     PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
                 } label: {
-                    Text(String(localized: "See all purchases"))
+                    Text(localization.commonLocalizedString(for: .seeAllPurchases))
                 }
 
                 Section {

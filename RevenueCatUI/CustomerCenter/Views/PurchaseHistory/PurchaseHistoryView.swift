@@ -18,14 +18,18 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseHistoryView: View {
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @StateObject var viewModel: PurchaseHistoryViewModel
 
     var body: some View {
         List {
             if let info = viewModel.customerInfo {
                 if !info.activeSubscriptions.isEmpty {
-                    // todo: add the price from the backend
-                    Section(header: Text(String(localized: "Active Subscriptions"))) {
+                    Section(header: Text(
+                        localization.commonLocalizedString(for: .activeSubscriptions)
+                    )) {
                         ForEach(viewModel.activeSubscriptions) { activeSubscription in
                             Button {
                                 viewModel.selectedPurchase = activeSubscription
@@ -35,7 +39,9 @@ struct PurchaseHistoryView: View {
                         }
                     }
 
-                    Section(header: Text(String(localized: "Expired Subscriptions"))) {
+                    Section(header: Text(
+                        localization.commonLocalizedString(for: .expiredSubscriptions)
+                    )) {
                         ForEach(viewModel.inactiveSubscriptions) { inactiveSubscription in
                             Button {
                                 viewModel.selectedPurchase = inactiveSubscription
@@ -47,11 +53,10 @@ struct PurchaseHistoryView: View {
                 }
 
                 // Non-Subscription Purchases Section
-                // todo: add information for non subscriptions
-                // and get product type and other info directly from StoreKit or backend
-
                 if !viewModel.nonSubscriptions.isEmpty {
-                    Section(header: Text(String(localized: "Other"))) {
+                    Section(header: Text(
+                        localization.commonLocalizedString(for: .otherPurchases)
+                    )) {
                         ForEach(viewModel.nonSubscriptions) { inactiveSubscription in
                             Button {
                                 viewModel.selectedPurchase = inactiveSubscription
@@ -63,22 +68,23 @@ struct PurchaseHistoryView: View {
                 }
 
                 // Account Details Section
-                // todo: make these easy to copy
-                Section(header: Text(String(localized: "Account Details"))) {
+                Section(header: Text(
+                    localization.commonLocalizedString(for: .accountDetails)
+                )) {
                     CompatibilityLabeledContent(
-                        String(localized: "Date when app was first purchased"),
+                        localization.commonLocalizedString(for: .dateWhenAppWasPurchased),
                         content: dateFormatter.string(from: info.originalPurchaseDate!)
                     )
 
                     CompatibilityLabeledContent(
-                        String(localized: "User ID"),
+                        localization.commonLocalizedString(for: .userId),
                         content: info.originalAppUserId
                     )
                     .contextMenu {
                         Button {
                             UIPasteboard.general.string = info.originalAppUserId
                         } label: {
-                            Text("Copy")
+                            Text(localization.commonLocalizedString(for: .copy))
                             Image(systemName: "doc.on.clipboard")
                         }
                     }
@@ -89,7 +95,7 @@ struct PurchaseHistoryView: View {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
         }
-        .navigationTitle(String(localized: "Purchase History"))
+        .navigationTitle(localization.commonLocalizedString(for: .purchaseHistory))
         .listStyle(.insetGrouped)
         .onAppear {
             Task {

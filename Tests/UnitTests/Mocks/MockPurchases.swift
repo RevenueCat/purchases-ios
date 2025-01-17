@@ -431,6 +431,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setPostHogUserID(_ postHogUserID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
         self.unimplemented()
     }

@@ -33,11 +33,9 @@ private enum Template1Preview {
                 heicLowRes: catUrl
             )
         ),
-        fitMode: .fit,
-        colorOverlay: .init(light: .linear(0, [
-            .init(color: "#ffffff", percent: 0),
-            .init(color: "#ffffff00", percent: 40)
-        ]))
+        size: .init(width: .fill, height: .fixed(270)),
+        fitMode: .fill,
+        maskShape: .convex
     )
 
     static let title = PaywallComponent.TextComponent(
@@ -205,7 +203,8 @@ struct Template1Preview_Previews: PreviewProvider {
                             availablePackages: [package]),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
-            onDismiss: { }
+            onDismiss: { },
+            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))

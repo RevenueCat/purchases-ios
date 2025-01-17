@@ -331,6 +331,16 @@ public extension Attribution {
     }
 
     /**
+     * Subscriber attribute associated with the PostHog User ID for the user.
+     * Optional for the RevenueCat PostHog integration.
+     *
+     *- Parameter postHogUserID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setPostHogUserID(_ postHogUserID: String?) {
+        self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles

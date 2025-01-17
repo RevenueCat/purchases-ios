@@ -91,9 +91,9 @@ enum PurchaseInfo: Identifiable {
                 items.append(.paidPrice(price))
             }
 
-            items.append(.status(purchaseInfo.isActive
-                                 ? String(localized: "Active")
-                                 : String(localized: "Inactive")))
+            items.append(.status(
+                purchaseInfo.isActive ? .active : .inactive
+            ))
 
             if let expiresDate = purchaseInfo.expiresDate {
                 if purchaseInfo.willRenew {
@@ -117,10 +117,8 @@ enum PurchaseInfo: Identifiable {
 
             if purchaseInfo.periodType != .normal {
                 items.append(.periodType(
-                    purchaseInfo.periodType == .intro
-                        ? String(localized: "Introductory Price")
-                        : String(localized: "Trial Period"))
-                )
+                    purchaseInfo.periodType == .intro ? .introductoryPrice : .trialPeriod
+                ))
             }
 
             if let refundedAt = purchaseInfo.refundedAt {

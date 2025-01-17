@@ -53,6 +53,7 @@ public struct CustomerCenterConfigData {
 
         public enum CommonLocalizedString: String {
 
+            case copy = "copy"
             case noThanks = "no_thanks"
             case noSubscriptionsFound = "no_subscriptions_found"
             case tryCheckRestore = "try_check_restore"
@@ -95,9 +96,44 @@ public struct CustomerCenterConfigData {
             case youHaveLifetime = "you_have_lifetime"
             case free = "free"
             case never = "never"
+            case seeAllPurchases = "screen_management_see_all_purchases"
+            case purchaseInfoPurchasedOnDate = "purchase_info_purchased_on_date"
+            case purchaseInfoExpiredOnDate = "purchase_info_expired_on_date"
+            case purchaseInfoRenewsOnDate = "purchase_info_renews_on_date"
+            case purchaseInfoExpiresOnDate = "purchase_info_expires_on_date"
+            case activeSubscriptions = "screen_purchase_history_active_subscriptions_title"
+            case expiredSubscriptions = "screen_purchase_history_expired_subscriptions_title"
+            case otherPurchases = "screen_purchase_history_others_title"
+            case accountDetails = "screen_purchase_history_account_details_title"
+            case dateWhenAppWasPurchased = "screen_purchase_history_original_purchase_date"
+            case userId = "screen_purchase_history_user_id"
+            case purchaseHistory = "screen_purchase_history_title"
+            case sharedThroughFamilyMember = "shared_through_family_member"
+            case active = "active"
+            case inactive = "inactive"
+            case introductoryPrice = "introductory_price"
+            case trialPeriod = "trial_period"
+            case productName = "product_name"
+            case paidPrice = "paid_price"
+            case originalDownloadDate = "original_download_date"
+            case status = "status"
+            case nextRenewalDate = "next_renewal"
+            case unsubscribedAt = "unsubscribed_at"
+            case billingIssueDetectedAt = "billing_issue_detected_at"
+            case gracePeriodExpiresAt = "grace_period_expires_at"
+            case periodType = "period_type"
+            case refundedAt = "refunded_at"
+            case store = "store"
+            case productID = "product_id"
+            case sandbox = "sandbox"
+            case transactionID = "transaction_id"
+            case yes = "yes"
+            case no = "no"
 
             var defaultValue: String {
                 switch self {
+                case .copy:
+                    return "Copy"
                 case .noThanks:
                     return "No, thanks"
                 case .noSubscriptionsFound:
@@ -186,13 +222,79 @@ public struct CustomerCenterConfigData {
                     return "Free"
                 case .never:
                     return "Never"
+                case .seeAllPurchases:
+                    return "See All Purchases"
+                case .purchaseInfoPurchasedOnDate:
+                    return "Purchased on {{ date }}"
+                case .purchaseInfoExpiredOnDate:
+                    return "Expired on {{ date }}"
+                case .purchaseInfoRenewsOnDate:
+                    return "Renews on {{ date }}"
+                case .purchaseInfoExpiresOnDate:
+                    return "Expires on {{ date }}"
+                case .activeSubscriptions:
+                    return "Active Subscriptions"
+                case .expiredSubscriptions:
+                    return "Expired Subscriptions"
+                case .otherPurchases:
+                    return "Other"
+                case .accountDetails:
+                    return "Account Details"
+                case .dateWhenAppWasPurchased:
+                    return "Date when app was first purchased"
+                case .userId:
+                    return "User ID"
+                case .purchaseHistory:
+                    return "Purchase History"
+                case .sharedThroughFamilyMember:
+                    return "Shared through family member"
+                case .active:
+                    return "Active"
+                case .inactive:
+                    return "Inactive"
+                case .introductoryPrice:
+                    return "Introductory Price"
+                case .trialPeriod:
+                    return "Trial Period"
+                case .productName:
+                    return "Product Name"
+                case .paidPrice:
+                    return "Paid Price"
+                case .originalDownloadDate:
+                    return "Original Download Date"
+                case .status:
+                    return "Status"
+                case .nextRenewalDate:
+                    return "Next Renewal"
+                case .unsubscribedAt:
+                    return "Unsubscribed At"
+                case .billingIssueDetectedAt:
+                    return "Billing Issue Detected At"
+                case .gracePeriodExpiresAt:
+                    return "Grace Period Expires At"
+                case .periodType:
+                    return "Period Type"
+                case .refundedAt:
+                    return "Refunded At"
+                case .store:
+                    return "Store"
+                case .productID:
+                    return "Product ID"
+                case .sandbox:
+                    return "Sandbox"
+                case .transactionID:
+                    return "Transaction ID"
+                case .yes:
+                    return "Yes"
+                case .no:
+                    return "No"
                 }
             }
 
         }
 
         public func commonLocalizedString(for key: CommonLocalizedString) -> String {
-            return self.localizedStrings[key.rawValue] ?? key.defaultValue
+            localizedStrings[key.rawValue] ?? key.defaultValue
         }
 
     }

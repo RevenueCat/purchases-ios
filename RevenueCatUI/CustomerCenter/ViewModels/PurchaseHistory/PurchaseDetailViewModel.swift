@@ -26,13 +26,16 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class PurchaseDetailViewModel: ObservableObject {
 
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @Published var items: [PurchaseDetailItem] = []
 
     var localizedOwnership: String? {
         switch purchaseInfo {
         case .subscription(let subscriptionInfo):
             subscriptionInfo.ownershipType == .familyShared
-            ? String(localized: "Shared through family member")
+            ? localization.commonLocalizedString(for: .sharedThroughFamilyMember)
             : nil
         case .nonSubscription(let nonSubscriptionTransaction):
             nil
@@ -66,7 +69,7 @@ private extension PurchaseDetailViewModel {
         }
 
         var items: [PurchaseDetailItem] = [
-            .productName(product.localizedTitle)
+            .productName(product.localizedTitle ?? product.productIdentifier)
         ]
 
         items.append(contentsOf: purchaseInfo.purchaseDetailItems)

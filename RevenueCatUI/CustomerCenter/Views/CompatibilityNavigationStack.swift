@@ -48,31 +48,29 @@ extension View {
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean that determines whether the destination is presented.
     ///   - destination: A closure that returns the destination view.
-    func compatibleNavigation<Destination: View>(
+    @ViewBuilder func compatibleNavigation<Destination: View>(
         isPresented: Binding<Bool>,
         @ViewBuilder destination: @escaping () -> Destination
     ) -> some View {
-        Group {
-            if #available(iOS 16.0, *) {
-                self.navigationDestination(isPresented: isPresented) {
-                    destination()
+        if #available(iOS 16.0, *) {
+            self.navigationDestination(isPresented: isPresented, destination: destination)
+        } else {
+            self.overlay(
+                NavigationLink(
+                    destination: destination(),
+                    isActive: isPresented
+                ) {
+                    EmptyView()
                 }
-            } else {
-                self.background(
-                    NavigationLink(
-                        destination: destination(),
-                        isActive: isPresented
-                    ) {
-                        EmptyView()
-                    }
-                )
-            }
+                    .hidden() // Keeps the NavigationLink invisible
+            )
         }
     }
 }
 
 extension View {
-    /// Adds backward-compatible navigation, supporting both iOS 16+ and earlier versions, triggered by an optional binding.
+    /// Adds backward-compatible navigation, supporting both iOS 16+ and earlier versions, triggered by an optional
+    /// binding.
     /// - Parameters:
     ///   - item: A binding to an optional value that triggers navigation when non-nil.
     ///   - destination: A closure that returns the destination view, taking the unwrapped value as a parameter.
@@ -80,40 +78,27 @@ extension View {
         item: Binding<Item?>,
         @ViewBuilder destination: @escaping (Item) -> Destination
     ) -> some View {
-        Group {
-            if #available(iOS 16.0, *) {
-                self.navigationDestination(
-                    isPresented: Binding<Bool>(
-                        get: { item.wrappedValue != nil },
-                        set: { isActive in
-                            if !isActive {
-                                item.wrappedValue = nil
-                            }
-                        }
-                    )
-                ) {
-                    if let unwrappedItem = item.wrappedValue {
-                        destination(unwrappedItem)
-                    }
-                }
-            } else {
-                self.background(
-                    NavigationLink(
-                        destination: item.wrappedValue.map { destination($0) },
-                        isActive: Binding<Bool>(
-                            get: { item.wrappedValue != nil },
-                            set: { isActive in
-                                if !isActive {
-                                    item.wrappedValue = nil
-                                }
-                            }
-                        )
-                    ) {
-                        EmptyView()
-                    }
-                )
+        compatibleNavigation(isPresented: item.isPresent()) {
+            if let unwrapped = item.wrappedValue {
+                destination(unwrapped)
             }
         }
+    }
+}
+
+private extension Binding {
+
+    func isPresent<Wrapped>() -> Binding<Bool> where Value == Wrapped? {
+        Binding<Bool>(
+            get: {
+                self.wrappedValue != nil
+            },
+            set: { isActive in
+                if !isActive {
+                    self.wrappedValue = nil
+                }
+            }
+        )
     }
 }
 

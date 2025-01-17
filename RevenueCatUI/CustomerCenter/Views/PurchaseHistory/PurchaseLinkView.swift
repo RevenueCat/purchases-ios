@@ -18,13 +18,16 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseLinkView: View {
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @State var productName: String?
     let purchaseInfo: PurchaseInfo
 
     var body: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(productName ?? "")
+                Text(productName ?? purchaseInfo.productIdentifier)
                     .font(.headline)
 
                 Text(dateString)
@@ -56,18 +59,26 @@ struct PurchaseLinkView: View {
         }
     }
 
+    private var purchasedOnLocalized: String {
+        localization.commonLocalizedString(for: .purchaseInfoPurchasedOnDate)
+            .replacingOccurrences(of: "{{ date }}", with: formattedDate(purchaseInfo.purchaseDate))
+    }
+
     private var dateString: String {
         guard let expiresDate = purchaseInfo.expiresDate else {
-            return String(localized: "Purchased on \(formattedDate(purchaseInfo.purchaseDate))")
+            return purchasedOnLocalized
         }
 
         guard purchaseInfo.isActive else {
-            return String(localized: "Expired on \(formattedDate(expiresDate))")
+            return localization.commonLocalizedString(for: .purchaseInfoExpiredOnDate)
+                .replacingOccurrences(of: "{{ date }}", with: formattedDate(expiresDate))
         }
 
         return purchaseInfo.willRenew
-            ? String(localized: "Renews on \(formattedDate(expiresDate))")
-            : String(localized: "Expires on \(formattedDate(expiresDate))")
+        ? localization.commonLocalizedString(for: .purchaseInfoRenewsOnDate)
+            .replacingOccurrences(of: "{{ date }}", with: formattedDate(expiresDate))
+        : localization.commonLocalizedString(for: .purchaseInfoExpiresOnDate)
+            .replacingOccurrences(of: "{{ date }}", with: formattedDate(expiresDate))
     }
 
     private func formattedDate(_ date: Date) -> String {
