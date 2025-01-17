@@ -30,6 +30,8 @@ struct ManageSubscriptionsView: View {
     private var localization: CustomerCenterConfigData.Localization
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.supportInformation)
+    private var support
 
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
@@ -86,13 +88,15 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                Button {
-                    viewModel.showPurchases = true
-                } label: {
-                    Text(localization.commonLocalizedString(for: .seeAllPurchases))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                if support?.displayPurchaseHistoryLink == true {
+                    Button {
+                        viewModel.showPurchases = true
+                    } label: {
+                        Text(localization.commonLocalizedString(for: .seeAllPurchases))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
 
                 Section {
                     ManageSubscriptionsButtonsView(
