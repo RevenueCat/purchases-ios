@@ -23,20 +23,16 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct CompatibilityNavigationStack<Content: View>: View {
 
-    @ViewBuilder var content: () -> Content
-
-    init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content
-    }
+    @ViewBuilder var content: Content
 
     var body: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                content()
+                content
             }
         } else {
             NavigationView {
-                content()
+                content
             }
         }
     }
