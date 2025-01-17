@@ -26,7 +26,9 @@ public protocol PaywallFontProvider {
 
 }
 
-public struct NewPublicStruct {}
+public struct NewPublicStruct {
+    public var value: String = "Value"
+}
 
 /// Default ``PaywallFontProvider`` which uses the system default font
 /// supporting dynamic type.
