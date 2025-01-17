@@ -41,7 +41,7 @@ class StoreKitRequestFetcher: NSObject {
     }
 
     // todo: main actor here
-    func fetchReceiptData(_ completion: @MainActor @Sendable @escaping () -> Void) {
+    func fetchReceiptData(_ completion: @Sendable @escaping () -> Void) {
         self.operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshCompletionHandlers.append(completion)
 
