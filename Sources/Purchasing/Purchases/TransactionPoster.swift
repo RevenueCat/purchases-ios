@@ -50,7 +50,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
     // todo: main actor here
     func finishTransactionIfNeeded(
         _ transaction: StoreTransactionType,
-        completion: @escaping @Sendable @MainActor () -> Void
+        completion: @escaping @Sendable () -> Void
     )
 
 }
@@ -125,11 +125,11 @@ final class TransactionPoster: TransactionPosterType {
     // todo: main actor here
     func finishTransactionIfNeeded(
         _ transaction: StoreTransactionType,
-        completion: @escaping @Sendable @MainActor () -> Void
+        completion: @escaping @Sendable () -> Void
     ) {
         @Sendable
         func complete() {
-            self.operationDispatcher.dispatchOnMainActor(completion)
+            self.operationDispatcher.dispatchOnMainThread(completion)
         }
 
         guard self.finishTransactions else {
@@ -332,6 +332,7 @@ extension TransactionPoster {
 
 private extension TransactionPoster {
 
+    // todo: verify actor replacement ehre
     func product(with identifier: String, completion: @escaping (StoreProduct?) -> Void) {
         self.productsManager.products(withIdentifiers: [identifier]) { products in
             self.operationDispatcher.dispatchOnMainThread {

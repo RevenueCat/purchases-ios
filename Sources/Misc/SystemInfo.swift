@@ -149,7 +149,7 @@ class SystemInfo {
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
     /// - Seealso: `isApplicationBackgrounded`
     func isApplicationBackgrounded(completion: @escaping @Sendable (Bool) -> Void) {
-        self.operationDispatcher.dispatchOnMainActor {
+        self.operationDispatcher.dispatchOnMainThread {
             completion(self.isApplicationBackgrounded)
         }
     }
@@ -157,8 +157,7 @@ class SystemInfo {
     /// Synchronous API for callers in `@MainActor`.
     /// - Seealso: `isApplicationBackgrounded(completion:)`
     // todo: main actor here
-    @MainActor
-    var isApplicationBackgrounded: Bool {
+    private var isApplicationBackgrounded: Bool {
     #if os(iOS) || os(tvOS) || VISION_OS
         return self.isApplicationBackgroundedIOSAndTVOS
     #elseif os(macOS)
@@ -276,7 +275,6 @@ private extension SystemInfo {
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
     // todo: main actor here
-    @MainActor
     var isApplicationBackgroundedIOSAndTVOS: Bool {
         if self.isAppExtension {
             return true
@@ -288,7 +286,6 @@ private extension SystemInfo {
 
     #elseif os(watchOS)
 
-    @MainActor
     // todo: main actor here
     var isApplicationBackgroundedWatchOS: Bool {
         var isSingleTargetApplication: Bool {

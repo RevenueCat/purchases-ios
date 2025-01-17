@@ -33,7 +33,7 @@ class OfflineEntitlementsManager {
     // todo: main actor here
     func updateProductsEntitlementsCacheIfStale(
         isAppBackgrounded: Bool,
-        completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
+        completion: (@Sendable (Result<(), Error>) -> Void)?
     ) {
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
               !self.systemInfo.observerMode,
@@ -106,11 +106,11 @@ private extension OfflineEntitlementsManager {
 
     // todo: main actor here
     func dispatchCompletionOnMainThreadIfPossible<Value, Error: Swift.Error>(
-        _ completion: (@MainActor @Sendable (Result<Value, Error>) -> Void)?,
+        _ completion: (@Sendable (Result<Value, Error>) -> Void)?,
         result: Result<Value, Error>
     ) {
         if let completion = completion {
-            self.operationDispatcher.dispatchOnMainActor {
+            self.operationDispatcher.dispatchOnMainThread {
                 completion(result)
             }
         }

@@ -34,10 +34,10 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
  Completion block for ``Purchases/purchase(product:completion:)``
  */
 // todo: main actor here
-public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?,
-                                                                CustomerInfo?,
-                                                                PublicError?,
-                                                                Bool) -> Void
+public typealias PurchaseCompletedBlock = @Sendable (StoreTransaction?,
+                                                     CustomerInfo?,
+                                                     PublicError?,
+                                                     Bool) -> Void
 
 /**
  Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``

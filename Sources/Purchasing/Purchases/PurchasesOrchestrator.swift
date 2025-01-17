@@ -374,8 +374,9 @@ final class PurchasesOrchestrator {
          * we wouldn't be able to notify of the purchase result.
          */
 
+        // todo: verify actor replacement here
         guard let productIdentifier = payment.extractProductIdentifier() else {
-            self.operationDispatcher.dispatchOnMainActor {
+            self.operationDispatcher.dispatchOnMainThread {
                 completion(
                     nil,
                     nil,
@@ -1291,8 +1292,9 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    // todo: verify actor replacement here
     func handleTestProduct(_ completion: @escaping PurchaseCompletedBlock) {
-        self.operationDispatcher.dispatchOnMainActor {
+        self.operationDispatcher.dispatchOnMainThread {
             completion(
                 nil,
                 nil,

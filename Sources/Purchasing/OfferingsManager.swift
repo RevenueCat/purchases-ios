@@ -44,7 +44,7 @@ class OfferingsManager {
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
         fetchCurrent: Bool = false,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         guard !fetchCurrent else {
             self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
@@ -78,7 +78,7 @@ class OfferingsManager {
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy = .default,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
@@ -138,7 +138,7 @@ private extension OfferingsManager {
     func fetchFromNetwork(
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
 
@@ -233,7 +233,7 @@ private extension OfferingsManager {
         with response: OfferingsResponse,
         appUserID: String,
         fetchPolicy: FetchPolicy,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
             switch result {
@@ -262,20 +262,20 @@ private extension OfferingsManager {
     // todo: main actor here
     func handleOfferingsUpdateError(
         _ error: Error,
-        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+        completion: (@Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         Logger.appleError(Strings.offering.fetching_offerings_error(error: error,
                                                                     underlyingError: error.underlyingError))
         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .failure(error))
     }
 
-    // todo: main actor here
+    // todo: verify main actor replacement here
     func dispatchCompletionOnMainThreadIfPossible<T>(
-        _ completion: (@MainActor @Sendable (T) -> Void)?,
+        _ completion: (@Sendable (T) -> Void)?,
         value: T
     ) {
         if let completion = completion {
-            self.operationDispatcher.dispatchOnMainActor {
+            self.operationDispatcher.dispatchOnMainThread {
                 completion(value)
             }
         }

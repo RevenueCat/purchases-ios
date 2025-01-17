@@ -52,7 +52,7 @@ class OperationDispatcher {
         self.mainQueue.async(execute: block)
     }
 
-    // todo: main actor references need OS check
+    // todo: confirm all references to this have OS checks
     func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
         Self.dispatchOnMainActor(block)
     }
