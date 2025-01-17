@@ -43,25 +43,20 @@ public struct CustomerCenterView: View {
 
     private let mode: CustomerCenterPresentationMode
 
-    /// A flag indicating whether the view is already embedded in a navigation stack.
-    ///
-    /// - When set to `true`, the view must be part of an existing `NavigationStack` / `NavigationView`.
-    /// - When set to `false`, the view is not part of an external `NavigationStack` / `NavigationView`
-    /// and uses one internally.
-    private let isEmbeddedInNavigationStack: Bool
+    private let navigationOptions: CustomerCenterNavigationOptions
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    ///   - isEmbeddedInNavigationStack: Whether this view is already inside a `NavigationStack` / `NavigationView`
+    ///   - navigationOptions: Options to control the navigation behavior
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-        isEmbeddedInNavigationStack: Bool = false) {
+        navigationOptions: CustomerCenterNavigationOptions = .default) {
         self.init(
             customerCenterActionHandler: customerCenterActionHandler,
             mode: .default,
-            isEmbeddedInNavigationStack: isEmbeddedInNavigationStack
+            navigationOptions: navigationOptions
         )
     }
 
@@ -70,23 +65,24 @@ public struct CustomerCenterView: View {
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - mode: The presentation mode for the Customer Center
-    ///   - isEmbeddedInNavigationStack: Whether this view is already inside a navigation stack
+    ///   - navigationOptions: Options to control the navigation behavior
     init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         mode: CustomerCenterPresentationMode,
-        isEmbeddedInNavigationStack: Bool = false) {
+        navigationOptions: CustomerCenterNavigationOptions) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.mode = mode
-        self.isEmbeddedInNavigationStack = isEmbeddedInNavigationStack
+        self.navigationOptions = navigationOptions
     }
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,
-        mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
+        mode: CustomerCenterPresentationMode =  .default,
+        navigationOptions: CustomerCenterNavigationOptions = .default) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.mode = mode
-        self.isEmbeddedInNavigationStack = false
+        self.navigationOptions = navigationOptions
     }
 
     // swiftlint:disable:next missing_docs
@@ -103,7 +99,8 @@ public struct CustomerCenterView: View {
                         .environment(\.localization, configuration.localization)
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.supportInformation, configuration.support)
-                        .environment(\.customerCenterPresentationMode, self.mode)
+//                        .environment(\.customerCenterPresentationMode, self.mode)
+                        .environment(\.navigationOptions, self.navigationOptions)
                 } else {
                     TintedProgressView()
                 }
@@ -179,7 +176,7 @@ private extension CustomerCenterView {
                                      for: self.colorScheme)
 
         Group {
-            if isEmbeddedInNavigationStack {
+            if navigationOptions.usesExistingNavigation {
                 destinationContent(configuration: configuration)
             } else {
                 CompatibilityNavigationStack {

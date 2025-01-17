@@ -52,10 +52,13 @@ extension View {
         isPresented: Binding<Bool>,
         @ViewBuilder destination: @escaping () -> Destination
     ) -> some View {
-        if #available(iOS 16.0, *) {
+        @Environment(\.navigationOptions)
+        var navigationOptions
+
+        if #available(iOS 16.0, *), navigationOptions.usesNavigationStack {
             self.navigationDestination(isPresented: isPresented, destination: destination)
         } else {
-            self.overlay(
+            self.background(
                 NavigationLink(
                     destination: destination(),
                     isActive: isPresented

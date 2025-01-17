@@ -12,11 +12,10 @@ import SwiftUI
 
 /// A view that provides a navigation link to `CustomerCenterView` with a customizable label.
 ///
-/// This is the **preferred way** to integrate `CustomerCenterView` into your `NavigationStack`,
-/// ensuring proper navigation behavior by setting `isEmbededInNavigation` to `true`.
+/// This is the **preferred way** to integrate `CustomerCenterView` into your `NavigationView`,
+/// ensuring proper navigation behavior by pre-setting navigation options.
 ///
-///
-/// Example:
+/// ## Example Usage
 /// ```swift
 /// CustomerCenterNavigationLink {
 ///     HStack {
@@ -63,7 +62,11 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
         NavigationLink {
             CustomerCenterView(
                 customerCenterActionHandler: customerCenterActionHandler,
-                isEmbeddedInNavigationStack: true)
+                navigationOptions: CustomerCenterNavigationOptions(
+                    usesNavigationStack: false,
+                    usesExistingNavigation: true,
+                    shouldShowCloseButton: false
+                ))
         } label: {
             label()
         }
