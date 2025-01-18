@@ -30,13 +30,13 @@ jobs:
       with:
         fetch-depth: 0
        
-    - name: "👾 Define Diff Versions"
+    - name: 👾 Define Diff Versions
       run: |
         NEW="${{ env.source }}~${{ env.githubRepo }}"
         
         # Release branches get compared to the last tag instead of the target branch
 
-        IS_RELEASE_BRANCH=""$(${{ env.targetBranchName }}" == release/*)"
+        IS_RELEASE_BRANCH="$(${{ env.targetBranchName }} == release/*)"
         
         if [[ "$IS_RELEASE_BRANCH" ]]
         then
