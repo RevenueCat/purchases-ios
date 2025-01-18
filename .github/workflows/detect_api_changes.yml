@@ -35,6 +35,7 @@ jobs:
         NEW="${{ env.source }}~${{ env.githubRepo }}"
         
         # Release branches get compared to the last tag instead of the target branch
+        # shellcheck disable=SC2193
         if [[ "${{ env.targetBranchName || env.noTargetBranch }}" == release/* ]]
         then
             LATEST_TAG="$(git describe --tags --abbrev=0)"
