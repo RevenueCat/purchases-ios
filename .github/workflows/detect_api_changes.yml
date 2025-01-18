@@ -39,7 +39,7 @@ jobs:
         IS_RELEASE_BRANCH="$(${{ env.targetBranchName }} == release/*)"
         echo "Is release branch: $IS_RELEASE_BRANCH"
         
-        if [[ "$IS_RELEASE_BRANCH" == "true" ]]
+        if [[ "$IS_RELEASE_BRANCH" = "true" ]]
         then
             LATEST_TAG="$(git describe --tags --abbrev=0)"
             OLD="$LATEST_TAG~${{ env.githubRepo }}"
