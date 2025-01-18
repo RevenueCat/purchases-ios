@@ -54,7 +54,7 @@ jobs:
         source: '${{ github.event.inputs.new || github.head_ref }}'
         target: '${{ github.event.inputs.old || github.event.pull_request.base.ref }}'
         githubRepo: '${{github.server_url}}/${{github.repository}}.git'
-        targetBranchName: $(${{ github.head_ref }} || '-')
+        targetBranchName: "$(${{ github.head_ref }} || '-')"
 
     # The github action automatically posts on a PR
     # and/or outputs the diff to the $GITHUB_STEP_SUMMARY
