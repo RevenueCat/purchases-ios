@@ -52,68 +52,11 @@ jobs:
         githubRepo: '${{github.server_url}}/${{github.repository}}.git'
         noTargetBranch: 'no target branch'
 
-    - uses: actions/checkout@v4
+    # The github action automatically posts on a PR
+    # and/or outputs the diff to the $GITHUB_STEP_SUMMARY
+    - name: 🔍 Detect Changes
+      uses: Adyen/adyen-swift-public-api-diff@0.8.0
       with:
-        repository: "Adyen/adyen-swift-public-api-diff"
-        ref: "0.7.0"
-        path: "public-api-diff"
-
-    - name: 👾 Compute binary path
-      run: |
-        cd $GITHUB_WORKSPACE/public-api-diff
-        echo "BINARY_PATH=$(swift build --configuration release --show-bin-path)/public-api-diff" >> $GITHUB_ENV
-
-    - name: 🛻 Restore Binary
-      id: cache-restore
-      uses: actions/cache/restore@v3
-      with:
-        path: ${{ env.BINARY_PATH }}
-        key: build-cache-${{ runner.os }}-0.7.0
-
-    - name: 🧰 Build Swift CLI
-      if: steps.cache-restore.outputs.cache-hit != 'true'
-      run: |
-        cd $GITHUB_WORKSPACE/public-api-diff
-        swift build --configuration release
-
-    - name: 🪪 Verify binary exists
-      run: |
-        if [ ! -f ${{ env.BINARY_PATH }} ]; then 
-          echo "Binary not found at ${{ env.BINARY_PATH }} after build" 
-          exit 1
-        else 
-          echo "Binary found at ${{ env.BINARY_PATH }}" 
-        fi
-
-    - name: 💾 Save Binary
-      if: steps.cache-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v3
-      with:
-        path: ${{ env.BINARY_PATH }}
-        key: build-cache-${{ runner.os }}-0.7.0
-        
-    - name: "🏃 Run Diff"
-      run: |
-        NEW=${{ env.NEW_VERSION }}
-        OLD=${{ env.OLD_VERSION }}
-        PLATFORM=${{ env.platform }}
-        BINARY_PATH=${{ env.BINARY_PATH }}
-                
-        PROJECT_FOLDER=$PWD
-        echo $PROJECT_FOLDER
-        
-        $BINARY_PATH project --new "$NEW" --old "$OLD" --platform "$PLATFORM" --output "$PROJECT_FOLDER/api_comparison.md" --log-output "$PROJECT_FOLDER/logs.txt"
-        
-        cat "$PROJECT_FOLDER/logs.txt"
-        
-        cat "$PROJECT_FOLDER/api_comparison.md" >> $GITHUB_STEP_SUMMARY
-      env:
-        platform: "macOS"
-      
-    - if: ${{ github.event.pull_request.base.ref != '' }}
-      name: 📝 Comment on PR
-      uses: thollander/actions-comment-pull-request@v3
-      with:
-        file-path: "${{ github.workspace }}/api_comparison.md"
-        comment-tag: api_changes
-        mode: recreate
+        platform: "iOS"
+        new: ${{ env.NEW_VERSION }}
+        old: ${{ env.OLD_VERSION }}
