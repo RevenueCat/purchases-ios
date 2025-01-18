@@ -36,7 +36,7 @@ jobs:
         
         # Release branches get compared to the last tag instead of the target branch
 
-        IS_RELEASE_BRANCH="[${{ env.targetBranchName || env.notAReleaseBranch }} = release/*]"
+        IS_RELEASE_BRANCH="$([${{ env.targetBranchName || env.notAReleaseBranch }} = release/*])"
         echo "Is release branch: $IS_RELEASE_BRANCH"
         
         if [[ "$IS_RELEASE_BRANCH" = "true" ]]
