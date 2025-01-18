@@ -35,7 +35,10 @@ jobs:
         NEW="${{ env.source }}~${{ env.githubRepo }}"
         
         # Release branches get compared to the last tag instead of the target branch
-        if [[ "${{ env.targetBranchName }}" == release/* ]]
+
+        IS_RELEASE_BRANCH=""$(${{ env.targetBranchName }}" == release/*)"
+        
+        if [[ "$IS_RELEASE_BRANCH" ]]
         then
             LATEST_TAG="$(git describe --tags --abbrev=0)"
             OLD="$LATEST_TAG~${{ env.githubRepo }}"
