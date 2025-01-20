@@ -127,8 +127,17 @@ public struct CustomerCenterConfigData {
             case productID = "product_id"
             case sandbox = "sandbox"
             case transactionID = "transaction_id"
-            case yes = "yes"
-            case no = "no"
+            case answerYes = "yes"
+            case answerNo = "no"
+            case storeAppStore = "store_app_store"
+            case storeMacAppStore = "store_mac_app_store"
+            case storePlayStore = "store_google_play_store"
+            case storeStripe = "store_stripe"
+            case storePromotional = "store_promotional"
+            case storeAmazon = "store_amazon_store"
+            case storeRCBilling = "store_web"
+            case storeExternal = "store_external"
+            case storeUnknownStore = "store_unknown"
 
             var defaultValue: String {
                 switch self {
@@ -284,10 +293,28 @@ public struct CustomerCenterConfigData {
                     return "Sandbox"
                 case .transactionID:
                     return "Transaction ID"
-                case .yes:
+                case .answerYes:
                     return "Yes"
-                case .no:
+                case .answerNo:
                     return "No"
+                case .storeAppStore:
+                    return "Apple App Store"
+                case .storeMacAppStore:
+                    return "Mac App Store"
+                case .storePlayStore:
+                    return "Google Play Store"
+                case .storeStripe:
+                    return "Stripe"
+                case .storePromotional:
+                    return "Promotional"
+                case .storeAmazon:
+                    return "Amazon Store"
+                case .storeRCBilling:
+                    return "Web"
+                case .storeExternal:
+                    return "External Purchases"
+                case .storeUnknownStore:
+                    return "Unknown Store"
                 }
             }
 
