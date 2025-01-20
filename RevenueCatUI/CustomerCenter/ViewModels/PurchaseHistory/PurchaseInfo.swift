@@ -126,32 +126,13 @@ enum PurchaseInfo: Identifiable {
             }
 
 #if DEBUG
-        items.append(contentsOf: [
-            .store(purchaseInfo.store.localizedName),
-            .productID(purchaseInfo.productIdentifier),
-            .sandbox(purchaseInfo.isSandbox)
-        ])
-
-        if purchaseInfo.isActive {
-            if let originalPurchaseDate = purchaseInfo.originalPurchaseDate,
-               originalPurchaseDate != purchaseInfo.purchaseDate {
-                items.append(.purchaseDate(formattedDate(originalPurchaseDate)))
-            }
-        }
-
-        if let storeTransactionId = purchaseInfo.storeTransactionId {
-            items.append(.transactionID(storeTransactionId))
-        }
+        items.append(contentsOf: debugItems)
 #endif
 
         case let .nonSubscription(transaction):
             items.append(.purchaseDate(formattedDate(transaction.purchaseDate)))
 #if DEBUG
-        items.append(contentsOf: [
-            .store(transaction.store.localizedName),
-            .productID(transaction.productIdentifier),
-            .transactionID(transaction.storeTransactionIdentifier)
-        ])
+        items.append(contentsOf: debugItems)
 #endif
         }
 
@@ -185,6 +166,35 @@ private extension PurchaseInfo {
         formatter.currencyCode = price.currency
 
         return formatter.string(from: NSNumber(value: price.amount))
+    }
+
+    var debugItems: [PurchaseDetailItem] {
+        switch self {
+        case .subscription(let purchaseInfo):
+            var items: [PurchaseDetailItem] = [
+                .store(purchaseInfo.store.localizedName),
+                .productID(purchaseInfo.productIdentifier),
+                .sandbox(purchaseInfo.isSandbox)
+            ]
+            if purchaseInfo.isActive {
+                if let originalPurchaseDate = purchaseInfo.originalPurchaseDate,
+                   originalPurchaseDate != purchaseInfo.purchaseDate {
+                    items.append(.purchaseDate(formattedDate(originalPurchaseDate)))
+                }
+            }
+
+            if let storeTransactionId = purchaseInfo.storeTransactionId {
+                items.append(.transactionID(storeTransactionId))
+            }
+            return items
+
+        case .nonSubscription(let transaction):
+            return [
+                .store(transaction.store.localizedName),
+                .productID(transaction.productIdentifier),
+                .transactionID(transaction.storeTransactionIdentifier)
+            ]
+        }
     }
 }
 
