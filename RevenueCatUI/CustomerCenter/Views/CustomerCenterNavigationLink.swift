@@ -10,9 +10,9 @@ import SwiftUI
 
 #if os(iOS)
 
-/// A view that provides a navigation link to `CustomerCenterView` with a customizable label.
+/// A view that provides a navigation link to ``CustomerCenterView`` with a customizable label.
 ///
-/// This is the **preferred way** to integrate `CustomerCenterView` into your `NavigationView`,
+/// This is the **preferred way** to integrate ``CustomerCenterView`` into your `NavigationView`,
 /// ensuring proper navigation behavior by pre-setting navigation options.
 ///
 /// ## Example Usage
