@@ -49,9 +49,6 @@ extension View {
         usesNavigationStack: Bool,
         @ViewBuilder destination: @escaping () -> Destination
     ) -> some View {
-        @Environment(\.navigationOptions)
-        var navigationOptions
-
         if #available(iOS 16.0, *), usesNavigationStack {
             self.navigationDestination(isPresented: isPresented, destination: destination)
         } else {
