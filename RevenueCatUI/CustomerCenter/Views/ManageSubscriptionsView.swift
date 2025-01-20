@@ -29,6 +29,8 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.supportInformation)
+    private var supportInformation
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -73,7 +75,6 @@ struct ManageSubscriptionsView: View {
     var content: some View {
         ZStack {
             List {
-
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     Section {
                         SubscriptionDetailsView(
@@ -83,6 +84,8 @@ struct ManageSubscriptionsView: View {
                     Section {
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
                                                        loadingPath: self.$viewModel.loadingPath)
+                        
+                        ContactSupportButton(support: supportInformation)
                     } header: {
                         if let subtitle = self.viewModel.screen.subtitle {
                             Text(subtitle)
@@ -158,6 +161,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
             }.preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
@@ -170,6 +174,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
             }.preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
         }

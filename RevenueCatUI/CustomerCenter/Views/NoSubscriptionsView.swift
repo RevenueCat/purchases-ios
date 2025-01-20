@@ -61,6 +61,8 @@ struct NoSubscriptionsView: View {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)
+                
+                ContactSupportButton(support: configuration.support)
             }
 
         }

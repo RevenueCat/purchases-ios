@@ -36,6 +36,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
     @Published
+    private(set) var supportInformation: CustomerCenterConfigData.Support?
+    @Published
     var promotionalOfferData: PromotionalOfferData?
     @Published
     var inAppBrowserURL: IdentifiableURL?

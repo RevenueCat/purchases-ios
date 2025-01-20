@@ -65,11 +65,15 @@ enum URLUtilities {
     }
 
     static func canOpenURL(_ url: URL) -> Bool {
+#if DEBUG
+        return true
+#else
         guard !Self.isAppExtension,
               let application = Self.sharedUIApplication else {
             return false
         }
         return application.canOpenURL(url)
+#endif
     }
 
 }

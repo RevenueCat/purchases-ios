@@ -93,7 +93,7 @@ import RevenueCat
     #if DEBUG
 
     convenience init(
-        purchaseInformation: PurchaseInformation,
+        purchaseInformation: PurchaseInformation?,
         configuration: CustomerCenterConfigData
     ) {
         self.init(customerCenterActionHandler: nil)
