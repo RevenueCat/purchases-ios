@@ -39,7 +39,7 @@ enum PurchaseInfo: Identifiable {
         switch self {
         case let .subscription(info):
             info.isActive
-        case let .nonSubscription(transaction):
+        case .nonSubscription:
             false
         }
     }
@@ -52,7 +52,7 @@ enum PurchaseInfo: Identifiable {
         switch self {
         case let .subscription(info):
             info.price
-        case let .nonSubscription(transaction):
+        case .nonSubscription:
             nil
         }
     }
