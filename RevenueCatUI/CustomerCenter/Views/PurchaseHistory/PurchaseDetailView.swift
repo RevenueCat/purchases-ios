@@ -57,7 +57,8 @@ struct PurchaseDetailView: View {
             return price ?? "-"
 
         case .status(let value),
-                .periodType(let value):
+                .periodType(let value),
+                .store(let value):
             return localization.commonLocalizedString(for: value)
 
         case .purchaseDate(let value),
@@ -67,15 +68,14 @@ struct PurchaseDetailView: View {
                 .billingIssuesDetectedAt(let value),
                 .gracePeriodExpiresDate(let value),
                 .refundedAtDate(let value),
-                .store(let value),
                 .productID(let value),
                 .transactionID(let value):
             return value
 
         case .sandbox(let value):
             return value
-            ? localization.commonLocalizedString(for: .yes)
-            : localization.commonLocalizedString(for: .no)
+            ? localization.commonLocalizedString(for: .answerYes)
+            : localization.commonLocalizedString(for: .answerNo)
         }
     }
 }

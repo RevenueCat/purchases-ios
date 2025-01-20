@@ -964,7 +964,7 @@ public extension Purchases {
     }
 
     func customerInfo() async throws -> CustomerInfo {
-        return try await self.customerInfo(fetchPolicy: .fetchCurrent)
+        return try await self.customerInfo(fetchPolicy: .default)
     }
 
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {

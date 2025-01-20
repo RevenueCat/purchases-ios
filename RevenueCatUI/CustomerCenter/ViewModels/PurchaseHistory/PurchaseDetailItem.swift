@@ -36,7 +36,7 @@ enum PurchaseDetailItem: Identifiable {
     case refundedAtDate(String)
 
     // DEBUG only
-    case store(String)
+    case store(CSCommonLocalizedString)
     case productID(String)
     case sandbox(Bool)
     case transactionID(String)

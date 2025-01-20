@@ -16,17 +16,17 @@ import RevenueCat
 
 extension Store {
 
-    var localizedName: String {
+    var localizedKey: CSCommonLocalizedString {
         switch self {
-        case .appStore: return "Apple App Store"
-        case .macAppStore: return "Mac App Store"
-        case .playStore: return "Google Play Store"
-        case .stripe: return "Stripe"
-        case .promotional: return "Promotional"
-        case .amazon: return "Amazon Store"
-        case .rcBilling: return "Web"
-        case .external: return "External Purchases"
-        case .unknownStore: return "Unknown Store"
+        case .appStore: return .storeAppStore
+        case .macAppStore: return .storeMacAppStore
+        case .playStore: return .storePlayStore
+        case .stripe: return .storeStripe
+        case .promotional: return .storePromotional
+        case .amazon: return .storeAmazon
+        case .rcBilling: return .storeRCBilling
+        case .external: return .storeExternal
+        case .unknownStore: return .storeUnknownStore
         }
     }
 }
