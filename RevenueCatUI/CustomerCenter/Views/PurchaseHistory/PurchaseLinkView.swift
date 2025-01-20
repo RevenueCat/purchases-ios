@@ -61,7 +61,7 @@ struct PurchaseLinkView: View {
 
     private var purchasedOnLocalized: String {
         localization.commonLocalizedString(for: .purchaseInfoPurchasedOnDate)
-            .replacingOccurrences(of: "{{ date }}", with: formattedDate(purchaseInfo.purchaseDate))
+            .replacingOccurrences(of: L10n.date, with: formattedDate(purchaseInfo.purchaseDate))
     }
 
     private var dateString: String {
@@ -71,14 +71,14 @@ struct PurchaseLinkView: View {
 
         guard purchaseInfo.isActive else {
             return localization.commonLocalizedString(for: .purchaseInfoExpiredOnDate)
-                .replacingOccurrences(of: "{{ date }}", with: formattedDate(expiresDate))
+                .replacingOccurrences(of: L10n.date, with: formattedDate(expiresDate))
         }
 
         return purchaseInfo.willRenew
         ? localization.commonLocalizedString(for: .purchaseInfoRenewsOnDate)
-            .replacingOccurrences(of: "{{ date }}", with: formattedDate(expiresDate))
+            .replacingOccurrences(of: L10n.date, with: formattedDate(expiresDate))
         : localization.commonLocalizedString(for: .purchaseInfoExpiresOnDate)
-            .replacingOccurrences(of: "{{ date }}", with: formattedDate(expiresDate))
+            .replacingOccurrences(of: L10n.date, with: formattedDate(expiresDate))
     }
 
     private func formattedDate(_ date: Date) -> String {
@@ -87,6 +87,10 @@ struct PurchaseLinkView: View {
         formatter.timeStyle = .none
         return formatter.string(from: date)
     }
+}
+
+private enum L10n {
+    static let date = "{{ date }}"
 }
 
 #endif

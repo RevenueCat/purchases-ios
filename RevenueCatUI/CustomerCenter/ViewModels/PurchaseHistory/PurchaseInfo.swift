@@ -61,7 +61,7 @@ enum PurchaseInfo: Identifiable {
         switch self {
         case let .subscription(info):
             info.willRenew
-        case let .nonSubscription(transaction):
+        case .nonSubscription:
             false
         }
     }
@@ -76,11 +76,12 @@ enum PurchaseInfo: Identifiable {
     }
 
     var expiresDate: Date? {
-        guard case let .subscription(info) = self else {
-            return nil
+        switch self {
+        case let .subscription(info):
+            info.expiresDate
+        case .nonSubscription:
+            nil
         }
-
-        return info.expiresDate
     }
 
     var purchaseDetailItems: [PurchaseDetailItem] {
@@ -124,17 +125,14 @@ enum PurchaseInfo: Identifiable {
             if let refundedAt = purchaseInfo.refundedAt {
                 items.append(.refundedAtDate(formattedDate(refundedAt)))
             }
-
-#if DEBUG
-        items.append(contentsOf: debugItems)
-#endif
-
         case let .nonSubscription(transaction):
             items.append(.purchaseDate(formattedDate(transaction.purchaseDate)))
+
+        }
+
 #if DEBUG
         items.append(contentsOf: debugItems)
 #endif
-        }
 
         return items
     }

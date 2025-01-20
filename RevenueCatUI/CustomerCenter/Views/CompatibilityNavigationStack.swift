@@ -26,13 +26,11 @@ struct CompatibilityNavigationStack<Content: View>: View {
     @ViewBuilder var content: Content
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
+        var body: some View {
+            if #available(iOS 16.0, *) {
+                NavigationStack(root: content)
+            } else {
+                NavigationView(content: content)
             }
         }
     }
