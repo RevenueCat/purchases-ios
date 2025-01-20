@@ -46,12 +46,13 @@ extension View {
     ///   - destination: A closure that returns the destination view.
     @ViewBuilder func compatibleNavigation<Destination: View>(
         isPresented: Binding<Bool>,
+        usesNavigationStack: Bool,
         @ViewBuilder destination: @escaping () -> Destination
     ) -> some View {
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, *), usesNavigationStack {
             self.navigationDestination(isPresented: isPresented, destination: destination)
         } else {
-            self.overlay(
+            self.background(
                 NavigationLink(
                     destination: destination(),
                     isActive: isPresented
@@ -72,9 +73,10 @@ extension View {
     ///   - destination: A closure that returns the destination view, taking the unwrapped value as a parameter.
     func compatibleNavigation<Item, Destination: View>(
         item: Binding<Item?>,
+        usesNavigationStack: Bool,
         @ViewBuilder destination: @escaping (Item) -> Destination
     ) -> some View {
-        compatibleNavigation(isPresented: item.isPresent()) {
+        compatibleNavigation(isPresented: item.isPresent(), usesNavigationStack: usesNavigationStack) {
             if let unwrapped = item.wrappedValue {
                 destination(unwrapped)
             }
