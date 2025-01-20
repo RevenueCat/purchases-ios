@@ -65,7 +65,17 @@ enum PurchaseDetailItem: Identifiable {
         switch self {
         case .store, .productID, .sandbox, .transactionID:
             return true
-        default:
+        case .productName,
+                .paidPrice,
+                .purchaseDate,
+                .status,
+                .nextRenewalDate,
+                .expiresDate,
+                .unsubscribeDetectedAt,
+                .billingIssuesDetectedAt,
+                .gracePeriodExpiresDate,
+                .periodType,
+                .refundedAtDate:
             return false
         }
     }
