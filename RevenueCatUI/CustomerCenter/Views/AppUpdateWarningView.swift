@@ -42,20 +42,20 @@ struct AppUpdateWarningView: View {
             List {
                 Section {
                     CompatibilityContentUnavailableView(
-                        localization.commonLocalizedString(for: .updateWarningTitle),
+                        localization[.updateWarningTitle],
                         systemImage: "arrow.up.circle.fill",
-                        description: Text(localization.commonLocalizedString(for: .updateWarningDescription))
+                        description: Text(localization[.updateWarningDescription])
                     )
                 }
 
                 Section {
-                    Button(localization.commonLocalizedString(for: .updateWarningUpdate)) {
+                    Button(localization[.updateWarningUpdate]) {
                         onUpdateAppClick()
                     }
                     .buttonStyle(ProminentButtonStyle())
                     .padding(.top, 4)
 
-                    Button(localization.commonLocalizedString(for: .updateWarningIgnore)) {
+                    Button(localization[.updateWarningIgnore]) {
                         onContinueAnywayClick()
                     }
                     .buttonStyle(TextButtonStyle())

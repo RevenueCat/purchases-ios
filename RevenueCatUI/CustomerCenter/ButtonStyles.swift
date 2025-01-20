@@ -69,7 +69,7 @@ struct DismissCircleButton: View {
                 )
             }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(localization.commonLocalizedString(for: .dismiss)))
+        .accessibilityLabel(Text(localization[.dismiss]))
     }
 
 }

@@ -82,11 +82,20 @@ struct ManageSubscriptionsView: View {
         ZStack {
             List {
 
+<<<<<<< Updated upstream
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     Section {
                         SubscriptionDetailsView(
                             purchaseInformation: purchaseInformation,
                             refundRequestStatus: self.viewModel.refundRequestStatus)
+=======
+                if support?.displayPurchaseHistoryLink == true {
+                    Button {
+                        viewModel.showPurchases = true
+                    } label: {
+                        Text(localization[.seeAllPurchases])
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+>>>>>>> Stashed changes
                     }
                     Section {
                         ManageSubscriptionsButtonsView(viewModel: self.viewModel,
@@ -113,6 +122,11 @@ struct ManageSubscriptionsView: View {
                                                        loadingPath: self.$viewModel.loadingPath)
                     }
                 }
+<<<<<<< Updated upstream
+=======
+            } else {
+                let fallbackDescription = localization[.tryCheckRestore]
+>>>>>>> Stashed changes
 
             }
         }

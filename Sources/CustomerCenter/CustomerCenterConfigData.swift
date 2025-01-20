@@ -188,13 +188,15 @@ public struct CustomerCenterConfigData {
                     return "Never"
                 }
             }
+        }
 
+        public subscript(_ key: CommonLocalizedString) -> String {
+            localizedStrings[key.rawValue] ?? key.defaultValue
         }
 
         public func commonLocalizedString(for key: CommonLocalizedString) -> String {
             return self.localizedStrings[key.rawValue] ?? key.defaultValue
         }
-
     }
 
     public struct HelpPath {

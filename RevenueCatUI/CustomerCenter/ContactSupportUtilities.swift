@@ -29,7 +29,7 @@ extension CustomerCenterConfigData.Support {
         }
         let defaultBody =
             """
-            \(localization.commonLocalizedString(for: .defaultBody))
+            \(localization[.defaultBody])
 
             ---------------------------
             \(infoToInclude.map { (key, value) in
@@ -40,7 +40,7 @@ extension CustomerCenterConfigData.Support {
     }
 
     private static func defaultData(_ localization: CustomerCenterConfigData.Localization) -> [(String, String)] {
-        let unknown = localization.commonLocalizedString(for: .unknown)
+        let unknown = localization[.unknown]
         var osVersion = unknown
         var deviceModel = unknown
         #if canImport(UIKit) && !os(watchOS)
