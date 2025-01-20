@@ -27,6 +27,8 @@ struct PurchaseHistoryView: View {
         List {
             if viewModel.isLoading {
                 ProgressView()
+            } else if viewModel.errorMessage != nil {
+                ErrorView()
             } else if let info = viewModel.customerInfo {
                 if !info.activeSubscriptions.isEmpty {
                     Section(header: Text(
