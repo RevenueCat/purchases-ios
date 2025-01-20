@@ -170,7 +170,7 @@ private extension PurchaseInfo {
         switch self {
         case .subscription(let purchaseInfo):
             var items: [PurchaseDetailItem] = [
-                .store(purchaseInfo.store.localizedKey),
+                .store(purchaseInfo.store.localizationKey),
                 .productID(purchaseInfo.productIdentifier),
                 .sandbox(purchaseInfo.isSandbox)
             ]
@@ -188,7 +188,7 @@ private extension PurchaseInfo {
 
         case .nonSubscription(let transaction):
             return [
-                .store(transaction.store.localizedKey),
+                .store(transaction.store.localizationKey),
                 .productID(transaction.productIdentifier),
                 .transactionID(transaction.storeTransactionIdentifier)
             ]

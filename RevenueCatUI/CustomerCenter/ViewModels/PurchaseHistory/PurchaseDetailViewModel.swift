@@ -37,7 +37,7 @@ final class PurchaseDetailViewModel: ObservableObject {
             subscriptionInfo.ownershipType == .familyShared
             ? localization.commonLocalizedString(for: .sharedThroughFamilyMember)
             : nil
-        case .nonSubscription(let nonSubscriptionTransaction):
+        case .nonSubscription:
             nil
         }
     }
@@ -68,13 +68,13 @@ private extension PurchaseDetailViewModel {
             return
         }
 
-        var items: [PurchaseDetailItem] = [
-            .productName(product.localizedTitle ?? product.productIdentifier)
+        await MainActor.run {
+            var items: [PurchaseDetailItem] = [
+            .productName(product.localizedTitle)
         ]
 
         items.append(contentsOf: purchaseInfo.purchaseDetailItems)
 
-        await MainActor.run {
             self.items = items
         }
     }

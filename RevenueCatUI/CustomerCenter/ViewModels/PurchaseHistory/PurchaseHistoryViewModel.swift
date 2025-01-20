@@ -41,6 +41,24 @@ final class PurchaseHistoryViewModel: ObservableObject {
     var inactiveSubscriptions: [PurchaseInfo] = []
     var nonSubscriptions: [PurchaseInfo] = []
 
+    init(
+        selectedPurchase: PurchaseInfo? = nil,
+        customerInfo: CustomerInfo? = nil,
+        errorMessage: String? = nil,
+        isLoading: Bool = true,
+        activeSubscriptions: [PurchaseInfo] = [],
+        inactiveSubscriptions: [PurchaseInfo] = [],
+        nonSubscriptions: [PurchaseInfo] = []
+    ) {
+        self.selectedPurchase = selectedPurchase
+        self.customerInfo = customerInfo
+        self.errorMessage = errorMessage
+        self.isLoading = isLoading
+        self.activeSubscriptions = activeSubscriptions
+        self.inactiveSubscriptions = inactiveSubscriptions
+        self.nonSubscriptions = nonSubscriptions
+    }
+
     func didAppear() async {
         await fetchCustomerInfo()
     }
