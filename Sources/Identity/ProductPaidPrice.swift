@@ -14,7 +14,7 @@
 import Foundation
 
 /// Price paid for the product
-@objc(RCProductPaidPrice) public final class ProductPaidPrice: NSObject {
+@objc(RCProductPaidPrice) public final class ProductPaidPrice: NSObject, Sendable {
 
     /// Currency paid
     @objc public let currency: String
