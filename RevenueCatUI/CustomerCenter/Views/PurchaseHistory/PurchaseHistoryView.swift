@@ -67,6 +67,7 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
