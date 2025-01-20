@@ -33,6 +33,9 @@ struct ManageSubscriptionsView: View {
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
+    @Environment(\.navigationOptions)
+    var navigationOptions
+
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
@@ -55,10 +58,14 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        content.compatibleNavigation(item: $viewModel.feedbackSurveyData) { feedbackSurveyData in
-            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
-                               customerCenterActionHandler: self.customerCenterActionHandler,
-                               isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+        content.compatibleNavigation(
+            item: $viewModel.feedbackSurveyData,
+            usesNavigationStack: navigationOptions.usesExistingNavigation
+        ) { feedbackSurveyData in
+            FeedbackSurveyView(
+                feedbackSurveyData: feedbackSurveyData,
+                customerCenterActionHandler: self.customerCenterActionHandler,
+                isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
         }
     }
 
@@ -124,7 +131,10 @@ struct ManageSubscriptionsView: View {
         }, content: { inAppBrowserURL in
             SafariView(url: inAppBrowserURL.url)
         })
-        .dismissCircleButtonToolbar()
+        .applyIf(self.viewModel.screen.type == .management, apply: {
+            $0.navigationTitle(self.viewModel.screen.title)
+                .navigationBarTitleDisplayMode(.inline)
+         })
     }
 
 }

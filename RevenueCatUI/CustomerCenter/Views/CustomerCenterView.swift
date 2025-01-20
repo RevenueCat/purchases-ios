@@ -99,7 +99,7 @@ public struct CustomerCenterView: View {
                         .environment(\.localization, configuration.localization)
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.supportInformation, configuration.support)
-//                        .environment(\.customerCenterPresentationMode, self.mode)
+                        .environment(\.customerCenterPresentationMode, self.mode)
                         .environment(\.navigationOptions, self.navigationOptions)
                 } else {
                     TintedProgressView()
