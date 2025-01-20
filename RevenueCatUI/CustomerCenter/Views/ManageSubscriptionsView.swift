@@ -88,7 +88,7 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                if support?.displayPurchaseHistoryLink == false {
+                if support?.displayPurchaseHistoryLink == true {
                     Button {
                         viewModel.showPurchases = true
                     } label: {
