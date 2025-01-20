@@ -21,6 +21,9 @@ struct PurchaseHistoryView: View {
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
+    @Environment(\.navigationOptions)
+    private var navigationOptions: CustomerCenterNavigationOptions
+
     @StateObject var viewModel: PurchaseHistoryViewModel
 
     var body: some View {
@@ -98,7 +101,10 @@ struct PurchaseHistoryView: View {
                 }
             }
         }
-        .compatibleNavigation(item: $viewModel.selectedPurchase) {
+        .compatibleNavigation(
+            item: $viewModel.selectedPurchase,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
         }

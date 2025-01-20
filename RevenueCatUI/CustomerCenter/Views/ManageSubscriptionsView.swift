@@ -26,12 +26,17 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.colorScheme)
     private var colorScheme
     @Environment(\.supportInformation)
     private var support
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
+    @Environment(\.navigationOptions)
+    var navigationOptions
 
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
@@ -55,27 +60,14 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            content
-                .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
-                    if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                        FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
-                                           customerCenterActionHandler: self.customerCenterActionHandler,
-                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                    }
-                }
-        } else {
-            content
-                .background(NavigationLink(
-                    destination: self.viewModel.feedbackSurveyData.map { data in
-                        FeedbackSurveyView(feedbackSurveyData: data,
-                                           customerCenterActionHandler: self.customerCenterActionHandler,
-                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                    },
-                    isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
-                ) {
-                    EmptyView()
-                })
+        content.compatibleNavigation(
+            item: $viewModel.feedbackSurveyData,
+            usesNavigationStack: navigationOptions.usesExistingNavigation
+        ) { feedbackSurveyData in
+            FeedbackSurveyView(
+                feedbackSurveyData: feedbackSurveyData,
+                customerCenterActionHandler: self.customerCenterActionHandler,
+                isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
         }
     }
 
@@ -126,14 +118,13 @@ struct ManageSubscriptionsView: View {
                 }
             }
         }
-        .compatibleNavigation(isPresented: $viewModel.showPurchases) {
+        .compatibleNavigation(
+            isPresented: $viewModel.showPurchases,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
             PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
-        }
+        .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(
             item: self.$viewModel.promotionalOfferData,
@@ -157,9 +148,9 @@ struct ManageSubscriptionsView: View {
             SafariView(url: inAppBrowserURL.url)
         })
         .applyIf(self.viewModel.screen.type == .management, apply: {
-            $0.navigationTitle(self.viewModel.screen.title).navigationBarTitleDisplayMode(.inline)
-        })
-
+            $0.navigationTitle(self.viewModel.screen.title)
+                .navigationBarTitleDisplayMode(.inline)
+         })
     }
 
 }

@@ -26,12 +26,15 @@ struct NoSubscriptionsView: View {
 
     let configuration: CustomerCenterConfigData
 
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.colorScheme)
     private var colorScheme
+
     @State
     private var showRestoreAlert: Bool = false
 
@@ -61,11 +64,7 @@ struct NoSubscriptionsView: View {
             }
 
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
-        }
+        .dismissCircleButtonToolbar()
     }
 
 }
