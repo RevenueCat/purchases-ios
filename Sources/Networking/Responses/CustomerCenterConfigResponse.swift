@@ -87,6 +87,7 @@ struct CustomerCenterConfigResponse {
 
                 let id: String
                 let title: String
+                let titleInDefaultLocale: String
                 let promotionalOffer: PromotionalOffer?
 
             }

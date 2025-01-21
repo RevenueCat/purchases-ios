@@ -23,7 +23,13 @@ public enum CustomerCenterAction {
     /// - Parameter refundRequestStatus: The status of the refund request
     case refundRequestCompleted(_ refundRequestStatus: RefundRequestStatus)
     /// An option of the feedback survey has been selected
-    /// - Parameter feedbackSurveyOptionId: The id of the feedback survey option selected
+    /// - Parameter feedbackSurveyOptionId: The id of the selected feedback survey option
     case feedbackSurveyCompleted(_ feedbackSurveyOptionId: String)
+    /// An option of the feedback survey has been selected
+    /// - Parameter feedbackSurveyOptionId: The id of the selected feedback survey option
+    /// - Parameter titleInDefaultLocale: The displayed text of the selected feedback survey
+    /// option in the default locale (English by default)
+    case feedbackSurveyCompletedWithTitleInDefaultLocale(_ feedbackSurveyOptionId: String,
+                                                         _ titleInDefaultLocale: String)
 
 }

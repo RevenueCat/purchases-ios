@@ -309,11 +309,16 @@ public struct CustomerCenterConfigData {
 
                 public let id: String
                 public let title: String
+                public let titleInDefaultLocale: String
                 public let promotionalOffer: PromotionalOffer?
 
-                public init(id: String, title: String, promotionalOffer: PromotionalOffer?) {
+                public init(id: String,
+                            title: String,
+                            titleInDefaultLocale: String,
+                            promotionalOffer: PromotionalOffer?) {
                     self.id = id
                     self.title = title
+                    self.titleInDefaultLocale = titleInDefaultLocale
                     self.promotionalOffer = promotionalOffer
                 }
 
@@ -541,12 +546,12 @@ extension CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option {
     init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option) {
         self.id = response.id
         self.title = response.title
+        self.titleInDefaultLocale = response.titleInDefaultLocale
         if let promotionalOffer = response.promotionalOffer {
             self.promotionalOffer = CustomerCenterConfigData.HelpPath.PromotionalOffer(from: promotionalOffer)
         } else {
             self.promotionalOffer = nil
         }
-
     }
 
 }
