@@ -15,7 +15,7 @@
 #### ✨ New Features
 * feat: Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
 * feat: Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
-* feat: Introduce PurchaseHistory (#4686) via Facundo Menzella (@facumenzella)
+* feat: Introduce PurchaseHistory (disabled for now) (#4686) via Facundo Menzella (@facumenzella)
 * feat: Introduce NavigationOptions for custom navigation (#4682) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
 * fix: dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
