@@ -84,7 +84,7 @@ struct ManageSubscriptionsView: View {
                     Button {
                         viewModel.showPurchases = true
                     } label: {
-                        Text(localization.commonLocalizedString(for: .seeAllPurchases))
+                        Text(localization[.seeAllPurchases])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
@@ -102,7 +102,7 @@ struct ManageSubscriptionsView: View {
                     }
                 }
             } else {
-                let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
+                let fallbackDescription = localization[.tryCheckRestore]
 
                 Section {
                     CompatibilityContentUnavailableView(

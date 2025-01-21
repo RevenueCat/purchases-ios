@@ -60,7 +60,7 @@ struct PurchaseLinkView: View {
     }
 
     private var purchasedOnLocalized: String {
-        localization.commonLocalizedString(for: .purchaseInfoPurchasedOnDate)
+        localization[.purchaseInfoPurchasedOnDate]
             .replacingOccurrences(of: L10n.date, with: formattedDate(purchaseInfo.purchaseDate))
     }
 
@@ -70,14 +70,14 @@ struct PurchaseLinkView: View {
         }
 
         guard purchaseInfo.isActive else {
-            return localization.commonLocalizedString(for: .purchaseInfoExpiredOnDate)
+            return localization[.purchaseInfoExpiredOnDate]
                 .replacingOccurrences(of: L10n.date, with: formattedDate(expiresDate))
         }
 
         return purchaseInfo.willRenew
-        ? localization.commonLocalizedString(for: .purchaseInfoRenewsOnDate)
+        ? localization[.purchaseInfoRenewsOnDate]
             .replacingOccurrences(of: L10n.date, with: formattedDate(expiresDate))
-        : localization.commonLocalizedString(for: .purchaseInfoExpiresOnDate)
+        : localization[.purchaseInfoExpiresOnDate]
             .replacingOccurrences(of: L10n.date, with: formattedDate(expiresDate))
     }
 

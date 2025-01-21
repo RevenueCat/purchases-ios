@@ -43,8 +43,8 @@ struct NoSubscriptionsView: View {
     }
 
     var body: some View {
-        let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
-        let fallbackTitle = localization.commonLocalizedString(for: .noSubscriptionsFound)
+        let fallbackDescription = localization[.tryCheckRestore]
+        let fallbackTitle = localization[.noSubscriptionsFound]
 
         List {
             Section {
@@ -57,7 +57,7 @@ struct NoSubscriptionsView: View {
             }
 
             Section {
-                Button(localization.commonLocalizedString(for: .restorePurchases)) {
+                Button(localization[.restorePurchases]) {
                     showRestoreAlert = true
                 }
                 .restorePurchasesAlert(isPresented: $showRestoreAlert)

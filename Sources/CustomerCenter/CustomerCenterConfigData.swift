@@ -317,13 +317,11 @@ public struct CustomerCenterConfigData {
                     return "Unknown Store"
                 }
             }
-
         }
 
-        public func commonLocalizedString(for key: CommonLocalizedString) -> String {
+        public subscript(_ key: CommonLocalizedString) -> String {
             localizedStrings[key.rawValue] ?? key.defaultValue
         }
-
     }
 
     public struct HelpPath {

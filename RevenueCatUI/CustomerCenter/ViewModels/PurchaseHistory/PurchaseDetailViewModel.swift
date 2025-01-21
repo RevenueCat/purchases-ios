@@ -35,7 +35,7 @@ final class PurchaseDetailViewModel: ObservableObject {
         switch purchaseInfo {
         case .subscription(let subscriptionInfo):
             subscriptionInfo.ownershipType == .familyShared
-            ? localization.commonLocalizedString(for: .sharedThroughFamilyMember)
+            ? localization[.sharedThroughFamilyMember]
             : nil
         case .nonSubscription:
             nil
@@ -74,7 +74,6 @@ private extension PurchaseDetailViewModel {
         ]
 
         items.append(contentsOf: purchaseInfo.purchaseDetailItems)
-
             self.items = items
         }
     }

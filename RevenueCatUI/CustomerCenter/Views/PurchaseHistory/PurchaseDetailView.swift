@@ -29,7 +29,7 @@ struct PurchaseDetailView: View {
             Section {
                 ForEach(viewModel.items) { detailItem in
                     CompatibilityLabeledContent(
-                        localization.commonLocalizedString(for: detailItem.label),
+                        localization[detailItem.label],
                         content: content(detailItem: detailItem)
                     )
                 }
@@ -59,7 +59,7 @@ struct PurchaseDetailView: View {
         case .status(let value),
                 .periodType(let value),
                 .store(let value):
-            return localization.commonLocalizedString(for: value)
+            return localization[value]
 
         case .purchaseDate(let value),
                 .expiresDate(let value),
@@ -74,8 +74,8 @@ struct PurchaseDetailView: View {
 
         case .sandbox(let value):
             return value
-            ? localization.commonLocalizedString(for: .answerYes)
-            : localization.commonLocalizedString(for: .answerNo)
+            ? localization[.answerYes]
+            : localization[.answerNo]
         }
     }
 }

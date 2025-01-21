@@ -35,7 +35,7 @@ struct PurchaseHistoryView: View {
             } else if let info = viewModel.customerInfo {
                 if !info.activeSubscriptions.isEmpty {
                     Section(header: Text(
-                        localization.commonLocalizedString(for: .activeSubscriptions)
+                        localization[.activeSubscriptions]
                     )) {
                         ForEach(viewModel.activeSubscriptions) { activeSubscription in
                             Button {
@@ -48,7 +48,7 @@ struct PurchaseHistoryView: View {
                     }
 
                     Section(header: Text(
-                        localization.commonLocalizedString(for: .expiredSubscriptions)
+                        localization[.expiredSubscriptions]
                     )) {
                         ForEach(viewModel.inactiveSubscriptions) { inactiveSubscription in
                             Button {
@@ -64,7 +64,7 @@ struct PurchaseHistoryView: View {
                 // Non-Subscription Purchases Section
                 if !viewModel.nonSubscriptions.isEmpty {
                     Section(header: Text(
-                        localization.commonLocalizedString(for: .otherPurchases)
+                        localization[.otherPurchases]
                     )) {
                         ForEach(viewModel.nonSubscriptions) { inactiveSubscription in
                             Button {
@@ -79,22 +79,22 @@ struct PurchaseHistoryView: View {
 
                 // Account Details Section
                 Section(header: Text(
-                    localization.commonLocalizedString(for: .accountDetails)
+                    localization[.accountDetails]
                 )) {
                     CompatibilityLabeledContent(
-                        localization.commonLocalizedString(for: .dateWhenAppWasPurchased),
+                        localization[.dateWhenAppWasPurchased],
                         content: dateFormatter.string(from: info.originalPurchaseDate!)
                     )
 
                     CompatibilityLabeledContent(
-                        localization.commonLocalizedString(for: .userId),
+                        localization[.userId],
                         content: info.originalAppUserId
                     )
                     .contextMenu {
                         Button {
                             UIPasteboard.general.string = info.originalAppUserId
                         } label: {
-                            Text(localization.commonLocalizedString(for: .copy))
+                            Text(localization[.copy])
                             Image(systemName: "doc.on.clipboard")
                         }
                     }
@@ -108,7 +108,7 @@ struct PurchaseHistoryView: View {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
         }
-        .navigationTitle(localization.commonLocalizedString(for: .purchaseHistory))
+        .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
         .onAppear {
             Task {

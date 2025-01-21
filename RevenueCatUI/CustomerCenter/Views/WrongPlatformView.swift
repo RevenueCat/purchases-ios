@@ -54,7 +54,7 @@ struct WrongPlatformView: View {
 
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
-        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+        let subject = self.localization[.defaultSubject]
         let body = supportInformation.calculateBody(self.localization)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
@@ -88,7 +88,7 @@ struct WrongPlatformView: View {
                     AsyncButton {
                         openURL(managementURL)
                     } label: {
-                        Text(localization.commonLocalizedString(for: .manageSubscription))
+                        Text(localization[.manageSubscription])
                     }
                 }
             }
@@ -97,7 +97,7 @@ struct WrongPlatformView: View {
                     AsyncButton {
                         openURL(url)
                     } label: {
-                        Text(localization.commonLocalizedString(for: .contactSupport))
+                        Text(localization[.contactSupport])
                     }
                 }
             }

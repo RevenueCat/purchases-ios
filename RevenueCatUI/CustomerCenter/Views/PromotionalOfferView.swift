@@ -82,7 +82,7 @@ struct PromotionalOfferView: View {
                     Button {
                         self.dismissPromotionalOfferView(.declinePromotionalOffer)
                     } label: {
-                        Text(self.localization.commonLocalizedString(for: .noThanks))
+                        Text(self.localization[.noThanks])
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
