@@ -11,18 +11,13 @@
 * Deprecate misnamed purchase(params) function in Obj-C (#4645) via Will Taylor (@fire-at-will)
 
 ## RevenueCatUI SDK
-### ✨ New Features
-* feat: Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
-* feat: Make CustomerCenterActionHandler optional for CustomerCenterNavigationLink (#4678) via Facundo Menzella (@facumenzella)
-* feat: [CustomerCenter] Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
 ### Customer Center
 #### ✨ New Features
-* feat: [CustomerCenter] Introduce PurchaseHistory (#4686) via Facundo Menzella (@facumenzella)
-* feat: [CustomerCenter] Introduce CustomerCenterNavigationLink (#4664) via Facundo Menzella (@facumenzella)
+* feat: Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
+* feat: Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
+* feat: Introduce PurchaseHistory (#4686) via Facundo Menzella (@facumenzella)
+* feat: Introduce NavigationOptions for custom navigation (#4682) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* fix: [CustomerCenter] Introduce NavigationOptions for custom navigation (#4682) via Facundo Menzella (@facumenzella)
-* Revert changes to public Customer Center API (#4681) via Cesar de la Vega (@vegaro)
-* [Customer Center]: fix navigation when embedded in `NavigationStack` (#4622) via Andy Boedo (@aboedo)
 * fix: dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
