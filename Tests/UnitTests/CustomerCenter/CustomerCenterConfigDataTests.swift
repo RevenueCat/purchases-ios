@@ -254,7 +254,7 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(unknownPath?.id) == "unknown_path"
         expect(unknownPath?.title) == "Unknown Path"
 
-        expect(configData.support.email) == nil
+        expect(configData.support.email) == "support@example.com"
         expect(configData.support.shouldWarnCustomerToUpdate) == true
         expect(configData.support.displayPurchaseHistoryLink) == false
     }
