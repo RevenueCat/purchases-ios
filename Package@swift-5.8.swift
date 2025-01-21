@@ -80,7 +80,7 @@ let package = Package(
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
-                        .product(name: "Nimble", package: "nimble")
+                        .product(name: "Nimble", package: "nimble"),
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
