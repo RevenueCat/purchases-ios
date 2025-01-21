@@ -189,7 +189,7 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.support.displayPurchaseHistoryLink) == true
     }
 
-    func testUnknownValuesHandling() throws {
+    func testDefaultValues() throws {
         let jsonString = """
         {
             "customerCenter": {
@@ -228,9 +228,7 @@ class CustomerCenterConfigDataTests: TestCase {
                     "localizedStrings": {}
                 },
                 "support": {
-                    "email": "support@example.com",
-                    "should_warn_customer_to_update": false,
-                    "display_purchase_history_link": true
+                    "email": "support@example.com"
                 }
             },
             "lastPublishedAppVersion": "1.0.0",
@@ -256,7 +254,8 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(unknownPath?.id) == "unknown_path"
         expect(unknownPath?.title) == "Unknown Path"
 
-        expect(configData.support.shouldWarnCustomerToUpdate) == false
-        expect(configData.support.displayPurchaseHistoryLink) == true
+        expect(configData.support.email) == nil
+        expect(configData.support.shouldWarnCustomerToUpdate) == true
+        expect(configData.support.displayPurchaseHistoryLink) == false
     }
 }

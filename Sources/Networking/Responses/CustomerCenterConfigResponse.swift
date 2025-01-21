@@ -151,14 +151,7 @@ extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Equatable {}
-extension CustomerCenterConfigResponse.Support: Codable, Equatable {
-
-    enum CodingKeys: String, CodingKey {
-        case email
-        case shouldWarnCustomerToUpdate = "should_warn_customer_to_update"
-        case displayPurchaseHistoryLink = "display_purchase_history_link"
-    }
-}
+extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
 
 protocol CodableEnumWithUnknownCase: Codable {
 
