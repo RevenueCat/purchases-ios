@@ -108,7 +108,8 @@ class CustomerCenterConfigDataTests: TestCase {
                 localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
                 support: .init(
                     email: "support@example.com",
-                    shouldWarnCustomerToUpdate: false
+                    shouldWarnCustomerToUpdate: false,
+                    displayPurchaseHistoryLink: false
                 )
             ),
             lastPublishedAppVersion: "1.2.3",
