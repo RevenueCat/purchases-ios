@@ -189,6 +189,7 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.support.displayPurchaseHistoryLink) == true
     }
 
+    /// The real json uses `snake_case`. This test should initialise the struct with default values
     func testDefaultValues() throws {
         let jsonString = """
         {
