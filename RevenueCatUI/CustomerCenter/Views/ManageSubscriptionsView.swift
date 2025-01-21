@@ -26,10 +26,17 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.supportInformation)
+    private var support
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
+    @Environment(\.navigationOptions)
+    var navigationOptions
 
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
@@ -53,88 +60,71 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            content
-                .navigationDestination(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
-                    if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
-                        FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
-                                           customerCenterActionHandler: self.customerCenterActionHandler,
-                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                    }
-                }
-        } else {
-            content
-                .background(NavigationLink(
-                    destination: self.viewModel.feedbackSurveyData.map { data in
-                        FeedbackSurveyView(feedbackSurveyData: data,
-                                           customerCenterActionHandler: self.customerCenterActionHandler,
-                                           isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                    },
-                    isActive: .isNotNil(self.$viewModel.feedbackSurveyData)
-                ) {
-                    EmptyView()
-                })
+        content.compatibleNavigation(
+            item: $viewModel.feedbackSurveyData,
+            usesNavigationStack: navigationOptions.usesExistingNavigation
+        ) { feedbackSurveyData in
+            FeedbackSurveyView(
+                feedbackSurveyData: feedbackSurveyData,
+                customerCenterActionHandler: self.customerCenterActionHandler,
+                isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
         }
     }
 
     @ViewBuilder
     var content: some View {
-        ZStack {
-            List {
+        List {
+            if let purchaseInformation = self.viewModel.purchaseInformation {
+                SubscriptionDetailsView(
+                    purchaseInformation: purchaseInformation,
+                    refundRequestStatus: self.viewModel.refundRequestStatus
+                )
 
-<<<<<<< Updated upstream
-                if let purchaseInformation = self.viewModel.purchaseInformation {
-                    Section {
-                        SubscriptionDetailsView(
-                            purchaseInformation: purchaseInformation,
-                            refundRequestStatus: self.viewModel.refundRequestStatus)
-=======
                 if support?.displayPurchaseHistoryLink == true {
                     Button {
                         viewModel.showPurchases = true
                     } label: {
                         Text(localization[.seeAllPurchases])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
->>>>>>> Stashed changes
                     }
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
-                        }
-                    }
-                } else {
-                    let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
+                    .buttonStyle(.plain)
+                }
 
-                    Section {
-                        CompatibilityContentUnavailableView(
-                            self.viewModel.screen.title,
-                            systemImage: "exclamationmark.triangle.fill",
-                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                        )
-                    }
-
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
+                Section {
+                    ManageSubscriptionsButtonsView(
+                        viewModel: self.viewModel,
+                        loadingPath: self.$viewModel.loadingPath
+                    )
+                } header: {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        Text(subtitle)
+                            .textCase(nil)
                     }
                 }
-<<<<<<< Updated upstream
-=======
             } else {
                 let fallbackDescription = localization[.tryCheckRestore]
->>>>>>> Stashed changes
 
+                Section {
+                    CompatibilityContentUnavailableView(
+                        self.viewModel.screen.title,
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
+
+                Section {
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                   loadingPath: self.$viewModel.loadingPath)
+                }
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
+        .compatibleNavigation(
+            isPresented: $viewModel.showPurchases,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
         }
+        .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .sheet(
             item: self.$viewModel.promotionalOfferData,
@@ -158,9 +148,9 @@ struct ManageSubscriptionsView: View {
             SafariView(url: inAppBrowserURL.url)
         })
         .applyIf(self.viewModel.screen.type == .management, apply: {
-            $0.navigationTitle(self.viewModel.screen.title).navigationBarTitleDisplayMode(.inline)
-        })
-
+            $0.navigationTitle(self.viewModel.screen.title)
+                .navigationBarTitleDisplayMode(.inline)
+         })
     }
 
 }

@@ -21,6 +21,16 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct AppUpdateWarningView: View {
+
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     let onUpdateAppClick: () -> Void
     let onContinueAnywayClick: () -> Void
 
@@ -28,13 +38,6 @@ struct AppUpdateWarningView: View {
         self.onUpdateAppClick = onUpdateAppClick
         self.onContinueAnywayClick = onContinueAnywayClick
     }
-
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
-    @Environment(\.appearance)
-    private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.colorScheme)
-    private var colorScheme
 
     @ViewBuilder
     var content: some View {
@@ -63,11 +66,7 @@ struct AppUpdateWarningView: View {
                 .listRowSeparator(.hidden)
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
-        }
+        .dismissCircleButtonToolbar()
     }
 
     var body: some View {

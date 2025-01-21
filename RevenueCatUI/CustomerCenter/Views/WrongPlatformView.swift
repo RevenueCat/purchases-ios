@@ -37,14 +37,18 @@ struct WrongPlatformView: View {
 
     private let screen: CustomerCenterConfigData.Screen?
 
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+
     @Environment(\.colorScheme)
     private var colorScheme
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
+
     @Environment(\.openURL)
     private var openURL
 
@@ -98,11 +102,7 @@ struct WrongPlatformView: View {
                 }
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
-        }
+        .dismissCircleButtonToolbar()
         .applyIf(self.screen?.title != nil, apply: {
             $0.navigationTitle(self.screen!.title).navigationBarTitleDisplayMode(.inline)
         })

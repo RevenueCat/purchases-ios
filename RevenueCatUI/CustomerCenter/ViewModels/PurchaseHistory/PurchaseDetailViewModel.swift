@@ -68,13 +68,12 @@ private extension PurchaseDetailViewModel {
             return
         }
 
-        var items: [PurchaseDetailItem] = [
-            .productName(product.localizedTitle ?? product.productIdentifier)
+        await MainActor.run {
+            var items: [PurchaseDetailItem] = [
+            .productName(product.localizedTitle)
         ]
 
         items.append(contentsOf: purchaseInfo.purchaseDetailItems)
-
-        await MainActor.run {
             self.items = items
         }
     }
