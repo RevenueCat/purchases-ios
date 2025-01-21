@@ -64,8 +64,7 @@ class FeedbackSurveyViewModel: ObservableObject {
         if let customerCenterActionHandler = self.customerCenterActionHandler {
             trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
             customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
-            customerCenterActionHandler(.feedbackSurveyCompletedWithTitleInDefaultLocale(option.id,
-                                                                                         option.titleInDefaultLocale))
+            customerCenterActionHandler(.feedbackSurveyCompletedWithOption(option))
         }
 
         if let promotionalOffer = option.promotionalOffer,
