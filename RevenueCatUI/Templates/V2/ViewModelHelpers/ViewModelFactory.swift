@@ -24,18 +24,23 @@ struct ViewModelFactory {
     func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider
     ) throws -> RootViewModel {
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
+            packageValidator: self.packageValidator,
             localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
             offering: offering
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
+                packageValidator: self.packageValidator,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -51,47 +56,73 @@ struct ViewModelFactory {
         )
     }
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func toViewModel(
         component: PaywallComponent,
         packageValidator: PackageValidator,
         offering: Offering,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
             return .text(
-                try TextComponentViewModel(localizationProvider: localizationProvider, component: component)
+                try TextComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
             )
         case .image(let component):
             return .image(
-                try ImageComponentViewModel(localizationProvider: localizationProvider, component: component)
+                try ImageComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
             )
-        case .spacer(let component):
-            return .spacer(
-                SpacerComponentViewModel(component: component)
+        case .icon(let component):
+            return .icon(
+                try IconComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
             )
         case .stack(let component):
             let viewModels = try component.components.map { component in
-                try self.toViewModel(component: component,
-                                     packageValidator: packageValidator,
-                                     offering: offering,
-                                     localizationProvider: localizationProvider)
+                try self.toViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    offering: offering,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider
+                )
+            }
+
+            let badgeViewModels = try component.badge?.stack.value.components.map { component in
+                try self.toViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    offering: offering,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider
+                )
             }
 
             return .stack(
                 try StackComponentViewModel(component: component,
-                                            viewModels: viewModels)
-            )
-        case .linkButton(let component):
-            return .linkButton(
-                try LinkButtonComponentViewModel(component: component,
-                                                 localizationProvider: localizationProvider)
+                                            viewModels: viewModels,
+                                            badgeViewModels: badgeViewModels ?? [],
+                                            uiConfigProvider: uiConfigProvider,
+                                            localizationProvider: localizationProvider)
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -106,7 +137,9 @@ struct ViewModelFactory {
         case .package(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -124,7 +157,9 @@ struct ViewModelFactory {
         case .purchaseButton(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -134,7 +169,9 @@ struct ViewModelFactory {
         case .stickyFooter(let component):
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
+                packageValidator: packageValidator,
                 localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
@@ -144,12 +181,86 @@ struct ViewModelFactory {
                     stackViewModel: stackViewModel
                 )
             )
+        case .tabs(let component):
+            let controlStackViewModel = try toStackViewModel(
+                component: component.control.stack,
+                packageValidator: packageValidator,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+
+            let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
+                let tabPackageValidator = PackageValidator()
+
+                let stackViewModel = try toStackViewModel(
+                    component: tab.stack,
+                    packageValidator: tabPackageValidator,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+
+                // Merging into entire paywall package validator
+                for (pkg, isSelectedByDefault) in tabPackageValidator.packageInfos {
+                    packageValidator.add(pkg, isSelectedByDefault: isSelectedByDefault)
+                }
+
+                return try .init(
+                    tab: tab,
+                    stackViewModel: stackViewModel,
+                    defaultSelectedPackage: tabPackageValidator.defaultSelectedPackage,
+                    packages: tabPackageValidator.packages,
+                    uiConfigProvider: uiConfigProvider
+                )
+            }
+
+            return .tabs(
+                try TabsComponentViewModel(
+                    component: component,
+                    controlStackViewModel: controlStackViewModel,
+                    tabViewModels: tabViewModels,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControl(let component):
+            return .tabControl(
+                try TabControlComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControlButton(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                packageValidator: packageValidator,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+
+            return .tabControlButton(
+                try TabControlButtonComponentViewModel(
+                    component: component,
+                    stackViewModel: stackViewModel,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
+        case .tabControlToggle(let component):
+            return .tabControlToggle(
+                try TabControlToggleComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider
+                )
+            )
         }
     }
 
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
+        packageValidator: PackageValidator,
         localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
         offering: Offering
     ) throws -> StackComponentViewModel {
         let viewModels = try component.components.map { component in
@@ -157,13 +268,17 @@ struct ViewModelFactory {
                 component: component,
                 packageValidator: packageValidator,
                 offering: offering,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
         }
 
         return try StackComponentViewModel(
             component: component,
-            viewModels: viewModels
+            viewModels: viewModels,
+            badgeViewModels: [],
+            uiConfigProvider: uiConfigProvider,
+            localizationProvider: localizationProvider
         )
     }
 

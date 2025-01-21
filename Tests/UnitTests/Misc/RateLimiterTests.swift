@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RateLimiterRests.swift
+//  RateLimiterTests.swift
 //
 //  Created by Josh Holtz on 2/27/24.
 

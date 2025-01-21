@@ -335,7 +335,7 @@ extension Configuration {
     }
 
     static func validate(apiKey: String) -> APIKeyValidationResult {
-        if apiKey.hasPrefix(Self.applePlatformKeyPrefix) {
+        if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
             return .validApplePlatform
         } else if apiKey.contains("_") {
@@ -355,7 +355,7 @@ extension Configuration {
         }
     }
 
-    private static let applePlatformKeyPrefix: String = "appl_"
+    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
 
 }
 

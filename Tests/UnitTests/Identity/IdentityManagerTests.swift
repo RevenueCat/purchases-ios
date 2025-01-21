@@ -116,10 +116,9 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
         expect(self.mockBackend.invokedClearHTTPClientCaches) == true
         expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
-        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
-        expect(self.mockDeviceCache.invokedClearCustomerInfoCacheParameters?.appUserID) == "nacho"
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == false
 
-        self.logger.verifyMessageWasLogged(Strings.identity.invalidating_cached_customer_info, level: .info)
+        self.logger.verifyMessageWasLogged(Strings.identity.invalidating_http_cache, level: .info)
     }
 
     func testIdentifyingCorrectlyIdentifies() {

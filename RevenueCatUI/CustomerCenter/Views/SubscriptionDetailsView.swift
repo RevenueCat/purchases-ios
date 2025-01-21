@@ -41,7 +41,7 @@ struct SubscriptionDetailsView: View {
                 if let durationTitle = purchaseInformation.durationTitle {
                     IconLabelView(
                         iconName: "coloncurrencysign.arrow.circlepath",
-                        label: localization.commonLocalizedString(for: .billingCycle),
+                        label: localization[.billingCycle],
                         value: durationTitle
                     )
                 }
@@ -49,7 +49,7 @@ struct SubscriptionDetailsView: View {
                 let priceValue: String? = {
                     switch purchaseInformation.price {
                     case .free:
-                        return localization.commonLocalizedString(for: .free)
+                        return localization[.free]
                     case .paid(let localizedPrice):
                         return localizedPrice
                     case .unknown:
@@ -60,7 +60,7 @@ struct SubscriptionDetailsView: View {
                 if let price = priceValue {
                     IconLabelView(
                         iconName: "coloncurrencysign",
-                        label: localization.commonLocalizedString(for: .currentPrice),
+                        label: localization[.currentPrice],
                         value: price
                     )
                 }
@@ -71,7 +71,7 @@ struct SubscriptionDetailsView: View {
                         IconLabelView(
                             iconName: "calendar",
                             label: label(for: expirationOrRenewal),
-                            value: localization.commonLocalizedString(for: .never)
+                            value: localization[.never]
                         )
                     case .date(let value):
                         IconLabelView(
@@ -86,7 +86,7 @@ struct SubscriptionDetailsView: View {
                    let refundStatusMessage = refundStatusMessage(for: refundRequestStatus) {
                     IconLabelView(
                         iconName: "arrowshape.turn.up.backward",
-                        label: localization.commonLocalizedString(for: .refundStatus),
+                        label: localization[.refundStatus],
                         value: refundStatusMessage
                     )
                 }
@@ -98,9 +98,9 @@ struct SubscriptionDetailsView: View {
     private func refundStatusMessage(for status: RefundRequestStatus) -> String? {
         switch status {
         case .error:
-            return localization.commonLocalizedString(for: .refundErrorGeneric)
+            return localization[.refundErrorGeneric]
         case .success:
-            return localization.commonLocalizedString(for: .refundGranted)
+            return localization[.refundGranted]
         case .userCancelled:
             return nil
         @unknown default:
@@ -111,11 +111,11 @@ struct SubscriptionDetailsView: View {
     private func label(for expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal) -> String {
         switch expirationOrRenewal.label {
         case .nextBillingDate:
-            return localization.commonLocalizedString(for: .nextBillingDate)
+            return localization[.nextBillingDate]
         case .expires:
-            return localization.commonLocalizedString(for: .expires)
+            return localization[.expires]
         case .expired:
-            return localization.commonLocalizedString(for: .expired)
+            return localization[.expired]
         }
     }
 }
@@ -148,23 +148,23 @@ struct SubscriptionDetailsHeader: View {
                                             localization: CustomerCenterConfigData.Localization) -> String {
         switch purchaseInformation.explanation {
         case .promotional:
-            return localization.commonLocalizedString(for: .youHavePromo)
+            return localization[.youHavePromo]
         case .earliestRenewal:
-            return localization.commonLocalizedString(for: .subEarliestRenewal)
+            return localization[.subEarliestRenewal]
         case .earliestExpiration:
-            return localization.commonLocalizedString(for: .subEarliestExpiration)
+            return localization[.subEarliestExpiration]
         case .expired:
-            return localization.commonLocalizedString(for: .subExpired)
+            return localization[.subExpired]
         case .lifetime:
-            return localization.commonLocalizedString(for: .youHaveLifetime)
+            return localization[.youHaveLifetime]
         case .google:
-            return localization.commonLocalizedString(for: .googleSubscriptionManage)
+            return localization[.googleSubscriptionManage]
         case .web:
-            return localization.commonLocalizedString(for: .webSubscriptionManage)
+            return localization[.webSubscriptionManage]
         case .otherStorePurchase:
-            return localization.commonLocalizedString(for: .pleaseContactSupportToManage)
+            return localization[.pleaseContactSupportToManage]
         case .amazon:
-            return localization.commonLocalizedString(for: .amazonSubscriptionManage)
+            return localization[.amazonSubscriptionManage]
         }
     }
 }

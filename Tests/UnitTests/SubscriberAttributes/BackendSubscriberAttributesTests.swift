@@ -52,7 +52,8 @@ class BackendSubscriberAttributesTests: TestCase {
         platformInfo: .init(flavor: "Unity", version: "2.3.3"),
         finishTransactions: true,
         storefrontProvider: MockStorefrontProvider(),
-        storeKitVersion: .versionForTests
+        storeKitVersion: .versionForTests,
+        responseVerificationMode: .disabled
     )
 
     override func setUpWithError() throws {

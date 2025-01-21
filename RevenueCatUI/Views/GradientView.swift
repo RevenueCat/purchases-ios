@@ -102,8 +102,9 @@ struct GradientView_Previews: PreviewProvider {
 private extension UnitPoint {
 
     init(angle: Angle) {
-        // Convert the angle to radians
-        let radians = angle.radians
+        // Convert the angle to radians and negate to make clockwise
+        // Subtract π/2 (90 degrees) to place an angle of 0 degrees at the top
+        let radians = -angle.radians - (.pi / 2)
 
         // Calculate the normalized x and y positions
         let xPosition = cos(radians)

@@ -207,6 +207,13 @@ public extension StoreProduct {
         return self.price as NSDecimalNumber
     }
 
+    /// Calculates the price of this subscription product per day.
+    /// - Returns: `nil` if the product is not a subscription.
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var pricePerDay: NSDecimalNumber? {
+        return self.subscriptionPeriod?.pricePerDay(withTotalPrice: self.price) as NSDecimalNumber?
+    }
+
     /// Calculates the price of this subscription product per week.
     /// - Returns: `nil` if the product is not a subscription.
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
@@ -233,6 +240,16 @@ public extension StoreProduct {
     @objc var localizedIntroductoryPriceString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return nil }
         return self.formattedString(for: self.introductoryDiscount?.priceDecimalNumber)
+    }
+
+    /// The formatted price per week using ``StoreProduct/priceFormatter``.
+    /// ### Related Symbols
+    /// - ``pricePerWeek``
+    /// - ``localizedPricePerMonth``
+    /// - ``localizedPricePerYear``
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var localizedPricePerDay: String? {
+        return self.formattedString(for: self.pricePerDay)
     }
 
     /// The formatted price per week using ``StoreProduct/priceFormatter``.

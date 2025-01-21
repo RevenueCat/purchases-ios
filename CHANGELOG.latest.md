@@ -1,11 +1,11 @@
-## RevenueCatUI SDK
-### Paywallv2
-#### 🐞 Bugfixes
-* [Paywalls V2] Fix current offering and sticky footer (#4617) via Josh Holtz (@joshdholtz)
-### Customer Center
-#### 🐞 Bugfixes
-* Use SK2 RenewalInfo to get renewal prices & currency (#4608) via Will Taylor (@fire-at-will)
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [EXTERNAL] Lock RateLimiter.shouldProceed() entirely to avoid race conditions (#4635) via @nguyenhuy (#4637) via JayShortway (@JayShortway)
 
 ### 🔄 Other Changes
-* Add Comment to StoreKit2ObserverModePurchaseDetectorTests (#4614) via Will Taylor (@fire-at-will)
-* Fixing text, image, and footer render issues (#4607) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Implement V2 variables and functions (#4633) via Josh Holtz (@joshdholtz)
+* [Paywalls] Fix PaywallTester build (#4636) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix gradient orientation by shifting initial position by 90º and making it rotate clockwise (#4634) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Add support for alias solid hex colors (not gradients) (#4632) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Support custom fonts with UIConfig (#4631) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Add UIConfig to OfferingsResponse (#4628) via Josh Holtz (@joshdholtz)

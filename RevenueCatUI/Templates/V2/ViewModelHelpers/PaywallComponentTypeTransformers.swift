@@ -18,8 +18,8 @@ import SwiftUI
 
 extension PaywallComponent.FontSize {
 
-    var font: Font {
-        return Font(self.uiFont)
+    func makeFont(familyName: String?) -> Font {
+        return Font(self.makeUIFont(familyName: familyName))
     }
 
     private var textStyle: UIFont.TextStyle {
@@ -36,7 +36,8 @@ extension PaywallComponent.FontSize {
         }
     }
 
-    private var uiFont: UIFont {
+    // swiftlint:disable cyclomatic_complexity
+    private func makeUIFont(familyName: String?) -> UIFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -51,8 +52,20 @@ extension PaywallComponent.FontSize {
         case .bodyS: fontSize = 13
         }
 
-        // Create a UIFont and apply dynamic type scaling
-        let baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        // Create the base font, with fallback to the system font
+        let baseFont: UIFont
+        if let familyName = familyName {
+            if let customFont = UIFont(name: familyName, size: fontSize) {
+                baseFont = customFont
+            } else {
+                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            }
+        } else {
+            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        }
+
+        // Apply dynamic type scaling
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
     }
 
@@ -207,7 +220,10 @@ extension PaywallComponent.FlexDistribution {
 
 extension PaywallComponent.Padding {
     var edgeInsets: EdgeInsets {
-            EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
+            EdgeInsets(top: top ?? 0,
+                       leading: leading ?? 0,
+                       bottom: bottom ?? 0,
+                       trailing: trailing ?? 0)
         }
 
 }
@@ -223,15 +239,12 @@ extension PaywallComponent.FitMode {
     }
 }
 
-extension PaywallComponent.ColorInfo {
+extension DisplayableColorInfo {
 
     func toColor(fallback: Color) -> Color {
         switch self {
         case .hex(let hex):
             return hex.toColor(fallback: fallback)
-        case .alias:
-            // WIP: Need to implement this when we actually have alias implemented
-            return fallback
         case .linear, .radial:
             return fallback
         }
@@ -239,7 +252,7 @@ extension PaywallComponent.ColorInfo {
 
     func toGradient() -> Gradient {
         switch self {
-        case .hex, .alias:
+        case .hex:
             return Gradient(colors: [.clear])
         case .linear(_, let points), .radial(let points):
             let stops = points.map { point in
@@ -296,7 +309,7 @@ extension PaywallComponent.ColorHex {
 
 }
 
-extension PaywallComponent.ColorScheme {
+extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func toDynamicColor() -> Color {
@@ -319,7 +332,7 @@ extension PaywallComponent.ColorScheme {
         })
     }
 
-    func effectiveColor(for colorScheme: ColorScheme) -> PaywallComponent.ColorInfo {
+    func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
         switch colorScheme {
         case .light:
             return light

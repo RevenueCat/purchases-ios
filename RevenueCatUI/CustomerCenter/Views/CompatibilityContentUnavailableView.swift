@@ -38,18 +38,11 @@ struct CompatibilityContentUnavailableView: View {
 
         if #available(iOS 17.0, *) {
             #if swift(>=5.9)
-            if let description {
-                ContentUnavailableView(
-                    title,
-                    systemImage: systemImage,
-                    description: description
-                )
-            } else {
-                ContentUnavailableView(
-                    title,
-                    systemImage: systemImage
-                )
+            ContentUnavailableView {
+                Label { titleView }
+                icon: { iconView }
             }
+            description: { description }
 
             #else
                 // In Xcode 14, any references to ContentUnavailableView would fail to compile since that entity
@@ -60,16 +53,8 @@ struct CompatibilityContentUnavailableView: View {
             #endif
         } else {
             VStack {
-                Image(systemName: systemImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 48, height: 48)
-                    .foregroundStyle(.secondary)
-                    .padding()
-
-                Text(title)
-                    .font(.title2)
-                    .bold()
+                iconView
+                titleView
 
                 if let description {
                     description
@@ -79,6 +64,22 @@ struct CompatibilityContentUnavailableView: View {
             }.frame(maxHeight: .infinity)
         }
 
+    }
+
+    private var titleView: some View {
+        Text(title)
+            .font(.title2)
+            .bold()
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var iconView: some View {
+        Image(systemName: systemImage)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 48, height: 48)
+            .foregroundStyle(.secondary)
+            .padding()
     }
 }
 

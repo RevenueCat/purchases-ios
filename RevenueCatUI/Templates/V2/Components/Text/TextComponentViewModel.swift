@@ -20,13 +20,19 @@ import SwiftUI
 class TextComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
+    let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.TextComponent
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
-    init(localizationProvider: LocalizationProvider, component: PaywallComponent.TextComponent) throws {
+    init(
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider,
+        component: PaywallComponent.TextComponent
+    ) throws {
         self.localizationProvider = localizationProvider
+        self.uiConfigProvider = uiConfigProvider
         self.component = component
         self.text = try localizationProvider.localizedStrings.string(key: component.text)
 
@@ -51,17 +57,20 @@ class TextComponentViewModel {
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
-
         let text = localizedPartial?.text ?? self.text
 
+        let fontFamily = self.uiConfigProvider.getFontFamily(for: partial?.fontName ?? self.component.fontName)
+
         let style = TextComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? true,
             text: Self.processText(
                 text,
                 packageContext: packageContext,
-                locale: self.localizationProvider.locale
+                locale: self.localizationProvider.locale,
+                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
-            fontFamily: partial?.fontName ?? self.component.fontName,
+            fontFamily: fontFamily,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
@@ -75,7 +84,53 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    private static func processText(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
+    private static func processText(_ text: String,
+                                    packageContext: PackageContext,
+                                    locale: Locale,
+                                    localizations: [String: String]) -> String {
+        let processedWithV2 = Self.processTextV2(
+            text,
+            packageContext: packageContext,
+            locale: locale,
+            localizations: localizations
+        )
+        // Note: This is temporary while in closed beta and shortly after
+        let processedWithV2AndV1 = Self.processTextV1(
+            processedWithV2,
+            packageContext: packageContext,
+            locale: locale
+        )
+
+        return processedWithV2AndV1
+    }
+
+    private static func processTextV2(_ text: String,
+                                      packageContext: PackageContext,
+                                      locale: Locale,
+                                      localizations: [String: String]) -> String {
+        guard let package = packageContext.package else {
+            return text
+        }
+
+        let discount = Self.discount(
+            from: package.storeProduct.pricePerMonth?.doubleValue,
+            relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+        )
+
+        let handler = VariableHandlerV2(
+            discountRelativeToMostExpensivePerMonth: discount,
+            showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
+        )
+
+        return handler.processVariables(
+            in: text,
+            with: package,
+            locale: locale,
+            localizations: localizations
+        )
+    }
+
+    private static func processTextV1(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -157,8 +212,8 @@ struct TextComponentStyle {
     let visible: Bool
     let text: String
     let fontWeight: Font.Weight
-    let color: PaywallComponent.ColorScheme
-    let fontSize: Font
+    let color: DisplayableColorScheme
+    let font: Font
     let horizontalAlignment: Alignment
     let textAlignment: TextAlignment
     let backgroundStyle: BackgroundStyle?
@@ -167,6 +222,7 @@ struct TextComponentStyle {
     let margin: EdgeInsets
 
     init(
+        uiConfigProvider: UIConfigProvider,
         visible: Bool,
         text: String,
         fontFamily: String?,
@@ -176,23 +232,47 @@ struct TextComponentStyle {
         size: PaywallComponent.Size,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
-        fontSize: PaywallComponent.FontSize,
+        fontSize: CGFloat,
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
         self.visible = visible
         self.text = text
         self.fontWeight = fontWeight.fontWeight
-        self.color = color
+        self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.fontSize = fontSize.font
+        self.font = Self.makeFont(size: fontSize, familyName: fontFamily)
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
-        self.backgroundStyle = backgroundColor?.backgroundStyle
+        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TextComponentStyle {
+
+    static func makeFont(size fontSize: CGFloat, familyName: String?) -> Font {
+        // Create the base font, with fallback to the system font
+        let baseFont: UIFont
+        if let familyName = familyName {
+            if let customFont = UIFont(name: familyName, size: fontSize) {
+                baseFont = customFont
+            } else {
+                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            }
+        } else {
+            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+        }
+
+        // Apply dynamic type scaling
+        let uiFont = UIFontMetrics.default.scaledFont(for: baseFont)
+        return Font(uiFont)
     }
 
 }

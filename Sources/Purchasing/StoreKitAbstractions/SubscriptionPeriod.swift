@@ -101,7 +101,29 @@ public extension SubscriptionPeriod {
 extension SubscriptionPeriod.Unit: Sendable {}
 extension SubscriptionPeriod: Sendable {}
 
+public extension SubscriptionPeriod {
+
+    /// The length of the period convert to another unit
+    func numberOfUnitsAs(unit: Unit) -> Decimal {
+        switch unit {
+        case .day:
+            return Decimal(self.value) * self.unitsPerDay
+        case .week:
+            return Decimal(self.value) * self.unitsPerWeek
+        case .month:
+            return Decimal(self.value) * self.unitsPerMonth
+        case .year:
+            return Decimal(self.value) * self.unitsPerYear
+        }
+    }
+
+}
+
 extension SubscriptionPeriod {
+
+    func pricePerDay(withTotalPrice price: Decimal) -> Decimal {
+        return self.pricePerPeriod(for: self.unitsPerDay, totalPrice: price)
+    }
 
     func pricePerWeek(withTotalPrice price: Decimal) -> Decimal {
         return self.pricePerPeriod(for: self.unitsPerWeek, totalPrice: price)
@@ -113,6 +135,15 @@ extension SubscriptionPeriod {
 
     func pricePerYear(withTotalPrice price: Decimal) -> Decimal {
         return self.pricePerPeriod(for: self.unitsPerYear, totalPrice: price)
+    }
+
+    private var unitsPerDay: Decimal {
+        switch self.unit {
+        case .day: return 1
+        case .week: return Constants.daysPerWeek
+        case .month: return Constants.daysPerMonth
+        case .year: return Constants.daysPerYear
+        }
     }
 
     private var unitsPerWeek: Decimal {

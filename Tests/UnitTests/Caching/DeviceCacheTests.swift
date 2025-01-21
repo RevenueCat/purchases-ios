@@ -492,7 +492,9 @@ private extension DeviceCacheTests {
         )
 
         let offering = try XCTUnwrap(
-            OfferingsFactory().createOffering(from: products, offering: offeringsData)
+            OfferingsFactory().createOffering(from: products,
+                                              offering: offeringsData,
+                                              uiConfig: nil)
         )
         return Offerings(
             offerings: [offeringIdentifier: offering],
@@ -502,7 +504,8 @@ private extension DeviceCacheTests {
             response: .init(currentOfferingId: "base",
                             offerings: [offeringsData],
                             placements: nil,
-                            targeting: nil)
+                            targeting: nil,
+                            uiConfig: nil)
         )
     }
 
@@ -519,7 +522,8 @@ private extension Offerings {
             currentOfferingId: "",
             offerings: [],
             placements: nil,
-            targeting: nil
+            targeting: nil,
+            uiConfig: nil
         )
     )
 

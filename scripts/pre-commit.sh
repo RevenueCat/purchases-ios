@@ -49,7 +49,7 @@ verify_no_included_apikeys() {
     for api_file in "${FILES_TO_CHECK[@]}"
     do
       absolute_api_file=$(realpath "$api_file")
-      if [ $absolute_staged_file = $absolute_api_file ] && ! grep -q $PATTERN $absolute_staged_file; then
+      if [ -n "$absolute_staged_file" ] && [ -n "$absolute_api_file" ] && [ "$absolute_staged_file" = "$absolute_api_file" ] && ! grep -q "$PATTERN" "$absolute_staged_file"; then
         echo "Leftover API Key found in '$(basename $absolute_staged_file)'. Please remove."
         exit 1
       fi
@@ -59,12 +59,18 @@ verify_no_included_apikeys() {
 
 if [[ -e "${SWIFT_LINT}" ]]; then
   echo "SwiftLint version: $(${SWIFT_LINT} version)"
+
   # Run only if not merging
   if ! git rev-parse -q --verify MERGE_HEAD; then 
-    # Run for just staged files
+      # Get only modified or added files that are staged (exclude deleted files)
     while IFS= read -r -d '' file; do
-      run_swiftlint "${file}"
-    done < <(git diff --cached --name-only -z)
+      # Get file status from git status --porcelain
+      status=$(git status --porcelain "$file" | cut -c1-2)
+      # Run SwiftLint only on files that are not deleted (status != ' D')
+      if [[ "$status" != "D " ]]; then
+        run_swiftlint "$file"
+      fi
+    done < <(git diff --cached --name-only -z -- '*.swift')
   fi
 else
   echo "${SWIFT_LINT} is not installed. Please install it via: fastlane setup_dev"

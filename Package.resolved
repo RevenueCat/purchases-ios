@@ -41,8 +41,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/quick/nimble",
       "state" : {
-        "revision" : "1f3bde57bde12f5e7b07909848c071e9b73d6edc",
-        "version" : "10.0.0"
+        "revision" : "1f3bde57bde12f5e7b07909848c071e9b73d6edc"
       }
     },
     {
@@ -68,8 +67,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "26ed3a2b4a2df47917ca9b790a57f91285b923fb",
-        "version" : "1.12.0"
+        "revision" : "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
       }
     }
   ],

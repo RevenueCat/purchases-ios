@@ -55,6 +55,11 @@ struct ImageComponentView: View {
             }
             .size(style.size)
             .clipped()
+            .shape(border: nil,
+                   shape: style.shape)
+            .padding(style.padding)
+            // WIP: Add border still
+            .padding(style.margin)
         }
     }
 
@@ -84,18 +89,11 @@ struct ImageComponentView: View {
             .frame(maxWidth: .infinity)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
-            // WIP: Need to replace this gradient with the better one
-            .overlay(
-                LinearGradient(
-                    gradient: Gradient(colors: style.gradientColors),
-                    startPoint: .top,
-                    endPoint: .bottom
+            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                view.overlay(
+                    Color.clear.backgroundStyle(.color(colorOverlay))
                 )
-            )
-            // WIP: this needs more shapes and borders
-            // WIP: this might also need dropshadow
-            .shape(border: nil,
-                   shape: style.shape)
+            })
     }
 
 }
@@ -117,6 +115,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -145,6 +144,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -173,6 +173,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -184,9 +185,10 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fill,
-                        gradientColors: [
-                            "#ffffff00", "#ffffff00", "#ffffffff"
-                        ]
+                        colorOverlay: .init(light: .linear(0, [
+                            .init(color: "#ffffff", percent: 0),
+                            .init(color: "#ffffff00", percent: 40)
+                        ]))
                     )
                 )
             )
@@ -204,6 +206,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         locale: Locale.current,
                         localizedStrings: [:]
                     ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                     component: .init(
                         source: .init(
                             light: .init(
@@ -226,6 +229,96 @@ struct ImageComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Rounded Corner")
+
+        // Light - Fit with Circle
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        maskShape: .circle
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Circle")
+
+        // Light - Fit with Convex
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        maskShape: .convex
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fit with Convex")
+
+        // Light - Fit with Concave
+        VStack {
+            ImageComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [:]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        source: .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: catUrl,
+                                heic: catUrl,
+                                heicLowRes: catUrl
+                            )
+                        ),
+                        fitMode: .fit,
+                        maskShape: .concave
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Light - Fit with Concave")
     }
 }
 

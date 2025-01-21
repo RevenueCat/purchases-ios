@@ -15,25 +15,33 @@ public enum PaywallComponent: PaywallComponentBase {
 
     case text(TextComponent)
     case image(ImageComponent)
-    case spacer(SpacerComponent)
+    case icon(IconComponent)
     case stack(StackComponent)
-    case linkButton(LinkButtonComponent)
     case button(ButtonComponent)
     case package(PackageComponent)
     case purchaseButton(PurchaseButtonComponent)
     case stickyFooter(StickyFooterComponent)
 
+    case tabs(TabsComponent)
+    case tabControl(TabControlComponent)
+    case tabControlButton(TabControlButtonComponent)
+    case tabControlToggle(TabControlToggleComponent)
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
         case image
-        case spacer
+        case icon
         case stack
-        case linkButton = "link_button"
         case button
         case package
         case purchaseButton = "purchase_button"
         case stickyFooter = "sticky_footer"
+
+        case tabs
+        case tabControl = "tab_control"
+        case tabControlButton = "tab_control_button"
+        case tabControlToggle = "tab_control_toggle"
 
     }
 
@@ -51,9 +59,11 @@ extension PaywallComponent: Codable {
     enum CodingKeys: String, CodingKey {
 
         case type
+        case fallback
 
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -64,14 +74,11 @@ extension PaywallComponent: Codable {
         case .image(let component):
             try container.encode(ComponentType.image, forKey: .type)
             try component.encode(to: encoder)
-        case .spacer(let component):
-            try container.encode(ComponentType.spacer, forKey: .type)
+        case .icon(let component):
+            try container.encode(ComponentType.icon, forKey: .type)
             try component.encode(to: encoder)
         case .stack(let component):
             try container.encode(ComponentType.stack, forKey: .type)
-            try component.encode(to: encoder)
-        case .linkButton(let component):
-            try container.encode(ComponentType.linkButton, forKey: .type)
             try component.encode(to: encoder)
         case .button(let component):
             try container.encode(ComponentType.button, forKey: .type)
@@ -85,32 +92,95 @@ extension PaywallComponent: Codable {
         case .stickyFooter(let component):
             try container.encode(ComponentType.stickyFooter, forKey: .type)
             try component.encode(to: encoder)
+        case .tabs(let component):
+            try container.encode(ComponentType.tabs, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControl(let component):
+            try container.encode(ComponentType.tabControl, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControlButton(let component):
+            try container.encode(ComponentType.tabControlButton, forKey: .type)
+            try component.encode(to: encoder)
+        case .tabControlToggle(let component):
+            try container.encode(ComponentType.tabControlToggle, forKey: .type)
+            try component.encode(to: encoder)
         }
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(ComponentType.self, forKey: .type)
 
+        // Decode the raw string for the `type` field
+        let typeString = try container.decode(String.self, forKey: .type)
+
+        // Attempt to convert raw string into our `ComponentType` enum
+        if let type = ComponentType(rawValue: typeString) {
+            self = try Self.decodeType(from: decoder, type: type)
+        } else {
+            if !container.contains(.fallback) {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode unknown type "\(typeString)" without a fallback.
+                      """
+                )
+                throw DecodingError.dataCorrupted(context)
+            }
+
+            do {
+                // If `typeString` is unknown, try to decode the fallback
+                self = try container.decode(PaywallComponent.self, forKey: .fallback)
+            } catch DecodingError.valueNotFound {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode unknown type "\(typeString)" without a fallback.
+                      """
+                )
+                throw DecodingError.dataCorrupted(context)
+            } catch {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription:
+                      """
+                      Failed to decode fallback for unknown type "\(typeString)".
+                      """,
+                    underlyingError: error
+                )
+                throw DecodingError.dataCorrupted(context)
+            }
+        }
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity
+    private static func decodeType(from decoder: Decoder, type: ComponentType) throws -> PaywallComponent {
         switch type {
         case .text:
-            self = .text(try TextComponent(from: decoder))
+            return .text(try TextComponent(from: decoder))
         case .image:
-            self = .image(try ImageComponent(from: decoder))
-        case .spacer:
-            self = .spacer(try SpacerComponent(from: decoder))
+            return .image(try ImageComponent(from: decoder))
+        case .icon:
+            return .icon(try IconComponent(from: decoder))
         case .stack:
-            self = .stack(try StackComponent(from: decoder))
-        case .linkButton:
-            self = .linkButton(try LinkButtonComponent(from: decoder))
+            return .stack(try StackComponent(from: decoder))
         case .button:
-            self = .button(try ButtonComponent(from: decoder))
+            return .button(try ButtonComponent(from: decoder))
         case .package:
-            self = .package(try PackageComponent(from: decoder))
+            return .package(try PackageComponent(from: decoder))
         case .purchaseButton:
-            self = .purchaseButton(try PurchaseButtonComponent(from: decoder))
+            return .purchaseButton(try PurchaseButtonComponent(from: decoder))
         case .stickyFooter:
-            self = .stickyFooter(try StickyFooterComponent(from: decoder))
+            return .stickyFooter(try StickyFooterComponent(from: decoder))
+        case .tabs:
+            return .tabs(try TabsComponent(from: decoder))
+        case .tabControl:
+            return .tabControl(try TabControlComponent(from: decoder))
+        case .tabControlButton:
+            return .tabControlButton(try TabControlButtonComponent(from: decoder))
+        case .tabControlToggle:
+            return .tabControlToggle(try TabControlToggleComponent(from: decoder))
         }
     }
 

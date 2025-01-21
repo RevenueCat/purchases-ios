@@ -489,6 +489,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         (nil, purchases.appUserID)
     }
 
+    func testSetAndClearPostHogUserID() {
+        setupPurchases()
+        purchases.attribution.setPostHogUserID("posthog")
+        purchases.attribution.setPostHogUserID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParametersList[0]) ==
+        ("posthog", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParametersList[1]) ==
+        (nil, purchases.appUserID)
+    }
+
     func testSetAndClearMediaSource() {
         setupPurchases()
         purchases.attribution.setMediaSource("media")
@@ -690,6 +700,17 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDParameters?.tenjinID) ==
         "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetTenjinAnalyticsInstallationIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetPostHogUserIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setPostHogUserID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParameters?.postHogUserID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID
     }
 

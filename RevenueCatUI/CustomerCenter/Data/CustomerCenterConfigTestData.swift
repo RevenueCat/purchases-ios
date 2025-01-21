@@ -22,7 +22,8 @@ enum CustomerCenterConfigTestData {
     // swiftlint:disable:next function_body_length
     static func customerCenterData(
         lastPublishedAppVersion: String?,
-        shouldWarnCustomerToUpdate: Bool = false
+        shouldWarnCustomerToUpdate: Bool = false,
+        displayPurchaseHistoryLink: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [.management:
@@ -116,7 +117,8 @@ enum CustomerCenterConfigTestData {
             ),
             support: .init(
                 email: "test-support@revenuecat.com",
-                shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate
+                shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
+                displayPurchaseHistoryLink: displayPurchaseHistoryLink
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
