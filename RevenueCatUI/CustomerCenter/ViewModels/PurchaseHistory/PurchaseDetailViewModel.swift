@@ -37,7 +37,7 @@ final class PurchaseDetailViewModel: ObservableObject {
             subscriptionInfo.ownershipType == .familyShared
             ? localization[.sharedThroughFamilyMember]
             : nil
-        case .nonSubscription(let nonSubscriptionTransaction):
+        case .nonSubscription:
             nil
         }
     }
