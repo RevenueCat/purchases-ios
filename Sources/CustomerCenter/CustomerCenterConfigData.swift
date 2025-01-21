@@ -686,7 +686,7 @@ extension CustomerCenterConfigData.Support {
     init(from response: CustomerCenterConfigResponse.Support) {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
-        self.displayPurchaseHistoryLink = false
+        self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
     }
 
 }
