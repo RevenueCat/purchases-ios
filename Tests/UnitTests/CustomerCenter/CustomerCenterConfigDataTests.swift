@@ -11,6 +11,7 @@
 //
 //  Created by Cesar de la Vega on 8/7/24.
 
+import Foundation
 import Nimble
 import XCTest
 
@@ -109,7 +110,7 @@ class CustomerCenterConfigDataTests: TestCase {
                 support: .init(
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
-                    displayPurchaseHistoryLink: false
+                    displayPurchaseHistoryLink: true
                 )
             ),
             lastPublishedAppVersion: "1.2.3",
@@ -184,6 +185,8 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.productId) == 123
 
         expect(configData.support.shouldWarnCustomerToUpdate) == false
+        expect(configData.support.email) == "support@example.com"
+        expect(configData.support.displayPurchaseHistoryLink) == true
     }
 
     func testUnknownValuesHandling() throws {
@@ -225,7 +228,9 @@ class CustomerCenterConfigDataTests: TestCase {
                     "localizedStrings": {}
                 },
                 "support": {
-                    "email": "support@example.com"
+                    "email": "support@example.com",
+                    "should_warn_customer_to_update": false,
+                    "display_purchase_history_link": true
                 }
             },
             "lastPublishedAppVersion": "1.0.0",
@@ -250,5 +255,8 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(unknownPath?.type) == .unknown
         expect(unknownPath?.id) == "unknown_path"
         expect(unknownPath?.title) == "Unknown Path"
+
+        expect(configData.support.shouldWarnCustomerToUpdate) == false
+        expect(configData.support.displayPurchaseHistoryLink) == true
     }
 }
