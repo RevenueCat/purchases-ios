@@ -66,6 +66,15 @@ extension CustomerInfoResponse {
         var refundedAt: Date?
         var storeTransactionId: String?
 
+        var displayName: String?
+
+        /// Price paid for the subscription
+        var price: PurchasePaidPrice?
+    }
+
+    struct PurchasePaidPrice {
+        let currency: String
+        let amount: Double
     }
 
     struct Transaction {
@@ -97,6 +106,7 @@ extension CustomerInfoResponse {
 
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
+extension CustomerInfoResponse.PurchasePaidPrice: Codable, Hashable {}
 
 extension CustomerInfoResponse.Entitlement: Hashable {}
 extension CustomerInfoResponse.Entitlement: Encodable {}

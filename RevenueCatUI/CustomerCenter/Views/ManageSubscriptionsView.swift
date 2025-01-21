@@ -29,6 +29,8 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
+    @Environment(\.supportInformation)
+    private var support
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -71,42 +73,56 @@ struct ManageSubscriptionsView: View {
 
     @ViewBuilder
     var content: some View {
-        ZStack {
-            List {
+        List {
+            if let purchaseInformation = self.viewModel.purchaseInformation {
+                SubscriptionDetailsView(
+                    purchaseInformation: purchaseInformation,
+                    refundRequestStatus: self.viewModel.refundRequestStatus
+                )
 
-                if let purchaseInformation = self.viewModel.purchaseInformation {
-                    Section {
-                        SubscriptionDetailsView(
-                            purchaseInformation: purchaseInformation,
-                            refundRequestStatus: self.viewModel.refundRequestStatus)
+                if support?.displayPurchaseHistoryLink == true {
+                    Button {
+                        viewModel.showPurchases = true
+                    } label: {
+                        Text(localization.commonLocalizedString(for: .seeAllPurchases))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     }
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
-                        }
-                    }
-                } else {
-                    let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
-
-                    Section {
-                        CompatibilityContentUnavailableView(
-                            self.viewModel.screen.title,
-                            systemImage: "exclamationmark.triangle.fill",
-                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                        )
-                    }
-
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                       loadingPath: self.$viewModel.loadingPath)
-                    }
+                    .buttonStyle(.plain)
                 }
 
+                Section {
+                    ManageSubscriptionsButtonsView(
+                        viewModel: self.viewModel,
+                        loadingPath: self.$viewModel.loadingPath
+                    )
+                } header: {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        Text(subtitle)
+                            .textCase(nil)
+                    }
+                }
+            } else {
+                let fallbackDescription = localization.commonLocalizedString(for: .tryCheckRestore)
+
+                Section {
+                    CompatibilityContentUnavailableView(
+                        self.viewModel.screen.title,
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
+
+                Section {
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                   loadingPath: self.$viewModel.loadingPath)
+                }
             }
+        }
+        .compatibleNavigation(
+            isPresented: $viewModel.showPurchases,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
         }
         .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
