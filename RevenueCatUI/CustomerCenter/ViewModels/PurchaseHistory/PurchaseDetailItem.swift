@@ -15,8 +15,6 @@
 
 import RevenueCat
 
-typealias CSCommonLocalizedString = CustomerCenterConfigData.Localization.CommonLocalizedString
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -25,23 +23,23 @@ enum PurchaseDetailItem: Identifiable {
     case productName(String)
     case paidPrice(String?)
     case purchaseDate(String)
-    case status(CSCommonLocalizedString)
+    case status(CCLocalizedString)
 
     case nextRenewalDate(String)
     case expiresDate(String)
     case unsubscribeDetectedAt(String)
     case billingIssuesDetectedAt(String)
     case gracePeriodExpiresDate(String)
-    case periodType(CSCommonLocalizedString)
+    case periodType(CCLocalizedString)
     case refundedAtDate(String)
 
     // DEBUG only
-    case store(CSCommonLocalizedString)
+    case store(CCLocalizedString)
     case productID(String)
     case sandbox(Bool)
     case transactionID(String)
 
-    var label: CSCommonLocalizedString {
+    var label: CCLocalizedString {
         switch self {
         case .productName: return .productName
         case .paidPrice: return .paidPrice

@@ -16,7 +16,7 @@ import RevenueCat
 
 extension Store {
 
-    var localizationKey: CSCommonLocalizedString {
+    var localizationKey: CCLocalizedString {
         switch self {
         case .appStore: return .storeAppStore
         case .macAppStore: return .storeMacAppStore
