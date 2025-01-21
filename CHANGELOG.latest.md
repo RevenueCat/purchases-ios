@@ -10,21 +10,17 @@
 * Deprecate misnamed purchase(params) function in Obj-C (#4645) via Will Taylor (@fire-at-will)
 
 ## RevenueCatUI SDK
-### ✨ New Features
-* feat: Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
-* feat: Make CustomerCenterActionHandler optional for CustomerCenterNavigationLink (#4678) via Facundo Menzella (@facumenzella)
-* feat: [CustomerCenter] Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
 ### Customer Center
 #### ✨ New Features
+* Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
 * Add support for `displayPurchaseHistoryLink` (#4686) via Facundo Menzella (@facumenzella)
 * Introduce `NavigationOptions` for custom navigation and `CustomerCenterNavigationLink` (#4682) via Facundo Menzella (@facumenzella)
-* feat: [CustomerCenter] Introduce CustomerCenterNavigationLink (#4664) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
 * Revert changes to public Customer Center API (#4681) via Cesar de la Vega (@vegaro)
-* [Customer Center]: fix navigation when embedded in `NavigationStack` (#4622) via Andy Boedo (@aboedo)
-* fix: dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
+* Dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
+* Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
 * fix: Add missing test for support in CustomerCenter (#4691) via Facundo Menzella (@facumenzella)
 * Use config response for `displayPurchaseHistoryLink` (#4690) via Facundo Menzella (@facumenzella)
 * Improve syntax for `CommonLocalizedString` (#4688) via Facundo Menzella (@facumenzella)
