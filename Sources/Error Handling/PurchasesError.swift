@@ -39,6 +39,32 @@ extension PurchasesError {
     /// let error = ErrorUtils.unknownError().asPublicError
     /// let errorCode = error as? ErrorCode
     /// ```
+    ///
+    /// Info about the root error can be accessed in userInfo.
+    /// Example:
+    /// ```
+    /// let error = ErrorUtils.unknownError().asPublicError
+    /// let rootErrorInfo = error.userInfo["rc_root_error"] as? [String: Any]
+    /// let rootErrorCode = rootErrorInfo?["code"] as? Int
+    /// let rootErrorDomain = rootErrorInfo?["domain"] as? String
+    /// let rootErrorLocalizedDescription = rootErrorInfo?["localizedDescription"] as? String
+    /// ```
+    ///
+    /// If the root error comes from StoreKit, some extra info will be added to the root error.
+    /// Example:
+    /// ```
+    /// let error = ErrorUtils.unknownError().asPublicError
+    /// let rootErrorInfo = error.userInfo["rc_root_error"] as? [String: Any]
+    /// let storeKitErrorInfo = rootErrorInfo?["storeKitError"] as? [String: Any]
+    /// let storeKitErrorDescription = storeKitErrorInfo?["description"] as? String
+    /// // If it's a SKError:
+    /// let skErrorCode = storeKitErrorInfo?["skErrorCode"] as? Int
+    /// // If it's a StoreKitError.networkError:
+    /// let urlErrorCode = storeKitErrorInfo?["urlErrorCode"] as? Int
+    /// let urlErrorFailingUrl = storeKitErrorInfo?["urlErrorFailingUrl"] as? String
+    /// // If it's a StoreKitError.systemError:
+    /// let systemErrorDescription = storeKitErrorInfo?["systemErrorDescription"] as? Int
+    /// ```
     var asPublicError: PublicError {
         let rootError: Error = self.rootError(from: self)
         let rootNSError = rootError as NSError
