@@ -141,6 +141,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         let response = try XCTUnwrap(result.value?.value)
         let customerCenter = try XCTUnwrap(response.customerCenter)
         let appearance = try XCTUnwrap(customerCenter.appearance)
+        let support = try XCTUnwrap(customerCenter.support)
 
         expect(customerCenter.localization.locale) == "en_US"
         expect(customerCenter.localization.localizedStrings).to(haveCount(2))
@@ -214,6 +215,10 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         let option3 = feedbackSurvey.options[2]
         expect(option3.id) == "jargnapocps"
         expect(option3.title) == "Bought by mistake"
+
+        expect(support.email) == "support@revenuecat.com"
+        expect(support.displayPurchaseHistoryLink) == true
+        expect(support.shouldWarnCustomerToUpdate) == false
     }
 
     func testGetCustomerCenterConfigFailSendsNil() {
@@ -383,7 +388,9 @@ private extension BackendGetCustomerCenterConfigTests {
                 "mode": "CUSTOM"
             ] as [String: Any],
             "support": [
-                "email": "support@revenuecat.com"
+                "email": "support@revenuecat.com",
+                "should_warn_customer_to_update": false,
+                "display_purchase_history_link": true
             ] as [String: Any]
         ] as [String: Any]
     ]
