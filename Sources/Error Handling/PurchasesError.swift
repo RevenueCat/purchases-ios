@@ -42,11 +42,11 @@ extension PurchasesError {
     var asPublicError: PublicError {
         let rootError: Error = self.rootError(from: self)
         let rootNSError = rootError as NSError
-        var rootErrorInfo = [
+        var rootErrorInfo: [String: Any] = [
             "code": rootNSError.code,
             "domain": rootNSError.domain,
-            "localizedDescription": rootNSError.localizedDescription,
-        ] as [String : Any]
+            "localizedDescription": rootNSError.localizedDescription
+        ]
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
             if let storeKitErrorInfo = self.getStoreKitErrorInfoIfAny(error: rootError) {
                 rootErrorInfo = rootErrorInfo.merging(["storeKitError": storeKitErrorInfo])
@@ -95,7 +95,7 @@ private extension PurchasesError {
     func getStoreKitErrorInfoIfAny(error: Error) -> [String: Any]? {
         if let skError = error as? SKError {
             return [
-                "skErrorCode": skError.code,
+                "skErrorCode": skError.code.rawValue,
                 "description": skError.code.trackingDescription
             ]
         } else if let storeKitError = error as? StoreKitError {
@@ -109,7 +109,7 @@ private extension PurchasesError {
             case let .networkError(urlError):
                 return resultMap.merging([
                     "urlErrorCode": urlError.errorCode,
-                    "urlErrorFailingUrl": urlError.failureURLString ?? ""
+                    "urlErrorFailingUrl": urlError.failureURLString ?? "missing_value"
                 ])
             case let .systemError(systemError):
                 return resultMap.merging([
@@ -117,6 +117,7 @@ private extension PurchasesError {
                 ])
 
             @unknown default:
+                Logger.warn(Strings.storeKit.unknown_storekit_error(storeKitError))
                 return resultMap
             }
         } else if let storeKitError = error as? StoreKit.Product.PurchaseError {
