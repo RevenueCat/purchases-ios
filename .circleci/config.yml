@@ -1367,10 +1367,13 @@ workflows:
       - run-revenuecat-ui-ios-18
       - emerge_purchases_ui_snapshot_tests
       - validate-package-swift:
+          name: validate-package-swift-5.7
           xcode_version: "14.0.1"
       - validate-package-swift:
-          xcode_version: "15.2.0"
+          name: validate-package-swift-5.8
+          xcode_version: "14.3.1"
       - validate-package-swift:
+          name: validate-package-swift-5.9
           xcode_version: "16.0.0"
   create-tag:
     when:
