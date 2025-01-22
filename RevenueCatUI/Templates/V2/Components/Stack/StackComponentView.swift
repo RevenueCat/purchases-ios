@@ -102,9 +102,38 @@ struct StackComponentView: View {
                shape: style.shape,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
-        .stackBadge(style.badge)
-        .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
+        .apply(badge: style.badge, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension View {
+
+    // Helper to decide if the be badge is added before or after the shadow.
+    //
+    // Some badge types require us to clip so they do not extend outside the bounds of the stack,
+    // this requires the badge be added before the shadow so the shadow is not clipped.
+    // However for edge-to-edge top/bottom badges, the shadow should be applied first so the badge
+    // appears behind the shadow.
+    @ViewBuilder
+    func apply(badge: BadgeModifier.BadgeInfo?,
+               shadow: ShadowModifier.ShadowInfo?,
+               shape: ShapeModifier.Shape?) -> some View {
+        if let badge = badge, case .edgeToEdge = badge.style {
+            switch badge.alignment {
+            case .top, .bottom:
+                self.shadow(shadow: shadow, shape: shape?.toInsettableShape())
+                    .stackBadge(badge)
+            default:
+                self.stackBadge(badge)
+                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+            }
+        } else {
+            self.stackBadge(badge)
+                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+        }
     }
 
 }
