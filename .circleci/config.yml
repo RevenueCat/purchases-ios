@@ -1,7 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@4.10.1
-  path-filtering: circleci/path-filtering@1.2.0
 
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
@@ -401,6 +400,8 @@ commands:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+jobs:
+
   validate-package-swift:
     parameters:
       swift_version:
@@ -409,8 +410,7 @@ commands:
       - run:
           name: Validate Package.swift
           command: swift package describe --swift-sdk "<< parameters.swift_version >>"
-
-jobs:
+          
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
