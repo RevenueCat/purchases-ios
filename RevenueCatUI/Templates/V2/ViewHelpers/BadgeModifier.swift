@@ -59,6 +59,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .padding(badge.stack.value.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -77,6 +78,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .padding(badge.stack.value.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -103,6 +105,7 @@ fileprivate extension View {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .frame(maxWidth: .infinity)
+                            .padding(badge.stack.value.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -126,6 +129,7 @@ fileprivate extension View {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .frame(maxWidth: .infinity)
+                            .padding(badge.stack.value.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -148,6 +152,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .padding(badge.stack.value.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -334,14 +339,14 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                         margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                     ))
                 ],
-                dimension: .horizontal(),
-                size: .init(width: .fill, height: .fixed(150)),
+                dimension: .horizontal(.center, .center),
+                size: .init(width: .fill, height: .fixed(100)),
                 spacing: 10,
                 backgroundColor: .init(light: .hex("#ffffff")),
                 padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
                 shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
-                border: .init(color: .init(light: .hex("#0000FF")), width: 10),
-                shadow:.init(color: .init(light: .hex("#00000030")), radius: 4, x: 0, y: 0),
+                border: .init(color: .init(light: .hex("#0074F3")), width: 10),
+                shadow: .init(color: .init(light: .hex("#00000030")), radius: 4, x: 0, y: 0),
                 badge: .init(
                     style: style,
                     alignment: alignment,
@@ -349,15 +354,16 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                         components: [
                             .text(PaywallComponent.TextComponent(
                                 text: "text_2",
+                                fontWeight: .bold,
                                 color: .init(light: .hex("#000000")),
                                 size: .init(width: .fit, height: .fit),
-                                margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                                fontSize: 13
                             ))
                         ],
                         dimension: .horizontal(),
                         size: .init(width: .fill, height: .fixed(150)),
                         spacing: 10,
-                        backgroundColor: .init(light: .hex("#ff0000")),
+                        backgroundColor: .init(light: .hex("#F67E70")),
                         padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                         margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
                         shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12))
