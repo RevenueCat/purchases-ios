@@ -1361,19 +1361,19 @@ workflows:
       - run-revenuecat-ui-ios-18
       - emerge_purchases_ui_snapshot_tests
       - validate-package-swift:
-          swift_version: 5.7
+          swift_version: "5.7"
           filters:
             changes:
               paths:
                 - "Package@swift-5.7.swift"
       - validate-package-swift:
-          swift_version: 5.8
+          swift_version: "5.8"
           filters:
             changes:
               paths:
                 - "Package@swift-5.8.swift"
       - validate-package-swift:
-          swift_version: 6.0
+          swift_version: "6.0"
           filters:
             changes:
               paths:
