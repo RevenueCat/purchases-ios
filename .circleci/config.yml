@@ -403,14 +403,17 @@ commands:
 jobs:
 
   validate-package-swift:
+    executor:
+      name: macos-executor
     parameters:
       swift_version:
         type: string
     steps:
+      - checkout
       - run:
           name: Validate Package.swift
-          command: swift package describe --swift-sdk "<< parameters.swift_version >>"
-          
+          command: swift package describe --swift-sdk "$(<< parameters.swift_version >>)"
+
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
