@@ -154,13 +154,13 @@ fileprivate extension View {
 
     // Helper to calculate the position of an overlaid badge at the top or bottom of the stack
     private func effetiveVerticalAlinmentForOverlaidBadge(alignment: Alignment) -> VerticalAlignment {
-        return switch alignment {
+        switch alignment {
         case .top, .topLeading, .topTrailing:
-            VerticalAlignment.top
+            return VerticalAlignment.top
         case .bottom, .bottomLeading, .bottomTrailing:
-            VerticalAlignment.bottom
+            return VerticalAlignment.bottom
         default:
-            VerticalAlignment.top
+            return VerticalAlignment.top
         }
     }
 

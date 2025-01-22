@@ -29,18 +29,18 @@ enum PurchaseInfo: Identifiable {
     var productIdentifier: String {
         switch self {
         case let .subscription(info):
-            info.productIdentifier
+            return info.productIdentifier
         case let .nonSubscription(transaction):
-            transaction.productIdentifier
+            return transaction.productIdentifier
         }
     }
 
     var isActive: Bool {
         switch self {
         case let .subscription(info):
-            info.isActive
+            return info.isActive
         case .nonSubscription:
-            false
+            return false
         }
     }
 
@@ -51,36 +51,36 @@ enum PurchaseInfo: Identifiable {
     private var price: ProductPaidPrice? {
         switch self {
         case let .subscription(info):
-            info.price
+            return info.price
         case .nonSubscription:
-            nil
+            return nil
         }
     }
 
     var willRenew: Bool {
         switch self {
         case let .subscription(info):
-            info.willRenew
+            return info.willRenew
         case .nonSubscription:
-            false
+            return false
         }
     }
 
     var purchaseDate: Date {
         switch self {
         case let .subscription(info):
-            info.purchaseDate
+            return info.purchaseDate
         case let .nonSubscription(transaction):
-            transaction.purchaseDate
+            return transaction.purchaseDate
         }
     }
 
     var expiresDate: Date? {
         switch self {
         case let .subscription(info):
-            info.expiresDate
+            return info.expiresDate
         case .nonSubscription:
-            nil
+            return nil
         }
     }
 

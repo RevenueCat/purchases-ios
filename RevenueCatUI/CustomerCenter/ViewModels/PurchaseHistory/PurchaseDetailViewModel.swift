@@ -34,11 +34,11 @@ final class PurchaseDetailViewModel: ObservableObject {
     var localizedOwnership: String? {
         switch purchaseInfo {
         case .subscription(let subscriptionInfo):
-            subscriptionInfo.ownershipType == .familyShared
-            ? localization[.sharedThroughFamilyMember]
-            : nil
+            return subscriptionInfo.ownershipType == .familyShared
+                ? localization[.sharedThroughFamilyMember]
+                : nil
         case .nonSubscription:
-            nil
+            return nil
         }
     }
 
