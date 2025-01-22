@@ -234,14 +234,14 @@ struct AnyInsettableShape: InsettableShape {
     }
 }
 
-extension InsettableShape {
+private extension InsettableShape {
     func eraseToAnyInsettableShape() -> AnyInsettableShape {
         AnyInsettableShape(self)
     }
 }
 
 // Substitute for UnevenRoundedRectangle which is only available on iOS 16+
-struct BackportedUnevenRoundedRectangle: InsettableShape {
+private struct BackportedUnevenRoundedRectangle: InsettableShape {
     var topLeft: CGFloat
     var topRight: CGFloat
     var bottomLeft: CGFloat
@@ -321,6 +321,49 @@ extension View {
                 uiConfigProvider: uiConfigProvider
             )
         )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ShapeModifier.Shape {
+    func toInsettableShape() -> (AnyInsettableShape)? {
+        switch self {
+        case .rectangle(let radiusInfo):
+            return self.effectiveRectangleShape(radiusInfo: radiusInfo)
+        case .circle:
+            return Circle().eraseToAnyInsettableShape()
+        case .pill:
+            return Capsule(style: .circular).eraseToAnyInsettableShape()
+        case .concave, .convex:
+            return nil
+        }
+    }
+
+    private func effectiveRectangleShape(radiusInfo: ShapeModifier.RadiusInfo?) -> AnyInsettableShape {
+        let topLeft = radiusInfo?.topLeft ?? 0
+        let topRight = radiusInfo?.topRight ?? 0
+        let bottomLeft = radiusInfo?.bottomLeft ?? 0
+        let bottomRight = radiusInfo?.bottomRight ?? 0
+        if  topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: topLeft,
+                    bottomLeadingRadius: bottomLeft,
+                    bottomTrailingRadius: bottomRight,
+                    topTrailingRadius: topRight,
+                    style: .circular
+                ).eraseToAnyInsettableShape()
+            } else {
+                return BackportedUnevenRoundedRectangle(
+                    topLeft: topLeft,
+                    topRight: topRight,
+                    bottomLeft: bottomLeft,
+                    bottomRight: bottomRight
+                ).eraseToAnyInsettableShape()
+            }
+        } else {
+            return Rectangle().eraseToAnyInsettableShape()
+        }
     }
 }
 
