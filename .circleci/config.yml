@@ -1,6 +1,8 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@4.10.1
+  path-filtering: circleci/path-filtering@1.2.0
+
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -1362,22 +1364,10 @@ workflows:
       - emerge_purchases_ui_snapshot_tests
       - validate-package-swift:
           swift_version: "5.7"
-          filters:
-            changes:
-              paths:
-                - "Package@swift-5.7.swift"
       - validate-package-swift:
           swift_version: "5.8"
-          filters:
-            changes:
-              paths:
-                - "Package@swift-5.8.swift"
       - validate-package-swift:
           swift_version: "6.0"
-          filters:
-            changes:
-              paths:
-                - "Package.swift"
   create-tag:
     when:
       and:
