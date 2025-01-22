@@ -78,9 +78,9 @@ enum PurchaseInfo: Identifiable {
     var expiresDate: Date? {
         switch self {
         case let .subscription(info):
-            info.expiresDate
+            return info.expiresDate
         case .nonSubscription:
-            nil
+            return nil
         }
     }
 
