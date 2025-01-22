@@ -346,7 +346,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                 padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
                 shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
                 border: .init(color: .init(light: .hex("#0074F3")), width: 10),
-                shadow: .init(color: .init(light: .hex("#00000030")), radius: 4, x: 0, y: 0),
+                shadow: .init(color: .init(light: .hex("#00000080")), radius: 4, x: 0, y: 4),
                 badge: .init(
                     style: style,
                     alignment: alignment,
