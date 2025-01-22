@@ -53,9 +53,10 @@ struct IconComponentView: View {
             .padding(style.padding)
             .shape(border: style.iconBackgroundBorder,
                    shape: style.iconBackgroundShape,
-                   shadow: style.iconBackgroundShadow,
                    background: style.iconBackgroundStyle,
                    uiConfigProvider: self.viewModel.uiConfigProvider)
+            .shadow(shadow: style.iconBackgroundShadow,
+                    shape: style.iconBackgroundShape?.toInsettableShape())
             .padding(style.padding)
             .size(style.size)
             .clipped()

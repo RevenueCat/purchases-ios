@@ -100,10 +100,10 @@ struct StackComponentView: View {
         .padding(additionalPadding)
         .shape(border: style.border,
                shape: style.shape,
-               shadow: style.shadow,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .stackBadge(style.badge)
+        .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
         .padding(style.margin)
     }
 
@@ -519,6 +519,7 @@ extension StackComponentViewModel {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
         let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+        let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
         let viewModels = try component.components.map { component in
             try factory.toViewModel(
@@ -526,14 +527,24 @@ extension StackComponentViewModel {
                 packageValidator: validator,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                uiConfigProvider: uiConfigProvider
+            )
+        }
+
+        let badgeViewModels = try component.badge?.stack.value.components.map { component in
+            try factory.toViewModel(
+                component: component,
+                packageValidator: validator,
+                offering: offering,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
         }
 
         try self.init(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: [],
+            badgeViewModels: badgeViewModels ?? [],
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             localizationProvider: localizationProvider
         )

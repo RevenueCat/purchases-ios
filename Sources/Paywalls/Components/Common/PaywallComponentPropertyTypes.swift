@@ -523,6 +523,12 @@ public extension PaywallComponent {
         public let alignment: TwoDimensionAlignment
         public let stack: CodableBox<StackComponent>
 
+        public init(style: BadgeStyle, alignment: TwoDimensionAlignment, stack: CodableBox<StackComponent>) {
+            self.style = style
+            self.alignment = alignment
+            self.stack = stack
+        }
+
     }
 
     // Holds a reference to a `Codable` value.
