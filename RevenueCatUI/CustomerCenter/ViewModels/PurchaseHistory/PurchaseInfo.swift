@@ -51,9 +51,9 @@ enum PurchaseInfo: Identifiable {
     private var price: ProductPaidPrice? {
         switch self {
         case let .subscription(info):
-            info.price
+            return info.price
         case .nonSubscription:
-            nil
+            return nil
         }
     }
 
