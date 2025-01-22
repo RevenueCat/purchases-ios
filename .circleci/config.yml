@@ -399,6 +399,15 @@ commands:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  validate-package-swift:
+    parameters:
+      swift_version:
+        type: string
+    steps:
+      - run:
+          name: Validate Package.swift
+          command: swift package describe --swift-sdk "<< parameters.swift_version >>"
+
 jobs:
   spm-release-build-xcode-14:
     executor:
@@ -1351,7 +1360,24 @@ workflows:
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
       - emerge_purchases_ui_snapshot_tests
-
+      - validate-package-swift:
+          swift_version: 5.7
+          filters:
+            changes:
+              paths:
+                - "Package@swift-5.7.swift"
+      - validate-package-swift:
+          swift_version: 5.8
+          filters:
+            changes:
+              paths:
+                - "Package@swift-5.8.swift"
+      - validate-package-swift:
+          swift_version: 6.0
+          filters:
+            changes:
+              paths:
+                - "Package.swift"
   create-tag:
     when:
       and:
