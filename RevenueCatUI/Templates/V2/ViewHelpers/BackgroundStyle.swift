@@ -16,9 +16,9 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-enum BackgroundStyle {
+enum BackgroundStyle: Hashable {
 
-    case color(PaywallComponent.ColorScheme)
+    case color(DisplayableColorScheme)
     case image(PaywallComponent.ThemeImageUrls)
 
 }
@@ -46,11 +46,14 @@ struct BackgroundStyleModifier: ViewModifier {
 fileprivate extension View {
 
     @ViewBuilder
-    func apply(backgroundStyle: BackgroundStyle, colorScheme: ColorScheme) -> some View {
+    func apply(
+        backgroundStyle: BackgroundStyle,
+        colorScheme: ColorScheme
+    ) -> some View {
         switch backgroundStyle {
         case .color(let color):
             switch color.effectiveColor(for: colorScheme) {
-            case .hex, .alias:
+            case .hex:
                 self.background(color.toDynamicColor())
             case .linear(let degrees, _):
                 self.background {
@@ -97,7 +100,7 @@ extension View {
 
 }
 
-extension PaywallComponent.Background {
+extension BackgroundStyle {
 
     var backgroundStyle: BackgroundStyle? {
         switch self {
@@ -110,7 +113,7 @@ extension PaywallComponent.Background {
 
 }
 
-extension PaywallComponent.ColorScheme {
+extension DisplayableColorScheme {
 
     var backgroundStyle: BackgroundStyle {
         return .color(self)
@@ -170,11 +173,15 @@ struct BackgrounDStyle_Previews: PreviewProvider {
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
+                    width: 750,
+                    height: 530,
                     original: lightUrl,
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 ),
                 dark: .init(
+                    width: 1024,
+                    height: 853,
                     original: darkUrl,
                     heic: darkUrl,
                     heicLowRes: darkUrl
@@ -187,11 +194,15 @@ struct BackgrounDStyle_Previews: PreviewProvider {
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
+                    width: 750,
+                    height: 530,
                     original: lightUrl,
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 ),
                 dark: .init(
+                    width: 1024,
+                    height: 853,
                     original: darkUrl,
                     heic: darkUrl,
                     heicLowRes: darkUrl
@@ -213,8 +224,8 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#ff0000", percent: 0),
                             .init(color: "#E58984", percent: 100)
                         ])
-                      )
-                 )
+                    ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                ))
             )
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
@@ -232,8 +243,8 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#00E519", percent: 0),
                             .init(color: "#9DEAD3", percent: 100)
                         ])
-                      )
-                 )
+                    ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                )
             )
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Linear Gradient - Light (should be green")
@@ -250,8 +261,8 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#ff0000", percent: 0),
                             .init(color: "#E58984", percent: 100)
                         ])
-                      )
-                 )
+                      ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                )
             )
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
@@ -270,8 +281,8 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                             .init(color: "#000000", percent: 0),
                             .init(color: "#ffffff", percent: 100)
                         ])
-                      )
-                 )
+                      ).asDisplayable(uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()))
+                )
             )
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Radial Gradient - Light (should be green")

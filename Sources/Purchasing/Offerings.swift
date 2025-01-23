@@ -162,11 +162,21 @@ private extension Offering {
             )
         }
 
+        #if PAYWALL_COMPONENTS
+        return Offering(identifier: self.identifier,
+                        serverDescription: self.serverDescription,
+                        metadata: self.metadata,
+                        paywall: self.paywall,
+                        paywallComponents: self.paywallComponents,
+                        availablePackages: updatedPackages
+        )
+        #else
         return Offering(identifier: self.identifier,
                         serverDescription: self.serverDescription,
                         metadata: self.metadata,
                         paywall: self.paywall,
                         availablePackages: updatedPackages
         )
+        #endif
     }
 }

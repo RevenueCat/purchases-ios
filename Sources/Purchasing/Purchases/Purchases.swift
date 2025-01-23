@@ -1028,7 +1028,7 @@ public extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    @objc(params:withCompletion:)
+    @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, completion: completion)
     }

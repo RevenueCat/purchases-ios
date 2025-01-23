@@ -21,6 +21,16 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct AppUpdateWarningView: View {
+
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     let onUpdateAppClick: () -> Void
     let onContinueAnywayClick: () -> Void
 
@@ -29,33 +39,26 @@ struct AppUpdateWarningView: View {
         self.onContinueAnywayClick = onContinueAnywayClick
     }
 
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
-    @Environment(\.appearance)
-    private var appearance: CustomerCenterConfigData.Appearance
-    @Environment(\.colorScheme)
-    private var colorScheme
-
     @ViewBuilder
     var content: some View {
         ZStack {
             List {
                 Section {
                     CompatibilityContentUnavailableView(
-                        localization.commonLocalizedString(for: .updateWarningTitle),
+                        localization[.updateWarningTitle],
                         systemImage: "arrow.up.circle.fill",
-                        description: Text(localization.commonLocalizedString(for: .updateWarningDescription))
+                        description: Text(localization[.updateWarningDescription])
                     )
                 }
 
                 Section {
-                    Button(localization.commonLocalizedString(for: .updateWarningUpdate)) {
+                    Button(localization[.updateWarningUpdate]) {
                         onUpdateAppClick()
                     }
                     .buttonStyle(ProminentButtonStyle())
                     .padding(.top, 4)
 
-                    Button(localization.commonLocalizedString(for: .updateWarningIgnore)) {
+                    Button(localization[.updateWarningIgnore]) {
                         onContinueAnywayClick()
                     }
                     .buttonStyle(TextButtonStyle())
@@ -63,11 +66,7 @@ struct AppUpdateWarningView: View {
                 .listRowSeparator(.hidden)
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .compatibleTopBarTrailing) {
-                DismissCircleButton()
-            }
-        }
+        .dismissCircleButtonToolbar()
     }
 
     var body: some View {

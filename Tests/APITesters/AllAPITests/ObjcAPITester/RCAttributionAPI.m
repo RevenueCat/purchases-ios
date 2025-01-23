@@ -46,6 +46,8 @@
     [a setFirebaseAppInstanceID: @""];
     [a setTenjinAnalyticsInstallationID: nil];
     [a setTenjinAnalyticsInstallationID: @""];
+    [a setPostHogUserID:nil];
+    [a setPostHogUserID:@""];
     [a setMediaSource: nil];
     [a setMediaSource: @""];
     [a setCampaign: nil];

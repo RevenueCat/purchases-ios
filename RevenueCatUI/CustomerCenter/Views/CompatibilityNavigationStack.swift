@@ -23,20 +23,76 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct CompatibilityNavigationStack<Content: View>: View {
 
-    @ViewBuilder var content: Content
+    @ViewBuilder var content: () -> Content
 
     var body: some View {
         if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
+            NavigationStack(root: content)
         } else {
-            NavigationView {
-                content
+            NavigationView(content: content)
+        }
+    }
+}
+
+extension View {
+    /// Adds backward-compatible navigation, supporting both iOS 16+ and earlier versions.
+    /// - Parameters:
+    ///   - isPresented: A binding to a Boolean that determines whether the destination is presented.
+    ///   - destination: A closure that returns the destination view.
+    @ViewBuilder func compatibleNavigation<Destination: View>(
+        isPresented: Binding<Bool>,
+        usesNavigationStack: Bool,
+        @ViewBuilder destination: @escaping () -> Destination
+    ) -> some View {
+        if #available(iOS 16.0, *), usesNavigationStack {
+            self.navigationDestination(isPresented: isPresented, destination: destination)
+        } else {
+            self.background(
+                NavigationLink(
+                    destination: destination(),
+                    isActive: isPresented
+                ) {
+                    EmptyView()
+                }
+                    .hidden() // Keeps the NavigationLink invisible
+            )
+        }
+    }
+}
+
+extension View {
+    /// Adds backward-compatible navigation, supporting both iOS 16+ and earlier versions, triggered by an optional
+    /// binding.
+    /// - Parameters:
+    ///   - item: A binding to an optional value that triggers navigation when non-nil.
+    ///   - destination: A closure that returns the destination view, taking the unwrapped value as a parameter.
+    func compatibleNavigation<Item, Destination: View>(
+        item: Binding<Item?>,
+        usesNavigationStack: Bool,
+        @ViewBuilder destination: @escaping (Item) -> Destination
+    ) -> some View {
+        compatibleNavigation(isPresented: item.isPresent(), usesNavigationStack: usesNavigationStack) {
+            if let unwrapped = item.wrappedValue {
+                destination(unwrapped)
             }
         }
     }
+}
 
+private extension Binding {
+
+    func isPresent<Wrapped>() -> Binding<Bool> where Value == Wrapped? {
+        Binding<Bool>(
+            get: {
+                self.wrappedValue != nil
+            },
+            set: { isActive in
+                if !isActive {
+                    self.wrappedValue = nil
+                }
+            }
+        )
+    }
 }
 
 #endif

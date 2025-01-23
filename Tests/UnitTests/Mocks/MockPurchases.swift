@@ -431,6 +431,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setPostHogUserID(_ postHogUserID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
         self.unimplemented()
     }
@@ -442,6 +446,13 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    @objc(params:withCompletion:)
+    func purchaseWithParams(
+        _ params: PurchaseParams,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
+        self.unimplemented()
+    }
 }
 
 extension MockPurchases: PurchasesSwiftType {

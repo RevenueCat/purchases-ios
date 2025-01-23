@@ -22,17 +22,22 @@ struct ForegroundColorSchemeModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
-    var foregroundColorScheme: PaywallComponent.ColorScheme
+    var foregroundColorScheme: DisplayableColorScheme
 
     func body(content: Content) -> some View {
-        content.foregroundColorScheme(foregroundColorScheme, colorScheme: colorScheme)
+        content.foregroundColorScheme(
+            self.foregroundColorScheme,
+            colorScheme: self.colorScheme
+        )
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func foregroundColorScheme(_ colorScheme: PaywallComponent.ColorScheme) -> some View {
+    func foregroundColorScheme(
+        _ colorScheme: DisplayableColorScheme
+    ) -> some View {
         self.modifier(ForegroundColorSchemeModifier(foregroundColorScheme: colorScheme))
     }
 }
@@ -40,10 +45,19 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
     @ViewBuilder
-    func foregroundColorScheme(_ color: PaywallComponent.ColorScheme, colorScheme: ColorScheme) -> some View {
+    func foregroundColorScheme(
+        _ color: DisplayableColorScheme,
+        colorScheme: ColorScheme
+    ) -> some View {
         switch color.effectiveColor(for: colorScheme) {
-        case .hex, .alias:
-            self.foregroundColor(color.toDynamicColor())
+        case .hex:
+            // Do not apply a clear text color
+            // Use the default color
+            if color.hasError {
+                self
+            } else {
+                self.foregroundColor(color.toDynamicColor())
+            }
         case .linear(let degrees, _):
             self.overlay {
                 GradientView(

@@ -112,6 +112,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.tenjinAnalyticsInstallationID, value: tenjinAnalyticsInstallationID, appUserID: appUserID)
     }
 
+    func setPostHogUserID(_ postHogUserID: String?, appUserID: String) {
+        setReservedAttribute(.postHogUserID, value: postHogUserID, appUserID: appUserID)
+    }
+
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
         setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }

@@ -124,6 +124,10 @@ NSURL *url;
     [p setKeyword: @""];
     [p setCreative: nil];
     [p setCreative: @""];
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    RCPurchaseParams *purchaseParams;
+    [p params:purchaseParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    #endif
 
     [p getCustomerInfoWithFetchPolicy:RCCacheFetchPolicyFetchCurrent completion:^(RCCustomerInfo *customerInfo,
                                                                                   NSError *error) {}];
@@ -165,7 +169,8 @@ NSURL *url;
         }];
     }
 
-    [p params:packageParams withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchaseWithParams:productParams completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchaseWithParams:packageParams completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     #endif
 
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<RCStoreProduct *> *products) { }];

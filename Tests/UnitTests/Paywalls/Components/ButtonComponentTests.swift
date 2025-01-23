@@ -11,7 +11,12 @@ class ButtonComponentCodableTests: TestCase {
         "type": "stack",
         "dimension": {
             "type": "vertical",
-            "alignment": "center"
+            "alignment": "center",
+            "distribution": "start"
+        },
+        "size": {
+            "width": { "type": "fill" },
+            "height": { "type": "fill" }
         },
         "padding": {
             "top": 0,
@@ -44,7 +49,11 @@ class ButtonComponentCodableTests: TestCase {
 
         let buttonComponent = PaywallComponent.ButtonComponent(
             action: .restorePurchases,
-            stack: .init(components: [])
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
         )
 
         XCTAssertEqual(decodedButton, buttonComponent)
@@ -65,7 +74,11 @@ class ButtonComponentCodableTests: TestCase {
 
         let buttonComponent = PaywallComponent.ButtonComponent(
             action: .navigateBack,
-            stack: .init(components: [])
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
         )
 
         XCTAssertEqual(decodedButton, buttonComponent)
@@ -87,7 +100,11 @@ class ButtonComponentCodableTests: TestCase {
 
         let buttonComponent = PaywallComponent.ButtonComponent(
             action: .navigateTo(destination: .customerCenter),
-            stack: .init(components: [])
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
         )
 
         XCTAssertEqual(decodedButton, buttonComponent)
@@ -116,7 +133,11 @@ class ButtonComponentCodableTests: TestCase {
                 destination: .terms(urlLid: "re45",
                                     method: .inAppBrowser)
             ),
-            stack: .init(components: [])
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
         )
 
         XCTAssertEqual(decodedButton, buttonComponent)
@@ -145,7 +166,11 @@ class ButtonComponentCodableTests: TestCase {
                 destination: .privacyPolicy(urlLid: "re45",
                                             method: .externalBrowser)
             ),
-            stack: .init(components: [])
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
         )
 
         XCTAssertEqual(decodedButton, buttonComponent)
@@ -174,7 +199,11 @@ class ButtonComponentCodableTests: TestCase {
                 destination: .url(urlLid: "re45",
                                   method: .deepLink)
             ),
-            stack: .init(components: [])
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            )
         )
 
         XCTAssertEqual(decodedButton, buttonComponent)

@@ -13,7 +13,8 @@
 
 import Foundation
 
-internal class RateLimiter {
+internal final class RateLimiter: @unchecked Sendable {
+    private let lock = Lock()
     private var timestamps: [Date?]
     private var index: Int = 0
     private let maxCallsInclusive: Int
@@ -30,17 +31,19 @@ internal class RateLimiter {
     }
 
     func shouldProceed() -> Bool {
-        let now = Date()
-        let oldestIndex = (index + 1) % maxCallsInclusive
-        let oldestTimestamp = timestamps[oldestIndex]
+        return self.lock.perform {
+            let now = Date()
+            let oldestIndex = (index + 1) % maxCallsInclusive
+            let oldestTimestamp = timestamps[oldestIndex]
 
-        // Check if the oldest timestamp is outside the rate limiting period or if it's nil
-        if let oldestTimestamp = oldestTimestamp, now.timeIntervalSince(oldestTimestamp) <= period {
-            return false
-        } else {
-            timestamps[index] = now
-            index = oldestIndex
-            return true
+            // Check if the oldest timestamp is outside the rate limiting period or if it's nil
+            if let oldestTimestamp = oldestTimestamp, now.timeIntervalSince(oldestTimestamp) <= period {
+                return false
+            } else {
+                timestamps[index] = now
+                index = oldestIndex
+                return true
+            }
         }
     }
 }

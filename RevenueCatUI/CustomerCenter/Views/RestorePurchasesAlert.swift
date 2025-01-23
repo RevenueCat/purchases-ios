@@ -34,8 +34,6 @@ struct RestorePurchasesAlert: ViewModifier {
 
     @State
     private var alertType: AlertType = .restorePurchases
-    @Environment(\.dismiss)
-    private var dismiss
     @Environment(\.localization)
     private var localization
     @Environment(\.supportInformation)
@@ -43,7 +41,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
-        let subject = self.localization.commonLocalizedString(for: .defaultSubject)
+        let subject = self.localization[.defaultSubject]
         let body = supportInformation.calculateBody(self.localization)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
@@ -74,7 +72,7 @@ struct RestorePurchasesAlert: ViewModifier {
         case .purchasesRecovered:
             return [
                 AlertOrConfirmationDialog.AlertAction(
-                    title: localization.commonLocalizedString(for: .dismiss),
+                    title: localization[.dismiss],
                     role: .cancel,
                     action: dismissAlert
                 )
@@ -87,7 +85,7 @@ struct RestorePurchasesAlert: ViewModifier {
                customerCenterViewModel.shouldShowAppUpdateWarnings {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
-                        title: localization.commonLocalizedString(for: .updateWarningUpdate),
+                        title: localization[.updateWarningUpdate],
                         role: nil,
                         action: onUpdateAppClick
                     )
@@ -97,7 +95,7 @@ struct RestorePurchasesAlert: ViewModifier {
             if let url = supportURL {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
-                        title: localization.commonLocalizedString(for: .contactSupport),
+                        title: localization[.contactSupport],
                         role: nil,
                         action: { Task { openURL(url) } }
                     )
@@ -106,7 +104,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
             actions.append(
                 AlertOrConfirmationDialog.AlertAction(
-                    title: localization.commonLocalizedString(for: .dismiss),
+                    title: localization[.dismiss],
                     role: .cancel,
                     action: dismissAlert
                 )
@@ -117,7 +115,7 @@ struct RestorePurchasesAlert: ViewModifier {
         case .restorePurchases:
             return [
                 AlertOrConfirmationDialog.AlertAction(
-                    title: localization.commonLocalizedString(for: .checkPastPurchases),
+                    title: localization[.checkPastPurchases],
                     role: nil,
                     action: {
                         Task {
@@ -127,7 +125,7 @@ struct RestorePurchasesAlert: ViewModifier {
                     }
                 ),
                 AlertOrConfirmationDialog.AlertAction(
-                    title: localization.commonLocalizedString(for: .cancel),
+                    title: localization[.cancel],
                     role: .cancel,
                     action: dismissAlert
                 )
@@ -139,32 +137,32 @@ struct RestorePurchasesAlert: ViewModifier {
     private func alertTitle() -> String {
         switch self.alertType {
         case .purchasesRecovered:
-            return localization.commonLocalizedString(for: .purchasesRecovered)
+            return localization[.purchasesRecovered]
         case .purchasesNotFound:
             return ""
         case .restorePurchases:
-            return localization.commonLocalizedString(for: .restorePurchases)
+            return localization[.restorePurchases]
         }
     }
 
     private func alertMessage() -> String {
         switch self.alertType {
         case .purchasesRecovered:
-            return localization.commonLocalizedString(for: .purchasesRecoveredExplanation)
+            return localization[.purchasesRecoveredExplanation]
         case .purchasesNotFound:
-            var message = localization.commonLocalizedString(for: .purchasesNotRecovered)
+            var message = localization[.purchasesNotRecovered]
             if customerCenterViewModel.shouldShowAppUpdateWarnings {
-                message += "\n\n" + localization.commonLocalizedString(for: .updateWarningDescription)
+                message += "\n\n" + localization[.updateWarningDescription]
             }
             return message
         case .restorePurchases:
-            return localization.commonLocalizedString(for: .goingToCheckPurchases)
+            return localization[.goingToCheckPurchases]
         }
     }
 
     private func dismissAlert() {
         self.alertType = .restorePurchases
-        dismiss()
+        self.isPresented = false
     }
 }
 

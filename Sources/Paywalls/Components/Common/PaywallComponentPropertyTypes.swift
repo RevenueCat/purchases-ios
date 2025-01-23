@@ -32,12 +32,16 @@ public extension PaywallComponent {
 
     struct ImageUrls: Codable, Sendable, Hashable, Equatable {
 
-        public init(original: URL, heic: URL, heicLowRes: URL) {
+        public init(width: Int, height: Int, original: URL, heic: URL, heicLowRes: URL) {
+            self.width = width
+            self.height = height
             self.original = original
             self.heic = heic
             self.heicLowRes = heicLowRes
         }
 
+        public let width: Int
+        public let height: Int
         public let original: URL
         public let heic: URL
         public let heicLowRes: URL
@@ -148,7 +152,7 @@ public extension PaywallComponent {
             switch self {
             case .rectangle(let corners):
                 try container.encode(ShapeType.rectangle.rawValue, forKey: .type)
-                try container.encode(corners, forKey: .corners)
+                try container.encodeIfPresent(corners, forKey: .corners)
             case .pill:
                 try container.encode(ShapeType.pill.rawValue, forKey: .type)
             }
@@ -160,7 +164,7 @@ public extension PaywallComponent {
 
             switch type {
             case .rectangle:
-                let value = try container.decode(CornerRadiuses.self, forKey: .corners)
+                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
                 self = .rectangle(value)
             case .pill:
                 self = .pill
@@ -185,10 +189,58 @@ public extension PaywallComponent {
 
     }
 
+    enum IconBackgroundShape: Codable, Sendable, Hashable, Equatable {
+
+        case rectangle(CornerRadiuses?)
+        case circle
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let corners):
+                try container.encode(ShapeType.rectangle.rawValue, forKey: .type)
+                try container.encodeIfPresent(corners, forKey: .corners)
+            case .circle:
+                try container.encode(ShapeType.circle.rawValue, forKey: .type)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(ShapeType.self, forKey: .type)
+
+            switch type {
+            case .rectangle:
+                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
+                self = .rectangle(value)
+            case .circle:
+                self = .circle
+            }
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+            case corners
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum ShapeType: String, Decodable {
+
+            case rectangle
+            case circle
+
+        }
+
+    }
+
     enum MaskShape: Codable, Sendable, Hashable, Equatable {
 
         case rectangle(CornerRadiuses?)
-        case pill
+        case circle
         case concave
         case convex
 
@@ -197,14 +249,14 @@ public extension PaywallComponent {
 
             switch self {
             case .rectangle(let corners):
-                try container.encode(MaskShapeType.rectangle.rawValue, forKey: .type)
+                try container.encodeIfPresent(MaskShapeType.rectangle.rawValue, forKey: .type)
                 try container.encode(corners, forKey: .corners)
-            case .pill:
-                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+            case .circle:
+                try container.encode(MaskShapeType.circle.rawValue, forKey: .type)
             case .concave:
-                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+                try container.encode(MaskShapeType.concave.rawValue, forKey: .type)
             case .convex:
-                try container.encode(MaskShapeType.pill.rawValue, forKey: .type)
+                try container.encode(MaskShapeType.convex.rawValue, forKey: .type)
             }
         }
 
@@ -214,10 +266,10 @@ public extension PaywallComponent {
 
             switch type {
             case .rectangle:
-                let value = try container.decode(CornerRadiuses.self, forKey: .corners)
+                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
                 self = .rectangle(value)
-            case .pill:
-                self = .pill
+            case .circle:
+                self = .circle
             case .concave:
                 self = .concave
             case .convex:
@@ -237,7 +289,7 @@ public extension PaywallComponent {
         private enum MaskShapeType: String, Decodable {
 
             case rectangle
-            case pill
+            case circle
             case concave
             case convex
 
@@ -247,17 +299,20 @@ public extension PaywallComponent {
 
     struct Padding: Codable, Sendable, Hashable, Equatable {
 
-        public init(top: Double, bottom: Double, leading: Double, trailing: Double) {
+        public init(top: Double?,
+                    bottom: Double?,
+                    leading: Double?,
+                    trailing: Double?) {
             self.top = top
             self.bottom = bottom
             self.leading = leading
             self.trailing = trailing
         }
 
-        public let top: Double
-        public let bottom: Double
-        public let leading: Double
-        public let trailing: Double
+        public let top: Double?
+        public let bottom: Double?
+        public let leading: Double?
+        public let trailing: Double?
 
         public static let `default` = Padding(top: 10, bottom: 10, leading: 20, trailing: 20)
         public static let zero = Padding(top: 0, bottom: 0, leading: 0, trailing: 0)
@@ -266,20 +321,20 @@ public extension PaywallComponent {
 
     struct CornerRadiuses: Codable, Sendable, Hashable, Equatable {
 
-        public init(topLeading: Double,
-                    topTrailing: Double,
-                    bottomLeading: Double,
-                    bottomTrailing: Double) {
+        public init(topLeading: Double?,
+                    topTrailing: Double?,
+                    bottomLeading: Double?,
+                    bottomTrailing: Double?) {
             self.topLeading = topLeading
             self.topTrailing = topTrailing
             self.bottomLeading = bottomLeading
             self.bottomTrailing = bottomTrailing
         }
 
-        public let topLeading: Double
-        public let topTrailing: Double
-        public let bottomLeading: Double
-        public let bottomTrailing: Double
+        public let topLeading: Double?
+        public let topTrailing: Double?
+        public let bottomLeading: Double?
+        public let bottomTrailing: Double?
 
         public static let `default` = CornerRadiuses(topLeading: 0,
                                                      topTrailing: 0,
@@ -385,7 +440,7 @@ public extension PaywallComponent {
 
     }
 
-    enum TwoDimensionAlignment: String, Decodable, Sendable, Hashable, Equatable {
+    enum TwoDimensionAlignment: String, Codable, Sendable, Hashable, Equatable {
 
         case center
         case leading
@@ -454,6 +509,53 @@ public extension PaywallComponent {
 
     }
 
+    enum BadgeStyle: String, Codable, Sendable, Hashable, Equatable {
+
+        case edgeToEdge = "edge_to_edge"
+        case overlaid = "overlaid"
+        case nested = "nested"
+
+    }
+
+    struct Badge: Codable, Sendable, Hashable, Equatable {
+
+        public let style: BadgeStyle
+        public let alignment: TwoDimensionAlignment
+        public let stack: CodableBox<StackComponent>
+
+    }
+
+    // Holds a reference to a `Codable` value.
+    final class CodableBox<T: Codable>: Codable {
+
+        public let value: T
+
+        public init(_ value: T) { self.value = value }
+
+        public required init(from decoder: Decoder) throws {
+            value = try T(from: decoder)
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            try value.encode(to: encoder)
+        }
+
+    }
+
+}
+
+extension PaywallComponent.CodableBox: Sendable where T: Sendable {}
+
+extension PaywallComponent.CodableBox: Equatable where T: Equatable {
+    public static func == (lhs: PaywallComponent.CodableBox<T>, rhs: PaywallComponent.CodableBox<T>) -> Bool {
+        return lhs.value == rhs.value
+    }
+}
+
+extension PaywallComponent.CodableBox: Hashable where T: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+    }
 }
 
 #endif

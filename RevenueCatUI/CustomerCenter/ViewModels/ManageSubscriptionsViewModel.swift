@@ -32,6 +32,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var showRestoreAlert: Bool = false
     @Published
+    var showPurchases: Bool = false
+
+    @Published
     var feedbackSurveyData: FeedbackSurveyData?
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?

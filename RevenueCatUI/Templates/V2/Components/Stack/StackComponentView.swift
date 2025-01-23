@@ -39,7 +39,11 @@ struct StackComponentView: View {
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
 
-    init(viewModel: StackComponentViewModel, onDismiss: @escaping () -> Void, additionalPadding: EdgeInsets? = nil) {
+    init(
+        viewModel: StackComponentViewModel,
+        onDismiss: @escaping () -> Void,
+        additionalPadding: EdgeInsets? = nil
+    ) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
@@ -69,8 +73,10 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                // This alignment positions the inner VStack horizontally.
-                .size(style.size, alignment: horizontalAlignment.frameAlignment)
+                // This alignment positions the inner VStack horizontally and vertically
+                .size(style.size,
+                      horizontalAlignment: horizontalAlignment.frameAlignment,
+                      verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
                 HorizontalStack(
                     style: style,
@@ -79,8 +85,10 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                // This alignment positions the inner HStack vertically.
-                .size(style.size, alignment: verticalAlignment.frameAlignment)
+                // This alignment positions the inner VStack horizontally and vertically
+                .size(style.size,
+                      horizontalAlignment: distribution.horizontalFrameAlignment,
+                      verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
@@ -90,13 +98,12 @@ struct StackComponentView: View {
         }
         .padding(style.padding)
         .padding(additionalPadding)
-        .backgroundStyle(style.backgroundStyle)
         .shape(border: style.border,
-               shape: style.shape)
-        .applyIfLet(style.shadow) { view, shadow in
-            // Without compositingGroup(), the shadow is applied to the stack's children as well.
-            view.compositingGroup().shadow(shadow: shadow)
-        }
+               shape: style.shape,
+               shadow: style.shadow,
+               background: style.backgroundStyle,
+               uiConfigProvider: self.viewModel.uiConfigProvider)
+        .stackBadge(style.badge)
         .padding(style.margin)
     }
 
@@ -130,8 +137,6 @@ struct VerticalStack: View {
                     onDismiss: self.onDismiss
                 )
             }
-            // This alignment positions the items vertically within its parent
-            .frame(maxHeight: .infinity, alignment: distribution.verticalFrameAlignment)
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
@@ -165,8 +170,6 @@ struct HorizontalStack: View {
             ) {
                 ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
             }
-            // This alignment positions the items horizontally within its parent
-            .frame(maxWidth: .infinity, alignment: distribution.horizontalFrameAlignment)
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,
@@ -183,6 +186,7 @@ struct HorizontalStack: View {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
 struct StackComponentView_Previews: PreviewProvider {
     static var previews: some View {
         // Default - Fill
@@ -349,6 +353,78 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
 
+        // Fits don't expand
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .stack(PaywallComponent.StackComponent(
+                            components: [
+                                .text(PaywallComponent.TextComponent(
+                                    text: "text_1",
+                                    color: .init(light: .hex("#000000")),
+                                    backgroundColor: .init(light: .hex("#ffcc00")),
+                                    size: .init(width: .fit, height: .fit),
+                                    margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                                )),
+                                .stack(PaywallComponent.StackComponent(
+                                    components: [
+                                        .text(.init(
+                                            text: "text_1",
+                                            color: .init(light: .hex("#000000")),
+                                            backgroundColor: .init(light: .hex("#ffcc00")),
+                                            size: .init(width: .fit, height: .fit),
+                                            margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                                        ))
+                                    ],
+                                    dimension: .vertical(.center, .center),
+                                    size: .init(width: .fit, height: .fit),
+                                    backgroundColor: .init(light: .hex("#dedede")),
+                                    margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                                )),
+                                .stack(PaywallComponent.StackComponent(
+                                    components: [
+                                        .text(.init(
+                                            text: "text_1",
+                                            color: .init(light: .hex("#000000")),
+                                            backgroundColor: .init(light: .hex("#ffcc00")),
+                                            size: .init(width: .fit, height: .fit),
+                                            margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                                        ))
+                                    ],
+                                    dimension: .horizontal(.center, .center),
+                                    size: .init(width: .fit, height: .fit),
+                                    backgroundColor: .init(light: .hex("#dedede")),
+                                    margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                                ))
+                            ],
+                            dimension: .vertical(.center, .center),
+                            size: .init(width: .fit, height: .fit),
+                            backgroundColor: .init(light: .hex("#0000ff")),
+                            margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                        ))
+                    ],
+                    dimension: .vertical(.center, .center),
+                    size: .init(
+                        width: .fill,
+                        height: .fill
+                    ),
+                    backgroundColor: .init(light: .hex("#ff0000"))
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "text_1": .string("Hey")
+                    ]
+                )
+            ),
+            onDismiss: {}
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Fits don't expand")
+
         stackAlignmentAndDistributionPreviews()
     }
 
@@ -434,7 +510,7 @@ struct StackComponentView_Previews: PreviewProvider {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension StackComponentViewModel {
+extension StackComponentViewModel {
 
     convenience init(
         component: PaywallComponent.StackComponent,
@@ -449,13 +525,17 @@ fileprivate extension StackComponentViewModel {
                 component: component,
                 packageValidator: validator,
                 offering: offering,
-                localizationProvider: localizationProvider
+                localizationProvider: localizationProvider,
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
             )
         }
 
         try self.init(
             component: component,
-            viewModels: viewModels
+            viewModels: viewModels,
+            badgeViewModels: [],
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            localizationProvider: localizationProvider
         )
     }
 

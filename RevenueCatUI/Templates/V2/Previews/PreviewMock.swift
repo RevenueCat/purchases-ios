@@ -21,6 +21,55 @@ import SwiftUI
 
 // swiftlint:disable identifier_name
 
+enum PreviewUIConfig {
+
+    static func make(
+        colors: [String: PaywallComponent.ColorScheme] = [:],
+        fonts: [String: UIConfig.FontsConfig] = [:]
+    ) -> UIConfig {
+        return .init(
+            app: .init(
+                colors: colors,
+                fonts: fonts
+            ),
+            localizations: [
+                "en_US": [
+                    "day": "day",
+                    "daily": "daily",
+                    "day_short": "day",
+                    "week": "week",
+                    "weekly": "weekly",
+                    "week_short": "wk",
+                    "month": "month",
+                    "monthly": "monthly",
+                    "month_short": "mo",
+                    "year": "year",
+                    "yearly": "yearly",
+                    "year_short": "yr",
+                    "annual": "annual",
+                    "annually": "annually",
+                    "annual_short": "yr",
+                    "free": "free",
+                    "percent": "%d%%",
+                    "num_day": "%d day",
+                    "num_week": "%d week",
+                    "num_month": "%d month",
+                    "num_year": "%d year",
+                    "num_days": "%d days",
+                    "num_weeks": "%d weeks",
+                    "num_months": "%d months",
+                    "num_years": "%d years"
+                ]
+            ],
+            variableConfig: .init(
+                variableCompatibilityMap: [:],
+                functionCompatibilityMap: [:]
+            )
+        )
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PreviewRequiredEnvironmentProperties: ViewModifier {
 
@@ -29,13 +78,16 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
     let packageContext: PackageContext?
+    let colorScheme: ColorScheme
 
     func body(content: Content) -> some View {
         content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
+            .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
+            .environment(\.colorScheme, colorScheme)
     }
 
 }
@@ -45,49 +97,140 @@ extension View {
     func previewRequiredEnvironmentProperties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
-        packageContext: PackageContext? = nil
+        packageContext: PackageContext? = nil,
+        colorScheme: ColorScheme = .light
     ) -> some View {
         self.modifier(PreviewRequiredEnvironmentProperties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
-            packageContext: packageContext
+            packageContext: packageContext,
+            colorScheme: colorScheme
         ))
     }
 }
 
 enum PreviewMock {
 
-    static var weeklyPackage: Package = .init(
-        identifier: "weekly",
+    static var weeklyStandardPackage: Package = .init(
+        identifier: "weekly_standard",
         packageType: .monthly,
         storeProduct: .init(sk1Product: Product(
-            price: 3.99,
+            price: 1.99,
             unit: .week,
-            localizedTitle: "Weekly"
+            localizedTitle: "Weekly Standard"
         )),
         offeringIdentifier: "default"
     )
 
-    static var monthlyPackage: Package = .init(
-        identifier: "monthly",
+    static var monthlyStandardPackage: Package = .init(
+        identifier: "monthly_standard",
+        packageType: .monthly,
+        storeProduct: .init(sk1Product: Product(
+            price: 4.99,
+            unit: .month,
+            localizedTitle: "Monthly Standard"
+        )),
+        offeringIdentifier: "default"
+    )
+
+    static var annualStandardPackage: Package = .init(
+        identifier: "annual_standard",
+        packageType: .annual,
+        storeProduct: .init(sk1Product: Product(
+            price: 49.99,
+            unit: .year,
+            localizedTitle: "Annual Standard"
+        )),
+        offeringIdentifier: "default"
+    )
+
+    static var weeklyPremiumPackage: Package = .init(
+        identifier: "weekly_premium",
+        packageType: .monthly,
+        storeProduct: .init(sk1Product: Product(
+            price: 4.99,
+            unit: .week,
+            localizedTitle: "Weekly Premium"
+        )),
+        offeringIdentifier: "default"
+    )
+
+    static var monthlyPremiumPackage: Package = .init(
+        identifier: "monthly_premium",
         packageType: .monthly,
         storeProduct: .init(sk1Product: Product(
             price: 9.99,
             unit: .month,
-            localizedTitle: "Monthly"
+            localizedTitle: "Monthly Premium"
         )),
         offeringIdentifier: "default"
     )
 
-    static var annualPackage: Package = .init(
-        identifier: "annual",
+    static var annualPremiumPackage: Package = .init(
+        identifier: "annual_premium",
         packageType: .annual,
         storeProduct: .init(sk1Product: Product(
             price: 99.99,
             unit: .year,
-            localizedTitle: "Annual"
+            localizedTitle: "Annual Premium"
         )),
         offeringIdentifier: "default"
+    )
+
+    static var uiConfig: UIConfig = .init(
+        app: .init(
+            colors: [:],
+            fonts: [:]
+        ),
+        localizations: [
+            "en_US": [
+                "day": "day",
+                "daily": "daily",
+                "day_short": "day",
+                "week": "week",
+                "weekly": "weekly",
+                "week_short": "wk",
+                "month": "month",
+                "monthly": "monthly",
+                "month_short": "mo",
+                "year": "year",
+                "yearly": "yearly",
+                "year_short": "yr",
+                "annual": "annual",
+                "annually": "annually",
+                "annual_short": "yr",
+                "free_price": "free",
+                "percent": "%d%%",
+                "num_day_zero": "%d day",
+                "num_day_one": "%d day",
+                "num_day_two": "%d days",
+                "num_day_few": "%d days",
+                "num_day_many": "%d days",
+                "num_day_other": "%d days",
+                "num_week_zero": "%d week",
+                "num_week_one": "%d week",
+                "num_week_two": "%d weeks",
+                "num_week_few": "%d weeks",
+                "num_week_many": "%d weeks",
+                "num_week_other": "%d weeks",
+                "num_month_zero": "%d month",
+                "num_month_one": "%d month",
+                "num_month_two": "%d months",
+                "num_month_few": "%d months",
+                "num_month_many": "%d months",
+                "num_month_other": "%d months",
+                "num_year_zero": "%d year",
+                "num_year_one": "%d year",
+                "num_year_two": "%d years",
+                "num_year_few": "%d years",
+                "num_year_many": "%d years",
+                "num_year_other": "%d years"
+            ]
+        ],
+        variableConfig: .init(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:]
+        )
     )
 
 }

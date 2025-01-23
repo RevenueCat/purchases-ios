@@ -19,8 +19,12 @@ import XCTest
 
 class ConfigurationTests: TestCase {
 
-    func testValidateAPIKeyWithPlatformSpecificKey() {
+    func testValidateAPIKeyWithApplPlatformSpecificKey() {
         expect(Configuration.validate(apiKey: "appl_1a2b3c4d5e6f7h")) == .validApplePlatform
+    }
+
+    func testValidateAPIKeyWithMacPlatformSpecificKey() {
+        expect(Configuration.validate(apiKey: "mac_1a2b3c4d5e6f7h")) == .validApplePlatform
     }
 
     func testValidateAPIKeyWithInvalidPlatformKey() {

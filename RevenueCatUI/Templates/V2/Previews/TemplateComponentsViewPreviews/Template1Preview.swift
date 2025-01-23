@@ -26,13 +26,16 @@ private enum Template1Preview {
     static let catImage = PaywallComponent.ImageComponent(
         source: .init(
             light: .init(
+                width: 750,
+                height: 530,
                 original: catUrl,
                 heic: catUrl,
                 heicLowRes: catUrl
             )
         ),
-        fitMode: .fit,
-        gradientColors: ["#ffffff00", "#ffffff00", "#ffffffff"]
+        size: .init(width: .fill, height: .fixed(270)),
+        fitMode: .fill,
+        maskShape: .convex
     )
 
     static let title = PaywallComponent.TextComponent(
@@ -43,7 +46,7 @@ private enum Template1Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .headingL,
+        fontSize: 28,
         horizontalAlignment: .center
     )
 
@@ -55,7 +58,7 @@ private enum Template1Preview {
         backgroundColor: nil,
         padding: .zero,
         margin: .zero,
-        fontSize: .bodyM,
+        fontSize: 15,
         horizontalAlignment: .center
     )
 
@@ -135,6 +138,21 @@ private enum Template1Preview {
         backgroundColor: nil
     )
 
+    static let paywallComponents: Offering.PaywallComponents = .init(
+        uiConfig: .init(
+            app: .init(
+                colors: [:],
+                fonts: [:]
+            ),
+            localizations: [:],
+            variableConfig: .init(
+                variableCompatibilityMap: [:],
+                functionCompatibilityMap: [:]
+            )
+        ),
+        data: data
+    )
+
     static let data: PaywallComponentsData = .init(
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
@@ -179,13 +197,14 @@ struct Template1Preview_Previews: PreviewProvider {
 
         // Template 1
         PaywallsV2View(
-            paywallComponentsData: Template1Preview.data,
+            paywallComponents: Template1Preview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
                             availablePackages: [package]),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
-            onDismiss: { }
+            onDismiss: { },
+            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))

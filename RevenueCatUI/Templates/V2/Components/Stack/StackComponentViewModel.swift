@@ -21,18 +21,24 @@ private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
-    private let component: PaywallComponent.StackComponent
+    let component: PaywallComponent.StackComponent
+    let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
+    let badgeViewModels: [PaywallComponentViewModel]
 
     init(
         component: PaywallComponent.StackComponent,
-        viewModels: [PaywallComponentViewModel]
+        viewModels: [PaywallComponentViewModel],
+        badgeViewModels: [PaywallComponentViewModel],
+        uiConfigProvider: UIConfigProvider,
+        localizationProvider: LocalizationProvider
     ) throws {
         self.component = component
         self.viewModels = viewModels
-
+        self.uiConfigProvider = uiConfigProvider
+        self.badgeViewModels = badgeViewModels
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
@@ -51,6 +57,8 @@ class StackComponentViewModel {
         )
 
         let style = StackComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
+            badgeViewModels: self.badgeViewModels,
             visible: partial?.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
@@ -60,7 +68,8 @@ class StackComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             shape: partial?.shape ?? self.component.shape,
             border: partial?.border ?? self.component.border,
-            shadow: partial?.shadow ?? self.component.shadow
+            shadow: partial?.shadow ?? self.component.shadow,
+            badge: partial?.badge ?? self.component.badge
         )
 
         apply(style)
@@ -70,19 +79,33 @@ class StackComponentViewModel {
 
 extension PresentedStackPartial: PresentedPartial {
 
-    static func combine(_ base: Self?, with other: Self?) -> Self {
+    static func combine(
+        _ base: PaywallComponent.PartialStackComponent?,
+        with other: PaywallComponent.PartialStackComponent?
+    ) -> Self {
+
+        let visible = other?.visible ?? base?.visible
+        let dimension = other?.dimension ?? base?.dimension
+        let size = other?.size ?? base?.size
+        let spacing = other?.spacing ?? base?.spacing
+        let backgroundColor = other?.backgroundColor ?? base?.backgroundColor
+        let padding = other?.padding ?? base?.padding
+        let margin = other?.margin ?? base?.margin
+        let shape = other?.shape ?? base?.shape
+        let border = other?.border ?? base?.border
+        let shadow = other?.shadow ?? base?.shadow
 
         return .init(
-            visible: other?.visible ?? base?.visible,
-            dimension: other?.dimension ?? base?.dimension,
-            size: other?.size ?? base?.size,
-            spacing: other?.spacing ?? base?.spacing,
-            backgroundColor: other?.backgroundColor ?? base?.backgroundColor,
-            padding: other?.padding ?? base?.padding,
-            margin: other?.margin ?? base?.margin,
-            shape: other?.shape ?? base?.shape,
-            border: other?.border ?? base?.border,
-            shadow: other?.shadow ?? base?.shadow
+            visible: visible,
+            dimension: dimension,
+            size: size,
+            spacing: spacing,
+            backgroundColor: backgroundColor,
+            padding: padding,
+            margin: margin,
+            shape: shape,
+            border: border,
+            shadow: shadow
         )
     }
 
@@ -105,8 +128,11 @@ struct StackComponentStyle {
     let shape: ShapeModifier.Shape?
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
+    let badge: BadgeModifier.BadgeInfo?
 
     init(
+        uiConfigProvider: UIConfigProvider,
+        badgeViewModels: [PaywallComponentViewModel],
         visible: Bool,
         dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
@@ -116,18 +142,22 @@ struct StackComponentStyle {
         margin: PaywallComponent.Padding,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
-        shadow: PaywallComponent.Shadow?
+        shadow: PaywallComponent.Shadow?,
+        badge: PaywallComponent.Badge?
     ) {
         self.visible = visible
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundStyle = backgroundColor?.backgroundStyle
+        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
-        self.border = border?.border
-        self.shadow = shadow?.shadow
+        self.border = border?.border(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.badge = badge?.badge(stackShape: self.shape,
+                                  badgeViewModels: badgeViewModels,
+                                  uiConfigProvider: uiConfigProvider)
     }
 
     var vstackStrategy: StackStrategy {
@@ -163,7 +193,7 @@ struct StackComponentStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Shape {
 
-    var shape: ShapeModifier.Shape? {
+    var shape: ShapeModifier.Shape {
         switch self {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
@@ -185,9 +215,9 @@ private extension PaywallComponent.Shape {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Border {
 
-    var border: ShapeModifier.BorderInfo? {
-        ShapeModifier.BorderInfo(
-            color: self.color.toDynamicColor(),
+    func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
+        return ShapeModifier.BorderInfo(
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
             width: self.width
         )
     }
@@ -197,12 +227,30 @@ private extension PaywallComponent.Border {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallComponent.Shadow {
 
-    var shadow: ShadowModifier.ShadowInfo? {
-        ShadowModifier.ShadowInfo(
-            color: self.color.toDynamicColor(),
+    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+        return ShadowModifier.ShadowInfo(
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
             radius: self.radius,
             x: self.x,
             y: self.y
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallComponent.Badge {
+
+    func badge(stackShape: ShapeModifier.Shape?,
+               badgeViewModels: [PaywallComponentViewModel],
+               uiConfigProvider: UIConfigProvider) -> BadgeModifier.BadgeInfo? {
+        BadgeModifier.BadgeInfo(
+            style: self.style,
+            alignment: self.alignment,
+            stack: self.stack,
+            badgeViewModels: badgeViewModels,
+            stackShape: stackShape,
+            uiConfigProvider: uiConfigProvider
         )
     }
 

@@ -69,9 +69,44 @@ struct DismissCircleButton: View {
                 )
             }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(localization.commonLocalizedString(for: .dismiss)))
+        .accessibilityLabel(Text(localization[.dismiss]))
     }
 
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct DismissCircleButtonToolbarModifier: ViewModifier {
+
+    @Environment(\.navigationOptions)
+    var navigationOptions
+
+    func body(content: Content) -> some View {
+        if navigationOptions.shouldShowCloseButton {
+            content
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        DismissCircleButton()
+                    }
+                }
+        } else {
+            content
+        }
+
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
+    func dismissCircleButtonToolbar() -> some View {
+        modifier(DismissCircleButtonToolbarModifier())
+    }
 }
 
 @available(iOS 15.0, *)

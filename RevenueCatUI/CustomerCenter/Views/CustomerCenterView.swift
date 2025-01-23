@@ -43,29 +43,46 @@ public struct CustomerCenterView: View {
 
     private let mode: CustomerCenterPresentationMode
 
+    private let navigationOptions: CustomerCenterNavigationOptions
+
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    public init(customerCenterActionHandler: CustomerCenterActionHandler? = nil) {
-        self.init(customerCenterActionHandler: customerCenterActionHandler, mode: .default)
+    ///   - navigationOptions: Options to control the navigation behavior
+    public init(
+        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        navigationOptions: CustomerCenterNavigationOptions = .default) {
+        self.init(
+            customerCenterActionHandler: customerCenterActionHandler,
+            mode: .default,
+            navigationOptions: navigationOptions
+        )
     }
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
-    init(customerCenterActionHandler: CustomerCenterActionHandler? = nil,
-         mode: CustomerCenterPresentationMode) {
+    ///   - mode: The presentation mode for the Customer Center
+    ///   - navigationOptions: Options to control the navigation behavior
+    init(
+        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        mode: CustomerCenterPresentationMode,
+        navigationOptions: CustomerCenterNavigationOptions) {
         self._viewModel = .init(wrappedValue:
                                     CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
         self.mode = mode
+        self.navigationOptions = navigationOptions
     }
 
-    fileprivate init(viewModel: CustomerCenterViewModel,
-                     mode: CustomerCenterPresentationMode = CustomerCenterPresentationMode.default) {
+    fileprivate init(
+        viewModel: CustomerCenterViewModel,
+        mode: CustomerCenterPresentationMode =  .default,
+        navigationOptions: CustomerCenterNavigationOptions = .default) {
         self._viewModel = .init(wrappedValue: viewModel)
         self.mode = mode
+        self.navigationOptions = navigationOptions
     }
 
     // swiftlint:disable:next missing_docs
@@ -83,6 +100,7 @@ public struct CustomerCenterView: View {
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.supportInformation, configuration.support)
                         .environment(\.customerCenterPresentationMode, self.mode)
+                        .environment(\.navigationOptions, self.navigationOptions)
                 } else {
                     TintedProgressView()
                 }
@@ -157,8 +175,14 @@ private extension CustomerCenterView {
         let accentColor = Color.from(colorInformation: configuration.appearance.accentColor,
                                      for: self.colorScheme)
 
-        CompatibilityNavigationStack {
-            destinationContent(configuration: configuration)
+        Group {
+            if navigationOptions.usesExistingNavigation {
+                destinationContent(configuration: configuration)
+            } else {
+                CompatibilityNavigationStack {
+                    destinationContent(configuration: configuration)
+                }
+            }
         }
         .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
     }
