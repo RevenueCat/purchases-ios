@@ -285,9 +285,7 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
     var badgeView: some View {
         VStack {
             ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                .frame(maxWidth: .infinity)
                 .padding(badge.stack.value.padding.edgeInsets)
-
         }.zIndex(-1)
     }
 
