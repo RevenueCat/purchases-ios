@@ -21,48 +21,85 @@ public extension PaywallComponent {
 
     protocol PartialComponent: PaywallComponentBase {}
 
-    struct ComponentOverrides<T: PartialComponent>: PaywallComponentBase {
+    typealias ComponentOverrides<T: PartialComponent> = [ComponentOverride<T>]
 
-        public init(
-            introOffer: T? = nil,
-            states: PaywallComponent.ComponentStates<T>? = nil,
-            conditions: PaywallComponent.ComponentConditions<T>? = nil
-        ) {
-            self.introOffer = introOffer
-            self.states = states
-            self.conditions = conditions
-        }
+    struct ComponentOverride<T: PartialComponent>: PaywallComponentBase {
 
-        public let introOffer: T?
-        public let states: ComponentStates<T>?
-        public let conditions: ComponentConditions<T>?
+        let conditions: [Condition]
+        let properties: T?
 
     }
 
-    struct ComponentStates<T: PartialComponent>: PaywallComponentBase {
+    enum Condition: String, Codable, Sendable, Hashable, Equatable {
 
-        public init(selected: T? = nil) {
-            self.selected = selected
+        case compact = "compact"
+        case medium = "medium"
+        case expanded = "expanded"
+        case introOffer = "intro_offer"
+        case selected
+
+        // For unknown cases
+        case unsupported
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .compact:
+                try container.encodeIfPresent(ConditionType.compact.rawValue, forKey: .type)
+            case .medium:
+                try container.encode(ConditionType.medium.rawValue, forKey: .type)
+            case .expanded:
+                try container.encode(ConditionType.expanded.rawValue, forKey: .type)
+            case .introOffer:
+                try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
+            case .selected:
+                try container.encode(ConditionType.selected.rawValue, forKey: .type)
+            case .unsupported:
+                // Encode a default value for unsupported
+                try container.encode(Self.unsupported.rawValue, forKey: .type)
+            }
         }
 
-        public let selected: T?
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let rawValue = try container.decode(String.self, forKey: .type)
 
-    }
-
-    enum ComponentConditionsType {
-        case compact, medium, expanded
-    }
-
-    struct ComponentConditions<T: PartialComponent>: PaywallComponentBase {
-        public init(compact: T? = nil, medium: T? = nil, expanded: T? = nil) {
-            self.compact = compact
-            self.medium = medium
-            self.expanded = expanded
+            if let conditionType = ConditionType(rawValue: rawValue) {
+                switch conditionType {
+                case .compact:
+                    self = .compact
+                case .medium:
+                    self = .medium
+                case .expanded:
+                    self = .expanded
+                case .introOffer:
+                    self = .introOffer
+                case .selected:
+                    self = .selected
+                }
+            } else {
+                self = .unsupported
+            }
         }
 
-        public let compact: T?
-        public let medium: T?
-        public let expanded: T?
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+
+            case type
+
+        }
+
+        // swiftlint:disable:next nesting
+        private enum ConditionType: String, Decodable {
+
+            case compact
+            case medium
+            case expanded
+            case introOffer
+            case selected
+
+        }
 
     }
 
