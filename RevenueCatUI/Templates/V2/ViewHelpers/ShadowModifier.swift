@@ -42,12 +42,12 @@ struct ShadowModifier: ViewModifier {
     let shape: (any Shape)?
 
     func body(content: Content) -> some View {
-        if let shadow, let shape {
+        if let shadow {
             content
                 .background {
                     GeometryReader { geometry in
                         let rect = geometry.frame(in: .local)
-                        LayerShadowView(shape: shape,
+                        LayerShadowView(shape: shape ?? Rectangle(),
                                         color: shadow.color,
                                         xOffset: shadow.x,
                                         yOffset: shadow.y,
