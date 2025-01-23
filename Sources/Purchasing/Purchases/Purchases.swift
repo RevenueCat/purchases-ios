@@ -765,7 +765,7 @@ public extension Purchases {
         return DeepLinkParser.parseAsWebPurchaseRedemption(url)
     }
 
-    @objc var appUserID: String { self.identityManager.currentAppUserID }
+    @_spi(Internal) @objc var appUserID: String { self.identityManager.currentAppUserID }
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
