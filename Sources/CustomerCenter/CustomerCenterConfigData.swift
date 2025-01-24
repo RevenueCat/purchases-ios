@@ -250,7 +250,7 @@ public struct CustomerCenterConfigData {
                 case .accountDetails:
                     return "Account Details"
                 case .dateWhenAppWasPurchased:
-                    return "Original Purchase Date"
+                    return "Original Download Date"
                 case .userId:
                     return "User ID"
                 case .purchaseHistory:
