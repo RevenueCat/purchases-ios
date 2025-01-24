@@ -85,7 +85,11 @@ enum PurchaseInfo: Identifiable {
     }
 
     var purchaseDetailDebugItems: [PurchaseDetailItem] {
+#if DEBUG
         debugItems
+#else
+        []
+#endif
     }
 
     var purchaseDetailItems: [PurchaseDetailItem] {
