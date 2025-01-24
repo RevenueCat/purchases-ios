@@ -84,6 +84,10 @@ enum PurchaseInfo: Identifiable {
         }
     }
 
+    var purchaseDetailDebugItems: [PurchaseDetailItem] {
+        debugItems
+    }
+
     var purchaseDetailItems: [PurchaseDetailItem] {
         var items: [PurchaseDetailItem] = []
         switch self {
@@ -129,10 +133,6 @@ enum PurchaseInfo: Identifiable {
             items.append(.purchaseDate(formattedDate(transaction.purchaseDate)))
 
         }
-
-#if DEBUG
-        items.append(contentsOf: debugItems)
-#endif
 
         return items
     }

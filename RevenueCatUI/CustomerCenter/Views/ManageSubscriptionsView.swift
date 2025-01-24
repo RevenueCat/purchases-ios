@@ -86,6 +86,7 @@ struct ManageSubscriptionsView: View {
                     } label: {
                         Text(localization[.seeAllPurchases])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
