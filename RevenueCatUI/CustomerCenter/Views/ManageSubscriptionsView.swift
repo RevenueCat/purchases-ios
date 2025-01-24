@@ -29,6 +29,7 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
+
     @Environment(\.supportInformation)
     private var support
 
@@ -68,6 +69,8 @@ struct ManageSubscriptionsView: View {
                 feedbackSurveyData: feedbackSurveyData,
                 customerCenterActionHandler: self.customerCenterActionHandler,
                 isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
         }
     }
 
@@ -124,6 +127,7 @@ struct ManageSubscriptionsView: View {
         ) {
             PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
                 .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
         }
         .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)

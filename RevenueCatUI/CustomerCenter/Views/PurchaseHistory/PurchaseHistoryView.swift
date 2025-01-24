@@ -108,6 +108,7 @@ struct PurchaseHistoryView: View {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
             .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
         }
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
