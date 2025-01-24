@@ -765,7 +765,7 @@ public extension Purchases {
         return DeepLinkParser.parseAsWebPurchaseRedemption(url)
     }
 
-    @_spi(Internal) @objc var appUserID: String { self.identityManager.currentAppUserID }
+    @objc var appUserID: String { self.identityManager.currentAppUserID }
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
 
@@ -1324,6 +1324,7 @@ public extension Purchases {
      *
      */
     @objc(configureWithConfiguration:)
+    @_spi(Internal)
     @discardableResult static func configure(with configuration: Configuration) -> Purchases {
         configure(withAPIKey: configuration.apiKey,
                   appUserID: configuration.appUserID,
@@ -1364,6 +1365,7 @@ public extension Purchases {
      *
      */
     @objc(configureWithConfigurationBuilder:)
+    @_spi(Internal)
     @discardableResult static func configure(with builder: Configuration.Builder) -> Purchases {
         return Self.configure(with: builder.build())
     }
