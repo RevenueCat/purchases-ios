@@ -123,6 +123,7 @@ struct ManageSubscriptionsView: View {
             usesNavigationStack: navigationOptions.usesNavigationStack
         ) {
             PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                .environment(\.localization, localization)
         }
         .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
