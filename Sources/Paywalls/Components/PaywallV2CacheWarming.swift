@@ -108,7 +108,7 @@ extension Array where Element == PaywallComponent.ComponentOverride<PaywallCompo
 
     func imageUrls(base: URL) -> [URL] {
         return self.compactMap { iconOverrides in
-            iconOverrides.properties?.formats?.imageUrls(base: base) ?? []
+            iconOverrides.properties.formats?.imageUrls(base: base) ?? []
         }.flatMap { $0 }
     }
 
@@ -118,7 +118,7 @@ extension Array where Element == PaywallComponent.ComponentOverride<PaywallCompo
 
     var imageUrls: [URL] {
         return self.compactMap { iconOverrides in
-            iconOverrides.properties?.source?.imageUrls ?? []
+            iconOverrides.properties.source?.imageUrls ?? []
         }.flatMap { $0 }
     }
 

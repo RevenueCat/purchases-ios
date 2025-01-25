@@ -25,16 +25,21 @@ public extension PaywallComponent {
 
     struct ComponentOverride<T: PartialComponent>: PaywallComponentBase {
 
-        let conditions: [Condition]
-        let properties: T?
+        public let conditions: [Condition]
+        public let properties: T
+
+        public init(conditions: [Condition], properties: T) {
+            self.conditions = conditions
+            self.properties = properties
+        }
 
     }
 
     enum Condition: String, Codable, Sendable, Hashable, Equatable {
 
-        case compact = "compact"
-        case medium = "medium"
-        case expanded = "expanded"
+        case compact
+        case medium
+        case expanded
         case introOffer = "intro_offer"
         case selected
 
@@ -96,7 +101,7 @@ public extension PaywallComponent {
             case compact
             case medium
             case expanded
-            case introOffer
+            case introOffer = "intro_offer"
             case selected
 
         }
