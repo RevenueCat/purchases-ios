@@ -283,6 +283,26 @@ struct ViewModelFactory {
                     uiConfigProvider: uiConfigProvider
                 )
             )
+        case .carousel(let component):
+            let stackViewModels = try component.slides.map { stackComponent in
+                try toStackViewModel(
+                    component: stackComponent,
+                    packageValidator: packageValidator,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+            fatalError()
+
+//            return .carousel(
+//                try CarouselComponentViewModel(
+//                    localizationProvider: localizationProvider,
+//                    uiConfigProvider: uiConfigProvider,
+//                    component: component,
+//                    slideStackViewModel: stackViewModels
+//                )
+//            )
         }
     }
 
