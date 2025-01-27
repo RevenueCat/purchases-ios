@@ -62,7 +62,7 @@ import Foundation
      * if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes. 
      */
-    @objc public let uiPreviewMode: Bool
+    @_spi(Internal) public let uiPreviewMode: Bool
 
     /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
@@ -113,7 +113,7 @@ import Foundation
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes. 
      */
-    public convenience init(uiPreviewMode: Bool) {
+    @_spi(Internal) public init(uiPreviewMode: Bool) {
         self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
