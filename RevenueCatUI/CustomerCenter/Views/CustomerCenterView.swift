@@ -85,24 +85,36 @@ public struct CustomerCenterView: View {
         self.navigationOptions = navigationOptions
     }
 
+    @ViewBuilder
+    var content: some View {
+        switch self.viewModel.state {
+        case .error:
+            ErrorView()
+                .dismissCircleButtonToolbar()
+        case .notLoaded:
+            TintedProgressView()
+        case .success:
+            if let configuration = self.viewModel.configuration {
+                destinationView(configuration: configuration)
+                    .environment(\.localization, configuration.localization)
+                    .environment(\.appearance, configuration.appearance)
+                    .environment(\.supportInformation, configuration.support)
+                    .environment(\.customerCenterPresentationMode, self.mode)
+                    .environment(\.navigationOptions, self.navigationOptions)
+            } else {
+                TintedProgressView()
+            }
+        }
+    }
+
     // swiftlint:disable:next missing_docs
     public var body: some View {
         Group {
-            switch self.viewModel.state {
-            case .error:
-                ErrorView()
-            case .notLoaded:
-                TintedProgressView()
-            case .success:
-                if let configuration = self.viewModel.configuration {
-                    destinationView(configuration: configuration)
-                        .environment(\.localization, configuration.localization)
-                        .environment(\.appearance, configuration.appearance)
-                        .environment(\.supportInformation, configuration.support)
-                        .environment(\.customerCenterPresentationMode, self.mode)
-                        .environment(\.navigationOptions, self.navigationOptions)
-                } else {
-                    TintedProgressView()
+            if navigationOptions.usesExistingNavigation {
+                content
+            } else {
+                CompatibilityNavigationStack {
+                    content
                 }
             }
         }
@@ -175,16 +187,8 @@ private extension CustomerCenterView {
         let accentColor = Color.from(colorInformation: configuration.appearance.accentColor,
                                      for: self.colorScheme)
 
-        Group {
-            if navigationOptions.usesExistingNavigation {
-                destinationContent(configuration: configuration)
-            } else {
-                CompatibilityNavigationStack {
-                    destinationContent(configuration: configuration)
-                }
-            }
-        }
-        .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
+        destinationContent(configuration: configuration)
+            .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
     }
 
     func trackImpression() {
