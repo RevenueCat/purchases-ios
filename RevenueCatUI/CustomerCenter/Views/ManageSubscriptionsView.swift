@@ -62,7 +62,7 @@ struct ManageSubscriptionsView: View {
     var body: some View {
         content.compatibleNavigation(
             item: $viewModel.feedbackSurveyData,
-            usesNavigationStack: navigationOptions.usesExistingNavigation
+            usesNavigationStack: navigationOptions.usesNavigationStack
         ) { feedbackSurveyData in
             FeedbackSurveyView(
                 feedbackSurveyData: feedbackSurveyData,
