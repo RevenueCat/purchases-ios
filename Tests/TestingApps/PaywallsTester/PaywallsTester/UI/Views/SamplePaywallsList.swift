@@ -334,7 +334,7 @@ extension SamplePaywallsList.Display: Identifiable {
             return "customer-center-sheet"
 
         case .customerCenterFullScreen:
-            return "customer-center-sheet"
+            return "customer-center-fullscreen"
 
         case .customerCenterNavigaitonView:
             return "customer-center-sheet"
