@@ -106,8 +106,10 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
     private func customerCenterView() -> some View {
-        CustomerCenterView(customerCenterActionHandler: self.customerCenterActionHandler)
-            .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        CustomerCenterView(
+            customerCenterActionHandler: self.customerCenterActionHandler,
+            navigationOptions: .init(shouldShowCloseButton: presentationMode == .fullScreen))
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
 }
