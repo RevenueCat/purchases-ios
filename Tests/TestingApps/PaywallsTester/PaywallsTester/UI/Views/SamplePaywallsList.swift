@@ -92,7 +92,7 @@ struct SamplePaywallsList: View {
             )
         case .customerCenterSheet:
             CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
-        case .customerCenterFullScreen, .customerCenterNavigaitonView:
+        case .customerCenterFullScreen, .customerCenterNavigationView:
             EmptyView()
         case .uiKitCustomerCenter:
             CustomerCenterUIKitView(
@@ -301,7 +301,7 @@ private extension SamplePaywallsList {
         case unrecognizedPaywall
         case customerCenterSheet
         case customerCenterFullScreen
-        case customerCenterNavigaitonView
+        case customerCenterNavigationView
         case uiKitCustomerCenter
         #if PAYWALL_COMPONENTS
         case componentPaywall(PaywallComponentsData)
@@ -336,8 +336,8 @@ extension SamplePaywallsList.Display: Identifiable {
         case .customerCenterFullScreen:
             return "customer-center-fullscreen"
 
-        case .customerCenterNavigaitonView:
-            return "customer-center-sheet"
+        case .customerCenterNavigationView:
+            return "customer-center-navigationview"
 
         #if PAYWALL_COMPONENTS
         case .componentPaywall:
