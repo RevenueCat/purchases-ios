@@ -113,7 +113,7 @@ import Foundation
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes. 
      */
-    @_spi(Internal) public init(uiPreviewMode: Bool) {
+    @_spi(Internal) public convenience init(uiPreviewMode: Bool) {
         self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
