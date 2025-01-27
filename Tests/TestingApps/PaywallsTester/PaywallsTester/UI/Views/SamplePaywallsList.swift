@@ -175,7 +175,7 @@ struct SamplePaywallsList: View {
                             shouldShowCloseButton: false
                         ))
                 } label: {
-                    Text("Inside NavigationView")
+                    Text("Pushed in NavigationView")
                 }
 
                 Button {
