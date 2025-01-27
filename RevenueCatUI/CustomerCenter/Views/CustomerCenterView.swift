@@ -85,6 +85,29 @@ public struct CustomerCenterView: View {
         self.navigationOptions = navigationOptions
     }
 
+    // swiftlint:disable:next missing_docs
+    public var body: some View {
+        navigationContent
+            .task {
+                await loadInformationIfNeeded()
+            }
+            .task {
+#if DEBUG
+                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+#endif
+                self.trackImpression()
+            }
+            .environmentObject(self.viewModel)
+    }
+
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private extension CustomerCenterView {
+
     @ViewBuilder
     var content: some View {
         switch self.viewModel.state {
@@ -117,29 +140,6 @@ public struct CustomerCenterView: View {
             }
         }
     }
-
-    // swiftlint:disable:next missing_docs
-    public var body: some View {
-        navigationContent
-            .task {
-                await loadInformationIfNeeded()
-            }
-            .task {
-#if DEBUG
-                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
-#endif
-                self.trackImpression()
-            }
-            .environmentObject(self.viewModel)
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension CustomerCenterView {
 
     func loadInformationIfNeeded() async {
         if viewModel.state == .notLoaded {
