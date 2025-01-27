@@ -107,27 +107,30 @@ public struct CustomerCenterView: View {
         }
     }
 
-    // swiftlint:disable:next missing_docs
-    public var body: some View {
-        Group {
-            if navigationOptions.usesExistingNavigation {
+    @ViewBuilder
+    var navigationContent: some View {
+        if navigationOptions.usesExistingNavigation {
+            content
+        } else {
+            CompatibilityNavigationStack {
                 content
-            } else {
-                CompatibilityNavigationStack {
-                    content
-                }
             }
         }
-        .task {
-            await loadInformationIfNeeded()
-        }
-        .task {
+    }
+
+    // swiftlint:disable:next missing_docs
+    public var body: some View {
+        navigationContent
+            .task {
+                await loadInformationIfNeeded()
+            }
+            .task {
 #if DEBUG
-            guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
 #endif
-            self.trackImpression()
-        }
-        .environmentObject(self.viewModel)
+                self.trackImpression()
+            }
+            .environmentObject(self.viewModel)
     }
 
 }
