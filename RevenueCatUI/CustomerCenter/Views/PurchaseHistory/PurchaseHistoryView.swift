@@ -46,7 +46,9 @@ struct PurchaseHistoryView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                }
 
+                if !viewModel.inactiveSubscriptions.isEmpty {
                     Section(header: Text(
                         localization[.expiredSubscriptions]
                     )) {
