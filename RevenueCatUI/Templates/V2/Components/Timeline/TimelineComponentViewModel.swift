@@ -40,16 +40,16 @@ class TimelineComponentViewModel {
 class TimelineItemViewModel {
     let id = UUID()
     let component: PaywallComponent.TimelineComponent.Item
-    let text: TextComponentViewModel
+    let title: TextComponentViewModel
     let description: TextComponentViewModel?
     let icon: IconComponentViewModel
 
     init(component: PaywallComponent.TimelineComponent.Item,
-         text: TextComponentViewModel,
+         title: TextComponentViewModel,
          description: TextComponentViewModel?,
          icon: IconComponentViewModel) {
         self.component = component
-        self.text = text
+        self.title = title
         self.description = description
         self.icon = icon
     }

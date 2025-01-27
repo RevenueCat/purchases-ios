@@ -49,13 +49,13 @@ public extension PaywallComponent {
         }
 
         public struct Item: Codable, Sendable, Equatable, Hashable {
-            public let text: TextComponent
+            public let title: TextComponent
             public let description: TextComponent?
             public let icon: IconComponent
             public let connector: Connector?
 
-            public init(text: TextComponent, description: TextComponent?, icon: IconComponent, connector: Connector) {
-                self.text = text
+            public init(title: TextComponent, description: TextComponent?, icon: IconComponent, connector: Connector) {
+                self.title = title
                 self.description = description
                 self.icon = icon
                 self.connector = connector

@@ -99,7 +99,7 @@ struct TimelineComponentView: View {
             }
 
             VStack(alignment: .leading, spacing: viewModel.component.textSpacing ?? 0) {
-                TextComponentView(viewModel: item.text)
+                TextComponentView(viewModel: item.title)
                     .applyIf(viewModel.component.iconAlignment == .title) { view in
                         view.alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
                     }
@@ -179,7 +179,7 @@ struct ContentView_Previews: PreviewProvider {
 
     static let items: [PaywallComponent.TimelineComponent.Item] = [
         PaywallComponent.TimelineComponent.Item(
-            text: .init(
+            title: .init(
                 text: "id_1",
                 fontWeight: .bold,
                 color: .init(light: .hex("#000000")),
@@ -201,7 +201,7 @@ struct ContentView_Previews: PreviewProvider {
             )
         ),
         PaywallComponent.TimelineComponent.Item(
-            text: .init(
+            title: .init(
                 text: "id_3",
                 fontWeight: .bold,
                 color: .init(light: .hex("#000000")),
@@ -223,7 +223,7 @@ struct ContentView_Previews: PreviewProvider {
             )
         ),
         PaywallComponent.TimelineComponent.Item(
-            text: .init(
+            title: .init(
                 text: "id_5",
                 fontWeight: .bold,
                 color: .init(light: .hex("#000000")),
@@ -303,10 +303,10 @@ fileprivate extension TimelineComponentViewModel {
             }
             return TimelineItemViewModel(
                 component: item,
-                text: try TextComponentViewModel(
+                title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    component: item.text
+                    component: item.title
                 ),
                 description: description,
                 icon: try IconComponentViewModel(
