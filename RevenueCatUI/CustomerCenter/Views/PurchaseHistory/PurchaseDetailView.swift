@@ -38,6 +38,17 @@ struct PurchaseDetailView: View {
                     Text(ownership)
                 }
             }
+
+            if !viewModel.debugItems.isEmpty {
+                Section(localization[.debugHeaderTitle]) {
+                    ForEach(viewModel.debugItems) { detailItem in
+                        CompatibilityLabeledContent(
+                            localization[detailItem.label],
+                            content: content(detailItem: detailItem)
+                        )
+                    }
+                }
+            }
         }
         .listStyle(.insetGrouped)
         .navigationBarTitleDisplayMode(.inline)

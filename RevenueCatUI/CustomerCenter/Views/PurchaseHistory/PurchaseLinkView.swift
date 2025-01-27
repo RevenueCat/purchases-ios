@@ -46,6 +46,7 @@ struct PurchaseLinkView: View {
             Image(systemName: "chevron.forward")
                 .foregroundStyle(.secondary)
         }
+        .contentShape(Rectangle())
         .onAppear {
             Task {
                 guard
