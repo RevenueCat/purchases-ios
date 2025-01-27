@@ -291,6 +291,68 @@ extension View {
     }
 }
 
+#if DEBUG
+
+// As of Xcode 16, there is a limit of 15 views per PreviewProvider.
+// To work around this, we can create multiple PreviewProviders with different sets of previews.
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BadgeEdgeToEdge_Previews: PreviewProvider {
+
+    static var previews: some View {
+        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
+            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
+        ]
+        ForEach(alignments, id: \.self) { alignment in
+            badge(style: .edgeToEdge, alignment: alignment)
+                .previewDisplayName("edgeToEdge - \(alignment)")
+        }
+        .previewLayout(.sizeThatFits)
+        .padding(30)
+        .padding(.vertical, 50)
+        .previewRequiredEnvironmentProperties()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BadgeOverlaid_Previews: PreviewProvider {
+
+    static var previews: some View {
+        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
+            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
+        ]
+        ForEach(alignments, id: \.self) { alignment in
+            badge(style: .overlaid, alignment: alignment)
+                .previewDisplayName("overlaid - \(alignment)")
+        }
+        .previewLayout(.sizeThatFits)
+        .padding(30)
+        .padding(.vertical, 50)
+        .previewRequiredEnvironmentProperties()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BadgeNested_Previews: PreviewProvider {
+
+    static var previews: some View {
+        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
+            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
+        ]
+        ForEach(alignments, id: \.self) { alignment in
+            badge(style: .nested, alignment: alignment)
+                .previewDisplayName("nested - \(alignment)")
+        }
+        .previewLayout(.sizeThatFits)
+        .padding(30)
+        .padding(.vertical, 50)
+        .previewRequiredEnvironmentProperties()
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @ViewBuilder
 // swiftlint:disable:next function_body_length
@@ -402,64 +464,6 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
     )
 }
 
-// As of Xcode 16, there is a limit of 15 views per PreviewProvider.
-// To work around this, we can create multiple PreviewProviders with different sets of previews.
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BadgeEdgeToEdge_Previews: PreviewProvider {
-
-    static var previews: some View {
-        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
-            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
-        ]
-        ForEach(alignments, id: \.self) { alignment in
-            badge(style: .edgeToEdge, alignment: alignment)
-                .previewDisplayName("edgeToEdge - \(alignment)")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding(30)
-        .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BadgeOverlaid_Previews: PreviewProvider {
-
-    static var previews: some View {
-        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
-            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
-        ]
-        ForEach(alignments, id: \.self) { alignment in
-            badge(style: .overlaid, alignment: alignment)
-                .previewDisplayName("overlaid - \(alignment)")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding(30)
-        .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BadgeNested_Previews: PreviewProvider {
-
-    static var previews: some View {
-        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
-            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
-        ]
-        ForEach(alignments, id: \.self) { alignment in
-            badge(style: .nested, alignment: alignment)
-                .previewDisplayName("nested - \(alignment)")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding(30)
-        .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
-    }
-
-}
+#endif
 
 #endif
