@@ -90,9 +90,10 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
-        case .customerCenterSheet:
-            CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
-        case .customerCenterFullScreen, .customerCenterNavigationView:
+        case .customerCenterSheet,
+                .customerCenterFullScreen,
+                .customerCenterNavigationView:
+            // handled by view modifier
             EmptyView()
         case .uiKitCustomerCenter:
             CustomerCenterUIKitView(
