@@ -22,8 +22,8 @@ class CarouselComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.CarouselComponent
-    let slideStackViewModel: [StackComponentViewModel]
+    let component: PaywallComponent.CarouselComponent
+    let slideStackViewModels: [StackComponentViewModel]
 
 //    private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
 
@@ -31,12 +31,12 @@ class CarouselComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.CarouselComponent,
-        slideStackViewModel: [StackComponentViewModel]
+        slideStackViewModels: [StackComponentViewModel]
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
-        self.slideStackViewModel = slideStackViewModel
+        self.slideStackViewModels = slideStackViewModels
 
 //        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
 //            try LocalizedImagePartial.create(from: $0, using: localizationProvider.localizedStrings)
