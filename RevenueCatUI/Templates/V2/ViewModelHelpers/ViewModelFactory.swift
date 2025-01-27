@@ -17,6 +17,7 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
@@ -179,6 +180,39 @@ struct ViewModelFactory {
                 StickyFooterComponentViewModel(
                     component: component,
                     stackViewModel: stackViewModel
+                )
+            )
+        case .timeline(let component):
+            let models = try component.items.map { item in
+                var description: TextComponentViewModel?
+                if let descriptionComponent = item.description {
+                    description = try TextComponentViewModel(
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        component: descriptionComponent
+                    )
+                }
+                return TimelineItemViewModel(
+                    component: item,
+                    text: try TextComponentViewModel(
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        component: item.text
+                    ),
+                    description: description,
+                    icon: try IconComponentViewModel(
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        component: item.icon
+                    )
+                )
+            }
+
+            return .timeline(
+                try TimelineComponentViewModel(
+                    component: component,
+                    items: models,
+                    uiConfigProvider: uiConfigProvider
                 )
             )
         case .tabs(let component):

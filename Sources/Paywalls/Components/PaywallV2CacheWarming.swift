@@ -54,12 +54,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             case .text:
                 ()
             case .icon(let icon):
-                guard let baseUrl = URL(string: icon.baseUrl) else {
-                    break
-                }
-
-                urls += icon.formats.imageUrls(base: baseUrl)
-                urls += icon.overrides?.imageUrls(base: baseUrl) ?? []
+                urls += icon.imageUrls
             case .image(let image):
                 urls += [
                     image.source.light.heicLowRes,
@@ -85,6 +80,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += self.collectAllImageURLs(in: purchaseButton.stack)
             case .stickyFooter(let stickyFooter):
                 urls += self.collectAllImageURLs(in: stickyFooter.stack)
+            case .timeline(let component):
+                for item in component.items {
+                    urls += item.icon.imageUrls
+                }
             case .tabs(let tabs):
                 for tab in tabs.tabs {
                     urls += self.collectAllImageURLs(in: tab.stack)
@@ -109,6 +108,18 @@ extension PaywallComponent.IconComponent.Formats {
         return [
             base.appendingPathComponent(heic)
         ]
+    }
+
+}
+
+private extension PaywallComponent.IconComponent {
+
+    var imageUrls: [URL] {
+        guard let baseUrl = URL(string: self.baseUrl) else {
+            return []
+        }
+
+        return self.formats.imageUrls(base: baseUrl) + (self.overrides?.imageUrls(base: baseUrl) ?? [])
     }
 
 }
