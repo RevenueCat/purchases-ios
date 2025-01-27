@@ -18,7 +18,7 @@ import Foundation
 // swiftlint:disable missing_docs nesting
 public extension PaywallComponent {
 
-    struct TimelineComponent: PaywallComponentBase, Equatable, Hashable {
+    final class TimelineComponent: PaywallComponentBase {
         let type: ComponentType
         public let iconAlignment: IconAlignment?
         public let itemSpacing: CGFloat?
@@ -48,21 +48,63 @@ public extension PaywallComponent {
             self.items = items
         }
 
-        public struct Item: Codable, Sendable, Equatable, Hashable {
+        public static func == (lhs: PaywallComponent.TimelineComponent,
+                               rhs: PaywallComponent.TimelineComponent) -> Bool {
+            return lhs.iconAlignment == rhs.iconAlignment &&
+            lhs.itemSpacing == rhs.itemSpacing &&
+            lhs.textSpacing == rhs.textSpacing &&
+            lhs.columnGutter == rhs.columnGutter &&
+            lhs.size == rhs.size &&
+            lhs.padding == rhs.padding &&
+            lhs.margin == rhs.margin &&
+            lhs.items == rhs.items
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(iconAlignment)
+            hasher.combine(itemSpacing)
+            hasher.combine(textSpacing)
+            hasher.combine(columnGutter)
+            hasher.combine(size)
+            hasher.combine(padding)
+            hasher.combine(margin)
+            hasher.combine(items)
+        }
+
+        public final class Item: PaywallComponentBase {
             public let title: TextComponent
             public let description: TextComponent?
             public let icon: IconComponent
             public let connector: Connector?
 
-            public init(title: TextComponent, description: TextComponent?, icon: IconComponent, connector: Connector) {
+            public init(title: TextComponent,
+                        description: TextComponent?,
+                        icon: IconComponent,
+                        connector: Connector) {
                 self.title = title
                 self.description = description
                 self.icon = icon
                 self.connector = connector
             }
+
+            public static func == (lhs: PaywallComponent.TimelineComponent.Item,
+                                   rhs: PaywallComponent.TimelineComponent.Item) -> Bool {
+                return lhs.title == rhs.title &&
+                lhs.description == rhs.description &&
+                lhs.icon == rhs.icon &&
+                lhs.connector == rhs.connector
+            }
+
+            public func hash(into hasher: inout Hasher) {
+                hasher.combine(title)
+                hasher.combine(description)
+                hasher.combine(icon)
+                hasher.combine(connector)
+            }
         }
 
-        public struct Connector: Codable, Sendable, Equatable, Hashable {
+        public final class Connector: PaywallComponentBase {
+
             public let width: CGFloat
             public let color: ColorScheme
             public let margin: Padding
@@ -71,6 +113,19 @@ public extension PaywallComponent {
                 self.width = width
                 self.color = color
                 self.margin = margin
+            }
+
+            public static func == (lhs: PaywallComponent.TimelineComponent.Connector,
+                                   rhs: PaywallComponent.TimelineComponent.Connector) -> Bool {
+                return lhs.color == rhs.color &&
+                    lhs.width == rhs.width &&
+                    lhs.margin == rhs.margin
+            }
+
+            public func hash(into hasher: inout Hasher) {
+                hasher.combine(color)
+                hasher.combine(width)
+                hasher.combine(margin)
             }
         }
 
