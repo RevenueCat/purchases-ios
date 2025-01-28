@@ -99,7 +99,7 @@ struct GradientView_Previews: PreviewProvider {
 
 }
 
-private extension UnitPoint {
+extension UnitPoint {
 
     init(angle: Angle) {
         // Convert the angle to radians and negate to make clockwise

@@ -56,9 +56,8 @@ struct IconComponentView: View {
                    shadow: style.iconBackgroundShadow,
                    background: style.iconBackgroundStyle,
                    uiConfigProvider: self.viewModel.uiConfigProvider)
-            .padding(style.padding)
+            .padding(style.margin)
             .size(style.size)
-            .clipped()
         }
     }
 
@@ -153,7 +152,7 @@ struct IconComponentView_Previews: PreviewProvider {
                         ),
                         size: .init(width: .fixed(150), height: .fixed(150)),
                         padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
-                        margin: .zero,
+                        margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
                         color: PaywallComponent.ColorScheme(
                             light: .hex("#ff0000")
                         ),
