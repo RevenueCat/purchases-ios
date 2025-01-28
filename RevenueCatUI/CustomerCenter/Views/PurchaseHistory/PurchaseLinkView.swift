@@ -18,6 +18,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseLinkView: View {
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 

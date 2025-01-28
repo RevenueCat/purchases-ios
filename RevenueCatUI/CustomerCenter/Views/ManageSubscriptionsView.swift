@@ -61,17 +61,49 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        content.compatibleNavigation(
-            item: $viewModel.feedbackSurveyData,
-            usesNavigationStack: navigationOptions.usesNavigationStack
-        ) { feedbackSurveyData in
-            FeedbackSurveyView(
-                feedbackSurveyData: feedbackSurveyData,
-                customerCenterActionHandler: self.customerCenterActionHandler,
-                isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-            .environment(\.localization, localization)
-            .environment(\.navigationOptions, navigationOptions)
-        }
+        content
+            .compatibleNavigation(
+                item: $viewModel.feedbackSurveyData,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) { feedbackSurveyData in
+                FeedbackSurveyView(
+                    feedbackSurveyData: feedbackSurveyData,
+                    customerCenterActionHandler: self.customerCenterActionHandler,
+                    isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
+            .compatibleNavigation(
+                isPresented: $viewModel.showPurchases,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
+            }
+            .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
+                PromotionalOfferView(
+                    promotionalOffer: promotionalOfferData.promotionalOffer,
+                    product: promotionalOfferData.product,
+                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    onDismissPromotionalOfferView: { userAction in
+                        Task(priority: .userInitiated) {
+                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
+                        }
+                    }
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .interactiveDismissDisabled()
+            }
+            .sheet(item: self.$viewModel.inAppBrowserURL,
+                   onDismiss: {
+                self.viewModel.onDismissInAppBrowser()
+            }, content: { inAppBrowserURL in
+                SafariView(url: inAppBrowserURL.url)
+            })
     }
 
     @ViewBuilder
@@ -122,37 +154,8 @@ struct ManageSubscriptionsView: View {
                 }
             }
         }
-        .compatibleNavigation(
-            isPresented: $viewModel.showPurchases,
-            usesNavigationStack: navigationOptions.usesNavigationStack
-        ) {
-            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
-                .environment(\.localization, localization)
-                .environment(\.navigationOptions, navigationOptions)
-        }
         .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(
-            item: self.$viewModel.promotionalOfferData,
-            content: { promotionalOfferData in
-                PromotionalOfferView(
-                    promotionalOffer: promotionalOfferData.promotionalOffer,
-                    product: promotionalOfferData.product,
-                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                    onDismissPromotionalOfferView: { userAction in
-                        Task(priority: .userInitiated) {
-                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
-                        }
-                    }
-                )
-                .interactiveDismissDisabled()
-            })
-        .sheet(item: self.$viewModel.inAppBrowserURL,
-               onDismiss: {
-            self.viewModel.onDismissInAppBrowser()
-        }, content: { inAppBrowserURL in
-            SafariView(url: inAppBrowserURL.url)
-        })
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)

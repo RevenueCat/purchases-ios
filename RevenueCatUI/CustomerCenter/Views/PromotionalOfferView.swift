@@ -25,15 +25,19 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct PromotionalOfferView: View {
 
-    @StateObject
-    private var viewModel: PromotionalOfferViewModel
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+
     @Environment(\.colorScheme)
     private var colorScheme
+
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @State private var isLoading: Bool = false
+
+    @StateObject
+    private var viewModel: PromotionalOfferViewModel
 
     private let onDismissPromotionalOfferView: (PromotionalOfferViewAction) -> Void
 
@@ -90,6 +94,10 @@ struct PromotionalOfferView: View {
             }
         }
         .onAppear {
+            print("""
+            PromotionalOfferView
+            \(appearance)
+            """)
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
     }
@@ -143,8 +151,10 @@ struct PromotionalOfferHeaderView: View {
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+
     @Environment(\.colorScheme)
     private var colorScheme
+
     @ObservedObject
     private(set) var viewModel: PromotionalOfferViewModel
 

@@ -24,20 +24,20 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct FeedbackSurveyView: View {
 
-    @StateObject
-    private var viewModel: FeedbackSurveyViewModel
-
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
-
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
 
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.customerCenterPresentationMode)
     private var mode: CustomerCenterPresentationMode
+
+    @StateObject
+    private var viewModel: FeedbackSurveyViewModel
 
     @Binding
     private var isPresented: Bool
@@ -87,10 +87,18 @@ struct FeedbackSurveyView: View {
                         }
                     )
                     .interactiveDismissDisabled()
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
                 })
         }
         .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            print("""
+            FeedbackSurveyView
+            \(mode)
+            """)
+        }
     }
 
     private func dismissView() {

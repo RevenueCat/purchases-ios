@@ -119,11 +119,11 @@ private extension CustomerCenterView {
         case .success:
             if let configuration = self.viewModel.configuration {
                 destinationView(configuration: configuration)
-                    .environment(\.localization, configuration.localization)
                     .environment(\.appearance, configuration.appearance)
-                    .environment(\.supportInformation, configuration.support)
+                    .environment(\.localization, configuration.localization)
                     .environment(\.customerCenterPresentationMode, self.mode)
                     .environment(\.navigationOptions, self.navigationOptions)
+                    .environment(\.supportInformation, configuration.support)
             } else {
                 TintedProgressView()
             }
