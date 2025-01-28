@@ -27,6 +27,8 @@ public enum PaywallComponent: PaywallComponentBase {
     case tabControlButton(TabControlButtonComponent)
     case tabControlToggle(TabControlToggleComponent)
 
+    case carousel(CarouselComponent)
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
@@ -42,6 +44,8 @@ public enum PaywallComponent: PaywallComponentBase {
         case tabControl = "tab_control"
         case tabControlButton = "tab_control_button"
         case tabControlToggle = "tab_control_toggle"
+
+        case carousel
 
     }
 
@@ -103,6 +107,9 @@ extension PaywallComponent: Codable {
             try component.encode(to: encoder)
         case .tabControlToggle(let component):
             try container.encode(ComponentType.tabControlToggle, forKey: .type)
+            try component.encode(to: encoder)
+        case .carousel(let component):
+            try container.encode(ComponentType.carousel, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -181,6 +188,8 @@ extension PaywallComponent: Codable {
             return .tabControlButton(try TabControlButtonComponent(from: decoder))
         case .tabControlToggle:
             return .tabControlToggle(try TabControlToggleComponent(from: decoder))
+        case .carousel:
+            return .carousel(try CarouselComponent(from: decoder))
         }
     }
 

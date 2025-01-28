@@ -85,7 +85,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         private enum FontInfoTypes: String, Decodable {
 
             case name
-            case googleFonts
+            case googleFonts = "google_fonts"
 
         }
 
