@@ -85,13 +85,13 @@ struct ImageComponentView: View {
                 containerContentMode: style.contentMode
             )
             .frame(maxWidth: .infinity)
-            // WIP: Fix this later when accessibility info is available
-            .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear.backgroundStyle(.color(colorOverlay))
                 )
             })
+            // WIP: Fix this later when accessibility info is available
+            .accessibilityHidden(true)
     }
 
 }
