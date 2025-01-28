@@ -388,15 +388,6 @@ struct App: View {
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
-            .onPaywallTierChange(self.paywallTierChange)
-        #endif
-    }
-
-    @ViewBuilder
-    var checkPaywallFooter: some View {
-        #if !os(watchOS)
-
-        Text("")
             .paywallFooter()
             .paywallFooter(purchaseStarted: self.purchaseOfPackageStarted)
             .paywallFooter(purchaseCompleted: self.purchaseOrRestoreCompleted)
@@ -554,6 +545,172 @@ struct App: View {
                            restoreCompleted: nil,
                            purchaseFailure: nil,
                            restoreFailure: nil)
+            .onPaywallTierChange(self.paywallTierChange)
+        #endif
+    }
+
+    @ViewBuilder
+    var checkPaywallFooter: some View {
+        #if !os(watchOS)
+
+        Text("")
+            .paywallFooterForV1()
+            .paywallFooterForV1(purchaseStarted: self.purchaseOfPackageStarted)
+            .paywallFooterForV1(purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(purchaseCancelled: self.purchaseCancelled)
+            .paywallFooterForV1(restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(purchaseFailure: self.failureHandler)
+            .paywallFooterForV1(restoreFailure: self.failureHandler)
+            .paywallFooterForV1(fonts: self.fonts)
+            .paywallFooterForV1(fonts: self.fonts, purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(condensed: true)
+            .paywallFooterForV1(condensed: true, fonts: self.fonts)
+            .paywallFooterForV1(condensed: true, purchaseStarted: nil)
+            .paywallFooterForV1(condensed: true, purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(condensed: true,
+                                purchaseStarted: nil,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(condensed: true,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted)
+            .paywallFooterForV1(condensed: true,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseCancelled: self.purchaseCancelled,
+                                restoreCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseFailure: self.failureHandler,
+                                restoreFailure: self.failureHandler)
+            .paywallFooterForV1(offering: offering)
+            .paywallFooterForV1(offering: offering, fonts: self.fonts)
+            .paywallFooterForV1(offering: offering, purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering, restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering, fonts: self.fonts, purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseCancelled: self.purchaseCancelled,
+                                restoreStarted: self.restoreStarted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseFailure: self.failureHandler,
+                                restoreFailure: self.failureHandler)
+            .paywallFooterForV1(condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: nil,
+                                purchaseCompleted: nil,
+                                purchaseCancelled: nil,
+                                restoreStarted: nil,
+                                restoreCompleted: nil,
+                                purchaseFailure: nil,
+                                restoreFailure: nil)
+            .paywallFooterForV1(offering: offering)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                fonts: self.fonts)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseCancelled: self.purchaseCancelled,
+                                restoreStarted: self.restoreStarted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseFailure: self.failureHandler,
+                                restoreFailure: self.failureHandler)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts)
+            .paywallFooterForV1(offering: offering,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                purchaseCancelled: self.purchaseCancelled)
+            .paywallFooterForV1(offering: offering,
+                                restoreStarted: self.restoreStarted)
+            .paywallFooterForV1(offering: offering,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                purchaseFailure: self.failureHandler)
+            .paywallFooterForV1(offering: offering,
+                                restoreFailure: self.failureHandler)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseCancelled: self.purchaseCancelled,
+                                restoreStarted: self.restoreStarted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseFailure: self.failureHandler,
+                                restoreFailure: self.failureHandler)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                fonts: self.fonts,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooterForV1(offering: offering,
+                                fonts: self.fonts,
+                                purchaseStarted: self.purchaseOfPackageStarted,
+                                purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseCancelled: self.purchaseCancelled,
+                                restoreStarted: self.restoreStarted,
+                                restoreCompleted: self.purchaseOrRestoreCompleted,
+                                purchaseFailure: self.failureHandler,
+                                restoreFailure: self.failureHandler)
+            .paywallFooterForV1(offering: offering,
+                                condensed: true,
+                                fonts: self.fonts,
+                                purchaseStarted: nil,
+                                purchaseCompleted: nil,
+                                purchaseCancelled: nil,
+                                restoreStarted: nil,
+                                restoreCompleted: nil,
+                                purchaseFailure: nil,
+                                restoreFailure: nil)
         #endif
     }
 
