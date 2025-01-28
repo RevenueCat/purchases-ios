@@ -26,14 +26,14 @@ struct BadgeModifier: ViewModifier {
     struct BadgeInfo {
         let style: PaywallComponent.BadgeStyle
         let alignment: PaywallComponent.TwoDimensionAlignment
-        let stack: PaywallComponent.CodableBox<PaywallComponent.StackComponent>
+        let stack: PaywallComponent.StackComponent
         let badgeViewModels: [PaywallComponentViewModel]
         let stackShape: ShapeModifier.Shape?
         let stackBorder: ShapeModifier.BorderInfo?
         let uiConfigProvider: UIConfigProvider
 
         var backgroundStyle: BackgroundStyle? {
-            stack.value.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+            stack.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         }
     }
 
@@ -59,7 +59,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .padding(badge.stack.value.padding.edgeInsets)
+                            .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -78,11 +78,10 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .padding(badge.stack.value.padding.edgeInsets)
+                            .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
                 }
@@ -93,7 +92,7 @@ fileprivate extension View {
             }
         }
     }
-
+    
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
     private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo) -> some View {
@@ -105,7 +104,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .padding(badge.stack.value.padding.edgeInsets)
+                            .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -160,9 +159,9 @@ fileprivate extension View {
             case .top, .bottom, .center:
                 return .zero
             case .leading, .topLeading, .bottomLeading:
-                return .init(top: 0, bottom: 0, leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: 0, leading: badge.stack.margin.leading, trailing: 0)
             case .trailing, .topTrailing, .bottomTrailing:
-                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.margin.trailing)
             }
         case .nested:
             let borderWidth = badge.stackBorder?.width ?? 0
@@ -170,27 +169,26 @@ fileprivate extension View {
             case .center, .leading, .trailing:
                 return .zero
             case .top:
-                return .init(top: (badge.stack.value.margin.top ?? 0) + borderWidth, bottom: 0,
+                return .init(top: (badge.stack.margin.top ?? 0) + borderWidth, bottom: 0,
                              leading: 0, trailing: 0)
             case .bottom:
-                return .init(top: 0, bottom: (badge.stack.value.margin.bottom ?? 0) + borderWidth,
+                return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
                              leading: 0, trailing: 0)
             case .topLeading:
-                return .init(top: (badge.stack.value.margin.top ?? 0) + borderWidth, bottom: 0,
-                             leading: (badge.stack.value.margin.leading ?? 0) + borderWidth, trailing: 0)
+                return .init(top: (badge.stack.margin.top ?? 0) + borderWidth, bottom: 0,
+                             leading: (badge.stack.margin.leading ?? 0) + borderWidth, trailing: 0)
             case .topTrailing:
-                return .init(top: (badge.stack.value.margin.top ?? 0) + borderWidth, bottom: 0,
-                             leading: 0, trailing: (badge.stack.value.margin.trailing ?? 0) + borderWidth)
+                return .init(top: (badge.stack.margin.top ?? 0) + borderWidth, bottom: 0,
+                             leading: 0, trailing: (badge.stack.margin.trailing ?? 0) + borderWidth)
             case .bottomLeading:
-                return .init(top: 0, bottom: (badge.stack.value.margin.bottom ?? 0) + borderWidth,
-                             leading: (badge.stack.value.margin.leading ?? 0) + borderWidth, trailing: 0)
+                return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
+                             leading: (badge.stack.margin.leading ?? 0) + borderWidth, trailing: 0)
             case .bottomTrailing:
-                return .init(top: 0, bottom: (badge.stack.value.margin.bottom ?? 0) + borderWidth,
-                             leading: 0, trailing: (badge.stack.value.margin.trailing ?? 0) + borderWidth)
+                return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
+                             leading: 0, trailing: (badge.stack.margin.trailing ?? 0) + borderWidth)
             }
         }
     }
-
 }
 
 // Helper to calculate the shape of the edge-to-edge badge badge in trailing/leading positions.
@@ -199,7 +197,7 @@ fileprivate extension View {
 private func effectiveShape(badge: BadgeModifier.BadgeInfo, pillStackRadius: Double? = 0) -> ShapeModifier.Shape? {
     switch badge.style {
     case .edgeToEdge:
-        switch badge.stack.value.shape {
+        switch badge.stack.shape {
         case .pill, .none:
             // Edge-to-edge badge cannot have pill shape
             return nil
@@ -244,10 +242,16 @@ private func effectiveShape(badge: BadgeModifier.BadgeInfo, pillStackRadius: Dou
                     topRight: 0,
                     bottomLeft: 0,
                     bottomRight: radiusInfo(shape: badge.stackShape).bottomRight))
+            @unknown default:
+                return nil
             }
+        case .none:
+            return nil
+        @unknown default:
+            return nil
         }
     case .nested, .overlaid:
-        switch badge.stack.value.shape {
+        switch badge.stack.shape {
         case .rectangle(let radius):
             return .rectangle(.init(topLeft: radius?.topLeading,
                                     topRight: radius?.topTrailing,
@@ -257,7 +261,11 @@ private func effectiveShape(badge: BadgeModifier.BadgeInfo, pillStackRadius: Dou
             return .pill
         case .none:
             return nil
+        @unknown default:
+            return nil
         }
+    @unknown default:
+        return nil
     }
 }
 
@@ -285,7 +293,7 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
     var badgeView: some View {
         VStack {
             ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                .padding(badge.stack.value.padding.edgeInsets)
+                .padding(badge.stack.padding.edgeInsets)
         }.zIndex(-1)
     }
 
@@ -359,7 +367,7 @@ struct BadgePreviews: View {
                     badge: .init(
                         style: style,
                         alignment: alignment,
-                        stack: .init(PaywallComponent.StackComponent(
+                        stack: PaywallComponent.StackComponent(
                             components: [
                                 .text(PaywallComponent.TextComponent(
                                     text: "text_2",
@@ -377,7 +385,7 @@ struct BadgePreviews: View {
                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
                             shape: .rectangle(.init(topLeading: 12, topTrailing: 12,
                                                     bottomLeading: 12, bottomTrailing: 12))
-                        ))
+                        )
                     )
                 ),
                 localizationProvider: .init(

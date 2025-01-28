@@ -29,10 +29,13 @@ struct FeedbackSurveyView: View {
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
+
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
+
     @Environment(\.colorScheme)
     private var colorScheme
+
     @Environment(\.customerCenterPresentationMode)
     private var mode: CustomerCenterPresentationMode
 

@@ -33,7 +33,7 @@ class PaywallFooterTests: TestCase {
         var packageBeingPurchased: Package?
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -53,7 +53,7 @@ class PaywallFooterTests: TestCase {
         var customerInfo: CustomerInfo?
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -73,7 +73,7 @@ class PaywallFooterTests: TestCase {
         var error: NSError?
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -93,7 +93,7 @@ class PaywallFooterTests: TestCase {
         var started = false
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -113,7 +113,7 @@ class PaywallFooterTests: TestCase {
         var customerInfo: CustomerInfo?
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -135,7 +135,7 @@ class PaywallFooterTests: TestCase {
         var error: NSError?
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -162,7 +162,7 @@ class PaywallFooterTests: TestCase {
         })
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
@@ -186,7 +186,7 @@ class PaywallFooterTests: TestCase {
         })
 
         _ = try Text("")
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: Self.offering,
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),

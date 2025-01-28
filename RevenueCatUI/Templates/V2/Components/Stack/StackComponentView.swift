@@ -569,7 +569,7 @@ extension StackComponentViewModel {
             )
         }
 
-        let badgeViewModels = try component.badge?.stack.value.components.map { component in
+        let badgeViewModels = try component.badge?.stack.components.map { component in
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,

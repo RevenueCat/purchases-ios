@@ -141,14 +141,14 @@ private enum FamilySharingTogglePreview {
                                     bottomLeading: 16,
                                     bottomTrailing: 20)),
             border: .init(color: .init(light: .hex("#cccccc")), width: 1),
-            overrides: .init(
-                states: .init(
-                    selected: .init(
-                        backgroundColor: .init(light: .hex("#ffdfdd")),
-                        border: .init(color: .init(light: .hex("#e89d89")), width: 1)
-                    )
-                )
-            )
+            overrides: [
+                .init(conditions: [
+                    .selected
+                ], properties: .init(
+                    backgroundColor: .init(light: .hex("#ffdfdd")),
+                    border: .init(color: .init(light: .hex("#e89d89")), width: 1)
+                ))
+            ]
         )
 
         return PaywallComponent.PackageComponent(
@@ -202,13 +202,13 @@ private enum FamilySharingTogglePreview {
                             text: "toggle_text",
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit, height: .fit),
-                            overrides: .init(
-                                states: .init(
-                                    selected: .init(
-                                        color: .init(light: .hex("#ffffff"))
-                                    )
-                                )
-                            )
+                            overrides: [
+                                .init(conditions: [
+                                    .selected
+                                ], properties: .init(
+                                    color: .init(light: .hex("#ffffff"))
+                                ))
+                            ]
                         )),
                         .tabControlToggle(.init(
                             defaultValue: false,

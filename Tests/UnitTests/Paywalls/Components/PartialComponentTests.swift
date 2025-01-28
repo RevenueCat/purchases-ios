@@ -49,6 +49,18 @@ final class PartialComponentTests: TestCase {
                          heicLowRes: sampleURL))
         ), PaywallComponent.PartialImageComponent()),
 
+        // IconComponent
+        (PaywallComponent.IconComponent(
+            baseUrl: "",
+            iconName: "",
+            formats: .init(svg: "", png: "", heic: "", webp: ""),
+            size: .init(width: .fit, height: .fit),
+            padding: .zero,
+            margin: .zero,
+            color: .init(light: .hex("#000000")),
+            iconBackground: nil
+        ), PaywallComponent.PartialIconComponent()),
+
         // StackComponent
         (PaywallComponent.StackComponent(components: []), PaywallComponent.PartialStackComponent())
     ]
