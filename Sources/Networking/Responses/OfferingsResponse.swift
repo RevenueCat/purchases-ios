@@ -33,9 +33,7 @@ struct OfferingsResponse {
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
 
-        #if PAYWALL_COMPONENTS
         var paywallComponents: PaywallComponentsData?
-        #endif
 
     }
 

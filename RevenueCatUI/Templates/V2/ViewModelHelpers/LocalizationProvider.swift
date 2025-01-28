@@ -14,13 +14,9 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 struct LocalizationProvider {
 
     let locale: Locale
     let localizedStrings: PaywallComponent.LocalizationDictionary
 
 }
-
-#endif

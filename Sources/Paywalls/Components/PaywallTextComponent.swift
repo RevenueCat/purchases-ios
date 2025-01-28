@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class TextComponent: PaywallComponentBase {
@@ -251,5 +249,3 @@ private extension PaywallComponent.FontSize {
     }
 
 }
-
-#endif

@@ -15,8 +15,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 final class PartialComponentTests: TestCase {
 
     // Properties of full components that partials can't have
@@ -95,5 +93,3 @@ final class PartialComponentTests: TestCase {
     }
 
 }
-
-#endif

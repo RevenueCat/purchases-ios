@@ -253,7 +253,6 @@ public struct PaywallView: View {
             countries: offering.paywall?.zeroDecimalPlaceCountries
         )
 
-        #if PAYWALL_COMPONENTS
         if let paywallComponents = offering.paywallComponents {
 
             // For fallback view or footer
@@ -339,35 +338,6 @@ public struct PaywallView: View {
                 paywallView
             }
         }
-        #else
-        let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
-
-        let paywallView = LoadedOfferingPaywallView(
-            offering: offering,
-            activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-            paywall: paywall,
-            template: template,
-            mode: self.mode,
-            fonts: fonts,
-            displayCloseButton: self.displayCloseButton,
-            introEligibility: checker,
-            purchaseHandler: purchaseHandler,
-            locale: displayedLocale,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-        )
-
-        if let error {
-            DebugErrorView(
-                "\(error.description)\n" +
-                "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
-                "The displayed paywall contains default configuration.\n" +
-                "This error will be hidden in production.",
-                replacement: paywallView
-            )
-        } else {
-            paywallView
-        }
-        #endif
     }
 
     // MARK: -

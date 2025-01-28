@@ -8,8 +8,6 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 extension Array where Element == PaywallComponent {
 
     func printAsJSON() {
@@ -45,5 +43,3 @@ extension Dictionary where Key == PaywallComponent.LocaleID, Value == PaywallCom
     }
 
 }
-
-#endif

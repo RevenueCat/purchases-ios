@@ -14,8 +14,6 @@
 import Combine
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 @MainActor
 class IntroOfferEligibilityContext: ObservableObject {
 
@@ -45,5 +43,3 @@ extension IntroOfferEligibilityContext {
     }
 
 }
-
-#endif

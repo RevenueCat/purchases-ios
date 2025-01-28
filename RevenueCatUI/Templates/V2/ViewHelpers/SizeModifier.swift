@@ -14,8 +14,6 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 struct SizeModifier: ViewModifier {
 
     var size: PaywallComponent.Size
@@ -73,5 +71,3 @@ extension View {
     }
 
 }
-
-#endif

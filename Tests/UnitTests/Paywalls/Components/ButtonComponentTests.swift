@@ -2,8 +2,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class ButtonComponentCodableTests: TestCase {
 
     let jsonStringDefaultStack = """
@@ -210,5 +208,3 @@ class ButtonComponentCodableTests: TestCase {
     }
 
 }
-
-#endif

@@ -102,11 +102,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func templateGroupName(offering: Offering) -> String? {
-        #if PAYWALL_COMPONENTS
         offering.paywall?.templateName ?? offering.paywallComponents?.data.templateName
-        #else
-        offering.paywall?.templateName
-        #endif
     }
 
     @ViewBuilder
@@ -128,11 +124,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func offeringHasComponents(_ offering: Offering) -> Bool {
-        #if PAYWALL_COMPONENTS
         offering.paywallComponents != nil
-        #else
-        false
-        #endif
     }
 
     @ViewBuilder
@@ -181,13 +173,11 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
-                #if PAYWALL_COMPONENTS
                 .onAppear {
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
-                #endif
         }
     }
 
@@ -219,12 +209,10 @@ struct APIKeyDashboardList: View {
                 HStack {
                     Text(self.offering.serverDescription)
                     Spacer()
-                    #if PAYWALL_COMPONENTS
                     if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.red)
                     }
-                    #endif
                 }
             }
             .buttonStyle(.plain)

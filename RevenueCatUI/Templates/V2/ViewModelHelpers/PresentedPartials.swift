@@ -15,8 +15,6 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {
 
@@ -138,5 +136,3 @@ extension Array {
     }
 
 }
-
-#endif

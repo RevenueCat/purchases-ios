@@ -14,8 +14,6 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
 struct ViewModelFactory {
@@ -313,5 +311,3 @@ struct ViewModelFactory {
     }
 
 }
-
-#endif

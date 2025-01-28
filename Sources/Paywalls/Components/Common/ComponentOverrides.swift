@@ -15,8 +15,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     protocol PartialComponent: PaywallComponentBase {}
@@ -109,5 +107,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

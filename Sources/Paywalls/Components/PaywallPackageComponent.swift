@@ -15,8 +15,6 @@ import Foundation
 
 // swiftlint:disable missing_docs
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class PackageComponent: PaywallComponentBase {
@@ -63,5 +61,3 @@ extension PaywallComponent.PackageComponent {
     }
 
 }
-
-#endif

@@ -14,8 +14,6 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 enum BackgroundStyle: Hashable {
 
     case color(DisplayableColorScheme)
@@ -288,7 +286,5 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .previewDisplayName("Radial Gradient - Light (should be green")
     }
 }
-
-#endif
 
 #endif

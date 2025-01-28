@@ -15,8 +15,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class UIConfigDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesPaywallData() throws {
@@ -57,5 +55,3 @@ class UIConfigDecodingTests: BaseHTTPResponseTest {
     }
 
 }
-
-#endif

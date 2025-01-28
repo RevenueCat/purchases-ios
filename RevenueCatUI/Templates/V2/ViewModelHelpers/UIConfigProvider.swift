@@ -14,8 +14,6 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 struct UIConfigProvider {
 
     private let uiConfig: UIConfig
@@ -55,5 +53,3 @@ struct UIConfigProvider {
     }
 
 }
-
-#endif

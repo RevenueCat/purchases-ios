@@ -16,8 +16,6 @@ import SwiftUI
 
 // swiftlint:disable force_try
 
-#if PAYWALL_COMPONENTS
-
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -156,7 +154,5 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
         .previewDisplayName("Component With Fallback")
     }
 }
-
-#endif
 
 #endif

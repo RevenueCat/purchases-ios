@@ -13,8 +13,6 @@
 
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 enum ScreenCondition {
 
     case compact, medium, expanded
@@ -48,5 +46,3 @@ extension EnvironmentValues {
     }
 
 }
-
-#endif

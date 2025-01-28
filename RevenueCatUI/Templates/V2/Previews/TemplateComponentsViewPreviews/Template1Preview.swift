@@ -15,8 +15,6 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 #if DEBUG
 
 private enum Template1Preview {
@@ -211,7 +209,5 @@ struct Template1Preview_Previews: PreviewProvider {
         .previewDisplayName("Template 1")
     }
 }
-
-#endif
 
 #endif

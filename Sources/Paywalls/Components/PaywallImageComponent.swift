@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class ImageComponent: PaywallComponentBase {
@@ -156,5 +154,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

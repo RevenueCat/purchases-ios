@@ -2,8 +2,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class FallbackComponentTests: TestCase {
 
     let jsonStringDefaultStack = """
@@ -183,5 +181,3 @@ class FallbackComponentTests: TestCase {
     }
 
 }
-
-#endif

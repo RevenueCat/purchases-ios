@@ -11,8 +11,6 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-#if PAYWALL_COMPONENTS
-
 #if DEBUG
 
 import RevenueCat
@@ -283,7 +281,5 @@ extension PreviewMock {
     }
 
 }
-
-#endif
 
 #endif

@@ -15,8 +15,6 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ShapeModifier: ViewModifier {
@@ -549,7 +547,5 @@ struct CornerBorder_Previews: PreviewProvider {
         .previewDisplayName("Top Left and Bottom Right - Blue Border")
     }
 }
-
-#endif
 
 #endif

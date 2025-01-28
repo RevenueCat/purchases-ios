@@ -2,8 +2,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class TextComponentTests: TestCase {
 
     func testFontSizeWithString() throws {
@@ -79,5 +77,3 @@ class TextComponentTests: TestCase {
     }
 
 }
-
-#endif

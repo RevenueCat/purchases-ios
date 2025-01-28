@@ -2,8 +2,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class PaddingPropertyTests: TestCase {
 
     func testAllValues() throws {
@@ -50,5 +48,3 @@ class PaddingPropertyTests: TestCase {
     }
 
 }
-
-#endif

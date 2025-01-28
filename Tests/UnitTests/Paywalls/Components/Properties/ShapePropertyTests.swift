@@ -2,8 +2,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class ShapePropertyTests: TestCase {
 
     func testRectangleNoCorners() throws {
@@ -52,5 +50,3 @@ class ShapePropertyTests: TestCase {
     }
 
 }
-
-#endif

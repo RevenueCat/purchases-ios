@@ -2,8 +2,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
-
 class StackComponentTests: TestCase {
 
     func testStack() throws {
@@ -177,5 +175,3 @@ class StackComponentTests: TestCase {
     }
 
 }
-
-#endif

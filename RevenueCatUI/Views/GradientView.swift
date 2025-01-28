@@ -13,8 +13,6 @@
 
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 struct GradientView: View {
     enum GradientStyle {
         case linear(Int)
@@ -122,5 +120,3 @@ extension UnitPoint {
     }
 
 }
-
-#endif

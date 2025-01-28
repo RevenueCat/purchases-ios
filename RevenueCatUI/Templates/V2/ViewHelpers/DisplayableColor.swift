@@ -15,8 +15,6 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 extension PaywallComponent.Background {
 
     func asDisplayable(uiConfigProvider: UIConfigProvider) -> BackgroundStyle {
@@ -142,5 +140,3 @@ enum PaywallColorError: LocalizedError {
         }
     }
 }
-
-#endif

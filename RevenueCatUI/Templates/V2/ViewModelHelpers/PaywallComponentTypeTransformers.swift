@@ -14,8 +14,6 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 extension PaywallComponent.FontSize {
 
     func makeFont(familyName: String?) -> Font {
@@ -344,5 +342,3 @@ extension DisplayableColorScheme {
     }
 
 }
-
-#endif

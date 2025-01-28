@@ -14,8 +14,6 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
-
 enum JustifyContent {
     case start, center, end, spaceBetween, spaceAround, spaceEvenly
 }
@@ -40,5 +38,3 @@ extension PaywallComponent.FlexDistribution {
     }
 
 }
-
-#endif

@@ -80,7 +80,6 @@ extension PaywallEvent {
         public var localeIdentifier: String
         public var darkMode: Bool
 
-        #if PAYWALL_COMPONENTS
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
             offering: Offering,
@@ -99,7 +98,6 @@ extension PaywallEvent {
                 darkMode: darkMode
             )
         }
-        #endif
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(

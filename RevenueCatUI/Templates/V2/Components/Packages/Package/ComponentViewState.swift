@@ -14,8 +14,6 @@
 import Foundation
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
-
 enum ComponentViewState {
     case `default`
     case selected
@@ -35,5 +33,3 @@ extension EnvironmentValues {
     }
 
 }
-
-#endif

@@ -151,19 +151,9 @@ private extension Offerings {
         )
     }
 
-    #if PAYWALL_COMPONENTS
-
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
     }
-
-    #else
-
-    var allImagesInPaywalls: Set<URL> {
-        return self.allImagesInPaywallsV1
-    }
-
-    #endif
 
     private var allImagesInPaywallsV1: Set<URL> {
         return .init(
@@ -174,8 +164,6 @@ private extension Offerings {
                 .flatMap(\.allImageURLs)
         )
     }
-
-    #if PAYWALL_COMPONENTS
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.
@@ -191,8 +179,6 @@ private extension Offerings {
                 .flatMap(\.data.allImageURLs)
         )
     }
-
-    #endif
 
 }
 

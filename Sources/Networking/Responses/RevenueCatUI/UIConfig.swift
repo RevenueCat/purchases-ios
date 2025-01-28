@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct AppConfig: Codable, Equatable, Sendable {
@@ -119,11 +117,3 @@ public struct UIConfig: Codable, Equatable, Sendable {
     }
 
 }
-
-#else
-
-public struct UIConfig: Codable, Equatable, Sendable {
-
-}
-
-#endif
