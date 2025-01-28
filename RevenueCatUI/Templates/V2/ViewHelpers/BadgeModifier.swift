@@ -26,13 +26,13 @@ struct BadgeModifier: ViewModifier {
     struct BadgeInfo {
         let style: PaywallComponent.BadgeStyle
         let alignment: PaywallComponent.TwoDimensionAlignment
-        let stack: PaywallComponent.CodableBox<PaywallComponent.StackComponent>
+        let stack: PaywallComponent.StackComponent
         let badgeViewModels: [PaywallComponentViewModel]
         let stackShape: ShapeModifier.Shape?
         let uiConfigProvider: UIConfigProvider
 
         var backgroundStyle: BackgroundStyle? {
-            stack.value.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+            stack.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         }
     }
 
@@ -77,7 +77,6 @@ fileprivate extension View {
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
                 }
@@ -178,30 +177,30 @@ fileprivate extension View {
             case .top, .bottom, .center:
                 return .zero
             case .leading, .topLeading, .bottomLeading:
-                return .init(top: 0, bottom: 0, leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: 0, leading: badge.stack.margin.leading, trailing: 0)
             case .trailing, .topTrailing, .bottomTrailing:
-                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.margin.trailing)
             }
         case .nested:
             switch badge.alignment {
             case .center, .leading, .trailing:
                 return .zero
             case .top:
-                return .init(top: badge.stack.value.margin.top, bottom: 0, leading: 0, trailing: 0)
+                return .init(top: badge.stack.margin.top, bottom: 0, leading: 0, trailing: 0)
             case .bottom:
-                return .init(top: 0, bottom: badge.stack.value.margin.bottom, leading: 0, trailing: 0)
+                return .init(top: 0, bottom: badge.stack.margin.bottom, leading: 0, trailing: 0)
             case .topLeading:
-                return .init(top: badge.stack.value.margin.top, bottom: 0,
-                             leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: badge.stack.margin.top, bottom: 0,
+                             leading: badge.stack.margin.leading, trailing: 0)
             case .topTrailing:
-                return .init(top: badge.stack.value.margin.top, bottom: 0,
-                             leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: badge.stack.margin.top, bottom: 0,
+                             leading: 0, trailing: badge.stack.margin.trailing)
             case .bottomLeading:
-                return .init(top: 0, bottom: badge.stack.value.margin.bottom,
-                             leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: badge.stack.margin.bottom,
+                             leading: badge.stack.margin.leading, trailing: 0)
             case .bottomTrailing:
-                return .init(top: 0, bottom: badge.stack.value.margin.bottom,
-                             leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: 0, bottom: badge.stack.margin.bottom,
+                             leading: 0, trailing: badge.stack.margin.trailing)
             }
         }
     }
@@ -211,7 +210,7 @@ fileprivate extension View {
     private func effectiveShape(badge: BadgeModifier.BadgeInfo) -> ShapeModifier.Shape? {
         switch badge.style {
         case .edgeToEdge:
-            switch badge.stack.value.shape {
+            switch badge.stack.shape {
             case .pill, .none:
                 // Edge-to-edge badge cannot have pill shape
                 return nil
@@ -258,7 +257,7 @@ fileprivate extension View {
                 }
             }
         case .nested, .overlaid:
-            switch badge.stack.value.shape {
+            switch badge.stack.shape {
             case .rectangle(let radius):
                 return .rectangle(.init(topLeft: radius?.topLeading,
                                         topRight: radius?.topTrailing,
@@ -415,7 +414,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
         BadgeModifier.BadgeInfo(
             style: style,
             alignment: alignment,
-            stack: PaywallComponent.CodableBox(PaywallComponent.StackComponent(
+            stack: PaywallComponent.StackComponent(
                 components: [
                     PaywallComponent.text(
                         PaywallComponent.TextComponent(
@@ -434,7 +433,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
                 padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                 margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
                 shape: .rectangle(.init(topLeading: 8.0, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8))
-            )), badgeViewModels: [
+            ), badgeViewModels: [
                 .text(
                     // swiftlint:disable:next force_try
                     try! TextComponentViewModel(

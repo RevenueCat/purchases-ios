@@ -90,32 +90,14 @@ struct ViewModelFactory {
                 )
             )
         case .stack(let component):
-            let viewModels = try component.components.map { component in
-                try self.toViewModel(
-                    component: component,
-                    packageValidator: packageValidator,
-                    offering: offering,
-                    localizationProvider: localizationProvider,
-                    uiConfigProvider: uiConfigProvider
-                )
-            }
-
-            let badgeViewModels = try component.badge?.stack.value.components.map { component in
-                try self.toViewModel(
-                    component: component,
-                    packageValidator: packageValidator,
-                    offering: offering,
-                    localizationProvider: localizationProvider,
-                    uiConfigProvider: uiConfigProvider
-                )
-            }
-
             return .stack(
-                try StackComponentViewModel(component: component,
-                                            viewModels: viewModels,
-                                            badgeViewModels: badgeViewModels ?? [],
-                                            uiConfigProvider: uiConfigProvider,
-                                            localizationProvider: localizationProvider)
+                try toStackViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
@@ -273,10 +255,24 @@ struct ViewModelFactory {
             )
         }
 
+        let badgeViewModels = try component.badge.flatMap { badge in
+            [
+                PaywallComponentViewModel.stack(
+                    try toStackViewModel(
+                        component: badge.stack,
+                        packageValidator: packageValidator,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        offering: offering
+                    )
+                )
+            ]
+        } ?? []
+
         return try StackComponentViewModel(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: [],
+            badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
             localizationProvider: localizationProvider
         )
