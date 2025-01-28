@@ -94,10 +94,6 @@ struct PromotionalOfferView: View {
             }
         }
         .onAppear {
-            print("""
-            PromotionalOfferView
-            \(appearance)
-            """)
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
     }
