@@ -115,7 +115,6 @@ private extension PaywallComponent.IconComponent {
 
 }
 
-
 extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialIconComponent> {
 
     func imageUrls(base: URL) -> [URL] {
