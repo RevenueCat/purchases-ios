@@ -13,6 +13,7 @@
 
 import RevenueCat
 import SwiftUI
+import UIKit
 
 extension PaywallComponent.FontSize {
 
