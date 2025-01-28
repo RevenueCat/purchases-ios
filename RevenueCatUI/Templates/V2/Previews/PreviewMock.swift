@@ -78,7 +78,6 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
     let packageContext: PackageContext?
-    let colorScheme: ColorScheme
 
     func body(content: Content) -> some View {
         content
@@ -87,7 +86,6 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
-            .environment(\.colorScheme, colorScheme)
     }
 
 }
@@ -97,14 +95,12 @@ extension View {
     func previewRequiredEnvironmentProperties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
-        packageContext: PackageContext? = nil,
-        colorScheme: ColorScheme = .light
+        packageContext: PackageContext? = nil
     ) -> some View {
         self.modifier(PreviewRequiredEnvironmentProperties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
-            packageContext: packageContext,
-            colorScheme: colorScheme
+            packageContext: packageContext
         ))
     }
 }
