@@ -54,68 +54,38 @@ struct ShapeModifier: ViewModifier {
 
     var border: BorderInfo?
     var shape: Shape
-    var shadow: ShadowModifier.ShadowInfo?
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
 
     init(border: BorderInfo?,
          shape: Shape?,
-         shadow: ShadowModifier.ShadowInfo?,
          background: BackgroundStyle?,
          uiConfigProvider: UIConfigProvider?
     ) {
         self.border = border
         self.shape = shape ?? .rectangle(nil)
-        self.shadow = shadow
         self.background = background
         self.uiConfigProvider = uiConfigProvider
     }
 
     func body(content: Content) -> some View {
         switch self.shape {
-        case .rectangle(let radiusInfo):
-            let shape = self.effectiveRectangleShape(radiusInfo: radiusInfo)
-            let effectiveShape = shape ?? Rectangle().eraseToAnyInsettableShape()
-            content
-                .backgroundStyle(background)
+        case .circle, .pill, .rectangle:
+            if let shape = self.shape.toInsettableShape() {
+                content
+                    .backgroundStyle(background)
                 // We want to clip only in case there is a non-Rectangle shape
                 // or if there's a border, otherwise we let the background color
                 // extend behind the safe areas
-                .applyIfLet(shape) { view, shape in
-                    view.clipShape(shape)
-                }
-                .applyIfLet(border) { view, border in
-                    view.clipShape(effectiveShape).overlay {
-                        effectiveShape.strokeBorder(border.color, lineWidth: border.width)
+                    .applyIf(!shape.isRectangle()) { view in
+                        view.clipShape(shape)
                     }
-                }
-                .applyIfLet(shadow) { view, shadow in
-                    view.shadow(shadow: shadow, shape: effectiveShape)
-                }
-        case .pill:
-            let shape = Capsule(style: .circular)
-            content
-                .backgroundStyle(background)
-                .clipShape(shape)
-                .applyIfLet(border) { view, border in
-                    view.overlay {
-                        shape.strokeBorder(border.color, lineWidth: border.width)
+                    .applyIfLet(border) { view, border in
+                        view.clipShape(shape).overlay {
+                            shape.strokeBorder(border.color, lineWidth: border.width)
+                        }
                     }
-                }.applyIfLet(shadow) { view, shadow in
-                    view.shadow(shadow: shadow, shape: shape)
-                }
-        case .circle:
-            let shape = Circle()
-            content
-                .backgroundStyle(background)
-                .clipShape(shape)
-                .applyIfLet(border) { view, border in
-                    view.overlay {
-                        shape.strokeBorder(border.color, lineWidth: border.width)
-                    }
-                }.applyIfLet(shadow) { view, shadow in
-                    view.shadow(shadow: shadow, shape: shape)
-                }
+            }
         case .concave:
             // WIP: Need to implement
             content
@@ -123,33 +93,6 @@ struct ShapeModifier: ViewModifier {
         case .convex:
             content
                 .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2))
-        }
-    }
-
-    func effectiveRectangleShape(radiusInfo: RadiusInfo?) -> AnyInsettableShape? {
-        if let topLeft = radiusInfo?.topLeft,
-           let topRight = radiusInfo?.topRight,
-           let bottomLeft = radiusInfo?.bottomLeft,
-           let bottomRight = radiusInfo?.bottomRight,
-           topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: topLeft,
-                    bottomLeadingRadius: bottomLeft,
-                    bottomTrailingRadius: bottomRight,
-                    topTrailingRadius: topRight,
-                    style: .circular
-                ).eraseToAnyInsettableShape()
-            } else {
-                BackportedUnevenRoundedRectangle(
-                    topLeft: topLeft,
-                    topRight: topRight,
-                    bottomLeft: bottomLeft,
-                    bottomRight: bottomRight
-                ).eraseToAnyInsettableShape()
-            }
-        } else {
-            nil
         }
     }
 
@@ -285,6 +228,10 @@ struct AnyInsettableShape: InsettableShape {
         copy.base = copy.base.inset(by: amount)
         return copy
     }
+
+    func isRectangle() -> Bool {
+        base is Rectangle
+    }
 }
 
 private extension InsettableShape {
@@ -363,7 +310,6 @@ extension View {
     func shape(
         border: ShapeModifier.BorderInfo?,
         shape: ShapeModifier.Shape?,
-        shadow: ShadowModifier.ShadowInfo? = nil,
         background: BackgroundStyle? = nil,
         uiConfigProvider: UIConfigProvider? = nil
     ) -> some View {
@@ -371,11 +317,53 @@ extension View {
             ShapeModifier(
                 border: border,
                 shape: shape,
-                shadow: shadow,
                 background: background,
                 uiConfigProvider: uiConfigProvider
             )
         )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension ShapeModifier.Shape {
+    func toInsettableShape() -> (AnyInsettableShape)? {
+        switch self {
+        case .rectangle(let radiusInfo):
+            return self.effectiveRectangleShape(radiusInfo: radiusInfo)
+        case .circle:
+            return Circle().eraseToAnyInsettableShape()
+        case .pill:
+            return Capsule(style: .circular).eraseToAnyInsettableShape()
+        case .concave, .convex:
+            return nil
+        }
+    }
+
+    private func effectiveRectangleShape(radiusInfo: ShapeModifier.RadiusInfo?) -> AnyInsettableShape {
+        let topLeft = radiusInfo?.topLeft ?? 0
+        let topRight = radiusInfo?.topRight ?? 0
+        let bottomLeft = radiusInfo?.bottomLeft ?? 0
+        let bottomRight = radiusInfo?.bottomRight ?? 0
+        if  topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: topLeft,
+                    bottomLeadingRadius: bottomLeft,
+                    bottomTrailingRadius: bottomRight,
+                    topTrailingRadius: topRight,
+                    style: .circular
+                ).eraseToAnyInsettableShape()
+            } else {
+                return BackportedUnevenRoundedRectangle(
+                    topLeft: topLeft,
+                    topRight: topRight,
+                    bottomLeft: bottomLeft,
+                    bottomRight: bottomRight
+                ).eraseToAnyInsettableShape()
+            }
+        } else {
+            return Rectangle().eraseToAnyInsettableShape()
+        }
     }
 }
 
@@ -461,10 +449,10 @@ struct CornerBorder_Previews: PreviewProvider {
                             }
                             .shape(border: border,
                                    shape: shape,
-                                   shadow: shadow,
                                    background: background,
                                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
                             )
+                            .shadow(shadow: shadow, shape: shape?.toInsettableShape())
                             .padding(5)
                         }
                     }
