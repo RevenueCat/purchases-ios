@@ -105,7 +105,7 @@ class IdentityManager: CurrentUserProvider {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 
-    private static let uiPreviewModeAppUserID: String = "$RCPREVIEWMODE"
+    static let uiPreviewModeAppUserID: String = "$RCPREVIEWMODE"
 }
 
 extension IdentityManager {
