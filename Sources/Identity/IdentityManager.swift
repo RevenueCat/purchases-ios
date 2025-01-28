@@ -36,6 +36,7 @@ class IdentityManager: CurrentUserProvider {
 
     init(
         deviceCache: DeviceCache,
+        systemInfo: SystemInfo,
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
         attributeSyncing: AttributeSyncing,
@@ -50,10 +51,14 @@ class IdentityManager: CurrentUserProvider {
             Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
         }
 
-        let appUserID = appUserID?.notEmptyOrWhitespaces
+        let appUserID = if systemInfo.dangerousSettings.uiPreviewMode {
+            Self.uiPreviewModeAppUserID
+        } else {
+            appUserID?.notEmptyOrWhitespaces
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
             ?? Self.generateRandomID()
+        }
 
         Logger.user(Strings.identity.identifying_app_user_id)
 
@@ -100,6 +105,7 @@ class IdentityManager: CurrentUserProvider {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 
+    private static let uiPreviewModeAppUserID: String = "$RCPREVIEWMODE"
 }
 
 extension IdentityManager {
