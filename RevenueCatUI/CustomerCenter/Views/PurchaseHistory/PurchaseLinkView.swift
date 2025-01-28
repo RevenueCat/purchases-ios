@@ -29,6 +29,7 @@ struct PurchaseLinkView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(productName ?? purchaseInfo.productIdentifier)
                     .font(.headline)
+                    .foregroundStyle(.primary)
 
                 Text(dateString)
                     .font(.subheadline)
@@ -47,6 +48,7 @@ struct PurchaseLinkView: View {
                 .foregroundStyle(.secondary)
         }
         .contentShape(Rectangle())
+        .tint(.black)
         .onAppear {
             Task {
                 guard
