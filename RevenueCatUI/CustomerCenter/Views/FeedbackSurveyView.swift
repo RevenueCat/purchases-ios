@@ -93,12 +93,6 @@ struct FeedbackSurveyView: View {
         }
         .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            print("""
-            FeedbackSurveyView
-            \(mode)
-            """)
-        }
     }
 
     private func dismissView() {
