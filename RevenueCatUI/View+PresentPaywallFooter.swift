@@ -120,7 +120,8 @@ extension View {
 
     /// Presents a ``PaywallFooterView`` at the bottom of a view that loads the `Offerings.current`.
     /// If you are presenting a V1 paywall, this will show the footer of the template you selected.
-    /// If you are presenting a V2 paywall, this will show a default footer since V2 paywalls don't have a footer representation.
+    /// If you are presenting a V2 paywall, this will show a default footer since V2 paywalls
+    /// don't have a footer representation.
     /// ```swift
     /// var body: some View {
     ///    YourPaywall()
@@ -261,7 +262,8 @@ extension View {
 
     /// Presents a ``PaywallFooterView`` at the bottom of a view with the given offering.
     /// If you are presenting a V1 paywall, this will show the footer of the template you selected.
-    /// If you are presenting a V2 paywall, this will show a default footer since V2 paywalls don't have a footer representation.
+    /// If you are presenting a V2 paywall, this will show a default footer since V2 paywalls
+    /// don't have a footer representation.
     /// ```swift
     /// var body: some View {
     ///    YourPaywall()
