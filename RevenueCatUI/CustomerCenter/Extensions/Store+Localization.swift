@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Store+Localized.swift
+//  Store+Localization.swift
 //
 //
 //  Created by Facundo Menzella on 14/1/25.

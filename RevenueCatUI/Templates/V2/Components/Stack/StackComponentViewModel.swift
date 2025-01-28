@@ -16,7 +16,7 @@ import SwiftUI
 
 #if PAYWALL_COMPONENTS
 
-private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
+typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
@@ -156,6 +156,7 @@ struct StackComponentStyle {
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
         self.badge = badge?.badge(stackShape: self.shape,
+                                  stackBorder: self.border,
                                   badgeViewModels: badgeViewModels,
                                   uiConfigProvider: uiConfigProvider)
     }
@@ -198,10 +199,10 @@ private extension PaywallComponent.Shape {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
                 ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading,
-                    topRight: cornerRadiuses.topTrailing,
-                    bottomLeft: cornerRadiuses.bottomLeading,
-                    bottomRight: cornerRadiuses.bottomTrailing
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
                 )
             }
             return .rectangle(corners)
@@ -242,6 +243,7 @@ private extension PaywallComponent.Shadow {
 private extension PaywallComponent.Badge {
 
     func badge(stackShape: ShapeModifier.Shape?,
+               stackBorder: ShapeModifier.BorderInfo?,
                badgeViewModels: [PaywallComponentViewModel],
                uiConfigProvider: UIConfigProvider) -> BadgeModifier.BadgeInfo? {
         BadgeModifier.BadgeInfo(
@@ -250,6 +252,7 @@ private extension PaywallComponent.Badge {
             stack: self.stack,
             badgeViewModels: badgeViewModels,
             stackShape: stackShape,
+            stackBorder: stackBorder,
             uiConfigProvider: uiConfigProvider
         )
     }

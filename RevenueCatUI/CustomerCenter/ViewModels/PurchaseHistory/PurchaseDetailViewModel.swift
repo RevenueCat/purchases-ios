@@ -30,15 +30,16 @@ final class PurchaseDetailViewModel: ObservableObject {
     private var localization: CustomerCenterConfigData.Localization
 
     @Published var items: [PurchaseDetailItem] = []
+    var debugItems: [PurchaseDetailItem] = []
 
     var localizedOwnership: String? {
         switch purchaseInfo {
         case .subscription(let subscriptionInfo):
-            subscriptionInfo.ownershipType == .familyShared
-            ? localization[.sharedThroughFamilyMember]
-            : nil
+            return subscriptionInfo.ownershipType == .familyShared
+                ? localization[.sharedThroughFamilyMember]
+                : nil
         case .nonSubscription:
-            nil
+            return nil
         }
     }
 
@@ -70,10 +71,11 @@ private extension PurchaseDetailViewModel {
 
         await MainActor.run {
             var items: [PurchaseDetailItem] = [
-            .productName(product.localizedTitle)
-        ]
+                .productName(product.localizedTitle)
+            ]
 
-        items.append(contentsOf: purchaseInfo.purchaseDetailItems)
+            items.append(contentsOf: purchaseInfo.purchaseDetailItems)
+            self.debugItems = purchaseInfo.purchaseDetailDebugItems
             self.items = items
         }
     }

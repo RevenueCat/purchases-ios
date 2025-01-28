@@ -54,7 +54,8 @@ struct ComponentsView: View {
                 PurchaseButtonComponentView(viewModel: viewModel)
             case .stickyFooter(let viewModel):
                 StickyFooterComponentView(viewModel: viewModel)
-
+            case .timeline(let viewModel):
+                TimelineComponentView(viewModel: viewModel)
             case .tabs(let viewModel):
                 TabsComponentView(viewModel: viewModel, onDismiss: onDismiss)
             case .tabControl(let viewModel):

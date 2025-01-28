@@ -17,6 +17,7 @@ import RevenueCat
 #if PAYWALL_COMPONENTS
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
@@ -90,32 +91,14 @@ struct ViewModelFactory {
                 )
             )
         case .stack(let component):
-            let viewModels = try component.components.map { component in
-                try self.toViewModel(
-                    component: component,
-                    packageValidator: packageValidator,
-                    offering: offering,
-                    localizationProvider: localizationProvider,
-                    uiConfigProvider: uiConfigProvider
-                )
-            }
-
-            let badgeViewModels = try component.badge?.stack.value.components.map { component in
-                try self.toViewModel(
-                    component: component,
-                    packageValidator: packageValidator,
-                    offering: offering,
-                    localizationProvider: localizationProvider,
-                    uiConfigProvider: uiConfigProvider
-                )
-            }
-
             return .stack(
-                try StackComponentViewModel(component: component,
-                                            viewModels: viewModels,
-                                            badgeViewModels: badgeViewModels ?? [],
-                                            uiConfigProvider: uiConfigProvider,
-                                            localizationProvider: localizationProvider)
+                try toStackViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
             )
         case .button(let component):
             let stackViewModel = try toStackViewModel(
@@ -179,6 +162,39 @@ struct ViewModelFactory {
                 StickyFooterComponentViewModel(
                     component: component,
                     stackViewModel: stackViewModel
+                )
+            )
+        case .timeline(let component):
+            let models = try component.items.map { item in
+                var description: TextComponentViewModel?
+                if let descriptionComponent = item.description {
+                    description = try TextComponentViewModel(
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        component: descriptionComponent
+                    )
+                }
+                return TimelineItemViewModel(
+                    component: item,
+                    title: try TextComponentViewModel(
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        component: item.title
+                    ),
+                    description: description,
+                    icon: try IconComponentViewModel(
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        component: item.icon
+                    )
+                )
+            }
+
+            return .timeline(
+                try TimelineComponentViewModel(
+                    component: component,
+                    items: models,
+                    uiConfigProvider: uiConfigProvider
                 )
             )
         case .tabs(let component):
@@ -273,10 +289,24 @@ struct ViewModelFactory {
             )
         }
 
+        let badgeViewModels = try component.badge.flatMap { badge in
+            [
+                PaywallComponentViewModel.stack(
+                    try toStackViewModel(
+                        component: badge.stack,
+                        packageValidator: packageValidator,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        offering: offering
+                    )
+                )
+            ]
+        } ?? []
+
         return try StackComponentViewModel(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: [],
+            badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
             localizationProvider: localizationProvider
         )

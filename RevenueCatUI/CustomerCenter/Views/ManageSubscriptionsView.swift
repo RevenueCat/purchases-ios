@@ -29,6 +29,7 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
+
     @Environment(\.supportInformation)
     private var support
 
@@ -62,12 +63,14 @@ struct ManageSubscriptionsView: View {
     var body: some View {
         content.compatibleNavigation(
             item: $viewModel.feedbackSurveyData,
-            usesNavigationStack: navigationOptions.usesExistingNavigation
+            usesNavigationStack: navigationOptions.usesNavigationStack
         ) { feedbackSurveyData in
             FeedbackSurveyView(
                 feedbackSurveyData: feedbackSurveyData,
                 customerCenterActionHandler: self.customerCenterActionHandler,
                 isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
         }
     }
 
@@ -86,6 +89,7 @@ struct ManageSubscriptionsView: View {
                     } label: {
                         Text(localization[.seeAllPurchases])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -123,6 +127,8 @@ struct ManageSubscriptionsView: View {
             usesNavigationStack: navigationOptions.usesNavigationStack
         ) {
             PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
         }
         .dismissCircleButtonToolbar()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)

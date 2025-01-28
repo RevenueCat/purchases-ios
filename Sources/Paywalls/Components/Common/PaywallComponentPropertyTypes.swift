@@ -512,50 +512,37 @@ public extension PaywallComponent {
     enum BadgeStyle: String, Codable, Sendable, Hashable, Equatable {
 
         case edgeToEdge = "edge_to_edge"
-        case overlaid = "overlaid"
+        case overlaid = "overlay"
         case nested = "nested"
 
     }
 
-    struct Badge: Codable, Sendable, Hashable, Equatable {
+    final class Badge: Codable, Sendable, Hashable, Equatable {
 
         public let style: BadgeStyle
         public let alignment: TwoDimensionAlignment
-        public let stack: CodableBox<StackComponent>
+        public let stack: StackComponent
 
-    }
-
-    // Holds a reference to a `Codable` value.
-    final class CodableBox<T: Codable>: Codable {
-
-        public let value: T
-
-        public init(_ value: T) { self.value = value }
-
-        public required init(from decoder: Decoder) throws {
-            value = try T(from: decoder)
+        public init(style: BadgeStyle, alignment: TwoDimensionAlignment, stack: StackComponent) {
+            self.style = style
+            self.alignment = alignment
+            self.stack = stack
         }
 
-        public func encode(to encoder: Encoder) throws {
-            try value.encode(to: encoder)
+        public static func == (lhs: Badge, rhs: Badge) -> Bool {
+            return lhs.style == rhs.style &&
+                   lhs.alignment == rhs.alignment &&
+                   lhs.stack == rhs.stack
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(style)
+            hasher.combine(alignment)
+            hasher.combine(stack)
         }
 
     }
 
-}
-
-extension PaywallComponent.CodableBox: Sendable where T: Sendable {}
-
-extension PaywallComponent.CodableBox: Equatable where T: Equatable {
-    public static func == (lhs: PaywallComponent.CodableBox<T>, rhs: PaywallComponent.CodableBox<T>) -> Bool {
-        return lhs.value == rhs.value
-    }
-}
-
-extension PaywallComponent.CodableBox: Hashable where T: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(value)
-    }
 }
 
 #endif

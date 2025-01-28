@@ -17,7 +17,10 @@ struct SamplePaywallsList: View {
     private var display: Display?
 
     @State
-    private var presentingCustomerCenter: Bool = false
+    private var presentingCustomerCenterSheet: Bool = false
+
+    @State
+    private var presentingCustomerCenterFullScreen: Bool = false
 
     var body: some View {
         NavigationView {
@@ -87,8 +90,11 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
-        case .customerCenter:
-            CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
+        case .customerCenterSheet,
+                .customerCenterFullScreen,
+                .customerCenterNavigationView:
+            // handled by view modifier
+            EmptyView()
         case .uiKitCustomerCenter:
             CustomerCenterUIKitView(
                 customerCenterActionHandler: self.handleCustomerCenterAction
@@ -160,10 +166,16 @@ struct SamplePaywallsList: View {
 
             #if os(iOS)
             Section("Customer Center") {
-                Button {
-                    self.display = .customerCenter
+                NavigationLink {
+                    CustomerCenterView(
+                        customerCenterActionHandler: handleCustomerCenterAction,
+                        navigationOptions: CustomerCenterNavigationOptions(
+                            usesNavigationStack: false,
+                            usesExistingNavigation: true,
+                            shouldShowCloseButton: false
+                        ))
                 } label: {
-                    TemplateLabel(name: "SwiftUI", icon: "person.fill.questionmark")
+                    Text("Pushed in NavigationView")
                 }
 
                 Button {
@@ -173,7 +185,13 @@ struct SamplePaywallsList: View {
                 }
 
                 Button {
-                    self.presentingCustomerCenter = true
+                    self.presentingCustomerCenterFullScreen = true
+                } label: {
+                    TemplateLabel(name: "Fullscreen", icon: "person.fill")
+                }
+
+                Button {
+                    self.presentingCustomerCenterSheet = true
                 } label: {
                     TemplateLabel(name: "Sheet", icon: "person.fill")
                 }
@@ -191,8 +209,18 @@ struct SamplePaywallsList: View {
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
         #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
-            self.presentingCustomerCenter = false
+        .presentCustomerCenter(
+            isPresented: self.$presentingCustomerCenterSheet,
+            customerCenterActionHandler: self.handleCustomerCenterAction
+        ) {
+            self.presentingCustomerCenterSheet = false
+        }
+        .presentCustomerCenter(
+            isPresented: self.$presentingCustomerCenterFullScreen,
+            customerCenterActionHandler: self.handleCustomerCenterAction,
+            presentationMode: .fullScreen
+        ) {
+            self.presentingCustomerCenterFullScreen = false
         }
         #endif
     }
@@ -272,7 +300,9 @@ private extension SamplePaywallsList {
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
-        case customerCenter
+        case customerCenterSheet
+        case customerCenterFullScreen
+        case customerCenterNavigationView
         case uiKitCustomerCenter
         #if PAYWALL_COMPONENTS
         case componentPaywall(PaywallComponentsData)
@@ -301,8 +331,15 @@ extension SamplePaywallsList.Display: Identifiable {
         case .unrecognizedPaywall:
             return "unrecognized"
 
-        case .customerCenter:
-            return "customer-center"
+        case .customerCenterSheet:
+            return "customer-center-sheet"
+
+        case .customerCenterFullScreen:
+            return "customer-center-fullscreen"
+
+        case .customerCenterNavigationView:
+            return "customer-center-navigationview"
+
         #if PAYWALL_COMPONENTS
         case .componentPaywall:
             return "component-paywall"

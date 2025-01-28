@@ -98,13 +98,51 @@ struct StackComponentView: View {
         }
         .padding(style.padding)
         .padding(additionalPadding)
-        .shape(border: style.border,
+        .shape(border: nil,
                shape: style.shape,
-               shadow: style.shadow,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
-        .stackBadge(style.badge)
+        .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension View {
+
+    // Helper to compute the order or application of border, shadow and badge.
+    @ViewBuilder
+    func apply(badge: BadgeModifier.BadgeInfo?,
+               border: ShapeModifier.BorderInfo?,
+               shadow: ShadowModifier.ShadowInfo?,
+               shape: ShapeModifier.Shape?) -> some View {
+        switch badge?.style {
+        case .edgeToEdge:
+            switch badge?.alignment {
+            case .top, .bottom:
+                // Some badge types require us to clip so they do not extend outside the bounds of the stack,
+                // this requires the badge be added before the shadow so the shadow is not clipped.
+                // However for edge-to-edge top/bottom badges, the shadow should be applied first so the badge
+                // appears behind the shadow.
+                self.shape(border: border, shape: shape)
+                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+                    .stackBadge(badge)
+            default:
+                self.shape(border: border, shape: shape)
+                    .stackBadge(badge)
+                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+            }
+        case .nested:
+            // For nested badges, we want the border to be applied last so it appears over the badge.
+            self.stackBadge(badge)
+                .shape(border: border, shape: shape)
+                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+        default:
+            self.shape(border: border, shape: shape)
+                .stackBadge(badge)
+                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+        }
     }
 
 }
@@ -519,6 +557,7 @@ extension StackComponentViewModel {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
         let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+        let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
         let viewModels = try component.components.map { component in
             try factory.toViewModel(
@@ -526,14 +565,24 @@ extension StackComponentViewModel {
                 packageValidator: validator,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                uiConfigProvider: uiConfigProvider
+            )
+        }
+
+        let badgeViewModels = try component.badge?.stack.components.map { component in
+            try factory.toViewModel(
+                component: component,
+                packageValidator: validator,
+                offering: offering,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
         }
 
         try self.init(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: [],
+            badgeViewModels: badgeViewModels ?? [],
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             localizationProvider: localizationProvider
         )

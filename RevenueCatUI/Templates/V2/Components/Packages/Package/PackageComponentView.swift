@@ -98,13 +98,13 @@ struct PackageComponentView_Previews: PreviewProvider {
                     color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero,
-                    overrides: .init(
-                        states: .init(
-                            selected: .init(
-                                color: .init(light: .hex("#ff0000"))
-                            )
-                        )
-                    )
+                    overrides: [
+                        .init(conditions: [
+                            .selected
+                        ], properties: .init(
+                            color: .init(light: .hex("#ff0000"))
+                        ))
+                    ]
                 )),
                 .text(.init(
                     text: "detail",
@@ -125,13 +125,13 @@ struct PackageComponentView_Previews: PreviewProvider {
                           leading: 10,
                           trailing: 10),
             border: .init(color: .init(light: .hex("#cccccc")), width: 2),
-            overrides: .init(
-                states: .init(
-                    selected: .init(
-                        border: .init(color: .init(light: .hex("#ff0000")), width: 2)
-                    )
-                )
-            )
+            overrides: [
+                .init(conditions: [
+                    .selected
+                ], properties: .init(
+                    border: .init(color: .init(light: .hex("#ff0000")), width: 2)
+                ))
+            ]
         )
     }
 

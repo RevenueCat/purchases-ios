@@ -1,11 +1,10 @@
-## RevenueCat SDK
-### 🐞 Bugfixes
-* [EXTERNAL] Lock RateLimiter.shouldProceed() entirely to avoid race conditions (#4635) via @nguyenhuy (#4637) via JayShortway (@JayShortway)
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Show expired subscriptions if nonEmpty (#4707) via Facundo Menzella (@facumenzella)
+* feat: Add debug section for purchase detail (#4702) via Facundo Menzella (@facumenzella)
+* fix: Use usesNavigationStack instead of usesExistingNavigation (#4706) via Facundo Menzella (@facumenzella)
+* fix: Set environment values for every child view in CustomerCenter (#4704) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* [Paywalls V2] Implement V2 variables and functions (#4633) via Josh Holtz (@joshdholtz)
-* [Paywalls] Fix PaywallTester build (#4636) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls] Fix gradient orientation by shifting initial position by 90º and making it rotate clockwise (#4634) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Add support for alias solid hex colors (not gradients) (#4632) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Support custom fonts with UIConfig (#4631) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Add UIConfig to OfferingsResponse (#4628) via Josh Holtz (@joshdholtz)
+* [Paywalls] Fix hex colors with alpha component (#4698) via Mark Villacampa (@MarkVillacampa)

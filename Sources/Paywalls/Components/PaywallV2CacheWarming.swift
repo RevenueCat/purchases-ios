@@ -54,26 +54,12 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             case .text:
                 ()
             case .icon(let icon):
-                guard let baseUrl = URL(string: icon.baseUrl) else {
-                    break
-                }
-
-                urls += icon.formats.imageUrls(base: baseUrl)
-                urls += icon.overrides?.imageUrls(base: baseUrl) ?? []
+                urls += icon.imageUrls
             case .image(let image):
-                urls += [
-                    image.source.light.heicLowRes,
-                    image.source.dark?.heicLowRes
-                ].compactMap { $0 }
+                urls += image.source.imageUrls
 
-                if let overides = image.overrides {
-                    urls += [
-                        overides.introOffer?.source?.imageUrls ?? [],
-                        overides.states?.selected?.source?.imageUrls ?? [],
-                        overides.conditions?.compact?.source?.imageUrls ?? [],
-                        overides.conditions?.medium?.source?.imageUrls ?? [],
-                        overides.conditions?.expanded?.source?.imageUrls ?? []
-                    ].flatMap { $0 }
+                if let overrides = image.overrides {
+                    urls += overrides.imageUrls
                 }
             case .stack(let stack):
                 urls += self.collectAllImageURLs(in: stack)
@@ -85,6 +71,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += self.collectAllImageURLs(in: purchaseButton.stack)
             case .stickyFooter(let stickyFooter):
                 urls += self.collectAllImageURLs(in: stickyFooter.stack)
+            case .timeline(let component):
+                for item in component.items {
+                    urls += item.icon.imageUrls
+                }
             case .tabs(let tabs):
                 for tab in tabs.tabs {
                     urls += self.collectAllImageURLs(in: tab.stack)
@@ -113,16 +103,34 @@ extension PaywallComponent.IconComponent.Formats {
 
 }
 
-extension PaywallComponent.ComponentOverrides where T == PaywallComponent.PartialIconComponent {
+private extension PaywallComponent.IconComponent {
+
+    var imageUrls: [URL] {
+        guard let baseUrl = URL(string: self.baseUrl) else {
+            return []
+        }
+
+        return self.formats.imageUrls(base: baseUrl) + (self.overrides?.imageUrls(base: baseUrl) ?? [])
+    }
+
+}
+
+extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialIconComponent> {
 
     func imageUrls(base: URL) -> [URL] {
-        return [
-            self.introOffer?.formats?.imageUrls(base: base) ?? [],
-            self.states?.selected?.formats?.imageUrls(base: base) ?? [],
-            self.conditions?.compact?.formats?.imageUrls(base: base) ?? [],
-            self.conditions?.medium?.formats?.imageUrls(base: base) ?? [],
-            self.conditions?.expanded?.formats?.imageUrls(base: base) ?? []
-        ].flatMap { $0 }
+        return self.compactMap { iconOverrides in
+            iconOverrides.properties.formats?.imageUrls(base: base) ?? []
+        }.flatMap { $0 }
+    }
+
+}
+
+extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialImageComponent> {
+
+    var imageUrls: [URL] {
+        return self.compactMap { iconOverrides in
+            iconOverrides.properties.source?.imageUrls ?? []
+        }.flatMap { $0 }
     }
 
 }
