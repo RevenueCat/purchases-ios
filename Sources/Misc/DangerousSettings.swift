@@ -108,7 +108,7 @@ import Foundation
     }
 
     /**
-     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     * Used to initialize the SDK in UI preview mode.
      *
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes. 
@@ -117,6 +117,7 @@ import Foundation
         self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
+    /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
