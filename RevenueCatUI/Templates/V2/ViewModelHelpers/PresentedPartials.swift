@@ -121,7 +121,7 @@ extension Array {
     /// - Parameter convert: Conversion function to apply
     /// - Returns: Presented overrides with converted components
     func toPresentedOverrides<
-        T: PaywallComponent.PartialComponent,
+        T: PaywallPartialComponent,
         P: PresentedPartial
     >(
         convert: (T) throws -> P

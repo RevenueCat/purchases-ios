@@ -86,7 +86,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialImageComponent: PartialComponent {
+    final class PartialImageComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let source: ThemeImageUrls?

@@ -140,7 +140,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialIconComponent: PartialComponent {
+    final class PartialIconComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let baseUrl: String?

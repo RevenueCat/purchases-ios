@@ -216,7 +216,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialTabsComponent: PartialComponent {
+    final class PartialTabsComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let size: Size?

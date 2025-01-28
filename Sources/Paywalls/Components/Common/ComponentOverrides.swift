@@ -17,13 +17,13 @@ import Foundation
 
 #if !os(watchOS) && !os(macOS)
 
+public protocol PaywallPartialComponent: PaywallComponentBase {}
+
 public extension PaywallComponent {
 
-    protocol PartialComponent: PaywallComponentBase {}
+    typealias ComponentOverrides<T: PaywallPartialComponent> = [ComponentOverride<T>]
 
-    typealias ComponentOverrides<T: PartialComponent> = [ComponentOverride<T>]
-
-    struct ComponentOverride<T: PartialComponent>: PaywallComponentBase {
+    struct ComponentOverride<T: PaywallPartialComponent>: PaywallComponentBase {
 
         public let conditions: [Condition]
         public let properties: T

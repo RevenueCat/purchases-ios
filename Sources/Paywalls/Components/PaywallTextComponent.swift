@@ -148,7 +148,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialTextComponent: PartialComponent {
+    final class PartialTextComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let text: LocalizationKey?
