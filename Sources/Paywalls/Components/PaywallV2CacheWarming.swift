@@ -56,19 +56,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             case .icon(let icon):
                 urls += icon.imageUrls
             case .image(let image):
-                urls += [
-                    image.source.light.heicLowRes,
-                    image.source.dark?.heicLowRes
-                ].compactMap { $0 }
+                urls += image.source.imageUrls
 
-                if let overides = image.overrides {
-                    urls += [
-                        overides.introOffer?.source?.imageUrls ?? [],
-                        overides.states?.selected?.source?.imageUrls ?? [],
-                        overides.conditions?.compact?.source?.imageUrls ?? [],
-                        overides.conditions?.medium?.source?.imageUrls ?? [],
-                        overides.conditions?.expanded?.source?.imageUrls ?? []
-                    ].flatMap { $0 }
+                if let overrides = image.overrides {
+                    urls += overrides.imageUrls
                 }
             case .stack(let stack):
                 urls += self.collectAllImageURLs(in: stack)
@@ -124,16 +115,23 @@ private extension PaywallComponent.IconComponent {
 
 }
 
-extension PaywallComponent.ComponentOverrides where T == PaywallComponent.PartialIconComponent {
+
+extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialIconComponent> {
 
     func imageUrls(base: URL) -> [URL] {
-        return [
-            self.introOffer?.formats?.imageUrls(base: base) ?? [],
-            self.states?.selected?.formats?.imageUrls(base: base) ?? [],
-            self.conditions?.compact?.formats?.imageUrls(base: base) ?? [],
-            self.conditions?.medium?.formats?.imageUrls(base: base) ?? [],
-            self.conditions?.expanded?.formats?.imageUrls(base: base) ?? []
-        ].flatMap { $0 }
+        return self.compactMap { iconOverrides in
+            iconOverrides.properties.formats?.imageUrls(base: base) ?? []
+        }.flatMap { $0 }
+    }
+
+}
+
+extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialImageComponent> {
+
+    var imageUrls: [URL] {
+        return self.compactMap { iconOverrides in
+            iconOverrides.properties.source?.imageUrls ?? []
+        }.flatMap { $0 }
     }
 
 }

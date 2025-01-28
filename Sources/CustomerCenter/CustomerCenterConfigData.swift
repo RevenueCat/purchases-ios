@@ -138,6 +138,7 @@ public struct CustomerCenterConfigData {
             case storeRCBilling = "store_web"
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
+            case debugHeaderTitle = "Debug"
 
             var defaultValue: String {
                 switch self {
@@ -315,6 +316,8 @@ public struct CustomerCenterConfigData {
                     return "External Purchases"
                 case .storeUnknownStore:
                     return "Unknown Store"
+                case .debugHeaderTitle:
+                    return "Debug"
                 }
             }
         }

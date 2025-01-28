@@ -24,6 +24,7 @@
 		03A98D322D2441B8009BCA61 /* PaywallDataDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */; };
 		03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */; };
 		03A98D382D2AC63B009BCA61 /* UIConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */; };
+		03C06FC52D4553C000600693 /* PresentedPartialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */; };
 		03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */; };
 		03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72F8C2D3311D500297FEC /* DisplayableColor.swift */; };
 		03C72FBE2D34949600297FEC /* PaywallIconComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */; };
@@ -1295,6 +1296,7 @@
 		03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallDataDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProvider.swift; sourceTree = "<group>"; };
+		03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentedPartialsTests.swift; sourceTree = "<group>"; };
 		03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingTogglePreview.swift; sourceTree = "<group>"; };
 		03C72F8C2D3311D500297FEC /* DisplayableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayableColor.swift; sourceTree = "<group>"; };
 		03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallIconComponent.swift; sourceTree = "<group>"; };
@@ -2534,6 +2536,7 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
 				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
 			);
 			path = PaywallsV2;
@@ -6934,6 +6937,7 @@
 				887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */,
 				030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */,
 				FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */,
+				03C06FC52D4553C000600693 /* PresentedPartialsTests.swift in Sources */,
 				887A63442C1D177800E1A461 /* PaywallFooterTests.swift in Sources */,
 				887A63452C1D177800E1A461 /* PaywallViewEventsTests.swift in Sources */,
 				887A63472C1D177800E1A461 /* PurchaseCompletedHandlerTests.swift in Sources */,
