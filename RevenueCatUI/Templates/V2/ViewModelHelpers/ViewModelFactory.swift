@@ -284,7 +284,7 @@ struct ViewModelFactory {
                 )
             )
         case .carousel(let component):
-            let stackViewModels = try component.slides.map { stackComponent in
+            let pageStackViewModels = try component.pages.map { stackComponent in
                 try toStackViewModel(
                     component: stackComponent,
                     packageValidator: packageValidator,
@@ -293,16 +293,15 @@ struct ViewModelFactory {
                     offering: offering
                 )
             }
-            fatalError()
 
-//            return .carousel(
-//                try CarouselComponentViewModel(
-//                    localizationProvider: localizationProvider,
-//                    uiConfigProvider: uiConfigProvider,
-//                    component: component,
-//                    slideStackViewModel: stackViewModels
-//                )
-//            )
+            return .carousel(
+                try CarouselComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component,
+                    pageStackViewModels: pageStackViewModels
+                )
+            )
         }
     }
 

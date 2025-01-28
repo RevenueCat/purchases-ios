@@ -84,7 +84,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             case .tabControlToggle:
                 break
             case .carousel(let carousel):
-                urls += carousel.slides.flatMap({ stack in
+                urls += carousel.pages.flatMap({ stack in
                     self.collectAllImageURLs(in: stack)
                 })
             }

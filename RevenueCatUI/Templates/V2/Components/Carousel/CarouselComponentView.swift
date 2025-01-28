@@ -34,7 +34,7 @@ struct CarouselComponentView: View {
     var body: some View {
         GeometryReader { reader in
             CarouselView(
-                pages: self.viewModel.slideStackViewModels.map({ stackViewModel in
+                pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
                     StackComponentView(
                         viewModel: stackViewModel,
                         onDismiss: self.onDismiss
@@ -43,12 +43,37 @@ struct CarouselComponentView: View {
                 loop: self.viewModel.component.loop,
                 spacing: spacing,
                 cardWidth: reader.size.width - ((reader.size.width * showableWidthPercent) * 2) - spacing,
-                msTimePerSlide: viewModel.component.autoAdvance?.msTimePerSlide,
+                pageControl: .init(
+                    width: self.viewModel.component.pageControl.width,
+                    height: self.viewModel.component.pageControl.height,
+                    color: self.viewModel.component.pageControl.color.asDisplayable(uiConfigProvider: self.viewModel.uiConfigProvider).toDynamicColor()
+                ),
+                selectPageControl: .init(
+                    width: self.viewModel.component.pageControl.selectedWidth,
+                    height: self.viewModel.component.pageControl.selectedHeight,
+                    color: self.viewModel.component.pageControl.selectedColor.asDisplayable(uiConfigProvider: self.viewModel.uiConfigProvider).toDynamicColor()
+                ),
+                msTimePerSlide: viewModel.component.autoAdvance?.msTimePerPage,
                 msTransitionTime: viewModel.component.autoAdvance?.msTransitionTime
             )
         }
         .frame(height: 240)
         .padding(.top, 50)
+    }
+
+}
+
+struct DisplayablePageControl {
+
+    let width: CGFloat
+    let height: CGFloat
+
+    let color: Color
+
+    init(width: Int, height: Int, color: Color) {
+        self.width = CGFloat(width)
+        self.height = CGFloat(height)
+        self.color = color
     }
 
 }
@@ -59,34 +84,7 @@ private struct CarouselItem<Content: View>: Identifiable {
     let view: Content
 }
 
-//GeometryReader { reader in
-//    CarouselView(
-//        pages: [
-//            AnyView(Text("First")
-//                .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                .background(Color.blue.opacity(0.2))
-//                .cornerRadius(12)),
-//            AnyView(Text("Second")
-//                .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                .background(Color.green.opacity(0.2))
-//                .cornerRadius(12)),
-//            AnyView(Text("Third")
-//                .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                .background(Color.red.opacity(0.2))
-//                .cornerRadius(12)),
-//            AnyView(Text("Fourth")
-//                .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                .background(Color.orange.opacity(0.2))
-//                .cornerRadius(12))
-//        ],
-//        loop: true,
-//        spacing: 16,
-//        cardWidth: reader.size.width - (40 * 2) - 16
-//    )
-//}
-//.frame(height: 240)
-//.padding(.top, 50)
-
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
 
@@ -94,6 +92,9 @@ private struct CarouselView<Content: View>: View {
     private let loop: Bool
     private let spacing: CGFloat
     private let cardWidth: CGFloat
+
+    private let pageControl: DisplayablePageControl
+    private let selectPageControl: DisplayablePageControl
 
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
@@ -123,6 +124,8 @@ private struct CarouselView<Content: View>: View {
         loop: Bool = false,
         spacing: CGFloat = 16,
         cardWidth: CGFloat = 300,
+        pageControl: DisplayablePageControl,
+        selectPageControl: DisplayablePageControl,
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int? = nil,
         msTransitionTime: Int? = nil
@@ -131,6 +134,8 @@ private struct CarouselView<Content: View>: View {
         self.loop = loop
         self.spacing = spacing
         self.cardWidth = cardWidth
+        self.pageControl = pageControl
+        self.selectPageControl = selectPageControl
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
     }
@@ -163,13 +168,12 @@ private struct CarouselView<Content: View>: View {
 
                 // Pager dots for the original set
                 if originalCount > 1 {
-                    HStack(spacing: 6) {
-                        ForEach(0..<originalCount, id: \.self) { i in
-                            Circle()
-                                .fill(currentDotIndex() == i ? Color.primary : Color.secondary.opacity(0.4))
-                                .frame(width: 8, height: 8)
-                        }
-                    }
+                    PageControlView(
+                        originalCount: self.originalCount,
+                        pageControl: self.pageControl,
+                        selectPageControl: self.selectPageControl,
+                        currentIndex: self.$index
+                    )
                     .padding(.top, 8)
                 }
             }
@@ -270,13 +274,6 @@ private struct CarouselView<Content: View>: View {
         }
     }
 
-    // MARK: - Dots
-
-    private func currentDotIndex() -> Int {
-        guard originalCount > 0 else { return 0 }
-        return index % originalCount
-    }
-
     // MARK: - Expanding
 
     private func expandDataIfNeeded() {
@@ -332,6 +329,41 @@ private struct CarouselView<Content: View>: View {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PageControlView: View {
+
+    let originalCount: Int
+    let pageControl: DisplayablePageControl
+    let selectPageControl: DisplayablePageControl
+    @Binding var currentIndex: Int
+
+    @State private var localCurrentIndex: Int = 0
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<originalCount, id: \.self) { index in
+                Capsule()
+                    .fill(localCurrentIndex == index ? selectPageControl.color : pageControl.color)
+                    .frame(
+                        width: localCurrentIndex == index ? selectPageControl.width : pageControl.width,
+                        height: localCurrentIndex == index ? selectPageControl.height : pageControl.height
+                    )
+                    .animation(.easeInOut, value: self.localCurrentIndex)
+            }
+        }
+        .onChange(of: self.currentIndex) { newValue in
+            withAnimation {
+                guard originalCount > 0 else {
+                    self.localCurrentIndex = 0
+                    return
+                }
+                self.localCurrentIndex = newValue % originalCount
+            }
+        }
+    }
+
+}
+
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -345,7 +377,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     component: .init(
-                        slides: [
+                        pages: [
                             .init(
                                 components: [],
                                 size: .init(width: .fill, height: .fixed(120)),
@@ -374,7 +406,15 @@ struct CarouselComponentView_Previews: PreviewProvider {
                                                         bottomTrailing: 8))
                             )
                         ],
-                        loop: false
+                        loop: false,
+                        pageControl: .init(
+                            width: 10,
+                            height: 10,
+                            color: .init(light: .hex("#cccccc")),
+                            selectedWidth: 10,
+                            selectedHeight: 10,
+                            selectedColor: .init(light: .hex("#000000"))
+                        )
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
@@ -388,7 +428,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     component: .init(
-                        slides: [
+                        pages: [
                             .init(
                                 components: [],
                                 size: .init(width: .fixed(100), height: .fixed(120)),
@@ -417,7 +457,15 @@ struct CarouselComponentView_Previews: PreviewProvider {
                                                         bottomTrailing: 8))
                             )
                         ],
-                        loop: true
+                        loop: true,
+                        pageControl: .init(
+                            width: 10,
+                            height: 10,
+                            color: .init(light: .hex("#cccccc")),
+                            selectedWidth: 10,
+                            selectedHeight: 10,
+                            selectedColor: .init(light: .hex("#000000"))
+                        )
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
@@ -426,14 +474,13 @@ struct CarouselComponentView_Previews: PreviewProvider {
                 ),
                 onDismiss: {}
             )
-            .frame(width: 200)
             .clipped()
 
             CarouselComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     component: .init(
-                        slides: [
+                        pages: [
                             .init(
                                 components: [],
                                 size: .init(width: .fill, height: .fixed(120)),
@@ -463,7 +510,15 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             )
                         ],
                         loop: true,
-                        autoAdvance: .init(msTimePerSlide: 1000, msTransitionTime: 500)
+                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
+                        pageControl: .init(
+                            width: 10,
+                            height: 10,
+                            color: .init(light: .hex("#4462e96e")),
+                            selectedWidth: 40,
+                            selectedHeight: 10,
+                            selectedColor: .init(light: .hex("#4462e9"))
+                        )
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
@@ -488,7 +543,7 @@ extension CarouselComponentViewModel {
         component: PaywallComponent.CarouselComponent,
         localizationProvider: LocalizationProvider
     ) throws {
-        let viewModels: [StackComponentViewModel] = try component.slides.map { component in
+        let viewModels: [StackComponentViewModel] = try component.pages.map { component in
             return try .init(
                 component: component,
                 localizationProvider: localizationProvider
@@ -499,7 +554,7 @@ extension CarouselComponentViewModel {
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             component: component,
-            slideStackViewModels: viewModels
+            pageStackViewModels: viewModels
         )
     }
 
