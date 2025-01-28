@@ -91,7 +91,6 @@ struct ManageSubscriptionsView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
                 }
 
                 Section {
