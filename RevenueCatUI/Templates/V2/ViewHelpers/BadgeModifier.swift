@@ -90,9 +90,11 @@ fileprivate extension View {
             .applyIfLet(badge.stackShape?.toInsettableShape()) { view, shape in
                 view.clipShape(shape)
             }
+        @unknown default:
+            self
         }
     }
-    
+
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
     private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo) -> some View {
@@ -162,6 +164,8 @@ fileprivate extension View {
                 return .init(top: 0, bottom: 0, leading: badge.stack.margin.leading, trailing: 0)
             case .trailing, .topTrailing, .bottomTrailing:
                 return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.margin.trailing)
+            @unknown default:
+                return .zero
             }
         case .nested:
             let borderWidth = badge.stackBorder?.width ?? 0
@@ -186,7 +190,11 @@ fileprivate extension View {
             case .bottomTrailing:
                 return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
                              leading: 0, trailing: (badge.stack.margin.trailing ?? 0) + borderWidth)
+            @unknown default:
+                return .zero
             }
+        @unknown default:
+            return .zero
         }
     }
 }
@@ -245,8 +253,6 @@ private func effectiveShape(badge: BadgeModifier.BadgeInfo, pillStackRadius: Dou
             @unknown default:
                 return nil
             }
-        case .none:
-            return nil
         @unknown default:
             return nil
         }
