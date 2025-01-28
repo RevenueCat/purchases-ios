@@ -14,7 +14,7 @@
 import Combine
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 @MainActor
 class IntroOfferEligibilityContext: ObservableObject {

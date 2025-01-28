@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 struct LocalizationProvider {
 

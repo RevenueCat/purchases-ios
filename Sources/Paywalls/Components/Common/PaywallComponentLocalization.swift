@@ -14,7 +14,7 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 extension PaywallComponent.LocalizationDictionary {
 

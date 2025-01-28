@@ -15,7 +15,7 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 public extension PaywallComponent {
 

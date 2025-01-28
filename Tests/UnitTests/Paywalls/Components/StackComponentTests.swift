@@ -2,7 +2,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 class StackComponentTests: TestCase {
 

@@ -14,7 +14,7 @@
 import Foundation
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 enum ComponentViewState {
     case `default`

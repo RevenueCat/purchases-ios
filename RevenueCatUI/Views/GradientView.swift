@@ -13,7 +13,7 @@
 
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 struct GradientView: View {
     enum GradientStyle {

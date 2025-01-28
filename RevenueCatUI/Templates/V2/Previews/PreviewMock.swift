@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 #if DEBUG
 

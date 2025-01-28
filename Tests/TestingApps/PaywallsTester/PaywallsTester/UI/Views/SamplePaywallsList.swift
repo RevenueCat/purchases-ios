@@ -99,7 +99,7 @@ struct SamplePaywallsList: View {
             CustomerCenterUIKitView(
                 customerCenterActionHandler: self.handleCustomerCenterAction
             )
-        #if PAYWALL_COMPONENTS
+        #if !os(watchOS) && !os(macOS)
         case .componentPaywall(let data):
             PaywallView(configuration: .init(
                 offering: Self.loader.offering(with: data),
@@ -304,7 +304,7 @@ private extension SamplePaywallsList {
         case customerCenterFullScreen
         case customerCenterNavigationView
         case uiKitCustomerCenter
-        #if PAYWALL_COMPONENTS
+        #if !os(watchOS) && !os(macOS)
         case componentPaywall(PaywallComponentsData)
         #endif
 
@@ -340,7 +340,7 @@ extension SamplePaywallsList.Display: Identifiable {
         case .customerCenterNavigationView:
             return "customer-center-navigationview"
 
-        #if PAYWALL_COMPONENTS
+        #if !os(watchOS) && !os(macOS)
         case .componentPaywall:
             return "component-paywall"
         #endif

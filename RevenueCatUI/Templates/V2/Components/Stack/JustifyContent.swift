@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 enum JustifyContent {
     case start, center, end, spaceBetween, spaceAround, spaceEvenly

@@ -162,7 +162,7 @@ private extension Offering {
             )
         }
 
-        #if PAYWALL_COMPONENTS
+        #if !os(watchOS) && !os(macOS)
         return Offering(identifier: self.identifier,
                         serverDescription: self.serverDescription,
                         metadata: self.metadata,

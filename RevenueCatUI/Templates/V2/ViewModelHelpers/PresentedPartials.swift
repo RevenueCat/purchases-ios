@@ -15,7 +15,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {

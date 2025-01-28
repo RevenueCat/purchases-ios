@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable force_try
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 #if DEBUG
 

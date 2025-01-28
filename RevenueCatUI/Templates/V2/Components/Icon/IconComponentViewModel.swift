@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 private typealias PresentedIconPartial = PaywallComponent.PartialIconComponent
 

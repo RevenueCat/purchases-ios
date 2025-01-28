@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-#if PAYWALL_COMPONENTS
+#if !os(watchOS) && !os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
