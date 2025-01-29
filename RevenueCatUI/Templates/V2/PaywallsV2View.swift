@@ -249,7 +249,7 @@ private struct LoadedPaywallsV2View: View {
             self.paywallState.componentsConfig.background
                 .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         )
-        .edgesIgnoringSafeArea(.top)
+        .edgesIgnoringSafeArea(.bottom)
     }
 
 }
