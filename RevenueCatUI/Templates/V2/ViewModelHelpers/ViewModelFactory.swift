@@ -289,18 +289,14 @@ struct ViewModelFactory {
             )
         }
 
-        let badgeViewModels = try component.badge.flatMap { badge in
-            [
-                PaywallComponentViewModel.stack(
-                    try toStackViewModel(
-                        component: badge.stack,
-                        packageValidator: packageValidator,
-                        localizationProvider: localizationProvider,
-                        uiConfigProvider: uiConfigProvider,
-                        offering: offering
-                    )
-                )
-            ]
+        let badgeViewModels = try component.badge?.stack.components.map { component in
+            try self.toViewModel(
+                component: component,
+                packageValidator: packageValidator,
+                offering: offering,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
+            )
         } ?? []
 
         return try StackComponentViewModel(
