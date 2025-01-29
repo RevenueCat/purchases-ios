@@ -136,13 +136,13 @@ fileprivate extension View {
 
     // Helper to calculate the position of an overlaid badge to place it at the center of the parent stack's border
     private func effetiveYTranslationForOverlaidBadge(badge: BadgeModifier.BadgeInfo) -> CGFloat {
-        return switch badge.alignment {
+        switch badge.alignment {
         case .top, .topLeading, .topTrailing:
-            -(badge.stackBorder?.width ?? 0)/2
+            return -(badge.stackBorder?.width ?? 0)/2
         case .bottom, .bottomLeading, .bottomTrailing:
-            +(badge.stackBorder?.width ?? 0)/2
+            return +(badge.stackBorder?.width ?? 0)/2
         default:
-            0
+            return 0
         }
     }
 
