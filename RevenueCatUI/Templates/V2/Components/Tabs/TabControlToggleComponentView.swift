@@ -83,7 +83,7 @@ private struct CustomToggleStyle: ToggleStyle {
                     .offset(x: configuration.isOn ? 10 : -10)
             )
             .onTapGesture {
-                withAnimation(.smooth(duration: 0.2)) {
+                withAnimation(.easeInOut(duration: 0.2)) {
                     configuration.isOn.toggle()
                 }
             }
