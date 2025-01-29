@@ -241,7 +241,7 @@ private struct LoadedPaywallsV2View: View {
             ComponentsView(
                 componentViewModels: [paywallState.componentViewModel],
                 onDismiss: self.onDismiss
-            )            
+            )
         }
         .environmentObject(self.selectedPackageContext)
         .frame(maxHeight: .infinity, alignment: .topLeading)
