@@ -523,6 +523,12 @@ public extension PaywallComponent {
         public let alignment: TwoDimensionAlignment
         public let stack: StackComponent
 
+        public init(style: BadgeStyle, alignment: TwoDimensionAlignment, stack: StackComponent) {
+            self.style = style
+            self.alignment = alignment
+            self.stack = stack
+        }
+
         public static func == (lhs: Badge, rhs: Badge) -> Bool {
             return lhs.style == rhs.style &&
                    lhs.alignment == rhs.alignment &&

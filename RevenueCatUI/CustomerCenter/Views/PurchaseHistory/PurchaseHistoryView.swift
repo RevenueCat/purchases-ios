@@ -44,7 +44,6 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: activeSubscription)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -59,7 +58,6 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -75,7 +73,6 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }

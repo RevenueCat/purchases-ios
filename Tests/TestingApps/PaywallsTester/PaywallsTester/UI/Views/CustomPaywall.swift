@@ -34,7 +34,7 @@ struct CustomPaywall: View {
 
     private var content: some View {
         CustomPaywallContent(selectedTierName: self.currentTierName)
-            .paywallFooter(
+            .originalTemplatePaywallFooter(
                 offering: self.offering,
                 customerInfo: self.customerInfo,
                 condensed: self.condensed,

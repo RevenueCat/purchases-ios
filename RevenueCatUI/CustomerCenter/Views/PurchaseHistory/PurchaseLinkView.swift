@@ -19,6 +19,9 @@ import SwiftUI
 @available(iOS 15.0, *)
 struct PurchaseLinkView: View {
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
@@ -30,6 +33,7 @@ struct PurchaseLinkView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(productName ?? purchaseInfo.productIdentifier)
                     .font(.headline)
+                    .foregroundStyle(.primary)
 
                 Text(dateString)
                     .font(.subheadline)
@@ -41,13 +45,14 @@ struct PurchaseLinkView: View {
             if let price = purchaseInfo.paidPrice {
                 Text(price)
                     .font(.subheadline)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
 
             Image(systemName: "chevron.forward")
                 .foregroundStyle(.secondary)
         }
         .contentShape(Rectangle())
+        .tint(colorScheme == .dark ? .white : .black)
         .onAppear {
             Task {
                 guard
