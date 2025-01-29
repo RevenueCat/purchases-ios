@@ -33,9 +33,11 @@ struct RootView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            ScrollView {
-                StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: onDismiss)
-            }
+            StackComponentView(
+                viewModel: viewModel.stackViewModel,
+                isScrollableByDefault: true,
+                onDismiss: onDismiss
+            )
 
             if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                 StackComponentView(

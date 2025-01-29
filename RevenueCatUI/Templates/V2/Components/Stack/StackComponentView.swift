@@ -34,6 +34,7 @@ struct StackComponentView: View {
     private var screenCondition
 
     private let viewModel: StackComponentViewModel
+    private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
@@ -41,10 +42,12 @@ struct StackComponentView: View {
 
     init(
         viewModel: StackComponentViewModel,
+        isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil
     ) {
         self.viewModel = viewModel
+        self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
     }
@@ -75,6 +78,7 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .scrollableIfEnabled(.vertical, enabled: style.scrollable ?? self.isScrollableByDefault)
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -87,6 +91,7 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .scrollableIfEnabled(.horizontal, enabled: style.scrollable ?? self.isScrollableByDefault)
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
@@ -118,8 +123,31 @@ struct StackComponentView: View {
 
 }
 
+private extension Axis {
+
+    var scrollViewAxis: Axis.Set {
+        switch self {
+        case .horizontal: return .horizontal
+        case .vertical: return .vertical
+        }
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
+
+    @ViewBuilder
+    // @PublicForExternalTesting
+    func scrollableIfEnabled(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+        if enabled {
+            ScrollView(axis.scrollViewAxis) {
+                self
+            }
+        } else {
+            self
+        }
+    }
 
     // Helper to compute the order or application of border, shadow and badge.
     @ViewBuilder
@@ -400,6 +428,57 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
+
+        // Scrollable - HStack
+        HStack(spacing: 0) {
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#ff0000"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#00ff00"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#0000ff"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#000000"))
+                            ))
+                        ],
+                        dimension: .horizontal(.center, .start),
+                        size: .init(
+                            width: .fixed(400),
+                            height: .fit
+                        ),
+                        spacing: 10,
+                        backgroundColor: .init(light: .hex("#ffffff")),
+                        padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
+                    ),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
+                onDismiss: {}
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Scrollable - HStack")
 
         // Fits don't expand
         StackComponentView(
