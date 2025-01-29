@@ -70,7 +70,6 @@ final class CustomerCenterAnswerSubmittedEventTests: TestCase {
                          }
                        """
         )
-        // swiftlint:enable line_length
     }
 
     // MARK: -

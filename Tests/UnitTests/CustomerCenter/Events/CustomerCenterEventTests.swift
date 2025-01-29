@@ -37,7 +37,6 @@ final class CustomerCenterEventTests: TestCase {
             )
         )
 
-        let encoded = try JSONEncoder.default.encode(event)
         let prettyPrintedData = try JSONEncoder.prettyPrinted.encode(event)
         let prettyPrintedString = String(data: prettyPrintedData, encoding: .utf8)!
         XCTAssertEqual(prettyPrintedString,
