@@ -313,7 +313,7 @@ extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func toDynamicColor() -> Color {
-        #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
