@@ -18,7 +18,7 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
-#if !os(macOS) && !os(tvOS)
+#if !os(watchOS) && !os(macOS)
 
 /// Base class for Snapshot tests
 ///
