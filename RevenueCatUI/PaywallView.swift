@@ -116,8 +116,7 @@ public struct PaywallView: View {
         )
     }
 
-    // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
+    public init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {
             self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)

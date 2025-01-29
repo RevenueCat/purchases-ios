@@ -43,9 +43,9 @@ struct ButtonComponentView: View {
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
-        }.presentCustomerCenter(isPresented: $showCustomerCenter) {
+        }.presentCustomerCenter(isPresented: $showCustomerCenter, onDismiss: {
             showCustomerCenter = false
-        }
+        })
         #endif
     }
 
