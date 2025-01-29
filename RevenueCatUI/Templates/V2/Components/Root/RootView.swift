@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RootView: View {
@@ -47,6 +47,11 @@ struct RootView: View {
                     )
                 )
                 .fixedSize(horizontal: false, vertical: true)
+
+                // This spacer is to prevent the bottom most view from expanding into the
+                // safe space. iOS will take the bottom view and expand it to fill the
+                // the safe space and we don't want anything there.
+                Spacer()
             }
         }
     }

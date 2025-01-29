@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     struct Border: Codable, Sendable, Hashable {
@@ -31,5 +29,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

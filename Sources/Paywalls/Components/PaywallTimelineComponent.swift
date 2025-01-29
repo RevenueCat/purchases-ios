@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 // swiftlint:disable missing_docs nesting
 public extension PaywallComponent {
 
@@ -136,5 +134,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

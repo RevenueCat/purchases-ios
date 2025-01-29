@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -333,7 +333,11 @@ extension ShapeModifier.Shape {
         case .circle:
             return Circle().eraseToAnyInsettableShape()
         case .pill:
+            #if compiler(>=5.9)
             return Capsule(style: .circular).eraseToAnyInsettableShape()
+            #else
+            return Capsule().eraseToAnyInsettableShape()
+            #endif
         case .concave, .convex:
             return nil
         }
@@ -345,6 +349,7 @@ extension ShapeModifier.Shape {
         let bottomLeft = radiusInfo?.bottomLeft ?? 0
         let bottomRight = radiusInfo?.bottomRight ?? 0
         if  topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
+            #if compiler(>=5.9)
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 return UnevenRoundedRectangle(
                     topLeadingRadius: topLeft,
@@ -361,6 +366,14 @@ extension ShapeModifier.Shape {
                     bottomRight: bottomRight
                 ).eraseToAnyInsettableShape()
             }
+            #else
+            return BackportedUnevenRoundedRectangle(
+                topLeft: topLeft,
+                topRight: topRight,
+                bottomLeft: bottomLeft,
+                bottomRight: bottomRight
+            ).eraseToAnyInsettableShape()
+            #endif
         } else {
             return Rectangle().eraseToAnyInsettableShape()
         }

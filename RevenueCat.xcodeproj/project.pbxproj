@@ -373,7 +373,6 @@
 		4D322E3A2B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */; };
 		4D322E3C2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */; };
 		4D3BA4CC2D37D15E00668AFC /* PaywallTimelineComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */; };
-		4D3BA4CD2D37D15E00668AFC /* PaywallTimelineComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */; };
 		4D3BA5882D432E5900668AFC /* Fill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA5872D432E5700668AFC /* Fill.swift */; };
 		4D3BA5B22D47AB4400668AFC /* TimelineComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA5AF2D47AB4400668AFC /* TimelineComponentView.swift */; };
 		4D3BA5B32D47AB4400668AFC /* TimelineComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA5B02D47AB4400668AFC /* TimelineComponentViewModel.swift */; };
@@ -6725,7 +6724,6 @@
 				88A543E12C37A4820039C6A5 /* TemplateView+MultiTier.swift in Sources */,
 				3523048A2D0A0F30003971A4 /* ErrorView.swift in Sources */,
 				887A60B72C1D037000E1A461 /* WatchTemplateView.swift in Sources */,
-				4D3BA4CD2D37D15E00668AFC /* PaywallTimelineComponent.swift in Sources */,
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
 				887A60C32C1D037000E1A461 /* FooterView.swift in Sources */,
 				2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */,

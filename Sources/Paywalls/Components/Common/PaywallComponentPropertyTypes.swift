@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     struct ThemeImageUrls: Codable, Sendable, Hashable, Equatable {
@@ -544,5 +542,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

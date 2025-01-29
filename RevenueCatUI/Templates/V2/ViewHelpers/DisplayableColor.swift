@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 extension PaywallComponent.Background {
 

@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 

@@ -151,7 +151,7 @@ private extension Offerings {
         )
     }
 
-    #if PAYWALL_COMPONENTS
+    #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
@@ -175,7 +175,7 @@ private extension Offerings {
         )
     }
 
-    #if PAYWALL_COMPONENTS
+    #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.
