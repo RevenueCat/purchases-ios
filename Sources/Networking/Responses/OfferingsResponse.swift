@@ -32,10 +32,7 @@ struct OfferingsResponse {
         var paywall: PaywallData?
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
-
-        #if !os(macOS) && !os(tvOS) // For Paywalls V2
         var paywallComponents: PaywallComponentsData?
-        #endif
 
     }
 

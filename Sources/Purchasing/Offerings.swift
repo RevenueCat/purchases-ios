@@ -162,7 +162,6 @@ private extension Offering {
             )
         }
 
-        #if !os(macOS) && !os(tvOS) // For Paywalls V2
         return Offering(identifier: self.identifier,
                         serverDescription: self.serverDescription,
                         metadata: self.metadata,
@@ -170,13 +169,5 @@ private extension Offering {
                         paywallComponents: self.paywallComponents,
                         availablePackages: updatedPackages
         )
-        #else
-        return Offering(identifier: self.identifier,
-                        serverDescription: self.serverDescription,
-                        metadata: self.metadata,
-                        paywall: self.paywall,
-                        availablePackages: updatedPackages
-        )
-        #endif
     }
 }

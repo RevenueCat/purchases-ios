@@ -52,7 +52,6 @@ class OfferingsFactory {
             return nil
         }
 
-        #if !os(macOS) && !os(tvOS) // For Paywalls V2
         let paywallComponents: Offering.PaywallComponents? = {
             if let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(
@@ -69,13 +68,6 @@ class OfferingsFactory {
                         paywall: offering.paywall,
                         paywallComponents: paywallComponents,
                         availablePackages: availablePackages)
-        #else
-        return Offering(identifier: offering.identifier,
-                        serverDescription: offering.description,
-                        metadata: offering.metadata.mapValues(\.asAny),
-                        paywall: offering.paywall,
-                        availablePackages: availablePackages)
-        #endif
     }
 
     func createPackage(
