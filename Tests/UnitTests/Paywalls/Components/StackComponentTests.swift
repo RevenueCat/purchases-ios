@@ -77,9 +77,12 @@ class StackComponentTests: TestCase {
                         }
                     },
                     "background": {
-                        "light": {
-                            "type": "hex",
-                            "value": "#11D483FF"
+                        "type": "color",
+                        "value": {
+                            "light": {
+                                "type": "hex",
+                                "value": "#11D483FF"
+                            }
                         }
                     },
                     "badge": null,

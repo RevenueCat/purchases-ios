@@ -162,7 +162,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.spacing == rhs.spacing &&
                    lhs.backgroundColor == rhs.backgroundColor &&
-                     lhs.background == rhs.background &&
+                   lhs.background == rhs.background &&
                    lhs.dimension == rhs.dimension &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
