@@ -192,7 +192,7 @@ private extension OfferingsManager {
             return
         }
 
-        self.productsManager.products(withIdentifiers: productIdentifiers) { result in
+        self.fetchProducts(withIdentifiers: productIdentifiers) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
@@ -273,6 +273,58 @@ private extension OfferingsManager {
                 completion(value)
             }
         }
+    }
+
+    private func fetchProducts(withIdentifiers identifiers: Set<String>, completion: @escaping ProductsManagerType.Completion) {
+        if self.systemInfo.dangerousSettings.uiPreviewMode {
+            let mockProducts = self.createMockProducts(productIdentifiers: identifiers)
+            completion(.success(mockProducts))
+        } else {
+            self.productsManager.products(withIdentifiers: identifiers, completion: completion)
+        }
+    }
+
+    private func createMockProducts(productIdentifiers: Set<String>) -> Set<StoreProduct> {
+        let productTypes = [
+            (type: "weekly", price: 1.99, period: SubscriptionPeriod(value: 1, unit: .week)),
+            (type: "monthly", price: 5.99, period: SubscriptionPeriod(value: 1, unit: .month)),
+            (type: "yearly", price: 59.99, period: SubscriptionPeriod(value: 1, unit: .year)),
+            (type: "lifetime", price: 199.99, period: nil)
+        ]
+
+        let products = productIdentifiers.enumerated().map { index, identifier -> StoreProduct in
+            let productType = productTypes[index % productTypes.count]
+
+            let introductoryDiscount: TestStoreProductDiscount? = {
+                guard productType.period != nil && Bool.random() else { return nil }
+                return TestStoreProductDiscount(
+                    identifier: "intro",
+                    price: 0,
+                    localizedPriceString: "$0.00",
+                    paymentMode: .freeTrial,
+                    subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .week),
+                    numberOfPeriods: 1,
+                    type: .introductory
+                )
+            }()
+
+            let testProduct = TestStoreProduct(
+                localizedTitle: "PRO \(productType.type)",
+                price: Decimal(productType.price),
+                localizedPriceString: String(format: "$%.2f", productType.price),
+                productIdentifier: identifier,
+                productType: productType.period == nil ? .nonConsumable : .autoRenewableSubscription,
+                localizedDescription: "\(productType.type) subscription",
+                subscriptionGroupIdentifier: productType.period == nil ? nil : "group",
+                subscriptionPeriod: productType.period,
+                introductoryDiscount: introductoryDiscount,
+                discounts: []
+            )
+
+            return testProduct.toStoreProduct()
+        }
+
+        return Set(products)
     }
 
 }
