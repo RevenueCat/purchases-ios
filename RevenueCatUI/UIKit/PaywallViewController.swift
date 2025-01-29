@@ -13,10 +13,12 @@
 
 // swiftlint:disable file_length
 
+import SwiftUI
+
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
 import RevenueCat
-import SwiftUI
+
 import UIKit
 
 /// A view controller for displaying `PaywallData` for an `Offering`.
@@ -406,7 +408,9 @@ private struct PaywallContainerView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+#endif
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
     @ViewBuilder func applyIf<Content: View>(_ condition: Bool, apply: (Self) -> Content) -> some View {
         if condition {
@@ -417,7 +421,7 @@ extension View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
     @ViewBuilder func applyIfLet<T, Content: View>(_ value: T?, apply: (Self, T) -> Content) -> some View {
         if let value = value {
@@ -427,7 +431,5 @@ extension View {
         }
     }
 }
-
-#endif
 
 // swiftlint:enable file_length
