@@ -14,7 +14,7 @@
 import Foundation
 import SwiftUI
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 enum ComponentViewState {
     case `default`

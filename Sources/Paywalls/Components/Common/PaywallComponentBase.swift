@@ -7,7 +7,7 @@
 // swiftlint:disable missing_docs
 import Foundation
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
 

@@ -16,7 +16,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 #if DEBUG
 

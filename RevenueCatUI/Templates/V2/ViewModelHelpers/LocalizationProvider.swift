@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 struct LocalizationProvider {
 

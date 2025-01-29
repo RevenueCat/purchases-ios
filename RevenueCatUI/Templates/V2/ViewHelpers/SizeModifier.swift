@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 struct SizeModifier: ViewModifier {
 

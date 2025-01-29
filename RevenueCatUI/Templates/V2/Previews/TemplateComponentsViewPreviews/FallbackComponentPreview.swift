@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable force_try
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 #if DEBUG
 

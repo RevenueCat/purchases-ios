@@ -162,7 +162,7 @@ private extension Offering {
             )
         }
 
-        #if !os(watchOS) && !os(macOS)
+        #if !os(macOS) && !os(tvOS)
         return Offering(identifier: self.identifier,
                         serverDescription: self.serverDescription,
                         metadata: self.metadata,

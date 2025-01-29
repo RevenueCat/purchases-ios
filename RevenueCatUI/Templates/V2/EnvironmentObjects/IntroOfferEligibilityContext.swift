@@ -14,7 +14,7 @@
 import Combine
 import RevenueCat
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 @MainActor
 class IntroOfferEligibilityContext: ObservableObject {

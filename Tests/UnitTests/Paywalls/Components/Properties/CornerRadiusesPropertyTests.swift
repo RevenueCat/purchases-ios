@@ -2,7 +2,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 class CornerRadiusesPropertyTests: TestCase {
 

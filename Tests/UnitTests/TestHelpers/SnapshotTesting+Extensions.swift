@@ -116,7 +116,7 @@ extension Snapshotting where Value == Encodable, Format == String {
 
 // MARK: - Image Snapshoting
 
-#if !os(watchOS) && !os(macOS) && swift(>=5.8)
+#if !os(macOS) && !os(tvOS) && swift(>=5.8)
 extension SwiftUI.View {
 
     func snapshot(

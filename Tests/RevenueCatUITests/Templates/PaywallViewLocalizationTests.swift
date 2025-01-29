@@ -11,7 +11,7 @@ import RevenueCat
 import SnapshotTesting
 import SwiftUI
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 private let spanishLocale = Locale(identifier: "es_ES")
 

@@ -102,7 +102,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func templateGroupName(offering: Offering) -> String? {
-        #if !os(watchOS) && !os(macOS)
+        #if !os(macOS) && !os(tvOS)
         offering.paywall?.templateName ?? offering.paywallComponents?.data.templateName
         #else
         offering.paywall?.templateName
@@ -128,7 +128,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func offeringHasComponents(_ offering: Offering) -> Bool {
-        #if !os(watchOS) && !os(macOS)
+        #if !os(macOS) && !os(tvOS)
         offering.paywallComponents != nil
         #else
         false
@@ -181,7 +181,7 @@ struct APIKeyDashboardList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
-                #if !os(watchOS) && !os(macOS)
+                #if !os(macOS) && !os(tvOS)
                 .onAppear {
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
@@ -219,7 +219,7 @@ struct APIKeyDashboardList: View {
                 HStack {
                     Text(self.offering.serverDescription)
                     Spacer()
-                    #if !os(watchOS) && !os(macOS)
+                    #if !os(macOS) && !os(tvOS)
                     if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.red)

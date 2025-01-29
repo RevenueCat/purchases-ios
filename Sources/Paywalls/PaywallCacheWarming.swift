@@ -151,7 +151,7 @@ private extension Offerings {
         )
     }
 
-    #if !os(watchOS) && !os(macOS)
+    #if !os(macOS) && !os(tvOS)
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
@@ -175,7 +175,7 @@ private extension Offerings {
         )
     }
 
-    #if !os(watchOS) && !os(macOS)
+    #if !os(macOS) && !os(tvOS)
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.

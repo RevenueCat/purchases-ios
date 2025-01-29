@@ -15,7 +15,7 @@ import Foundation
 
 // swiftlint:disable missing_docs
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 public extension PaywallComponent {
 

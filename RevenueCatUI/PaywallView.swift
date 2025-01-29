@@ -252,7 +252,7 @@ public struct PaywallView: View {
             countries: offering.paywall?.zeroDecimalPlaceCountries
         )
 
-        #if !os(watchOS) && !os(macOS)
+        #if !os(macOS) && !os(tvOS)
         if let paywallComponents = offering.paywallComponents {
 
             // For fallback view or footer

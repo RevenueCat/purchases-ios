@@ -52,7 +52,7 @@ class OfferingsFactory {
             return nil
         }
 
-        #if !os(watchOS) && !os(macOS)
+        #if !os(macOS) && !os(tvOS)
         let paywallComponents: Offering.PaywallComponents? = {
             if let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(

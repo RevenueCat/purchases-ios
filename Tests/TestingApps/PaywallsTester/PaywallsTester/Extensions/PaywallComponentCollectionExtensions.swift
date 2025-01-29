@@ -8,7 +8,7 @@
 import Foundation
 import RevenueCat
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 extension Array where Element == PaywallComponent {
 

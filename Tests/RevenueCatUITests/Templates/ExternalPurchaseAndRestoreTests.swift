@@ -18,7 +18,7 @@ import RevenueCat
 import SwiftUI
 import XCTest
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 enum TestError: Error {
     case error

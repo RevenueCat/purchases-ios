@@ -13,7 +13,7 @@
 
 import SwiftUI
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 struct GradientView: View {
     enum GradientStyle {

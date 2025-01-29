@@ -14,7 +14,7 @@
 
 import Foundation
 
-#if !os(watchOS) && !os(macOS)
+#if !os(macOS) && !os(tvOS)
 
 public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
