@@ -67,6 +67,7 @@ class TextComponentViewModel {
             text: Self.processText(
                 text,
                 packageContext: packageContext,
+                variableConfig: uiConfigProvider.variableConfig,
                 locale: self.localizationProvider.locale,
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
@@ -86,11 +87,13 @@ class TextComponentViewModel {
 
     private static func processText(_ text: String,
                                     packageContext: PackageContext,
+                                    variableConfig: UIConfig.VariableConfig,
                                     locale: Locale,
                                     localizations: [String: String]) -> String {
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
+            variableConfig: variableConfig,
             locale: locale,
             localizations: localizations
         )
@@ -106,6 +109,7 @@ class TextComponentViewModel {
 
     private static func processTextV2(_ text: String,
                                       packageContext: PackageContext,
+                                      variableConfig: UIConfig.VariableConfig,
                                       locale: Locale,
                                       localizations: [String: String]) -> String {
         guard let package = packageContext.package else {
@@ -118,6 +122,8 @@ class TextComponentViewModel {
         )
 
         let handler = VariableHandlerV2(
+            variableCompatibilityMap: variableConfig.variableCompatibilityMap,
+            functionCompatibilityMap: variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
             showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
         )
@@ -130,7 +136,9 @@ class TextComponentViewModel {
         )
     }
 
-    private static func processTextV1(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
+    private static func processTextV1(_ text: String,
+                                      packageContext: PackageContext,
+                                      locale: Locale) -> String {
         guard let package = packageContext.package else {
             return text
         }

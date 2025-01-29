@@ -70,7 +70,12 @@ class VariableHandlerV2Test: TestCase {
 
     let locale = Locale(identifier: "en_US")
 
+    static let variableMapping: [String: String] = [:]
+    static let functionMapping: [String: String] = [:]
+
     let variableHandler = VariableHandlerV2(
+        variableCompatibilityMap: variableMapping,
+        functionCompatibilityMap: functionMapping,
         discountRelativeToMostExpensivePerMonth: nil,
         showZeroDecimalPlacePrices: false,
         dateProvider: {
@@ -473,6 +478,8 @@ class VariableHandlerV2Test: TestCase {
 
     func testProductRelativeDiscount() {
         let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
             discountRelativeToMostExpensivePerMonth: 0.3,
             showZeroDecimalPlacePrices: false
         )
@@ -514,6 +521,78 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("Month"))
+    }
+
+    func testVariableMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [
+                "product_name": "product.store_product_name"
+            ],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Name is {{ product_name }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Name is Monthly"))
+    }
+
+    func testVariableMappingWithNoMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Name is {{ product_name_that_does_not_exist }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Name is "))
+    }
+
+    func testFunctionMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [
+                "loud": "uppercase"
+            ],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.store_product_name || loud }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("MONTHLY"))
+    }
+
+    func testFunctionMappingWithNoMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.store_product_name || loud }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Monthly"))
     }
 
 }
