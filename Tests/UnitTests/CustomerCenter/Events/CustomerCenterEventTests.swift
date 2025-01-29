@@ -43,7 +43,7 @@ final class CustomerCenterEventTests: TestCase {
                        prettyPrintedString,
                        """
                        {
-                           "answer_submitted" : {
+                           "impression" : {
                              "_0" : {
                                "date" : "2023-09-06T19:42:08Z",
                                "id" : "72164C05-2BDC-4807-8918-A4105F727DEB"
