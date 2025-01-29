@@ -14,7 +14,7 @@
 import Foundation
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ShadowModifier: ViewModifier {
@@ -42,6 +42,7 @@ struct ShadowModifier: ViewModifier {
     let shape: (any Shape)?
 
     func body(content: Content) -> some View {
+        #if !os(watchOS)
         if let shadow {
             content
                 .background {
@@ -60,6 +61,9 @@ struct ShadowModifier: ViewModifier {
         } else {
             content
         }
+        #else
+        content
+        #endif
     }
 }
 
@@ -75,6 +79,8 @@ extension View {
         ))
     }
 }
+
+#if !os(watchOS)
 
 // Using the .shadow() modifier to add a drop shadow in SwiftUI has multiple downsides:
 // - The shadow is applied to all children views (can be worked around with .compositingGroup())
@@ -153,6 +159,8 @@ private struct LayerShadowView: UIViewRepresentable {
         uiView.layer.mask = maskLayer
     }
 }
+
+#endif
 
 #if DEBUG
 

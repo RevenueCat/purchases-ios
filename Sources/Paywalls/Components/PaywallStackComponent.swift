@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class StackComponent: PaywallComponentBase {
@@ -96,7 +94,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialStackComponent: PartialComponent {
+    final class PartialStackComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let size: Size?
@@ -166,5 +164,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

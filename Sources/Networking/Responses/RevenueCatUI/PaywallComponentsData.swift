@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct ComponentsConfig: Codable, Equatable, Sendable {
@@ -208,5 +206,3 @@ extension PaywallComponentsData {
     }
 
 }
-
-#endif

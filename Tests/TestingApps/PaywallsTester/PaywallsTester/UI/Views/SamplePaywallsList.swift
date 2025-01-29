@@ -99,7 +99,6 @@ struct SamplePaywallsList: View {
             CustomerCenterUIKitView(
                 customerCenterActionHandler: self.handleCustomerCenterAction
             )
-        #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
             PaywallView(configuration: .init(
                 offering: Self.loader.offering(with: data),
@@ -107,7 +106,6 @@ struct SamplePaywallsList: View {
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
             ))
-        #endif
         }
 
     }
@@ -304,9 +302,7 @@ private extension SamplePaywallsList {
         case customerCenterFullScreen
         case customerCenterNavigationView
         case uiKitCustomerCenter
-        #if PAYWALL_COMPONENTS
         case componentPaywall(PaywallComponentsData)
-        #endif
 
     }
 
@@ -340,10 +336,9 @@ extension SamplePaywallsList.Display: Identifiable {
         case .customerCenterNavigationView:
             return "customer-center-navigationview"
 
-        #if PAYWALL_COMPONENTS
         case .componentPaywall:
             return "component-paywall"
-        #endif
+
         case .uiKitCustomerCenter:
             return "customer-center-uikit"
         }

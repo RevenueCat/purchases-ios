@@ -15,8 +15,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class ButtonComponent: PaywallComponentBase {
@@ -178,5 +176,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif
