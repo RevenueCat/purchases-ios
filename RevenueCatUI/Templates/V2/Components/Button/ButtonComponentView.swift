@@ -44,11 +44,11 @@ struct ButtonComponentView: View {
         .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
             SafariView(url: inAppBrowserURL!)
         }
-        #endif
         #if os(iOS)
         .presentCustomerCenter(isPresented: $showCustomerCenter, onDismiss: {
             showCustomerCenter = false
         })
+        #endif
         #endif
     }
 
