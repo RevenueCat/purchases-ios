@@ -296,7 +296,8 @@ extension View {
         )
     }
 
-    public func originalTemplatePaywallFooter(
+    // @PublicForExternalTesting
+    func originalTemplatePaywallFooter(
         offering: Offering?,
         customerInfo: CustomerInfo?,
         condensed: Bool = false,
