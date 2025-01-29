@@ -19,40 +19,40 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Shape {
 
-    @ViewBuilder
     func fillColorScheme(
         _ color: DisplayableColorScheme,
         colorScheme: ColorScheme
     ) -> some View {
-        let effectiveColor = color.effectiveColor(for: colorScheme)
-        switch effectiveColor {
-        case .hex:
-            // Do not apply a clear text color
-            // Use the default color
-            if color.hasError {
-                return self
-            } else {
-                return self.fill(color.toDynamicColor())
+        Group {
+            let effectiveColor = color.effectiveColor(for: colorScheme)
+            switch effectiveColor {
+            case .hex:
+                // Do not apply a clear text color
+                // Use the default color
+                if color.hasError {
+                    return self
+                } else {
+                    return self.fill(color.toDynamicColor())
+                }
+            case .linear(let degrees, _):
+                return self.fill(
+                    LinearGradient(
+                        gradient: effectiveColor.toGradient(),
+                        startPoint: UnitPoint(angle: Angle(degrees: Double(degrees))),
+                        endPoint: UnitPoint(angle: Angle(degrees: Double(degrees+180)))
+                    )
+                )
+            case .radial:
+                return self.fill(
+                    RadialGradient(
+                        gradient: effectiveColor.toGradient(),
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 100
+                    )
+                )
             }
-        case .linear(let degrees, _):
-            return self.fill(
-                LinearGradient(
-                    gradient: effectiveColor.toGradient(),
-                    startPoint: UnitPoint(angle: Angle(degrees: Double(degrees))),
-                    endPoint: UnitPoint(angle: Angle(degrees: Double(degrees+180)))
-                )
-            )
-        case .radial:
-            return self.fill(
-                RadialGradient(
-                    gradient: effectiveColor.toGradient(),
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 100
-                )
-            )
         }
-
     }
 }
 
