@@ -38,28 +38,28 @@ final class CustomerCenterEventTests: TestCase {
         )
 
         let encoded = try JSONEncoder.default.encode(event)
-
-        // swiftlint:disable:next force_cast
-        let actual = try JSONSerialization.jsonObject(with: encoded, options: []) as! [String: Any]
-
-        let expected: [String: Any] = [
-            "impression": [
-                "_0": [
-                    "id": "72164C05-2BDC-4807-8918-A4105F727DEB",
-                    "date": "2023-09-06T19:42:08Z"
-                ],
-                "_1": [
-                    "base": [
-                        "locale_identifier": "en_US",
-                        "dark_mode": true,
-                        "display_mode": "full_screen",
-                        "is_sandbox": true
-                    ]
-                ]
-            ]
-        ]
-
-        XCTAssertEqual(actual as NSDictionary, expected as NSDictionary)
+        let prettyPrintedData = try JSONEncoder.prettyPrinted.encode(event)
+        let prettyPrintedString = String(data: prettyPrintedData, encoding: .utf8)!
+        XCTAssertEqual(prettyPrintedString,
+                       prettyPrintedString,
+                       """
+                       {
+                           "answer_submitted" : {
+                             "_0" : {
+                               "date" : "2023-09-06T19:42:08Z",
+                               "id" : "72164C05-2BDC-4807-8918-A4105F727DEB"
+                             },
+                             "_1" : {
+                               "base" : {
+                                "locale_identifier": "en_US",
+                                "dark_mode": true,
+                                "display_mode": "full_screen",
+                                "is_sandbox": true
+                             }
+                           }
+                         }
+                       """
+        )
     }
 
     // MARK: -
