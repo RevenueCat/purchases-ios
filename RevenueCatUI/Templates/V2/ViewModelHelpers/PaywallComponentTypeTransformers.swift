@@ -232,9 +232,9 @@ extension PaywallComponent.FitMode {
     var contentMode: ContentMode {
         switch self {
         case .fit:
-            ContentMode.fit
+            return ContentMode.fit
         case .fill:
-            ContentMode.fill
+            return ContentMode.fill
         }
     }
 }
