@@ -345,7 +345,7 @@ extension ShapeModifier.Shape {
         let bottomLeft = radiusInfo?.bottomLeft ?? 0
         let bottomRight = radiusInfo?.bottomRight ?? 0
         if  topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
-            #if compiler(>=5.7)
+            #if compiler(>=5.9)
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 return UnevenRoundedRectangle(
                     topLeadingRadius: topLeft,
