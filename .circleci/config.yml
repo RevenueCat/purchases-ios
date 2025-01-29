@@ -18,7 +18,7 @@ parameters:
     default: false
     type: boolean
 
-  # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
+# params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
     default: ""
@@ -37,7 +37,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: "16.0"
+        default: '16.0'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
@@ -50,7 +50,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: "16.0"
+        default: '16.0'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.large.gen1
@@ -111,13 +111,13 @@ commands:
       runtime-name:
         type: string
     steps:
-      - install-brew-dependency:
-          dependency_name: "xcodes"
-      - run:
-          name: Install simulator
-          command: | # Print all available simulators and install required one
-            xcodes runtimes
-            sudo xcodes runtimes install "<< parameters.runtime-name >>"
+       - install-brew-dependency:
+           dependency_name: 'xcodes'
+       - run:
+           name: Install simulator
+           command: | # Print all available simulators and install required one
+               xcodes runtimes
+               sudo xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -403,7 +403,7 @@ jobs:
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
-      xcode_version: "14.3.0"
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
@@ -415,7 +415,7 @@ jobs:
   spm-release-build-xcode-16:
     executor:
       name: macos-executor
-      xcode_version: "16.0.0"
+      xcode_version: '16.0.0'
 
     steps:
       - checkout
@@ -427,7 +427,7 @@ jobs:
   spm-release-build-xcode-15:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
@@ -439,7 +439,7 @@ jobs:
   spm-xcode-14-1:
     executor:
       name: macos-executor
-      xcode_version: "14.1.0"
+      xcode_version: '14.1.0'
 
     steps:
       - checkout
@@ -499,7 +499,7 @@ jobs:
   spm-revenuecat-ui-ios-15:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: '14.3.0'
 
     steps:
       - checkout
@@ -528,7 +528,7 @@ jobs:
   spm-revenuecat-ui-ios-16:
     executor:
       name: macos-executor
-      xcode_version: "15.4.0"
+      xcode_version: '15.4.0'
 
     steps:
       - checkout
@@ -561,7 +561,7 @@ jobs:
   run-revenuecat-ui-ios-17:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
@@ -594,7 +594,7 @@ jobs:
   run-revenuecat-ui-ios-18:
     executor:
       name: macos-executor
-      xcode_version: "16.0"
+      xcode_version: '16.0'
 
     steps:
       - checkout
@@ -674,7 +674,7 @@ jobs:
   run-test-ios-18:
     executor:
       name: macos-executor
-      xcode_version: "16.0"
+      xcode_version: '16.0'
 
     steps:
       - checkout
@@ -702,7 +702,7 @@ jobs:
   run-test-ios-17:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
@@ -730,7 +730,7 @@ jobs:
   run-test-ios-16:
     executor:
       name: macos-executor
-      xcode_version: "15.4.0"
+      xcode_version: '15.4.0'
 
     steps:
       - checkout
@@ -763,7 +763,7 @@ jobs:
     executor:
       name: macos-executor
       # Needs to be 15.2.0 because if not running on Swift 5.9, the tests fail
-      xcode_version: "15.2.0"
+      xcode_version: '15.2.0'
 
     steps:
       - checkout
@@ -840,9 +840,9 @@ jobs:
   run-test-ios-14:
     executor:
       name: macos-executor
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      xcode_version: "14.2.0"
+    # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+    # See https://circleci.com/docs/using-macos/#supported-xcode-versions
+      xcode_version: '14.2.0'
 
     steps:
       - checkout
@@ -876,7 +876,7 @@ jobs:
   run-test-ios-13:
     executor:
       name: macos-executor
-      xcode_version: "14.2.0"
+      xcode_version: '14.2.0'
 
     steps:
       - checkout
@@ -1005,7 +1005,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: "14.3.0"
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -1021,7 +1021,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: "14.3.0"
+      xcode_version: '14.3.0'
     steps:
       - setup-git-credentials
       - checkout
@@ -1492,3 +1492,4 @@ workflows:
       - deploy-purchase-tester:
           dry_run: true
       - emerge_purchases_ui_snapshot_tests
+
