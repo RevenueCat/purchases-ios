@@ -113,17 +113,21 @@ private extension CustomerCenterView {
         switch self.viewModel.state {
         case .error:
             ErrorView()
+                .environment(\.customerCenterPresentationMode, self.mode)
+                .environment(\.navigationOptions, self.navigationOptions)
                 .dismissCircleButtonToolbar()
+
         case .notLoaded:
             TintedProgressView()
+
         case .success:
             if let configuration = self.viewModel.configuration {
                 destinationView(configuration: configuration)
-                    .environment(\.localization, configuration.localization)
                     .environment(\.appearance, configuration.appearance)
-                    .environment(\.supportInformation, configuration.support)
+                    .environment(\.localization, configuration.localization)
                     .environment(\.customerCenterPresentationMode, self.mode)
                     .environment(\.navigationOptions, self.navigationOptions)
+                    .environment(\.supportInformation, configuration.support)
             } else {
                 TintedProgressView()
             }

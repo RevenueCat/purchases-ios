@@ -34,8 +34,8 @@ struct PurchaseDetailView: View {
                     )
                 }
             } footer: {
-                if let ownership = viewModel.localizedOwnership {
-                    Text(ownership)
+                if let ownershipKey = viewModel.localizedOwnership {
+                    Text(localization[ownershipKey])
                 }
             }
 

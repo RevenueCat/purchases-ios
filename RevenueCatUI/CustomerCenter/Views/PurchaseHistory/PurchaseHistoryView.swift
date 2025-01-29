@@ -18,6 +18,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseHistoryView: View {
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
@@ -107,7 +108,6 @@ struct PurchaseHistoryView: View {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
             .environment(\.localization, localization)
-            .environment(\.navigationOptions, navigationOptions)
         }
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
