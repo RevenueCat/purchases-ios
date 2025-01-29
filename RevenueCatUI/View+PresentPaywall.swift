@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 /// Presentation options to use with the [presentPaywallIfNeeded](x-source-tag://presentPaywallIfNeeded) View modifiers.
 ///

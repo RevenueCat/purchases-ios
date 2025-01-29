@@ -13,7 +13,7 @@
 
 import Foundation
 
-#if !os(macOS) && !os(tvOS)
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 // swiftlint:disable missing_docs nesting
 public extension PaywallComponent {

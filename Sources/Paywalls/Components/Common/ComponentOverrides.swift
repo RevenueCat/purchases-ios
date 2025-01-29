@@ -15,7 +15,7 @@
 
 import Foundation
 
-#if !os(macOS) && !os(tvOS)
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 public protocol PaywallPartialComponent: PaywallComponentBase {}
 

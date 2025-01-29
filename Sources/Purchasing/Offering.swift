@@ -28,7 +28,7 @@ import Foundation
  */
 @objc(RCOffering) public final class Offering: NSObject {
 
-    #if !os(macOS) && !os(tvOS)
+    #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
     /// Initialize a ``PaywallComponents``
     public struct PaywallComponents {
@@ -75,7 +75,7 @@ import Foundation
      */
     public let paywall: PaywallData?
 
-    #if !os(macOS) && !os(tvOS)
+    #if !os(macOS) && !os(tvOS) // For Paywalls V2
     /**
      Paywall components configuration defined in RevenueCat dashboard.
      */
@@ -171,7 +171,7 @@ import Foundation
         metadata: [String: Any] = [:],
         availablePackages: [Package]
     ) {
-        #if !os(macOS) && !os(tvOS)
+        #if !os(macOS) && !os(tvOS) // For Paywalls V2
         self.init(
             identifier: identifier,
             serverDescription: serverDescription,
@@ -191,7 +191,7 @@ import Foundation
         #endif
     }
 
-    #if !os(macOS) && !os(tvOS)
+    #if !os(macOS) && !os(tvOS) // For Paywalls V2
     /// Initialize an ``Offering`` given a list of ``Package``s.
     public init(
         identifier: String,
@@ -363,7 +363,7 @@ extension Offering: Identifiable {
 
 }
 
-#if !os(macOS) && !os(tvOS)
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 extension Offering.PaywallComponents: Sendable {}
 #endif
 
