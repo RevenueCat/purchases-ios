@@ -402,9 +402,9 @@ class IdentityManagerTests: TestCase {
             finishTransactions: false,
             dangerousSettings: dangerousSettings
         )
-        
+
         let manager = create(appUserID: nil)
-        
+
         expect(manager.currentAppUserID) == IdentityManager.uiPreviewModeAppUserID
         expect(manager.currentUserIsAnonymous) == false
     }
@@ -416,9 +416,9 @@ class IdentityManagerTests: TestCase {
             finishTransactions: false,
             dangerousSettings: dangerousSettings
         )
-        
+
         let manager = create(appUserID: "test_user")
-        
+
         expect(manager.currentAppUserID) == IdentityManager.uiPreviewModeAppUserID
         expect(manager.currentUserIsAnonymous) == false
     }
@@ -430,9 +430,9 @@ class IdentityManagerTests: TestCase {
             finishTransactions: false,
             dangerousSettings: dangerousSettings
         )
-        
+
         let manager = create(appUserID: "test_user")
-        
+
         expect(manager.currentAppUserID) == "test_user"
         expect(manager.currentUserIsAnonymous) == false
     }
@@ -444,7 +444,7 @@ class IdentityManagerTests: TestCase {
             finishTransactions: false,
             dangerousSettings: dangerousSettings
         )
-        
+
         let manager = create(appUserID: nil)
 
         expect(manager.currentAppUserID) != IdentityManager.uiPreviewModeAppUserID
