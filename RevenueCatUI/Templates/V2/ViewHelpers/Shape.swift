@@ -333,7 +333,7 @@ extension ShapeModifier.Shape {
         case .circle:
             return Circle().eraseToAnyInsettableShape()
         case .pill:
-            return Capsule(style: .circular).eraseToAnyInsettableShape()
+            return Capsule().eraseToAnyInsettableShape()
         case .concave, .convex:
             return nil
         }
