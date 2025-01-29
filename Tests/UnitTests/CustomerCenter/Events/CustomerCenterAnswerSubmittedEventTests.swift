@@ -28,7 +28,7 @@ final class CustomerCenterAnswerSubmittedEventTests: TestCase {
 
     func testEncoding() throws {
         let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(
-            Self.eventCreationData,
+            .default,
             CustomerCenterAnswerSubmittedEvent.Data(
                 locale: Locale(identifier: "en_US"),
                 darkMode: true,

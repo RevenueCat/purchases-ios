@@ -28,7 +28,7 @@ final class CustomerCenterEventTests: TestCase {
 
     func testEncoding() throws {
         let event = CustomerCenterEvent.impression(
-            Self.eventCreationData,
+            .default,
             CustomerCenterEvent.Data(
                 locale: Locale(identifier: "en_US"),
                 darkMode: true,
@@ -60,11 +60,4 @@ final class CustomerCenterEventTests: TestCase {
                        """
         )
     }
-
-    // MARK: -
-
-    private static let eventCreationData: CustomerCenterEventCreationData = .init(
-        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-        date: .init(timeIntervalSince1970: 1694029328)
-    )
 }
