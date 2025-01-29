@@ -73,7 +73,8 @@ class StackComponentViewModel {
             shape: partial?.shape ?? self.component.shape,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
-            badge: partial?.badge ?? self.component.badge
+            badge: partial?.badge ?? self.component.badge,
+            scrollable: partial?.scrollable ?? self.component.scrollable
         )
 
         apply(style)
@@ -133,6 +134,7 @@ struct StackComponentStyle {
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
     let badge: BadgeModifier.BadgeInfo?
+    let scrollable: Bool?
 
     init(
         uiConfigProvider: UIConfigProvider,
@@ -148,7 +150,8 @@ struct StackComponentStyle {
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
         shadow: PaywallComponent.Shadow?,
-        badge: PaywallComponent.Badge?
+        badge: PaywallComponent.Badge?,
+        scrollable: Bool?
     ) {
         self.visible = visible
         self.dimension = dimension
@@ -165,6 +168,7 @@ struct StackComponentStyle {
                                   stackBorder: self.border,
                                   badgeViewModels: badgeViewModels,
                                   uiConfigProvider: uiConfigProvider)
+        self.scrollable = scrollable
     }
 
     var vstackStrategy: StackStrategy {
