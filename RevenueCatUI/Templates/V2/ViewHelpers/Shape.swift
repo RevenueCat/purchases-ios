@@ -333,7 +333,11 @@ extension ShapeModifier.Shape {
         case .circle:
             return Circle().eraseToAnyInsettableShape()
         case .pill:
+            #if compiler(>=5.9)
+            return Capsule(style: .circular).eraseToAnyInsettableShape()
+            #else
             return Capsule().eraseToAnyInsettableShape()
+            #endif
         case .concave, .convex:
             return nil
         }
