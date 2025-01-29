@@ -49,13 +49,13 @@ struct VariableHandlerV2 {
             let variable = self.findVariable(variableRaw)
             let function = functionRaw.flatMap { self.findFunction($0) }
 
-            let processedVariable = variable.process(
+            let processedVariable = variable?.process(
                 package: package,
                 locale: locale,
                 localizations: localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
                 date: self.dateProvider()
-            )
+            ) ?? ""
 
             return function?.process(processedVariable) ?? processedVariable
         }
@@ -63,7 +63,7 @@ struct VariableHandlerV2 {
         return whisker.render()
     }
 
-    private func findVariable(_ variableRaw: String) -> VariablesV2 {
+    private func findVariable(_ variableRaw: String) -> VariablesV2? {
         guard let originalVariable = VariablesV2(rawValue: variableRaw) else {
 
             let backSupportedVariableRaw = self.variableCompatibilityMap[variableRaw]
@@ -73,7 +73,7 @@ struct VariableHandlerV2 {
                     "Paywall variable '\(variableRaw)' is not supported " +
                     "and no backward compatible replacement found."
                 )
-                return .unsupported
+                return nil
             }
 
             guard let backSupportedVariable = VariablesV2(rawValue: backSupportedVariableRaw) else {
@@ -81,7 +81,7 @@ struct VariableHandlerV2 {
                     "Paywall variable '\(variableRaw)' is not supported " +
                     "and could not find backward compatible '\(backSupportedVariableRaw)'."
                 )
-                return .unsupported
+                return nil
             }
 
             Logger.warning(
@@ -94,7 +94,7 @@ struct VariableHandlerV2 {
         return originalVariable
     }
 
-    private func findFunction(_ functionRaw: String) -> FunctionsV2 {
+    private func findFunction(_ functionRaw: String) -> FunctionsV2? {
         guard let originalFunction = FunctionsV2(rawValue: functionRaw) else {
 
             let backSupportedFunctionRaw = self.functionCompatibilityMap[functionRaw]
@@ -103,14 +103,14 @@ struct VariableHandlerV2 {
                 Logger.error(
                     "Paywall function '\(functionRaw)' is not supported " +
                     "and no backward compatible replacement found.")
-                return .unsupported
+                return nil
             }
 
             guard let backSupportedFunction = FunctionsV2(rawValue: backSupportedFunctionRaw) else {
                 Logger.error(
                     "Paywall variable '\(functionRaw)' is not supported " +
                     "and could not find backward compatible '\(backSupportedFunctionRaw)'.")
-                return .unsupported
+                return nil
             }
 
             Logger.warning(
@@ -208,8 +208,6 @@ enum VariablesV2: String {
     case productRelativeDiscount = "product.relative_discount"
     case productStoreProductName = "product.store_product_name"
 
-    case unsupported = "__unsupported__"
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -218,8 +216,6 @@ enum FunctionsV2: String {
     case lowercase
     case uppercase
     case capitalize
-
-    case unsupported = "__unsupported__"
 
 }
 
@@ -306,9 +302,6 @@ extension VariablesV2 {
             )
         case .productStoreProductName:
             return self.productStoreProductName(package: package)
-
-        case .unsupported:
-            return ""
         }
     }
 
@@ -788,9 +781,6 @@ extension FunctionsV2 {
             return uppercase(text)
         case .capitalize:
             return capitalize(text)
-
-        case .unsupported:
-            return text
         }
     }
 
