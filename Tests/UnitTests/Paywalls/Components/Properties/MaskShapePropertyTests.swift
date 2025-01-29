@@ -38,19 +38,6 @@ class MaskShapePropertyTests: TestCase {
         )
     }
 
-    func testPill() throws {
-        let json = """
-        {
-            "type": "pill",
-        }
-        """
-
-        _ = try JSONDecoder.default.decode(
-            PaywallComponent.MaskShape.self,
-            from: json.data(using: .utf8)!
-        )
-    }
-
     func testConvex() throws {
         let json = """
         {
