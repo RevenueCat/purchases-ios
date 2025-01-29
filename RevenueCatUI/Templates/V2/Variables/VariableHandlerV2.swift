@@ -18,15 +18,22 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
 
+    private let variableCompatibilityMap: [String: String]
+    private let functionCompatibilityMap: [String: String]
+
     private let showZeroDecimalPlacePrices: Bool
     private let discountRelativeToMostExpensivePerMonth: Double?
     private let dateProvider: () -> Date
 
     init(
+        variableCompatibilityMap: [String: String],
+        functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
         showZeroDecimalPlacePrices: Bool,
         dateProvider: @escaping () -> Date = { Date() }
     ) {
+        self.variableCompatibilityMap = variableCompatibilityMap
+        self.functionCompatibilityMap = functionCompatibilityMap
         self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.dateProvider = dateProvider
@@ -39,8 +46,8 @@ struct VariableHandlerV2 {
         localizations: [String: String]
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
-            let variable = VariablesV2(rawValue: variableRaw)
-            let function = functionRaw.flatMap { FunctionsV2(rawValue: $0) }
+            let variable = self.findVariable(variableRaw)
+            let function = functionRaw.flatMap { self.findFunction($0) }
 
             let processedVariable = variable?.process(
                 package: package,
@@ -56,6 +63,50 @@ struct VariableHandlerV2 {
         }
 
         return whisker.render()
+    }
+
+    private func findVariable(_ variableRaw: String) -> VariablesV2? {
+        guard let originalVariable = VariablesV2(rawValue: variableRaw) else {
+
+            let backSupportedVariableRaw = self.variableCompatibilityMap[variableRaw]
+
+            guard let backSupportedVariableRaw else {
+                Logger.error("Paywall variable '\(variableRaw)' is not supported and no backward compatible replacement found.")
+                return nil
+            }
+
+            guard let backSupportedVariable = VariablesV2(rawValue: backSupportedVariableRaw) else {
+                Logger.error("Paywall variable '\(variableRaw)' is not supported and could not find backward compatible '\(backSupportedVariableRaw)'.")
+                return nil
+            }
+
+            Logger.warning("Paywall variable '\(variableRaw)' is not supported. Using backward compatible '\(backSupportedVariableRaw)' instead.")
+            return backSupportedVariable
+        }
+
+        return originalVariable
+    }
+
+    private func findFunction(_ functionRaw: String) -> FunctionsV2? {
+        guard let originalFunction = FunctionsV2(rawValue: functionRaw) else {
+
+            let backSupportedFunctionRaw = self.functionCompatibilityMap[functionRaw]
+
+            guard let backSupportedFunctionRaw else {
+                Logger.error("Paywall function '\(functionRaw)' is not supported and no backward compatible replacement found.")
+                return nil
+            }
+
+            guard let backSupportedFunction = FunctionsV2(rawValue: backSupportedFunctionRaw) else {
+                Logger.error("Paywall variable '\(functionRaw)' is not supported and could not find backward compatible '\(backSupportedFunctionRaw)'.")
+                return nil
+            }
+
+            Logger.warning("Paywall function '\(functionRaw)' is not supported. Using backward compatible '\(backSupportedFunction)' instead.")
+            return backSupportedFunction
+        }
+
+        return originalFunction
     }
 
 }

@@ -70,7 +70,12 @@ class VariableHandlerV2Test: TestCase {
 
     let locale = Locale(identifier: "en_US")
 
+    static let variableMapping: [String: String] = [:]
+    static let functionMapping: [String: String] = [:]
+
     let variableHandler = VariableHandlerV2(
+        variableCompatibilityMap: variableMapping,
+        functionCompatibilityMap: functionMapping,
         discountRelativeToMostExpensivePerMonth: nil,
         showZeroDecimalPlacePrices: false,
         dateProvider: {
@@ -473,6 +478,8 @@ class VariableHandlerV2Test: TestCase {
 
     func testProductRelativeDiscount() {
         let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
             discountRelativeToMostExpensivePerMonth: 0.3,
             showZeroDecimalPlacePrices: false
         )
@@ -514,6 +521,10 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("Month"))
+    }
+
+    func testVariableMapping() {
+
     }
 
 }
