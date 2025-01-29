@@ -19,6 +19,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Shape {
 
+    @ViewBuilder
     func fillColorScheme(
         _ color: DisplayableColorScheme,
         colorScheme: ColorScheme
@@ -29,12 +30,12 @@ extension Shape {
             // Do not apply a clear text color
             // Use the default color
             if color.hasError {
-                return self
+                self.fill()
             } else {
-                return self.fill(color.toDynamicColor())
+                self.fill(color.toDynamicColor())
             }
         case .linear(let degrees, _):
-            return self.fill(
+            self.fill(
                 LinearGradient(
                     gradient: effectiveColor.toGradient(),
                     startPoint: UnitPoint(angle: Angle(degrees: Double(degrees))),
@@ -42,7 +43,7 @@ extension Shape {
                 )
             )
         case .radial:
-            return self.fill(
+            self.fill(
                 RadialGradient(
                     gradient: effectiveColor.toGradient(),
                     center: .center,
