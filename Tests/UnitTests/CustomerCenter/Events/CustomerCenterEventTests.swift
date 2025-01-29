@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterAnswerSubmittedEventTests.swift
+//  CustomerCenterEventTests.swift
 //
 //  Created by Facundo Menzella on 29/1/25.
 
@@ -18,7 +18,7 @@ import SnapshotTesting
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-final class CustomerCenterAnswerSubmittedEventTests: TestCase {
+final class CustomerCenterEventTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -27,43 +27,34 @@ final class CustomerCenterAnswerSubmittedEventTests: TestCase {
     }
 
     func testEncoding() throws {
-        let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(
+        let event = CustomerCenterEvent.impression(
             Self.eventCreationData,
-            CustomerCenterAnswerSubmittedEvent.Data(
+            CustomerCenterEvent.Data(
                 locale: Locale(identifier: "en_US"),
                 darkMode: true,
                 isSandbox: true,
-                displayMode: .fullScreen,
-                path: .cancel,
-                url: URL(string: "https://revenuecat.com"),
-                surveyOptionID: "surveyOptionID",
-                surveyOptionTitleKey: "surveyOptionTitleKey",
-                revisionID: 1
+                displayMode: .fullScreen
             )
         )
 
         let encoded = try JSONEncoder.default.encode(event)
+
         // swiftlint:disable:next force_cast
         let actual = try JSONSerialization.jsonObject(with: encoded, options: []) as! [String: Any]
 
         let expected: [String: Any] = [
-            "answer_submitted": [
+            "impression": [
                 "_0": [
                     "id": "72164C05-2BDC-4807-8918-A4105F727DEB",
                     "date": "2023-09-06T19:42:08Z"
                 ],
                 "_1": [
-                    "path": "CANCEL",
                     "base": [
                         "locale_identifier": "en_US",
                         "dark_mode": true,
                         "display_mode": "full_screen",
                         "is_sandbox": true
-                    ],
-                    "url": "https://revenuecat.com",
-                    "survey_option_id": "surveyOptionID",
-                    "survey_option_title_key": "surveyOptionTitleKey",
-                    "revision_id": 1
+                    ]
                 ]
             ]
         ]
