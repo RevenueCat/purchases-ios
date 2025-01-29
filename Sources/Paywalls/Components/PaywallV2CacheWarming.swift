@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
-
 extension PaywallComponentsData {
 
     var allImageURLs: [URL] {
@@ -145,5 +143,3 @@ private extension PaywallComponent.ThemeImageUrls {
     }
 
 }
-
-#endif

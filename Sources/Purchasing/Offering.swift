@@ -71,12 +71,10 @@ import Foundation
      */
     public let paywall: PaywallData?
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
     /**
      Paywall components configuration defined in RevenueCat dashboard.
      */
     public let paywallComponents: PaywallComponents?
-    #endif
 
     /**
      Array of ``Package`` objects available for purchase.

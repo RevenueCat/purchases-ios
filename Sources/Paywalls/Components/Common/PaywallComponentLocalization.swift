@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
-
 extension PaywallComponent.LocalizationDictionary {
 
     public func string(key: String) throws -> String {
@@ -44,5 +42,3 @@ enum LocalizationValidationError: Error {
     case invalidUrl(String)
 
 }
-
-#endif

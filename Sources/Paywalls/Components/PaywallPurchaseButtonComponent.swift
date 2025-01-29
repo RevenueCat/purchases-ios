@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
-
 public extension PaywallComponent {
 
     final class PurchaseButtonComponent: PaywallComponentBase {
@@ -35,5 +33,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

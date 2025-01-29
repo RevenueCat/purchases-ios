@@ -15,8 +15,6 @@ import Foundation
 
 // swiftlint:disable missing_docs
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
-
 public extension PaywallComponent {
 
     final class PackageComponent: PaywallComponentBase {
@@ -63,5 +61,3 @@ extension PaywallComponent.PackageComponent {
     }
 
 }
-
-#endif
