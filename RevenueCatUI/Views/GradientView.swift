@@ -31,11 +31,11 @@ struct GradientView: View {
     private var gradient: Gradient {
         switch colorScheme {
         case .light:
-            lightGradient
+            return lightGradient
         case .dark:
-            darkGradient ?? lightGradient
+            return darkGradient ?? lightGradient
         @unknown default:
-            lightGradient
+            return lightGradient
         }
     }
 
