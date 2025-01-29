@@ -345,22 +345,31 @@ extension ShapeModifier.Shape {
         let bottomLeft = radiusInfo?.bottomLeft ?? 0
         let bottomRight = radiusInfo?.bottomRight ?? 0
         if  topLeft > 0 || topRight > 0 || bottomLeft > 0 || bottomRight > 0 {
-//            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-//                return UnevenRoundedRectangle(
-//                    topLeadingRadius: topLeft,
-//                    bottomLeadingRadius: bottomLeft,
-//                    bottomTrailingRadius: bottomRight,
-//                    topTrailingRadius: topRight,
-//                    style: .circular
-//                ).eraseToAnyInsettableShape()
-//            } else {
+            #if compiler(>=5.7)
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: topLeft,
+                    bottomLeadingRadius: bottomLeft,
+                    bottomTrailingRadius: bottomRight,
+                    topTrailingRadius: topRight,
+                    style: .circular
+                ).eraseToAnyInsettableShape()
+            } else {
                 return BackportedUnevenRoundedRectangle(
                     topLeft: topLeft,
                     topRight: topRight,
                     bottomLeft: bottomLeft,
                     bottomRight: bottomRight
                 ).eraseToAnyInsettableShape()
-//            }
+            }
+            #else
+            return BackportedUnevenRoundedRectangle(
+                topLeft: topLeft,
+                topRight: topRight,
+                bottomLeft: bottomLeft,
+                bottomRight: bottomRight
+            ).eraseToAnyInsettableShape()
+            #endif
         } else {
             return Rectangle().eraseToAnyInsettableShape()
         }
