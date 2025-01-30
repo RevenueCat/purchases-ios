@@ -26,7 +26,7 @@ private struct PaywallState {
     let componentsConfig: PaywallComponentsData.PaywallComponentsConfig
     let viewModelFactory: ViewModelFactory
     let packages: [Package]
-    let componentViewModel: PaywallComponentViewModel
+    let rootViewModel: RootViewModel
     let showZeroDecimalPlacePrices: Bool
 
 }
@@ -237,21 +237,45 @@ private struct LoadedPaywallsV2View: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ComponentsView(
-                componentViewModels: [paywallState.componentViewModel],
-                onDismiss: self.onDismiss
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                ComponentsView(
+                    componentViewModels: [.root(paywallState.rootViewModel)],
+                    onDismiss: self.onDismiss
+                )
+            }
+            // If the first view in the first stack is an image,
+            // we will ignore safe area pass the safe area insets in to environment
+            // If the image is in a ZStack, the ZStack will push non-images
+            // down with the inset
+            .applyIf(paywallState.rootViewModel.firstImageInfo != nil, apply: { view in
+                view
+                    .environment(\.safeAreaInsets, proxy.safeAreaInsets)
+                    .edgesIgnoringSafeArea(.top)
+            })
+            // This is normal
+            .environmentObject(self.selectedPackageContext)
+            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .backgroundStyle(
+                self.paywallState.componentsConfig.background
+                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
             )
+            .edgesIgnoringSafeArea(.bottom)
         }
-        .environmentObject(self.selectedPackageContext)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
-        .backgroundStyle(
-            self.paywallState.componentsConfig.background
-                .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
-        )
-        .edgesIgnoringSafeArea(.bottom)
     }
 
+}
+
+/// Custom EnvironmentKey for safe area insets
+private struct SafeAreaInsetsKey: EnvironmentKey {
+    static let defaultValue: EdgeInsets = EdgeInsets()
+}
+
+extension EnvironmentValues {
+    var safeAreaInsets: EdgeInsets {
+        get { self[SafeAreaInsetsKey.self] }
+        set { self[SafeAreaInsetsKey.self] = newValue }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -295,7 +319,7 @@ fileprivate extension PaywallsV2View {
                     componentsConfig: componentsConfig,
                     viewModelFactory: factory,
                     packages: packages,
-                    componentViewModel: .root(root),
+                    rootViewModel: root,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             )

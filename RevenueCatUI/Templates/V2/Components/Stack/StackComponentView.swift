@@ -91,7 +91,11 @@ struct StackComponentView: View {
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
+                    ComponentsView(
+                        componentViewModels: self.viewModel.viewModels,
+                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        onDismiss: self.onDismiss
+                    )
                 }
                 .size(style.size)
             }
@@ -563,6 +567,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
+                firstImageInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider
@@ -573,6 +578,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
+                firstImageInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider

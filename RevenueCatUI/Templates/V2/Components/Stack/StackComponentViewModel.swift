@@ -27,11 +27,13 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
+    let shouldApplySafeAreaInset: Bool
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
+        shouldApplySafeAreaInset: Bool = false,
         uiConfigProvider: UIConfigProvider,
         localizationProvider: LocalizationProvider
     ) throws {
@@ -39,6 +41,7 @@ class StackComponentViewModel {
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
+        self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
