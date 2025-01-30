@@ -90,6 +90,7 @@ struct StackComponentView: View {
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
+                // This alignment defines the position of inner components relative to each other
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
@@ -97,7 +98,10 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
-                .size(style.size)
+                // These alignments define the position of inner components inside the ZStack
+                .size(style.size,
+                      horizontalAlignment: alignment.stackAlignment,
+                      verticalAlignment: alignment.stackAlignment)
             }
         }
         .padding(style.padding)
