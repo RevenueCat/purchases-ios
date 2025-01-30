@@ -26,7 +26,7 @@ struct APIKeyDashboardList: View {
 
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
-        var mode: PaywallViewMode
+        var mode: PaywallTesterViewMode
     }
 
     @State
@@ -34,6 +34,9 @@ struct APIKeyDashboardList: View {
 
     @State
     private var presentedPaywall: PresentedPaywall?
+
+    @State
+    private var presentedPaywallCover: PresentedPaywall?
 
     var body: some View {
         NavigationView {
@@ -179,21 +182,56 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
+        .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
+//            VStack {
+//                ZStack {
+//                    Color.blue // Background extends under the safe area
+//                        .ignoresSafeArea()
+//
+//                    //                GeometryReader { geometry in
+//                    VStack {
+//                        Text("This text respects the safe area")
+//                            .padding()
+//                            .background(Color.white)
+//                            .cornerRadius(10)
+//                        //                            .padding(.top, geometry.safeAreaInsets.top) // Restore top safe area
+//
+//                        Spacer()
+//                    }
+//                    //                    .frame(width: geometry.size.width, height: geometry.size.height)
+//                    //                }
+//                }
+//            }
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
+                .onRestoreCompleted { _ in
+                    self.presentedPaywall = nil
+                }
+                .onAppear {
+                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                        print("Paywall V2 Error:", errorInfo.debugDescription)
+                    }
+                }
+        }
     }
 
     #if !os(watchOS)
     @ViewBuilder
     private func contextMenu(for offering: Offering) -> some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+        ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering)
         }
     }
     #endif
 
     @ViewBuilder
-    private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
+    private func button(for selectedMode: PaywallTesterViewMode, offering: Offering) -> some View {
         Button {
-            self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            switch selectedMode {
+            case .fullScreen:
+                self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
+            case .sheet, .footer, .condensedFooter:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            }
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)

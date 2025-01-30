@@ -12,13 +12,13 @@ import RevenueCatUI
 struct PaywallPresenter: View {
 
     var offering: Offering
-    var mode: PaywallViewMode
+    var mode: PaywallTesterViewMode
     var introEligility: IntroEligibilityStatus
     var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
 
     var body: some View {
         switch self.mode {
-        case .fullScreen:
+        case .fullScreen, .sheet:
 
             let handler = PurchaseHandler.default()
 

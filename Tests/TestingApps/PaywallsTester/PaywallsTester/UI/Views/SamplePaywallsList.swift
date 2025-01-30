@@ -39,7 +39,7 @@ struct SamplePaywallsList: View {
         switch display {
         case let .template(template, mode):
             switch mode {
-            case .fullScreen:
+            case .fullScreen, .sheet:
                 PaywallView(configuration: .init(
                     offering: Self.loader.offering(for: template),
                     customerInfo: Self.loader.customerInfo,
@@ -115,7 +115,7 @@ struct SamplePaywallsList: View {
 
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
-                    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                    ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
                         Button {
                             self.display = .template(template, mode)
                         } label: {
@@ -126,7 +126,7 @@ struct SamplePaywallsList: View {
                     Button {
                         self.display = .customFont(template)
                     } label: {
-                        TemplateLabel(name: "Custom font", icon: "textformat")
+                        TemplateLabel(name: "Custsom font", icon: "textformat")
                             .font(.body.italic())
                     }
                 }
@@ -138,14 +138,14 @@ struct SamplePaywallsList: View {
                     self.display = .customPaywall(.footer)
                 } label: {
                     TemplateLabel(name: "Custom + footer",
-                                  icon: PaywallViewMode.footer.icon)
+                                  icon: PaywallTesterViewMode.footer.icon)
                 }
 
                 Button {
                     self.display = .customPaywall(.condensedFooter)
                 } label: {
                     TemplateLabel(name: "Custom + condensed footer",
-                                  icon: PaywallViewMode.condensedFooter.icon)
+                                  icon: PaywallTesterViewMode.condensedFooter.icon)
                 }
                 #endif
 
@@ -292,7 +292,7 @@ private extension SamplePaywallsList {
 
     enum Display {
 
-        case template(PaywallTemplate, PaywallViewMode)
+        case template(PaywallTemplate, PaywallTesterViewMode)
         case customFont(PaywallTemplate)
         @available(watchOS, unavailable)
         case customPaywall(PaywallViewMode)
