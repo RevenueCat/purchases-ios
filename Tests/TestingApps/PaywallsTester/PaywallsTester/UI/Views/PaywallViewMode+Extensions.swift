@@ -8,11 +8,11 @@
 import Foundation
 import RevenueCat
 
-enum PaywallTesterViewMode: String {
-    case fullScreen = "Full Screen"
-    case sheet = "Sheet"
-    case footer = "Footer"
-    case condensedFooter = "Condensed Footer"
+enum PaywallTesterViewMode {
+    case fullScreen
+    case sheet
+    case footer
+    case condensedFooter
 }
 
 internal extension PaywallTesterViewMode {

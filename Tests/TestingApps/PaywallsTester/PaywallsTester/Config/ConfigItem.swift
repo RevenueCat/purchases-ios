@@ -14,7 +14,7 @@ protocol AvailableConfigItems {
 
 // CI system adds keys here
 extension AvailableConfigItems {
-    static var apiKey: String { "appl_SYkbbYptqjDadVkQeBUtXxVxCcw" }
+    static var apiKey: String { "" }
     static var proxyURL: String? { nil }
 }
 

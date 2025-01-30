@@ -183,25 +183,6 @@ struct APIKeyDashboardList: View {
                 }
         }
         .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
-//            VStack {
-//                ZStack {
-//                    Color.blue // Background extends under the safe area
-//                        .ignoresSafeArea()
-//
-//                    //                GeometryReader { geometry in
-//                    VStack {
-//                        Text("This text respects the safe area")
-//                            .padding()
-//                            .background(Color.white)
-//                            .cornerRadius(10)
-//                        //                            .padding(.top, geometry.safeAreaInsets.top) // Restore top safe area
-//
-//                        Spacer()
-//                    }
-//                    //                    .frame(width: geometry.size.width, height: geometry.size.height)
-//                    //                }
-//                }
-//            }
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
