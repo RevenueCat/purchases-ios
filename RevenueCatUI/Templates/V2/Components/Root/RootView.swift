@@ -20,8 +20,8 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RootView: View {
 
-    @Environment(\.safeAreaInsets)
-    private var safeAreaInsets
+//    @Environment(\.safeAreaInsets)
+//    private var safeAreaInsets
 
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
@@ -44,7 +44,7 @@ struct RootView: View {
                     additionalPadding: EdgeInsets(
                         top: 0,
                         leading: 0,
-                        bottom: safeAreaInsets.bottom,
+                        bottom: 0,
                         trailing: 0
                     )
                 )
