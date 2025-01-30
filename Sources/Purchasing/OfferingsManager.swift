@@ -294,7 +294,7 @@ private extension OfferingsManager {
         productIdentifiers: Set<String>,
         fromResponse response: OfferingsResponse
     ) -> Set<StoreProduct> {
-        let packagesByProductID = response.packages.dictionaryWithKeys { $0.platformProductIdentifier }
+        let packagesByProductID = response.packages.dictionaryAllowingDuplicateKeys { $0.platformProductIdentifier }
         let products = productIdentifiers.map { identifier -> StoreProduct in
             let productType = self.mockProductType(from: packagesByProductID[identifier],
                                                    productIdentifier: identifier)
