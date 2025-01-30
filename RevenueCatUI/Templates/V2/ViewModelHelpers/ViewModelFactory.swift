@@ -28,7 +28,7 @@ struct ViewModelFactory {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider
     ) throws -> RootViewModel {
-        let firstImageInfo = self.findImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+        let firstImageInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
@@ -331,15 +331,20 @@ struct ViewModelFactory {
         )
     }
 
-    // swiftlint:disable cyclomatic_complexity
-    private func findImageViewIfItsTheFirst(
+    // swiftlint:disable cyclomatic_complexity function_body_length
+    private func findFullWidthImageViewIfItsTheFirst(
         _ component: PaywallComponent
     ) -> RootViewModel.FirstImageInfo? {
         switch component {
         case .text:
             return nil
         case .image(let image):
-            return .init(imageComponent: image, parentZStack: nil)
+            switch image.size.width {
+            case .fill:
+                return .init(imageComponent: image, parentZStack: nil)
+            case .fit, .fixed:
+                return nil
+            }
         case .icon:
             return nil
         case .stack(let stack):
@@ -347,7 +352,7 @@ struct ViewModelFactory {
                 return nil
             }
 
-            let imageInfo = self.findImageViewIfItsTheFirst(first)
+            let imageInfo = self.findFullWidthImageViewIfItsTheFirst(first)
 
             switch stack.dimension {
             case .vertical, .horizontal:
@@ -366,7 +371,7 @@ struct ViewModelFactory {
             guard let first = package.stack.components.first else {
                 return nil
             }
-            return self.findImageViewIfItsTheFirst(first)
+            return self.findFullWidthImageViewIfItsTheFirst(first)
         case .purchaseButton:
             return nil
         case .stickyFooter:
@@ -377,7 +382,7 @@ struct ViewModelFactory {
             guard let first = tabs.tabs.first?.stack.components.first else {
                 return nil
             }
-            return self.findImageViewIfItsTheFirst(first)
+            return self.findFullWidthImageViewIfItsTheFirst(first)
         case .tabControl:
             return nil
         case .tabControlButton:

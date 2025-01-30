@@ -23,7 +23,7 @@ struct ComponentsView: View {
     private var safeAreaInsets
 
     let componentViewModels: [PaywallComponentViewModel]
-    let ignoreSafeArea: Bool
+    let applySafeAreaInsetForZStackChildren: Bool
     private let onDismiss: () -> Void
 
     init(
@@ -32,7 +32,7 @@ struct ComponentsView: View {
         onDismiss: @escaping () -> Void
     ) {
         self.componentViewModels = componentViewModels
-        self.ignoreSafeArea = ignoreSafeArea
+        self.applySafeAreaInsetForZStackChildren = ignoreSafeArea
         self.onDismiss = onDismiss
     }
 
@@ -77,10 +77,11 @@ struct ComponentsView: View {
                 }
             }
             // Applies a top padding to mimmic safe area insets
-            // This was designed to be applied to the 
-            .applyIf(index > 0 && self.ignoreSafeArea) { view in
-                view.padding(.top, self.safeAreaInsets.top)
-            }
+            // This was designed to be applied to for ZStacks when
+            // they have a full width header image and are the first
+            // component in the paywall. This will keep the other
+            // components from going into the safe area.
+            .padding(.top, (self.applySafeAreaInsetForZStackChildren && index > 0) ? self.safeAreaInsets.top : 0)
         }
     }
 
