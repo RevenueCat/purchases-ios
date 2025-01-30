@@ -286,6 +286,7 @@ struct ViewModelFactory {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
         packageValidator: PackageValidator,
