@@ -6,7 +6,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class IdentityManagerTests: TestCase {
 
@@ -17,10 +17,12 @@ class IdentityManagerTests: TestCase {
 
     private var mockIdentityAPI: MockIdentityAPI!
     private var mockCustomerInfo: CustomerInfo!
+    private var mockSystemInfo: MockSystemInfo!
 
     @discardableResult
     private func create(appUserID: String?) -> IdentityManager {
         return IdentityManager(deviceCache: self.mockDeviceCache,
+                               systemInfo: self.mockSystemInfo,
                                backend: self.mockBackend,
                                customerInfoManager: self.mockCustomerInfoManager,
                                attributeSyncing: self.mockAttributeSyncing,
@@ -33,9 +35,9 @@ class IdentityManagerTests: TestCase {
         self.mockIdentityAPI = try XCTUnwrap(mockBackend.identity as? MockIdentityAPI)
         self.mockCustomerInfo = .emptyInfo
 
-        let systemInfo = MockSystemInfo(finishTransactions: false)
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
+        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         self.mockCustomerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
             operationDispatcher: MockOperationDispatcher(),
@@ -43,7 +45,7 @@ class IdentityManagerTests: TestCase {
             backend: MockBackend(),
             transactionFetcher: MockStoreKit2TransactionFetcher(),
             transactionPoster: MockTransactionPoster(),
-            systemInfo: systemInfo
+            systemInfo: self.mockSystemInfo
         )
         self.mockAttributeSyncing = MockAttributeSyncing()
     }
@@ -389,6 +391,64 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache
             .invokedClearLatestNetworkAndAdvertisingIdsSentParameters?.appUserID) == "test-user-id"
         expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
+    }
+
+    // MARK: - UI Preview mode user
+
+    func testConfigureWithUIPreviewModeUsesPreviewModeUserID() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+
+        expect(manager.currentAppUserID) == IdentityManager.uiPreviewModeAppUserID
+        expect(manager.currentUserIsAnonymous) == false
+    }
+
+    func testConfigureWithUIPreviewModeIgnoresProvidedAppUserID() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: "test_user")
+
+        expect(manager.currentAppUserID) == IdentityManager.uiPreviewModeAppUserID
+        expect(manager.currentUserIsAnonymous) == false
+    }
+
+    func testConfigureWithoutUIPreviewModeUsesNormalAppUserID() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: false)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: "test_user")
+
+        expect(manager.currentAppUserID) == "test_user"
+        expect(manager.currentUserIsAnonymous) == false
+    }
+
+    func testConfigureWithoutUIPreviewModeUsesAnonymousIDWhenNoUserProvided() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: false)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+
+        expect(manager.currentAppUserID) != IdentityManager.uiPreviewModeAppUserID
+        assertCorrectlyIdentifiedWithAnonymous(manager)
     }
 }
 
