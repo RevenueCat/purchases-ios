@@ -39,7 +39,7 @@ struct OfferingButton: View {
 }
 
 private extension OfferingButton {
-    private func showPaywall(mode: PaywallViewMode = .default) {
+    private func showPaywall(mode: PaywallTesterViewMode = .sheet) {
         Task { @MainActor in
             await viewModel.getAndShowPaywallForID(id: responseOffering.id, mode: mode)
             selectedItemID = responseOffering.id
@@ -109,7 +109,7 @@ private extension OfferingButton {
 
     @MainActor @ViewBuilder
     private func contextMenuItems() -> some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+        ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
             self.showPaywallMenuButton(for: mode)
         }
         if let appID = viewModel.singleApp?.id {
@@ -118,7 +118,7 @@ private extension OfferingButton {
         }
     }
     
-    private func showPaywallMenuButton(for selectedMode: PaywallViewMode) -> some View {
+    private func showPaywallMenuButton(for selectedMode: PaywallTesterViewMode) -> some View {
         Button {
             showPaywall(mode: selectedMode)
         } label: {

@@ -22,7 +22,7 @@ struct OfferingPaywall: Hashable {
 
 struct PresentedPaywall: Hashable {
     var offering: Offering
-    var mode: PaywallViewMode
+    var mode: PaywallTesterViewMode
     var responseOfferingID: String
 }
 
@@ -55,6 +55,9 @@ final class OfferingsPaywallsViewModel: ObservableObject {
 
     @Published
     var presentedPaywall: PresentedPaywall?
+
+    @Published
+    var presentedPaywallCover: PresentedPaywall?
 
     @Published
     var listData: PaywallsData? {
@@ -99,7 +102,7 @@ final class OfferingsPaywallsViewModel: ObservableObject {
         }
     }
 
-    func getAndShowPaywallForID(id: String, mode: PaywallViewMode = .default) async {
+    func getAndShowPaywallForID(id: String, mode: PaywallTesterViewMode = .default) async {
 
         await showPaywallForID(id, mode: mode)
 
@@ -150,21 +153,31 @@ private extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
-    private func showPaywallForID(_ id: String, mode: PaywallViewMode = .default) {
+    private func showPaywallForID(_ id: String, mode: PaywallTesterViewMode = .sheet) {
+        let currentPaywall = self.presentedPaywall ?? self.presentedPaywallCover
+
         switch self.state {
         case .notloaded:
             Self.logger.log(level: .info, "Could not show paywall for id \(id), data not loaded.")
             self.presentedPaywall = nil
+            self.presentedPaywallCover = nil
         case .success:
             if let newRCOffering = listData?.offeringsAndPaywalls.first(where: { $0.offering.id == id })?.rcOffering {
-                if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
-                    self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
+                if currentPaywall == nil || currentPaywall?.offering.paywall != newRCOffering.paywall {
+                    switch mode {
+                    case .fullScreen:
+                        self.presentedPaywallCover = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
+                    case .sheet, .footer, .condensedFooter:
+                        self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
+                    }
+
                 }
             }
         case .error(let error):
             Self.logger.log(level: .error, "Could not find a paywall for id \(id), error: \(error)")
             self.error = error
             self.presentedPaywall = nil
+            self.presentedPaywallCover = nil
         }
     }
 
