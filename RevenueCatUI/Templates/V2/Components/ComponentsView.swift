@@ -26,7 +26,11 @@ struct ComponentsView: View {
     let ignoreSafeArea: Bool
     private let onDismiss: () -> Void
 
-    init(componentViewModels: [PaywallComponentViewModel], ignoreSafeArea: Bool = false, onDismiss: @escaping () -> Void) {
+    init(
+        componentViewModels: [PaywallComponentViewModel],
+        ignoreSafeArea: Bool = false,
+        onDismiss: @escaping () -> Void
+    ) {
         self.componentViewModels = componentViewModels
         self.ignoreSafeArea = ignoreSafeArea
         self.onDismiss = onDismiss

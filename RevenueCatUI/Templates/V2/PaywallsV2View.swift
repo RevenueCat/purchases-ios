@@ -261,14 +261,15 @@ private struct LoadedPaywallsV2View: View {
         }
     }
 
-    func isFirstViewAnImage(_ viewModels: [PaywallComponentViewModel]) -> Bool {
+    // swiftlint:disable cyclomatic_complexity
+    private func isFirstViewAnImage(_ viewModels: [PaywallComponentViewModel]) -> Bool {
         guard let first = viewModels.first else {
             return false
         }
 
         switch first {
         case .root(let root):
-            return isFirstViewAnImage(root.stackViewModel.viewModels)
+            return self.isFirstViewAnImage(root.stackViewModel.viewModels)
         case .text:
             return false
         case .image:
@@ -276,11 +277,11 @@ private struct LoadedPaywallsV2View: View {
         case .icon:
             return false
         case .stack(let stack):
-            return isFirstViewAnImage(stack.viewModels)
+            return self.isFirstViewAnImage(stack.viewModels)
         case .button:
             return false
-        case .package(_):
-            return false
+        case .package(let package):
+            return self.isFirstViewAnImage(package.stackViewModel.viewModels)
         case .purchaseButton:
             return false
         case .stickyFooter:
@@ -288,7 +289,10 @@ private struct LoadedPaywallsV2View: View {
         case .timeline:
             return false
         case .tabs(let tabs):
-            return false
+            guard let firstTab = tabs.tabViewModels.first else {
+                return false
+            }
+            return self.isFirstViewAnImage(firstTab.stackViewModel.viewModels)
         case .tabControl:
             return false
         case .tabControlButton:

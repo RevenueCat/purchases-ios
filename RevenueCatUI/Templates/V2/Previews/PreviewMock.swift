@@ -86,6 +86,7 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
+            .environment(\.safeAreaInsets, EdgeInsets())
     }
 
 }
