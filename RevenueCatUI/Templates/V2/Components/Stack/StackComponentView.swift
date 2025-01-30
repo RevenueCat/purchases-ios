@@ -21,9 +21,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
-    @Environment(\.safeAreaInsets)
-    private var safeAreaInsets
-
     @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -96,7 +93,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: true,
+                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -570,6 +567,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
+                firstImageInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider
@@ -580,6 +578,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
+                firstImageInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider

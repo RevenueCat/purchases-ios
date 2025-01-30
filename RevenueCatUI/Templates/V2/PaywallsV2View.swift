@@ -26,7 +26,7 @@ private struct PaywallState {
     let componentsConfig: PaywallComponentsData.PaywallComponentsConfig
     let viewModelFactory: ViewModelFactory
     let packages: [Package]
-    let componentViewModel: PaywallComponentViewModel
+    let rootViewModel: RootViewModel
     let showZeroDecimalPlacePrices: Bool
 
 }
@@ -240,12 +240,15 @@ private struct LoadedPaywallsV2View: View {
         GeometryReader { proxy in
             VStack(spacing: 0) {
                 ComponentsView(
-                    componentViewModels: [paywallState.componentViewModel],
+                    componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss
                 )
             }
-            // Need to be smart about when to ignore and when not to
-            .applyIf(self.isFirstViewAnImage([paywallState.componentViewModel]), apply: { view in
+            // If the first view in the first stack is an image,
+            // we will ignore safe area pass the safe area insets in to environment
+            // If the image is in a ZStack, the ZStack will push non-images
+            // down with the inset
+            .applyIf(paywallState.rootViewModel.firstImageInfo != nil, apply: { view in
                 view
                     .environment(\.safeAreaInsets, proxy.safeAreaInsets)
                     .edgesIgnoringSafeArea(.top)
@@ -258,47 +261,6 @@ private struct LoadedPaywallsV2View: View {
                     .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
             )
             .edgesIgnoringSafeArea(.bottom)
-        }
-    }
-
-    // swiftlint:disable cyclomatic_complexity
-    private func isFirstViewAnImage(_ viewModels: [PaywallComponentViewModel]) -> Bool {
-        guard let first = viewModels.first else {
-            return false
-        }
-
-        switch first {
-        case .root(let root):
-            return self.isFirstViewAnImage(root.stackViewModel.viewModels)
-        case .text:
-            return false
-        case .image:
-            return true
-        case .icon:
-            return false
-        case .stack(let stack):
-            return self.isFirstViewAnImage(stack.viewModels)
-        case .button:
-            return false
-        case .package(let package):
-            return self.isFirstViewAnImage(package.stackViewModel.viewModels)
-        case .purchaseButton:
-            return false
-        case .stickyFooter:
-            return false
-        case .timeline:
-            return false
-        case .tabs(let tabs):
-            guard let firstTab = tabs.tabViewModels.first else {
-                return false
-            }
-            return self.isFirstViewAnImage(firstTab.stackViewModel.viewModels)
-        case .tabControl:
-            return false
-        case .tabControlButton:
-            return false
-        case .tabControlToggle:
-            return false
         }
     }
 
@@ -357,7 +319,7 @@ fileprivate extension PaywallsV2View {
                     componentsConfig: componentsConfig,
                     viewModelFactory: factory,
                     packages: packages,
-                    componentViewModel: .root(root),
+                    rootViewModel: root,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             )

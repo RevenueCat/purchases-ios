@@ -75,9 +75,11 @@ struct ComponentsView: View {
                 case .tabControlToggle(let viewModel):
                     TabControlToggleComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 }
-            }.applyIf(index > 0 && self.ignoreSafeArea) { view in
-                view
-                    .padding(.top, self.safeAreaInsets.top)
+            }
+            // Applies a top padding to mimmic safe area insets
+            // This was designed to be applied to the 
+            .applyIf(index > 0 && self.ignoreSafeArea) { view in
+                view.padding(.top, self.safeAreaInsets.top)
             }
         }
     }
