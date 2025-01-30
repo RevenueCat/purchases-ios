@@ -66,6 +66,9 @@ extension OfferingsResponse {
         )
     }
 
+    var packages: [Offering.Package] {
+        return self.offerings.flatMap { $0.packages }
+    }
 }
 
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}

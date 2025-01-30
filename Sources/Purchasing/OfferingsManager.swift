@@ -192,7 +192,7 @@ private extension OfferingsManager {
             return
         }
 
-        self.fetchProducts(withIdentifiers: productIdentifiers) { result in
+        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
@@ -275,28 +275,33 @@ private extension OfferingsManager {
         }
     }
 
-    private func fetchProducts(withIdentifiers identifiers: Set<String>, completion: @escaping ProductsManagerType.Completion) {
+    private func fetchProducts(
+        withIdentifiers identifiers: Set<String>,
+        fromResponse response: OfferingsResponse,
+        completion: @escaping ProductsManagerType.Completion
+    ) {
         if self.systemInfo.dangerousSettings.uiPreviewMode {
-            let mockProducts = self.createMockProducts(productIdentifiers: identifiers)
+            let mockProducts = self.createMockProducts(productIdentifiers: identifiers, fromResponse: response)
             completion(.success(mockProducts))
         } else {
             self.productsManager.products(withIdentifiers: identifiers, completion: completion)
         }
     }
 
-    private func createMockProducts(productIdentifiers: Set<String>) -> Set<StoreProduct> {
-        let productTypes = [
-            (type: "weekly", price: 1.99, period: SubscriptionPeriod(value: 1, unit: .week)),
-            (type: "monthly", price: 5.99, period: SubscriptionPeriod(value: 1, unit: .month)),
-            (type: "yearly", price: 59.99, period: SubscriptionPeriod(value: 1, unit: .year)),
-            (type: "lifetime", price: 199.99, period: nil)
-        ]
+    // MARK: - Mocks for UI Preview mode
 
-        let products = productIdentifiers.enumerated().map { index, identifier -> StoreProduct in
-            let productType = productTypes[index % productTypes.count]
+    private func createMockProducts(
+        productIdentifiers: Set<String>,
+        fromResponse response: OfferingsResponse
+    ) -> Set<StoreProduct> {
+        let packagesByProductID = response.packages.dictionaryWithKeys { $0.platformProductIdentifier }
+        let products = productIdentifiers.map { identifier -> StoreProduct in
+            let productType = self.mockProductType(from: packagesByProductID[identifier],
+                                                   productIdentifier: identifier)
 
             let introductoryDiscount: TestStoreProductDiscount? = {
-                guard productType.period != nil && Bool.random() else { return nil }
+                // For mocking purposes: all yearly subscriptions have a 1-week free trial
+                guard productType.period?.unit == .year else { return nil }
                 return TestStoreProductDiscount(
                     identifier: "intro",
                     price: 0,
@@ -327,6 +332,38 @@ private extension OfferingsManager {
         return Set(products)
     }
 
+    private func mockProductType(
+        from package: OfferingsResponse.Offering.Package?,
+        productIdentifier: String
+    ) -> ProductTypeMock {
+        if let package,
+           let mockProductType = ProductTypeMock(packageType: Package.packageType(from: package.identifier)) {
+            return mockProductType
+        } else {
+            // Try to guess basing on the product identifier
+            let id = productIdentifier.lowercased()
+
+            let packageType: PackageType
+            if id.contains("lifetime") || id.contains("forever") || id.contains("permanent") {
+                packageType = .lifetime
+            } else if id.contains("annual") || id.contains("year") {
+                packageType = .annual
+            } else if id.contains("sixmonth") || id.contains("6month") {
+                packageType = .sixMonth
+            } else if id.contains("threemonth") || id.contains("3month") || id.contains("quarter") {
+                packageType = .threeMonth
+            } else if id.contains("twomonth") || id.contains("2month") {
+                packageType = .twoMonth
+            } else if id.contains("month") {
+                packageType = .monthly
+            } else if id.contains("week") {
+                packageType = .weekly
+            } else {
+                packageType = .custom
+            }
+            return ProductTypeMock(packageType: packageType) ?? .default
+        }
+    }
 }
 
 extension OfferingsManager {
@@ -453,4 +490,54 @@ extension OfferingsManager.Error: CustomNSError {
         }
     }
 
+}
+
+/// For UI Preview mode only.
+private struct ProductTypeMock {
+    let type: String
+    let price: Double
+    let period: SubscriptionPeriod?
+
+    static let `default` = ProductTypeMock(type: "lifetime", price: 249.99, period: nil)
+
+    private init(type: String, price: Double, period: SubscriptionPeriod?) {
+        self.type = type
+        self.price = price
+        self.period = period
+    }
+
+    init?(packageType: PackageType) {
+        switch packageType {
+        case .lifetime:
+            self = ProductTypeMock(type: "lifetime",
+                                   price: 199.99,
+                                   period: nil)
+        case .annual:
+            self = ProductTypeMock(type: "yearly",
+                                   price: 59.99,
+                                   period: SubscriptionPeriod(value: 1, unit: .year))
+        case .sixMonth:
+            self = ProductTypeMock(type: "6 months",
+                                   price: 30.99,
+                                   period: SubscriptionPeriod(value: 3, unit: .month))
+        case .threeMonth:
+            self = ProductTypeMock(type: "3 months",
+                                   price: 15.99,
+                                   period: SubscriptionPeriod(value: 3, unit: .month))
+        case .twoMonth:
+            self = ProductTypeMock(type: "monthly",
+                                   price: 11.49,
+                                   period: SubscriptionPeriod(value: 2, unit: .month))
+        case .monthly:
+            self = ProductTypeMock(type: "monthly",
+                                   price: 5.99,
+                                   period: SubscriptionPeriod(value: 1, unit: .month))
+        case .weekly:
+            self = ProductTypeMock(type: "weekly",
+                                   price: 1.99,
+                                   period: SubscriptionPeriod(value: 1, unit: .week))
+        case .unknown, .custom:
+            return nil
+        }
+    }
 }
