@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
@@ -289,18 +289,14 @@ struct ViewModelFactory {
             )
         }
 
-        let badgeViewModels = try component.badge.flatMap { badge in
-            [
-                PaywallComponentViewModel.stack(
-                    try toStackViewModel(
-                        component: badge.stack,
-                        packageValidator: packageValidator,
-                        localizationProvider: localizationProvider,
-                        uiConfigProvider: uiConfigProvider,
-                        offering: offering
-                    )
-                )
-            ]
+        let badgeViewModels = try component.badge?.stack.components.map { component in
+            try self.toViewModel(
+                component: component,
+                packageValidator: packageValidator,
+                offering: offering,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
+            )
         } ?? []
 
         return try StackComponentViewModel(

@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class StackComponent: PaywallComponentBase {
@@ -25,6 +23,7 @@ public extension PaywallComponent {
         public let size: Size
         public let spacing: CGFloat?
         public let backgroundColor: ColorScheme?
+        public let background: Background?
         public let dimension: Dimension
         public let padding: Padding
         public let margin: Padding
@@ -41,6 +40,7 @@ public extension PaywallComponent {
             size: Size = .init(width: .fill, height: .fit),
             spacing: CGFloat? = nil,
             backgroundColor: ColorScheme? = nil,
+            background: Background? = nil,
             padding: Padding = .zero,
             margin: Padding = .zero,
             shape: Shape? = nil,
@@ -53,6 +53,7 @@ public extension PaywallComponent {
             self.size = size
             self.spacing = spacing
             self.backgroundColor = backgroundColor
+            self.background = background
             self.type = .stack
             self.dimension = dimension
             self.padding = padding
@@ -69,6 +70,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(spacing)
             hasher.combine(backgroundColor)
+            hasher.combine(background)
             hasher.combine(dimension)
             hasher.combine(padding)
             hasher.combine(margin)
@@ -85,6 +87,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.spacing == rhs.spacing &&
                    lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.background == rhs.background &&
                    lhs.dimension == rhs.dimension &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
@@ -96,12 +99,13 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialStackComponent: PartialComponent {
+    final class PartialStackComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let size: Size?
         public let spacing: CGFloat?
         public let backgroundColor: ColorScheme?
+        public let background: Background?
         public let dimension: Dimension?
         public let padding: Padding?
         public let margin: Padding?
@@ -116,6 +120,7 @@ public extension PaywallComponent {
             size: Size? = nil,
             spacing: CGFloat? = nil,
             backgroundColor: ColorScheme? = nil,
+            background: Background? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
             shape: Shape? = nil,
@@ -127,6 +132,7 @@ public extension PaywallComponent {
             self.size = size
             self.spacing = spacing
             self.backgroundColor = backgroundColor
+            self.background = background
             self.dimension = dimension
             self.padding = padding
             self.margin = margin
@@ -141,6 +147,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(spacing)
             hasher.combine(backgroundColor)
+            hasher.combine(background)
             hasher.combine(dimension)
             hasher.combine(padding)
             hasher.combine(margin)
@@ -155,6 +162,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.spacing == rhs.spacing &&
                    lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.background == rhs.background &&
                    lhs.dimension == rhs.dimension &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
@@ -166,5 +174,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

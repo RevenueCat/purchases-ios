@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     enum Dimension: Codable, Sendable, Hashable {
@@ -90,5 +88,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

@@ -16,7 +16,7 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BadgeModifier: ViewModifier {
@@ -136,13 +136,13 @@ fileprivate extension View {
 
     // Helper to calculate the position of an overlaid badge to place it at the center of the parent stack's border
     private func effetiveYTranslationForOverlaidBadge(badge: BadgeModifier.BadgeInfo) -> CGFloat {
-        return switch badge.alignment {
+        switch badge.alignment {
         case .top, .topLeading, .topTrailing:
-            -(badge.stackBorder?.width ?? 0)/2
+            return -(badge.stackBorder?.width ?? 0)/2
         case .bottom, .bottomLeading, .bottomTrailing:
-            +(badge.stackBorder?.width ?? 0)/2
+            return +(badge.stackBorder?.width ?? 0)/2
         default:
-            0
+            return 0
         }
     }
 

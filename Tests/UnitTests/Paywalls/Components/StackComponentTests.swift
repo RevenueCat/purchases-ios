@@ -2,7 +2,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 class StackComponentTests: TestCase {
 
@@ -74,6 +74,15 @@ class StackComponentTests: TestCase {
                         "light": {
                             "type": "hex",
                             "value": "#11D483FF"
+                        }
+                    },
+                    "background": {
+                        "type": "color",
+                        "value": {
+                            "light": {
+                                "type": "hex",
+                                "value": "#11D483FF"
+                            }
                         }
                     },
                     "badge": null,

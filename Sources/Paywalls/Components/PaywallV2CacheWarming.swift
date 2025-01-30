@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 extension PaywallComponentsData {
 
     var allImageURLs: [URL] {
@@ -145,5 +143,3 @@ private extension PaywallComponent.ThemeImageUrls {
     }
 
 }
-
-#endif

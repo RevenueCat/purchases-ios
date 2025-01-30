@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class TabControlButtonComponent: PaywallComponentBase {
@@ -216,7 +214,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialTabsComponent: PartialComponent {
+    final class PartialTabsComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let size: Size?
@@ -271,5 +269,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

@@ -2,7 +2,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 class MaskShapePropertyTests: TestCase {
 
@@ -29,19 +29,6 @@ class MaskShapePropertyTests: TestCase {
                 "bottom_leading": 5,
                 "bottom_trailing": 5
             }
-        }
-        """
-
-        _ = try JSONDecoder.default.decode(
-            PaywallComponent.MaskShape.self,
-            from: json.data(using: .utf8)!
-        )
-    }
-
-    func testPill() throws {
-        let json = """
-        {
-            "type": "pill",
         }
         """
 

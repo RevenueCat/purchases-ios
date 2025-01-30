@@ -50,7 +50,8 @@ struct ManageSubscriptionButton: View {
     let path: CustomerCenterConfigData.HelpPath
     @ObservedObject var viewModel: ManageSubscriptionsViewModel
 
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
 
     var body: some View {
         AsyncButton(action: {

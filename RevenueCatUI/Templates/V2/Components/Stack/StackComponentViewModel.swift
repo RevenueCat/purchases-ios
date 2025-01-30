@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
@@ -64,6 +64,7 @@ class StackComponentViewModel {
             size: partial?.size ?? self.component.size,
             spacing: partial?.spacing ?? self.component.spacing,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            background: partial?.background ?? self.component.background,
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
             shape: partial?.shape ?? self.component.shape,
@@ -138,6 +139,7 @@ struct StackComponentStyle {
         size: PaywallComponent.Size,
         spacing: CGFloat?,
         backgroundColor: PaywallComponent.ColorScheme?,
+        background: PaywallComponent.Background?,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
         shape: PaywallComponent.Shape?,
@@ -149,7 +151,8 @@ struct StackComponentStyle {
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle ??
+            backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape

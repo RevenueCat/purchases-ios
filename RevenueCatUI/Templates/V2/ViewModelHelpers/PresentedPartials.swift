@@ -15,7 +15,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {
@@ -121,7 +121,7 @@ extension Array {
     /// - Parameter convert: Conversion function to apply
     /// - Returns: Presented overrides with converted components
     func toPresentedOverrides<
-        T: PaywallComponent.PartialComponent,
+        T: PaywallPartialComponent,
         P: PresentedPartial
     >(
         convert: (T) throws -> P
