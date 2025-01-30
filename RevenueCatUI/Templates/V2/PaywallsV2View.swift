@@ -244,16 +244,16 @@ private struct LoadedPaywallsV2View: View {
                     onDismiss: self.onDismiss
                 )
             }
+            // Used for header image and sticky footer
+            .environment(\.safeAreaInsets, proxy.safeAreaInsets)
             // If the first view in the first stack is an image,
             // we will ignore safe area pass the safe area insets in to environment
             // If the image is in a ZStack, the ZStack will push non-images
             // down with the inset
             .applyIf(paywallState.rootViewModel.firstImageInfo != nil, apply: { view in
                 view
-                    .environment(\.safeAreaInsets, proxy.safeAreaInsets)
                     .edgesIgnoringSafeArea(.top)
             })
-            // This is normal
             .environmentObject(self.selectedPackageContext)
             .frame(maxHeight: .infinity, alignment: .topLeading)
             .backgroundStyle(
