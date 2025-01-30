@@ -22,6 +22,8 @@ enum IdentityStrings {
 
     case logging_in_with_static_string
 
+    case logging_in_with_preview_mode_appuserid
+
     case login_success
 
     case log_out_called_for_user
@@ -58,6 +60,8 @@ extension IdentityStrings: LogMessage {
             return "The appUserID passed to logIn is a constant string known at compile time. " +
             "This is likely a programmer error. This ID is used to identify the current user. " +
             "See https://docs.revenuecat.com/docs/user-ids for more information."
+        case .logging_in_with_preview_mode_appuserid:
+            return "Using the default preview mode appUserID. The passed appUserID was ignored."
         case .login_success:
             return "Log in successful"
         case .log_out_called_for_user:

@@ -54,7 +54,10 @@ fileprivate extension View {
         case .color(let color):
             switch color.effectiveColor(for: colorScheme) {
             case .hex:
-                self.background(color.toDynamicColor())
+                self.background(
+                    color.toDynamicColor()
+                        .edgesIgnoringSafeArea(.all)
+                )
             case .linear(let degrees, _):
                 self.background {
                     GradientView(
@@ -62,6 +65,7 @@ fileprivate extension View {
                         darkGradient: color.dark?.toGradient(),
                         gradientStyle: .linear(degrees)
                     )
+                    .edgesIgnoringSafeArea(.all)
                 }
             case .radial:
                 self.background {
@@ -70,6 +74,7 @@ fileprivate extension View {
                         darkGradient: color.dark?.toGradient(),
                         gradientStyle: .radial
                     )
+                    .edgesIgnoringSafeArea(.all)
                 }
             }
         case .image(let imageInfo):
@@ -85,6 +90,7 @@ fileprivate extension View {
                         .scaledToFill()
                         .ignoresSafeArea()
                 }
+                .edgesIgnoringSafeArea(.all)
             }
         }
     }
