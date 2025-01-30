@@ -237,21 +237,79 @@ private struct LoadedPaywallsV2View: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ComponentsView(
-                componentViewModels: [paywallState.componentViewModel],
-                onDismiss: self.onDismiss
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                ComponentsView(
+                    componentViewModels: [paywallState.componentViewModel],
+                    onDismiss: self.onDismiss
+                )
+            }
+            // Need to be smart about when to ignore and when not to
+            .applyIf(self.isFirstViewAnImage([paywallState.componentViewModel]), apply: { view in
+                view
+                    .environment(\.safeAreaInsets, proxy.safeAreaInsets)
+                    .edgesIgnoringSafeArea(.top)
+            })
+            // This is normal
+            .environmentObject(self.selectedPackageContext)
+            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .backgroundStyle(
+                self.paywallState.componentsConfig.background
+                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
             )
+            .edgesIgnoringSafeArea(.bottom)
         }
-        .environmentObject(self.selectedPackageContext)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
-        .backgroundStyle(
-            self.paywallState.componentsConfig.background
-                .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
-        )
-        .edgesIgnoringSafeArea(.bottom)
     }
 
+    func isFirstViewAnImage(_ viewModels: [PaywallComponentViewModel]) -> Bool {
+        guard let first = viewModels.first else {
+            return false
+        }
+
+        switch first {
+        case .root(let root):
+            return isFirstViewAnImage(root.stackViewModel.viewModels)
+        case .text:
+            return false
+        case .image:
+            return true
+        case .icon:
+            return false
+        case .stack(let stack):
+            return isFirstViewAnImage(stack.viewModels)
+        case .button:
+            return false
+        case .package(_):
+            return false
+        case .purchaseButton:
+            return false
+        case .stickyFooter:
+            return false
+        case .timeline:
+            return false
+        case .tabs(let tabs):
+            return false
+        case .tabControl:
+            return false
+        case .tabControlButton:
+            return false
+        case .tabControlToggle:
+            return false
+        }
+    }
+
+}
+
+/// Custom EnvironmentKey for safe area insets
+private struct SafeAreaInsetsKey: EnvironmentKey {
+    static let defaultValue: EdgeInsets = EdgeInsets()
+}
+
+extension EnvironmentValues {
+    var safeAreaInsets: EdgeInsets {
+        get { self[SafeAreaInsetsKey.self] }
+        set { self[SafeAreaInsetsKey.self] = newValue }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -21,6 +21,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
+    @Environment(\.safeAreaInsets)
+    private var safeAreaInsets
+
     @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -91,7 +94,11 @@ struct StackComponentView: View {
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 ZStack(alignment: alignment.stackAlignment) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
+                    ComponentsView(
+                        componentViewModels: self.viewModel.viewModels,
+                        ignoreSafeArea: true,
+                        onDismiss: self.onDismiss
+                    )
                 }
                 .size(style.size)
             }
