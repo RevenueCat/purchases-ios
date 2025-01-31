@@ -11,7 +11,7 @@ import OHHTTPStubs
 import OHHTTPStubsSwift
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 /// Generic `ETagManager` type allows subclasses to use either `MockETagManager`
 /// or the real `ETagManager`.
@@ -1015,6 +1015,52 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         expect(headerPresent.value) == true
+    }
+
+    func testPassesUIPreviewModeHeaderCorrectlyWhenEnabled() {
+        let headerName = "X-UI-Preview-Mode"
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    dangerousSettings: .init(uiPreviewMode: true))
+        self.client = self.createClient(systemInfo)
+
+        let header: Atomic<String?> = nil
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "true"
+    }
+
+    func testDoesNotPassUIPreviewModeHeaderWhenDisabled() {
+        let headerName = "X-UI-Preview-Mode"
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    dangerousSettings: .init(uiPreviewMode: false))
+        self.client = self.createClient(systemInfo)
+
+        let header: Atomic<String?> = nil
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        stub(condition: isPath(request.path)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == nil
     }
 
     func testRequestsWithCustomEntitlementsSendHeader() {

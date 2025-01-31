@@ -152,6 +152,10 @@ class HTTPClient {
             headers["X-Custom-Entitlements-Computation"] = "\(true)"
         }
 
+        if self.systemInfo.dangerousSettings.uiPreviewMode {
+            headers["X-UI-Preview-Mode"] = "\(true)"
+        }
+
         return headers
     }
 
