@@ -16,7 +16,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -111,14 +111,14 @@ private enum MultiTierPreview {
                                     bottomLeading: 16,
                                     bottomTrailing: 20)),
             border: .init(color: .init(light: .hex("#cccccc")), width: 1),
-            overrides: .init(
-                states: .init(
-                    selected: .init(
-                        backgroundColor: .init(light: .hex("#ffdfdd")),
-                        border: .init(color: .init(light: .hex("#e89d89")), width: 1)
-                    )
-                )
-            )
+            overrides: [
+                .init(conditions: [
+                    .selected
+                ], properties: .init(
+                    backgroundColor: .init(light: .hex("#ffdfdd")),
+                    border: .init(color: .init(light: .hex("#e89d89")), width: 1)
+                ))
+            ]
         )
 
         return PaywallComponent.PackageComponent(
@@ -178,25 +178,25 @@ private enum MultiTierPreview {
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#e89d89"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#e89d89"))
+                                        ))
+                                    ]
                                 )
                             )
                         ),
@@ -210,25 +210,25 @@ private enum MultiTierPreview {
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#e89d89"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#e89d89"))
+                                        ))
+                                    ]
                                 )
                             )
                         )

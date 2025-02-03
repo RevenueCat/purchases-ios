@@ -14,7 +14,7 @@
 import Foundation
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ShadowModifier: ViewModifier {
@@ -38,57 +38,49 @@ struct ShadowModifier: ViewModifier {
 
     }
 
-    var shadow: ShadowInfo
+    let shadow: ShadowInfo?
+    let shape: (any Shape)?
 
     func body(content: Content) -> some View {
+        #if !os(watchOS)
+        if let shadow {
+            content
+                .background {
+                    GeometryReader { geometry in
+                        let rect = geometry.frame(in: .local)
+                        LayerShadowView(shape: shape ?? Rectangle(),
+                                        color: shadow.color,
+                                        xOffset: shadow.x,
+                                        yOffset: shadow.y,
+                                        blur: shadow.radius * 2,
+                                        spread: 0,
+                                        rect: rect)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+        } else {
+            content
+        }
+        #else
         content
-            .shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+        #endif
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
     func shadow(
-        shadow: ShadowModifier.ShadowInfo,
-        shape: some Shape
+        shadow: ShadowModifier.ShadowInfo?,
+        shape: (some Shape)?
     ) -> some View {
-        self.modifier(LayerShadowModifier(
-            shape: shape,
-            color: shadow.color,
-            xOffset: shadow.x,
-            yOffset: shadow.y,
-            blur: shadow.radius * 2,
-            spread: 0
+        self.modifier(ShadowModifier(
+            shadow: shadow,
+            shape: shape
         ))
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct LayerShadowModifier: ViewModifier {
-    let shape: any Shape
-    let color: Color
-    let xOffset: CGFloat
-    let yOffset: CGFloat
-    let blur: CGFloat
-    let spread: CGFloat
-
-    func body(content: Content) -> some View {
-        content
-            .background {
-                GeometryReader { geometry in
-                    let rect = geometry.frame(in: .local)
-                    LayerShadowView(shape: shape,
-                                    color: color,
-                                    xOffset: xOffset,
-                                    yOffset: yOffset,
-                                    blur: blur,
-                                    spread: spread,
-                                    rect: rect)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            }
-    }
-}
+#if !os(watchOS)
 
 // Using the .shadow() modifier to add a drop shadow in SwiftUI has multiple downsides:
 // - The shadow is applied to all children views (can be worked around with .compositingGroup())
@@ -167,6 +159,8 @@ private struct LayerShadowView: UIViewRepresentable {
         uiView.layer.mask = maskLayer
     }
 }
+
+#endif
 
 #if DEBUG
 

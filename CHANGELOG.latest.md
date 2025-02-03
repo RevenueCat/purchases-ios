@@ -1,46 +1,37 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Add convenience method for setting PostHog User ID (#4679) via Cody Kerns (@codykerns)
+* feat: Add paywall tester examples for simpler testing (#4710) via Facundo Menzella (@facumenzella)
 ### 🐞 Bugfixes
-* Do not lint deleted files (#4687) via Facundo Menzella (@facumenzella)
-* fix: Set https urls for packages (#4669) via Facundo Menzella (@facumenzella)
-* Add purchaseWithParams to PurchasesType (#4663) via Will Taylor (@fire-at-will)
-* fix: Fix versions for swift-doc, snapshot-testing & nimble (#4661) via Facundo Menzella (@facumenzella)
-* fix: Use custom label for CompatibilityContentUnavailableView (#4647) via Facundo Menzella (@facumenzella)
-* Deprecate misnamed purchase(params) function in Obj-C (#4645) via Will Taylor (@fire-at-will)
+* fix: PaywalTester successful archive  (#4736) via Facundo Menzella (@facumenzella)
+* fix: Avoid the use of return switch (#4733) via Facundo Menzella (@facumenzella)
+* Fix Font.TextStyle.caption3 Availabilities on tvOS (#4716) via Will Taylor (@fire-at-will)
 
 ## RevenueCatUI SDK
-### Customer Center
+### 🐞 Bugfixes
+* [Paywalls] Move SwiftUI previews for badge behind DEBUG flag (#4717) via Josh Holtz (@joshdholtz)
+### Paywallv2
 #### ✨ New Features
-* Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
-* Add support for `displayPurchaseHistoryLink` (#4686) via Facundo Menzella (@facumenzella)
-* Introduce `NavigationOptions` for custom navigation and `CustomerCenterNavigationLink` (#4682) via Facundo Menzella (@facumenzella)
+* [Paywalls V2] Remove/replace `PAYWALL_COMPONENTS` compiler flag and fix OS/platform compile issues (#4727) via Josh Holtz (@joshdholtz)
 #### 🐞 Bugfixes
-* Revert changes to public Customer Center API (#4681) via Cesar de la Vega (@vegaro)
-* Dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
+* [Paywalls V2] Fix footer positioning and bottom padding (#4746) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Ignore top safe area edges for image (#4744) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Support variable mapping (#4740) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Fix footer spacing issues (#4730) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] Fix paywalls badge rendering (#4719) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Revisit environment values for CustomerCenter (#4723) via Facundo Menzella (@facumenzella)
+* fix: Remove  buttonStyle for PurchaseHistory (#4724) via Facundo Menzella (@facumenzella)
+* fix: Show close button in ErrorView (#4711) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
-* fix: Add missing test for support in CustomerCenter (#4691) via Facundo Menzella (@facumenzella)
-* Use config response for `displayPurchaseHistoryLink` (#4690) via Facundo Menzella (@facumenzella)
-* Improve syntax for `CommonLocalizedString` (#4688) via Facundo Menzella (@facumenzella)
-* [Trusted Entitlements] Enable Trusted Entitlements by default (#4672) via Toni Rico (@tonidero)
-* [Trusted Entitlements] Do not clear CustomerInfo upon enabling Trusted Entitlements (#4671) via Toni Rico (@tonidero)
-* [Paywalls V2] Move image mask after sizing (#4675) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Add masking (concave, convex, circle) and padding/margin to image (#4674) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Use V1 default paywall when footers are used with V2 paywalls (#4667) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Added V1 fallback paywall into Paywall V2 error logic (#4666) via Josh Holtz (@joshdholtz)
-* Do not warn when using mac API keys (#4668) via Toni Rico (@tonidero)
-* [Paywalls V2] Prefetch low res images (#4658) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Convert Codable structs to classes (#4665) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Icon Component (#4655) via Josh Holtz (@joshdholtz)
-* [Paywalls] Tabs (multi-tier / toggle) component (#4648) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Fix compilation errors (#4657) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Accept number as font size for text (#4654) via Josh Holtz (@joshdholtz)
-* [Paywalls] Add Badge Modifier (#4596) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Updated outdated image component properties (#4649) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Updating UIConfig aliased colors to contain both light and dark (#4650) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Fix vstack and hstack growing size when fit (#4646) via Josh Holtz (@joshdholtz)
-* [Paywalls] Use CALayer-backed shadows and refactor Shape.swift (#4630) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Optionalizing padding, margin, and corner radius properties for safety (#4644) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Decode rectangle corners as optional (#4640) via Josh Holtz (@joshdholtz)
+* [Paywalls] Fix ZStack alignment (#4748) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Add full cover option to Paywalls Tester (#4745) via Josh Holtz (@joshdholtz)
+* UI Preview Mode: app user ID (#4725) via AJPallares (@ajpallares)
+* [Paywalls] Add background property to Stack component (#4743) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Do not embed the badge in an extra stack (#4742) via Mark Villacampa (@MarkVillacampa)
+* Add `uiPreviewMode` to `DangerousSettings` (#4714) via AJPallares (@ajpallares)
+* [Paywalls] Badge fixes (#4696) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Add Timeline component (#4713) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls V2] Rename `paywallFooter` to `originalTemplatePaywallFooter` (#4721) via Josh Holtz (@joshdholtz)
+* [Paywalls V2] New overrides structure (#4705) via Josh Holtz (@joshdholtz)

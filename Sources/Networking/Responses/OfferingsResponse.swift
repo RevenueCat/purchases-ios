@@ -32,10 +32,7 @@ struct OfferingsResponse {
         var paywall: PaywallData?
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
-
-        #if PAYWALL_COMPONENTS
         var paywallComponents: PaywallComponentsData?
-        #endif
 
     }
 
@@ -69,6 +66,9 @@ extension OfferingsResponse {
         )
     }
 
+    var packages: [Offering.Package] {
+        return self.offerings.flatMap { $0.packages }
+    }
 }
 
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}

@@ -18,6 +18,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct PurchaseHistoryView: View {
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
@@ -43,10 +44,11 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: activeSubscription)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
+                }
 
+                if !viewModel.inactiveSubscriptions.isEmpty {
                     Section(header: Text(
                         localization[.expiredSubscriptions]
                     )) {
@@ -56,7 +58,6 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -72,7 +73,6 @@ struct PurchaseHistoryView: View {
                             } label: {
                                 PurchaseLinkView(purchaseInfo: inactiveSubscription)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -107,6 +107,7 @@ struct PurchaseHistoryView: View {
         ) {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
+            .environment(\.localization, localization)
         }
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)

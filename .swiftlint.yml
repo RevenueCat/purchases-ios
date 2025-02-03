@@ -35,6 +35,13 @@ custom_rules:
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."
+    
+  return_switch_forbidden:
+    included: ".*\\.swift"
+    name: "Forbidden 'return switch' usage"
+    regex: '\breturn\s+switch\b'
+    message: "Inline 'return switch' is not allowed."
+    severity: error
 
 identifier_name:
   max_length: 

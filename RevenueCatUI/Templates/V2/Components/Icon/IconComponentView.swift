@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IconComponentView: View {
@@ -53,12 +53,12 @@ struct IconComponentView: View {
             .padding(style.padding)
             .shape(border: style.iconBackgroundBorder,
                    shape: style.iconBackgroundShape,
-                   shadow: style.iconBackgroundShadow,
                    background: style.iconBackgroundStyle,
                    uiConfigProvider: self.viewModel.uiConfigProvider)
-            .padding(style.padding)
+            .shadow(shadow: style.iconBackgroundShadow,
+                    shape: style.iconBackgroundShape?.toInsettableShape())
+            .padding(style.margin)
             .size(style.size)
-            .clipped()
         }
     }
 
@@ -153,7 +153,7 @@ struct IconComponentView_Previews: PreviewProvider {
                         ),
                         size: .init(width: .fixed(150), height: .fixed(150)),
                         padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
-                        margin: .zero,
+                        margin: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
                         color: PaywallComponent.ColorScheme(
                             light: .hex("#ff0000")
                         ),

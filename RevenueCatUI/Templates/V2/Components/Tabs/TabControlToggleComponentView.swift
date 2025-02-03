@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TabControlToggleComponentView: View {
@@ -83,7 +83,7 @@ private struct CustomToggleStyle: ToggleStyle {
                     .offset(x: configuration.isOn ? 10 : -10)
             )
             .onTapGesture {
-                withAnimation(.smooth(duration: 0.2)) {
+                withAnimation(.easeInOut(duration: 0.2)) {
                     configuration.isOn.toggle()
                 }
             }

@@ -34,8 +34,19 @@ struct PurchaseDetailView: View {
                     )
                 }
             } footer: {
-                if let ownership = viewModel.localizedOwnership {
-                    Text(ownership)
+                if let ownershipKey = viewModel.localizedOwnership {
+                    Text(localization[ownershipKey])
+                }
+            }
+
+            if !viewModel.debugItems.isEmpty {
+                Section(localization[.debugHeaderTitle]) {
+                    ForEach(viewModel.debugItems) { detailItem in
+                        CompatibilityLabeledContent(
+                            localization[detailItem.label],
+                            content: content(detailItem: detailItem)
+                        )
+                    }
                 }
             }
         }

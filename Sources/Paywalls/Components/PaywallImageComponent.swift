@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class ImageComponent: PaywallComponentBase {
@@ -86,7 +84,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialImageComponent: PartialComponent {
+    final class PartialImageComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let source: ThemeImageUrls?
@@ -156,5 +154,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

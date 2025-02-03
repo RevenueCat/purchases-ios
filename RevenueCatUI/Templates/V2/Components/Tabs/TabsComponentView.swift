@@ -16,7 +16,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TabControlContext: ObservableObject {
@@ -182,25 +182,25 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#3d6787"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#3d6787"))
+                                        ))
+                                    ]
                                 )
                             )
                         ),
@@ -220,25 +220,25 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#3d6787"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#3d6787"))
+                                        ))
+                                    ]
                                 )
                             )
                         ),
@@ -258,25 +258,25 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             text: "tab_3_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#3d6787"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#3d6787"))
+                                        ))
+                                    ]
                                 )
                             )
                         )
@@ -357,13 +357,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
@@ -372,13 +372,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                                                             topTrailing: 8,
                                                             bottomLeading: 8,
                                                             bottomTrailing: 8)),
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#3d6787"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#3d6787"))
+                                        ))
+                                    ]
                                 )
                             )
                         ),
@@ -392,13 +392,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
@@ -407,13 +407,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                                                             topTrailing: 8,
                                                             bottomLeading: 8,
                                                             bottomTrailing: 8)),
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#3d6787"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#3d6787"))
+                                        ))
+                                    ]
                                 )
                             )
                         ),
@@ -427,13 +427,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             text: "tab_3_button",
                                             color: .init(light: .hex("#000000")),
                                             size: .init(width: .fit, height: .fit),
-                                            overrides: .init(
-                                                states: .init(
-                                                    selected: .init(
-                                                        color: .init(light: .hex("#ffffff"))
-                                                    )
-                                                )
-                                            )
+                                            overrides: [
+                                                .init(conditions: [
+                                                    .selected
+                                                ], properties: .init(
+                                                    color: .init(light: .hex("#ffffff"))
+                                                ))
+                                            ]
                                         ))
                                     ],
                                     size: .init(width: .fit, height: .fit),
@@ -442,13 +442,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                                                             topTrailing: 8,
                                                             bottomLeading: 8,
                                                             bottomTrailing: 8)),
-                                    overrides: .init(
-                                        states: .init(
-                                            selected: .init(
-                                                backgroundColor: .init(light: .hex("#3d6787"))
-                                            )
-                                        )
-                                    )
+                                    overrides: [
+                                        .init(conditions: [
+                                            .selected
+                                        ], properties: .init(
+                                            backgroundColor: .init(light: .hex("#3d6787"))
+                                        ))
+                                    ]
                                 )
                             )
                         )

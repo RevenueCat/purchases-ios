@@ -36,6 +36,7 @@ class IdentityManager: CurrentUserProvider {
 
     init(
         deviceCache: DeviceCache,
+        systemInfo: SystemInfo,
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
         attributeSyncing: AttributeSyncing,
@@ -46,20 +47,25 @@ class IdentityManager: CurrentUserProvider {
         self.customerInfoManager = customerInfoManager
         self.attributeSyncing = attributeSyncing
 
-        if appUserID?.isEmpty == true {
-            Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
-        }
-
-        let appUserID = appUserID?.notEmptyOrWhitespaces
+        let finalAppUserID: String
+        if systemInfo.dangerousSettings.uiPreviewMode {
+            Logger.debug(Strings.identity.logging_in_with_preview_mode_appuserid)
+            finalAppUserID = Self.uiPreviewModeAppUserID
+        } else {
+            if appUserID?.isEmpty == true {
+                Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
+            }
+            finalAppUserID = appUserID?.notEmptyOrWhitespaces
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
             ?? Self.generateRandomID()
+        }
 
         Logger.user(Strings.identity.identifying_app_user_id)
 
-        deviceCache.cache(appUserID: appUserID)
+        deviceCache.cache(appUserID: finalAppUserID)
         deviceCache.cleanupSubscriberAttributes()
-        self.invalidateCachesIfNeeded(appUserID: appUserID)
+        self.invalidateCachesIfNeeded(appUserID: finalAppUserID)
     }
 
     var currentAppUserID: String {
@@ -100,6 +106,7 @@ class IdentityManager: CurrentUserProvider {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 
+    static let uiPreviewModeAppUserID: String = "$RC_PREVIEW_MODE_USER"
 }
 
 extension IdentityManager {

@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 struct UIConfigProvider {
 
@@ -22,6 +22,10 @@ struct UIConfigProvider {
 
     init(uiConfig: UIConfig) {
         self.uiConfig = uiConfig
+    }
+
+    var variableConfig: UIConfig.VariableConfig {
+        return self.uiConfig.variableConfig
     }
 
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {

@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 private typealias PresentedIconPartial = PaywallComponent.PartialIconComponent
 
@@ -155,10 +155,10 @@ private extension PaywallComponent.IconBackgroundShape {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
                 ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading,
-                    topRight: cornerRadiuses.topTrailing,
-                    bottomLeft: cornerRadiuses.bottomLeading,
-                    bottomRight: cornerRadiuses.bottomTrailing
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
                 )
             }
             return .rectangle(corners)

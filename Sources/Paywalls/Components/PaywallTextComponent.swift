@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class TextComponent: PaywallComponentBase {
@@ -148,7 +146,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialTextComponent: PartialComponent {
+    final class PartialTextComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let text: LocalizationKey?
@@ -251,5 +249,3 @@ private extension PaywallComponent.FontSize {
     }
 
 }
-
-#endif

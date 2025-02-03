@@ -10,6 +10,8 @@
 //  View+PresentPaywallFooter.swift
 //
 //  Created by Josh Holtz on 8/18/23.
+//
+// swiftlint:disable file_length
 
 import RevenueCat
 import SwiftUI
@@ -68,6 +70,7 @@ extension View {
         )
     }
 
+    // swiftlint:disable line_length
     /// Presents a ``PaywallFooterView`` at the bottom of a view that loads the `Offerings.current`.
     /// ```swift
     /// var body: some View {
@@ -78,7 +81,52 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    @available(iOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(tvOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(watchOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macCatalyst, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    // swiftlint:enable line_length
     public func paywallFooter(
+        condensed: Bool = false,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
+    ) -> some View {
+        return self.originalTemplatePaywallFooter(
+            condensed: condensed,
+            fonts: fonts,
+            myAppPurchaseLogic: myAppPurchaseLogic,
+            purchaseStarted: purchaseStarted,
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure
+        )
+    }
+
+    /// Presents a ``PaywallFooterView`` at the bottom of a view that loads the `Offerings.current`.
+    /// If you are presenting a V1 paywall, this will show the footer of the template you selected.
+    /// If you are presenting a V2 paywall, this will show a default footer since V2 paywalls
+    /// don't have a footer representation.
+    /// ```swift
+    /// var body: some View {
+    ///    YourPaywall()
+    ///      .originalTemplatePaywallFooter()
+    /// }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func originalTemplatePaywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
@@ -92,7 +140,7 @@ extension View {
     ) -> some View {
         let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                       performRestore: myAppPurchaseLogic?.performRestore)
-        return self.paywallFooter(
+        return self.originalTemplatePaywallFooter(
             offering: nil,
             customerInfo: nil,
             condensed: condensed,
@@ -120,11 +168,11 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
-    @available(iOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(tvOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(watchOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(macOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(iOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(tvOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(watchOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
     @_disfavoredOverload
     public func paywallFooter(
@@ -139,7 +187,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         let purchaseHandler = PurchaseHandler.default()
-        return self.paywallFooter(
+        return self.originalTemplatePaywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
@@ -158,6 +206,7 @@ extension View {
         )
     }
 
+    // swiftlint:disable line_length
     /// Presents a ``PaywallFooterView`` at the bottom of a view with the given offering.
     /// ```swift
     /// var body: some View {
@@ -168,7 +217,54 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    @available(iOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(tvOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(watchOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macCatalyst, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    // swiftlint:enable line_length
     public func paywallFooter(
+        offering: Offering,
+        condensed: Bool = false,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
+    ) -> some View {
+        return self.originalTemplatePaywallFooter(
+            offering: offering,
+            condensed: condensed,
+            fonts: fonts,
+            myAppPurchaseLogic: myAppPurchaseLogic,
+            purchaseStarted: purchaseStarted,
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure
+        )
+    }
+
+    /// Presents a ``PaywallFooterView`` at the bottom of a view with the given offering.
+    /// If you are presenting a V1 paywall, this will show the footer of the template you selected.
+    /// If you are presenting a V2 paywall, this will show a default footer since V2 paywalls
+    /// don't have a footer representation.
+    /// ```swift
+    /// var body: some View {
+    ///    YourPaywall()
+    ///      .originalTemplatePaywallFooter(offering: offering)
+    /// }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func originalTemplatePaywallFooter(
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
@@ -183,7 +279,7 @@ extension View {
     ) -> some View {
         let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                       performRestore: myAppPurchaseLogic?.performRestore)
-        return self.paywallFooter(
+        return self.originalTemplatePaywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
@@ -201,7 +297,7 @@ extension View {
     }
 
     // @PublicForExternalTesting
-    func paywallFooter(
+    func originalTemplatePaywallFooter(
         offering: Offering?,
         customerInfo: CustomerInfo?,
         condensed: Bool = false,

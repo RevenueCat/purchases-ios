@@ -70,5 +70,7 @@ func main() -> Int {
 
     checkVerificationResultAPI()
 
+    checkDangerousSettingsAPI()
+
     return 0
 }

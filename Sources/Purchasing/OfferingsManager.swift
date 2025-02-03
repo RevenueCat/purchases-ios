@@ -45,7 +45,7 @@ class OfferingsManager {
         fetchCurrent: Bool = false,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        guard !fetchCurrent else {
+        guard !fetchCurrent && !self.systemInfo.dangerousSettings.uiPreviewMode else {
             self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
             return
         }
@@ -192,7 +192,7 @@ private extension OfferingsManager {
             return
         }
 
-        self.productsManager.products(withIdentifiers: productIdentifiers) { result in
+        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
@@ -275,6 +275,97 @@ private extension OfferingsManager {
         }
     }
 
+    private func fetchProducts(
+        withIdentifiers identifiers: Set<String>,
+        fromResponse response: OfferingsResponse,
+        completion: @escaping ProductsManagerType.Completion
+    ) {
+        if self.systemInfo.dangerousSettings.uiPreviewMode {
+            let previewProducts = self.createPreviewProducts(productIdentifiers: identifiers, fromResponse: response)
+            completion(.success(previewProducts))
+        } else {
+            self.productsManager.products(withIdentifiers: identifiers, completion: completion)
+        }
+    }
+
+    // MARK: - For UI Preview mode
+
+    /// Generates a set of dummy `StoreProduct`s with hardcoded information exclusively for UI Preview mode.
+    private func createPreviewProducts(
+        productIdentifiers: Set<String>,
+        fromResponse response: OfferingsResponse
+    ) -> Set<StoreProduct> {
+        let packagesByProductID = response.packages.dictionaryAllowingDuplicateKeys { $0.platformProductIdentifier }
+        let products = productIdentifiers.map { identifier -> StoreProduct in
+            let productType = self.inferredPreviewProductType(from: packagesByProductID[identifier],
+                                                              productIdentifier: identifier)
+
+            let introductoryDiscount: TestStoreProductDiscount? = {
+                // To allow introductory offers in UI Preview mode,
+                // all dummy yearly subscriptions have a 1-week free trial
+                guard productType.period?.unit == .year else { return nil }
+                return TestStoreProductDiscount(
+                    identifier: "intro",
+                    price: 0,
+                    localizedPriceString: "$0.00",
+                    paymentMode: .freeTrial,
+                    subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .week),
+                    numberOfPeriods: 1,
+                    type: .introductory
+                )
+            }()
+
+            let testProduct = TestStoreProduct(
+                localizedTitle: "PRO \(productType.type)",
+                price: Decimal(productType.price),
+                localizedPriceString: String(format: "$%.2f", productType.price),
+                productIdentifier: identifier,
+                productType: productType.period == nil ? .nonConsumable : .autoRenewableSubscription,
+                localizedDescription: productType.type + (productType.period == nil ? "" : " subscription"),
+                subscriptionGroupIdentifier: productType.period == nil ? nil : "group",
+                subscriptionPeriod: productType.period,
+                introductoryDiscount: introductoryDiscount,
+                discounts: []
+            )
+
+            return testProduct.toStoreProduct()
+        }
+
+        return Set(products)
+    }
+
+    private func inferredPreviewProductType(
+        from package: OfferingsResponse.Offering.Package?,
+        productIdentifier: String
+    ) -> PreviewProductType {
+        if let package,
+           let previewProductType = PreviewProductType(packageType: Package.packageType(from: package.identifier)) {
+            return previewProductType
+        } else {
+            // Try to guess basing on the product identifier
+            let id = productIdentifier.lowercased()
+
+            let packageType: PackageType
+            if id.contains("lifetime") || id.contains("forever") || id.contains("permanent") {
+                packageType = .lifetime
+            } else if id.contains("annual") || id.contains("year") {
+                packageType = .annual
+            } else if id.contains("sixmonth") || id.contains("6month") {
+                packageType = .sixMonth
+            } else if id.contains("threemonth") || id.contains("3month") || id.contains("quarter") {
+                packageType = .threeMonth
+            } else if id.contains("twomonth") || id.contains("2month") {
+                packageType = .twoMonth
+            } else if id.contains("month") {
+                packageType = .monthly
+            } else if id.contains("week") {
+                packageType = .weekly
+            } else {
+                packageType = .custom
+            }
+            return PreviewProductType(packageType: packageType) ?? .default
+        }
+    }
 }
 
 extension OfferingsManager {
@@ -401,4 +492,54 @@ extension OfferingsManager.Error: CustomNSError {
         }
     }
 
+}
+
+/// For UI Preview mode only.
+private struct PreviewProductType {
+    let type: String
+    let price: Double
+    let period: SubscriptionPeriod?
+
+    static let `default` = PreviewProductType(type: "lifetime", price: 249.99, period: nil)
+
+    private init(type: String, price: Double, period: SubscriptionPeriod?) {
+        self.type = type
+        self.price = price
+        self.period = period
+    }
+
+    init?(packageType: PackageType) {
+        switch packageType {
+        case .lifetime:
+            self = PreviewProductType(type: "lifetime",
+                                      price: 199.99,
+                                      period: nil)
+        case .annual:
+            self = PreviewProductType(type: "yearly",
+                                      price: 59.99,
+                                      period: SubscriptionPeriod(value: 1, unit: .year))
+        case .sixMonth:
+            self = PreviewProductType(type: "6 months",
+                                      price: 30.99,
+                                      period: SubscriptionPeriod(value: 3, unit: .month))
+        case .threeMonth:
+            self = PreviewProductType(type: "3 months",
+                                      price: 15.99,
+                                      period: SubscriptionPeriod(value: 3, unit: .month))
+        case .twoMonth:
+            self = PreviewProductType(type: "monthly",
+                                      price: 11.49,
+                                      period: SubscriptionPeriod(value: 2, unit: .month))
+        case .monthly:
+            self = PreviewProductType(type: "monthly",
+                                      price: 5.99,
+                                      period: SubscriptionPeriod(value: 1, unit: .month))
+        case .weekly:
+            self = PreviewProductType(type: "weekly",
+                                      price: 1.99,
+                                      period: SubscriptionPeriod(value: 1, unit: .week))
+        case .unknown, .custom:
+            return nil
+        }
+    }
 }

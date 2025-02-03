@@ -13,7 +13,7 @@
 
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 struct GradientView: View {
     enum GradientStyle {
@@ -31,11 +31,11 @@ struct GradientView: View {
     private var gradient: Gradient {
         switch colorScheme {
         case .light:
-            lightGradient
+            return lightGradient
         case .dark:
-            darkGradient ?? lightGradient
+            return darkGradient ?? lightGradient
         @unknown default:
-            lightGradient
+            return lightGradient
         }
     }
 
@@ -60,6 +60,14 @@ struct GradientView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct GradientView_Previews: PreviewProvider {
+
+    static private func gradientView(style: GradientView.GradientStyle) -> some View {
+        GradientView(
+            lightGradient: .init(colors: .init([.red, .black])),
+            darkGradient: .init(colors: .init([.blue, .black])),
+            gradientStyle: style
+        )
+    }
 
     static var previews: some View {
         GradientView(
@@ -95,11 +103,30 @@ struct GradientView_Previews: PreviewProvider {
         )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Linear 90º - Light (should be red)")
+
+        VStack {
+            Text("Linear 0º")
+            gradientView(style: .linear(0))
+            Text("Linear 45º")
+            gradientView(style: .linear(45))
+            Text("Linear 90º")
+            gradientView(style: .linear(90))
+            Text("Linear 135º")
+            gradientView(style: .linear(135))
+            Text("Linear 180º")
+            gradientView(style: .linear(180))
+            Text("Linear 225º")
+            gradientView(style: .linear(225))
+            Text("Linear 270º")
+            gradientView(style: .linear(270))
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Linear")
     }
 
 }
 
-private extension UnitPoint {
+extension UnitPoint {
 
     init(angle: Angle) {
         // Convert the angle to radians and negate to make clockwise

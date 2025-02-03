@@ -14,9 +14,9 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
-private typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
+typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
@@ -27,11 +27,13 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
+    let shouldApplySafeAreaInset: Bool
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
+        shouldApplySafeAreaInset: Bool = false,
         uiConfigProvider: UIConfigProvider,
         localizationProvider: LocalizationProvider
     ) throws {
@@ -39,6 +41,7 @@ class StackComponentViewModel {
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
+        self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
@@ -64,6 +67,7 @@ class StackComponentViewModel {
             size: partial?.size ?? self.component.size,
             spacing: partial?.spacing ?? self.component.spacing,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
+            background: partial?.background ?? self.component.background,
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
             shape: partial?.shape ?? self.component.shape,
@@ -138,6 +142,7 @@ struct StackComponentStyle {
         size: PaywallComponent.Size,
         spacing: CGFloat?,
         backgroundColor: PaywallComponent.ColorScheme?,
+        background: PaywallComponent.Background?,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
         shape: PaywallComponent.Shape?,
@@ -149,13 +154,15 @@ struct StackComponentStyle {
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle ??
+            backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
         self.badge = badge?.badge(stackShape: self.shape,
+                                  stackBorder: self.border,
                                   badgeViewModels: badgeViewModels,
                                   uiConfigProvider: uiConfigProvider)
     }
@@ -198,10 +205,10 @@ private extension PaywallComponent.Shape {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
                 ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading,
-                    topRight: cornerRadiuses.topTrailing,
-                    bottomLeft: cornerRadiuses.bottomLeading,
-                    bottomRight: cornerRadiuses.bottomTrailing
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
                 )
             }
             return .rectangle(corners)
@@ -242,6 +249,7 @@ private extension PaywallComponent.Shadow {
 private extension PaywallComponent.Badge {
 
     func badge(stackShape: ShapeModifier.Shape?,
+               stackBorder: ShapeModifier.BorderInfo?,
                badgeViewModels: [PaywallComponentViewModel],
                uiConfigProvider: UIConfigProvider) -> BadgeModifier.BadgeInfo? {
         BadgeModifier.BadgeInfo(
@@ -250,6 +258,7 @@ private extension PaywallComponent.Badge {
             stack: self.stack,
             badgeViewModels: badgeViewModels,
             stackShape: stackShape,
+            stackBorder: stackBorder,
             uiConfigProvider: uiConfigProvider
         )
     }
