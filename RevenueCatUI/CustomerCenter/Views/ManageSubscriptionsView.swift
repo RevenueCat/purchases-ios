@@ -128,7 +128,7 @@ struct ManageSubscriptionsView: View {
                 Section {
                     ManageSubscriptionsButtonsView(
                         viewModel: self.viewModel,
-                        loadingPath: self.$viewModel.loadingPath
+                        loadingPath: self.viewModel.loadingPath
                     )
                 } header: {
                     if let subtitle = self.viewModel.screen.subtitle {
@@ -149,7 +149,7 @@ struct ManageSubscriptionsView: View {
 
                 Section {
                     ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                   loadingPath: self.$viewModel.loadingPath)
+                                                   loadingPath: self.viewModel.loadingPath)
                 }
             }
         }
