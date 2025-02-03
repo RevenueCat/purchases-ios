@@ -76,6 +76,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
+    /**
+     * The delegate for ``Purchases`` responsible for handling updating your app's state in response to updated
+     * customer info or promotional product purchases.
+     *
+     * - Warning: The delegate is not retained by `Purchases`, so your app must retain a reference to the delegate
+     * to prevent it from being unintentionally deallocated.
+     */
     @objc public var delegate: PurchasesDelegate? {
         get { self.privateDelegate }
         set {
