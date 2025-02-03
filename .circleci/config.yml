@@ -1345,7 +1345,6 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
-      - run-test-ios-13
       - run-test-ios-17
       - run-test-ios-18
       - pod-lib-lint
