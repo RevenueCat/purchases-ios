@@ -1467,6 +1467,7 @@ workflows:
       - build-tv-watch-and-macos
       - build-visionos
       - docs-build
+      - run-test-ios-13
       - run-test-ios-14
       - run-test-ios-15
       - run-test-ios-16
