@@ -45,7 +45,7 @@ class OfferingsManager {
         fetchCurrent: Bool = false,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        guard !fetchCurrent else {
+        guard !fetchCurrent && !self.systemInfo.dangerousSettings.uiPreviewMode else {
             self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
             return
         }
