@@ -1347,7 +1347,6 @@ workflows:
       - lint
       - run-test-ios-17
       - run-test-ios-18
-      - run-test-ios-13
       - pod-lib-lint
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
