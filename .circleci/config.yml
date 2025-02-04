@@ -95,6 +95,7 @@ commands:
   slack-notify:
     steps:
       - slack/notify:
+          branch_pattern: main
           channel: 'feed-circleci-ios-failures'
           event: fail
           template: basic_fail_1
