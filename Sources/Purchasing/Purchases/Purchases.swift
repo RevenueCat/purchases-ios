@@ -80,7 +80,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * The delegate for ``Purchases`` responsible for handling updating your app's state in response to updated
      * customer info or promotional product purchases.
      *
-     * - Warning: The delegate is not retained by `Purchases`, so your app must retain a reference to the delegate
+     * - Warning: The delegate is not retained by ``Purchases``, so your app must retain a reference to the delegate
      * to prevent it from being unintentionally deallocated.
      */
     @objc public var delegate: PurchasesDelegate? {
