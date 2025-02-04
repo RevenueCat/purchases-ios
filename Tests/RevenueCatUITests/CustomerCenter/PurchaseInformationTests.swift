@@ -74,10 +74,56 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .earliestRenewal
         expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .nextBillingDate
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
+
+        expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
+        expect(subscriptionInfo.store) == .appStore
+    }
+
+    func testAppleEntitlementAndLifetimeProduct() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithLifetimeAppSubscrition
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Monthly Product",
+            price: 6.99,
+            localizedPriceString: "$6.99",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO monthly",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: nil
+            )
+        )
+
+        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
+                                                                 subscribedProduct: mockProduct.toStoreProduct(),
+                                                                 transaction: mockTransaction,
+                                                                 dateFormatter: Self.mockDateFormatter))
+        expect(subscriptionInfo.title) == "Monthly Product"
+        expect(subscriptionInfo.durationTitle) == "1 month"
+        expect(subscriptionInfo.explanation) == .lifetime
+        expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.isLifetimeSubscription).to(beTrue())
+
+        let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .expires
+        expect(expirationOrRenewal.date) == .never
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
@@ -118,6 +164,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .earliestExpiration
         expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expires
@@ -162,6 +209,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .expired
         expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expired
@@ -193,6 +241,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .nextBillingDate
@@ -224,6 +273,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expires
@@ -255,6 +305,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expired
@@ -286,6 +337,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .promotional
         expect(subscriptionInfo.price) == .free
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expires
@@ -317,6 +369,8 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .promotional
         expect(subscriptionInfo.price) == .free
+        // false - no way to know if its lifetime
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expires
@@ -348,6 +402,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .web
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .nextBillingDate
@@ -379,6 +434,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .web
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expires
@@ -410,6 +466,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .web
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expired
@@ -438,6 +495,7 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.explanation) == .expired
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .expired
@@ -446,5 +504,4 @@ class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.productIdentifier) == "product_id"
         expect(subscriptionInfo.store) == .stripe
     }
-
 }

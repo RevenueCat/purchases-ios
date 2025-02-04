@@ -453,7 +453,8 @@ private extension PurchaseInformation {
             price: .paid(""),
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
-            store: .appStore
+            store: .appStore,
+            isLifetimeSubscription: true
         )
     }
 }

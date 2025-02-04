@@ -27,6 +27,7 @@ struct PurchaseInformation {
     let expirationOrRenewal: ExpirationOrRenewal?
     let productIdentifier: String
     let store: Store
+    let isLifetimeSubscription: Bool
 
     init(title: String,
          durationTitle: String,
@@ -34,7 +35,8 @@ struct PurchaseInformation {
          price: PriceDetails,
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
-         store: Store
+         store: Store,
+         isLifetimeSubscription: Bool
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -43,6 +45,7 @@ struct PurchaseInformation {
         self.expirationOrRenewal = expirationOrRenewal
         self.productIdentifier = productIdentifier
         self.store = store
+        self.isLifetimeSubscription = isLifetimeSubscription
     }
 
     init(entitlement: EntitlementInfo? = nil,
@@ -67,6 +70,8 @@ struct PurchaseInformation {
             } else {
                 self.price = entitlement.priceBestEffort(product: subscribedProduct)
             }
+            self.isLifetimeSubscription = entitlement.expirationDate == nil
+
         } else {
             switch transaction.type {
             case .subscription(let isActive, let willRenew, let expiresDate):
@@ -80,9 +85,12 @@ struct PurchaseInformation {
                         : .expired
                     return ExpirationOrRenewal(label: label, date: .date(dateString))
                 }
+                self.isLifetimeSubscription = expiresDate == nil
+
             case .nonSubscription:
                 self.explanation = .lifetime
                 self.expirationOrRenewal = nil
+                self.isLifetimeSubscription = false
             }
 
             self.productIdentifier = transaction.productIdentifier
