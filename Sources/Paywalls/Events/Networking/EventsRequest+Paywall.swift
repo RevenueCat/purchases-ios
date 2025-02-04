@@ -97,6 +97,7 @@ private extension PaywallEvent {
 extension EventsRequest.PaywallEvent.EventType: Encodable {}
 extension EventsRequest.PaywallEvent: Encodable {
 
+    /// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used
     private enum CodingKeys: String, CodingKey {
 
         case id
