@@ -67,16 +67,13 @@ extension StoreKitConfigTestCase {
         while attempts < maxAttempts {
             result = try await productToPurchase.purchase()
 
-            switch result {
-            case .success, .pending, nil:
-                attempts = .max // Exit the loop. Breaking here only breaks out of the switch, not the while loop
-            case .userCancelled:
+            if case .userCancelled = result {
                 attempts += 1
                 try await Task.sleep(nanoseconds: UInt64(attempts) * 1_000_000_000)
                 continue
-            default:
-                attempts = .max // Exit the loop. Breaking here only breaks out of the switch, not the while loop
             }
+
+            break
         }
 
         let unwrappedResult = try XCTUnwrap(result, "Purchase attempt did not yield a result")
