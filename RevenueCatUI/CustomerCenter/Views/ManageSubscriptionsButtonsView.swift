@@ -26,11 +26,12 @@ struct ManageSubscriptionsButtonsView: View {
     @ObservedObject
     var viewModel: ManageSubscriptionsViewModel
 
-    var loadingPath: CustomerCenterConfigData.HelpPath?
-
     var body: some View {
         ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
-            ManageSubscriptionButton(path: path, viewModel: self.viewModel)
+            ManageSubscriptionButton(
+                path: path,
+                viewModel: self.viewModel
+            )
         }
     }
 
@@ -43,7 +44,9 @@ struct ManageSubscriptionsButtonsView: View {
 private struct ManageSubscriptionButton: View {
 
     let path: CustomerCenterConfigData.HelpPath
-    let viewModel: ManageSubscriptionsViewModel
+
+    @ObservedObject
+    var viewModel: ManageSubscriptionsViewModel
 
     var body: some View {
         AsyncButton(action: {
