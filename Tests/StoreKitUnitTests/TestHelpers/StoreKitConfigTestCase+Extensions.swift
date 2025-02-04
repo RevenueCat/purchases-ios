@@ -69,13 +69,13 @@ extension StoreKitConfigTestCase {
 
             switch result {
             case .success, .pending, nil:
-                break
+                attempts = .max // Exit the loop. Breaking here only breaks out of the switch, not the while loop
             case .userCancelled:
                 attempts += 1
                 try await Task.sleep(nanoseconds: UInt64(attempts) * 1_000_000_000)
                 continue
             default:
-                break
+                attempts = .max // Exit the loop. Breaking here only breaks out of the switch, not the while loop
             }
         }
 
