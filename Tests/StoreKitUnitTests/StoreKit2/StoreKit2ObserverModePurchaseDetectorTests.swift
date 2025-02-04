@@ -34,6 +34,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     override func setUp() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         deviceCache = .init()
+        try await super.setUp()
     }
 
     func testDetectUnobservedTransactionsDoesntCallDelegateWith0Transactions() async {
@@ -57,7 +58,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     func testDetectUnobservedTransactionsCallsDelegateUnobservedTransactions() async throws {
         let txn1 = try await self.simulateAnyPurchase(
             finishTransaction: true,
-            retryOnUserCancelledFailure: true
+            retryPurchaseOnUserCancelled: true
         )
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
@@ -89,7 +90,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     func testDetectUnobservedTransactionsCallsDelegateOncePerUnobservedTransactions() async throws {
         let txn1 = try await self.simulateAnyPurchase(
             finishTransaction: true,
-            retryOnUserCancelledFailure: true
+            retryPurchaseOnUserCancelled: true
         )
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()

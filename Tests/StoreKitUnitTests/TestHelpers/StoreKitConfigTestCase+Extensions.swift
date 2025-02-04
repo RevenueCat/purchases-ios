@@ -37,13 +37,19 @@ extension StoreKitConfigTestCase {
                                                   finishTransaction: finishTransaction).underlyingTransaction
     }
 
+    /// - Parameters:
+    ///   - product: An optional `SK2Product` to be purchased. If `nil`, a default product will be fetched.
+    ///   - finishTransaction: A Boolean flag indicating whether to call `finish()`
+    ///   on the transaction after a successful purchase.
+    ///   - retryPurchaseOnUserCancelled: A Boolean flag indicating whether to
+    ///   retry the purchase up to 3 times if the user cancels. The retry backoff interval is equal to the number of
+    ///   attempts in seconds (1s, then 2s, etc.).
     /// - Returns: `SK2Transaction` ater the purchase succeeded.
     @discardableResult
     func simulateAnyPurchase(
         product: SK2Product? = nil,
         finishTransaction: Bool = false,
-        retryOnUserCancelledFailure: Bool = false,
-        maxRetries: Int = 3
+        retryPurchaseOnUserCancelled: Bool = false
     ) async throws -> StoreKit.VerificationResult<SK2Transaction> {
         let productToPurchase: SK2Product
         if let product = product {
@@ -53,19 +59,22 @@ extension StoreKitConfigTestCase {
         }
 
         var result: Product.PurchaseResult?
-        var attempts = 0
 
-        while true {
+        var attempts = 0
+        let maxAttempts = 3
+        while attempts < maxAttempts {
             result = try await productToPurchase.purchase()
 
-            if case .userCancelled = result {
+            switch result {
+            case .success, .pending, nil:
+                break
+            case .userCancelled:
                 attempts += 1
-                if retryOnUserCancelledFailure && attempts < maxRetries {
-                    try await Task.sleep(nanoseconds: UInt64(attempts) * 1_000_000_000)
-                    continue
-                }
+                try await Task.sleep(nanoseconds: UInt64(attempts) * 1_000_000_000)
+                continue
+            default:
+                break
             }
-            break
         }
 
         let unwrappedResult = try XCTUnwrap(result, "Purchase attempt did not yield a result")
