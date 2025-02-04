@@ -41,7 +41,9 @@ extension StoreKitConfigTestCase {
     @discardableResult
     func simulateAnyPurchase(
         product: SK2Product? = nil,
-        finishTransaction: Bool = false
+        finishTransaction: Bool = false,
+        retryOnUserCancelledFailure: Bool = false,
+        maxRetries: Int = 3
     ) async throws -> StoreKit.VerificationResult<SK2Transaction> {
         let productToPurchase: SK2Product
         if let product = product {
@@ -50,7 +52,22 @@ extension StoreKitConfigTestCase {
             productToPurchase = try await self.fetchSk2Product()
         }
 
-        let result = try await productToPurchase.purchase()
+        var result: Product.PurchaseResult
+        var attempts = 0
+
+        while true {
+            result = try await productToPurchase.purchase()
+
+            if case .userCancelled = result {
+                attempts += 1
+                if retryOnUserCancelledFailure && attempts < maxRetries {
+                    try await Task.sleep(nanoseconds: UInt64(attempts) * 1_000_000_000)
+                    continue
+                }
+            }
+            break
+        }
+
         let verificationResult = try XCTUnwrap(result.verificationResult, "Purchase did not succeed: \(result)")
 
         if finishTransaction {

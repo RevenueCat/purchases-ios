@@ -55,7 +55,10 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     }
 
     func testDetectUnobservedTransactionsCallsDelegateUnobservedTransactions() async throws {
-        let txn1 = try await self.simulateAnyPurchase(finishTransaction: true)
+        let txn1 = try await self.simulateAnyPurchase(
+            finishTransaction: true,
+            retryOnUserCancelledFailure: true
+        )
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
@@ -84,7 +87,10 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     // Since the transaction is cached when it is detected for the first time, we don't expect
     // the delegate to be called again for this transaction in the future.
     func testDetectUnobservedTransactionsCallsDelegateOncePerUnobservedTransactions() async throws {
-        let txn1 = try await self.simulateAnyPurchase(finishTransaction: true)
+        let txn1 = try await self.simulateAnyPurchase(
+            finishTransaction: true,
+            retryOnUserCancelledFailure: true
+        )
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
