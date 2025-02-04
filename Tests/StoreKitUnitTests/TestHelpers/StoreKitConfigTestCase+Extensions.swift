@@ -43,7 +43,9 @@ extension StoreKitConfigTestCase {
     ///   on the transaction after a successful purchase.
     ///   - retryPurchaseOnUserCancelled: A Boolean flag indicating whether to
     ///   retry the purchase up to 3 times if the user cancels. The retry backoff interval is equal to the number of
-    ///   attempts in seconds (1s, then 2s, etc.).
+    ///   attempts in seconds (1s, then 2s, etc.). This is helpful in CI environments where StoreKit may not be
+    ///   ready to make a purchase immediately. In this case, it sometimes returns a `userCancelled` PurchaseResult
+    ///   for purchases.
     /// - Returns: `SK2Transaction` ater the purchase succeeded.
     @discardableResult
     func simulateAnyPurchase(
