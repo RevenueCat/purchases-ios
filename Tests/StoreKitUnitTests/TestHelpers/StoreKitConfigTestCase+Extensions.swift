@@ -52,7 +52,7 @@ extension StoreKitConfigTestCase {
             productToPurchase = try await self.fetchSk2Product()
         }
 
-        var result: Product.PurchaseResult
+        var result: Product.PurchaseResult?
         var attempts = 0
 
         while true {
@@ -68,7 +68,10 @@ extension StoreKitConfigTestCase {
             break
         }
 
-        let verificationResult = try XCTUnwrap(result.verificationResult, "Purchase did not succeed: \(result)")
+        let unwrappedResult = try XCTUnwrap(result, "Purchase attempt did not yield a result")
+        let verificationResult = try XCTUnwrap(
+            unwrappedResult.verificationResult, "Purchase did not succeed: \(unwrappedResult)"
+        )
 
         if finishTransaction {
             await verificationResult.underlyingTransaction.finish()
