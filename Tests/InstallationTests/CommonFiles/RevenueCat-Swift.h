@@ -2730,6 +2730,11 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCPurchases 
 /// or one of is overloads.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly) BOOL isConfigured;)
 + (BOOL)isConfigured SWIFT_WARN_UNUSED_RESULT;
+/// The delegate for <code>Purchases</code> responsible for handling updating your app’s state in response to updated
+/// customer info or promotional product purchases.
+/// warning:
+/// The delegate is not retained by <code>Purchases</code>, so your app must retain a reference to the delegate
+/// to prevent it from being unintentionally deallocated.
 @property (nonatomic, strong) id <RCPurchasesDelegate> _Nullable delegate;
 /// Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat.
 /// <h4>Related Symbols</h4>
@@ -3500,7 +3505,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCUnknownStore SWIFT_COMPILE_NAME("unknownStore") = 5,
 /// For entitlements granted via the Amazon Store.
   RCAmazon SWIFT_COMPILE_NAME("amazon") = 6,
-/// For entitlements granted via RC Billing
+/// For entitlements granted via RevenueCat’s Web Billing
   RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
 /// For entitlements granted via RevenueCat’s External Purchases API.
   RCExternal SWIFT_COMPILE_NAME("external") = 8,
