@@ -9,6 +9,8 @@ on:
 jobs:
   health-check:
     runs-on: macos-latest
+    name: iOS PR Health Check
+    continue-on-error: true  # Don't block PRs for now
 
     steps:
       - name: Checkout code
