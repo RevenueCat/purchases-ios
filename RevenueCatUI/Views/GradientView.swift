@@ -117,6 +117,9 @@ struct GradientView_Previews: PreviewProvider {
         .previewDisplayName("Linear")
     }
 
+    /// Helper view to preview linear gradients with different angles. This is useful so to keep down the
+    /// number of views in the container holding all of the previews to avoid compilation issues
+    /// with the preview.
     private struct LinearGradientPreview: View {
 
         let label: String
