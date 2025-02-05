@@ -105,23 +105,29 @@ struct GradientView_Previews: PreviewProvider {
         .previewDisplayName("Linear 90º - Light (should be red)")
 
         VStack {
-            Text("Linear 0º")
-            gradientView(style: .linear(0))
-            Text("Linear 45º")
-            gradientView(style: .linear(45))
-            Text("Linear 90º")
-            gradientView(style: .linear(90))
-            Text("Linear 135º")
-            gradientView(style: .linear(135))
-            Text("Linear 180º")
-            gradientView(style: .linear(180))
-            Text("Linear 225º")
-            gradientView(style: .linear(225))
-            Text("Linear 270º")
-            gradientView(style: .linear(270))
+            LinearGradientPreview(label: "Linear 0º", degrees: 0)
+            LinearGradientPreview(label: "Linear 45º", degrees: 45)
+            LinearGradientPreview(label: "Linear 90º", degrees: 90)
+            LinearGradientPreview(label: "Linear 135º", degrees: 135)
+            LinearGradientPreview(label: "Linear 180º", degrees: 180)
+            LinearGradientPreview(label: "Linear 225º", degrees: 225)
+            LinearGradientPreview(label: "Linear 270º", degrees: 270)
         }
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Linear")
+    }
+
+    private struct LinearGradientPreview: View {
+
+        let label: String
+        let degrees: Int
+
+        var body: some View {
+            VStack {
+                Text(label)
+                gradientView(style: .linear(degrees))
+            }
+        }
     }
 
 }
