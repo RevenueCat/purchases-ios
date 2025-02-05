@@ -59,8 +59,6 @@ class TextComponentViewModel {
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
-        let fontFamily = self.uiConfigProvider.getFontFamily(for: partial?.fontName ?? self.component.fontName)
-
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? true,
@@ -71,7 +69,7 @@ class TextComponentViewModel {
                 locale: self.localizationProvider.locale,
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
-            fontFamily: fontFamily,
+            fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
@@ -233,7 +231,7 @@ struct TextComponentStyle {
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
         text: String,
-        fontFamily: String?,
+        fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
         color: PaywallComponent.ColorScheme,
         backgroundColor: PaywallComponent.ColorScheme?,
@@ -249,7 +247,7 @@ struct TextComponentStyle {
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.font = Self.makeFont(size: fontSize, familyName: fontFamily)
+        self.font = Self.makeFont(size: fontSize, name: fontName, uiConfigProvider: uiConfigProvider)
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
@@ -261,25 +259,60 @@ struct TextComponentStyle {
 
 }
 
+enum GenericFont: String {
+
+    case serif, monospace, sansSerif = "sans-serif"
+
+    func makeFont(fontSize: CGFloat) -> Font {
+        switch self {
+        case .serif:
+            return Font.system(size: fontSize, weight: .regular, design: .serif)
+        case .monospace:
+            return Font.system(size: fontSize, weight: .regular, design: .monospaced)
+        case .sansSerif:
+            return Font.system(size: fontSize, weight: .regular, design: .default)
+        default:
+            break
+        }
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentStyle {
 
-    static func makeFont(size fontSize: CGFloat, familyName: String?) -> Font {
-        // Create the base font, with fallback to the system font
-        let baseFont: UIFont
-        if let familyName = familyName {
-            if let customFont = UIFont(name: familyName, size: fontSize) {
-                baseFont = customFont
-            } else {
-                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
-            }
-        } else {
-            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+    static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
+        // Use default font if no name given
+        guard let name = name else {
+            return GenericFont.sansSerif.makeFont(fontSize: fontSize)
+        }
+
+        // Check if name is a generic font (serfic, sansserif, monospace)
+        if let genericFont = GenericFont(rawValue: name) {
+            return genericFont.makeFont(fontSize: fontSize)
+        }
+
+        let customFont = self.resolveCustomFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
+        return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
+    }
+
+    static private func resolveCustomFont(
+        size fontSize: CGFloat,
+        name: String,
+        uiConfigProvider: UIConfigProvider
+    ) -> Font? {
+        guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
+            Logger.warning("Maping for '\(name)' could not be found. Falling back to system font.")
+            return nil
+        }
+
+        guard let customFont = UIFont(name: familyName, size: fontSize) else {
+            Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+            return nil
         }
 
         // Apply dynamic type scaling
-        let uiFont = UIFontMetrics.default.scaledFont(for: baseFont)
+        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
         return Font(uiFont)
     }
 
