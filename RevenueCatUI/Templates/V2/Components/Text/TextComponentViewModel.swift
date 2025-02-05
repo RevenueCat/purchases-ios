@@ -271,8 +271,6 @@ enum GenericFont: String {
             return Font.system(size: fontSize, weight: .regular, design: .monospaced)
         case .sansSerif:
             return Font.system(size: fontSize, weight: .regular, design: .default)
-        default:
-            break
         }
     }
 
