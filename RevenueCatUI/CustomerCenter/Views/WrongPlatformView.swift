@@ -140,7 +140,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
         .init(store: .rcBilling,
               managementURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/customerportal/1234/portal"),
               customerInfo: CustomerInfoFixtures.customerInfoWithRCBillingSubscriptions,
-              displayName: "RCBilling"),
+              displayName: "Web Billing"),
         .init(store: .stripe,
               managementURL: nil,
               customerInfo: CustomerInfoFixtures.customerInfoWithStripeSubscriptions,

@@ -40,7 +40,7 @@ import Foundation
     /// For entitlements granted via the Amazon Store.
     @objc(RCAmazon) case amazon = 6
 
-    /// For entitlements granted via RC Billing
+    /// For entitlements granted via RevenueCat's Web Billing
     @objc(RCBilling) case rcBilling = 7
 
     /// For entitlements granted via RevenueCat's External Purchases API.
