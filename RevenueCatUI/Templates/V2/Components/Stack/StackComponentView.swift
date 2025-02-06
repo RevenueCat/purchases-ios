@@ -111,16 +111,16 @@ struct StackComponentView: View {
         }
         .padding(style.padding)
         .padding(additionalPadding)
-        .scrollableIfEnabled(
-            style.dimension,
-            enabled: style.scrollable ?? self.isScrollableByDefault
-        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
+        .scrollableIfEnabled(
+            style.dimension,
+            enabled: style.scrollable ?? self.isScrollableByDefault
+        )
     }
 
 }

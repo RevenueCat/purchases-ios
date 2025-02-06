@@ -173,12 +173,12 @@ struct StackComponentStyle {
 
         self.scrollable = overflow.flatMap({ overflow in
             switch overflow {
-            case .none:
+            case .default:
                 return false
             case .scroll:
                 return true
             }
-        }) ?? false
+        })
     }
 
     var vstackStrategy: StackStrategy {

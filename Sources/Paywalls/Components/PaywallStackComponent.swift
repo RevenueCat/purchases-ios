@@ -19,7 +19,7 @@ public extension PaywallComponent {
     final class StackComponent: PaywallComponentBase {
 
         public enum Overflow: PaywallComponentBase {
-            case none
+            case `default`
             case scroll
         }
 
