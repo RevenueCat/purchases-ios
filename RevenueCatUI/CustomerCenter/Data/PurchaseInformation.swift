@@ -18,15 +18,28 @@ import RevenueCat
 import StoreKit
 
 // swiftlint:disable nesting
+
+/// Information about a purchase.
 struct PurchaseInformation {
 
+    /// The title of the storekit product, if applicable.
+    /// - Note: See `StoreProduct.localizedTitle` for more details.
     let title: String?
+    /// The duration of the product, if applicable.
+    /// - Note: See `StoreProduct.localizedDetails` for more details.
     let durationTitle: String?
     let explanation: Explanation
+    /// Pricing details of the purchase.
     let price: PriceDetails
+    /// Subscription expiration or renewal details, if applicable.
     let expirationOrRenewal: ExpirationOrRenewal?
+    /// The unique product identifier for the purchase.
     let productIdentifier: String
+    /// The store from which the purchase was made (e.g., App Store, Play Store).
     let store: Store
+    /// Indicates whether the purchase grants lifetime access.
+    /// - `true` for non-subscription purchases.
+    /// - `false` for subscriptions, even if the expiration date is set far in the future.
     let isLifetime: Bool
 
     init(title: String,
