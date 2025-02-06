@@ -74,7 +74,7 @@ class StackComponentViewModel {
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
             badge: partial?.badge ?? self.component.badge,
-            scrollable: partial?.scrollable ?? self.component.scrollable
+            overflow: partial?.overflow ?? self.component.overflow
         )
 
         apply(style)
@@ -153,7 +153,7 @@ struct StackComponentStyle {
         border: PaywallComponent.Border?,
         shadow: PaywallComponent.Shadow?,
         badge: PaywallComponent.Badge?,
-        scrollable: Bool?
+        overflow: PaywallComponent.StackComponent.Overflow?
     ) {
         self.visible = visible
         self.dimension = dimension
@@ -170,7 +170,15 @@ struct StackComponentStyle {
                                   stackBorder: self.border,
                                   badgeViewModels: badgeViewModels,
                                   uiConfigProvider: uiConfigProvider)
-        self.scrollable = scrollable
+
+        self.scrollable = overflow.flatMap({ overflow in
+            switch overflow {
+            case .none:
+                return false
+            case .scroll:
+                return true
+            }
+        }) ?? false
     }
 
     var vstackStrategy: StackStrategy {

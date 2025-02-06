@@ -10,13 +10,18 @@
 //  StackComponent.swift
 //
 //  Created by James Borthwick on 2024-08-20.
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting
 
 import Foundation
 
 public extension PaywallComponent {
 
     final class StackComponent: PaywallComponentBase {
+
+        public enum Overflow: PaywallComponentBase {
+            case none
+            case scroll
+        }
 
         let type: ComponentType
         public let visible: Bool?
@@ -32,7 +37,7 @@ public extension PaywallComponent {
         public let border: Border?
         public let shadow: Shadow?
         public let badge: Badge?
-        public let scrollable: Bool?
+        public let overflow: Overflow?
 
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
@@ -50,7 +55,7 @@ public extension PaywallComponent {
             border: Border? = nil,
             shadow: Shadow? = nil,
             badge: Badge? = nil,
-            scrollable: Bool? = false,
+            overflow: Overflow? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
             self.visible = visible
@@ -67,7 +72,7 @@ public extension PaywallComponent {
             self.border = border
             self.shadow = shadow
             self.badge = badge
-            self.scrollable = scrollable
+            self.overflow = overflow
             self.overrides = overrides
         }
         public func hash(into hasher: inout Hasher) {
@@ -85,7 +90,7 @@ public extension PaywallComponent {
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(badge)
-            hasher.combine(scrollable)
+            hasher.combine(overflow)
             hasher.combine(overrides)
         }
 
@@ -104,7 +109,7 @@ public extension PaywallComponent {
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
                    lhs.badge == rhs.badge &&
-                   lhs.scrollable == rhs.scrollable &&
+                   lhs.overflow == rhs.overflow &&
                    lhs.overrides == rhs.overrides
         }
     }
@@ -122,7 +127,7 @@ public extension PaywallComponent {
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
-        public let scrollable: Bool?
+        public let overflow: PaywallComponent.StackComponent.Overflow?
         public let badge: Badge?
 
         public init(
@@ -137,7 +142,7 @@ public extension PaywallComponent {
             shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
-            scrollable: Bool? = nil,
+            overflow: PaywallComponent.StackComponent.Overflow? = nil,
             badge: Badge? = nil
         ) {
             self.visible = visible
@@ -151,7 +156,7 @@ public extension PaywallComponent {
             self.shape = shape
             self.border = border
             self.shadow = shadow
-            self.scrollable = scrollable
+            self.overflow = overflow
             self.badge = badge
         }
 
@@ -167,7 +172,7 @@ public extension PaywallComponent {
             hasher.combine(shape)
             hasher.combine(border)
             hasher.combine(shadow)
-            hasher.combine(scrollable)
+            hasher.combine(overflow)
             hasher.combine(badge)
         }
 
@@ -183,7 +188,7 @@ public extension PaywallComponent {
                    lhs.shape == rhs.shape &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
-                   lhs.scrollable == rhs.scrollable &&
+                   lhs.overflow == rhs.overflow &&
                    lhs.badge == rhs.badge
         }
     }
