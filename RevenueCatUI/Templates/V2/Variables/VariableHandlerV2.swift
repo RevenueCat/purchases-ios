@@ -441,10 +441,6 @@ extension VariablesV2 {
             return ""
         }
 
-        guard let abbreviation = localizations[period.periodAbbreviatedLocalizationKey] else {
-            return ""
-        }
-
         if period.value > 1 {
             let localizedFormatKey: String
             switch period.unit {
@@ -461,18 +457,13 @@ extension VariablesV2 {
             guard let localizedFormat = localizations[localizedFormatKey] else {
                 return ""
             }
-
-            guard let cStringAbbreviation = (abbreviation as NSString).utf8String else {
-                return ""
-            }
-            guard let cStringPeriod = ("\(period.value)" as NSString).utf8String else {
-                return ""
-            }
-
-            // Number first, abbreviated string second
-            return String(format: localizedFormat, cStringPeriod, cStringAbbreviation)
+            return String(format: localizedFormat, period.value)
 
         } else {
+            guard let abbreviation = localizations[period.periodAbbreviatedLocalizationKey] else {
+                return ""
+            }
+
             return abbreviation
         }
     }

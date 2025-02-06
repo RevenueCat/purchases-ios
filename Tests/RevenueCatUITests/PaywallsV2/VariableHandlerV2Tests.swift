@@ -65,10 +65,10 @@ class VariableHandlerV2Test: TestCase {
             "num_year_few": "%d years",
             "num_year_many": "%d years",
             "num_year_other": "%d years",
-            "num_days_short": "%1$s%2$s",
-            "num_weeks_short": "%1$s%2$s",
-            "num_months_short": "%1$s%2$s",
-            "num_years_short": "%1$s%2$s"
+            "num_days_short": "%dd",
+            "num_weeks_short": "%dwk",
+            "num_months_short": "%dmo",
+            "num_years_short": "%dyr"
         ],
         "ar": [
             "day": "day",
@@ -112,10 +112,10 @@ class VariableHandlerV2Test: TestCase {
             "num_year_few": "%d years",
             "num_year_many": "%d years",
             "num_year_other": "%d years",
-            "num_days_short": "%2$s%1$s",
-            "num_weeks_short": "%2$s%1$s",
-            "num_months_short": "%2$s%1$s",
-            "num_years_short": "%2$s%1$s"
+            "num_days_short": "d3",
+            "num_weeks_short": "wk3",
+            "num_months_short": "mo3",
+            "num_years_short": "yr3"
         ]
     ]
 
