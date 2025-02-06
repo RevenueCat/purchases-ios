@@ -24,24 +24,29 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class ManageSubscriptionsViewModel: ObservableObject {
+final class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
     let paths: [CustomerCenterConfigData.HelpPath]
 
     @Published
     var showRestoreAlert: Bool = false
+
     @Published
     var showPurchases: Bool = false
 
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
+
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
+
     @Published
     var promotionalOfferData: PromotionalOfferData?
+
     @Published
     var inAppBrowserURL: IdentifiableURL?
+
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -238,11 +243,7 @@ private extension CustomerCenterConfigData.Screen {
 
     var filteredPaths: [CustomerCenterConfigData.HelpPath] {
         return self.paths.filter { path in
-            #if targetEnvironment(macCatalyst)
-                return path.type == .refundRequest
-            #else
-                return path.type != .unknown
-            #endif
+            return path.type != .unknown
         }
     }
 
