@@ -29,7 +29,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        if purchaseInformation?.isLifetimeSubscription == true {
+        if purchaseInformation?.isLifetime == true {
             return paths.filter { $0.type != .cancel }
         } else {
             return paths

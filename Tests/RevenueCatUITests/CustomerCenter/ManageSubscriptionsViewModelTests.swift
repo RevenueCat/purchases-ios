@@ -454,7 +454,7 @@ private extension PurchaseInformation {
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: .appStore,
-            isLifetimeSubscription: true
+            isLifetime: true
         )
     }
 }
