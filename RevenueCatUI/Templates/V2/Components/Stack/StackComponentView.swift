@@ -76,7 +76,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                .scrollableIfEnabled(.vertical, enabled: style.scrollable ?? self.isScrollableByDefault)
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -89,7 +88,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                .scrollableIfEnabled(.horizontal, enabled: style.scrollable ?? self.isScrollableByDefault)
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
@@ -111,6 +109,10 @@ struct StackComponentView: View {
         }
         .padding(style.padding)
         .padding(additionalPadding)
+        .scrollableIfEnabled(
+            style.dimension,
+            enabled: style.scrollable ?? self.isScrollableByDefault
+        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
@@ -137,9 +139,21 @@ fileprivate extension View {
 
     @ViewBuilder
     // @PublicForExternalTesting
-    func scrollableIfEnabled(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+    func scrollableIfEnabled(
+        _ dimension: PaywallComponent.Dimension,
+        enabled: Bool = true
+    ) -> some View {
         if enabled {
-            ScrollView(axis.scrollViewAxis) {
+            switch dimension {
+            case .horizontal:
+                ScrollView(.horizontal) {
+                    self
+                }
+            case .vertical:
+                ScrollView(.vertical) {
+                    self
+                }
+            case .zlayer:
                 self
             }
         } else {
@@ -461,8 +475,9 @@ struct StackComponentView_Previews: PreviewProvider {
                             height: .fit
                         ),
                         spacing: 10,
-                        backgroundColor: .init(light: .hex("#ffffff")),
-                        padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
+                        backgroundColor: .init(light: .hex("#ffcc00")),
+                        padding: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        overflow: .scroll
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
