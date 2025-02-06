@@ -33,7 +33,7 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
-public typealias PurchaseCompletedBlock =  @Sendable (StoreTransaction?,
+public typealias PurchaseCompletedBlock =  @MainActor @Sendable (StoreTransaction?,
                                                       CustomerInfo?,
                                                       PublicError?,
                                                       Bool) -> Void
