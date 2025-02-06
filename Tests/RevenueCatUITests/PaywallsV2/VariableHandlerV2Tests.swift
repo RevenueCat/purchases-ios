@@ -64,7 +64,58 @@ class VariableHandlerV2Test: TestCase {
             "num_year_two": "%d years",
             "num_year_few": "%d years",
             "num_year_many": "%d years",
-            "num_year_other": "%d years"
+            "num_year_other": "%d years",
+            "num_days_short": "%1$s%2$s",
+            "num_weeks_short": "%1$s%2$s",
+            "num_months_short": "%1$s%2$s",
+            "num_years_short": "%1$s%2$s"
+        ],
+        "ar": [
+            "day": "day",
+            "daily": "daily",
+            "day_short": "day",
+            "week": "week",
+            "weekly": "weekly",
+            "week_short": "wk",
+            "month": "month",
+            "monthly": "monthly",
+            "month_short": "mo",
+            "year": "year",
+            "yearly": "yearly",
+            "year_short": "yr",
+            "annual": "annual",
+            "annually": "annually",
+            "annual_short": "yr",
+            "free_price": "free",
+            "percent": "%d%%",
+            "num_day_zero": "%d day",
+            "num_day_one": "%d day",
+            "num_day_two": "%d days",
+            "num_day_few": "%d days",
+            "num_day_many": "%d days",
+            "num_day_other": "%d days",
+            "num_week_zero": "%d week",
+            "num_week_one": "%d week",
+            "num_week_two": "%d weeks",
+            "num_week_few": "%d weeks",
+            "num_week_many": "%d weeks",
+            "num_week_other": "%d weeks",
+            "num_month_zero": "%d month",
+            "num_month_one": "%d month",
+            "num_month_two": "%d months",
+            "num_month_few": "%d months",
+            "num_month_many": "%d months",
+            "num_month_other": "%d months",
+            "num_year_zero": "%d year",
+            "num_year_one": "%d year",
+            "num_year_two": "%d years",
+            "num_year_few": "%d years",
+            "num_year_many": "%d years",
+            "num_year_other": "%d years",
+            "num_days_short": "%2$s%1$s",
+            "num_weeks_short": "%2$s%1$s",
+            "num_months_short": "%2$s%1$s",
+            "num_years_short": "%2$s%1$s"
         ]
     ]
 
@@ -116,6 +167,16 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("monthly"))
     }
 
+    func testProductPeriodlyMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.periodly }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("3 months"))
+    }
+
     func testProductPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.price }}",
@@ -136,6 +197,16 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$6.99/month"))
     }
 
+    func testProductPricePerPeriodMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$4.99/3 months"))
+    }
+
     func testProductPricePerPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_period_abbreviated }}",
@@ -144,6 +215,16 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("$6.99/mo"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$4.99/3mo"))
     }
 
     func testProductPricePerDay() {
@@ -196,6 +277,16 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("month"))
     }
 
+    func testProductPeriodMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("3 months"))
+    }
+
     func testProductPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_abbreviated }}",
@@ -204,6 +295,26 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("mo"))
+    }
+
+    func testProductPeriodAbbreviatedMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("3mo"))
+    }
+
+    func testProductPeriodAbbreviatedMultipleMonthsRTL() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["ar"]!
+        )
+        expect(result).to(equal("mo3"))
     }
 
     func testProductPeriodInDays() {
