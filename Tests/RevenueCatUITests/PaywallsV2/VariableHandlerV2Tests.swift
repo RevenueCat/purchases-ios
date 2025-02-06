@@ -112,10 +112,10 @@ class VariableHandlerV2Test: TestCase {
             "num_year_few": "%d years",
             "num_year_many": "%d years",
             "num_year_other": "%d years",
-            "num_days_short": "d3",
-            "num_weeks_short": "wk3",
-            "num_months_short": "mo3",
-            "num_years_short": "yr3"
+            "num_days_short": "d%d",
+            "num_weeks_short": "wk%d",
+            "num_months_short": "mo%d",
+            "num_years_short": "yr%d"
         ]
     ]
 
