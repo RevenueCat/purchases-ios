@@ -972,8 +972,8 @@ private extension PurchasesOrchestrator {
                 return false
             }
 
-            callbacks[productIdentifier] = { transaction, customerInfo, error, cancelled in
-                self.operationDispatcher.dispatchOnMainActor {
+            callbacks[productIdentifier] = { [weak self] transaction, customerInfo, error, cancelled in
+                self?.operationDispatcher.dispatchOnMainActor {
                     completion(transaction, customerInfo, error, cancelled)
                 }
             }
