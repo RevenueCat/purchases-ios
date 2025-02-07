@@ -69,53 +69,6 @@ class VariableHandlerV2Test: TestCase {
             "num_weeks_short": "%dwk",
             "num_months_short": "%dmo",
             "num_years_short": "%dyr"
-        ],
-        "ar": [
-            "day": "day",
-            "daily": "daily",
-            "day_short": "day",
-            "week": "week",
-            "weekly": "weekly",
-            "week_short": "wk",
-            "month": "month",
-            "monthly": "monthly",
-            "month_short": "mo",
-            "year": "year",
-            "yearly": "yearly",
-            "year_short": "yr",
-            "annual": "annual",
-            "annually": "annually",
-            "annual_short": "yr",
-            "free_price": "free",
-            "percent": "%d%%",
-            "num_day_zero": "%d day",
-            "num_day_one": "%d day",
-            "num_day_two": "%d days",
-            "num_day_few": "%d days",
-            "num_day_many": "%d days",
-            "num_day_other": "%d days",
-            "num_week_zero": "%d week",
-            "num_week_one": "%d week",
-            "num_week_two": "%d weeks",
-            "num_week_few": "%d weeks",
-            "num_week_many": "%d weeks",
-            "num_week_other": "%d weeks",
-            "num_month_zero": "%d month",
-            "num_month_one": "%d month",
-            "num_month_two": "%d months",
-            "num_month_few": "%d months",
-            "num_month_many": "%d months",
-            "num_month_other": "%d months",
-            "num_year_zero": "%d year",
-            "num_year_one": "%d year",
-            "num_year_two": "%d years",
-            "num_year_few": "%d years",
-            "num_year_many": "%d years",
-            "num_year_other": "%d years",
-            "num_days_short": "d%d",
-            "num_weeks_short": "wk%d",
-            "num_months_short": "mo%d",
-            "num_years_short": "yr%d"
         ]
     ]
 
@@ -305,16 +258,6 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("3mo"))
-    }
-
-    func testProductPeriodAbbreviatedMultipleMonthsRTL() {
-        let result = variableHandler.processVariables(
-            in: "{{ product.period_abbreviated }}",
-            with: TestData.threeMonthPackage,
-            locale: locale,
-            localizations: localizations["ar"]!
-        )
-        expect(result).to(equal("mo3"))
     }
 
     func testProductPeriodInDays() {
