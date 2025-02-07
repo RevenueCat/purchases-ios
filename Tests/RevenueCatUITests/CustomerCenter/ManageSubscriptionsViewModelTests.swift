@@ -50,6 +50,16 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.showRestoreAlert) == false
     }
 
+    func testLifetimeSubscriptionDoesNotShowCancel() {
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.screen,
+            customerCenterActionHandler: nil,
+            purchaseInformation: PurchaseInformation.mockLifetime
+        )
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
     func testStateChangeToError() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
                                                      customerCenterActionHandler: nil)
@@ -432,6 +442,21 @@ private class MockLoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
     }
 
+}
+
+private extension PurchaseInformation {
+    static var mockLifetime: PurchaseInformation {
+        PurchaseInformation(
+            title: "",
+            durationTitle: "",
+            explanation: .lifetime,
+            price: .paid(""),
+            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
+            productIdentifier: "",
+            store: .appStore,
+            isLifetime: true
+        )
+    }
 }
 
 #endif

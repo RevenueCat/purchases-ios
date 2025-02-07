@@ -29,15 +29,18 @@ import RevenueCat
     typealias CurrentVersionFetcher = () -> String?
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
+
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
+
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
-    private(set) var purchasesProvider: CustomerCenterPurchasesType
-    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
+
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
     var shouldShowAppUpdateWarnings: Bool {
@@ -147,28 +150,28 @@ import RevenueCat
 private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation() async throws {
-            let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+        let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
-            let hasActiveProducts =
-            !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
+        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
+        !customerInfo.nonSubscriptions.isEmpty
 
-            if !hasActiveProducts {
-                self.purchaseInformation = nil
-                self.state = .success
-                return
-            }
+        if !hasActiveProducts {
+            self.purchaseInformation = nil
+            self.state = .success
+            return
+        }
 
-            guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
-                Logger.warning(Strings.could_not_find_subscription_information)
-                self.purchaseInformation = nil
-                throw CustomerCenterError.couldNotFindSubscriptionInformation
-            }
+        guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
+            Logger.warning(Strings.could_not_find_subscription_information)
+            self.purchaseInformation = nil
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
 
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+        let entitlement = customerInfo.entitlements.all.values
+            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-            self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
-                                                                           entitlement: entitlement)
+        self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
+                                                                       entitlement: entitlement)
     }
 
     func loadCustomerCenterConfig() async throws {

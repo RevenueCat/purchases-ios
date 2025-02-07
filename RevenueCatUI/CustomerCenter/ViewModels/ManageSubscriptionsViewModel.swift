@@ -27,7 +27,14 @@ import SwiftUI
 final class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
-    let paths: [CustomerCenterConfigData.HelpPath]
+
+    var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
+        if purchaseInformation?.isLifetime == true {
+            return paths.filter { $0.type != .cancel }
+        } else {
+            return paths
+        }
+    }
 
     @Published
     var showRestoreAlert: Bool = false
@@ -58,13 +65,15 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
+
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private var purchasesProvider: ManageSubscriptionsPurchaseType
-    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
+    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
+    private let paths: [CustomerCenterConfigData.HelpPath]
+    private var purchasesProvider: ManageSubscriptionsPurchaseType
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
