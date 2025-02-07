@@ -167,6 +167,10 @@ private enum VariableLocalizationKey: String {
     case numYearFew = "num_year_few"
     case numYearMany = "num_year_many"
     case numYearOther = "num_year_other"
+    case numDaysShort = "num_days_short"
+    case numWeeksShort = "num_weeks_short"
+    case numMonthsShort = "num_months_short"
+    case numYearsShort = "num_years_short"
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -336,6 +340,11 @@ extension VariablesV2 {
             return ""
         }
 
+        // Ex: "3 months" will return as "3 months"
+        if period.value > 1 {
+            return self.productPeriodWithUnit(package: package, localizations: localizations)
+        }
+
         let value: String
         switch period.unit {
         case .day:
@@ -372,7 +381,11 @@ extension VariablesV2 {
             return ""
         }
 
-        return localizations[period.periodLocalizationKey] ?? ""
+        if period.value > 1 {
+            return self.productPeriodWithUnit(package: package, localizations: localizations)
+        } else {
+            return localizations[period.periodLocalizationKey] ?? ""
+        }
     }
 
     func productPeriodAbbreviated(package: Package, localizations: [String: String]) -> String {
@@ -380,7 +393,31 @@ extension VariablesV2 {
             return ""
         }
 
-        return localizations[period.periodAbbreviatedLocalizationKey] ?? ""
+        if period.value > 1 {
+            let localizedFormatKey: String
+            switch period.unit {
+            case .day:
+                localizedFormatKey = VariableLocalizationKey.numDaysShort.rawValue
+            case .week:
+                localizedFormatKey = VariableLocalizationKey.numWeeksShort.rawValue
+            case .month:
+                localizedFormatKey = VariableLocalizationKey.numMonthsShort.rawValue
+            case .year:
+                localizedFormatKey = VariableLocalizationKey.numYearsShort.rawValue
+            }
+
+            guard let localizedFormat = localizations[localizedFormatKey] else {
+                return ""
+            }
+            return String(format: localizedFormat, period.value)
+
+        } else {
+            guard let abbreviation = localizations[period.periodAbbreviatedLocalizationKey] else {
+                return ""
+            }
+
+            return abbreviation
+        }
     }
 
     func productPeriodInDays(package: Package) -> String {
