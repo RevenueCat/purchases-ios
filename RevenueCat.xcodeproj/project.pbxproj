@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890802D2B76450069677B /* VariableHandlerV2.swift */; };
 		030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */; };
+		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */; };
 		0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA402D4029C300F9E330 /* TabControlComponentViewModel.swift */; };
@@ -1283,6 +1284,7 @@
 /* Begin PBXFileReference section */
 		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
+		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		0354AA3D2D4029C300F9E330 /* TabControlButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentView.swift; sourceTree = "<group>"; };
 		0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentViewModel.swift; sourceTree = "<group>"; };
@@ -2545,6 +2547,14 @@
 				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
 			);
 			path = PaywallsV2;
+			sourceTree = "<group>";
+		};
+		030F91882D55C0FF0085103F /* Localizations */ = {
+			isa = PBXGroup;
+			children = (
+				030F91892D55C1AB0085103F /* LocaleFinder.swift */,
+			);
+			path = Localizations;
 			sourceTree = "<group>";
 		};
 		0354AA452D4029C300F9E330 /* Tabs */ = {
@@ -4956,6 +4966,7 @@
 			children = (
 				88B1BAE32C813A3C001B7EE5 /* PaywallsV2View.swift */,
 				2C7457492CEA6B06004ACE52 /* EnvironmentObjects */,
+				030F91882D55C0FF0085103F /* Localizations */,
 				0308907F2D2B76340069677B /* Variables */,
 				2C7457442CEA652B004ACE52 /* ViewHelpers */,
 				2C7457452CEA653A004ACE52 /* ViewModelHelpers */,
@@ -6810,6 +6821,7 @@
 				887A60CA2C1D037000E1A461 /* RemoteImage.swift in Sources */,
 				887A607B2C1D037000E1A461 /* Bundle+Extensions.swift in Sources */,
 				03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */,
+				030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */,
 				353756662C382C2800A1B8D6 /* CustomerCenterError.swift in Sources */,
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
 				3537566B2C382C2800A1B8D6 /* CustomerCenterView.swift in Sources */,
