@@ -259,6 +259,7 @@ struct TextComponentStyle {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum GenericFont: String {
 
     case serif, monospace, sansSerif = "sans-serif"
@@ -300,7 +301,7 @@ extension TextComponentStyle {
         uiConfigProvider: UIConfigProvider
     ) -> Font? {
         guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
-            Logger.warning("Maping for '\(name)' could not be found. Falling back to system font.")
+            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
             return nil
         }
 
