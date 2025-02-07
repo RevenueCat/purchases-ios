@@ -984,14 +984,11 @@ private extension PurchasesOrchestrator {
     func getAndRemovePurchaseCompletedCallback(
         forTransaction transaction: StoreTransaction
     ) -> (@Sendable (StoreTransaction?,
-                    CustomerInfo?,
-                    PublicError?,
-                    Bool) -> Void)? {
+                     CustomerInfo?,
+                     PublicError?,
+                     Bool) -> Void)? {
         return self.purchaseCompleteCallbacksByProductID.modify {
-            let block = $0.removeValue(forKey: transaction.productIdentifier)
-            return { transaction, customerInfo, error, cancelled in
-                block?(transaction, customerInfo, error, cancelled)
-            }
+            return $0.removeValue(forKey: transaction.productIdentifier)
         }
     }
 
