@@ -410,35 +410,4 @@ fileprivate extension PaywallsV2View {
     }
 }
 
-fileprivate extension Locale {
-
-    static var preferredLocales: [Self] {
-        return Self.preferredLanguages.map(Locale.init(identifier:))
-    }
-
-    func matchesLanguage(_ rhs: Locale) -> Bool {
-        self.removingRegion == rhs.removingRegion
-    }
-
-    // swiftlint:disable:next identifier_name
-    var rc_languageCode: String? {
-        #if swift(>=5.9)
-        // `Locale.languageCode` is deprecated
-        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
-            return self.language.languageCode?.identifier
-        } else {
-            return self.languageCode
-        }
-        #else
-        return self.languageCode
-        #endif
-    }
-
-    /// - Returns: the same locale as `self` but removing its region.
-    private var removingRegion: Self? {
-        return self.rc_languageCode.map(Locale.init(identifier:))
-    }
-
-}
-
 #endif

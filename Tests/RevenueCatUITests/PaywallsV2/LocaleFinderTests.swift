@@ -46,4 +46,17 @@ class LocaleFinderTest: TestCase {
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
 
+    func test_es_MX() {
+        let localizations = [
+            "zh_Hans": Self.wrongTranslations,
+            "es": Self.expectedTranslations,
+            "es_ES": Self.wrongTranslations
+        ]
+
+        let locale = Locale(identifier: "es_MX")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
+
 }

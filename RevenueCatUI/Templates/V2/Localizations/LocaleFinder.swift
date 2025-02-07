@@ -23,8 +23,13 @@ extension Dictionary where Key == String {
         }
 
         // For zh-Hans and zh-Hant
-        let underscoreUocaleIdentifier = localeIdentifier.replacingOccurrences(of: "-", with: "_")
-        if let exactMatch = self[underscoreUocaleIdentifier] {
+        let underscoreLocaleIdentifier = localeIdentifier.replacingOccurrences(of: "-", with: "_")
+        if let exactMatch = self[underscoreLocaleIdentifier] {
+            return exactMatch
+        }
+
+        // For matching language without region
+        if let noRegionLocaleIdentifier = locale.rc_languageCode, let exactMatch = self[noRegionLocaleIdentifier] {
             return exactMatch
         }
 
