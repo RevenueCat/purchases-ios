@@ -116,6 +116,7 @@ public struct PaywallView: View {
             )
     }
 
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
