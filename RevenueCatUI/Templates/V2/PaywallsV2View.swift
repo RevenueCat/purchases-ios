@@ -352,9 +352,9 @@ fileprivate extension PaywallsV2View {
         let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? defaultLocale
 
         // STEP 3: Get localization for one of preferred locales in order
-        if let localizedStrings = componentsLocalizations[chosenLocale.identifier] {
+        if let localizedStrings = componentsLocalizations.findLocale(chosenLocale) {
             return .init(locale: chosenLocale, localizedStrings: localizedStrings)
-        } else if let localizedStrings = componentsLocalizations[defaultLocale.identifier] {
+        } else if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {
             Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
             return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else {
@@ -408,37 +408,6 @@ fileprivate extension PaywallsV2View {
 
         return nil
     }
-}
-
-fileprivate extension Locale {
-
-    static var preferredLocales: [Self] {
-        return Self.preferredLanguages.map(Locale.init(identifier:))
-    }
-
-    func matchesLanguage(_ rhs: Locale) -> Bool {
-        self.removingRegion == rhs.removingRegion
-    }
-
-    // swiftlint:disable:next identifier_name
-    var rc_languageCode: String? {
-        #if swift(>=5.9)
-        // `Locale.languageCode` is deprecated
-        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
-            return self.language.languageCode?.identifier
-        } else {
-            return self.languageCode
-        }
-        #else
-        return self.languageCode
-        #endif
-    }
-
-    /// - Returns: the same locale as `self` but removing its region.
-    private var removingRegion: Self? {
-        return self.rc_languageCode.map(Locale.init(identifier:))
-    }
-
 }
 
 #endif
