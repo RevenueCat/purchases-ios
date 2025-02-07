@@ -10,6 +10,7 @@
 		030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890802D2B76450069677B /* VariableHandlerV2.swift */; };
 		030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */; };
 		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
+		030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918B2D55C9D80085103F /* LocaleFinderTests.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */; };
 		0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA402D4029C300F9E330 /* TabControlComponentViewModel.swift */; };
@@ -1285,6 +1286,7 @@
 		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
 		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
+		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		0354AA3D2D4029C300F9E330 /* TabControlButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentView.swift; sourceTree = "<group>"; };
 		0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentViewModel.swift; sourceTree = "<group>"; };
@@ -2543,6 +2545,7 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				030F918B2D55C9D80085103F /* LocaleFinderTests.swift */,
 				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
 				030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */,
 			);
@@ -6952,6 +6955,7 @@
 				88AD4C482C24E8EA00943C3E /* ExternalPurchaseAndRestoreTests.swift in Sources */,
 				887A633D2C1D177800E1A461 /* Template2ViewTests.swift in Sources */,
 				887A633E2C1D177800E1A461 /* Template3ViewTests.swift in Sources */,
+				030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */,
 				887A633F2C1D177800E1A461 /* Template4ViewTests.swift in Sources */,
 				887A63402C1D177800E1A461 /* Template5ViewTests.swift in Sources */,
 				887A63412C1D177800E1A461 /* BaseSnapshotTest.swift in Sources */,
