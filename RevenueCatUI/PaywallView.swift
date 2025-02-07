@@ -262,7 +262,7 @@ public struct PaywallView: View {
     }
 
     @ViewBuilder
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length function_parameter_count
     private func paywallView(
         for offering: Offering,
         useDraftPaywall: Bool,
