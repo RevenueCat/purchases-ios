@@ -162,6 +162,7 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
+        self.useDraftPaywall = configuration.useDraftPaywall
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
 
