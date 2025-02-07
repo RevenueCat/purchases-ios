@@ -219,7 +219,7 @@ public struct PaywallView: View {
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
-                                     useDraftPaywall: false, // TODO: implement
+                                     useDraftPaywall: self.useDraftPaywall,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
