@@ -192,6 +192,77 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font")
 
+        // Custom Font - Generic
+        VStack {
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        text: "id_1",
+                        fontName: "serif",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: 40
+                    )
+                )
+            )
+
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "primary": .init(ios: .name("Chalkduster"))
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        fontName: "sanserif",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: 40
+                    )
+                )
+            )
+
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string("Hello, world")
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "primary": .init(ios: .name("Chalkduster"))
+                        ]
+                    )),
+                    component: .init(
+                        text: "id_1",
+                        fontName: "monospace",
+                        color: .init(light: .hex("#000000")),
+                        fontSize: 40
+                    )
+                )
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Custom Font - Generic")
+
         // Custom Color
         VStack {
             TextComponentView(
