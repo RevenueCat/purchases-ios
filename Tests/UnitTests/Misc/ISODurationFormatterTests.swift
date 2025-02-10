@@ -18,12 +18,9 @@ import XCTest
 
 final class ISODurationFormatterTests: TestCase {
 
-    func testParseFullDuration() {
+    func testParseFullDuration() throws {
         let durationString = "P1Y2M3W4DT5H6M7S"
-        guard let duration = ISODurationFormatter.parse(from: durationString) else {
-            XCTFail("Failed to parse full duration")
-            return
-        }
+        let duration = try XCTUnwrap(ISODurationFormatter.parse(from: durationString))
 
         expect(duration.years) == 1
         expect(duration.months) == 2
@@ -34,12 +31,9 @@ final class ISODurationFormatterTests: TestCase {
         expect(duration.seconds) == 7
     }
 
-    func testParseDaysOnly() {
+    func testParseDaysOnly() throws {
         let durationString = "P10D"
-        guard let duration = ISODurationFormatter.parse(from: durationString) else {
-            XCTFail("Failed to parse days-only duration")
-            return
-        }
+        let duration = try XCTUnwrap(ISODurationFormatter.parse(from: durationString))
 
         expect(duration.years) == 0
         expect(duration.months) == 0
@@ -50,12 +44,9 @@ final class ISODurationFormatterTests: TestCase {
         expect(duration.seconds) == 0
     }
 
-    func testParseWeeksOnly() {
+    func testParseWeeksOnly() throws {
         let durationString = "P5W"
-        guard let duration = ISODurationFormatter.parse(from: durationString) else {
-            XCTFail("Failed to parse weeks-only duration")
-            return
-        }
+        let duration = try XCTUnwrap(ISODurationFormatter.parse(from: durationString))
 
         expect(duration.weeks) == 5
         expect(duration.years) == 0
@@ -66,12 +57,9 @@ final class ISODurationFormatterTests: TestCase {
         expect(duration.days) == 0
     }
 
-    func testParseTimeOnly() {
+    func testParseTimeOnly() throws {
         let durationString = "PT3H45M20S"
-        guard let duration = ISODurationFormatter.parse(from: durationString) else {
-            XCTFail("Failed to parse time-only duration")
-            return
-        }
+        let duration = try XCTUnwrap(ISODurationFormatter.parse(from: durationString))
 
         expect(duration.weeks) == 0
         expect(duration.years) == 0

@@ -44,7 +44,6 @@ struct ISODuration {
 
     /// The number of weeks in the duration.
     ///
-    /// Weeks will be converted to days if calculating a `TimeInterval`.
     /// Example: For `"P3W"`, this will be `3`.
     let weeks: Int
 
