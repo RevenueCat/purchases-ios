@@ -72,6 +72,7 @@ struct ISODuration {
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
 enum ISODurationFormatter {
 
+    // swiftlint:disable:next line_length
     static let pattern = #"([-+]?)P(?:([-+]?\d+)Y)?(?:([-+]?\d+)M)?(?:([-+]?\d+)W)?(?:([-+]?\d+)D)?(?:T(?:([-+]?\d+)H)?(?:([-+]?\d+)M)?(?:([-+]?\d+)S)?)?"#
 
     /// Parses an ISO 8601 duration string and returns an `ISODuration` object.

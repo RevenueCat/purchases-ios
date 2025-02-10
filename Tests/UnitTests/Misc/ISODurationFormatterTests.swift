@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 10/2/25.
 
+import Nimble
 import XCTest
 
 @testable import RevenueCat
@@ -24,13 +25,13 @@ final class ISODurationFormatterTests: TestCase {
             return
         }
 
-        XCTAssertEqual(duration.years, 1)
-        XCTAssertEqual(duration.months, 2)
-        XCTAssertEqual(duration.weeks, 3)
-        XCTAssertEqual(duration.days, 4)
-        XCTAssertEqual(duration.hours, 5)
-        XCTAssertEqual(duration.minutes, 6)
-        XCTAssertEqual(duration.seconds, 7)
+        expect(duration.years) == 1
+        expect(duration.months) == 2
+        expect(duration.weeks) == 3
+        expect(duration.days) == 4
+        expect(duration.hours) == 5
+        expect(duration.minutes) == 6
+        expect(duration.seconds) == 7
     }
 
     func testParseDaysOnly() {
@@ -40,13 +41,13 @@ final class ISODurationFormatterTests: TestCase {
             return
         }
 
-        XCTAssertEqual(duration.years, 0)
-        XCTAssertEqual(duration.months, 0)
-        XCTAssertEqual(duration.weeks, 0)
-        XCTAssertEqual(duration.days, 10)
-        XCTAssertEqual(duration.hours, 0)
-        XCTAssertEqual(duration.minutes, 0)
-        XCTAssertEqual(duration.seconds, 0)
+        expect(duration.years) == 0
+        expect(duration.months) == 0
+        expect(duration.weeks) == 0
+        expect(duration.days) == 10
+        expect(duration.hours) == 0
+        expect(duration.minutes) == 0
+        expect(duration.seconds) == 0
     }
 
     func testParseWeeksOnly() {
@@ -56,8 +57,13 @@ final class ISODurationFormatterTests: TestCase {
             return
         }
 
-        XCTAssertEqual(duration.weeks, 5)
-        XCTAssertEqual(duration.days, 0)
+        expect(duration.weeks) == 5
+        expect(duration.years) == 0
+        expect(duration.months) == 0
+        expect(duration.hours) == 0
+        expect(duration.minutes) == 0
+        expect(duration.seconds) == 0
+        expect(duration.days) == 0
     }
 
     func testParseTimeOnly() {
@@ -67,34 +73,37 @@ final class ISODurationFormatterTests: TestCase {
             return
         }
 
-        XCTAssertEqual(duration.hours, 3)
-        XCTAssertEqual(duration.minutes, 45)
-        XCTAssertEqual(duration.seconds, 20)
+        expect(duration.weeks) == 0
+        expect(duration.years) == 0
+        expect(duration.months) == 0
+        expect(duration.hours) == 3
+        expect(duration.minutes) == 45
+        expect(duration.seconds) == 20
+        expect(duration.days) == 0
     }
 
     func testStringFromDuration() {
         let duration = ISODuration(years: 1, months: 2, weeks: 0, days: 4, hours: 5, minutes: 6, seconds: 7)
         let durationString = ISODurationFormatter.string(from: duration)
 
-        XCTAssertEqual(durationString, "P1Y2M4DT5H6M7S", "String conversion is incorrect")
+        expect(durationString) == "P1Y2M4DT5H6M7S"
     }
 
     func testEmptyDuration() {
         let durationString = "P"
         let duration = ISODurationFormatter.parse(from: durationString)
 
-        XCTAssertNotNil(duration, "Empty duration should be valid and return zero duration")
-        XCTAssertEqual(duration?.years, 0)
-        XCTAssertEqual(duration?.months, 0)
-        XCTAssertEqual(duration?.days, 0)
-        XCTAssertEqual(duration?.hours, 0)
-        XCTAssertEqual(duration?.minutes, 0)
-        XCTAssertEqual(duration?.seconds, 0)
+        expect(duration).toNot(beNil())
+        expect(duration?.years) == 0
+        expect(duration?.months) == 0
+        expect(duration?.days) == 0
+        expect(duration?.hours) == 0
+        expect(duration?.minutes) == 0
+        expect(duration?.seconds) == 0
     }
 
     func testInvalidDuration() {
         let durationString = "InvalidString"
-        let duration = ISODurationFormatter.parse(from: durationString)
-        XCTAssertNil(duration, "Invalid duration string should return nil")
+        expect(ISODurationFormatter.parse(from: durationString)).to(beNil())
     }
 }
