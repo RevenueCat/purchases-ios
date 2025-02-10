@@ -46,6 +46,7 @@ struct NavigationViewIfNeeded<Content: View>: View {
         case .inNav:
             content
         case .notInNav:
+            #if swift(>=5.7)
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 // Using NavigationStack is best generic solution if only need
                 // to show a toolbar
@@ -58,6 +59,11 @@ struct NavigationViewIfNeeded<Content: View>: View {
                     content
                 }
             }
+            #else
+            NavigationView {
+                content
+            }
+            #endif
         }
     }
 }
