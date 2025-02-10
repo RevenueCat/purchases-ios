@@ -28,16 +28,19 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
-        public var stack: PaywallComponent.StackComponent
+        public let stack: PaywallComponent.StackComponent
+        public let navigationBar: PaywallComponent.NavigationBarComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
-        public var background: PaywallComponent.Background
+        public let background: PaywallComponent.Background
 
         public init(
             stack: PaywallComponent.StackComponent,
+            navigationBar: PaywallComponent.NavigationBarComponent?,
             stickyFooter: PaywallComponent.StickyFooterComponent?,
             background: PaywallComponent.Background
         ) {
             self.stack = stack
+            self.navigationBar = navigationBar
             self.stickyFooter = stickyFooter
             self.background = background
         }
@@ -144,6 +147,7 @@ extension PaywallComponentsData {
             errors["componentsConfig"] = .init(error)
             componentsConfig = ComponentsConfig(base: PaywallComponentsConfig(
                 stack: .init(components: []),
+                navigationBar: nil,
                 stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
             ))

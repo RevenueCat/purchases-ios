@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TestPaywallPreviews.swift
+//  NavigationBarPreview.swift
 //
-//  Created by Josh Holtz on 9/26/24.
+//  Created by Josh Holtz on 2/9/25.
 
 import Foundation
 import RevenueCat
@@ -19,7 +19,7 @@ import SwiftUI
 
 #if DEBUG
 
-private enum Template1Preview {
+private enum NavigationBarPreview {
 
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
 
@@ -163,7 +163,25 @@ private enum Template1Preview {
                         .stack(stack)
                     ]
                 ),
-                navigationBar: nil,
+                navigationBar: .init(
+                    trailingStack: .init(
+                        components: [
+                            .button(.init(
+                                action: .navigateBack,
+                                stack: .init(
+                                    components: [
+                                        .text(
+                                            .init(
+                                                text: "nav_close",
+                                                color: .init(light: .hex("#000000"))
+                                            )
+                                        )
+                                    ]
+                                )
+                            ))
+                        ]
+                    )
+                ),
                 stickyFooter: nil,
                 background: .color(.init(
                     light: .hex("#ffffff")
@@ -176,7 +194,8 @@ private enum Template1Preview {
             "package_name": .string("Monthly"),
             "package_detail": .string("Some price into"),
             "cta": .string("Get Started"),
-            "cta_intro": .string("Claim Free Trial")
+            "cta_intro": .string("Claim Free Trial"),
+            "nav_close": .string("Close")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"
@@ -184,7 +203,7 @@ private enum Template1Preview {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct Template1Preview_Previews: PreviewProvider {
+struct NavigationBarPreview_Previews: PreviewProvider {
 
     static var package: Package {
         return .init(identifier: "weekly",
@@ -195,22 +214,78 @@ struct Template1Preview_Previews: PreviewProvider {
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
-
-        // Template 1
-        PaywallsV2View(
-            paywallComponents: Template1Preview.paywallComponents,
-            offering: .init(identifier: "default",
-                            serverDescription: "",
-                            availablePackages: [package]),
-            introEligibilityChecker: .default(),
-            showZeroDecimalPlacePrices: true,
-            onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
-        )
+        ExampleView(package: self.package)
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct ExampleView: View {
+
+    let package: Package
+
+    @State
+    private var showSheet = false
+
+    @State
+    private var showFullCover = false
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+
+                NavigationLink(destination: ThePaywallView(package: self.package)) {
+                    Text("Push")
+                }
+
+                Button(action: {
+                    self.showSheet = true
+                }, label: {
+                    Text("Sheet")
+                })
+
+                Button(action: {
+                    self.showFullCover = true
+                }, label: {
+                    Text("Full Screen")
+                })
+
+            }
+        }
+        .sheet(isPresented: self.$showSheet) {
+            ThePaywallView(package: self.package)
+        }
+        .fullScreenCover(isPresented: self.$showFullCover) {
+            ThePaywallView(package: self.package)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct ThePaywallView: View {
+
+    @Environment(\.dismiss) private var dismiss
+
+    let package: Package
+
+    var body: some View {
+        PaywallsV2View(
+            paywallComponents: NavigationBarPreview.paywallComponents,
+            offering: .init(identifier: "default",
+                            serverDescription: "",
+                            availablePackages: [self.package]),
+            introEligibilityChecker: .default(),
+            showZeroDecimalPlacePrices: true,
+            onDismiss: {
+                self.dismiss()
+            },
+            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+        )
+    }
+
 }
 
 #endif

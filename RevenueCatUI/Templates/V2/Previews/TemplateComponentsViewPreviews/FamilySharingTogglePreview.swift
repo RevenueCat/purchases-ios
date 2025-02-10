@@ -333,6 +333,7 @@ private enum FamilySharingTogglePreview {
                         .stack(stack)
                     ]
                 ),
+                navigationBar: nil,
                 stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
             )

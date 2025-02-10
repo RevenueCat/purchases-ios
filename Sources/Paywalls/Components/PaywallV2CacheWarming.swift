@@ -40,7 +40,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
         let stickFooterImageURLs = self.stickyFooter.flatMap { self.collectAllImageURLs(in: $0.stack) } ?? []
 
-        return rootStackImageURLs + stickFooterImageURLs
+        let navBarLeading = self.navigationBar?.leadingStack.flatMap { self.collectAllImageURLs(in: $0) } ?? []
+        let navBarTrailing = self.navigationBar?.trailingStack.flatMap { self.collectAllImageURLs(in: $0) } ?? []
+
+        return rootStackImageURLs + stickFooterImageURLs + navBarLeading + navBarTrailing
     }
 
     // swiftlint:disable:next cyclomatic_complexity
@@ -67,10 +70,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += self.collectAllImageURLs(in: package.stack)
             case .purchaseButton(let purchaseButton):
                 urls += self.collectAllImageURLs(in: purchaseButton.stack)
-            case .stickyFooter(let stickyFooter):
-                urls += self.collectAllImageURLs(in: stickyFooter.stack)
-            case .timeline(let component):
-                for item in component.items {
+            case .timeline(let timeline):
+                for item in timeline.items {
                     urls += item.icon.imageUrls
                 }
             case .tabs(let tabs):

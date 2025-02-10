@@ -10,6 +10,7 @@
 //  ViewModelFactory.swift
 //
 //  Created by Josh Holtz on 11/5/24.
+// swiftlint:disable function_body_length type_body_length file_length
 
 import Foundation
 import RevenueCat
@@ -17,11 +18,11 @@ import RevenueCat
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// swiftlint:disable:next type_body_length
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
 
+    // swiftlint:disable:next function_body_length
     func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
@@ -55,8 +56,39 @@ struct ViewModelFactory {
             )
         }
 
+        let navigationBarViewModel = try componentsConfig.navigationBar.flatMap {
+            let leadingStackViewModel = try $0.leadingStack.flatMap { stackComponent in
+                return try toStackViewModel(
+                    component: stackComponent,
+                    packageValidator: self.packageValidator,
+                    firstImageInfo: nil,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+
+            let trailingStackViewModel = try $0.trailingStack.flatMap { stackComponent in
+                return try toStackViewModel(
+                    component: stackComponent,
+                    packageValidator: self.packageValidator,
+                    firstImageInfo: nil,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+
+            return NavigationBarComponentViewModel(
+                component: $0,
+                leadingStackViewModel: leadingStackViewModel,
+                trailingStackViewModel: trailingStackViewModel
+            )
+        }
+
         return RootViewModel(
             stackViewModel: rootStackViewModel,
+            navigationBarViewModel: navigationBarViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
             firstImageInfo: firstImageInfo
         )
@@ -158,22 +190,6 @@ struct ViewModelFactory {
 
             return .purchaseButton(
                 PurchaseButtonComponentViewModel(stackViewModel: stackViewModel)
-            )
-        case .stickyFooter(let component):
-            let stackViewModel = try toStackViewModel(
-                component: component.stack,
-                packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
-                localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider,
-                offering: offering
-            )
-
-            return .stickyFooter(
-                StickyFooterComponentViewModel(
-                    component: component,
-                    stackViewModel: stackViewModel
-                )
             )
         case .timeline(let component):
             let models = try component.items.map { item in
@@ -331,7 +347,7 @@ struct ViewModelFactory {
         )
     }
 
-    // swiftlint:disable cyclomatic_complexity function_body_length
+    // swiftlint:disable cyclomatic_complexity
     private func findFullWidthImageViewIfItsTheFirst(
         _ component: PaywallComponent
     ) -> RootViewModel.FirstImageInfo? {
@@ -373,8 +389,6 @@ struct ViewModelFactory {
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
         case .purchaseButton:
-            return nil
-        case .stickyFooter:
             return nil
         case .timeline:
             return nil
