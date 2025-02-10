@@ -60,7 +60,10 @@ struct NavigationBarIfNeededModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func navigationBarIfNeeded(_ viewModel: NavigationBarComponentViewModel?, onDismiss: @escaping () -> Void) -> some View {
+    func navigationBarIfNeeded(
+        _ viewModel: NavigationBarComponentViewModel?,
+        onDismiss: @escaping () -> Void
+    ) -> some View {
         self.modifier(NavigationBarIfNeededModifier(
             viewModel: viewModel,
             onDismiss: onDismiss
