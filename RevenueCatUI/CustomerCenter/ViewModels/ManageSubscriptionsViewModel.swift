@@ -24,24 +24,36 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class ManageSubscriptionsViewModel: ObservableObject {
+final class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
-    let paths: [CustomerCenterConfigData.HelpPath]
+
+    var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
+        if purchaseInformation?.isLifetime == true {
+            return paths.filter { $0.type != .cancel }
+        } else {
+            return paths
+        }
+    }
 
     @Published
     var showRestoreAlert: Bool = false
+
     @Published
     var showPurchases: Bool = false
 
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
+
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
+
     @Published
     var promotionalOfferData: PromotionalOfferData?
+
     @Published
     var inAppBrowserURL: IdentifiableURL?
+
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -53,13 +65,15 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
+
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private var purchasesProvider: ManageSubscriptionsPurchaseType
-    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
+    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
+    private let paths: [CustomerCenterConfigData.HelpPath]
+    private var purchasesProvider: ManageSubscriptionsPurchaseType
 
     init(screen: CustomerCenterConfigData.Screen,
          customerCenterActionHandler: CustomerCenterActionHandler?,
@@ -238,11 +252,7 @@ private extension CustomerCenterConfigData.Screen {
 
     var filteredPaths: [CustomerCenterConfigData.HelpPath] {
         return self.paths.filter { path in
-            #if targetEnvironment(macCatalyst)
-                return path.type == .refundRequest
-            #else
-                return path.type != .unknown
-            #endif
+            return path.type != .unknown
         }
     }
 

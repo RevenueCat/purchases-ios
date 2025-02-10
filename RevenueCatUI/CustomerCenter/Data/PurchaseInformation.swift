@@ -18,15 +18,29 @@ import RevenueCat
 import StoreKit
 
 // swiftlint:disable nesting
+
+/// Information about a purchase.
 struct PurchaseInformation {
 
+    /// The title of the storekit product, if applicable.
+    /// - Note: See `StoreProduct.localizedTitle` for more details.
     let title: String?
+    /// The duration of the product, if applicable.
+    /// - Note: See `StoreProduct.localizedDetails` for more details.
     let durationTitle: String?
     let explanation: Explanation
+    /// Pricing details of the purchase.
     let price: PriceDetails
+    /// Subscription expiration or renewal details, if applicable.
     let expirationOrRenewal: ExpirationOrRenewal?
+    /// The unique product identifier for the purchase.
     let productIdentifier: String
+    /// The store from which the purchase was made (e.g., App Store, Play Store).
     let store: Store
+    /// Indicates whether the purchase grants lifetime access.
+    /// - `true` for non-subscription purchases.
+    /// - `false` for subscriptions, even if the expiration date is set far in the future.
+    let isLifetime: Bool
 
     init(title: String,
          durationTitle: String,
@@ -34,7 +48,8 @@ struct PurchaseInformation {
          price: PriceDetails,
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
-         store: Store
+         store: Store,
+         isLifetime: Bool
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -43,6 +58,7 @@ struct PurchaseInformation {
         self.expirationOrRenewal = expirationOrRenewal
         self.productIdentifier = productIdentifier
         self.store = store
+        self.isLifetime = isLifetime
     }
 
     init(entitlement: EntitlementInfo? = nil,
@@ -67,6 +83,8 @@ struct PurchaseInformation {
             } else {
                 self.price = entitlement.priceBestEffort(product: subscribedProduct)
             }
+            self.isLifetime = entitlement.expirationDate == nil
+
         } else {
             switch transaction.type {
             case .subscription(let isActive, let willRenew, let expiresDate):
@@ -80,9 +98,12 @@ struct PurchaseInformation {
                         : .expired
                     return ExpirationOrRenewal(label: label, date: .date(dateString))
                 }
+                self.isLifetime = false
+
             case .nonSubscription:
                 self.explanation = .lifetime
                 self.expirationOrRenewal = nil
+                self.isLifetime = true
             }
 
             self.productIdentifier = transaction.productIdentifier

@@ -144,7 +144,8 @@ enum CustomerCenterConfigTestData {
         expirationOrRenewal: .init(label: .nextBillingDate,
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
-        store: .appStore
+        store: .appStore,
+        isLifetime: false
     )
 
     static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
@@ -155,7 +156,8 @@ enum CustomerCenterConfigTestData {
         expirationOrRenewal: .init(label: .expires,
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
-        store: .appStore
+        store: .appStore,
+        isLifetime: false
     )
 
 }
