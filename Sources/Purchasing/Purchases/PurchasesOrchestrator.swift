@@ -676,6 +676,8 @@ final class PurchasesOrchestrator {
         if let confirmInScene = sk2ConfirmInOptions?.confirmInScene,
            #available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *) {
             return try await product.purchase(confirmIn: confirmInScene, options: options)
+        } else {
+            return try await product.purchase(options: options)
         }
 
         // purchase(confirmIn:options:) was introduced in iOS 17.0, which shipped with Xcode 15.0
@@ -685,10 +687,10 @@ final class PurchasesOrchestrator {
         if let confirmInWindow = sk2ConfirmInOptions.confirmInWindow,
            #available(macOS 15.2, *) {
             return try await product.purchase(confirmIn: confirmInWindow, options: options)
+        } else {
+            return try await product.purchase(options: options)
         }
         #endif
-
-        return try await product.purchase(options: options)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
