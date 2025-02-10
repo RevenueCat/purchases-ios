@@ -10,6 +10,7 @@
 //  ViewModelFactory.swift
 //
 //  Created by Josh Holtz on 11/5/24.
+// swiftlint:disable function_body_length type_body_length file_length
 
 import Foundation
 import RevenueCat
@@ -17,11 +18,11 @@ import RevenueCat
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// swiftlint:disable:next type_body_length
 struct ViewModelFactory {
 
     let packageValidator = PackageValidator()
 
+    // swiftlint:disable:next function_body_length
     func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
@@ -346,7 +347,7 @@ struct ViewModelFactory {
         )
     }
 
-    // swiftlint:disable cyclomatic_complexity function_body_length
+    // swiftlint:disable cyclomatic_complexity
     private func findFullWidthImageViewIfItsTheFirst(
         _ component: PaywallComponent
     ) -> RootViewModel.FirstImageInfo? {

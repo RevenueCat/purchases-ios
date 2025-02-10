@@ -45,9 +45,6 @@ struct NavigationViewIfNeeded<Content: View>: View {
                 }
         case .inNav:
             content
-                .onAppear {
-                    print("✅ IN Navigation")
-                }
         case .notInNav:
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 // Using NavigationStack is best generic solution if only need
@@ -55,9 +52,6 @@ struct NavigationViewIfNeeded<Content: View>: View {
                 // NavigatonStack toolbars combine nicely in parent NavigationView
                 NavigationStack {
                     content
-                        .onAppear {
-                            print("❌ NOT IN Navigation")
-                        }
                 }
             } else {
                 NavigationView {
