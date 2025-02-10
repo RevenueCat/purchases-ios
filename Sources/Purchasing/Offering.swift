@@ -77,6 +77,11 @@ import Foundation
     public let paywallComponents: PaywallComponents?
 
     /**
+     Draft paywall components configuration defined in RevenueCat dashboard.
+     */
+    @_spi(Internal) public let draftPaywallComponents: PaywallComponents?
+
+    /**
      Array of ``Package`` objects available for purchase.
      */
     @objc public let availablePackages: [Package]
@@ -176,12 +181,32 @@ import Foundation
     }
 
     /// Initialize an ``Offering`` given a list of ``Package``s.
-    public init(
+    public convenience init(
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
+        availablePackages: [Package]
+    ) {
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: nil,
+            availablePackages: availablePackages
+        )
+    }
+
+    init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponents: PaywallComponents? = nil,
+        draftPaywallComponents: PaywallComponents?,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
@@ -190,6 +215,7 @@ import Foundation
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
         self.paywallComponents = paywallComponents
+        self.draftPaywallComponents = draftPaywallComponents
 
         var foundPackages: [PackageType: Package] = [:]
 

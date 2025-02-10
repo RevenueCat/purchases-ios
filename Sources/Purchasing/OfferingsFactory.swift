@@ -62,11 +62,22 @@ class OfferingsFactory {
             return nil
         }()
 
+        let paywallDraftComponents: Offering.PaywallComponents? = {
+            if let uiConfig, let paywallDraftComponents = offering.draftPaywallComponents {
+                return .init(
+                    uiConfig: uiConfig,
+                    data: paywallDraftComponents
+                )
+            }
+            return nil
+        }()
+
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
                         paywall: offering.paywall,
                         paywallComponents: paywallComponents,
+                        draftPaywallComponents: paywallDraftComponents,
                         availablePackages: availablePackages)
     }
 
