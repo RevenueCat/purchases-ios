@@ -59,9 +59,10 @@ class FeedbackSurveyViewModel: ObservableObject {
         for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
         darkMode: Bool,
         displayMode: CustomerCenterPresentationMode,
+        locale: Locale = .current,
         dismissView: () -> Void
     ) async {
-        trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
+        trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
 
         self.customerCenterActionHandler?(.feedbackSurveyCompleted(option.id))
 
@@ -116,9 +117,10 @@ private extension FeedbackSurveyViewModel {
 
     func trackSurveyAnswerSubmitted(option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
                                     darkMode: Bool,
-                                    displayMode: CustomerCenterPresentationMode) {
+                                    displayMode: CustomerCenterPresentationMode,
+                                    locale: Locale) {
         let isSandbox = purchasesProvider.isSandbox
-        let surveyOptionData = CustomerCenterAnswerSubmittedEvent.Data(locale: .current,
+        let surveyOptionData = CustomerCenterAnswerSubmittedEvent.Data(locale: locale,
                                                                        darkMode: darkMode,
                                                                        isSandbox: isSandbox,
                                                                        displayMode: displayMode,
