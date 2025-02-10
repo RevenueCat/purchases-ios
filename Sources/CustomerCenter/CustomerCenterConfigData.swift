@@ -335,19 +335,22 @@ public struct CustomerCenterConfigData {
         public let openMethod: OpenMethod?
         public let type: PathType
         public let detail: PathDetail?
+        public let refundWindow: String?
 
         public init(id: String,
                     title: String,
                     url: URL? = nil,
                     openMethod: OpenMethod? = nil,
                     type: PathType,
-                    detail: PathDetail?) {
+                    detail: PathDetail?,
+                    refundWindow: String?) {
             self.id = id
             self.title = title
             self.url = url
             self.openMethod = openMethod
             self.type = type
             self.detail = detail
+            self.refundWindow = refundWindow
         }
 
         public enum PathDetail {
@@ -644,6 +647,7 @@ extension CustomerCenterConfigData.HelpPath {
         } else {
             self.detail = nil
         }
+        self.refundWindow = response.refundWindow
     }
 
 }

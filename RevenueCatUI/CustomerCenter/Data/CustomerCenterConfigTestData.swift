@@ -38,7 +38,8 @@ enum CustomerCenterConfigTestData {
                                 url: nil,
                                 openMethod: nil,
                                 type: .missingPurchase,
-                                detail: nil
+                                detail: nil,
+                                refundWindow: nil
                             ),
                             .init(
                                 id: "2",
@@ -52,7 +53,8 @@ enum CustomerCenterConfigTestData {
                                     title: "title",
                                     subtitle: "subtitle",
                                     productMapping: ["monthly": "offer_id"]
-                                ))
+                                )),
+                                refundWindow: nil
                             ),
                             .init(
                                 id: "3",
@@ -60,7 +62,8 @@ enum CustomerCenterConfigTestData {
                                 url: nil,
                                 openMethod: nil,
                                 type: .changePlans,
-                                detail: nil
+                                detail: nil,
+                                refundWindow: nil
                             ),
                             .init(
                                 id: "4",
@@ -87,7 +90,8 @@ enum CustomerCenterConfigTestData {
                                             promotionalOffer: nil
                                         )
                                     ]
-                                ))
+                                )),
+                                refundWindow: nil
                             )
                         ]
                     ),
@@ -102,7 +106,8 @@ enum CustomerCenterConfigTestData {
                                 url: nil,
                                 openMethod: nil,
                                 type: .missingPurchase,
-                                detail: nil
+                                detail: nil,
+                                refundWindow: nil
                             )
                         ]
                       )
