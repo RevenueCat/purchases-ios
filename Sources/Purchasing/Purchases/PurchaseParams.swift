@@ -13,6 +13,14 @@
 
 import Foundation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
+
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
 /**
@@ -37,12 +45,16 @@ import Foundation
     let winBackOffer: WinBackOffer?
     let metadata: [String: String]?
 
+    /// Options for the confirmIn: parameter of the `purchase(confirmIn:options:)` SK2 APIs.
+    let sk2ConfirmInOptions: SK2ConfirmInOptions?
+
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
         self.metadata = builder.metadata
         self.product = builder.product
         self.package = builder.package
         self.winBackOffer = builder.winBackOffer
+        self.sk2ConfirmInOptions = builder.sk2ConfirmInOptions
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -52,6 +64,7 @@ import Foundation
         private(set) var package: Package?
         private(set) var product: StoreProduct?
         private(set) var winBackOffer: WinBackOffer?
+        private(set) var sk2ConfirmInOptions: SK2ConfirmInOptions?
 
         /**
          * Create a new builder with a ``Package``.
@@ -90,6 +103,38 @@ import Foundation
          */
         @objc public func with(metadata: [String: String]) -> Self {
             self.metadata = metadata
+            return self
+        }
+        #endif
+
+        #if canImport(UIKit)
+        /**
+         * Set `confirmInScene`.
+         *
+         * - Parameter confirmInScene: The scene to show the purchase confirmation UI in proximity to.
+         * - Note: This value is only used when StoreKit 2 is in use.
+         *
+         * Availability: iOS 17.0+, macCatalyst 15.0+, tvOS 17.0+, visionOS 1.0+
+         */
+        @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+        @objc public func with(confirmInScene: UIScene) -> Self {
+            self.sk2ConfirmInOptions = SK2ConfirmInOptions(confirmInScene: confirmInScene)
+            return self
+        }
+        #endif
+
+        #if canImport(AppKit)
+        /**
+         * Set `confirmInWindow`.
+         *
+         * - Parameter confirmInWindow: The window to show the purchase confirmation UI in proximity to.
+         * - Note: This value is only used when StoreKit 2 is in use.
+         *
+         * Availability: macOS 15.2+
+         */
+        @available(macOS 15.2, *)
+        @objc public func with(confirmInWindow: NSWindow) -> Self {
+            self.sk2ConfirmInOptions = SK2ConfirmInOptions(confirmInWindow: confirmInWindow)
             return self
         }
         #endif

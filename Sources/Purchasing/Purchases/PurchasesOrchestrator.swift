@@ -389,6 +389,7 @@ final class PurchasesOrchestrator {
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
                  winBackOffer: params.winBackOffer,
+                 sk2ConfirmInOptions: params.sk2ConfirmInOptions,
                  metadata: params.metadata,
                  completion: completion)
     }
@@ -398,6 +399,7 @@ final class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: WinBackOffer? = nil,
+                  sk2ConfirmInOptions: SK2ConfirmInOptions? = nil,
                   metadata: [String: String]? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
@@ -416,6 +418,7 @@ final class PurchasesOrchestrator {
                           package: package,
                           promotionalOffer: promotionalOffer,
                           winBackOffer: winBackOffer,
+                          sk2ConfirmInOptions: sk2ConfirmInOptions,
                           metadata: metadata,
                           completion: completion)
         } else if product.isTestProduct {
@@ -507,10 +510,12 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_parameter_count
     func purchase(sk2Product product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
                   winBackOffer: WinBackOffer?,
+                  sk2ConfirmInOptions: SK2ConfirmInOptions?,
                   metadata: [String: String]? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
@@ -520,6 +525,7 @@ final class PurchasesOrchestrator {
                     package: package,
                     promotionalOffer: promotionalOffer,
                     winBackOffer: winBackOffer?.discount.sk2Discount,
+                    sk2ConfirmInOptions: sk2ConfirmInOptions,
                     metadata: metadata
                 )
 
@@ -557,6 +563,7 @@ final class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: Product.SubscriptionOffer? = nil,
+                  sk2ConfirmInOptions: SK2ConfirmInOptions? = nil,
                   metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
 
@@ -593,7 +600,7 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
-            result = try await self.purchase(sk2Product, options)
+            result = try await self.purchase(sk2Product, options, sk2ConfirmInOptions)
         } catch StoreKitError.userCancelled {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()
@@ -649,14 +656,39 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func purchase(
         _ product: SK2Product,
-        _ options: Set<Product.PurchaseOption>
+        _ options: Set<Product.PurchaseOption>,
+        _ sk2ConfirmInOptions: SK2ConfirmInOptions?
     ) async throws -> Product.PurchaseResult {
         #if VISION_OS
-        return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
-                                          options: options)
-        #else
-        return try await product.purchase(options: options)
+        let scene: UIScene
+        if let confirmInScene = sk2ConfirmInOptions?.confirmInScene {
+            scene = confirmInScene
+        } else {
+            scene = try await self.systemInfo.currentWindowScene
+        }
+
+        return try await product.purchase(confirmIn: scene, options: options)
+
+        // purchase(confirmIn:options:) was introduced in iOS 17.0, which shipped with Xcode 15.0
+        // and the Swift 5.9.0 compiler.
+        #elseif canImport(UIKit) && compiler(>=5.9.0)
+
+        if let confirmInScene = sk2ConfirmInOptions?.confirmInScene,
+           #available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *) {
+            return try await product.purchase(confirmIn: confirmInScene, options: options)
+        }
+
+        // purchase(confirmIn:options:) was introduced in iOS 17.0, which shipped with Xcode 15.0
+        // and the Swift 5.9.0 compiler.
+        #elseif canImport(AppKit) && compiler(>=5.9.0)
+
+        if let confirmInWindow = sk2ConfirmInOptions.confirmInWindow,
+           #available(macOS 15.2, *) {
+            return try await product.purchase(confirmIn: confirmInWindow, options: options)
+        }
         #endif
+
+        return try await product.purchase(options: options)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

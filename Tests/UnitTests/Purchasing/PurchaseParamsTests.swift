@@ -14,6 +14,10 @@
 import Nimble
 import XCTest
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -29,11 +33,7 @@ class PurchaseParamsTests: TestCase {
     }
 
     func testPurchaseParamsBuilderWithPackage() async throws {
-        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
-        let package = Package(identifier: "package",
-                              packageType: .monthly,
-                              storeProduct: StoreProduct(sk1Product: product),
-                              offeringIdentifier: "offering")
+        let package = buildMockPackage()
         let params = PurchaseParams.Builder(package: package).build()
         expect(params.package).to(equal(package))
         expect(params.product).to(beNil())
@@ -103,4 +103,76 @@ class PurchaseParamsTests: TestCase {
         }
     }
 
+    #if canImport(UIKit)
+    @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+    func testPurchaseParamsBuilderWithConfirmInScene() throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        guard let uiScene: UIScene = self.createMockUIScene() else {
+            fail("UIScene not mocked")
+            return
+        }
+        let package = buildMockPackage()
+
+        let purchaseParams: PurchaseParams = PurchaseParams.Builder(package: package)
+            .with(confirmInScene: uiScene)
+            .build()
+
+        expect(purchaseParams.sk2ConfirmInOptions).toNot(beNil())
+        expect(purchaseParams.sk2ConfirmInOptions?.confirmInScene).to(equal(uiScene))
+    }
+    #endif
+
+    #if canImport(AppKit)
+    @available(macOS 15.2, *)
+    func testPurchaseParamsBuilderWithConfirmInWindow() throws {
+        try AvailabilityChecks.macOS15_2APIAvailableOrSkipTest()
+
+        guard let nsWindow: NSWindow = self.createMockNSWindow() else {
+            fail("NSWindow not mocked")
+            return
+        }
+        let package = buildMockPackage()
+
+        let purchaseParams: PurchaseParams = PurchaseParams.Builder(package: package)
+            .with(confirmInWindow: nsWindow)
+            .build()
+
+        expect(purchaseParams.sk2ConfirmInOptions).toNot(beNil())
+        expect(purchaseParams.sk2ConfirmInOptions?.confirmInWindow).to(equal(nsWindow))
+    }
+    #endif
 }
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension PurchaseParamsTests {
+    private func buildMockPackage() -> Package {
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+        return Package(identifier: "package",
+                       packageType: .monthly,
+                       storeProduct: StoreProduct(sk1Product: product),
+                       offeringIdentifier: "offering")
+    }
+}
+
+#if canImport(UIKit)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension PurchaseParamsTests {
+    // We can't access or instantiate UIScenes directly, so we need to use reflection to create a mock
+    private func createMockUIScene() -> UIScene? {
+        guard let sceneClass = NSClassFromString("UIScene") as? NSObject.Type else { return nil }
+        return sceneClass.init() as? UIScene
+    }
+}
+#endif
+
+#if canImport(AppKit)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension PurchaseParamsTests {
+    // We can't access or instantiate NSWindows directly, so we need to use reflection to create a mock
+    private func createMockNSWindow() -> NSWindow? {
+        guard let nsWindowClass = NSClassFromString("NSWindow") as? NSObject.Type else { return nil }
+        return nsWindowClass.init() as? NSWindow
+    }
+}
+#endif

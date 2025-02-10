@@ -68,4 +68,9 @@ enum AvailabilityChecks {
         #endif
     }
 
+    static func macOS15_2APIAvailableOrSkipTest() throws {
+        guard #available(macOS 15.2, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
 }
