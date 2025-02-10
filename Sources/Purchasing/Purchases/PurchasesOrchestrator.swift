@@ -684,7 +684,7 @@ final class PurchasesOrchestrator {
         // and the Swift 5.9.0 compiler.
         #elseif canImport(AppKit) && compiler(>=5.9.0)
 
-        if let confirmInWindow = sk2ConfirmInOptions.confirmInWindow,
+        if let confirmInWindow = sk2ConfirmInOptions?.confirmInWindow,
            #available(macOS 15.2, *) {
             return try await product.purchase(confirmIn: confirmInWindow, options: options)
         } else {
