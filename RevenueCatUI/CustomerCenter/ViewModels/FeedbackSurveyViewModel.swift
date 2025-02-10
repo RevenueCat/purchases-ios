@@ -61,10 +61,9 @@ class FeedbackSurveyViewModel: ObservableObject {
         displayMode: CustomerCenterPresentationMode,
         dismissView: () -> Void
     ) async {
-        if let customerCenterActionHandler = self.customerCenterActionHandler {
-            trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
-            customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
-        }
+        trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
+
+        self.customerCenterActionHandler?(.feedbackSurveyCompleted(option.id))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
