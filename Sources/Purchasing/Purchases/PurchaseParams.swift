@@ -107,7 +107,7 @@ import AppKit
         }
         #endif
 
-        #if canImport(UIKit)
+        #if canImport(UIKit) && !os(watchOS)
         /**
          * Set `confirmInScene`.
          *

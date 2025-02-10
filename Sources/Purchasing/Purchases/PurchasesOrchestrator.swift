@@ -671,7 +671,7 @@ final class PurchasesOrchestrator {
 
         // purchase(confirmIn:options:) was introduced in iOS 17.0, which shipped with Xcode 15.0
         // and the Swift 5.9.0 compiler.
-        #elseif canImport(UIKit) && compiler(>=5.9.0)
+        #elseif canImport(UIKit) && compiler(>=5.9.0) && !os(watchOS)
 
         if let confirmInScene = sk2ConfirmInOptions?.confirmInScene,
            #available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *) {
@@ -690,6 +690,9 @@ final class PurchasesOrchestrator {
         } else {
             return try await product.purchase(options: options)
         }
+
+        #else
+        return try await product.purchase(options: options)
         #endif
     }
 

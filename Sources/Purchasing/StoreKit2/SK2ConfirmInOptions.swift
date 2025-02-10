@@ -28,7 +28,7 @@ import AppKit
 /// - When UIKit is available, use `confirmInScene` to specify a `UIScene`.
 /// - When AppKit is available, use `confirmInWindow` to specify an `NSWindow`.
 internal struct SK2ConfirmInOptions {
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     /// The scene to show purchase confirmation UI in proximity to.
     let confirmInScene: UIScene?
     #endif
