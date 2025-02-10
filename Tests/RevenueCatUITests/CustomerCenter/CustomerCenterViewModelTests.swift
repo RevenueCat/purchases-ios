@@ -786,6 +786,9 @@ class CustomerCenterViewModelTests: TestCase {
         if case .impression = trackedEvent {} else {
             fail("Expected an impression event")
         }
+
+        viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
+        expect(mockPurchases.trackedEvents.count) == 1
     }
 
     func testShouldShowAppUpdateWarningsTrue() {
