@@ -788,6 +788,8 @@ class CustomerCenterViewModelTests: TestCase {
         }
 
         viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
+        viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
+        viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
         expect(mockPurchases.trackedEvents.count) == 1
     }
 
