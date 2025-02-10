@@ -55,8 +55,39 @@ struct ViewModelFactory {
             )
         }
 
+        let navigationBarViewModel = try componentsConfig.navigationBar.flatMap {
+            let leadingStackViewModel = try $0.leadingStack.flatMap { stackComponent in
+                return try toStackViewModel(
+                    component: stackComponent,
+                    packageValidator: self.packageValidator,
+                    firstImageInfo: nil,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+
+            let trailingStackViewModel = try $0.trailingStack.flatMap { stackComponent in
+                return try toStackViewModel(
+                    component: stackComponent,
+                    packageValidator: self.packageValidator,
+                    firstImageInfo: nil,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+
+            return NavigationBarComponentViewModel(
+                component: $0,
+                leadingStackViewModel: leadingStackViewModel,
+                trailingStackViewModel: trailingStackViewModel
+            )
+        }
+
         return RootViewModel(
             stackViewModel: rootStackViewModel,
+            navigationBarViewModel: navigationBarViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
             firstImageInfo: firstImageInfo
         )
@@ -158,22 +189,6 @@ struct ViewModelFactory {
 
             return .purchaseButton(
                 PurchaseButtonComponentViewModel(stackViewModel: stackViewModel)
-            )
-        case .stickyFooter(let component):
-            let stackViewModel = try toStackViewModel(
-                component: component.stack,
-                packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
-                localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider,
-                offering: offering
-            )
-
-            return .stickyFooter(
-                StickyFooterComponentViewModel(
-                    component: component,
-                    stackViewModel: stackViewModel
-                )
             )
         case .timeline(let component):
             let models = try component.items.map { item in
@@ -373,8 +388,6 @@ struct ViewModelFactory {
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
         case .purchaseButton:
-            return nil
-        case .stickyFooter:
             return nil
         case .timeline:
             return nil

@@ -62,8 +62,6 @@ struct ComponentsView: View {
                     PackageComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 case .purchaseButton(let viewModel):
                     PurchaseButtonComponentView(viewModel: viewModel)
-                case .stickyFooter(let viewModel):
-                    StickyFooterComponentView(viewModel: viewModel)
                 case .timeline(let viewModel):
                     TimelineComponentView(viewModel: viewModel)
                 case .tabs(let viewModel):

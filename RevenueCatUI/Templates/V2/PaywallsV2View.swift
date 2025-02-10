@@ -170,6 +170,7 @@ struct PaywallsV2View: View {
                 .task {
                     await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
                 }
+                .navigationBar(paywallState.rootViewModel.navigationBarViewModel, onDismiss: self.onDismiss)
             case .failure(let error):
                 // Show fallback paywall and debug error message that
                 // occurred while validating data and view models

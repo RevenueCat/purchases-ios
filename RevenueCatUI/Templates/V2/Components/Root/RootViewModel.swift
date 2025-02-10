@@ -25,15 +25,18 @@ class RootViewModel {
     }
 
     let stackViewModel: StackComponentViewModel
+    let navigationBarViewModel: NavigationBarComponentViewModel?
     let stickyFooterViewModel: StickyFooterComponentViewModel?
     let firstImageInfo: FirstImageInfo?
 
     init(
         stackViewModel: StackComponentViewModel,
+        navigationBarViewModel: NavigationBarComponentViewModel?,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
         firstImageInfo: FirstImageInfo?
     ) {
         self.stackViewModel = stackViewModel
+        self.navigationBarViewModel = navigationBarViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
         self.firstImageInfo = firstImageInfo
     }

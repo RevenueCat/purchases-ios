@@ -342,6 +342,7 @@ private enum MultiTierPreview {
                         .stack(stack)
                     ]
                 ),
+                navigationBar: nil,
                 stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
             )

@@ -28,7 +28,6 @@ enum PaywallComponentViewModel {
     case button(ButtonComponentViewModel)
     case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
-    case stickyFooter(StickyFooterComponentViewModel)
     case timeline(TimelineComponentViewModel)
 
     case tabs(TabsComponentViewModel)
