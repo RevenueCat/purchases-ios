@@ -282,6 +282,8 @@ extension SamplePaywallsList {
             print("CustomerCenter: refundRequestCompleted. Result: \(status)")
         case .feedbackSurveyCompleted(let surveyOptionID):
             print("CustomerCenter: feedbackSurveyCompleted. Result: \(surveyOptionID)")
+        case .feedbackSurveyCompletedWithOption(let option):
+            print("CustomerCenter: feedbackSurveyCompleted. Result: \(option)")
         }
     }
 }
