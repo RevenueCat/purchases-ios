@@ -42,6 +42,8 @@ struct PurchaseInformation {
     /// - `false` for subscriptions, even if the expiration date is set far in the future.
     let isLifetime: Bool
 
+    let latestPurchaseDate: Date?
+
     init(title: String,
          durationTitle: String,
          explanation: Explanation,
@@ -49,7 +51,8 @@ struct PurchaseInformation {
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
          store: Store,
-         isLifetime: Bool
+         isLifetime: Bool,
+         latestPurchaseDate: Date?
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -59,6 +62,7 @@ struct PurchaseInformation {
         self.productIdentifier = productIdentifier
         self.store = store
         self.isLifetime = isLifetime
+        self.latestPurchaseDate = latestPurchaseDate
     }
 
     init(entitlement: EntitlementInfo? = nil,
@@ -84,7 +88,7 @@ struct PurchaseInformation {
                 self.price = entitlement.priceBestEffort(product: subscribedProduct)
             }
             self.isLifetime = entitlement.expirationDate == nil
-
+            self.latestPurchaseDate = entitlement.latestPurchaseDate
         } else {
             switch transaction.type {
             case .subscription(let isActive, let willRenew, let expiresDate):
@@ -99,11 +103,13 @@ struct PurchaseInformation {
                     return ExpirationOrRenewal(label: label, date: .date(dateString))
                 }
                 self.isLifetime = false
+                self.latestPurchaseDate = (transaction as? SubscriptionInfo)?.purchaseDate
 
             case .nonSubscription:
                 self.explanation = .lifetime
                 self.expirationOrRenewal = nil
                 self.isLifetime = true
+                self.latestPurchaseDate = (transaction as? NonSubscriptionTransaction)?.purchaseDate
             }
 
             self.productIdentifier = transaction.productIdentifier

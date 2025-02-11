@@ -30,7 +30,10 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
         if purchaseInformation?.isLifetime == true {
-            return paths.filter { $0.type != .cancel }
+            return paths
+                .filter {
+                    $0.type != .cancel
+                }
         } else {
             return paths
         }
@@ -256,6 +259,49 @@ private extension CustomerCenterConfigData.Screen {
         }
     }
 
+}
+
+private extension CustomerCenterConfigData.HelpPath {
+    func isWithinRefundWindow(purchaseInformation: PurchaseInformation?) -> Bool {
+        guard let purchaseInformation,
+              type != .refundRequest else {
+            return true
+        }
+
+        if let refundWindow {
+            switch refundWindow {
+            case .forever:
+                return true
+            case let .duration(duration):
+
+                return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate)
+            }
+        }
+
+        return true
+    }
+}
+
+private extension ISODuration {
+    func withinDuration(referenceDate: Date?) -> Bool {
+        guard let referenceDate else {
+            return true
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = self.years
+        dateComponents.month = self.months
+        dateComponents.weekOfYear = self.weeks
+        dateComponents.day = self.days
+        dateComponents.hour = self.hours
+        dateComponents.minute = self.minutes
+        dateComponents.second = self.seconds
+
+        let calendar = Calendar.current
+        let endDate = calendar.date(byAdding: dateComponents, to: referenceDate) ?? referenceDate
+
+        return referenceDate < endDate && Date() <= endDate
+    }
 }
 
 #endif

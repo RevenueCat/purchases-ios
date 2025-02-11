@@ -150,7 +150,8 @@ enum CustomerCenterConfigTestData {
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
         store: .appStore,
-        isLifetime: false
+        isLifetime: false,
+        latestPurchaseDate: nil
     )
 
     static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
@@ -162,7 +163,8 @@ enum CustomerCenterConfigTestData {
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
         store: .appStore,
-        isLifetime: false
+        isLifetime: false,
+        latestPurchaseDate: nil
     )
 
 }
