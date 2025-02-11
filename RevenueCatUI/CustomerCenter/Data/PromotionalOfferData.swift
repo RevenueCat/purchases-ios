@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-struct PromotionalOfferData: Identifiable {
+struct PromotionalOfferData: Identifiable, Equatable {
 
     let id = UUID()
     let promotionalOffer: PromotionalOffer

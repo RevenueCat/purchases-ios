@@ -18,7 +18,7 @@ import Foundation
 // swiftlint:disable missing_docs nesting file_length type_body_length
 public typealias RCColor = PaywallColor
 
-public struct CustomerCenterConfigData {
+public struct CustomerCenterConfigData: Equatable {
 
     public let screens: [Screen.ScreenType: Screen]
     public let appearance: Appearance
@@ -41,7 +41,7 @@ public struct CustomerCenterConfigData {
         self.productId = productId
     }
 
-    public struct Localization {
+    public struct Localization: Equatable {
 
         let locale: String
         let localizedStrings: [String: String]
@@ -51,7 +51,7 @@ public struct CustomerCenterConfigData {
             self.localizedStrings = localizedStrings
         }
 
-        public enum CommonLocalizedString: String {
+        public enum CommonLocalizedString: String, Equatable {
 
             case copy = "copy"
             case noThanks = "no_thanks"
@@ -327,7 +327,7 @@ public struct CustomerCenterConfigData {
         }
     }
 
-    public struct HelpPath {
+    public struct HelpPath: Equatable {
 
         public let id: String
         public let title: String
@@ -353,14 +353,14 @@ public struct CustomerCenterConfigData {
             self.refundWindow = refundWindow
         }
 
-        public enum PathDetail {
+        public enum PathDetail: Equatable {
 
             case promotionalOffer(PromotionalOffer)
             case feedbackSurvey(FeedbackSurvey)
 
         }
 
-        public enum PathType: String {
+        public enum PathType: String, Equatable {
 
             case missingPurchase = "MISSING_PURCHASE"
             case refundRequest = "REFUND_REQUEST"
@@ -388,7 +388,7 @@ public struct CustomerCenterConfigData {
 
         }
 
-        public enum OpenMethod: String {
+        public enum OpenMethod: String, Equatable {
 
             case inApp = "IN_APP"
             case external = "EXTERNAL"
@@ -406,7 +406,7 @@ public struct CustomerCenterConfigData {
 
         }
 
-        public struct PromotionalOffer {
+        public struct PromotionalOffer: Equatable {
 
             public let iosOfferId: String
             public let eligible: Bool
@@ -428,7 +428,7 @@ public struct CustomerCenterConfigData {
 
         }
 
-        public struct FeedbackSurvey {
+        public struct FeedbackSurvey: Equatable {
 
             public let title: String
             public let options: [Option]
@@ -438,7 +438,7 @@ public struct CustomerCenterConfigData {
                 self.options = options
             }
 
-            public struct Option {
+            public struct Option: Equatable {
 
                 public let id: String
                 public let title: String
@@ -456,7 +456,7 @@ public struct CustomerCenterConfigData {
 
     }
 
-    public struct Appearance {
+    public struct Appearance: Equatable {
 
         public let accentColor: ColorInformation
         public let textColor: ColorInformation
@@ -476,7 +476,7 @@ public struct CustomerCenterConfigData {
             self.buttonBackgroundColor = buttonBackgroundColor
         }
 
-        public struct ColorInformation {
+        public struct ColorInformation: Equatable {
 
             public var light: RCColor?
             public var dark: RCColor?
@@ -509,7 +509,7 @@ public struct CustomerCenterConfigData {
 
     }
 
-    public struct Screen {
+    public struct Screen: Equatable {
 
         public let type: ScreenType
         public let title: String
@@ -523,7 +523,7 @@ public struct CustomerCenterConfigData {
             self.paths = paths
         }
 
-        public enum ScreenType: String {
+        public enum ScreenType: String, Equatable {
             case management = "MANAGEMENT"
             case noActive = "NO_ACTIVE"
             case unknown
@@ -542,7 +542,7 @@ public struct CustomerCenterConfigData {
 
     }
 
-    public struct Support {
+    public struct Support: Equatable {
 
         public let email: String
         public let shouldWarnCustomerToUpdate: Bool
