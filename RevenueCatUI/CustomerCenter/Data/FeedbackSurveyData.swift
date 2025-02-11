@@ -22,7 +22,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class FeedbackSurveyData: ObservableObject {
+class FeedbackSurveyData: ObservableObject, Equatable {
 
     var configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
     var path: CustomerCenterConfigData.HelpPath
@@ -36,6 +36,10 @@ class FeedbackSurveyData: ObservableObject {
         self.onOptionSelected = onOptionSelected
     }
 
+    static func == (lhs: FeedbackSurveyData, rhs: FeedbackSurveyData) -> Bool {
+        return lhs.configuration == rhs.configuration &&
+               lhs.path == rhs.path
+    }
 }
 
 #endif
