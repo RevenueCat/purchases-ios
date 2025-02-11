@@ -37,6 +37,10 @@ class TabsComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
     }
 
+    var visible: Bool {
+        return self.component.visible
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

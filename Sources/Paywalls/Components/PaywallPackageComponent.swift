@@ -24,9 +24,10 @@ public extension PaywallComponent {
         public let isSelectedByDefault: Bool
         public let stack: PaywallComponent.StackComponent
 
-        public init(packageID: String,
-                    isSelectedByDefault: Bool,
-                    stack: PaywallComponent.StackComponent
+        public init(
+            packageID: String,
+            isSelectedByDefault: Bool,
+            stack: PaywallComponent.StackComponent
         ) {
             self.type = .package
             self.packageID = packageID

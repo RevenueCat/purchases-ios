@@ -62,7 +62,7 @@ class StackComponentViewModel {
         let style = StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             badgeViewModels: self.badgeViewModels,
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
             spacing: partial?.spacing ?? self.component.spacing,

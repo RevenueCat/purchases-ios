@@ -112,18 +112,19 @@ struct LoadedTabsComponentView: View {
     }
 
     var body: some View {
-        LoadedTabComponentView(
-            stackViewModel: self.activeTabViewModel.stackViewModel,
-            onChange: { context in
-                self.packageContext.update(
-                    package: context.package,
-                    variableContext: context.variableContext
-                )
-            },
-            onDismiss: self.onDismiss
-        )
-        .environmentObject(self.tabControlContext)
-        .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
+        
+            LoadedTabComponentView(
+                stackViewModel: self.activeTabViewModel.stackViewModel,
+                onChange: { context in
+                    self.packageContext.update(
+                        package: context.package,
+                        variableContext: context.variableContext
+                    )
+                },
+                onDismiss: self.onDismiss
+            )
+            .environmentObject(self.tabControlContext)
+            .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
     }
 
 }

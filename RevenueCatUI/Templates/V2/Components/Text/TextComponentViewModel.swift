@@ -61,7 +61,7 @@ class TextComponentViewModel {
 
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             text: Self.processText(
                 text,
                 packageContext: packageContext,
