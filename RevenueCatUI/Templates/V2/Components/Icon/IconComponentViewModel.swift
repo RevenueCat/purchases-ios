@@ -55,7 +55,7 @@ class IconComponentViewModel {
         )
 
         let style = IconComponentStyle(
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             baseUrl: partial?.baseUrl ?? self.component.baseUrl,
             formats: partial?.formats ?? self.component.formats,
             size: partial?.size ?? self.component.size,

@@ -21,7 +21,7 @@ public extension PaywallComponent {
 
     typealias ComponentOverrides<T: PaywallPartialComponent> = [ComponentOverride<T>]
 
-    struct ComponentOverride<T: PaywallPartialComponent>: PaywallComponentBase {
+    struct ComponentOverride<T: PaywallPartialComponent>: Codable, Sendable, Hashable, Equatable {
 
         public let conditions: [Condition]
         public let properties: T
