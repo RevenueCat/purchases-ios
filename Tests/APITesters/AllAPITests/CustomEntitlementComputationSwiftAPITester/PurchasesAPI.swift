@@ -45,7 +45,8 @@ func checkPurchasesEnums() {
     switch periodType! {
     case .normal,
          .intro,
-         .trial:
+         .trial,
+         .prepaid:
         print(periodType!)
     @unknown default:
         fatalError()

@@ -229,6 +229,7 @@ NSURL *url;
         case RCNormal:
         case RCIntro:
         case RCTrial:
+        case RCPrepaid:
             NSLog(@"%ld", (long)t);
     }
 
