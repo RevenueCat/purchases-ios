@@ -85,9 +85,6 @@ struct PaywallsV2View: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @EnvironmentObject
-    private var purchaseHandler: PurchaseHandler
-
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -97,12 +94,14 @@ struct PaywallsV2View: View {
     private let paywallComponentsData: PaywallComponentsData
     private let uiConfigProvider: UIConfigProvider
     private let offering: Offering
+    private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
+        purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
@@ -113,6 +112,7 @@ struct PaywallsV2View: View {
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider
         self.offering = offering
+        self.purchaseHandler = purchaseHandler
         self.onDismiss = onDismiss
         self.fallbackContent = fallbackContent
         self._introOfferEligibilityContext = .init(
@@ -154,6 +154,7 @@ struct PaywallsV2View: View {
                     onDismiss: self.onDismiss
                 )
                 .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                .environmentObject(self.purchaseHandler)
                 .environmentObject(self.introOfferEligibilityContext)
                 .disabled(self.purchaseHandler.actionInProgress)
                 .onAppear {
@@ -170,6 +171,19 @@ struct PaywallsV2View: View {
                 .task {
                     await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
                 }
+                // Note: preferences need to be applied after `.toolbar` call
+                .preference(key: PurchaseInProgressPreferenceKey.self,
+                            value: self.purchaseHandler.packageBeingPurchased)
+                .preference(key: PurchasedResultPreferenceKey.self,
+                            value: .init(data: self.purchaseHandler.purchaseResult))
+                .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                            value: self.purchaseHandler.restoredCustomerInfo)
+                .preference(key: RestoreInProgressPreferenceKey.self,
+                            value: self.purchaseHandler.restoreInProgress)
+                .preference(key: PurchaseErrorPreferenceKey.self,
+                            value: self.purchaseHandler.purchaseError as NSError?)
+                .preference(key: RestoreErrorPreferenceKey.self,
+                            value: self.purchaseHandler.restoreError as NSError?)
             case .failure(let error):
                 // Show fallback paywall and debug error message that
                 // occurred while validating data and view models
