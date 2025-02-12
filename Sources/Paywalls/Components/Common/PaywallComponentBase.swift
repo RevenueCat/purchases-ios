@@ -7,9 +7,9 @@
 // swiftlint:disable missing_docs
 import Foundation
 
-public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
+public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {}
 
-public enum PaywallComponent: PaywallComponentBase {
+public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case text(TextComponent)
     case image(ImageComponent)
@@ -54,7 +54,7 @@ public extension PaywallComponent {
     typealias ColorHex = String
 }
 
-extension PaywallComponent: Codable {
+extension PaywallComponent {
 
     enum CodingKeys: String, CodingKey {
 

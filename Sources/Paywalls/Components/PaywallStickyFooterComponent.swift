@@ -19,21 +19,22 @@ public extension PaywallComponent {
 
     final class StickyFooterComponent: PaywallComponentBase {
 
-            public let stack: PaywallComponent.StackComponent
+        public let stack: PaywallComponent.StackComponent
 
-            public init(
-                stack: PaywallComponent.StackComponent
-            ) {
-                self.stack = stack
-            }
-
-            public func hash(into hasher: inout Hasher) {
-                hasher.combine(stack)
-            }
-
-            public static func == (lhs: StickyFooterComponent, rhs: StickyFooterComponent) -> Bool {
-                return lhs.stack == rhs.stack
-            }
+        public init(
+            stack: PaywallComponent.StackComponent
+        ) {
+            self.stack = stack
         }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(stack)
+        }
+
+        public static func == (lhs: StickyFooterComponent, rhs: StickyFooterComponent) -> Bool {
+            return lhs.stack == rhs.stack
+        }
+
+    }
 
 }
