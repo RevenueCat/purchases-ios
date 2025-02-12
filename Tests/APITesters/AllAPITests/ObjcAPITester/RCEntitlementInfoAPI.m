@@ -58,6 +58,7 @@
         case RCIntro:
         case RCTrial:
         case RCNormal:
+        case RCPrepaid:
             NSLog(@"%ld", (long)pr);
     }
 }
