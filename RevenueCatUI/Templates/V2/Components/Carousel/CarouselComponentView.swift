@@ -32,31 +32,32 @@ struct CarouselComponentView: View {
     let spacing: CGFloat = 16
 
     var body: some View {
-        GeometryReader { reader in
-            CarouselView(
-                pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
-                    StackComponentView(
-                        viewModel: stackViewModel,
-                        onDismiss: self.onDismiss
-                    )
-                }),
-                loop: self.viewModel.component.loop,
-                spacing: spacing,
-                cardWidth: reader.size.width - ((reader.size.width * showableWidthPercent) * 2) - spacing,
-                pageControl: .init(
-                    width: self.viewModel.component.pageControl.width,
-                    height: self.viewModel.component.pageControl.height,
-                    color: self.viewModel.component.pageControl.color.asDisplayable(uiConfigProvider: self.viewModel.uiConfigProvider).toDynamicColor()
-                ),
-                selectPageControl: .init(
-                    width: self.viewModel.component.pageControl.selectedWidth,
-                    height: self.viewModel.component.pageControl.selectedHeight,
-                    color: self.viewModel.component.pageControl.selectedColor.asDisplayable(uiConfigProvider: self.viewModel.uiConfigProvider).toDynamicColor()
-                ),
-                msTimePerSlide: viewModel.component.autoAdvance?.msTimePerPage,
-                msTransitionTime: viewModel.component.autoAdvance?.msTransitionTime
-            )
-        }
+        EmptyView()
+//        GeometryReader { reader in
+//            CarouselView(
+//                pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
+//                    StackComponentView(
+//                        viewModel: stackViewModel,
+//                        onDismiss: self.onDismiss
+//                    )
+//                }),
+//                loop: self.viewModel.component.loop,
+//                spacing: spacing,
+//                cardWidth: reader.size.width - ((reader.size.width * showableWidthPercent) * 2) - spacing,
+//                pageControl: .init(
+//                    width: self.viewModel.component.pageControl.width,
+//                    height: self.viewModel.component.pageControl.height,
+//                    color: self.viewModel.component.pageControl.color.asDisplayable(uiConfigProvider: self.viewModel.uiConfigProvider).toDynamicColor()
+//                ),
+//                selectPageControl: .init(
+//                    width: self.viewModel.component.pageControl.selectedWidth,
+//                    height: self.viewModel.component.pageControl.selectedHeight,
+//                    color: self.viewModel.component.pageControl.selectedColor.asDisplayable(uiConfigProvider: self.viewModel.uiConfigProvider).toDynamicColor()
+//                ),
+//                msTimePerSlide: viewModel.component.autoAdvance?.msTimePerPage,
+//                msTransitionTime: viewModel.component.autoAdvance?.msTransitionTime
+//            )
+//        }
         .frame(height: 240)
         .padding(.top, 50)
     }
@@ -366,199 +367,199 @@ struct PageControlView: View {
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct CarouselComponentView_Previews: PreviewProvider {
-
-    // Need to wrap in VStack otherwise preview rerenders and images won't show
-    static var previews: some View {
-        // Examples
-        VStack {
-            CarouselComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    component: .init(
-                        pages: [
-                            .init(
-                                components: [],
-                                size: .init(width: .fill, height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#FF0000")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            ),
-                            .init(
-                                components: [],
-                                size: .init(width: .fill, height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#00FF00")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            ),
-                            .init(
-                                components: [],
-                                size: .init(width: .fill, height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#0000FF")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            )
-                        ],
-                        loop: false,
-                        pageControl: .init(
-                            width: 10,
-                            height: 10,
-                            color: .init(light: .hex("#cccccc")),
-                            selectedWidth: 10,
-                            selectedHeight: 10,
-                            selectedColor: .init(light: .hex("#000000"))
-                        )
-                    ),
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
-                    )
-                ),
-                onDismiss: {}
-            )
-
-            CarouselComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    component: .init(
-                        pages: [
-                            .init(
-                                components: [],
-                                size: .init(width: .fixed(100), height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#FF0000")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            ),
-                            .init(
-                                components: [],
-                                size: .init(width: .fixed(100), height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#00FF00")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            ),
-                            .init(
-                                components: [],
-                                size: .init(width: .fixed(100), height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#0000FF")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            )
-                        ],
-                        loop: true,
-                        pageControl: .init(
-                            width: 10,
-                            height: 10,
-                            color: .init(light: .hex("#cccccc")),
-                            selectedWidth: 10,
-                            selectedHeight: 10,
-                            selectedColor: .init(light: .hex("#000000"))
-                        )
-                    ),
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
-                    )
-                ),
-                onDismiss: {}
-            )
-            .clipped()
-
-            CarouselComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
-                    component: .init(
-                        pages: [
-                            .init(
-                                components: [],
-                                size: .init(width: .fill, height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#FF0000")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            ),
-                            .init(
-                                components: [],
-                                size: .init(width: .fill, height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#00FF00")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            ),
-                            .init(
-                                components: [],
-                                size: .init(width: .fill, height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#0000FF")),
-                                shape: .rectangle(.init(topLeading: 8,
-                                                        topTrailing: 8,
-                                                        bottomLeading: 8,
-                                                        bottomTrailing: 8))
-                            )
-                        ],
-                        loop: true,
-                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
-                        pageControl: .init(
-                            width: 10,
-                            height: 10,
-                            color: .init(light: .hex("#4462e96e")),
-                            selectedWidth: 40,
-                            selectedHeight: 10,
-                            selectedColor: .init(light: .hex("#4462e9"))
-                        )
-                    ),
-                    localizationProvider: .init(
-                        locale: Locale.current,
-                        localizedStrings: [:]
-                    )
-                ),
-                onDismiss: {}
-            )
-        }
-        .padding(.vertical)
-        .previewRequiredEnvironmentProperties()
-        .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Examples")
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CarouselComponentViewModel {
-
-    convenience init(
-        component: PaywallComponent.CarouselComponent,
-        localizationProvider: LocalizationProvider
-    ) throws {
-        let viewModels: [StackComponentViewModel] = try component.pages.map { component in
-            return try .init(
-                component: component,
-                localizationProvider: localizationProvider
-            )
-        }
-
-        try self.init(
-            localizationProvider: localizationProvider,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            component: component,
-            pageStackViewModels: viewModels
-        )
-    }
-
-}
+//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+//struct CarouselComponentView_Previews: PreviewProvider {
+//
+//    // Need to wrap in VStack otherwise preview rerenders and images won't show
+//    static var previews: some View {
+//        // Examples
+//        VStack {
+//            CarouselComponentView(
+//                // swiftlint:disable:next force_try
+//                viewModel: try! .init(
+//                    component: .init(
+//                        pages: [
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fill, height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#FF0000")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            ),
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fill, height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#00FF00")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            ),
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fill, height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#0000FF")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            )
+//                        ],
+//                        loop: false,
+//                        pageControl: .init(
+//                            width: 10,
+//                            height: 10,
+//                            color: .init(light: .hex("#cccccc")),
+//                            selectedWidth: 10,
+//                            selectedHeight: 10,
+//                            selectedColor: .init(light: .hex("#000000"))
+//                        )
+//                    ),
+//                    localizationProvider: .init(
+//                        locale: Locale.current,
+//                        localizedStrings: [:]
+//                    )
+//                ),
+//                onDismiss: {}
+//            )
+//
+//            CarouselComponentView(
+//                // swiftlint:disable:next force_try
+//                viewModel: try! .init(
+//                    component: .init(
+//                        pages: [
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fixed(100), height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#FF0000")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            ),
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fixed(100), height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#00FF00")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            ),
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fixed(100), height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#0000FF")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            )
+//                        ],
+//                        loop: true,
+//                        pageControl: .init(
+//                            width: 10,
+//                            height: 10,
+//                            color: .init(light: .hex("#cccccc")),
+//                            selectedWidth: 10,
+//                            selectedHeight: 10,
+//                            selectedColor: .init(light: .hex("#000000"))
+//                        )
+//                    ),
+//                    localizationProvider: .init(
+//                        locale: Locale.current,
+//                        localizedStrings: [:]
+//                    )
+//                ),
+//                onDismiss: {}
+//            )
+//            .clipped()
+//
+//            CarouselComponentView(
+//                // swiftlint:disable:next force_try
+//                viewModel: try! .init(
+//                    component: .init(
+//                        pages: [
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fill, height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#FF0000")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            ),
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fill, height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#00FF00")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            ),
+//                            .init(
+//                                components: [],
+//                                size: .init(width: .fill, height: .fixed(120)),
+//                                backgroundColor: .init(light: .hex("#0000FF")),
+//                                shape: .rectangle(.init(topLeading: 8,
+//                                                        topTrailing: 8,
+//                                                        bottomLeading: 8,
+//                                                        bottomTrailing: 8))
+//                            )
+//                        ],
+//                        loop: true,
+//                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
+//                        pageControl: .init(
+//                            width: 10,
+//                            height: 10,
+//                            color: .init(light: .hex("#4462e96e")),
+//                            selectedWidth: 40,
+//                            selectedHeight: 10,
+//                            selectedColor: .init(light: .hex("#4462e9"))
+//                        )
+//                    ),
+//                    localizationProvider: .init(
+//                        locale: Locale.current,
+//                        localizedStrings: [:]
+//                    )
+//                ),
+//                onDismiss: {}
+//            )
+//        }
+//        .padding(.vertical)
+//        .previewRequiredEnvironmentProperties()
+//        .previewLayout(.fixed(width: 400, height: 400))
+//        .previewDisplayName("Examples")
+//    }
+//
+//}
+//
+//@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+//extension CarouselComponentViewModel {
+//
+//    convenience init(
+//        component: PaywallComponent.CarouselComponent,
+//        localizationProvider: LocalizationProvider
+//    ) throws {
+//        let viewModels: [StackComponentViewModel] = try component.pages.map { component in
+//            return try .init(
+//                component: component,
+//                localizationProvider: localizationProvider
+//            )
+//        }
+//
+//        try self.init(
+//            localizationProvider: localizationProvider,
+//            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+//            component: component,
+//            pageStackViewModels: viewModels
+//        )
+//    }
+//
+//}
 
 
 #endif

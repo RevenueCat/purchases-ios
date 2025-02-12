@@ -43,6 +43,31 @@ class CarouselComponentViewModel {
 //        }
     }
 
+    }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct DisplayablePageControl2 {
+
+    public let position: PaywallComponent.CarouselComponent.PageControl.Position
+    public let backgroundColor: BackgroundStyle?
+    public let shape: ShapeModifier.Shape?
+    public let border: ShapeModifier.BorderInfo?
+    public let shadow: ShadowModifier.ShadowInfo?
+
+//    public let active: PageControllIndicator
+//    public let `default`: PageControllIndicator
+
+    init(
+        uiConfigProvider: UIConfigProvider,
+        pageControl: PaywallComponent.CarouselComponent.PageControl
+    ) {
+        self.position = pageControl.position
+        self.backgroundColor = pageControl.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.shape = pageControl.shape?.shape
+        self.border = pageControl.border?.border(uiConfigProvider: uiConfigProvider)
+        self.shadow = pageControl.shadow?.shadow(uiConfigProvider: uiConfigProvider)
+    }
+
 }
 
 #endif

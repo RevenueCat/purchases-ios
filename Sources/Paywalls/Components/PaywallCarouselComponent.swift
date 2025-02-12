@@ -10,7 +10,7 @@
 //  PaywallCarouselComponent.swift
 //
 //  Created by Josh Holtz on 1/26/25.
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs nesting
 
 import Foundation
 
@@ -18,46 +18,71 @@ import Foundation
 
 public extension PaywallComponent {
 
-    struct AutoAdvanceSlides: PaywallComponentBase {
-
-        public let msTimePerPage: Int
-        public let msTransitionTime: Int
-
-        public init(msTimePerPage: Int, msTransitionTime: Int) {
-            self.msTimePerPage = msTimePerPage
-            self.msTransitionTime = msTransitionTime
-        }
-
-    }
-
-    struct PageControl: PaywallComponentBase {
-
-        public let width: Int
-        public let height: Int
-        public let color: ColorScheme
-        public let selectedWidth: Int
-        public let selectedHeight: Int
-        public let selectedColor: ColorScheme
-
-        public init(
-            width: Int,
-            height: Int,
-            color: PaywallComponent.ColorScheme,
-            selectedWidth: Int,
-            selectedHeight: Int,
-            selectedColor: PaywallComponent.ColorScheme
-        ) {
-            self.width = width
-            self.height = height
-            self.color = color
-            self.selectedWidth = selectedWidth
-            self.selectedHeight = selectedHeight
-            self.selectedColor = selectedColor
-        }
-
-    }
-
     final class CarouselComponent: PaywallComponentBase {
+
+        public struct AutoAdvanceSlides: PaywallComponentBase {
+
+            public let msTimePerPage: Int
+            public let msTransitionTime: Int
+
+            public init(msTimePerPage: Int, msTransitionTime: Int) {
+                self.msTimePerPage = msTimePerPage
+                self.msTransitionTime = msTransitionTime
+            }
+
+        }
+
+        public struct PageControl: PaywallComponentBase {
+
+            public enum Position: String, Codable, Sendable, Hashable, Equatable {
+                case top
+                case bottom
+            }
+
+            public let position: Position
+            public let backgroundColor: ColorScheme?
+            public let shape: Shape?
+            public let border: Border?
+            public let shadow: Shadow?
+
+            public let active: PageControllIndicator
+            public let `default`: PageControllIndicator
+
+            public init(
+                position: Position,
+                backgroundColor: ColorScheme?,
+                shape: Shape?,
+                border: Border?,
+                shadow: Shadow?,
+                active: PageControllIndicator,
+                default: PageControllIndicator
+            ) {
+                self.position = position
+                self.backgroundColor = backgroundColor
+                self.shape = shape
+                self.border = border
+                self.shadow = shadow
+                self.active = active
+                self.default = `default`
+            }
+
+        }
+
+        public struct PageControllIndicator: PaywallComponentBase {
+
+            public let width: Int
+            public let height: Int
+            public let margin: Padding?
+            public let color: ColorScheme
+
+            public init(width: Int, height: Int, margin: Padding? = nil, color: ColorScheme) {
+                self.width = width
+                self.height = height
+                self.margin = margin
+                self.color = color
+            }
+
+        }
 
         let type: ComponentType
 
@@ -91,7 +116,7 @@ public extension PaywallComponent {
             pagePeek: Double = 0.2,
             startPageIndex: Int = 0,
             loop: Bool = false,
-            autoAdvance: PaywallComponent.AutoAdvanceSlides? = nil,
+            autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
             pageControl: PageControl
         ) {
             self.type = .carousel
