@@ -288,6 +288,7 @@ struct ViewModelFactory {
                 try toStackViewModel(
                     component: stackComponent,
                     packageValidator: packageValidator,
+                    firstImageInfo: firstImageInfo,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering
@@ -408,6 +409,11 @@ struct ViewModelFactory {
             return nil
         case .tabControlToggle:
             return nil
+        case .carousel(let carousel):
+            guard let first = carousel.pages.first?.components.first else {
+                return nil
+            }
+            return self.findFullWidthImageViewIfItsTheFirst(first)
         }
     }
 

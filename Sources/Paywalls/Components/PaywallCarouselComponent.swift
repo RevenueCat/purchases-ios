@@ -45,8 +45,8 @@ public extension PaywallComponent {
             public let border: Border?
             public let shadow: Shadow?
 
-            public let active: PageControllIndicator
-            public let `default`: PageControllIndicator
+            public let active: PageControlIndicator
+            public let `default`: PageControlIndicator
 
             public init(
                 position: Position,
@@ -54,8 +54,8 @@ public extension PaywallComponent {
                 shape: Shape?,
                 border: Border?,
                 shadow: Shadow?,
-                active: PageControllIndicator,
-                default: PageControllIndicator
+                active: PageControlIndicator,
+                default: PageControlIndicator
             ) {
                 self.position = position
                 self.backgroundColor = backgroundColor
@@ -68,7 +68,7 @@ public extension PaywallComponent {
 
         }
 
-        public struct PageControllIndicator: PaywallComponentBase {
+        public struct PageControlIndicator: PaywallComponentBase {
 
             public let width: Int
             public let height: Int

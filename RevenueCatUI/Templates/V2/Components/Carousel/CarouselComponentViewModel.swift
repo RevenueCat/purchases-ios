@@ -43,19 +43,26 @@ class CarouselComponentViewModel {
 //        }
     }
 
+    var displayablePageControl: DisplayablePageControl {
+        return DisplayablePageControl(
+            uiConfigProvider: self.uiConfigProvider,
+            pageControl: self.component.pageControl
+        )
     }
 
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct DisplayablePageControl2 {
+struct DisplayablePageControl {
 
-    public let position: PaywallComponent.CarouselComponent.PageControl.Position
-    public let backgroundColor: BackgroundStyle?
-    public let shape: ShapeModifier.Shape?
-    public let border: ShapeModifier.BorderInfo?
-    public let shadow: ShadowModifier.ShadowInfo?
+    let position: PaywallComponent.CarouselComponent.PageControl.Position
+    let backgroundColor: BackgroundStyle?
+    let shape: ShapeModifier.Shape?
+    let border: ShapeModifier.BorderInfo?
+    let shadow: ShadowModifier.ShadowInfo?
 
-//    public let active: PageControllIndicator
-//    public let `default`: PageControllIndicator
+    let active: DisplayablePageControlIndicator
+    let `default`: DisplayablePageControlIndicator
 
     init(
         uiConfigProvider: UIConfigProvider,
@@ -66,6 +73,29 @@ struct DisplayablePageControl2 {
         self.shape = pageControl.shape?.shape
         self.border = pageControl.border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = pageControl.shadow?.shadow(uiConfigProvider: uiConfigProvider)
+
+        self.active = .init(uiConfigProvider: uiConfigProvider, pageControlIndicator: pageControl.active)
+        self.default = .init(uiConfigProvider: uiConfigProvider, pageControlIndicator: pageControl.default)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct DisplayablePageControlIndicator {
+
+    let width: CGFloat
+    let height: CGFloat
+    let edgeInsets: EdgeInsets
+    let color: Color
+
+    init(
+        uiConfigProvider: UIConfigProvider,
+        pageControlIndicator: PaywallComponent.CarouselComponent.PageControlIndicator
+    ) {
+        self.width = CGFloat(pageControlIndicator.width)
+        self.height = CGFloat(pageControlIndicator.height)
+        self.edgeInsets = (pageControlIndicator.margin ?? .zero).edgeInsets
+        self.color = pageControlIndicator.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
     }
 
 }
