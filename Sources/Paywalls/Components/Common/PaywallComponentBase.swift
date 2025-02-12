@@ -7,7 +7,6 @@
 // swiftlint:disable missing_docs
 import Foundation
 
-
 public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {}
 
 public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {

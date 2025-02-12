@@ -34,7 +34,6 @@ public extension PaywallComponent {
 
         private enum CodingKeys: String, CodingKey {
             case type
-            case visible
             case action
             case stack
         }

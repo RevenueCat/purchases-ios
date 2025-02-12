@@ -19,7 +19,20 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TimelineComponentView: View {
+
     private let viewModel: TimelineComponentViewModel
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -29,14 +42,33 @@ struct TimelineComponentView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: viewModel.component.itemSpacing ?? 0) {
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            )
+        ) { style in
+            Group {
+                if style.visible {
+                    timeline(style: style)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func timeline(
+        style: TimelineComponentStyle
+    ) -> some View {
+        VStack(alignment: .leading, spacing: style.itemSpacing ?? 0) {
             ForEach(viewModel.items, id: \.component) { item in
-                timelineRow(item: item)
+                timelineRow(item: item, style: style)
             }
         }
         // Add `itemSpacing` padding to the bottom of the timeline so the last connector can extend
         // a little beyond the description text of the last item.
-        .padding(.bottom, viewModel.component.itemSpacing ?? 0)
+        .padding(.bottom, style.itemSpacing ?? 0)
         .backgroundPreferenceValue(ItemBoundsKey.self) { bounds in
             GeometryReader { proxy in
                 ForEach(Array(viewModel.items.enumerated()), id: \.offset) { index, item in
@@ -81,16 +113,17 @@ struct TimelineComponentView: View {
                 }
             }
         }
-        .padding(viewModel.component.margin.edgeInsets)
-        .size(viewModel.component.size, horizontalAlignment: .leading, verticalAlignment: .top)
+        .padding(style.margin)
+        .size(style.size, horizontalAlignment: .leading, verticalAlignment: .top)
         .clipped()
     }
 
     @ViewBuilder
-    func timelineRow(
-        item: TimelineItemViewModel
+    private func timelineRow(
+        item: TimelineItemViewModel,
+        style: TimelineComponentStyle
     ) -> some View {
-        HStack(alignment: .centerIcon, spacing: viewModel.component.columnGutter ?? 0) {
+        HStack(alignment: .centerIcon, spacing: style.columnGutter ?? 0) {
             VStack(spacing: 0) {
                 IconComponentView(viewModel: item.icon)
                     // Store the bounds of the icon so we can later use them to position the connectors
@@ -98,16 +131,16 @@ struct TimelineComponentView: View {
                     .alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
             }
 
-            VStack(alignment: .leading, spacing: viewModel.component.textSpacing ?? 0) {
+            VStack(alignment: .leading, spacing: style.textSpacing ?? 0) {
                 TextComponentView(viewModel: item.title)
-                    .applyIf(viewModel.component.iconAlignment == .title) { view in
+                    .applyIf(style.iconAlignment == .title) { view in
                         view.alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
                     }
                 if let description = item.description {
                     TextComponentView(viewModel: description)
                 }
             }
-            .applyIf(viewModel.component.iconAlignment == .titleAndDescription) { view in
+            .applyIf(style.iconAlignment == .titleAndDescription) { view in
                 view.alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
             }
         }
@@ -264,7 +297,8 @@ struct ContentView_Previews: PreviewProvider {
                     size: .init(width: .fill, height: .fit),
                     padding: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
                     margin: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
-                    items: items
+                    items: items,
+                    overrides: nil
                 ), localizationProvider: LocalizationProvider(
                     locale: Locale.current,
                     localizedStrings: [

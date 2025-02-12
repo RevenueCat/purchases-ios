@@ -169,30 +169,4 @@ private extension PaywallComponent.IconBackgroundShape {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.Border {
-
-    func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
-        return ShapeModifier.BorderInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
-            width: self.width
-        )
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.Shadow {
-
-    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
-        return ShadowModifier.ShadowInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
-            radius: self.radius,
-            x: self.x,
-            y: self.y
-        )
-    }
-
-}
-
 #endif
