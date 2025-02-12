@@ -70,6 +70,9 @@ extension Store: DefaultValueProvider {
 
     /// If the entitlement is under a trial period.
     @objc(RCTrial) case trial = 2
+
+    /// If the entitlement is under a prepaid period.
+    @objc(RCPrepaid) case prepaid = 3
 }
 
 extension PeriodType: CaseIterable {}
