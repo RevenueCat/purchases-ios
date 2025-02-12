@@ -10,6 +10,7 @@
 //  ComponentViewModels.swift
 //
 //  Created by Josh Holtz on 8/27/24.
+// swiftlint:disable file_length
 
 import RevenueCat
 import SwiftUI
@@ -346,6 +347,74 @@ extension DisplayableColorScheme {
         @unknown default:
             return light
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.Shape {
+
+    var shape: ShapeModifier.Shape {
+        switch self {
+        case .rectangle(let cornerRadiuses):
+            let corners = cornerRadiuses.flatMap { cornerRadiuses in
+                ShapeModifier.RadiusInfo(
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
+                )
+            }
+            return .rectangle(corners)
+        case .pill:
+            return .pill
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.Border {
+
+    func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
+        return ShapeModifier.BorderInfo(
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            width: self.width
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.Shadow {
+
+    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+        return ShadowModifier.ShadowInfo(
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            radius: self.radius,
+            x: self.x,
+            y: self.y
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.Badge {
+
+    func badge(stackShape: ShapeModifier.Shape?,
+               stackBorder: ShapeModifier.BorderInfo?,
+               badgeViewModels: [PaywallComponentViewModel],
+               uiConfigProvider: UIConfigProvider) -> BadgeModifier.BadgeInfo? {
+        BadgeModifier.BadgeInfo(
+            style: self.style,
+            alignment: self.alignment,
+            stack: self.stack,
+            badgeViewModels: badgeViewModels,
+            stackShape: stackShape,
+            stackBorder: stackBorder,
+            uiConfigProvider: uiConfigProvider
+        )
     }
 
 }
