@@ -64,7 +64,6 @@ struct StackComponentView: View {
     }
 
     @ViewBuilder
-    // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
         Group {
             switch style.dimension {
