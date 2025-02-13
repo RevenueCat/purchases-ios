@@ -13,15 +13,14 @@
 
 import Foundation
 
-// swiftlint:disable:next missing_docs@_spi(Internal)
-public protocol ClockType: Sendable {
+// swiftlint:disable missing_docs
+@_spi(Internal) public protocol ClockType: Sendable {
 
     var now: Date { get }
     var currentTime: DispatchTime { get }
 
 }
 
-// swiftlint:disable:next missing_docs
 @_spi(Internal) public final class Clock: ClockType {
 
     @_spi(Internal) public var now: Date { return Date() }
@@ -30,6 +29,7 @@ public protocol ClockType: Sendable {
     @_spi(Internal) public static let `default`: Clock = .init()
 
 }
+// swiftlint:enable missing_docs
 
 extension ClockType {
 
