@@ -10,6 +10,7 @@
 //  ViewModelFactory.swift
 //
 //  Created by Josh Holtz on 11/5/24.
+// swiftlint:disable file_length
 
 import Foundation
 import RevenueCat

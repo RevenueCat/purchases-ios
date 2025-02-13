@@ -216,7 +216,9 @@ struct DisplayablePageControl {
         self.position = pageControl.position
         self.padding = (pageControl.padding).edgeInsets
         self.margin = (pageControl.margin).edgeInsets
-        self.backgroundStyle = pageControl.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.backgroundStyle = pageControl.backgroundColor?.asDisplayable(
+            uiConfigProvider: uiConfigProvider
+        ).backgroundStyle
         self.shape = pageControl.shape?.shape
         self.border = pageControl.border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = pageControl.shadow?.shadow(uiConfigProvider: uiConfigProvider)

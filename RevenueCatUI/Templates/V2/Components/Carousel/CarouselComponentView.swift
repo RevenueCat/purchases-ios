@@ -10,17 +10,13 @@
 //  CarouselComponentView.swift
 //
 //  Created by Josh Holtz on 1/27/25.
+// swiftlint:disable file_length
 
 import Foundation
 import RevenueCat
 import SwiftUI
 
 #if PAYWALL_COMPONENTS
-
-// TODO: add default selected index
-// TODO: add colors and size to indicator
-// TODO: fix touching on animated
-// TODO: SUPER FUTURE - drag on indicator
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CarouselComponentView: View {
@@ -137,9 +133,9 @@ private struct CarouselView<Content: View>: View {
     @GestureState private var translation: CGFloat = 0
 
     /// A timer for auto-play, if enabled.
-    @State private var autoTimer: Timer? = nil
+    @State private var autoTimer: Timer?
     @State private var isPaused: Bool = false
-    @State private var pauseEndDate: Date? = nil
+    @State private var pauseEndDate: Date?
 
     // MARK: - Init
 
@@ -359,16 +355,14 @@ private struct CarouselView<Content: View>: View {
 
         // If user is at least 2 copies in from the front, we can drop 1 copy from the front.
         while index >= 2 * originalCount,
-              data.count / originalCount > maxCopiesAllowed
-        {
+              data.count / originalCount > maxCopiesAllowed {
             data.removeFirst(originalCount)
             index -= originalCount
         }
 
         // If user is at least 2 copies from the end, we can drop 1 copy from the end.
         while index < data.count - 2 * originalCount,
-              data.count / originalCount > maxCopiesAllowed
-        {
+              data.count / originalCount > maxCopiesAllowed {
             data.removeLast(originalCount)
         }
     }
@@ -516,7 +510,10 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         padding: PaywallComponent.Padding(top: 20, bottom: 20, leading: 20, trailing: 20),
                         margin: PaywallComponent.Padding(top: 20, bottom: 20, leading: 20, trailing: 20),
                         background: .color(.init(light: .hex("#ffcc00"))),
-                        shape: .rectangle(.init(topLeading: 20, topTrailing: 20, bottomLeading: 20, bottomTrailing: 20)),
+                        shape: .rectangle(.init(topLeading: 20,
+                                                topTrailing: 20,
+                                                bottomLeading: 20,
+                                                bottomTrailing: 20)),
                         pages: [
                             .init(
                                 components: [],
@@ -552,7 +549,10 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             padding: PaywallComponent.Padding(top: 10, bottom: 10, leading: 16, trailing: 16),
                             margin: PaywallComponent.Padding(top: 10, bottom: 0, leading: 0, trailing: 0),
                             backgroundColor: PaywallComponent.ColorScheme(light: .hex("#ffffff")),
-                            shape: .rectangle(.init(topLeading: 8, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8)),
+                            shape: .rectangle(.init(topLeading: 8,
+                                                    topTrailing: 8,
+                                                    bottomLeading: 8,
+                                                    bottomTrailing: 8)),
                             border: .init(color: .init(light: .hex("#cccccc")), width: 1),
                             shadow: nil,
                             spacing: 10,
