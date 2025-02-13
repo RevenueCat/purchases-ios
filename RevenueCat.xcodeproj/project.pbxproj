@@ -12,7 +12,6 @@
 		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
 		030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918B2D55C9D80085103F /* LocaleFinderTests.swift */; };
 		030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918D2D5664410085103F /* LocaleExtensions.swift */; };
-		030F93002D5E13660085103F /* VisibleIfNeeded.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F92FF2D5E13630085103F /* VisibleIfNeeded.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */; };
 		0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA402D4029C300F9E330 /* TabControlComponentViewModel.swift */; };
@@ -1295,7 +1294,6 @@
 		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
 		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
 		030F918D2D5664410085103F /* LocaleExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleExtensions.swift; sourceTree = "<group>"; };
-		030F92FF2D5E13630085103F /* VisibleIfNeeded.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleIfNeeded.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		0354AA3D2D4029C300F9E330 /* TabControlButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentView.swift; sourceTree = "<group>"; };
 		0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentViewModel.swift; sourceTree = "<group>"; };
@@ -2687,7 +2685,6 @@
 		2C7457442CEA652B004ACE52 /* ViewHelpers */ = {
 			isa = PBXGroup;
 			children = (
-				030F92FF2D5E13630085103F /* VisibleIfNeeded.swift */,
 				2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */,
 				77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */,
 				4D6F4BCF2CF69DE300353AF6 /* ForegroundColorScheme.swift */,
@@ -6912,7 +6909,6 @@
 				88B1BB022C813A3C001B7EE5 /* StackComponentView.swift in Sources */,
 				353756712C382C2800A1B8D6 /* ManageSubscriptionsPurchaseType.swift in Sources */,
 				FD33CD4D2D034CBD000D13A4 /* CustomerCenterViewController.swift in Sources */,
-				030F93002D5E13660085103F /* VisibleIfNeeded.swift in Sources */,
 				35C200AF2C39252D00B9778B /* FeedbackSurveyData.swift in Sources */,
 				353FDC0D2CA41CB20055F328 /* SubscriptionPeriod+Extensions.swift in Sources */,
 				3551E39D2C4A6A1400D27C25 /* TintedProgressView.swift in Sources */,

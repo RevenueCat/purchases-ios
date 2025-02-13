@@ -49,7 +49,7 @@ struct TextComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            VisibleIfNeeded(visible: style.visible) {
+            if style.visible {
                 Text(.init(style.text))
                     .font(style.font)
                     .fontWeight(style.fontWeight)

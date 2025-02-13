@@ -46,7 +46,7 @@ class TimelineComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (TimelineComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,

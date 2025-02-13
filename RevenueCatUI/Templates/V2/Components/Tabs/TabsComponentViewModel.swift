@@ -47,7 +47,7 @@ class TabsComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (TabsComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (TabsComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedTabsPartial.buildPartial(
             state: state,

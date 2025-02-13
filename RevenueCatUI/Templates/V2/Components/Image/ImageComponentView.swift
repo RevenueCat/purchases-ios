@@ -45,7 +45,7 @@ struct ImageComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            VisibleIfNeeded(visible: style.visible) {
+            if style.visible {
                 RemoteImage(
                     url: style.url,
                     lowResUrl: style.lowResUrl,

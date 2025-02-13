@@ -45,7 +45,7 @@ class IconComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (IconComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedIconPartial.buildPartial(
             state: state,

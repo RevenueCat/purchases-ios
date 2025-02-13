@@ -50,7 +50,7 @@ class StackComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (StackComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedStackPartial.buildPartial(
             state: state,

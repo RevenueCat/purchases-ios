@@ -57,13 +57,14 @@ struct StackComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            VisibleIfNeeded(visible: style.visible) {
+            if style.visible {
                 self.make(style: style)
             }
         }
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
         Group {
             switch style.dimension {
