@@ -13,30 +13,20 @@
 
 import Foundation
 
-/// A type that can provide the current `Date` and `DispatchTime`.
-///
-/// - Note: Internal use only
-@_spi(Internal) public protocol ClockType: Sendable {
+// swiftlint:disable:next missing_docs@_spi(Internal)
+public protocol ClockType: Sendable {
 
-    /// This property provides the current date as a `Date` object.
     var now: Date { get }
-
-    /// the current time using `DispatchTime`, which is useful for performance measurement or time-sensitive operations
-    /// in GCD contexts.
     var currentTime: DispatchTime { get }
 
 }
 
-/// Default implementation of `ClockType` which simply provides the current date.
+// swiftlint:disable:next missing_docs
 @_spi(Internal) public final class Clock: ClockType {
 
-    /// Returns the current date.
     @_spi(Internal) public var now: Date { return Date() }
-
-    /// Returns the current time as a `DispatchTime`.
     @_spi(Internal) public var currentTime: DispatchTime { return .now() }
 
-    /// Default instance of `Clock` for convenience.
     @_spi(Internal) public static let `default`: Clock = .init()
 
 }
