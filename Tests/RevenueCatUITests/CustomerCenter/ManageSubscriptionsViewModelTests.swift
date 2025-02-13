@@ -40,11 +40,6 @@ class ManageSubscriptionsViewModelTests: TestCase {
         }
     }
 
-    override func setUp() {
-        super.setUp()
-        testClock = TestClock()
-    }
-
     func testInitialState() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                                      customerCenterActionHandler: nil,

@@ -258,27 +258,6 @@ private extension CustomerCenterConfigData.Screen {
 
 }
 
-private extension CustomerCenterConfigData.HelpPath {
-    func isWithinRefundWindow(purchaseInformation: PurchaseInformation?, now: Date) -> Bool {
-        guard let purchaseInformation,
-              type != .refundRequest else {
-            return true
-        }
-
-        if let refundWindow {
-            switch refundWindow {
-            case .forever:
-                return true
-            case let .duration(duration):
-
-                return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate, now: now)
-            }
-        }
-
-        return true
-    }
-}
-
 private extension Array<CustomerCenterConfigData.HelpPath> {
     func relevantPathsForPurchase(
         _ purchaseInformation: PurchaseInformation?,
@@ -296,9 +275,14 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
 private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {
     func withinWindow(_ purchaseInformation: PurchaseInformation, now: Date) -> Bool {
         switch self {
-        case .forever: return true
+        case .forever:
+            return true
+
         case let .duration(duration):
             return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate, now: now)
+
+        @unknown default:
+            return true
         }
     }
 }

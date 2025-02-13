@@ -15,7 +15,7 @@ import CryptoKit
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 class SigningTests: TestCase {
 
