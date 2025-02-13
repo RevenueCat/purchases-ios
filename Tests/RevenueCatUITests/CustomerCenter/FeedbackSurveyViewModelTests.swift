@@ -476,7 +476,8 @@ private extension FeedbackSurveyViewModelTests {
         url: nil,
         openMethod: nil,
         type: .cancel,
-        detail: .feedbackSurvey(feedbackSurvey))
+        detail: .feedbackSurvey(feedbackSurvey),
+        refundWindow: .forever)
 
 }
 

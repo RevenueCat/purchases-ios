@@ -16,7 +16,7 @@
 // swiftlint:disable file_length type_body_length function_body_length
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import StoreKit
 import XCTest
@@ -31,6 +31,7 @@ import XCTest
 class ManageSubscriptionsViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
+    private var testClock = TestClock()
 
     private struct TestError: Error, Equatable {
         let message: String
@@ -39,9 +40,15 @@ class ManageSubscriptionsViewModelTests: TestCase {
         }
     }
 
+    override func setUp() {
+        super.setUp()
+        testClock = TestClock()
+    }
+
     func testInitialState() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
-                                                     customerCenterActionHandler: nil)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
+                                                     customerCenterActionHandler: nil,
+                                                     clock: testClock)
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
@@ -52,17 +59,76 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
         let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.screen,
+            screen: ManageSubscriptionsViewModelTests.default,
             customerCenterActionHandler: nil,
-            purchaseInformation: PurchaseInformation.mockLifetime
-        )
+            purchaseInformation: PurchaseInformation.mockLifetime,
+            clock: testClock)
 
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
     }
 
+    func testShowsRefundIfRefundWindowIsForever() {
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowForRefund: .forever),
+            customerCenterActionHandler: nil,
+            purchaseInformation: PurchaseInformation.mockNonLifetime(),
+            clock: testClock)
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+    }
+
+    func testDoesNotShowRefundIfPurchaseOutsideRefundWindow() {
+        let latestPurchaseDate = Date()
+        let oneDay = ISODuration(
+            years: 0,
+            months: 0,
+            weeks: 0,
+            days: 1,
+            hours: 0,
+            minutes: 0,
+            seconds: 0
+        )
+
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        testClock.now = latestPurchaseDate.addingTimeInterval(twoDays)
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowForRefund: .duration(oneDay)),
+            customerCenterActionHandler: nil,
+            purchaseInformation: PurchaseInformation.mockNonLifetime(latestPurchaseDate: latestPurchaseDate),
+            clock: testClock)
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testShowsRefundIfPurchaseOutsideRefundWindow() {
+        let latestPurchaseDate = Date()
+        let oneDay = ISODuration(
+            years: 0,
+            months: 0,
+            weeks: 0,
+            days: 3,
+            hours: 0,
+            minutes: 0,
+            seconds: 0
+        )
+
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        testClock.now = latestPurchaseDate.addingTimeInterval(twoDays)
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowForRefund: .duration(oneDay)),
+            customerCenterActionHandler: nil,
+            purchaseInformation: PurchaseInformation.mockNonLifetime(latestPurchaseDate: latestPurchaseDate),
+            clock: testClock)
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+    }
+
     func testStateChangeToError() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
-                                                     customerCenterActionHandler: nil)
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
+                                                     customerCenterActionHandler: nil,
+                                                     clock: testClock)
 
         viewModel.state = CustomerCenterViewState.error(error)
 
@@ -195,8 +261,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
                     customerInfo: customerInfo,
                     products: products
                 ),
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
-            )
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                clock: testClock)
 
             let screen = try XCTUnwrap(viewModel.screen)
             expect(viewModel.state) == .success
@@ -298,7 +364,8 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                                                     clock: testClock)
 
         return (viewModel, loadPromotionalOfferUseCase)
     }
@@ -396,8 +463,16 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ManageSubscriptionsViewModelTests {
 
-    static let screen: CustomerCenterConfigData.Screen =
+    static let `default`: CustomerCenterConfigData.Screen =
     CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+
+    static func managementScreen(
+        refundWindowForRefund: CustomerCenterConfigData.HelpPath.RefundWindowDuration
+    ) -> CustomerCenterConfigData.Screen {
+        CustomerCenterConfigTestData.customerCenterData(
+            lastPublishedAppVersion: "1.0.0",
+            refundWindowForRefund: refundWindowForRefund).screens[.management]!
+    }
 
 }
 
@@ -424,9 +499,49 @@ private extension PurchaseInformation {
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: .appStore,
-            isLifetime: true
+            isLifetime: true,
+            latestPurchaseDate: nil
         )
     }
+
+    static func mockNonLifetime(latestPurchaseDate: Date = Date()) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "",
+            durationTitle: "",
+            explanation: .earliestExpiration,
+            price: .paid(""),
+            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
+                label: .expires,
+                date: .date("")
+            ),
+            productIdentifier: "",
+            store: .appStore,
+            isLifetime: false,
+            latestPurchaseDate: latestPurchaseDate
+        )
+    }
+}
+
+/// Same implementation that in RevenueCatTest target. Temporary till a shared package is created.
+final class TestClock: ClockType {
+
+    var now: Date {
+        get { self._now.value }
+        set { self._now.value = newValue }
+    }
+    var currentTime: DispatchTime {
+        get { self._currentTime.value }
+        set { self._currentTime.value = newValue }
+    }
+
+    private let _now: Atomic<Date>
+    private let _currentTime: Atomic<DispatchTime>
+
+    init(now: Date = .init(), currentTime: DispatchTime = .now()) {
+        self._now = .init(now)
+        self._currentTime = .init(currentTime)
+    }
+
 }
 
 #endif

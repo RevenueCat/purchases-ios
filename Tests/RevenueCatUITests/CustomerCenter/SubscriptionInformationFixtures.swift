@@ -60,7 +60,8 @@ enum PurchaseInformationFixtures {
                     title: "title",
                     subtitle: "subtitle",
                     productMapping: ["product_id": "offer_id"]
-                ))
+                )),
+                refundWindow: .forever
             )
         ]
     )
@@ -83,7 +84,8 @@ enum PurchaseInformationFixtures {
                         title: "title",
                         subtitle: "subtitle",
                         productMapping: ["product_id": "offer_id"]
-                    ))
+                    )),
+                    refundWindow: .forever
                 )
             ]
         )

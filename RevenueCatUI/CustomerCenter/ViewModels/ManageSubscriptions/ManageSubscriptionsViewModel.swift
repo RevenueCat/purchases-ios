@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -29,14 +29,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        if purchaseInformation?.isLifetime == true {
-            return paths
-                .filter {
-                    $0.type != .cancel
-                }
-        } else {
-            return paths
-        }
+        paths.relevantPathsForPurchase(purchaseInformation, now: clock.now)
     }
 
     @Published
@@ -77,22 +70,26 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
     private var purchasesProvider: ManageSubscriptionsPurchaseType
+    private let clock: any ClockType
 
-    init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         purchaseInformation: PurchaseInformation? = nil,
-         refundRequestStatus: RefundRequestStatus? = nil,
-         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
-         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-        self.screen = screen
-        self.paths = screen.filteredPaths
-        self.purchaseInformation = purchaseInformation
-        self.purchasesProvider = ManageSubscriptionPurchases()
-        self.refundRequestStatus = refundRequestStatus
-        self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
-        self.state = .success
-    }
+    init(
+        screen: CustomerCenterConfigData.Screen,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
+        purchaseInformation: PurchaseInformation? = nil,
+        refundRequestStatus: RefundRequestStatus? = nil,
+        purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
+        clock: any ClockType = RevenueCat.Clock.default) {
+            self.screen = screen
+            self.paths = screen.filteredPaths
+            self.purchaseInformation = purchaseInformation
+            self.purchasesProvider = ManageSubscriptionPurchases()
+            self.refundRequestStatus = refundRequestStatus
+            self.customerCenterActionHandler = customerCenterActionHandler
+            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+            self.state = .success
+            self.clock = clock
+        }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
@@ -262,7 +259,7 @@ private extension CustomerCenterConfigData.Screen {
 }
 
 private extension CustomerCenterConfigData.HelpPath {
-    func isWithinRefundWindow(purchaseInformation: PurchaseInformation?) -> Bool {
+    func isWithinRefundWindow(purchaseInformation: PurchaseInformation?, now: Date) -> Bool {
         guard let purchaseInformation,
               type != .refundRequest else {
             return true
@@ -274,7 +271,7 @@ private extension CustomerCenterConfigData.HelpPath {
                 return true
             case let .duration(duration):
 
-                return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate)
+                return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate, now: now)
             }
         }
 
@@ -282,8 +279,33 @@ private extension CustomerCenterConfigData.HelpPath {
     }
 }
 
+private extension Array<CustomerCenterConfigData.HelpPath> {
+    func relevantPathsForPurchase(
+        _ purchaseInformation: PurchaseInformation?,
+        now: Date) -> [CustomerCenterConfigData.HelpPath] {
+
+        guard let purchaseInformation else {
+            return self
+        }
+
+        return filter { !purchaseInformation.isLifetime || $0.type != .cancel }
+                .filter { $0.type == .refundRequest
+                        && $0.refundWindow.map { $0.withinWindow(purchaseInformation, now: now) } ?? true }
+    }
+}
+
+private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {
+    func withinWindow(_ purchaseInformation: PurchaseInformation, now: Date) -> Bool {
+        switch self {
+        case .forever: return true
+        case let .duration(duration):
+            return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate, now: now)
+        }
+    }
+}
+
 private extension ISODuration {
-    func withinDuration(referenceDate: Date?) -> Bool {
+    func withinDuration(referenceDate: Date?, now: Date) -> Bool {
         guard let referenceDate else {
             return true
         }
@@ -300,7 +322,7 @@ private extension ISODuration {
         let calendar = Calendar.current
         let endDate = calendar.date(byAdding: dateComponents, to: referenceDate) ?? referenceDate
 
-        return referenceDate < endDate && Date() <= endDate
+        return referenceDate < endDate && now <= endDate
     }
 }
 

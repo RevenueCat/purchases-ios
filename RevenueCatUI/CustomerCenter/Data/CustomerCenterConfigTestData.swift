@@ -23,7 +23,8 @@ enum CustomerCenterConfigTestData {
     static func customerCenterData(
         lastPublishedAppVersion: String?,
         shouldWarnCustomerToUpdate: Bool = false,
-        displayPurchaseHistoryLink: Bool = false
+        displayPurchaseHistoryLink: Bool = false,
+        refundWindowForRefund: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [.management:
@@ -54,7 +55,7 @@ enum CustomerCenterConfigTestData {
                                     subtitle: "subtitle",
                                     productMapping: ["monthly": "offer_id"]
                                 )),
-                                refundWindow: nil
+                                refundWindow: refundWindowForRefund
                             ),
                             .init(
                                 id: "3",
