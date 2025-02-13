@@ -61,8 +61,6 @@ struct IconComponentView: View {
                             shape: style.iconBackgroundShape?.toInsettableShape())
                     .padding(style.margin)
                     .size(style.size)
-                } else {
-                    EmptyView()
                 }
             }
         }

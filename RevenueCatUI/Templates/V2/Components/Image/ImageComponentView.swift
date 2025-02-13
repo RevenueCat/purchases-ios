@@ -62,8 +62,6 @@ struct ImageComponentView: View {
                     .padding(style.padding)
                     // WIP: Add border still
                     .padding(style.margin)
-                } else {
-                    EmptyView()
                 }
             }
         }

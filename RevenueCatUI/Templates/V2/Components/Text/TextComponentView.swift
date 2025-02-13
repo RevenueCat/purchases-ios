@@ -62,8 +62,6 @@ struct TextComponentView: View {
                               horizontalAlignment: style.horizontalAlignment)
                         .backgroundStyle(style.backgroundStyle)
                         .padding(style.margin)
-                } else {
-                    EmptyView()
                 }
             }
         }

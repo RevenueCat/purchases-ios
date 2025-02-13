@@ -133,8 +133,6 @@ struct LoadedTabsComponentView: View {
                     )
                     .environmentObject(self.tabControlContext)
                     .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
-                } else {
-                    EmptyView()
                 }
             }
         }

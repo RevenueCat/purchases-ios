@@ -60,8 +60,6 @@ struct StackComponentView: View {
             Group {
                 if style.visible {
                     self.make(style: style)
-                } else {
-                    EmptyView()
                 }
             }
         }
