@@ -57,10 +57,8 @@ struct StackComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    self.make(style: style)
-                }
+            VisibleIfNeeded(visible: style.visible) {
+                self.make(style: style)
             }
         }
     }

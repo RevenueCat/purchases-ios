@@ -45,23 +45,21 @@ struct IconComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    RemoteImage(
-                        url: style.url
-                    ) { (image, size) in
-                        self.renderImage(image, size, with: style)
-                    }
-                    .padding(style.padding)
-                    .shape(border: style.iconBackgroundBorder,
-                           shape: style.iconBackgroundShape,
-                           background: style.iconBackgroundStyle,
-                           uiConfigProvider: self.viewModel.uiConfigProvider)
-                    .shadow(shadow: style.iconBackgroundShadow,
-                            shape: style.iconBackgroundShape?.toInsettableShape())
-                    .padding(style.margin)
-                    .size(style.size)
+            VisibleIfNeeded(visible: style.visible) {
+                RemoteImage(
+                    url: style.url
+                ) { (image, size) in
+                    self.renderImage(image, size, with: style)
                 }
+                .padding(style.padding)
+                .shape(border: style.iconBackgroundBorder,
+                       shape: style.iconBackgroundShape,
+                       background: style.iconBackgroundStyle,
+                       uiConfigProvider: self.viewModel.uiConfigProvider)
+                .shadow(shadow: style.iconBackgroundShadow,
+                        shape: style.iconBackgroundShape?.toInsettableShape())
+                .padding(style.margin)
+                .size(style.size)
             }
         }
     }

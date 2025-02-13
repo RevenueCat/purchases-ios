@@ -49,20 +49,18 @@ struct TextComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    Text(.init(style.text))
-                        .font(style.font)
-                        .fontWeight(style.fontWeight)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(style.textAlignment)
-                        .foregroundColorScheme(style.color)
-                        .padding(style.padding)
-                        .size(style.size,
-                              horizontalAlignment: style.horizontalAlignment)
-                        .backgroundStyle(style.backgroundStyle)
-                        .padding(style.margin)
-                }
+            VisibleIfNeeded(visible: style.visible) {
+                Text(.init(style.text))
+                    .font(style.font)
+                    .fontWeight(style.fontWeight)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(style.textAlignment)
+                    .foregroundColorScheme(style.color)
+                    .padding(style.padding)
+                    .size(style.size,
+                          horizontalAlignment: style.horizontalAlignment)
+                    .backgroundStyle(style.backgroundStyle)
+                    .padding(style.margin)
             }
         }
     }

@@ -49,10 +49,8 @@ struct TimelineComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    timeline(style: style)
-                }
+            VisibleIfNeeded(visible: style.visible) {
+                timeline(style: style)
             }
         }
     }

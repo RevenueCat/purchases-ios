@@ -119,21 +119,19 @@ struct LoadedTabsComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    LoadedTabComponentView(
-                        stackViewModel: self.activeTabViewModel.stackViewModel,
-                        onChange: { context in
-                            self.packageContext.update(
-                                package: context.package,
-                                variableContext: context.variableContext
-                            )
-                        },
-                        onDismiss: self.onDismiss
-                    )
-                    .environmentObject(self.tabControlContext)
-                    .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
-                }
+            VisibleIfNeeded(visible: style.visible) {
+                LoadedTabComponentView(
+                    stackViewModel: self.activeTabViewModel.stackViewModel,
+                    onChange: { context in
+                        self.packageContext.update(
+                            package: context.package,
+                            variableContext: context.variableContext
+                        )
+                    },
+                    onDismiss: self.onDismiss
+                )
+                .environmentObject(self.tabControlContext)
+                .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
             }
         }
     }
