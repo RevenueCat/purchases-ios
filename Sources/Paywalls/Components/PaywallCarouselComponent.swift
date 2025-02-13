@@ -92,6 +92,7 @@ public extension PaywallComponent {
         let type: ComponentType
 
         public let visible: Bool?
+        public let size: Size? // TODO: make optional default to fit/fit
         public let padding: Padding
         public let margin: Padding
         public let background: Background?
