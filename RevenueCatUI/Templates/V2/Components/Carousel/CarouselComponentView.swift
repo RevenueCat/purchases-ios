@@ -25,37 +25,83 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CarouselComponentView: View {
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
+    @State private var carouselHeight: CGFloat = 0
+
     var body: some View {
-        EmptyView()
-        GeometryReader { reader in
-            CarouselView(
-                pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
-                    StackComponentView(
-                        viewModel: stackViewModel,
-                        onDismiss: self.onDismiss
-                    )
-                }),
-                initialIndex: self.viewModel.component.initialPageIndex,
-                loop: self.viewModel.component.loop,
-                spacing: CGFloat(self.viewModel.component.pageSpacing),
-                cardWidth: reader.size.width - CGFloat(self.viewModel.component.pagePeek * 2) - CGFloat(self.viewModel.component.pageSpacing),
-                pageControl: self.viewModel.displayablePageControl,
-                msTimePerSlide: viewModel.component.autoAdvance?.msTimePerPage,
-                msTransitionTime: viewModel.component.autoAdvance?.msTransitionTime
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
             )
+        ) { style in
+            Group {
+                if style.visible {
+                    GeometryReader { reader in
+                        CarouselView(
+                            width: reader.size.width,
+                            pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
+                                StackComponentView(
+                                    viewModel: stackViewModel,
+                                    onDismiss: self.onDismiss
+                                )
+                            }),
+                            initialIndex: style.initialPageIndex,
+                            loop: style.loop,
+                            spacing: style.pageSpacing,
+                            cardWidth: reader.size.width - (style.pagePeek * 2) - style.pageSpacing,
+                            pageControl: style.pageControl,
+                            msTimePerSlide: style.autoAdvance?.msTimePerPage,
+                            msTransitionTime: style.autoAdvance?.msTransitionTime
+                        ).clipped()
+                    }
+                    // Need to set height since geometry reader has no intrinsic height
+                    .frame(height: carouselHeight)
+                    .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
+                        self.carouselHeight = newHeight
+                    }
+                    // Style the carousel
+                    .padding(style.padding)
+                    .shape(border: style.border,
+                           shape: style.shape,
+                           background: style.backgroundStyle,
+                           uiConfigProvider: self.viewModel.uiConfigProvider)
+                    .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
+                    .padding(style.margin)
+                } else {
+                    EmptyView()
+                }
+            }
         }
-        .frame(height: 240)
-        .padding(.top, 50)
     }
 
 }
 
+struct HeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 /// A wrapper to give each page copy a stable, unique identity.
 private struct CarouselItem<Content: View>: Identifiable {
-    let id: Int         // or UUID()
+    let id: Int
     let view: Content
 }
 
@@ -63,6 +109,7 @@ private struct CarouselItem<Content: View>: Identifiable {
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
 
+    private let width: CGFloat
     private let initialIndex: Int
     private let originalPages: [Content]
     private let loop: Bool
@@ -91,10 +138,13 @@ private struct CarouselView<Content: View>: View {
 
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer? = nil
+    @State private var isPaused: Bool = false
+    @State private var pauseEndDate: Date? = nil
 
     // MARK: - Init
 
     init(
+        width: CGFloat,
         pages: [Content],
         initialIndex: Int,
         loop: Bool = false,
@@ -105,6 +155,7 @@ private struct CarouselView<Content: View>: View {
         msTimePerSlide: Int? = nil,
         msTransitionTime: Int? = nil
     ) {
+        self.width = width
         self.initialIndex = initialIndex
         self.originalPages = pages
         self.loop = loop
@@ -118,50 +169,59 @@ private struct CarouselView<Content: View>: View {
     // MARK: - Body
 
     var body: some View {
-        GeometryReader { geo in
-            VStack {
-                // Main horizontal “strip” of pages:
-                HStack(spacing: spacing) {
-                    ForEach(data) { item in
-                        item.view
-                            .frame(width: cardWidth)
+        VStack {
+            // Main horizontal “strip” of pages:
+            HStack(spacing: spacing) {
+                ForEach(data) { item in
+                    item.view
+                        .frame(width: cardWidth)
+                }
+            }
+            .frame(width: self.width, alignment: .leading)
+            .offset(x: xOffset(in: self.width))
+            // Animate only final snaps (or auto transitions), not real-time dragging
+            .animation(.spring(), value: index)
+            .gesture(
+                DragGesture()
+                    .onChanged({ _ in
+                        pauseAutoPlay(for: 10)
+                    })
+                    .updating($translation) { value, state, _ in
+                        state = value.translation.width
                     }
-                }
-                .frame(width: geo.size.width, alignment: .leading)
-                .offset(x: xOffset(in: geo.size.width))
-                // Animate only final snaps (or auto transitions), not real-time dragging
-                .animation(.spring(), value: index)
-                .gesture(
-                    DragGesture()
-                        .updating($translation) { value, state, _ in
-                            state = value.translation.width
-                        }
-                        .onEnded { value in
-                            handleDragEnd(translation: value.translation.width)
-                        }
-                )
+                    .onEnded { value in
+                        handleDragEnd(translation: value.translation.width)
+                    }
+            )
+            .simultaneousGesture(
+                TapGesture()
+                    .onEnded {
+                        pauseAutoPlay(for: 10) // Pause on any tap interaction
+                    }
+            )
 
-                // Pager dots for the original set
-                if originalCount > 1 {
-                    PageControlView(
-                        originalCount: self.originalCount,
-                        pageControl: self.pageControl,
-                        currentIndex: self.$index
-                    )
-                    .padding(.top, 8)
-                }
-            }
-            .onAppear {
-                setupData()
-                startAutoPlayIfNeeded()
-            }
-            .onDisappear {
-                // Stop the timer if view disappears
-                autoTimer?.invalidate()
-                autoTimer = nil
+            // Pager dots for the original set
+            if originalCount > 1 {
+                PageControlView(
+                    originalCount: self.originalCount,
+                    pageControl: self.pageControl,
+                    currentIndex: self.$index
+                )
+                .padding(.top, 8)
             }
         }
-        .frame(height: 240) // Adjust as desired
+        .background(GeometryReader { geo in
+            Color.clear.preference(key: HeightPreferenceKey.self, value: geo.size.height)
+        })
+        .onAppear {
+            setupData()
+            startAutoPlayIfNeeded()
+        }
+        .onDisappear {
+            // Stop the timer if view disappears
+            autoTimer?.invalidate()
+            autoTimer = nil
+        }
     }
 
     // MARK: - Setup
@@ -201,16 +261,23 @@ private struct CarouselView<Content: View>: View {
         guard let msTimePerSlide = msTimePerSlide,
               let msTransitionTime = msTransitionTime else { return }
 
-        // We schedule a repeating timer that advances to the next page every `msTimePerSlide`.
+        autoTimer?.invalidate() // Stop any existing timer
+
         autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide) / 1000, repeats: true) { _ in
-            // We animate the transition over `msTransitionTime` milliseconds
+            guard !isPaused else {
+                // If paused, check if 10 seconds have passed
+                if let pauseEndDate = pauseEndDate, Date() >= pauseEndDate {
+                    isPaused = false // Resume auto-play
+                }
+                return
+            }
+
             withAnimation(.easeInOut(duration: Double(msTransitionTime) / 1000)) {
                 index += 1
                 if loop {
                     expandDataIfNeeded()
                     pruneDataIfNeeded()
                 } else {
-                    // If non-loop, just clamp
                     index = min(index, data.count - 1)
                 }
             }
@@ -245,6 +312,21 @@ private struct CarouselView<Content: View>: View {
         } else {
             // Non-loop clamp
             index = max(0, min(index, data.count - 1))
+        }
+
+        // Pause auto-play for 10 seconds
+        pauseAutoPlay(for: 10)
+    }
+
+    private func pauseAutoPlay(for seconds: TimeInterval) {
+        isPaused = true
+        pauseEndDate = Date().addingTimeInterval(seconds)
+
+        // Restart auto-play after `seconds` seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            if Date() >= self.pauseEndDate! {
+                self.isPaused = false
+            }
         }
     }
 
@@ -360,7 +442,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
         // Examples
-        VStack {
+        ScrollView {
             CarouselComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
@@ -400,8 +482,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         loop: false,
                         pageControl: .init(
                             position: .bottom,
-                            padding: .init(top: 6, bottom: 6, leading: 20, trailing: 20),
-                            margin: .init(top: 20, bottom: 20, leading: 0, trailing: 0),
+                            padding: PaywallComponent.Padding(top: 6, bottom: 6, leading: 20, trailing: 20),
+                            margin: PaywallComponent.Padding(top: 20, bottom: 20, leading: 0, trailing: 0),
                             backgroundColor: .init(light: .hex("#f0f0f0")),
                             shape: .pill,
                             border: nil,
@@ -410,12 +492,12 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: .init(light: .hex("#aeaeae"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae"))
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: .init(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
                             )
                         )
                     ),
@@ -431,6 +513,10 @@ struct CarouselComponentView_Previews: PreviewProvider {
                 // swiftlint:disable:next force_try
                 viewModel: try! .init(
                     component: .init(
+                        padding: PaywallComponent.Padding(top: 20, bottom: 20, leading: 20, trailing: 20),
+                        margin: PaywallComponent.Padding(top: 20, bottom: 20, leading: 20, trailing: 20),
+                        background: .color(.init(light: .hex("#ffcc00"))),
+                        shape: .rectangle(.init(topLeading: 20, topTrailing: 20, bottomLeading: 20, bottomTrailing: 20)),
                         pages: [
                             .init(
                                 components: [],
@@ -453,7 +539,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             .init(
                                 components: [],
                                 size: .init(width: .fixed(100), height: .fixed(120)),
-                                backgroundColor: .init(light: .hex("#0000FF")),
+                                backgroundColor: PaywallComponent.ColorScheme(light: .hex("#0000FF")),
                                 shape: .rectangle(.init(topLeading: 8,
                                                         topTrailing: 8,
                                                         bottomLeading: 8,
@@ -463,9 +549,9 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         loop: true,
                         pageControl: .init(
                             position: .bottom,
-                            padding: .init(top: 10, bottom: 10, leading: 16, trailing: 16),
-                            margin: .init(top: 10, bottom: 10, leading: 0, trailing: 0),
-                            backgroundColor: nil,
+                            padding: PaywallComponent.Padding(top: 10, bottom: 10, leading: 16, trailing: 16),
+                            margin: PaywallComponent.Padding(top: 10, bottom: 0, leading: 0, trailing: 0),
+                            backgroundColor: PaywallComponent.ColorScheme(light: .hex("#ffffff")),
                             shape: .rectangle(.init(topLeading: 8, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8)),
                             border: .init(color: .init(light: .hex("#cccccc")), width: 1),
                             shadow: nil,
@@ -473,12 +559,12 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: .init(light: .hex("#cccccc"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc"))
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: .init(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
                             )
                         )
                     ),
@@ -489,7 +575,6 @@ struct CarouselComponentView_Previews: PreviewProvider {
                 ),
                 onDismiss: {}
             )
-            .clipped()
 
             CarouselComponentView(
                 // swiftlint:disable:next force_try
@@ -531,8 +616,8 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
                         pageControl: .init(
                             position: .bottom,
-                            padding: .init(top: 0, bottom: 0, leading: 0, trailing: 0),
-                            margin: .init(top: 10, bottom: 10, leading: 0, trailing: 0),
+                            padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 0, trailing: 0),
+                            margin: PaywallComponent.Padding(top: 10, bottom: 10, leading: 0, trailing: 0),
                             backgroundColor: nil,
                             shape: nil,
                             border: nil,
@@ -541,12 +626,12 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: .init(light: .hex("#4462e96e"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e"))
                             ),
                             active: .init(
                                 width: 60,
                                 height: 20,
-                                color: .init(light: .hex("#4462e9"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9"))
                             )
                         )
                     ),
@@ -560,7 +645,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
         }
         .padding(.vertical)
         .previewRequiredEnvironmentProperties()
-        .previewLayout(.fixed(width: 400, height: 400))
+        .previewLayout(.sizeThatFits)
         .previewDisplayName("Examples")
     }
 
