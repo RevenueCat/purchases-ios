@@ -92,7 +92,6 @@ public extension PaywallComponent {
         let type: ComponentType
 
         public let visible: Bool?
-        public let size: Size
         public let padding: Padding
         public let margin: Padding
         public let background: Background?
@@ -114,7 +113,6 @@ public extension PaywallComponent {
 
         public init(
             visible: Bool? = nil,
-            size: PaywallComponent.Size = .init(width: .fit, height: .fit),
             padding: PaywallComponent.Padding = .zero,
             margin: PaywallComponent.Padding = .zero,
             background: PaywallComponent.Background? = nil,
@@ -134,7 +132,6 @@ public extension PaywallComponent {
             self.type = .carousel
 
             self.visible = visible
-            self.size = size
             self.padding = padding
             self.margin = margin
             self.background = background
@@ -155,7 +152,6 @@ public extension PaywallComponent {
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
             return lhs.type == rhs.type &&
                 lhs.visible == rhs.visible &&
-                lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
                 lhs.margin == rhs.margin &&
                 lhs.background == rhs.background &&
@@ -177,7 +173,6 @@ public extension PaywallComponent {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(visible)
-            hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(background)
@@ -200,7 +195,6 @@ public extension PaywallComponent {
     final class PartialCarouselComponent: PaywallPartialComponent {
 
         public let visible: Bool?
-        public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
         public let background: Background?
@@ -235,7 +229,6 @@ public extension PaywallComponent {
             pageControl: PaywallComponent.CarouselComponent.PageControl? = nil
         ) {
             self.visible = visible
-            self.size = size
             self.padding = padding
             self.margin = margin
             self.background = background
@@ -253,7 +246,6 @@ public extension PaywallComponent {
 
         public static func == (lhs: PartialCarouselComponent, rhs: PartialCarouselComponent) -> Bool {
             return lhs.visible == rhs.visible &&
-                lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
                 lhs.margin == rhs.margin &&
                 lhs.background == rhs.background &&
@@ -272,7 +264,6 @@ public extension PaywallComponent {
         // MARK: - Hashable
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
-            hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(background)

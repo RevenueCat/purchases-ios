@@ -166,6 +166,15 @@ private struct CarouselView<Content: View>: View {
 
     var body: some View {
         VStack {
+            // If bottom page control
+            if self.pageControl.position == .top {
+                PageControlView(
+                    originalCount: self.originalCount,
+                    pageControl: self.pageControl,
+                    currentIndex: self.$index
+                )
+            }
+
             // Main horizontal “strip” of pages:
             HStack(spacing: spacing) {
                 ForEach(data) { item in
@@ -196,14 +205,13 @@ private struct CarouselView<Content: View>: View {
                     }
             )
 
-            // Pager dots for the original set
-            if originalCount > 1 {
+            // If bottom page control
+            if self.pageControl.position == .bottom {
                 PageControlView(
                     originalCount: self.originalCount,
                     pageControl: self.pageControl,
                     currentIndex: self.$index
                 )
-                .padding(.top, 8)
             }
         }
         .background(GeometryReader { geo in
@@ -397,31 +405,35 @@ struct PageControlView: View {
     }
 
     var body: some View {
-        HStack(spacing: self.pageControl.spacing) {
-            ForEach(0..<originalCount, id: \.self) { index in
-                Capsule()
-                    .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
-                    .frame(
-                        width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
-                        height: localCurrentIndex == index ? activeIndicator.height : indicator.height
-                    )
-                    .animation(.easeInOut, value: self.localCurrentIndex)
-            }
-        }
-        .padding(self.pageControl.padding)
-        .shape(border: pageControl.border,
-               shape: pageControl.shape,
-               background: pageControl.backgroundStyle,
-               uiConfigProvider: pageControl.uiConfigProvider)
-        .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
-        .padding(self.pageControl.margin)
-        .onChange(of: self.currentIndex) { newValue in
-            withAnimation {
-                guard originalCount > 0 else {
-                    self.localCurrentIndex = 0
-                    return
+        if self.originalCount <= 1 {
+            EmptyView()
+        } else {
+            HStack(spacing: self.pageControl.spacing) {
+                ForEach(0..<originalCount, id: \.self) { index in
+                    Capsule()
+                        .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
+                        .frame(
+                            width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
+                            height: localCurrentIndex == index ? activeIndicator.height : indicator.height
+                        )
+                        .animation(.easeInOut, value: self.localCurrentIndex)
                 }
-                self.localCurrentIndex = newValue % originalCount
+            }
+            .padding(self.pageControl.padding)
+            .shape(border: pageControl.border,
+                   shape: pageControl.shape,
+                   background: pageControl.backgroundStyle,
+                   uiConfigProvider: pageControl.uiConfigProvider)
+            .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
+            .padding(self.pageControl.margin)
+            .onChange(of: self.currentIndex) { newValue in
+                withAnimation {
+                    guard originalCount > 0 else {
+                        self.localCurrentIndex = 0
+                        return
+                    }
+                    self.localCurrentIndex = newValue % originalCount
+                }
             }
         }
     }
@@ -545,9 +557,9 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         ],
                         loop: true,
                         pageControl: .init(
-                            position: .bottom,
+                            position: .top,
                             padding: PaywallComponent.Padding(top: 10, bottom: 10, leading: 16, trailing: 16),
-                            margin: PaywallComponent.Padding(top: 10, bottom: 0, leading: 0, trailing: 0),
+                            margin: PaywallComponent.Padding(top: 0, bottom: 10, leading: 0, trailing: 0),
                             backgroundColor: PaywallComponent.ColorScheme(light: .hex("#ffffff")),
                             shape: .rectangle(.init(topLeading: 8,
                                                     topTrailing: 8,

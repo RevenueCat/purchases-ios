@@ -60,7 +60,6 @@ class CarouselComponentViewModel {
         let style = CarouselComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
-            size: partial?.size ?? self.component.size,
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
             background: partial?.background ?? self.component.background,
@@ -96,7 +95,6 @@ extension PresentedCarouselPartial: PresentedPartial {
     ) -> Self {
 
         let visible = other?.visible ?? base?.visible
-        let size = other?.size ?? base?.size
         let padding = other?.padding ?? base?.padding
         let margin = other?.margin ?? base?.margin
         let background = other?.background ?? base?.background
@@ -115,7 +113,6 @@ extension PresentedCarouselPartial: PresentedPartial {
 
         return .init(
             visible: visible,
-            size: size,
             padding: padding,
             margin: margin,
             background: background,
@@ -138,7 +135,6 @@ extension PresentedCarouselPartial: PresentedPartial {
 struct CarouselComponentStyle {
 
     let visible: Bool
-    let size: PaywallComponent.Size
     let padding: EdgeInsets
     let margin: EdgeInsets
     let backgroundStyle: BackgroundStyle?
@@ -158,7 +154,6 @@ struct CarouselComponentStyle {
     init(
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
-        size: PaywallComponent.Size,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
         background: PaywallComponent.Background?,
@@ -174,7 +169,6 @@ struct CarouselComponentStyle {
         pageControl: PaywallComponent.CarouselComponent.PageControl
     ) {
         self.visible = visible
-        self.size = size
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
