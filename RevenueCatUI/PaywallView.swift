@@ -23,7 +23,6 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
-// swiftlint:disable:next type_body_length
 public struct PaywallView: View {
 
     private let contentToDisplay: PaywallViewConfiguration.Content
@@ -318,7 +317,8 @@ public struct PaywallView: View {
                 PaywallsV2View(
                     paywallComponents: paywallComponents,
                     offering: offering,
-                    introEligibilityChecker: .default(),
+                    purchaseHandler: purchaseHandler,
+                    introEligibilityChecker: checker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                     onDismiss: {
                         guard let onRequestedDismissal = self.onRequestedDismissal else {
@@ -329,8 +329,6 @@ public struct PaywallView: View {
                     },
                     fallbackContent: .paywallV1View(dataForV1DefaultPaywall)
                 )
-                .environmentObject(self.introEligibility)
-                .environmentObject(self.purchaseHandler)
             }
         } else {
 

@@ -91,13 +91,13 @@ public struct CustomerCenterView: View {
             .task {
                 await loadInformationIfNeeded()
             }
-            .task {
+            .environmentObject(self.viewModel)
+            .onAppear {
 #if DEBUG
                 guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
 #endif
                 self.trackImpression()
             }
-            .environmentObject(self.viewModel)
     }
 
 }
