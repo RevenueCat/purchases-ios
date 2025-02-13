@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 // Note: this class is implicitly `@unchecked Sendable` through its parent
 // even though it's not actually thread safe.

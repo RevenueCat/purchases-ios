@@ -15,7 +15,7 @@ import Foundation
 import XCTest
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BaseReceiptFetcherTests: TestCase {
 
