@@ -77,6 +77,7 @@ import RevenueCat
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
     private var error: Error?
+    private var impressionData: CustomerCenterEvent.Data?
 
     init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
@@ -131,13 +132,17 @@ import RevenueCat
     }
 
     func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
-        let isSandbox = purchasesProvider.isSandbox
+        guard impressionData == nil else {
+            return
+        }
+
         let eventData = CustomerCenterEvent.Data(locale: .current,
                                                  darkMode: darkMode,
-                                                 isSandbox: isSandbox,
+                                                 isSandbox: purchasesProvider.isSandbox,
                                                  displayMode: displayMode)
-        let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
+        defer { self.impressionData = eventData }
 
+        let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
     }
 
