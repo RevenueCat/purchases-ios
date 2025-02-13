@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallDecodingTests.swift
+//  PaywallComponentsDecodingTests.swift
 //
 //  Created by Antonio Pallares on 13/2/25.
 
