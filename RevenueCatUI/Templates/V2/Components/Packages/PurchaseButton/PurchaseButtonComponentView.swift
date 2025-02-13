@@ -50,7 +50,11 @@ struct PurchaseButtonComponentView: View {
             _ = try await self.purchaseHandler.purchase(package: selectedPackage)
         } label: {
             // Not passing an onDismiss - nothing in this stack should be able to dismiss
-            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: {})
+            StackComponentView(
+                viewModel: viewModel.stackViewModel,
+                onDismiss: {},
+                showsActivityIndicatorOverContent: self.purchaseHandler.actionInProgress
+            )
         }
     }
 

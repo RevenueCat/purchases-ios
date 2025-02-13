@@ -33,23 +33,29 @@ struct StackComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
+    private let showsActivityIndicatorOverContent: Bool
 
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
-        additionalPadding: EdgeInsets? = nil
+        additionalPadding: EdgeInsets? = nil,
+        showsActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        self.showsActivityIndicatorOverContent = showsActivityIndicatorOverContent
     }
 
     var body: some View {
@@ -109,6 +115,12 @@ struct StackComponentView: View {
                       verticalAlignment: alignment.stackAlignment)
             }
         }
+        .hidden(if: self.showsActivityIndicatorOverContent)
+        .applyIf(self.showsActivityIndicatorOverContent, apply: { view in
+            view.overlay {
+                self.progress(for: style.backgroundStyle)
+            }
+        })
         .padding(style.padding)
         .padding(additionalPadding)
         .shape(border: nil,
@@ -134,6 +146,54 @@ private extension Axis {
         }
     }
 
+    func progress(for backgroundStyle: BackgroundStyle?) -> some View {
+        guard let backgroundStyle else {
+            return ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(
+                    tint: Color.white
+                ))
+        }
+
+        switch backgroundStyle {
+        case .color(let displayableColorScheme):
+            let colorInfo = displayableColorScheme.effectiveColor(for: self.colorScheme)
+
+            return ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(
+                    tint: self.bestTint(for: colorInfo)
+                ))
+        case .image:
+            return ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(
+                    tint: Color.white
+                ))
+        }
+    }
+
+    func bestTint(for colorInfo: DisplayableColorInfo) -> Color {
+        switch colorInfo {
+        case .hex:
+            return colorInfo
+                .toColor(fallback: .black)
+                .brightness() > 0.6 ? .black : .white
+        case .linear, .radial:
+            let gradient = colorInfo.toGradient()
+            let averageBrightness = gradient.stops
+                .compactMap { $0.color.brightness() }
+                .reduce(0, +) / CGFloat(gradient.stops.count)
+
+            return averageBrightness > 0.6 ? .black : .white
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension Color {
+    func brightness() -> CGFloat {
+        guard let uiColor = UIColor(self).cgColor.components else { return 1.0 }
+        return (uiColor[0] * 299 + uiColor[1] * 587 + uiColor[2] * 114) / 1000
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
