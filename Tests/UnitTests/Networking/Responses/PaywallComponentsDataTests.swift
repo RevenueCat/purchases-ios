@@ -22,11 +22,11 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("Offerings")
+        self.response = try self.decodeFixture("OfferingsWithPaywallComponents")
     }
 
     func testDecodesPaywallComponentsNoDraftPaywallComponents() throws {
-        let offering = try XCTUnwrap(self.response.offerings[safe: 6])
+        let offering = try XCTUnwrap(self.response.offerings[safe: 0])
 
         expect(offering.identifier) == "paywall_components"
         expect(offering.description) == "Offering with paywall components"
@@ -46,7 +46,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testDecodesPaywallComponentsWithDraftPaywallComponents() throws {
-        let offering = try XCTUnwrap(self.response.offerings[safe: 7])
+        let offering = try XCTUnwrap(self.response.offerings[safe: 1])
 
         expect(offering.identifier) == "paywall_components_with_draft"
         expect(offering.description) == "Offering with paywall components + draft paywall"
