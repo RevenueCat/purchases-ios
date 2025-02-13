@@ -28,9 +28,6 @@ struct CarouselComponentView: View {
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
-    let showableWidthPercent: CGFloat = 0.2
-    let spacing: CGFloat = 16
-
     var body: some View {
         EmptyView()
         GeometryReader { reader in
@@ -41,9 +38,10 @@ struct CarouselComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }),
+                initialIndex: self.viewModel.component.initialPageIndex,
                 loop: self.viewModel.component.loop,
-                spacing: spacing,
-                cardWidth: reader.size.width - ((reader.size.width * showableWidthPercent) * 2) - spacing,
+                spacing: CGFloat(self.viewModel.component.pageSpacing),
+                cardWidth: reader.size.width - CGFloat(self.viewModel.component.pagePeek * 2) - CGFloat(self.viewModel.component.pageSpacing),
                 pageControl: self.viewModel.displayablePageControl,
                 msTimePerSlide: viewModel.component.autoAdvance?.msTimePerPage,
                 msTransitionTime: viewModel.component.autoAdvance?.msTransitionTime
@@ -65,6 +63,7 @@ private struct CarouselItem<Content: View>: Identifiable {
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
 
+    private let initialIndex: Int
     private let originalPages: [Content]
     private let loop: Bool
     private let spacing: CGFloat
@@ -97,6 +96,7 @@ private struct CarouselView<Content: View>: View {
 
     init(
         pages: [Content],
+        initialIndex: Int,
         loop: Bool = false,
         spacing: CGFloat = 16,
         cardWidth: CGFloat = 300,
@@ -105,6 +105,7 @@ private struct CarouselView<Content: View>: View {
         msTimePerSlide: Int? = nil,
         msTransitionTime: Int? = nil
     ) {
+        self.initialIndex = initialIndex
         self.originalPages = pages
         self.loop = loop
         self.spacing = spacing
@@ -177,11 +178,11 @@ private struct CarouselView<Content: View>: View {
             data = firstCopy + secondCopy + thirdCopy
 
             // Put user in the middle copy
-            index = originalCount
+            index = originalCount + self.initialIndex
         } else {
             // Non-looping: just one copy
             data = makeItems(forCopyIndex: 0)
-            index = 0
+            index = self.initialIndex
         }
     }
 
@@ -320,7 +321,7 @@ struct PageControlView: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: self.pageControl.spacing) {
             ForEach(0..<originalCount, id: \.self) { index in
                 Capsule()
                     .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
@@ -331,6 +332,13 @@ struct PageControlView: View {
                     .animation(.easeInOut, value: self.localCurrentIndex)
             }
         }
+        .padding(self.pageControl.padding)
+        .shape(border: pageControl.border,
+               shape: pageControl.shape,
+               background: pageControl.backgroundStyle,
+               uiConfigProvider: pageControl.uiConfigProvider)
+        .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
+        .padding(self.pageControl.margin)
         .onChange(of: self.currentIndex) { newValue in
             withAnimation {
                 guard originalCount > 0 else {
@@ -386,24 +394,28 @@ struct CarouselComponentView_Previews: PreviewProvider {
                                                         bottomTrailing: 8))
                             )
                         ],
+                        pageSpacing: 20,
+                        pagePeek: 40,
+                        initialPageIndex: 1,
                         loop: false,
                         pageControl: .init(
                             position: .bottom,
-                            backgroundColor: nil,
-                            shape: nil,
+                            padding: .init(top: 6, bottom: 6, leading: 20, trailing: 20),
+                            margin: .init(top: 20, bottom: 20, leading: 0, trailing: 0),
+                            backgroundColor: .init(light: .hex("#f0f0f0")),
+                            shape: .pill,
                             border: nil,
-                            shadow: nil,
-                            active: .init(
-                                width: 10,
-                                height: 10,
-                                margin: nil,
-                                color: .init(light: .hex("#000000"))
-                            ),
+                            shadow: .init(color: .init(light: .hex("#00000066")), radius: 4, x: 2, y: 2),
+                            spacing: 10,
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                margin: nil,
-                                color: .init(light: .hex("#cccccc"))
+                                color: .init(light: .hex("#aeaeae"))
+                            ),
+                            active: .init(
+                                width: 10,
+                                height: 10,
+                                color: .init(light: .hex("#000000"))
                             )
                         )
                     ),
@@ -451,21 +463,22 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         loop: true,
                         pageControl: .init(
                             position: .bottom,
+                            padding: .init(top: 10, bottom: 10, leading: 16, trailing: 16),
+                            margin: .init(top: 10, bottom: 10, leading: 0, trailing: 0),
                             backgroundColor: nil,
-                            shape: nil,
-                            border: nil,
+                            shape: .rectangle(.init(topLeading: 8, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8)),
+                            border: .init(color: .init(light: .hex("#cccccc")), width: 1),
                             shadow: nil,
-                            active: .init(
-                                width: 10,
-                                height: 10,
-                                margin: nil,
-                                color: .init(light: .hex("#000000"))
-                            ),
+                            spacing: 10,
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                margin: nil,
                                 color: .init(light: .hex("#cccccc"))
+                            ),
+                            active: .init(
+                                width: 10,
+                                height: 10,
+                                color: .init(light: .hex("#000000"))
                             )
                         )
                     ),
@@ -511,25 +524,29 @@ struct CarouselComponentView_Previews: PreviewProvider {
                                                         bottomTrailing: 8))
                             )
                         ],
+                        pageSpacing: 20,
+                        pagePeek: 20,
+                        initialPageIndex: 1,
                         loop: true,
                         autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
                         pageControl: .init(
                             position: .bottom,
+                            padding: .init(top: 0, bottom: 0, leading: 0, trailing: 0),
+                            margin: .init(top: 10, bottom: 10, leading: 0, trailing: 0),
                             backgroundColor: nil,
                             shape: nil,
                             border: nil,
                             shadow: nil,
-                            active: .init(
-                                width: 40,
-                                height: 10,
-                                margin: nil,
-                                color: .init(light: .hex("#4462e9"))
-                            ),
+                            spacing: 10,
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                margin: nil,
                                 color: .init(light: .hex("#4462e96e"))
+                            ),
+                            active: .init(
+                                width: 60,
+                                height: 20,
+                                color: .init(light: .hex("#4462e9"))
                             )
                         )
                     ),

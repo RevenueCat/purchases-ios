@@ -40,30 +40,39 @@ public extension PaywallComponent {
             }
 
             public let position: Position
+            public let padding: Padding
+            public let margin: Padding
             public let backgroundColor: ColorScheme?
             public let shape: Shape?
             public let border: Border?
             public let shadow: Shadow?
 
-            public let active: PageControlIndicator
+            public let spacing: Int
             public let `default`: PageControlIndicator
+            public let active: PageControlIndicator
 
             public init(
                 position: Position,
+                padding: Padding,
+                margin: Padding,
                 backgroundColor: ColorScheme?,
                 shape: Shape?,
                 border: Border?,
                 shadow: Shadow?,
-                active: PageControlIndicator,
-                default: PageControlIndicator
+                spacing: Int,
+                default: PageControlIndicator,
+                active: PageControlIndicator
             ) {
                 self.position = position
+                self.padding = padding
+                self.margin = margin
                 self.backgroundColor = backgroundColor
                 self.shape = shape
                 self.border = border
                 self.shadow = shadow
-                self.active = active
+                self.spacing = spacing
                 self.default = `default`
+                self.active = active
             }
 
         }
@@ -72,13 +81,11 @@ public extension PaywallComponent {
 
             public let width: Int
             public let height: Int
-            public let margin: Padding?
             public let color: ColorScheme
 
-            public init(width: Int, height: Int, margin: Padding? = nil, color: ColorScheme) {
+            public init(width: Int, height: Int, color: ColorScheme) {
                 self.width = width
                 self.height = height
-                self.margin = margin
                 self.color = color
             }
 
@@ -89,6 +96,7 @@ public extension PaywallComponent {
         public let size: Size
         public let padding: Padding
         public let margin: Padding
+        public let background: Background?
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
@@ -96,8 +104,8 @@ public extension PaywallComponent {
         public let pages: [StackComponent]
         public let pageAlignment: VerticalAlignment
         public let pageSpacing: Int
-        public let pagePeek: Double
-        public let startPageIndex: Int
+        public let pagePeek: Int
+        public let initialPageIndex: Int
         public let loop: Bool
         public let autoAdvance: AutoAdvanceSlides?
 
@@ -107,14 +115,15 @@ public extension PaywallComponent {
             size: PaywallComponent.Size = .init(width: .fit, height: .fit),
             padding: PaywallComponent.Padding = .zero,
             margin: PaywallComponent.Padding = .zero,
+            background: PaywallComponent.Background? = nil,
             shape: PaywallComponent.Shape? = nil,
             border: PaywallComponent.Border? = nil,
             shadow: PaywallComponent.Shadow? = nil,
             pages: [PaywallComponent.StackComponent],
             pageAlignment: PaywallComponent.VerticalAlignment = .center,
             pageSpacing: Int = 0,
-            pagePeek: Double = 0.2,
-            startPageIndex: Int = 0,
+            pagePeek: Int = 20,
+            initialPageIndex: Int = 0,
             loop: Bool = false,
             autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
             pageControl: PageControl
@@ -124,6 +133,7 @@ public extension PaywallComponent {
             self.size = size
             self.padding = padding
             self.margin = margin
+            self.background = background
             self.shape = shape
             self.border = border
             self.shadow = shadow
@@ -131,7 +141,7 @@ public extension PaywallComponent {
             self.pageAlignment = pageAlignment
             self.pageSpacing = pageSpacing
             self.pagePeek = pagePeek
-            self.startPageIndex = startPageIndex
+            self.initialPageIndex = initialPageIndex
             self.loop = loop
             self.autoAdvance = autoAdvance
             self.pageControl = pageControl
@@ -142,6 +152,7 @@ public extension PaywallComponent {
                 lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
                 lhs.margin == rhs.margin &&
+                lhs.background == rhs.background &&
                 lhs.shape == rhs.shape &&
                 lhs.border == rhs.border &&
                 lhs.shadow == rhs.shadow &&
@@ -149,7 +160,7 @@ public extension PaywallComponent {
                 lhs.pageAlignment == rhs.pageAlignment &&
                 lhs.pageSpacing == rhs.pageSpacing &&
                 lhs.pagePeek == rhs.pagePeek &&
-                lhs.startPageIndex == rhs.startPageIndex &&
+                lhs.initialPageIndex == rhs.initialPageIndex &&
                 lhs.loop == rhs.loop &&
                 lhs.autoAdvance == rhs.autoAdvance &&
                 lhs.pageControl == rhs.pageControl
@@ -161,6 +172,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
+            hasher.combine(background)
             hasher.combine(shape)
             hasher.combine(border)
             hasher.combine(shadow)
@@ -168,7 +180,7 @@ public extension PaywallComponent {
             hasher.combine(pageAlignment)
             hasher.combine(pageSpacing)
             hasher.combine(pagePeek)
-            hasher.combine(startPageIndex)
+            hasher.combine(initialPageIndex)
             hasher.combine(loop)
             hasher.combine(autoAdvance)
             hasher.combine(pageControl)
