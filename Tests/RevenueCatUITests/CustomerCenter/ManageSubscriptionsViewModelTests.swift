@@ -64,6 +64,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             purchaseInformation: PurchaseInformation.mockLifetime,
             clock: testClock)
 
+        expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
     }
 
@@ -74,6 +75,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             purchaseInformation: PurchaseInformation.mockNonLifetime(),
             clock: testClock)
 
+        expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
     }
 
@@ -98,6 +100,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             purchaseInformation: PurchaseInformation.mockNonLifetime(latestPurchaseDate: latestPurchaseDate),
             clock: testClock)
 
+        expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
     }
 
@@ -122,6 +125,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
             purchaseInformation: PurchaseInformation.mockNonLifetime(latestPurchaseDate: latestPurchaseDate),
             clock: testClock)
 
+        expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
     }
 

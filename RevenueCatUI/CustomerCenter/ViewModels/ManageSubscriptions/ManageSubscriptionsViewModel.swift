@@ -289,8 +289,7 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         }
 
         return filter { !purchaseInformation.isLifetime || $0.type != .cancel }
-                .filter { $0.type == .refundRequest
-                        && $0.refundWindow.map { $0.withinWindow(purchaseInformation, now: now) } ?? true }
+                .filter { $0.refundWindow.map { $0.withinWindow(purchaseInformation, now: now) } ?? true }
     }
 }
 
