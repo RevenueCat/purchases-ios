@@ -209,6 +209,10 @@ class CustomerInfoManager {
     }
 
     func cache(customerInfo: CustomerInfo, appUserID: String) {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            return
+        }
+
         if customerInfo.shouldCache {
             do {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
@@ -344,6 +348,10 @@ private extension CustomerInfoManager {
     func getCustomerInfo(appUserID: String,
                          isAppBackgrounded: Bool,
                          completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            completion(.success(self.createPreviewCustomerInfo()))
+            return
+        }
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
@@ -427,6 +435,23 @@ private extension CustomerInfoManager {
         initiationSource: .queue
     )
 
+    // MARK: - For UI Preview mode
+
+    /// Generates a dummy `CustomerInfo` with hardcoded information exclusively for UI Preview mode.
+    private func createPreviewCustomerInfo() -> CustomerInfo {
+        let previewSubscriber = CustomerInfoResponse.Subscriber(originalAppUserId: IdentityManager.uiPreviewModeAppUserID,
+                                                                firstSeen: Date(),
+                                                                subscriptions: [:],
+                                                                nonSubscriptions: [:],
+                                                                entitlements: [:])
+        let previewCustomerInfoResponse = CustomerInfoResponse(subscriber: previewSubscriber,
+                                                               requestDate: Date(),
+                                                               rawData: [:])
+        let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
+                                               entitlementVerification: .verified,
+                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
+        return previewCustomerInfo
+    }
 }
 
 // @unchecked because:
