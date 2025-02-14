@@ -60,6 +60,7 @@ class CarouselComponentViewModel {
         let style = CarouselComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
+            size: partial?.size ?? self.component.size,
             padding: partial?.padding ?? self.component.padding,
             margin: partial?.margin ?? self.component.margin,
             background: partial?.background ?? self.component.background,
@@ -76,13 +77,6 @@ class CarouselComponentViewModel {
         )
 
         apply(style)
-    }
-
-    var displayablePageControl: DisplayablePageControl {
-        return DisplayablePageControl(
-            uiConfigProvider: self.uiConfigProvider,
-            pageControl: self.component.pageControl
-        )
     }
 
 }
@@ -135,6 +129,7 @@ extension PresentedCarouselPartial: PresentedPartial {
 struct CarouselComponentStyle {
 
     let visible: Bool
+    let size: PaywallComponent.Size
     let padding: EdgeInsets
     let margin: EdgeInsets
     let backgroundStyle: BackgroundStyle?
@@ -149,11 +144,12 @@ struct CarouselComponentStyle {
     let loop: Bool
     let autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides?
 
-    let pageControl: DisplayablePageControl
+    let pageControl: DisplayablePageControl?
 
     init(
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
+        size: PaywallComponent.Size?,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
         background: PaywallComponent.Background?,
@@ -166,9 +162,10 @@ struct CarouselComponentStyle {
         initialPageIndex: Int,
         loop: Bool,
         autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides?,
-        pageControl: PaywallComponent.CarouselComponent.PageControl
+        pageControl: PaywallComponent.CarouselComponent.PageControl?
     ) {
         self.visible = visible
+        self.size = size ?? .init(width: .fit, height: .fit)
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
@@ -181,7 +178,9 @@ struct CarouselComponentStyle {
         self.initialPageIndex = initialPageIndex
         self.loop = loop
         self.autoAdvance = autoAdvance
-        self.pageControl = DisplayablePageControl(uiConfigProvider: uiConfigProvider, pageControl: pageControl)
+        self.pageControl = pageControl.flatMap {
+            DisplayablePageControl(uiConfigProvider: uiConfigProvider, pageControl: $0 )
+        }
     }
 
 }

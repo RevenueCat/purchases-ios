@@ -72,6 +72,7 @@ struct CarouselComponentView: View {
                         self.carouselHeight = newHeight
                     }
                     // Style the carousel
+                    .size(style.size)
                     .padding(style.padding)
                     .shape(border: style.border,
                            shape: style.shape,
@@ -112,7 +113,7 @@ private struct CarouselView<Content: View>: View {
     private let spacing: CGFloat
     private let cardWidth: CGFloat
 
-    private let pageControl: DisplayablePageControl
+    private let pageControl: DisplayablePageControl?
 
     /// Optional auto-play timings (in milliseconds).
     private let msTimePerSlide: Int?
@@ -146,7 +147,7 @@ private struct CarouselView<Content: View>: View {
         loop: Bool = false,
         spacing: CGFloat = 16,
         cardWidth: CGFloat = 300,
-        pageControl: DisplayablePageControl,
+        pageControl: DisplayablePageControl?,
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int? = nil,
         msTransitionTime: Int? = nil
@@ -166,11 +167,11 @@ private struct CarouselView<Content: View>: View {
 
     var body: some View {
         VStack {
-            // If bottom page control
-            if self.pageControl.position == .top {
+            // If top page control
+            if let pageControl = self.pageControl, pageControl.position == .top {
                 PageControlView(
                     originalCount: self.originalCount,
-                    pageControl: self.pageControl,
+                    pageControl: pageControl,
                     currentIndex: self.$index
                 )
             }
@@ -206,10 +207,10 @@ private struct CarouselView<Content: View>: View {
             )
 
             // If bottom page control
-            if self.pageControl.position == .bottom {
+            if let pageControl = self.pageControl, pageControl.position == .bottom {
                 PageControlView(
                     originalCount: self.originalCount,
-                    pageControl: self.pageControl,
+                    pageControl: pageControl,
                     currentIndex: self.$index
                 )
             }

@@ -92,7 +92,7 @@ public extension PaywallComponent {
         let type: ComponentType
 
         public let visible: Bool?
-        public let size: Size? // TODO: make optional default to fit/fit
+        public let size: Size?
         public let padding: Padding
         public let margin: Padding
         public let background: Background?
@@ -108,12 +108,13 @@ public extension PaywallComponent {
         public let loop: Bool
         public let autoAdvance: AutoAdvanceSlides?
 
-        public let pageControl: PageControl
+        public let pageControl: PageControl?
 
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
 
         public init(
             visible: Bool? = nil,
+            size: PaywallComponent.Size? = nil,
             padding: PaywallComponent.Padding = .zero,
             margin: PaywallComponent.Padding = .zero,
             background: PaywallComponent.Background? = nil,
@@ -127,12 +128,13 @@ public extension PaywallComponent {
             initialPageIndex: Int = 0,
             loop: Bool = false,
             autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
-            pageControl: PageControl,
+            pageControl: PageControl? = nil,
             overrides: ComponentOverrides<PartialCarouselComponent>? = nil
         ) {
             self.type = .carousel
 
             self.visible = visible
+            self.size = size
             self.padding = padding
             self.margin = margin
             self.background = background
@@ -153,6 +155,7 @@ public extension PaywallComponent {
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
             return lhs.type == rhs.type &&
                 lhs.visible == rhs.visible &&
+                lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
                 lhs.margin == rhs.margin &&
                 lhs.background == rhs.background &&
@@ -174,6 +177,7 @@ public extension PaywallComponent {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(visible)
+            hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(background)
@@ -196,6 +200,7 @@ public extension PaywallComponent {
     final class PartialCarouselComponent: PaywallPartialComponent {
 
         public let visible: Bool?
+        public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
         public let background: Background?
@@ -230,6 +235,7 @@ public extension PaywallComponent {
             pageControl: PaywallComponent.CarouselComponent.PageControl? = nil
         ) {
             self.visible = visible
+            self.size = size
             self.padding = padding
             self.margin = margin
             self.background = background
@@ -247,6 +253,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: PartialCarouselComponent, rhs: PartialCarouselComponent) -> Bool {
             return lhs.visible == rhs.visible &&
+                lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
                 lhs.margin == rhs.margin &&
                 lhs.background == rhs.background &&
@@ -265,6 +272,7 @@ public extension PaywallComponent {
         // MARK: - Hashable
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
+            hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(background)
