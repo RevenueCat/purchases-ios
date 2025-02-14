@@ -25,7 +25,9 @@ struct ProgressViewModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            #if !os(watchOS)
             .background(.ultraThinMaterial)
+            #endif
             .overlay(progressView)
     }
 
