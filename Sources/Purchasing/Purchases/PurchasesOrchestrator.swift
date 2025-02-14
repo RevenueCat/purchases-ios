@@ -115,7 +115,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    var storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType? {
+    var storeKit2ObserverModePurchaseDetector:StoreKit2ObserverModePurchaseDetectorType? {
         return self._storeKit2ObserverModePurchaseDetector as? StoreKit2ObserverModePurchaseDetectorType
     }
 
