@@ -61,23 +61,27 @@ private extension Color {
     /// Calculates the perceived brightness of the color.
     /// Uses the standard luminance formula for relative brightness perception.
     func brightness() -> CGFloat {
-        guard let uiColor = UIColor(self).cgColor.components else { return 1.0 }
-
-        // Ensure the color has at least three components (R, G, B)
-        guard uiColor.count >= 3 else { return 1.0 }
-
+        #if os(macOS)
+        guard let nsColor = NSColor(self).usingColorSpace(.deviceRGB) else { return 1.0 }
+        let red = nsColor.redComponent
+        let green = nsColor.greenComponent
+        let blue = nsColor.blueComponent
+        #else
+        guard let uiColor = UIColor(self).cgColor.components, uiColor.count >= 3 else { return 1.0 }
         let red = uiColor[0]
         let green = uiColor[1]
         let blue = uiColor[2]
+        #endif
 
         // Standard luminance coefficients for sRGB (per ITU-R BT.709)
         let redCoefficient: CGFloat = 0.299
         let greenCoefficient: CGFloat = 0.587
         let blueCoefficient: CGFloat = 0.114
 
-        // Compute the brightness based on the weighted sum of RGB components
+        // Compute brightness using the weighted sum of RGB components
         return (red * redCoefficient) + (green * greenCoefficient) + (blue * blueCoefficient)
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
