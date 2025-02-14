@@ -491,7 +491,10 @@ struct StackComponentView_Previews: PreviewProvider {
                         backgroundColor: .init(light: .hex("#ffcc00")),
                         padding: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
                         margin: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
-                        shape: .rectangle(.init(topLeading: 20, topTrailing: 20, bottomLeading: 20, bottomTrailing: 20)),
+                        shape: .rectangle(.init(topLeading: 20,
+                                                topTrailing: 20,
+                                                bottomLeading: 20,
+                                                bottomTrailing: 20)),
                         border: .init(color: .init(light: .hex("#0000ff")), width: 6),
                         overflow: .scroll
                     ),
