@@ -33,7 +33,7 @@ struct OfferingsResponse {
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
         var paywallComponents: PaywallComponentsData?
-
+        var draftPaywallComponents: PaywallComponentsData?
     }
 
     struct Placements {
