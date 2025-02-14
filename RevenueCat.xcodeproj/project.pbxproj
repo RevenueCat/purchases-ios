@@ -12,6 +12,7 @@
 		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
 		030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918B2D55C9D80085103F /* LocaleFinderTests.swift */; };
 		030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918D2D5664410085103F /* LocaleExtensions.swift */; };
+		030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
 		0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */; };
 		0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA402D4029C300F9E330 /* TabControlComponentViewModel.swift */; };
@@ -1295,6 +1296,7 @@
 		030F91892D55C1AB0085103F /* LocaleFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinder.swift; sourceTree = "<group>"; };
 		030F918B2D55C9D80085103F /* LocaleFinderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleFinderTests.swift; sourceTree = "<group>"; };
 		030F918D2D5664410085103F /* LocaleExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleExtensions.swift; sourceTree = "<group>"; };
+		030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModifier.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
 		0354AA3D2D4029C300F9E330 /* TabControlButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentView.swift; sourceTree = "<group>"; };
 		0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentViewModel.swift; sourceTree = "<group>"; };
@@ -2687,6 +2689,7 @@
 		2C7457442CEA652B004ACE52 /* ViewHelpers */ = {
 			isa = PBXGroup;
 			children = (
+				030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */,
 				2C7457872CEDF7AC004ACE52 /* BackgroundStyle.swift */,
 				77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */,
 				4D6F4BCF2CF69DE300353AF6 /* ForegroundColorScheme.swift */,
@@ -6900,6 +6903,7 @@
 				357CEC702C5940CE00A80837 /* ColorFromAppearance.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
 				574D1C702D3E75F9005840CD /* PurchaseDetailView.swift in Sources */,
+				030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */,
 				574D1C712D3E75F9005840CD /* PurchaseHistoryView.swift in Sources */,
 				574D1C722D3E75F9005840CD /* PurchaseLinkView.swift in Sources */,
 				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,
