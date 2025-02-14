@@ -148,14 +148,6 @@ private extension Axis {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension Color {
-    func brightness() -> CGFloat {
-        guard let uiColor = UIColor(self).cgColor.components else { return 1.0 }
-        return (uiColor[0] * 299 + uiColor[1] * 587 + uiColor[2] * 114) / 1000
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
 
     @ViewBuilder
