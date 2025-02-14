@@ -48,7 +48,7 @@ class TextComponentViewModel {
         condition: ScreenCondition,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (TextComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
@@ -61,7 +61,7 @@ class TextComponentViewModel {
 
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             text: Self.processText(
                 text,
                 packageContext: packageContext,

@@ -19,6 +19,7 @@ public extension PaywallComponent {
     final class StackComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let visible: Bool?
         public let components: [PaywallComponent]
         public let size: Size
         public let spacing: CGFloat?
@@ -35,6 +36,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialStackComponent>?
 
         public init(
+            visible: Bool? = nil,
             components: [PaywallComponent],
             dimension: Dimension = .vertical(.center, .start),
             size: Size = .init(width: .fill, height: .fit),
@@ -49,6 +51,7 @@ public extension PaywallComponent {
             badge: Badge? = nil,
             overrides: ComponentOverrides<PartialStackComponent>? = nil
         ) {
+            self.visible = visible
             self.components = components
             self.size = size
             self.spacing = spacing
@@ -66,6 +69,7 @@ public extension PaywallComponent {
         }
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(visible)
             hasher.combine(components)
             hasher.combine(size)
             hasher.combine(spacing)
@@ -83,6 +87,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.visible == rhs.visible &&
                    lhs.components == rhs.components &&
                    lhs.size == rhs.size &&
                    lhs.spacing == rhs.spacing &&

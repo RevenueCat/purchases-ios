@@ -57,7 +57,9 @@ struct StackComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            self.make(style: style)
+            if style.visible {
+                self.make(style: style)
+            }
         }
     }
 
