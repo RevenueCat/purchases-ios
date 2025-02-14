@@ -48,7 +48,7 @@ class CarouselComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (CarouselComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,
@@ -150,8 +150,8 @@ struct CarouselComponentStyle {
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
         size: PaywallComponent.Size?,
-        padding: PaywallComponent.Padding,
-        margin: PaywallComponent.Padding,
+        padding: PaywallComponent.Padding?,
+        margin: PaywallComponent.Padding?,
         background: PaywallComponent.Background?,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
@@ -166,8 +166,8 @@ struct CarouselComponentStyle {
     ) {
         self.visible = visible
         self.size = size ?? .init(width: .fit, height: .fit)
-        self.padding = padding.edgeInsets
-        self.margin = margin.edgeInsets
+        self.padding = (padding ?? .zero).edgeInsets
+        self.margin = (margin ?? .zero).edgeInsets
         self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
@@ -207,8 +207,8 @@ struct DisplayablePageControl {
         pageControl: PaywallComponent.CarouselComponent.PageControl
     ) {
         self.position = pageControl.position
-        self.padding = (pageControl.padding).edgeInsets
-        self.margin = (pageControl.margin).edgeInsets
+        self.padding = (pageControl.padding ?? .zero).edgeInsets
+        self.margin = (pageControl.margin ?? .zero).edgeInsets
         self.backgroundStyle = pageControl.backgroundColor?.asDisplayable(
             uiConfigProvider: uiConfigProvider
         ).backgroundStyle

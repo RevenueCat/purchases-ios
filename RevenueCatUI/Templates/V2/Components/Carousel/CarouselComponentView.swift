@@ -46,43 +46,39 @@ struct CarouselComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    GeometryReader { reader in
-                        CarouselView(
-                            width: reader.size.width,
-                            pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
-                                StackComponentView(
-                                    viewModel: stackViewModel,
-                                    onDismiss: self.onDismiss
-                                )
-                            }),
-                            initialIndex: style.initialPageIndex,
-                            loop: style.loop,
-                            spacing: style.pageSpacing,
-                            cardWidth: reader.size.width - (style.pagePeek * 2) - style.pageSpacing,
-                            pageControl: style.pageControl,
-                            msTimePerSlide: style.autoAdvance?.msTimePerPage,
-                            msTransitionTime: style.autoAdvance?.msTransitionTime
-                        ).clipped()
-                    }
-                    // Need to set height since geometry reader has no intrinsic height
-                    .frame(height: carouselHeight)
-                    .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
-                        self.carouselHeight = newHeight
-                    }
-                    // Style the carousel
-                    .size(style.size)
-                    .padding(style.padding)
-                    .shape(border: style.border,
-                           shape: style.shape,
-                           background: style.backgroundStyle,
-                           uiConfigProvider: self.viewModel.uiConfigProvider)
-                    .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
-                    .padding(style.margin)
-                } else {
-                    EmptyView()
+            if style.visible {
+                GeometryReader { reader in
+                    CarouselView(
+                        width: reader.size.width,
+                        pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
+                            StackComponentView(
+                                viewModel: stackViewModel,
+                                onDismiss: self.onDismiss
+                            )
+                        }),
+                        initialIndex: style.initialPageIndex,
+                        loop: style.loop,
+                        spacing: style.pageSpacing,
+                        cardWidth: reader.size.width - (style.pagePeek * 2) - style.pageSpacing,
+                        pageControl: style.pageControl,
+                        msTimePerSlide: style.autoAdvance?.msTimePerPage,
+                        msTransitionTime: style.autoAdvance?.msTransitionTime
+                    ).clipped()
                 }
+                // Need to set height since geometry reader has no intrinsic height
+                .frame(height: carouselHeight)
+                .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
+                    self.carouselHeight = newHeight
+                }
+                // Style the carousel
+                .size(style.size)
+                .padding(style.padding)
+                .shape(border: style.border,
+                       shape: style.shape,
+                       background: style.backgroundStyle,
+                       uiConfigProvider: self.viewModel.uiConfigProvider)
+                .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
+                .padding(style.margin)
             }
         }
     }
@@ -144,13 +140,13 @@ private struct CarouselView<Content: View>: View {
         width: CGFloat,
         pages: [Content],
         initialIndex: Int,
-        loop: Bool = false,
-        spacing: CGFloat = 16,
-        cardWidth: CGFloat = 300,
+        loop: Bool,
+        spacing: CGFloat,
+        cardWidth: CGFloat,
         pageControl: DisplayablePageControl?,
         /// If either of these is nil, auto‐play is off.
-        msTimePerSlide: Int? = nil,
-        msTransitionTime: Int? = nil
+        msTimePerSlide: Int?,
+        msTransitionTime: Int?
     ) {
         self.width = width
         self.initialIndex = initialIndex
@@ -323,7 +319,13 @@ private struct CarouselView<Content: View>: View {
         pauseAutoPlay(for: 10)
     }
 
+    private var autoPlayEnabled: Bool {
+        return self.msTimePerSlide != nil && self.msTransitionTime != nil
+    }
+
     private func pauseAutoPlay(for seconds: TimeInterval) {
+        guard self.autoPlayEnabled else { return }
+
         isPaused = true
         pauseEndDate = Date().addingTimeInterval(seconds)
 
@@ -406,9 +408,7 @@ struct PageControlView: View {
     }
 
     var body: some View {
-        if self.originalCount <= 1 {
-            EmptyView()
-        } else {
+        if self.originalCount > 1 {
             HStack(spacing: self.pageControl.spacing) {
                 ForEach(0..<originalCount, id: \.self) { index in
                     Capsule()

@@ -38,8 +38,8 @@ public extension PaywallComponent {
             }
 
             public let position: Position
-            public let padding: Padding
-            public let margin: Padding
+            public let padding: Padding?
+            public let margin: Padding?
             public let backgroundColor: ColorScheme?
             public let shape: Shape?
             public let border: Border?
@@ -51,8 +51,8 @@ public extension PaywallComponent {
 
             public init(
                 position: Position,
-                padding: Padding,
-                margin: Padding,
+                padding: Padding?,
+                margin: Padding?,
                 backgroundColor: ColorScheme?,
                 shape: Shape?,
                 border: Border?,
@@ -93,8 +93,8 @@ public extension PaywallComponent {
 
         public let visible: Bool?
         public let size: Size?
-        public let padding: Padding
-        public let margin: Padding
+        public let padding: Padding?
+        public let margin: Padding?
         public let background: Background?
         public let shape: Shape?
         public let border: Border?
@@ -115,8 +115,8 @@ public extension PaywallComponent {
         public init(
             visible: Bool? = nil,
             size: PaywallComponent.Size? = nil,
-            padding: PaywallComponent.Padding = .zero,
-            margin: PaywallComponent.Padding = .zero,
+            padding: PaywallComponent.Padding? = .zero,
+            margin: PaywallComponent.Padding? = .zero,
             background: PaywallComponent.Background? = nil,
             shape: PaywallComponent.Shape? = nil,
             border: PaywallComponent.Border? = nil,
