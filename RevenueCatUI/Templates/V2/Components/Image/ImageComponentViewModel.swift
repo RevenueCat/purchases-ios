@@ -52,7 +52,7 @@ class ImageComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (ImageComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedImagePartial.buildPartial(
             state: state,
@@ -63,7 +63,7 @@ class ImageComponentViewModel {
         let partial = localizedPartial?.partial
 
         let style = ImageComponentStyle(
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             source: localizedPartial?.imageInfo ?? self.imageInfo,
             size: partial?.size ?? self.component.size,
             fitMode: partial?.fitMode ?? self.component.fitMode,

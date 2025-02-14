@@ -45,21 +45,23 @@ struct ImageComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            RemoteImage(
-                url: style.url,
-                lowResUrl: style.lowResUrl,
-                darkUrl: style.darkUrl,
-                darkLowResUrl: style.darkLowResUrl
-            ) { (image, size) in
-                self.renderImage(image, size, with: style)
+            if style.visible {
+                RemoteImage(
+                    url: style.url,
+                    lowResUrl: style.lowResUrl,
+                    darkUrl: style.darkUrl,
+                    darkLowResUrl: style.darkLowResUrl
+                ) { (image, size) in
+                    self.renderImage(image, size, with: style)
+                }
+                .size(style.size)
+                .clipped()
+                .shape(border: nil,
+                       shape: style.shape)
+                .padding(style.padding)
+                // WIP: Add border still
+                .padding(style.margin)
             }
-            .size(style.size)
-            .clipped()
-            .shape(border: nil,
-                   shape: style.shape)
-            .padding(style.padding)
-            // WIP: Add border still
-            .padding(style.margin)
         }
     }
 
