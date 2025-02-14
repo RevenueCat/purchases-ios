@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 2/13/25.
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -92,3 +94,5 @@ extension View {
     }
 
 }
+
+#endif
