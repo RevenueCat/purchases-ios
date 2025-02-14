@@ -122,16 +122,16 @@ struct StackComponentView: View {
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
+        .scrollableIfEnabled(
+            style.dimension,
+            enabled: style.scrollable ?? self.isScrollableByDefault
+        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
-        .scrollableIfEnabled(
-            style.dimension,
-            enabled: style.scrollable ?? self.isScrollableByDefault
-        )
     }
 
 }
@@ -490,6 +490,12 @@ struct StackComponentView_Previews: PreviewProvider {
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ffcc00")),
                         padding: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        margin: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        shape: .rectangle(.init(topLeading: 20,
+                                                topTrailing: 20,
+                                                bottomLeading: 20,
+                                                bottomTrailing: 20)),
+                        border: .init(color: .init(light: .hex("#0000ff")), width: 6),
                         overflow: .scroll
                     ),
                     localizationProvider: .init(
