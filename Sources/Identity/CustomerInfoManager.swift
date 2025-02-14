@@ -189,6 +189,10 @@ class CustomerInfoManager {
     }
 
     func cachedCustomerInfo(appUserID: String) -> CustomerInfo? {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            return self.createPreviewCustomerInfo()
+        }
+        
         let cachedCustomerInfoData = self.withData {
             $0.deviceCache.cachedCustomerInfoData(appUserID: appUserID)
         }
