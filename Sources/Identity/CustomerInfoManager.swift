@@ -192,7 +192,7 @@ class CustomerInfoManager {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             return self.createPreviewCustomerInfo()
         }
-        
+
         let cachedCustomerInfoData = self.withData {
             $0.deviceCache.cachedCustomerInfoData(appUserID: appUserID)
         }
@@ -443,11 +443,13 @@ private extension CustomerInfoManager {
 
     /// Generates a dummy `CustomerInfo` with hardcoded information exclusively for UI Preview mode.
     private func createPreviewCustomerInfo() -> CustomerInfo {
-        let previewSubscriber = CustomerInfoResponse.Subscriber(originalAppUserId: IdentityManager.uiPreviewModeAppUserID,
-                                                                firstSeen: Date(),
-                                                                subscriptions: [:],
-                                                                nonSubscriptions: [:],
-                                                                entitlements: [:])
+        let previewSubscriber = CustomerInfoResponse.Subscriber(
+            originalAppUserId: IdentityManager.uiPreviewModeAppUserID,
+            firstSeen: Date(),
+            subscriptions: [:],
+            nonSubscriptions: [:],
+            entitlements: [:]
+        )
         let previewCustomerInfoResponse = CustomerInfoResponse(subscriber: previewSubscriber,
                                                                requestDate: Date(),
                                                                rawData: [:])
