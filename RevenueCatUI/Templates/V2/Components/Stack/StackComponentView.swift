@@ -42,20 +42,20 @@ struct StackComponentView: View {
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
-    private let showsActivityIndicatorOverContent: Bool
+    private let showActivityIndicatorOverContent: Bool
 
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
-        showsActivityIndicatorOverContent: Bool = false
+        showActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        self.showsActivityIndicatorOverContent = showsActivityIndicatorOverContent
+        self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
     }
 
     var body: some View {
@@ -73,6 +73,7 @@ struct StackComponentView: View {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
         Group {
             switch style.dimension {
@@ -115,14 +116,12 @@ struct StackComponentView: View {
                       verticalAlignment: alignment.stackAlignment)
             }
         }
-        .hidden(if: self.showsActivityIndicatorOverContent)
-        .applyIf(self.showsActivityIndicatorOverContent, apply: { view in
-            view.overlay {
-                self.progress(for: style.backgroundStyle)
-            }
-        })
+        .hidden(if: self.showActivityIndicatorOverContent)
         .padding(style.padding)
         .padding(additionalPadding)
+        .applyIf(self.showActivityIndicatorOverContent, apply: { view in
+            view.progressOverlay(for: style.backgroundStyle)
+        })
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
@@ -143,46 +142,6 @@ private extension Axis {
         switch self {
         case .horizontal: return .horizontal
         case .vertical: return .vertical
-        }
-    }
-
-    func progress(for backgroundStyle: BackgroundStyle?) -> some View {
-        guard let backgroundStyle else {
-            return ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(
-                    tint: Color.white
-                ))
-        }
-
-        switch backgroundStyle {
-        case .color(let displayableColorScheme):
-            let colorInfo = displayableColorScheme.effectiveColor(for: self.colorScheme)
-
-            return ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(
-                    tint: self.bestTint(for: colorInfo)
-                ))
-        case .image:
-            return ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(
-                    tint: Color.white
-                ))
-        }
-    }
-
-    func bestTint(for colorInfo: DisplayableColorInfo) -> Color {
-        switch colorInfo {
-        case .hex:
-            return colorInfo
-                .toColor(fallback: .black)
-                .brightness() > 0.6 ? .black : .white
-        case .linear, .radial:
-            let gradient = colorInfo.toGradient()
-            let averageBrightness = gradient.stops
-                .compactMap { $0.color.brightness() }
-                .reduce(0, +) / CGFloat(gradient.stops.count)
-
-            return averageBrightness > 0.6 ? .black : .white
         }
     }
 
@@ -554,6 +513,50 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Scrollable - HStack")
+
+        // Progress
+        let colorOptions: [(String, String, PaywallComponent.ColorInfo)] = [
+            ("Solid color - white tint", "#ffffff", .hex("#ff0000")),
+            ("Solid color - black tint", "#000000", .hex("#f784ff")),
+            ("Gradient - white tint", "#ffffff", .linear(0, [
+                .init(color: "#1a2494", percent: 0),
+                .init(color: "#380303", percent: 80)
+            ])),
+            ("Gradient - black tint", "#000000", .linear(0, [
+                .init(color: "#d6ea92", percent: 0),
+                .init(color: "#6cacef", percent: 80)
+            ]))
+        ]
+        ForEach(colorOptions, id: \.self.0) { colorPair in
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .text(.init(
+                                text: "text_1",
+                                color: .init(light: .hex(colorPair.1))))
+                        ],
+                        size: .init(
+                            width: .fill,
+                            height: .fixed(100)
+                        ),
+                        backgroundColor: .init(light: colorPair.2)
+                    ),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
+                onDismiss: {},
+                showActivityIndicatorOverContent: true
+            )
+            .previewRequiredEnvironmentProperties()
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Progress - \(colorPair.0)")
+        }
 
         // Fits don't expand
         StackComponentView(

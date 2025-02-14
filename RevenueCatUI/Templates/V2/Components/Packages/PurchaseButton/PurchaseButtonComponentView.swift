@@ -53,9 +53,10 @@ struct PurchaseButtonComponentView: View {
             StackComponentView(
                 viewModel: viewModel.stackViewModel,
                 onDismiss: {},
-                showsActivityIndicatorOverContent: self.purchaseHandler.actionInProgress
+                showActivityIndicatorOverContent: self.purchaseHandler.actionInProgress
             )
         }
+        .disabled(self.purchaseHandler.actionInProgress)
     }
 
 }
