@@ -427,7 +427,7 @@ struct PageControlView: View {
                    uiConfigProvider: pageControl.uiConfigProvider)
             .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
             .padding(self.pageControl.margin)
-            .onChange(of: self.currentIndex) { newValue in
+            .onChangeOf(self.currentIndex) { newValue in
                 withAnimation {
                     guard originalCount > 0 else {
                         self.localCurrentIndex = 0
