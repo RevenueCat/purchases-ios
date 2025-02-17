@@ -10,6 +10,7 @@
 //  ViewModelFactory.swift
 //
 //  Created by Josh Holtz on 11/5/24.
+// swiftlint:disable file_length
 
 import Foundation
 import RevenueCat
@@ -283,6 +284,26 @@ struct ViewModelFactory {
                     uiConfigProvider: uiConfigProvider
                 )
             )
+        case .carousel(let component):
+            let pageStackViewModels = try component.pages.map { stackComponent in
+                try toStackViewModel(
+                    component: stackComponent,
+                    packageValidator: packageValidator,
+                    firstImageInfo: firstImageInfo,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering
+                )
+            }
+
+            return .carousel(
+                try CarouselComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component,
+                    pageStackViewModels: pageStackViewModels
+                )
+            )
         }
     }
 
@@ -389,6 +410,11 @@ struct ViewModelFactory {
             return nil
         case .tabControlToggle:
             return nil
+        case .carousel(let carousel):
+            guard let first = carousel.pages.first?.components.first else {
+                return nil
+            }
+            return self.findFullWidthImageViewIfItsTheFirst(first)
         }
     }
 
