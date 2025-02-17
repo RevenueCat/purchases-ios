@@ -85,7 +85,10 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [
+                    visionOSSetting,
+                    .unsafeFlags(["-enable-library-evolution"])
+                ] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -94,6 +97,7 @@ let package = Package(
                 ],
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
+                    .unsafeFlags(["-enable-library-evolution"]),
                     visionOSSetting
                 ] + ciCompilerFlags + additionalCompilerFlags),
         // Receipt Parser
@@ -114,7 +118,9 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [
+                    .unsafeFlags(["-enable-library-evolution"]),
+                ] + ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
