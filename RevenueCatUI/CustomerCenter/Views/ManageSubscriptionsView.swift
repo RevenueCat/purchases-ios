@@ -168,6 +168,7 @@ struct ManageSubscriptionsView: View {
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {

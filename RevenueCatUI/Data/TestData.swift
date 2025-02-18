@@ -9,7 +9,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-// swiftlint:disable type_body_length file_length
+// swiftlint:disable type_body_length file_length force_unwrapping
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting

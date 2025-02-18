@@ -18,7 +18,7 @@ import SwiftUI
 import WebKit
 #endif
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length force_unwrapping
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {

@@ -20,6 +20,8 @@ import SwiftUI
 
 #if DEBUG
 
+// swiftlint:disable force_unwrapping
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
 private enum FamilySharingTogglePreview {

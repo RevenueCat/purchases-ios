@@ -163,6 +163,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
               displayName: "Amazon")
     ]
 
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         Group {
             ForEach(previewCases, id: \.displayName) { data in
