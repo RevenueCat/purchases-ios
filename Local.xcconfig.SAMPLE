@@ -23,7 +23,7 @@
 // 3. If there's any new build setting you think others can benefit from, please update the
 //    .SAMPLE file and open a pull request.
 //
-// Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects,
+// Note that this file is read by the RevenueCat, PurchaseTester, PaywallsTester and Example projects,
 // as well as by Package.swift.
 // ======
 
@@ -35,3 +35,13 @@
 
 // Set your your RevenueCat Proxy URL for local development here:
 // REVENUECAT_PROXY_URL = your-revenuecat-proxy-url
+
+//
+// For the example apps in the Examples directory (e.g. MagicWeather app)
+//
+
+// Set your RC API key for the example apps for local development here:
+// EXAMPLE_APP_API_KEY = your-example-app-api-key
+
+// Set your example apps' entitlement identifier for local development here:
+// EXAMPLE_APP_ENTITLEMENT_ID = premium

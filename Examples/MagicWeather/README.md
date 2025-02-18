@@ -55,7 +55,6 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 5. In the `Constants.swift` file: 
     - Replace the value for `apiKey` with the API key from your RevenueCat project.
     - Replace the value for `entitlementID` with the entitlement ID of your product in RevenueCat's dashboard.
-    - Comment out the error directives.
 6. Build the app and run it on your device. 
 
 ### Example Flow: Purchasing a Subscription
