@@ -81,10 +81,13 @@ struct PurchaseHistoryView: View {
                 Section(header: Text(
                     localization[.accountDetails]
                 )) {
-                    CompatibilityLabeledContent(
-                        localization[.dateWhenAppWasPurchased],
-                        content: dateFormatter.string(from: info.originalPurchaseDate!)
-                    )
+                    if let originalPurchaseDate = info.originalPurchaseDate {
+                        CompatibilityLabeledContent(
+                            localization[.dateWhenAppWasPurchased],
+                            content: dateFormatter.string(from: originalPurchaseDate)
+                        )
+
+                    }
 
                     CompatibilityLabeledContent(
                         localization[.userId],
