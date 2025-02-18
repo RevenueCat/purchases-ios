@@ -23,6 +23,9 @@
 		2D276F5C29F1C85800F51382 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2DB0898829F30ABD00A4DAE7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2DB0899029F32C9400A4DAE7 /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ../../..; sourceTree = "<group>"; };
+		754E474B2D64EC64003723B4 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = "/Users/ajpallares/Developer/SDKs/purchases-ios/Local.xcconfig"; sourceTree = "<absolute>"; };
+		754E474C2D64EC6E003723B4 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = "/Users/ajpallares/Developer/SDKs/purchases-ios/Global.xcconfig"; sourceTree = "<absolute>"; };
+		754E475C2D64F2AC003723B4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +43,8 @@
 		2D276F4929F1C85700F51382 = {
 			isa = PBXGroup;
 			children = (
+				754E474B2D64EC64003723B4 /* Local.xcconfig */,
+				754E474C2D64EC6E003723B4 /* Global.xcconfig */,
 				2D276F5429F1C85700F51382 /* testCustomEntitlementsComputation */,
 				2D276F5329F1C85700F51382 /* Products */,
 				2DB0899129F32C9F00A4DAE7 /* Frameworks */,
@@ -57,6 +62,7 @@
 		2D276F5429F1C85700F51382 /* testCustomEntitlementsComputation */ = {
 			isa = PBXGroup;
 			children = (
+				754E475C2D64F2AC003723B4 /* Info.plist */,
 				2D276F5529F1C85700F51382 /* testCustomEntitlementsComputationApp.swift */,
 				2D276F5729F1C85700F51382 /* ContentView.swift */,
 				2D276F5929F1C85800F51382 /* Assets.xcassets */,
@@ -168,6 +174,7 @@
 /* Begin XCBuildConfiguration section */
 		2D276F5E29F1C85800F51382 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 754E474C2D64EC6E003723B4 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -228,6 +235,7 @@
 		};
 		2D276F5F29F1C85800F51382 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 754E474C2D64EC6E003723B4 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -291,6 +299,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = testCustomEntitlementsComputation/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -320,6 +329,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = testCustomEntitlementsComputation/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

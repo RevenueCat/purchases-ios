@@ -9,8 +9,13 @@ import Foundation
 
 enum Constants {
 
-    #error("replace the API key here")
-    static let apiKey = "REPLACE_API_KEY_HERE"
+    static let apiKey: String = {
+           // return "your-api-key"
+           guard let key = Bundle.main.object(forInfoDictionaryKey: "EXAMPLE_APP_API_KEY") as? String, !key.isEmpty else {
+               fatalError("Modify this property to reflect your app's API key")
+           }
+           return key
+       }()
 
     static let defaultAppUserID = "testAppUserID"
 

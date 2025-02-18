@@ -55,6 +55,8 @@
 		559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegateHandler.swift; sourceTree = "<group>"; };
 		5791CE812742E39900E50C4B /* Magic Weather SwiftUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Magic Weather SwiftUI.entitlements"; sourceTree = "<group>"; };
 		5791CEC32742EF2400E50C4B /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		754E46E62D64CC55003723B4 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = "/Users/ajpallares/Developer/SDKs/purchases-ios/Local.xcconfig"; sourceTree = "<absolute>"; };
+		754E46E72D64CC5C003723B4 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = "/Users/ajpallares/Developer/SDKs/purchases-ios/Global.xcconfig"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,8 @@
 		5597797125ACDC3A00C33DFB = {
 			isa = PBXGroup;
 			children = (
+				754E46E62D64CC55003723B4 /* Local.xcconfig */,
+				754E46E72D64CC5C003723B4 /* Global.xcconfig */,
 				5597797625ACDC3A00C33DFB /* Shared */,
 				5597798025ACDC3E00C33DFB /* iOS */,
 				5597797F25ACDC3E00C33DFB /* Products */,
@@ -257,6 +261,7 @@
 /* Begin XCBuildConfiguration section */
 		5597799025ACDC3E00C33DFB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 754E46E72D64CC5C003723B4 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -316,6 +321,7 @@
 		};
 		5597799125ACDC3E00C33DFB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 754E46E72D64CC5C003723B4 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

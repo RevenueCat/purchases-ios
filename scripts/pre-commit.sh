@@ -37,6 +37,7 @@ verify_no_included_apikeys() {
     "${SCRIPT_DIR}/../Tests/BackendIntegrationTests/Constants.swift"
     "${SCRIPT_DIR}/../Examples/MagicWeather/MagicWeather/Constants.swift"
     "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/Shared/Constants.swift"
+    "${SCRIPT_DIR}/../Examples/testCustomEntitlementsComputation/testCustomEntitlementsComputation/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTesterSwiftUI/Core/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PaywallsTester/PaywallsTester/Config/ConfigItem.swift"
   )

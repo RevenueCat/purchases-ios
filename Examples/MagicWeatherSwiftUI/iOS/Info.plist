@@ -18,6 +18,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>EXAMPLE_APP_API_KEY</key>
+	<string>$(EXAMPLE_APP_API_KEY)</string>
+	<key>EXAMPLE_APP_ENTITLEMENT_ID</key>
+	<string>$(EXAMPLE_APP_ENTITLEMENT_ID)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

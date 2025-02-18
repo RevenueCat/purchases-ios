@@ -41,6 +41,8 @@
 		5582ECE22587EF8800ACB34B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5582ECE42587EF8800ACB34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5582ECF92587F29600ACB34B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		754E46B72D64C7D6003723B4 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = "/Users/ajpallares/Developer/SDKs/purchases-ios/Global.xcconfig"; sourceTree = "<absolute>"; };
+		754E46B82D64C7E2003723B4 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = "/Users/ajpallares/Developer/SDKs/purchases-ios/Local.xcconfig"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,8 @@
 		5582ECCA2587EF8500ACB34B = {
 			isa = PBXGroup;
 			children = (
+				754E46B82D64C7E2003723B4 /* Local.xcconfig */,
+				754E46B72D64C7D6003723B4 /* Global.xcconfig */,
 				5539DF392593E6D90073FB19 /* README.md */,
 				5582ECD52587EF8500ACB34B /* MagicWeather */,
 				5582ECD42587EF8500ACB34B /* Products */,
@@ -272,6 +276,7 @@
 /* Begin XCBuildConfiguration section */
 		5582ECE52587EF8800ACB34B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 754E46B72D64C7D6003723B4 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -333,6 +338,7 @@
 		};
 		5582ECE62587EF8800ACB34B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 754E46B72D64C7D6003723B4 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
