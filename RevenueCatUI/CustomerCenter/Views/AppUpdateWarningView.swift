@@ -92,18 +92,22 @@ private struct TextButtonStyle: PrimitiveButtonStyle {
 struct AppUpdateWarningView_Previews: PreviewProvider {
 
     static var previews: some View {
-        Group {
+        NavigationView {
             AppUpdateWarningView(
-                onUpdateAppClick: {
-
-                },
-                onContinueAnywayClick: {
-
-                }
+                onUpdateAppClick: { },
+                onContinueAnywayClick: { }
             )
+            .environment(\.colorScheme, .light)
+        }
+
+        NavigationView {
+            AppUpdateWarningView(
+                onUpdateAppClick: { },
+                onContinueAnywayClick: { }
+            )
+            .environment(\.colorScheme, .dark)
         }
     }
-
 }
 
 #endif
