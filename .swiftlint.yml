@@ -10,7 +10,6 @@ excluded:
   - .build
 
 opt_in_rules:
-  - force_unwrapping
   - sorted_imports
   - missing_docs
   - convenience_type
