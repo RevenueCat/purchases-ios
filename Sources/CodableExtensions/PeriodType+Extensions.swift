@@ -52,6 +52,7 @@ private extension PeriodType {
         case .normal: return "normal"
         case .intro: return "intro"
         case .trial: return "trial"
+        case .prepaid: return "prepaid"
         }
     }
 
