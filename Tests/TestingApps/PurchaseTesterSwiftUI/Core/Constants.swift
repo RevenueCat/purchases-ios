@@ -16,7 +16,10 @@ public struct Constants {
     /*
      The API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
      This is the default used by `ConfigurationView`
+
+     To add your own API key for local development, add it in your local.xcconfig file like this:
+     REVENUECAT_API_KEY = "your-api-key"
      */
-    public static let apiKey = "REVENUECAT_API_KEY"
+    public static var apiKey: String { Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String ?? "" }
 
 }
