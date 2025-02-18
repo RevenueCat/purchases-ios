@@ -59,6 +59,9 @@ struct APIKeyDashboardList: View {
         .task {
             await fetchOfferings()
         }
+        .refreshable {
+            await fetchOfferings()
+        }
     }
 
     private func fetchOfferings() async {
