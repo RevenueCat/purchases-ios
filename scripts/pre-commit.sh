@@ -38,6 +38,7 @@ verify_no_included_apikeys() {
     "${SCRIPT_DIR}/../Examples/MagicWeather/MagicWeather/Constants.swift"
     "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/Shared/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTesterSwiftUI/Core/Constants.swift"
+    "${SCRIPT_DIR}/../Tests/TestingApps/PaywallsTester/PaywallsTester/Config/ConfigItem.swift"
   )
   FILES_STAGED=$(git diff --cached --name-only)
   PATTERN="\"REVENUECAT_API_KEY\""
