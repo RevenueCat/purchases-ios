@@ -29,7 +29,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPathsForPurchase(purchaseInformation, now: clock.now)
+        paths.relevantPathsForPurchase(purchaseInformation)
     }
 
     @Published
@@ -70,7 +70,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
     private var purchasesProvider: ManageSubscriptionsPurchaseType
-    private let clock: any ClockType
 
     init(
         screen: CustomerCenterConfigData.Screen,
@@ -78,8 +77,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
-        clock: any ClockType = RevenueCat.Clock.default) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
@@ -88,7 +86,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.customerCenterActionHandler = customerCenterActionHandler
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
             self.state = .success
-            self.clock = clock
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
@@ -260,26 +257,30 @@ private extension CustomerCenterConfigData.Screen {
 
 private extension Array<CustomerCenterConfigData.HelpPath> {
     func relevantPathsForPurchase(
-        _ purchaseInformation: PurchaseInformation?,
-        now: Date) -> [CustomerCenterConfigData.HelpPath] {
-
+        _ purchaseInformation: PurchaseInformation?
+    ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return self
         }
 
         return filter { !purchaseInformation.isLifetime || $0.type != .cancel }
-                .filter { $0.refundWindow.map { $0.withinWindow(purchaseInformation, now: now) } ?? true }
+            .filter {
+                $0.refundWindowDuration.map { $0.isWithin(purchaseInformation) } ?? true
+            }
     }
 }
 
 private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {
-    func withinWindow(_ purchaseInformation: PurchaseInformation, now: Date) -> Bool {
+    func isWithin(_ purchaseInformation: PurchaseInformation) -> Bool {
         switch self {
         case .forever:
             return true
 
         case let .duration(duration):
-            return duration.withinDuration(referenceDate: purchaseInformation.latestPurchaseDate, now: now)
+            return duration.isWithin(
+                from: purchaseInformation.latestPurchaseDate,
+                now: purchaseInformation.customerInfoRequestedDate
+            )
 
         @unknown default:
             return true
@@ -288,8 +289,8 @@ private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {
 }
 
 private extension ISODuration {
-    func withinDuration(referenceDate: Date?, now: Date) -> Bool {
-        guard let referenceDate else {
+    func isWithin(from startDate: Date?, now: Date) -> Bool {
+        guard let startDate else {
             return true
         }
 
@@ -303,9 +304,9 @@ private extension ISODuration {
         dateComponents.second = self.seconds
 
         let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: dateComponents, to: referenceDate) ?? referenceDate
+        let endDate = calendar.date(byAdding: dateComponents, to: startDate) ?? startDate
 
-        return referenceDate < endDate && now <= endDate
+        return startDate < endDate && now <= endDate
     }
 }
 

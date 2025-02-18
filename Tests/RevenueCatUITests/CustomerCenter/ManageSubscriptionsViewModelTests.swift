@@ -31,7 +31,6 @@ import XCTest
 class ManageSubscriptionsViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
-    private var testClock = TestClock()
 
     private struct TestError: Error, Equatable {
         let message: String
@@ -42,8 +41,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
     func testInitialState() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                                     customerCenterActionHandler: nil,
-                                                     clock: testClock)
+                                                     customerCenterActionHandler: nil)
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
@@ -53,22 +51,24 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mockLifetime()
+
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
             customerCenterActionHandler: nil,
-            purchaseInformation: PurchaseInformation.mockLifetime,
-            clock: testClock)
+            purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
+        let purchase = PurchaseInformation.mockNonLifetime()
+
         let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowForRefund: .forever),
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             customerCenterActionHandler: nil,
-            purchaseInformation: PurchaseInformation.mockNonLifetime(),
-            clock: testClock)
+            purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -87,13 +87,14 @@ class ManageSubscriptionsViewModelTests: TestCase {
         )
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        testClock.now = latestPurchaseDate.addingTimeInterval(twoDays)
+        let purchase = PurchaseInformation.mockNonLifetime(
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
         let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowForRefund: .duration(oneDay)),
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             customerCenterActionHandler: nil,
-            purchaseInformation: PurchaseInformation.mockNonLifetime(latestPurchaseDate: latestPurchaseDate),
-            clock: testClock)
+            purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -112,13 +113,14 @@ class ManageSubscriptionsViewModelTests: TestCase {
         )
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        testClock.now = latestPurchaseDate.addingTimeInterval(twoDays)
+        let purchase = PurchaseInformation.mockNonLifetime(
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
         let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowForRefund: .duration(oneDay)),
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             customerCenterActionHandler: nil,
-            purchaseInformation: PurchaseInformation.mockNonLifetime(latestPurchaseDate: latestPurchaseDate),
-            clock: testClock)
+            purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -126,8 +128,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
     func testStateChangeToError() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                                     customerCenterActionHandler: nil,
-                                                     clock: testClock)
+                                                     customerCenterActionHandler: nil)
 
         viewModel.state = CustomerCenterViewState.error(error)
 
@@ -260,8 +261,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                     customerInfo: customerInfo,
                     products: products
                 ),
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
-                clock: testClock)
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
             let screen = try XCTUnwrap(viewModel.screen)
             expect(viewModel.state) == .success
@@ -363,8 +363,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
-                                                     clock: testClock)
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
         return (viewModel, loadPromotionalOfferUseCase)
     }
@@ -466,11 +465,11 @@ private extension ManageSubscriptionsViewModelTests {
     CustomerCenterConfigTestData.customerCenterData.screens[.management]!
 
     static func managementScreen(
-        refundWindowForRefund: CustomerCenterConfigData.HelpPath.RefundWindowDuration
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration
     ) -> CustomerCenterConfigData.Screen {
         CustomerCenterConfigTestData.customerCenterData(
             lastPublishedAppVersion: "1.0.0",
-            refundWindowForRefund: refundWindowForRefund).screens[.management]!
+            refundWindowDuration: refundWindowDuration).screens[.management]!
     }
 
 }
@@ -489,7 +488,7 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
 }
 
 private extension PurchaseInformation {
-    static var mockLifetime: PurchaseInformation {
+    static func mockLifetime(customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
@@ -499,11 +498,14 @@ private extension PurchaseInformation {
             productIdentifier: "",
             store: .appStore,
             isLifetime: true,
-            latestPurchaseDate: nil
+            latestPurchaseDate: nil,
+            customerInfoRequestedDate: customerInfoRequestedDate
         )
     }
 
-    static func mockNonLifetime(latestPurchaseDate: Date = Date()) -> PurchaseInformation {
+    static func mockNonLifetime(
+        latestPurchaseDate: Date = Date(),
+        customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
@@ -516,31 +518,10 @@ private extension PurchaseInformation {
             productIdentifier: "",
             store: .appStore,
             isLifetime: false,
-            latestPurchaseDate: latestPurchaseDate
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: customerInfoRequestedDate
         )
     }
-}
-
-/// Same implementation that in RevenueCatTest target. Temporary till a shared package is created.
-final class TestClock: ClockType {
-
-    var now: Date {
-        get { self._now.value }
-        set { self._now.value = newValue }
-    }
-    var currentTime: DispatchTime {
-        get { self._currentTime.value }
-        set { self._currentTime.value = newValue }
-    }
-
-    private let _now: Atomic<Date>
-    private let _currentTime: Atomic<DispatchTime>
-
-    init(now: Date = .init(), currentTime: DispatchTime = .now()) {
-        self._now = .init(now)
-        self._currentTime = .init(currentTime)
-    }
-
 }
 
 #endif

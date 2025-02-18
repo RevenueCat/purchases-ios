@@ -335,7 +335,7 @@ public struct CustomerCenterConfigData: Equatable {
         public let openMethod: OpenMethod?
         public let type: PathType
         public let detail: PathDetail?
-        public let refundWindow: RefundWindowDuration?
+        public let refundWindowDuration: RefundWindowDuration?
 
         public init(id: String,
                     title: String,
@@ -343,14 +343,14 @@ public struct CustomerCenterConfigData: Equatable {
                     openMethod: OpenMethod? = nil,
                     type: PathType,
                     detail: PathDetail?,
-                    refundWindow: RefundWindowDuration?) {
+                    refundWindowDuration: RefundWindowDuration?) {
             self.id = id
             self.title = title
             self.url = url
             self.openMethod = openMethod
             self.type = type
             self.detail = detail
-            self.refundWindow = refundWindow
+            self.refundWindowDuration = refundWindowDuration
         }
 
         public enum PathDetail: Equatable {
@@ -653,12 +653,12 @@ extension CustomerCenterConfigData.HelpPath {
             self.detail = nil
         }
 
-        if let window = response.refundWindow {
-            self.refundWindow = window == "forever"
+        if let window = response.refundWindowDuration {
+            self.refundWindowDuration = window == "forever"
                 ? RefundWindowDuration.forever
                 : ISODurationFormatter.parse(from: window).map { .duration($0) }
         } else {
-            self.refundWindow = nil
+            self.refundWindowDuration = nil
         }
     }
 }

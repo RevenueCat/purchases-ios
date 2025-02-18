@@ -24,7 +24,7 @@ enum CustomerCenterConfigTestData {
         lastPublishedAppVersion: String?,
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
-        refundWindowForRefund: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [.management:
@@ -40,7 +40,7 @@ enum CustomerCenterConfigTestData {
                                 openMethod: nil,
                                 type: .missingPurchase,
                                 detail: nil,
-                                refundWindow: nil
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "2",
@@ -55,7 +55,7 @@ enum CustomerCenterConfigTestData {
                                     subtitle: "subtitle",
                                     productMapping: ["monthly": "offer_id"]
                                 )),
-                                refundWindow: refundWindowForRefund
+                                refundWindowDuration: refundWindowDuration
                             ),
                             .init(
                                 id: "3",
@@ -64,7 +64,7 @@ enum CustomerCenterConfigTestData {
                                 openMethod: nil,
                                 type: .changePlans,
                                 detail: nil,
-                                refundWindow: nil
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "4",
@@ -92,7 +92,7 @@ enum CustomerCenterConfigTestData {
                                         )
                                     ]
                                 )),
-                                refundWindow: nil
+                                refundWindowDuration: nil
                             )
                         ]
                     ),
@@ -108,7 +108,7 @@ enum CustomerCenterConfigTestData {
                                 openMethod: nil,
                                 type: .missingPurchase,
                                 detail: nil,
-                                refundWindow: nil
+                                refundWindowDuration: nil
                             )
                         ]
                       )
@@ -152,7 +152,8 @@ enum CustomerCenterConfigTestData {
         productIdentifier: "product_id",
         store: .appStore,
         isLifetime: false,
-        latestPurchaseDate: nil
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date()
     )
 
     static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
@@ -165,7 +166,8 @@ enum CustomerCenterConfigTestData {
         productIdentifier: "product_id",
         store: .appStore,
         isLifetime: false,
-        latestPurchaseDate: nil
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date()
     )
 
 }

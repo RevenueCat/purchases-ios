@@ -43,6 +43,7 @@ struct PurchaseInformation {
     let isLifetime: Bool
 
     let latestPurchaseDate: Date?
+    let customerInfoRequestedDate: Date
 
     init(title: String,
          durationTitle: String,
@@ -52,7 +53,8 @@ struct PurchaseInformation {
          productIdentifier: String,
          store: Store,
          isLifetime: Bool,
-         latestPurchaseDate: Date?
+         latestPurchaseDate: Date?,
+         customerInfoRequestedDate: Date
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -63,18 +65,21 @@ struct PurchaseInformation {
         self.store = store
         self.isLifetime = isLifetime
         self.latestPurchaseDate = latestPurchaseDate
+        self.customerInfoRequestedDate = customerInfoRequestedDate
     }
 
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
+         customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = DateFormatter()) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
+        self.customerInfoRequestedDate = customerInfoRequestedDate
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -182,7 +187,8 @@ extension PurchaseInformation {
         entitlement: EntitlementInfo? = nil,
         subscribedProduct: StoreProduct,
         transaction: Transaction,
-        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
+        customerInfoRequestedDate: Date
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -192,7 +198,8 @@ extension PurchaseInformation {
             entitlement: entitlement,
             subscribedProduct: subscribedProduct,
             transaction: transaction,
-            renewalPrice: renewalPriceDetails
+            renewalPrice: renewalPriceDetails,
+            customerInfoRequestedDate: customerInfoRequestedDate
         )
     }
 
