@@ -162,6 +162,7 @@
 		57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfiguredPurchases.swift; sourceTree = "<group>"; };
 		57ED6A85290893B6009580C6 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		57FA0F7C2908503B00E9EA1B /* PurchaseTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurchaseTester.entitlements; sourceTree = "<group>"; };
+		757594DC2D64AB8C001B06F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		773C13482CB58A6100219E42 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../../Global.xcconfig; sourceTree = "<group>"; };
 		773C13492CB58A7400219E42 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Local.xcconfig; path = ../../../Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -298,6 +299,7 @@
 		578DAA0A2947DD21001700FD /* PurchaseTesterWatchOS */ = {
 			isa = PBXGroup;
 			children = (
+				757594DC2D64AB8C001B06F5 /* Info.plist */,
 				578DAA0B2947DD21001700FD /* PurchaseTesterWatchApp.swift */,
 				578DAA0D2947DD21001700FD /* ContentView.swift */,
 				578DAA0F2947DD21001700FD /* Assets.xcassets */,
@@ -805,6 +807,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PurchaseTesterWatchOS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PurchaseTesterWatchOS;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.revenuecat.sampleapp;
@@ -833,6 +836,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PurchaseTesterWatchOS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PurchaseTesterWatchOS;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.revenuecat.sampleapp;
