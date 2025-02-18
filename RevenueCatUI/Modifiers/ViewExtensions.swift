@@ -343,6 +343,22 @@ private struct RoundedCorner: Shape {
 
 #endif
 
+// MARK: - Disabling Refreshable
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    @ViewBuilder
+    func refreshableDisabled() -> some View {
+        if let refreshKeyPath = \EnvironmentValues.refresh as? WritableKeyPath<EnvironmentValues, RefreshAction?> {
+            self.environment(refreshKeyPath, nil)
+        } else {
+            self
+        }
+    }
+
+}
+
 // MARK: - Preference Keys
 
 private protocol ViewDimensionPreferenceKey: PreferenceKey where Value == CGFloat {}

@@ -209,6 +209,9 @@ public struct PaywallView: View {
                 }
                 onRequestedDismissal()
             }
+            // If the parent of the paywall uses refreshable, it is inherited by default
+            // and pulling down in the paywall would execute the parent's refreshable action
+            .refreshableDisabled()
     }
 
     @MainActor
