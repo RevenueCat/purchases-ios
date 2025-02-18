@@ -18,7 +18,7 @@ public struct Constants {
      This is the default used by `ConfigurationView`
 
      To add your own API key for local development, add it in your local.xcconfig file like this:
-     REVENUECAT_API_KEY = "your-api-key"
+     REVENUECAT_API_KEY = your-api-key
      */
     public static var apiKey: String { Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String ?? "" }
 
