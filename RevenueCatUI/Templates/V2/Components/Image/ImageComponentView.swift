@@ -58,6 +58,8 @@ struct ImageComponentView: View {
                 .clipped()
                 .shape(border: nil,
                        shape: style.shape)
+                .shadow(shadow: style.shadow,
+                        shape: style.shape?.toInsettableShape())
                 .padding(style.padding)
                 // WIP: Add border still
                 .padding(style.margin)
@@ -128,7 +130,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
-                        fitMode: .fit
+                        fitMode: .fit,
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -157,7 +166,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
-                        fitMode: .fill
+                        fitMode: .fill,
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -190,7 +206,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                         colorOverlay: .init(light: .linear(0, [
                             .init(color: "#ffffff", percent: 0),
                             .init(color: "#ffffff00", percent: 40)
-                        ]))
+                        ])),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -223,7 +246,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                         maskShape: .rectangle(.init(topLeading: 40,
                                                     topTrailing: 40,
                                                     bottomLeading: 40,
-                                                    bottomTrailing: 40))
+                                                    bottomTrailing: 40)),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -253,7 +283,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        maskShape: .circle
+                        maskShape: .circle,
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -283,7 +320,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        maskShape: .convex
+                        maskShape: .convex,
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -313,7 +357,14 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        maskShape: .concave
+                        maskShape: .concave,
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )

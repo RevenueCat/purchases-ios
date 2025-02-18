@@ -144,7 +144,7 @@ struct ImageComponentStyle {
     let padding: EdgeInsets
     let margin: EdgeInsets
     let border: PaywallComponent.Border?
-    let shadow: PaywallComponent.Shadow?
+    let shadow: ShadowModifier.ShadowInfo?
     let contentMode: ContentMode
 
     init(
@@ -175,7 +175,7 @@ struct ImageComponentStyle {
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.border = border
-        self.shadow = shadow
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
         self.contentMode = fitMode.contentMode
     }
 
