@@ -7,9 +7,9 @@
 // swiftlint:disable missing_docs
 import Foundation
 
-public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable { }
+public protocol PaywallComponentBase: Codable, Sendable, Hashable, Equatable {}
 
-public enum PaywallComponent: PaywallComponentBase {
+public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case text(TextComponent)
     case image(ImageComponent)
@@ -25,6 +25,8 @@ public enum PaywallComponent: PaywallComponentBase {
     case tabControl(TabControlComponent)
     case tabControlButton(TabControlButtonComponent)
     case tabControlToggle(TabControlToggleComponent)
+
+    case carousel(CarouselComponent)
 
     public enum ComponentType: String, Codable, Sendable {
 
@@ -43,6 +45,8 @@ public enum PaywallComponent: PaywallComponentBase {
         case tabControlButton = "tab_control_button"
         case tabControlToggle = "tab_control_toggle"
 
+        case carousel
+
     }
 
 }
@@ -54,7 +58,7 @@ public extension PaywallComponent {
     typealias ColorHex = String
 }
 
-extension PaywallComponent: Codable {
+extension PaywallComponent {
 
     enum CodingKeys: String, CodingKey {
 
@@ -106,6 +110,9 @@ extension PaywallComponent: Codable {
             try component.encode(to: encoder)
         case .tabControlToggle(let component):
             try container.encode(ComponentType.tabControlToggle, forKey: .type)
+            try component.encode(to: encoder)
+        case .carousel(let component):
+            try container.encode(ComponentType.carousel, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -186,6 +193,8 @@ extension PaywallComponent: Codable {
             return .tabControlButton(try TabControlButtonComponent(from: decoder))
         case .tabControlToggle:
             return .tabControlToggle(try TabControlToggleComponent(from: decoder))
+        case .carousel:
+            return .carousel(try CarouselComponent(from: decoder))
         }
     }
 

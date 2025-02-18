@@ -13,6 +13,7 @@ public extension PaywallComponent {
     final class ImageComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let visible: Bool?
         public let source: ThemeImageUrls
         public let size: Size
         public let overrideSourceLid: LocalizationKey?
@@ -27,6 +28,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialImageComponent>?
 
         public init(
+            visible: Bool? = nil,
             source: ThemeImageUrls,
             size: Size = .init(width: .fill, height: .fit),
             overrideSourceLid: LocalizationKey? = nil,
@@ -40,6 +42,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialImageComponent>? = nil
         ) {
             self.type = .image
+            self.visible = visible
             self.source = source
             self.size = size
             self.overrideSourceLid = overrideSourceLid
@@ -55,6 +58,7 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(visible)
             hasher.combine(source)
             hasher.combine(size)
             hasher.combine(overrideSourceLid)
@@ -70,6 +74,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: ImageComponent, rhs: ImageComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.visible == rhs.visible &&
                    lhs.source == rhs.source &&
                    lhs.size == rhs.size &&
                    lhs.overrideSourceLid == rhs.overrideSourceLid &&

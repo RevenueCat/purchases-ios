@@ -83,6 +83,10 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += self.collectAllImageURLs(in: controlButton.stack)
             case .tabControlToggle:
                 break
+            case .carousel(let carousel):
+                urls += carousel.pages.flatMap({ stack in
+                    self.collectAllImageURLs(in: stack)
+                })
             }
         }
 
