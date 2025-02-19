@@ -27,5 +27,11 @@
 // as well as by Package.swift.
 // ======
 
-// Uncomment to enable the PAYWALL_COMPONENTS flag.
-// SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) PAYWALL_COMPONENTS
+// Add new compiler flags like this:
+// SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) NEW_FLAG
+
+// Set your RevenueCat API key for local development here:
+// REVENUECAT_API_KEY = your-api-key
+
+// Set your your RevenueCat Proxy URL for local development here:
+// REVENUECAT_PROXY_URL = your-revenuecat-proxy-url
