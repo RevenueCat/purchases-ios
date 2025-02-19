@@ -35,7 +35,6 @@
 		88BEB9262BF537F200A3D05F /* ConfigItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9222BF537F200A3D05F /* ConfigItem.swift */; };
 		88BEB9272BF537F200A3D05F /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9232BF537F200A3D05F /* Configuration.swift */; };
 		88BEB9282BF537F200A3D05F /* SamplePaywalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */; };
-		88BEB9292BF537F200A3D05F /* LocalConfigItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9252BF537F200A3D05F /* LocalConfigItems.swift */; };
 		88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC12D2BC7335200273B6D /* ApplicationData.swift */; };
 		88DFC1322BC7385B00273B6D /* AuthenticationActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1302BC7385A00273B6D /* AuthenticationActor.swift */; };
 		88DFC1332BC7385B00273B6D /* ApplicationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1312BC7385B00273B6D /* ApplicationManager.swift */; };
@@ -128,7 +127,6 @@
 		88BEB9222BF537F200A3D05F /* ConfigItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConfigItem.swift; path = Config/ConfigItem.swift; sourceTree = "<group>"; };
 		88BEB9232BF537F200A3D05F /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Configuration.swift; path = Config/Configuration.swift; sourceTree = "<group>"; };
 		88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SamplePaywalls.swift; path = Config/SamplePaywalls.swift; sourceTree = "<group>"; };
-		88BEB9252BF537F200A3D05F /* LocalConfigItems.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalConfigItems.swift; path = Config/LocalConfigItems.swift; sourceTree = "<group>"; };
 		88DFC12D2BC7335200273B6D /* ApplicationData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationData.swift; sourceTree = "<group>"; };
 		88DFC1302BC7385A00273B6D /* AuthenticationActor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationActor.swift; sourceTree = "<group>"; };
 		88DFC1312BC7385B00273B6D /* ApplicationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationManager.swift; sourceTree = "<group>"; };
@@ -256,7 +254,6 @@
 			children = (
 				88BEB9222BF537F200A3D05F /* ConfigItem.swift */,
 				88BEB9232BF537F200A3D05F /* Configuration.swift */,
-				88BEB9252BF537F200A3D05F /* LocalConfigItems.swift */,
 				88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */,
 				880B2AF12BEC2D62006B9393 /* Preprocessor.sh */,
 				880B2AF32BEC35AA006B9393 /* Postprocessor.sh */,
@@ -504,7 +501,6 @@
 				88BEB9282BF537F200A3D05F /* SamplePaywalls.swift in Sources */,
 				88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */,
 				88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */,
-				88BEB9292BF537F200A3D05F /* LocalConfigItems.swift in Sources */,
 				88A52D132C8A09B900075D09 /* PaywallComponentCollectionExtensions.swift in Sources */,
 				88DFC1882BCF3AB700273B6D /* LoginScreen.swift in Sources */,
 				88DFC1892BCF3AB700273B6D /* LoginWall.swift in Sources */,
