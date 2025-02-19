@@ -58,7 +58,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             completion([:])
             return
         }
-        
+
         guard !productIdentifiers.isEmpty else {
             Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
             completion([:])
