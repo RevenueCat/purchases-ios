@@ -347,7 +347,25 @@ private struct RoundedCorner: Shape {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-
+    
+    /// Disables the refreshable action for a view.
+    /// - Returns: A view with the refreshable action removed.
+    ///
+    /// This is useful when you want to disable the refreshable action for a view that may inherit it from its container.
+    ///
+    /// # Use case
+    /// When a `PaywallView` is presented, the presenting view may have a refreshable action. If the `refreshable` modifier is applied **after** the modifier that presents the `PaywallView` (e.g. with `.sheet`), then the `PaywallView` will also inherit the refreshable action.
+    /// ```swift
+    /// contentView
+    ///     .sheet(isPresented: $paywallPresented) {
+    ///         PaywallView(offering: offering)
+    ///     }
+    ///     .refreshable {
+    ///         // Some async code to refresh contentView
+    ///     }
+    /// ```
+    ///
+    /// `PaywallView` uses this `refreshableDisabled()` modifier to disable the inherited refreshable action, if any.
     @ViewBuilder
     func refreshableDisabled() -> some View {
         if let refreshKeyPath = \EnvironmentValues.refresh as? WritableKeyPath<EnvironmentValues, RefreshAction?> {
