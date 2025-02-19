@@ -54,6 +54,11 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            completion([:])
+            return
+        }
+        
         guard !productIdentifiers.isEmpty else {
             Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
             completion([:])
