@@ -39,46 +39,31 @@ struct AppUpdateWarningView: View {
         self.onContinueAnywayClick = onContinueAnywayClick
     }
 
-    @ViewBuilder
-    var content: some View {
-        ZStack {
-            List {
-                Section {
-                    CompatibilityContentUnavailableView(
-                        localization[.updateWarningTitle],
-                        systemImage: "arrow.up.circle.fill",
-                        description: Text(localization[.updateWarningDescription])
-                    )
-                }
-
-                Section {
-                    Button(localization[.updateWarningUpdate]) {
-                        onUpdateAppClick()
-                    }
-                    .buttonStyle(ProminentButtonStyle())
-                    .padding(.top, 4)
-
-                    Button(localization[.updateWarningIgnore]) {
-                        onContinueAnywayClick()
-                    }
-                    .buttonStyle(TextButtonStyle())
-                }
-                .listRowSeparator(.hidden)
+    var body: some View {
+        List {
+            Section {
+                CompatibilityContentUnavailableView(
+                    localization[.updateWarningTitle],
+                    systemImage: "arrow.up.circle.fill",
+                    description: Text(localization[.updateWarningDescription])
+                )
             }
+
+            Section {
+                Button(localization[.updateWarningUpdate]) {
+                    onUpdateAppClick()
+                }
+                .buttonStyle(ProminentButtonStyle())
+                .padding(.top, 4)
+
+                Button(localization[.updateWarningIgnore]) {
+                    onContinueAnywayClick()
+                }
+                .buttonStyle(TextButtonStyle())
+            }
+            .listRowSeparator(.hidden)
         }
         .dismissCircleButtonToolbar()
-    }
-
-    var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                content
-            }
-        } else {
-            NavigationView {
-                content
-            }
-        }
     }
 }
 
@@ -107,18 +92,22 @@ private struct TextButtonStyle: PrimitiveButtonStyle {
 struct AppUpdateWarningView_Previews: PreviewProvider {
 
     static var previews: some View {
-        Group {
+        NavigationView {
             AppUpdateWarningView(
-                onUpdateAppClick: {
-
-                },
-                onContinueAnywayClick: {
-
-                }
+                onUpdateAppClick: { },
+                onContinueAnywayClick: { }
             )
+            .environment(\.colorScheme, .light)
+        }
+
+        NavigationView {
+            AppUpdateWarningView(
+                onUpdateAppClick: { },
+                onContinueAnywayClick: { }
+            )
+            .environment(\.colorScheme, .dark)
         }
     }
-
 }
 
 #endif
