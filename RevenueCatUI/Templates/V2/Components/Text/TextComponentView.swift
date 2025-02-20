@@ -199,10 +199,14 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Hello, world")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "generic": .init(ios: .name("serif"))
+                        ]
+                    )),
                     component: .init(
                         text: "id_1",
-                        fontName: "serif",
+                        fontName: "generic",
                         color: .init(light: .hex("#000000")),
                         fontSize: 40
                     )
@@ -220,12 +224,12 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "generic": .init(ios: .name("sans-serif"))
                         ]
                     )),
                     component: .init(
                         text: "id_1",
-                        fontName: "sanserif",
+                        fontName: "generic",
                         color: .init(light: .hex("#000000")),
                         fontSize: 40
                     )
@@ -243,12 +247,12 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "generic": .init(ios: .name("monospace"))
                         ]
                     )),
                     component: .init(
                         text: "id_1",
-                        fontName: "monospace",
+                        fontName: "generic",
                         color: .init(light: .hex("#000000")),
                         fontSize: 40
                     )
