@@ -55,7 +55,10 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            completion([:])
+            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+            }
+            completion(result)
             return
         }
 
