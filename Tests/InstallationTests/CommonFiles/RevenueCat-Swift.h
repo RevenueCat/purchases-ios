@@ -1683,7 +1683,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPeriodType, "PeriodType", open) {
   RCIntro SWIFT_COMPILE_NAME("intro") = 1,
 /// If the entitlement is under a trial period.
   RCTrial SWIFT_COMPILE_NAME("trial") = 2,
-/// If the entitlement is under a prepaid period.
+/// If the entitlement is under a prepaid period. This is Play Store only.
   RCPrepaid SWIFT_COMPILE_NAME("prepaid") = 3,
 };
 
