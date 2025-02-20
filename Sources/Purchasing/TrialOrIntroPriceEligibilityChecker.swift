@@ -55,6 +55,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            // No check eligibility request should happen in UI preview mode.
+            // Thus, the eligibility status for all product identifiers are set to `.unknown`
             let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                 resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
             }
