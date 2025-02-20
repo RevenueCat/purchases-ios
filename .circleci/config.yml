@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  slack: circleci/slack@4.10.1
+  slack: circleci/slack@5.0.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -92,6 +92,12 @@ aliases:
         only: main
 
 commands:
+  slack-notify:
+    steps:
+      - slack/notify:
+          branch_pattern: main
+          channel: 'feed-circleci-ios-failures'
+          template: basic_fail_1
   set-maximum-duration:
     parameters:
       seconds:
@@ -400,6 +406,12 @@ commands:
           destination: scan-test-output
 
 jobs:
+  slack-notify:
+    executor:
+      name: macos-executor
+    steps:
+      - slack-notify
+
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
@@ -943,7 +955,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
-
   backend-integration-tests-other:
     executor:
       name: macos-executor
@@ -964,7 +975,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
-
   release-checks:
     executor:
       name: macos-executor
@@ -1351,6 +1361,17 @@ workflows:
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
       - emerge_purchases_ui_snapshot_tests
+      - slack-notify:
+          context:
+            - slack-secrets-ios
+          requires:
+            - lint: failed
+            - run-test-ios-17: failed
+            - run-test-ios-18: failed
+            - pod-lib-lint: failed
+            - run-revenuecat-ui-ios-17: failed
+            - run-revenuecat-ui-ios-18: failed
+            - emerge_purchases_ui_snapshot_tests: failed
 
   create-tag:
     when:
