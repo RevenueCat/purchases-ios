@@ -196,6 +196,19 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+                                        customerCenterActionHandler: nil)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - \(colorScheme)")
         }
     }
 
