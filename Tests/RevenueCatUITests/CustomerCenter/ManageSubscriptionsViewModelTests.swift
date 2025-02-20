@@ -100,6 +100,23 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
     }
 
+    func testDoesNotShowRefundIfPurchaseIsFree() {
+        let latestPurchaseDate = Date()
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        let purchase = PurchaseInformation.mockNonLifetime(
+            price: .free,
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
     func testShowsRefundIfPurchaseOutsideRefundWindow() {
         let latestPurchaseDate = Date()
         let oneDay = ISODuration(
@@ -504,13 +521,14 @@ private extension PurchaseInformation {
     }
 
     static func mockNonLifetime(
+        price: PurchaseInformation.PriceDetails = .paid("5"),
         latestPurchaseDate: Date = Date(),
         customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
             explanation: .earliestExpiration,
-            price: .paid(""),
+            price: price,
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
                 label: .expires,
                 date: .date("")
