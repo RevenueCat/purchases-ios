@@ -27,9 +27,9 @@ enum StoreKitErrorUtils {
             return storeKitError.trackingDescription
         } else if let storeKitError = underlyingError as? StoreKit.Product.PurchaseError {
             return storeKitError.trackingDescription
+        } else {
+            return Self.extractStoreKitErrorDescription(from: underlyingError)
         }
-
-        return nil
     }
 
 }
