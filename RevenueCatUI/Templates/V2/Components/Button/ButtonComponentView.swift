@@ -68,9 +68,10 @@ struct ButtonComponentView: View {
 
         Logger.debug(Strings.restoring_purchases)
 
-        let (_, success) = try await self.purchaseHandler.restorePurchases()
+        let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
         if success {
             Logger.debug(Strings.restored_purchases)
+            self.purchaseHandler.setRestored(customerInfo)
         } else {
             Logger.debug(Strings.restore_purchases_with_empty_result)
         }
