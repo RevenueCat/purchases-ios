@@ -40,7 +40,7 @@ struct AppUpdateWarningView: View {
     }
 
     var body: some View {
-        Color(UIColor.systemBackground)
+        Color(colorScheme == .light ? UIColor.secondarySystemBackground : UIColor.systemBackground)
             .ignoresSafeArea()
             .overlay {
                 VStack(alignment: .center, content: {
@@ -54,7 +54,11 @@ struct AppUpdateWarningView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color(UIColor.secondarySystemBackground))
+                            .fill(
+                                Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground)
+                            )
                             .padding(.horizontal, 24)
                             .padding(.top, 24)
                     )
