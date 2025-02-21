@@ -156,6 +156,20 @@ enum CustomerCenterConfigTestData {
         customerInfoRequestedDate: Date()
     )
 
+    static let subscriptionInformationFree: PurchaseInformation = .init(
+        title: "Basic",
+        durationTitle: "Monthly",
+        explanation: .earliestRenewal,
+        price: .free,
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date()
+    )
+
     static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
         title: "Basic",
         durationTitle: "Yearly",

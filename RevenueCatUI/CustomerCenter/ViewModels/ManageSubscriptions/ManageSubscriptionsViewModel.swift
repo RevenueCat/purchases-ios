@@ -263,10 +263,11 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             return self
         }
 
-        return filter { !purchaseInformation.isLifetime || $0.type != .cancel }
-            .filter {
-                $0.refundWindowDuration.map { $0.isWithin(purchaseInformation) } ?? true
-            }
+        return filter {
+            ($0.type != .cancel || !purchaseInformation.isLifetime) &&
+            ($0.type != .refundRequest || purchaseInformation.price != .free) &&
+            ($0.refundWindowDuration?.isWithin(purchaseInformation) ?? true)
+        }
     }
 }
 
