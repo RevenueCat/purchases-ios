@@ -153,4 +153,28 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.paywallCache.invokedWarmUpPaywallImagesCacheOfferings) == offerings
     }
 
+    // MARK: - UI preview mode
+
+    func testFirstInitializationInUIPreviewModeDoesNotGetOfferingsIfAppActive() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         uiPreviewMode: true,
+                                         storeKitVersion: self.storeKitVersion,
+                                         clock: self.clock)
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toAlways(equal(0))
+    }
+
+    func testFirstInitializationInUIPreviewModeDoesNotGetOfferingsIfAppBackgrounded() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         uiPreviewMode: true,
+                                         storeKitVersion: self.storeKitVersion,
+                                         clock: self.clock)
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+        self.setupPurchases()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toAlways(equal(0))
+    }
+
 }
