@@ -154,6 +154,10 @@ final class AttributionPoster {
         Self.postponedAttributionData = nil
     }
 
+    func clearPostponedAttributionData() {
+        Self.postponedAttributionData = nil
+    }
+
     static func store(postponedAttributionData data: [String: Any],
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserID: String?) {

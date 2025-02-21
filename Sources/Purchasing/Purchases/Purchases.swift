@@ -700,7 +700,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
 
         self.subscribeToAppStateNotifications()
-        self.attributionPoster.postPostponedAttributionDataIfNeeded()
+
+        if systemInfo.dangerousSettings.uiPreviewMode {
+            self.attributionPoster.clearPostponedAttributionData()
+        } else {
+            self.attributionPoster.postPostponedAttributionDataIfNeeded()
+        }
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
             guard let self = self else { return }
@@ -758,6 +763,9 @@ extension Purchases {
     private func post(attributionData data: [String: Any],
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            return
+        }
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
     }
     #endif
