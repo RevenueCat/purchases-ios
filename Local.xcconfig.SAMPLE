@@ -30,8 +30,8 @@
 // Add new compiler flags like this:
 // SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) NEW_FLAG
 
-// Set your RevenueCat API key for local development here:
-// REVENUECAT_API_KEY = your-api-key
+// Set your RevenueCat API key for local development here (without quotes!):
+// REVENUECAT_API_KEY = your-api-key-without-quotes
 
-// Set your your RevenueCat Proxy URL for local development here:
-// REVENUECAT_PROXY_URL = your-revenuecat-proxy-url
+// Set your your RevenueCat Proxy URL for local development here (without quotes!):
+// REVENUECAT_PROXY_URL = your-revenuecat-proxy-url-without-quotes
