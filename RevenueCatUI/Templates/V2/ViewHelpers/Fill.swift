@@ -56,4 +56,28 @@ extension Shape {
     }
 }
 
+extension UnitPoint {
+
+    init(angle: Angle) {
+        // Convert the angle to radians and negate to make clockwise
+        // Subtract π/2 (90 degrees) to place an angle of 0 degrees at the top
+        let radians = -angle.radians - (.pi / 2)
+
+        // Calculate the normalized x and y positions
+        let xPosition = cos(radians)
+        let yPosition = sin(radians)
+
+        // Determine the scaling factor to move the point to the edge of the enclosing square
+        let scaleFactor = max(abs(xPosition), abs(yPosition))
+
+        // Scale the x and y coordinates
+        let scaledX = xPosition / scaleFactor
+        let scaledY = yPosition / scaleFactor
+
+        // Convert the scaled coordinates to a UnitPoint
+        self.init(x: (scaledX + 1) / 2, y: (1 - scaledY) / 2)
+    }
+
+}
+
 #endif
