@@ -227,7 +227,7 @@ class SystemInfo {
 
 }
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || os(tvOS) || VISION_OS
 extension SystemInfo {
 
     @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
@@ -241,6 +241,17 @@ extension SystemInfo {
             let scene = self.sharedUIApplication?.currentWindowScene
 
             return try scene.orThrow(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, *)
+    @MainActor
+    var currentViewController: UIViewController {
+        get throws {
+            let viewController = self.sharedUIApplication?.currentViewController
+
+            return try viewController
+                .orThrow(ErrorUtils.storeProblemError(withMessage: "Failed to get UIViewController"))
         }
     }
 
