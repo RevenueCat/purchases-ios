@@ -56,7 +56,7 @@ struct ImageComponentView: View {
                 }
                 .size(style.size)
                 .clipped()
-                .shape(border: nil,
+                .shape(border: style.border,
                        shape: style.shape)
                 .shadow(shadow: style.shadow,
                         shape: style.shape?.toInsettableShape())
@@ -104,6 +104,7 @@ struct ImageComponentView: View {
 
 #if DEBUG
 
+// swiftlint:disable:next type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
@@ -131,6 +132,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),
@@ -167,6 +169,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fill,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),
@@ -207,6 +210,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                             .init(color: "#ffffff", percent: 0),
                             .init(color: "#ffffff00", percent: 40)
                         ])),
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),
@@ -247,6 +251,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                                                     topTrailing: 40,
                                                     bottomLeading: 40,
                                                     bottomTrailing: 40)),
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),
@@ -284,6 +289,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         ),
                         fitMode: .fit,
                         maskShape: .circle,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),
@@ -321,6 +327,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         ),
                         fitMode: .fit,
                         maskShape: .convex,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),
@@ -358,6 +365,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                         ),
                         fitMode: .fit,
                         maskShape: .concave,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
                         shadow: .init(
                             color: .init(
                                 light: .hex("#000000"),

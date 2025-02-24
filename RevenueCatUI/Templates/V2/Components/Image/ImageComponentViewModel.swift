@@ -143,7 +143,7 @@ struct ImageComponentStyle {
     let colorOverlay: DisplayableColorScheme?
     let padding: EdgeInsets
     let margin: EdgeInsets
-    let border: PaywallComponent.Border?
+    let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
     let contentMode: ContentMode
 
@@ -174,7 +174,7 @@ struct ImageComponentStyle {
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
-        self.border = border
+        self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
         self.contentMode = fitMode.contentMode
     }
