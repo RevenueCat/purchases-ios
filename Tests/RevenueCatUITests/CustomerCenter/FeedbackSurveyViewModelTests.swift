@@ -18,6 +18,8 @@ import Nimble
 @testable import RevenueCatUI
 import XCTest
 
+#if os(iOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -492,3 +494,5 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
     let type: StoreProductDiscount.DiscountType
 
 }
+
+#endif

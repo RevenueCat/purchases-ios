@@ -196,6 +196,7 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         expect(params?.storeKitVersion) == .storeKit2
         expect(params?.errorMessage).to(beNil())
         expect(params?.errorCode).to(beNil())
+        expect(params?.storeKitErrorDescription).to(beNil())
     }
 
     #if swift(>=5.9)
@@ -222,6 +223,7 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         expect(params?.storeKitVersion) == .storeKit2
         expect(params?.errorMessage) == "Products request error: Unable to Complete Request"
         expect(params?.errorCode) == 2
+        expect(params?.storeKitErrorDescription) == StoreKitError.unknown.trackingDescription
     }
     #endif
 
