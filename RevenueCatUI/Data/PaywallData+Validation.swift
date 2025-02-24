@@ -193,7 +193,8 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
     var description: String {
         switch self {
         case let .missingPaywall(offering):
-            return "Offering '\(offering.identifier)' has no configured paywall."
+            return "Offering '\(offering.identifier)' has no configured paywall. If you expected to see a v2 Paywall," +
+            " make sure it is published."
 
         case .missingLocalization:
             return "Paywall has no localization."
