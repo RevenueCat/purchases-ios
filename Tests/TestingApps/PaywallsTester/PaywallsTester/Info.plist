@@ -22,5 +22,11 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>REVENUECAT_API_KEY</key>
+	<string>$(REVENUECAT_API_KEY)</string>
+	<key>REVENUECAT_PROXY_URL_HOST</key>
+	<string>$(REVENUECAT_PROXY_URL_HOST)</string>
+	<key>REVENUECAT_PROXY_URL_SCHEME</key>
+	<string>$(REVENUECAT_PROXY_URL_SCHEME)</string>
 </dict>
 </plist>

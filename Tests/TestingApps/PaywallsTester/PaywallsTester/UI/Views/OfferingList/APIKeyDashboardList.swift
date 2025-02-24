@@ -59,6 +59,11 @@ struct APIKeyDashboardList: View {
         .task {
             await fetchOfferings()
         }
+        // We keep this here for testing that the PaywallView is correctly
+        // disabling this refreshable action that is inherited by default
+        .refreshable {
+            await fetchOfferings()
+        }
     }
 
     private func fetchOfferings() async {

@@ -803,6 +803,7 @@
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		75425E0F2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */; };
+		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
@@ -1441,9 +1442,8 @@
 		2DC5622524EC63430031F69B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DD269162522A20A006AC4BC /* DictionaryExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryExtensionsTests.swift; sourceTree = "<group>"; };
 		2DD5003F2C519EB4009C19B7 /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
-		2DD500412C519EB4009C19B7 /* ConfigItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigItem.swift; sourceTree = "<group>"; };
+		2DD500412C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2DD500422C519EB4009C19B7 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
-		2DD500432C519EB4009C19B7 /* LocalConfigItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalConfigItems.swift; sourceTree = "<group>"; };
 		2DD500442C519EB4009C19B7 /* SamplePaywalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywalls.swift; sourceTree = "<group>"; };
 		2DD500462C519EB4009C19B7 /* ApplicationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationData.swift; sourceTree = "<group>"; };
 		2DD500472C519EB4009C19B7 /* ApplicationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationManager.swift; sourceTree = "<group>"; };
@@ -2108,6 +2108,7 @@
 		57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentsDataTests.swift; sourceTree = "<group>"; };
+		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		7707A93B2CAD8AA2006E0313 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
@@ -2962,6 +2963,7 @@
 				4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */,
 				2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */,
 				35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift */,
+				7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */,
 				2D69384426DFF93300FCDBC0 /* StoreProductTests.swift */,
 				4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */,
 				2D9C5EC926F2805C0057FC45 /* ProductsManagerTests.swift */,
@@ -3067,9 +3069,8 @@
 		2DD500452C519EB4009C19B7 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				2DD500412C519EB4009C19B7 /* ConfigItem.swift */,
+				2DD500412C519EB4009C19B7 /* Constants.swift */,
 				2DD500422C519EB4009C19B7 /* Configuration.swift */,
-				2DD500432C519EB4009C19B7 /* LocalConfigItems.swift */,
 				2DD500442C519EB4009C19B7 /* SamplePaywalls.swift */,
 			);
 			path = Config;
@@ -5971,6 +5972,7 @@
 				57544C29285FA95E004E54D5 /* MockAttributeSyncing.swift in Sources */,
 				57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */,
 				4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */,
+				7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */,
 				2D90F8C226FD20F7009B9142 /* MockETagManager.swift in Sources */,
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,

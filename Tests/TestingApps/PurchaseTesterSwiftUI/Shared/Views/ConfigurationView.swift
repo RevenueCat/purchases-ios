@@ -13,8 +13,7 @@ import RevenueCat
 struct ConfigurationView: View {
 
     struct Data: Equatable, Codable {
-        var apiKey: String = Constants.apiKey.replacingOccurrences(of: "REVENUECAT_API_KEY",
-                                                                   with: "")
+        var apiKey: String = Constants.apiKey
         var proxy: String = ""
         var storeKit2Enabled: Bool = true
         var verificationMode: Configuration.EntitlementVerificationMode = .disabled
