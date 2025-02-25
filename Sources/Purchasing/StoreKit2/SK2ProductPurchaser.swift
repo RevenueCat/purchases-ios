@@ -51,7 +51,9 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
         // purchase(confirmIn:options:) with UIScenes was introduced in iOS 17.0,
         // which shipped with Xcode 15.0 and the Swift 5.9.0 compiler.
-#elseif canImport(UIKit) && compiler(>=5.9.0) && (os(macCatalyst) || os(iOS) || os(tvOS))
+        //
+        // watchOS is excluded here since purchase(confirmIn:options:) isn't supported on watchOS.
+#elseif canImport(UIKit) && compiler(>=5.9.0) && !os(watchOS)
 
         if let confirmInScene = storeKit2ConfirmInOptions?.confirmInScene,
            #available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *) {
@@ -62,7 +64,7 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
         // purchase(confirmIn:options:) with NSWindows was introduced in macOS 15.2,
         // which shipped with Xcode 15.0 and the Swift 5.9.0 compiler.
-#elseif canImport(AppKit) && compiler(>=5.9.0) && os(macOS)
+#elseif canImport(AppKit) && compiler(>=5.9.0)
 
         if let confirmInWindow = storeKit2ConfirmInOptions?.confirmInWindow,
            #available(macOS 15.2, *) {
