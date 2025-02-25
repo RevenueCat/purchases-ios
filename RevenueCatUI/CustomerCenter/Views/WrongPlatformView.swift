@@ -181,7 +181,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
         return PurchaseInformation(
             entitlement: customerInfo.entitlements.active.first!.value,
             transaction: customerInfo.subscriptionsByProductIdentifier.values.first!,
-            customerInfoRequestedDate: Date())
+            customerInfoRequestedDate: customerInfo.requestDate)
     }
 
 }
