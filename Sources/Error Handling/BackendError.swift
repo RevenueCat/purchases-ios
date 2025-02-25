@@ -29,6 +29,7 @@ enum BackendError: Error, Equatable {
     case invalidWebRedemptionToken
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
+    case unsupportedInUIPreviewMode(Source)
 
 }
 
@@ -73,6 +74,12 @@ extension BackendError {
         return .unexpectedBackendResponse(error,
                                           extraContext: extraContext,
                                           .init(file: file, function: function, line: line))
+    }
+
+    static func unsupportedInUIPreviewMode(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unsupportedInUIPreviewMode(.init(file: file, function: function, line: line))
     }
 
 }
@@ -142,6 +149,10 @@ extension BackendError: PurchasesErrorConvertible {
                                            extraUserInfo: [
                                             .obfuscatedEmail: obfuscatedEmail
                                            ])
+        case let .unsupportedInUIPreviewMode(source):
+            return ErrorUtils.unsupportedInUIPreviewModeError(fileName: source.file,
+                                                              functionName: source.function,
+                                                              line: source.line)
 
         }
     }
@@ -182,7 +193,8 @@ extension BackendError {
              .unexpectedBackendResponse,
              .invalidWebRedemptionToken,
              .purchaseBelongsToOtherUser,
-             .expiredWebRedemptionToken:
+             .expiredWebRedemptionToken,
+             .unsupportedInUIPreviewMode:
             return nil
         }
     }
@@ -204,7 +216,8 @@ extension BackendError {
                 .missingCachedCustomerInfo,
                 .invalidWebRedemptionToken,
                 .purchaseBelongsToOtherUser,
-                .expiredWebRedemptionToken:
+                .expiredWebRedemptionToken,
+                .unsupportedInUIPreviewMode:
             return nil
 
         case let .unexpectedBackendResponse(error, _, _):
