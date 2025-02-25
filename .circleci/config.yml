@@ -92,7 +92,7 @@ aliases:
         only: main
 
 commands:
-  slack-notify:
+  slack-notify-on-fail:
     steps:
       - slack/notify:
           branch_pattern: main
@@ -468,7 +468,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
-      - slack-notify
+      - slack-notify-on-fail
 
   spm-release-build:
     executor:
@@ -598,7 +598,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify
+      - slack-notify-on-fail
 
   run-revenuecat-ui-ios-18:
     executor:
@@ -632,7 +632,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify
+      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -708,7 +708,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-      - slack-notify
+      - slack-notify-on-fail
 
   run-test-ios-17:
     executor:
@@ -737,7 +737,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-      - slack-notify
+      - slack-notify-on-fail
 
   run-test-ios-16:
     executor:
@@ -1090,7 +1090,7 @@ jobs:
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
-      - slack-notify
+      - slack-notify-on-fail
 
   installation-tests-cocoapods:
     executor:
@@ -1199,7 +1199,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
-      - slack-notify
+      - slack-notify-on-fail
 
   danger:
     docker:
@@ -1308,7 +1308,7 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
-      - slack-notify
+      - slack-notify-on-fail
 
   deploy-to-spm:
     docker:
