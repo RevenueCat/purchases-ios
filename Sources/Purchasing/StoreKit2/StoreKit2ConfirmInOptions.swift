@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SK2ConfirmInUIOptions.swift
+//  StoreKit2ConfirmInOptions.swift
 //
 //  Created by Will Taylor on 2/10/25.
 
@@ -27,7 +27,7 @@ import AppKit
 ///
 /// - When UIKit is available, use `confirmInScene` to specify a `UIScene`.
 /// - When AppKit is available, use `confirmInWindow` to specify an `NSWindow`.
-internal struct SK2ConfirmInOptions {
+internal struct StoreKit2ConfirmInOptions {
     #if canImport(UIKit) && !os(watchOS)
     /// The scene to show purchase confirmation UI in proximity to.
     let confirmInScene: UIScene?

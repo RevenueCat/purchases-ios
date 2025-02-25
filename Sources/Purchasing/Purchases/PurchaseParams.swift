@@ -46,7 +46,7 @@ import AppKit
     let metadata: [String: String]?
 
     /// Options for the confirmIn: parameter of the `purchase(confirmIn:options:)` SK2 APIs.
-    let sk2ConfirmInOptions: SK2ConfirmInOptions?
+    let storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
@@ -54,7 +54,7 @@ import AppKit
         self.product = builder.product
         self.package = builder.package
         self.winBackOffer = builder.winBackOffer
-        self.sk2ConfirmInOptions = builder.sk2ConfirmInOptions
+        self.storeKit2ConfirmInOptions = builder.storeKit2ConfirmInOptions
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -64,7 +64,7 @@ import AppKit
         private(set) var package: Package?
         private(set) var product: StoreProduct?
         private(set) var winBackOffer: WinBackOffer?
-        private(set) var sk2ConfirmInOptions: SK2ConfirmInOptions?
+        private(set) var storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
         /**
          * Create a new builder with a ``Package``.
@@ -118,7 +118,7 @@ import AppKit
          */
         @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
         @objc public func with(confirmInScene: UIScene) -> Self {
-            self.sk2ConfirmInOptions = SK2ConfirmInOptions(confirmInScene: confirmInScene)
+            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
             return self
         }
         #endif
@@ -134,7 +134,7 @@ import AppKit
          */
         @available(macOS 15.2, *)
         @objc public func with(confirmInWindow: NSWindow) -> Self {
-            self.sk2ConfirmInOptions = SK2ConfirmInOptions(confirmInWindow: confirmInWindow)
+            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: confirmInWindow)
             return self
         }
         #endif
