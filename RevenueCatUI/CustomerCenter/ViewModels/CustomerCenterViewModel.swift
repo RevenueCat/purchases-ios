@@ -175,8 +175,10 @@ private extension CustomerCenterViewModel {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-        self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
-                                                                       entitlement: entitlement)
+        self.purchaseInformation = try await createPurchaseInformation(
+            for: activeTransaction,
+            entitlement: entitlement,
+            customerInfo: customerInfo)
     }
 
     func loadCustomerCenterConfig() async throws {
@@ -217,14 +219,16 @@ private extension CustomerCenterViewModel {
     }
 
     func createPurchaseInformation(for transaction: Transaction,
-                                   entitlement: EntitlementInfo?) async throws -> PurchaseInformation {
+                                   entitlement: EntitlementInfo?,
+                                   customerInfo: CustomerInfo) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
                     transaction: transaction,
-                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                    customerInfoRequestedDate: customerInfo.requestDate
                 )
             } else {
                 Logger.warning(
@@ -233,7 +237,8 @@ private extension CustomerCenterViewModel {
 
                 return PurchaseInformation(
                     entitlement: entitlement,
-                    transaction: transaction
+                    transaction: transaction,
+                    customerInfoRequestedDate: customerInfo.requestDate
                 )
             }
         }
@@ -241,7 +246,8 @@ private extension CustomerCenterViewModel {
 
         return PurchaseInformation(
             entitlement: entitlement,
-            transaction: transaction
+            transaction: transaction,
+            customerInfoRequestedDate: customerInfo.requestDate
         )
     }
 

@@ -178,8 +178,10 @@ struct WrongPlatformView_Previews: PreviewProvider {
     }
 
     private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
-        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value,
-                                   transaction: customerInfo.subscriptionsByProductIdentifier.values.first!)
+        return PurchaseInformation(
+            entitlement: customerInfo.entitlements.active.first!.value,
+            transaction: customerInfo.subscriptionsByProductIdentifier.values.first!,
+            customerInfoRequestedDate: Date())
     }
 
 }

@@ -180,7 +180,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }.preferredColorScheme(colorScheme)
+            }
+            .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
             CompatibilityNavigationStack {
@@ -192,7 +193,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }.preferredColorScheme(colorScheme)
+            }
+            .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
         }
     }
