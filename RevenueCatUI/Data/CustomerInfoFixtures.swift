@@ -13,6 +13,8 @@
 
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
+
 class CustomerInfoFixtures {
 
     private init() {}

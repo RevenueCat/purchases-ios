@@ -9,6 +9,8 @@ import SwiftUI
 
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TierSelectorView: View {
 

@@ -184,6 +184,7 @@ private extension CustomerCenterViewModel {
         if let productId = configuration?.productId {
             self.onUpdateAppClick = {
                 // productId is a positive integer, so it should be safe to construct a URL from it.
+                // swiftlint:disable:next force_unwrapping
                 let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
                 URLUtilities.openURLIfNotAppExtension(url)
             }
@@ -248,6 +249,8 @@ private extension CustomerCenterViewModel {
 }
 
 fileprivate extension String {
+    // swiftlint:disable force_unwrapping
+
     /// Takes the first characters of this string, if they conform to Major.Minor.Patch. Returns nil otherwise.
     /// Note that Minor and Patch are optional. So if this string starts with a single number, that number is returned.
     func versionString() -> String? {
