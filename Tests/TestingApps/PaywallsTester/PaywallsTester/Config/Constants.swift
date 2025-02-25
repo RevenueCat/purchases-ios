@@ -25,7 +25,9 @@ enum Constants {
     static let proxyURL: String? = {
         guard
             var scheme = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_PROXY_URL_SCHEME") as? String,
-        let host = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_PROXY_URL_HOST") as? String else {
+            !scheme.isEmpty,
+            let host = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_PROXY_URL_HOST") as? String,
+            !host.isEmpty else {
             return nil
         }
         if !scheme.hasSuffix(":") {
