@@ -40,30 +40,47 @@ struct AppUpdateWarningView: View {
     }
 
     var body: some View {
-        List {
-            Section {
-                CompatibilityContentUnavailableView(
-                    localization[.updateWarningTitle],
-                    systemImage: "arrow.up.circle.fill",
-                    description: Text(localization[.updateWarningDescription])
-                )
-            }
+        Color(colorScheme == .light ? UIColor.secondarySystemBackground : UIColor.systemBackground)
+            .ignoresSafeArea()
+            .overlay {
+                VStack(alignment: .center, content: {
+                    CompatibilityContentUnavailableView(
+                        localization[.updateWarningTitle],
+                        systemImage: "arrow.up.circle.fill",
+                        description: Text(localization[.updateWarningDescription])
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 24)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(
+                                Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground)
+                            )
+                            .padding(.horizontal, 24)
+                            .padding(.top, 24)
+                    )
 
-            Section {
-                Button(localization[.updateWarningUpdate]) {
-                    onUpdateAppClick()
-                }
-                .buttonStyle(ProminentButtonStyle())
-                .padding(.top, 4)
+                    Spacer()
 
-                Button(localization[.updateWarningIgnore]) {
-                    onContinueAnywayClick()
-                }
-                .buttonStyle(TextButtonStyle())
+                    VStack(alignment: .center, spacing: 24) {
+                        Button(localization[.updateWarningUpdate]) {
+                            onUpdateAppClick()
+                        }
+                        .buttonStyle(ProminentButtonStyle())
+
+                        Button(localization[.updateWarningIgnore]) {
+                            onContinueAnywayClick()
+                        }
+                        .buttonStyle(TextButtonStyle())
+                    }
+                    .padding(.horizontal, 24)
+                })
+                .scrollableIfNecessary(.vertical)
             }
-            .listRowSeparator(.hidden)
-        }
-        .dismissCircleButtonToolbar()
+            .dismissCircleButtonToolbar()
     }
 }
 

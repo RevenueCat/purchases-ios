@@ -286,16 +286,11 @@ extension TextComponentStyle {
             return GenericFont.sansSerif.makeFont(fontSize: fontSize)
         }
 
-        // Check if name is a generic font (serfic, sansserif, monospace)
-        if let genericFont = GenericFont(rawValue: name) {
-            return genericFont.makeFont(fontSize: fontSize)
-        }
-
-        let customFont = self.resolveCustomFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
+        let customFont = self.resolveFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
         return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
     }
 
-    static private func resolveCustomFont(
+    static private func resolveFont(
         size fontSize: CGFloat,
         name: String,
         uiConfigProvider: UIConfigProvider
@@ -303,6 +298,11 @@ extension TextComponentStyle {
         guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
             Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
             return nil
+        }
+
+        // Check if the family name is a generic font (serif, sans-serif, monospace)
+        if let genericFont = GenericFont(rawValue: familyName) {
+            return genericFont.makeFont(fontSize: fontSize)
         }
 
         guard let customFont = UIFont(name: familyName, size: fontSize) else {

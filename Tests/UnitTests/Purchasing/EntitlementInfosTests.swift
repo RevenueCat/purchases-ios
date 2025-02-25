@@ -1215,6 +1215,29 @@ class EntitlementInfosTests: TestCase {
             ]
         )
         try verifyPeriodType(.normal)
+
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "prepaid",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "play_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
+        try verifyPeriodType(.prepaid)
     }
 
     func testParsePeriodForNonSubscription() throws {
@@ -1249,7 +1272,7 @@ class EntitlementInfosTests: TestCase {
         try verifyPeriodType(.normal)
     }
 
-    func testPromoWillRenew() throws {
+    func testPromoWillNotRenew() throws {
         stubResponse(
             entitlements: [
                 "pro_cat": [
@@ -1267,6 +1290,32 @@ class EntitlementInfosTests: TestCase {
                     "period_type": "normal",
                     "purchase_date": "2021-02-27T02:35:25Z",
                     "store": "promotional",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
+
+        try verifyRenewal(false)
+    }
+
+    func testPrepaidWillNotRenew() throws {
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2221-01-10T02:35:25Z",
+                    "product_identifier": "rc_promo_pro_cat_lifetime",
+                    "purchase_date": "2021-02-27T02:35:25Z"
+                ]
+            ],
+            subscriptions: [
+                "rc_promo_pro_cat_lifetime": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2221-01-10T02:35:25Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2021-02-27T02:35:25Z",
+                    "period_type": "prepaid",
+                    "purchase_date": "2021-02-27T02:35:25Z",
+                    "store": "play_store",
                     "unsubscribe_detected_at": nil
                 ] as [String: Any?]
             ]

@@ -337,7 +337,7 @@ enum TransactionType {
 
 }
 
-extension SubscriptionInfo: Transaction {
+extension RevenueCat.SubscriptionInfo: Transaction {
 
     var type: TransactionType {
         .subscription(isActive: isActive,

@@ -28,14 +28,14 @@ final class Configuration: ObservableObject {
     private init() {
 
         Purchases.logLevel = .verbose
-        Purchases.proxyURL = ConfigItem.proxyURL.flatMap { URL(string: $0) }
+        Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
         self.configure()
     }
 
     private func configure() {
         Purchases.configure(
-            with: .init(withAPIKey: ConfigItem.apiKey)
+            with: .init(withAPIKey: Constants.apiKey)
                 .with(entitlementVerificationMode: .informational)
                 .with(diagnosticsEnabled: true)
                 .with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: .storeKit2)
