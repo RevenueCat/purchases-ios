@@ -386,6 +386,7 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
                                 PreviewMock.weeklyPremiumPackage,
                                 PreviewMock.monthlyPremiumPackage
                                ]),
+            purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },

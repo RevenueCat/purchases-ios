@@ -554,6 +554,19 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         #endif
     }
 
+    func testNoCustomerInfoFetchInUIPreviewModeOnDidBecomeActive() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         uiPreviewMode: true,
+                                         storeKitVersion: self.storeKitVersion,
+                                         clock: self.clock)
+        self.setupPurchases()
+
+        self.deviceCache.stubbedIsCustomerInfoCacheStale = true
+
+        self.notificationCenter.fireNotifications()
+        expect(self.backend.getCustomerInfoCallCount).toAlways(equal(0))
+    }
+
   private static func create(
       purchasesAreCompletedBy: PurchasesAreCompletedBy,
       dangerousSettings: DangerousSettings = .init()

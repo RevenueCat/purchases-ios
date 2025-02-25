@@ -335,19 +335,22 @@ public struct CustomerCenterConfigData: Equatable {
         public let openMethod: OpenMethod?
         public let type: PathType
         public let detail: PathDetail?
+        public let refundWindowDuration: RefundWindowDuration?
 
         public init(id: String,
                     title: String,
                     url: URL? = nil,
                     openMethod: OpenMethod? = nil,
                     type: PathType,
-                    detail: PathDetail?) {
+                    detail: PathDetail?,
+                    refundWindowDuration: RefundWindowDuration?) {
             self.id = id
             self.title = title
             self.url = url
             self.openMethod = openMethod
             self.type = type
             self.detail = detail
+            self.refundWindowDuration = refundWindowDuration
         }
 
         public enum PathDetail: Equatable {
@@ -355,6 +358,11 @@ public struct CustomerCenterConfigData: Equatable {
             case promotionalOffer(PromotionalOffer)
             case feedbackSurvey(FeedbackSurvey)
 
+        }
+
+        public enum RefundWindowDuration: Equatable {
+            case forever
+            case duration(ISODuration)
         }
 
         public enum PathType: String, Equatable {
@@ -644,8 +652,15 @@ extension CustomerCenterConfigData.HelpPath {
         } else {
             self.detail = nil
         }
-    }
 
+        if let window = response.refundWindowDuration {
+            self.refundWindowDuration = window == "forever"
+                ? RefundWindowDuration.forever
+                : ISODurationFormatter.parse(from: window).map { .duration($0) }
+        } else {
+            self.refundWindowDuration = nil
+        }
+    }
 }
 
 extension CustomerCenterConfigData.HelpPath.PromotionalOffer {

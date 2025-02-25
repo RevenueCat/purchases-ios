@@ -49,22 +49,18 @@ struct TextComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            Group {
-                if style.visible {
-                    Text(.init(style.text))
-                        .font(style.font)
-                        .fontWeight(style.fontWeight)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(style.textAlignment)
-                        .foregroundColorScheme(style.color)
-                        .padding(style.padding)
-                        .size(style.size,
-                              horizontalAlignment: style.horizontalAlignment)
-                        .backgroundStyle(style.backgroundStyle)
-                        .padding(style.margin)
-                } else {
-                    EmptyView()
-                }
+            if style.visible {
+                Text(.init(style.text))
+                    .font(style.font)
+                    .fontWeight(style.fontWeight)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(style.textAlignment)
+                    .foregroundColorScheme(style.color)
+                    .padding(style.padding)
+                    .size(style.size,
+                          horizontalAlignment: style.horizontalAlignment)
+                    .backgroundStyle(style.backgroundStyle)
+                    .padding(style.margin)
             }
         }
     }
@@ -203,10 +199,14 @@ struct TextComponentView_Previews: PreviewProvider {
                             "id_1": .string("Hello, world")
                         ]
                     ),
-                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
+                        fonts: [
+                            "generic": .init(ios: .name("serif"))
+                        ]
+                    )),
                     component: .init(
                         text: "id_1",
-                        fontName: "serif",
+                        fontName: "generic",
                         color: .init(light: .hex("#000000")),
                         fontSize: 40
                     )
@@ -224,12 +224,12 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "generic": .init(ios: .name("sans-serif"))
                         ]
                     )),
                     component: .init(
                         text: "id_1",
-                        fontName: "sanserif",
+                        fontName: "generic",
                         color: .init(light: .hex("#000000")),
                         fontSize: 40
                     )
@@ -247,12 +247,12 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "generic": .init(ios: .name("monospace"))
                         ]
                     )),
                     component: .init(
                         text: "id_1",
-                        fontName: "monospace",
+                        fontName: "generic",
                         color: .init(light: .hex("#000000")),
                         fontSize: 40
                     )
@@ -485,60 +485,51 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
 
-        // Process variable (V2)
-        TextComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! .init(
-                localizationProvider: .init(
-                    locale: Locale.current,
-                    localizedStrings: [
-                        "id_1": .string(
-                            "{{ product.store_product_name }} is " +
-                            "{{ product.price_per_period }} " +
-                            "({{ product.relative_discount }})"
-                        )
-                    ]
-                ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                component: .init(
-                    text: "id_1",
-                    color: .init(light: .hex("#000000"))
+        VStack {
+            // Process variable (V2)
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string(
+                                "{{ product.store_product_name }} is " +
+                                "{{ product.price_per_period }} " +
+                                "({{ product.relative_discount }})"
+                            )
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        text: "id_1",
+                        color: .init(light: .hex("#000000"))
+                    )
                 )
             )
-        )
-        .previewRequiredEnvironmentProperties(
-            packageContext: .init(
-                package: PreviewMock.annualStandardPackage,
-                variableContext: .init(packages: [
-                    PreviewMock.monthlyStandardPackage,
-                    PreviewMock.annualStandardPackage
-                ])
-            )
-        )
-        .previewLayout(.sizeThatFits)
-        .previewDisplayName("Process variable (V2)")
 
-        // Process variable (V1)
-        TextComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! .init(
-                localizationProvider: .init(
-                    locale: Locale.current,
-                    localizedStrings: [
-                        "id_1": .string(
-                            "{{ product_name }} is " +
-                            "{{ price_per_period_full }} " +
-                            "({{ sub_relative_discount }})"
-                        )
-                    ]
-                ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                component: .init(
-                    text: "id_1",
-                    color: .init(light: .hex("#000000"))
+            // Process variable (V1)
+            TextComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "id_1": .string(
+                                "{{ product_name }} is " +
+                                "{{ price_per_period_full }} " +
+                                "({{ sub_relative_discount }})"
+                            )
+                        ]
+                    ),
+                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                    component: .init(
+                        text: "id_1",
+                        color: .init(light: .hex("#000000"))
+                    )
                 )
             )
-        )
+        }
         .previewRequiredEnvironmentProperties(
             packageContext: .init(
                 package: PreviewMock.annualStandardPackage,
@@ -549,7 +540,8 @@ struct TextComponentView_Previews: PreviewProvider {
             )
         )
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Process variable (V1)")
+        .previewDisplayName("Process variable")
+
     }
 }
 

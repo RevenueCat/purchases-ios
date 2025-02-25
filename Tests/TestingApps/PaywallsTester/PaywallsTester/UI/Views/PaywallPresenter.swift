@@ -30,7 +30,28 @@ struct PaywallPresenter: View {
                 purchaseHandler: handler
             )
 
-            PaywallView(configuration: configuration)
+            PaywallView(offering: offering)
+                .onPurchaseStarted({ package in
+                    print("Paywall Handler - onPurchaseStarted")
+                })
+                .onPurchaseCompleted({ customerInfo in
+                    print("Paywall Handler - onPurchaseCompleted")
+                })
+                .onPurchaseFailure({ error in
+                    print("Paywall Handler - onPurchaseFailure")
+                })
+                .onPurchaseCancelled({
+                    print("Paywall Handler - onPurchaseCancelled")
+                })
+                .onRestoreStarted({
+                    print("Paywall Handler - onRestoreStarted")
+                })
+                .onRestoreCompleted({ customerInfo in
+                    print("Paywall Handler - onRestoreCompleted")
+                })
+                .onRestoreFailure({ error in
+                    print("Paywall Handler - onRestoreFailure")
+                })
 
 #if !os(watchOS)
         case .footer:

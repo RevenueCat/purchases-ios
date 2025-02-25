@@ -180,7 +180,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }.preferredColorScheme(colorScheme)
+            }
+            .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
             CompatibilityNavigationStack {
@@ -192,8 +193,22 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }.preferredColorScheme(colorScheme)
+            }
+            .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+                                        customerCenterActionHandler: nil)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - \(colorScheme)")
         }
     }
 

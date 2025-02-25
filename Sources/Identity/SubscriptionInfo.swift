@@ -107,7 +107,8 @@ import Foundation
         self.willRenew = EntitlementInfo.willRenewWithExpirationDate(expirationDate: expiresDate,
                                                                      store: store,
                                                                      unsubscribeDetectedAt: unsubscribeDetectedAt,
-                                                                     billingIssueDetectedAt: billingIssuesDetectedAt)
+                                                                     billingIssueDetectedAt: billingIssuesDetectedAt,
+                                                                     periodType: periodType)
         self.price = price
 
         super.init()

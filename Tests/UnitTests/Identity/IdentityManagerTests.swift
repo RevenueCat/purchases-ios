@@ -450,6 +450,79 @@ class IdentityManagerTests: TestCase {
         expect(manager.currentAppUserID) != IdentityManager.uiPreviewModeAppUserID
         assertCorrectlyIdentifiedWithAnonymous(manager)
     }
+
+    func testLogInFailsInUIPreviewMode() throws {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+
+        let receivedResult = waitUntilValue { completed in
+            manager.logIn(appUserID: "user_id", completion: completed)
+        }
+
+        expect(receivedResult?.error) == .unsupportedInUIPreviewMode()
+    }
+
+    func testLogInFailsWhenUsingUIPreviewModeAppUserID() throws {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: false)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+
+        let receivedResult = waitUntilValue { completed in
+            manager.logIn(appUserID: IdentityManager.uiPreviewModeAppUserID, completion: completed)
+        }
+
+        expect(receivedResult?.error) == .unsupportedInUIPreviewMode()
+    }
+
+    func testLogOutCallsCompletionWithErrorInUIPreviewMode() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: "my_user_id")
+
+        let receivedError = waitUntilValue { completed in
+            manager.logOut { error in
+                completed(error as NSError?)
+            }
+        }
+
+        expect(receivedError?.code) == ErrorCode.unsupportedError.rawValue
+    }
+
+    func testLogOutCallsCompletionWithErrorInUIPreviewModeIfInitializedWithAnonymousUser() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+
+        let manager = create(appUserID: nil)
+
+        let receivedError = waitUntilValue { completed in
+            manager.logOut { error in
+                completed(error as NSError?)
+            }
+        }
+
+        expect(receivedError?.code) == ErrorCode.unsupportedError.rawValue
+    }
+
 }
 
 private extension IdentityManagerTests {

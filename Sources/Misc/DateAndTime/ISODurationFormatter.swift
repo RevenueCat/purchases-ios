@@ -31,41 +31,41 @@ import Foundation
 /// - `"P1Y2M3DT4H5M6S"`: 1 year, 2 months, 3 days, 4 hours, 5 minutes, 6 seconds.
 /// - `"P3W"`: 3 weeks.
 /// - `"PT15M"`: 15 minutes.
-struct ISODuration {
+public struct ISODuration: Equatable {
     /// The number of years in the duration.
     ///
     /// Example: For `"P1Y"`, this will be `1`.
-    let years: Int
+    public let years: Int
 
     /// The number of months in the duration.
     ///
     /// Example: For `"P2M"`, this will be `2`.
-    let months: Int
+    public let months: Int
 
     /// The number of weeks in the duration.
     ///
     /// Example: For `"P3W"`, this will be `3`.
-    let weeks: Int
+    public let weeks: Int
 
     /// The number of days in the duration.
     ///
     /// Example: For `"P4D"`, this will be `4`.
-    let days: Int
+    public let days: Int
 
     /// The number of hours in the duration.
     ///
     /// Example: For `"PT5H"`, this will be `5`.
-    let hours: Int
+    public let hours: Int
 
     /// The number of minutes in the duration.
     ///
     /// Example: For `"PT6M"`, this will be `6`.
-    let minutes: Int
+    public let minutes: Int
 
     /// The number of seconds in the duration.
     ///
     /// Example: For `"PT7S"`, this will be `7`.
-    let seconds: Int
+    public let seconds: Int
 }
 
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
