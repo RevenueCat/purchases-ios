@@ -90,6 +90,7 @@ private enum ROT13 {
         return result
     }()
     private static let lowercase: [Character] = Array("abcdefghijklmnopqrstuvwxyz")
+    // swiftlint:disable:next force_unwrapping
     private static let uppercase: [Character] = Self.lowercase.map { $0.uppercased().first! }
 
     fileprivate static func string(_ string: String) -> String {

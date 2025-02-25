@@ -102,9 +102,11 @@ extension PackageType {
         }
     }
 
+    // swiftlint:disable force_unwrapping
     static let typesByDescription: [String: PackageType] = PackageType
         .allCases
         .filter { $0.description != nil }
         .dictionaryWithKeys { $0.description! }
+    // swiftlint:enable force_unwrapping
 
 }

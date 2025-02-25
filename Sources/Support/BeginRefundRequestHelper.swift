@@ -33,7 +33,7 @@ class BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     var sk2Helper: SK2BeginRefundRequestHelperType {
         get {
-            // swiftlint:disable:next force_cast
+            // swiftlint:disable:next force_cast force_unwrapping
             return self._sk2Helper! as! SK2BeginRefundRequestHelperType
         }
 
