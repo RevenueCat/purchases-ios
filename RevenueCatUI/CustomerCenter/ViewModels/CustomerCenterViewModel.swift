@@ -181,11 +181,10 @@ private extension CustomerCenterViewModel {
 
     func loadCustomerCenterConfig() async throws {
         self.configuration = try await purchasesProvider.loadCustomerCenter()
-        if let productId = configuration?.productId {
+        if let productId = configuration?.productId,
+            let url = URL(string: "https://itunes.apple.com/app/id\(productId)") {
             self.onUpdateAppClick = {
                 // productId is a positive integer, so it should be safe to construct a URL from it.
-                // swiftlint:disable:next force_unwrapping
-                let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
