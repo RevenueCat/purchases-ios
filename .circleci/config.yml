@@ -97,6 +97,7 @@ commands:
       - slack/notify:
           branch_pattern: main
           channel: 'feed-circleci-ios-failures'
+          event: fail
           template: basic_fail_1
   set-maximum-duration:
     parameters:
@@ -406,12 +407,6 @@ commands:
           destination: scan-test-output
 
 jobs:
-  slack-notify:
-    executor:
-      name: macos-executor
-    steps:
-      - slack-notify
-
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
@@ -473,6 +468,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
+      - slack-notify
 
   spm-release-build:
     executor:
@@ -602,6 +598,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify
 
   run-revenuecat-ui-ios-18:
     executor:
@@ -635,6 +632,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -710,6 +708,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify
 
   run-test-ios-17:
     executor:
@@ -738,6 +737,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify
 
   run-test-ios-16:
     executor:
@@ -1090,6 +1090,7 @@ jobs:
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
+      - slack-notify
 
   installation-tests-cocoapods:
     executor:
@@ -1198,6 +1199,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      - slack-notify
 
   danger:
     docker:
@@ -1306,6 +1308,7 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
+      - slack-notify
 
   deploy-to-spm:
     docker:
@@ -1354,24 +1357,27 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - run-test-ios-17
-      - run-test-ios-18
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-17
-      - run-revenuecat-ui-ios-18
-      - emerge_purchases_ui_snapshot_tests
-      - slack-notify:
+      - lint:
           context:
             - slack-secrets-ios
-          requires:
-            - lint: failed
-            - run-test-ios-17: failed
-            - run-test-ios-18: failed
-            - pod-lib-lint: failed
-            - run-revenuecat-ui-ios-17: failed
-            - run-revenuecat-ui-ios-18: failed
-            - emerge_purchases_ui_snapshot_tests: failed
+      - run-test-ios-17:
+          context:
+            - slack-secrets-ios
+      - run-test-ios-18:
+          context:
+            - slack-secrets-ios
+      - pod-lib-lint:
+          context:
+            - slack-secrets-ios
+      - run-revenuecat-ui-ios-17:
+          context:
+            - slack-secrets-ios
+      - run-revenuecat-ui-ios-18:
+          context:
+            - slack-secrets-ios
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets-ios
 
   create-tag:
     when:
