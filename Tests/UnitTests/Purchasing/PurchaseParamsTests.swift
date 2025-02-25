@@ -118,8 +118,8 @@ class PurchaseParamsTests: TestCase {
             .with(confirmInScene: uiScene)
             .build()
 
-        expect(purchaseParams.sk2ConfirmInOptions).toNot(beNil())
-        expect(purchaseParams.sk2ConfirmInOptions?.confirmInScene).to(equal(uiScene))
+        expect(purchaseParams.storeKit2ConfirmInOptions).toNot(beNil())
+        expect(purchaseParams.storeKit2ConfirmInOptions?.confirmInScene).to(equal(uiScene))
     }
     #endif
 
@@ -138,8 +138,8 @@ class PurchaseParamsTests: TestCase {
             .with(confirmInWindow: nsWindow)
             .build()
 
-        expect(purchaseParams.sk2ConfirmInOptions).toNot(beNil())
-        expect(purchaseParams.sk2ConfirmInOptions?.confirmInWindow).to(equal(nsWindow))
+        expect(purchaseParams.storeKit2ConfirmInOptions).toNot(beNil())
+        expect(purchaseParams.storeKit2ConfirmInOptions?.confirmInWindow).to(equal(nsWindow))
     }
     #endif
 }

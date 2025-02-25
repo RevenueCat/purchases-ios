@@ -666,15 +666,6 @@ final class PurchasesOrchestrator {
     }
     // swiftlint:enable function_body_length
 
-//    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-//    private func purchase(
-//        _ product: SK2Product,
-//        _ options: Set<Product.PurchaseOption>,
-//        _ sk2ConfirmInOptions: SK2ConfirmInOptions?
-//    ) async throws -> Product.PurchaseResult {
-//        
-//    }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func promotionalOffer(
         forProductDiscount discount: StoreProductDiscountType,
