@@ -14,16 +14,16 @@
 import Foundation
 import StoreKit
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal protocol StoreKit2ProductPurchaserType {
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(
-        product: SK2Product,
+        product: PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
         storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
     ) async throws -> StoreKit.Product.PurchaseResult
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
     private let systemInfo: SystemInfo
@@ -34,11 +34,12 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
         self.systemInfo = systemInfo
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func purchase(
-        product: SK2Product,
-        options: Set<Product.PurchaseOption>,
+        product: PurchasableSK2Product,
+        options: Set<StoreKit.Product.PurchaseOption>,
         storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
-    ) async throws -> Product.PurchaseResult {
+    ) async throws -> StoreKit.Product.PurchaseResult {
 #if VISION_OS
         let scene: UIScene
         if let confirmInScene = storeKit2ConfirmInOptions?.confirmInScene {

@@ -108,7 +108,7 @@ class PurchaseParamsTests: TestCase {
     func testPurchaseParamsBuilderWithConfirmInScene() throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
-        guard let uiScene: UIScene = self.createMockUIScene() else {
+        guard let uiScene: UIScene = UIScene.mock() else {
             fail("UIScene not mocked")
             return
         }
@@ -128,7 +128,7 @@ class PurchaseParamsTests: TestCase {
     func testPurchaseParamsBuilderWithConfirmInWindow() throws {
         try AvailabilityChecks.macOS15_2APIAvailableOrSkipTest()
 
-        guard let nsWindow: NSWindow = self.createMockNSWindow() else {
+        guard let nsWindow: NSWindow = NSWindow.mock() else {
             fail("NSWindow not mocked")
             return
         }
@@ -154,25 +154,3 @@ extension PurchaseParamsTests {
                        offeringIdentifier: "offering")
     }
 }
-
-#if canImport(UIKit)
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension PurchaseParamsTests {
-    // We can't access or instantiate UIScenes directly, so we need to use reflection to create a mock
-    private func createMockUIScene() -> UIScene? {
-        guard let sceneClass = NSClassFromString("UIScene") as? NSObject.Type else { return nil }
-        return sceneClass.init() as? UIScene
-    }
-}
-#endif
-
-#if canImport(AppKit)
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension PurchaseParamsTests {
-    // We can't access or instantiate NSWindows directly, so we need to use reflection to create a mock
-    private func createMockNSWindow() -> NSWindow? {
-        guard let nsWindowClass = NSClassFromString("NSWindow") as? NSObject.Type else { return nil }
-        return nsWindowClass.init() as? NSWindow
-    }
-}
-#endif

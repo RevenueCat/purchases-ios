@@ -44,6 +44,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
+    var mockStoreKit2ProductPurchaser: MockStoreKit2ProductPurchaser!
     private var paywallEventsManager: PaywallEventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
 
@@ -203,6 +204,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         storeKit2TransactionListener: StoreKit2TransactionListenerType,
         storeKit2StorefrontListener: StoreKit2StorefrontListener,
         storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
+        storeKit2ProductPurchaser: StoreKit2ProductPurchaserType = MockStoreKit2ProductPurchaser(),
         diagnosticsSynchronizer: DiagnosticsSynchronizerType? = nil,
         diagnosticsTracker: DiagnosticsTrackerType? = nil
     ) {
@@ -227,6 +229,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             storeKit2TransactionListener: storeKit2TransactionListener,
             storeKit2StorefrontListener: storeKit2StorefrontListener,
             storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            storeKit2ProductPurchaser: storeKit2ProductPurchaser,
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsSynchronizer: diagnosticsSynchronizer,
             diagnosticsTracker: diagnosticsTracker,
