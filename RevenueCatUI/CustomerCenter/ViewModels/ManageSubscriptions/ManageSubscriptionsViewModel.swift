@@ -264,8 +264,13 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         }
 
         return filter {
+            // if it's cancel, it cannot be a lifetime subscription
             ($0.type != .cancel || !purchaseInformation.isLifetime) &&
+
+            // if it's refundRequest, it cannot be free
             ($0.type != .refundRequest || purchaseInformation.price != .free) &&
+
+            // if it has a refundDuration, check it's still valid
             ($0.refundWindowDuration?.isWithin(purchaseInformation) ?? true)
         }
     }
