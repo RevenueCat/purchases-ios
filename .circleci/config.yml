@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  slack: circleci/slack@4.10.1
+  slack: circleci/slack@5.0.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -92,6 +92,13 @@ aliases:
         only: main
 
 commands:
+  slack-notify-on-fail:
+    steps:
+      - slack/notify:
+          branch_pattern: main
+          channel: 'feed-circleci-ios-failures'
+          event: fail
+          template: basic_fail_1
   set-maximum-duration:
     parameters:
       seconds:
@@ -461,6 +468,7 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
+      - slack-notify-on-fail
 
   spm-release-build:
     executor:
@@ -590,6 +598,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   run-revenuecat-ui-ios-18:
     executor:
@@ -623,6 +632,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -698,6 +708,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify-on-fail
 
   run-test-ios-17:
     executor:
@@ -726,6 +737,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+      - slack-notify-on-fail
 
   run-test-ios-16:
     executor:
@@ -943,7 +955,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
-
   backend-integration-tests-other:
     executor:
       name: macos-executor
@@ -964,7 +975,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
-
   release-checks:
     executor:
       name: macos-executor
@@ -1080,6 +1090,7 @@ jobs:
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
+      - slack-notify-on-fail
 
   installation-tests-cocoapods:
     executor:
@@ -1188,6 +1199,7 @@ jobs:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output
+      - slack-notify-on-fail
 
   danger:
     docker:
@@ -1296,6 +1308,7 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
+      - slack-notify-on-fail
 
   deploy-to-spm:
     docker:
@@ -1344,13 +1357,27 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - run-test-ios-17
-      - run-test-ios-18
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-17
-      - run-revenuecat-ui-ios-18
-      - emerge_purchases_ui_snapshot_tests
+      - lint:
+          context:
+            - slack-secrets-ios
+      - run-test-ios-17:
+          context:
+            - slack-secrets-ios
+      - run-test-ios-18:
+          context:
+            - slack-secrets-ios
+      - pod-lib-lint:
+          context:
+            - slack-secrets-ios
+      - run-revenuecat-ui-ios-17:
+          context:
+            - slack-secrets-ios
+      - run-revenuecat-ui-ios-18:
+          context:
+            - slack-secrets-ios
+      - emerge_purchases_ui_snapshot_tests:
+          context:
+            - slack-secrets-ios
 
   create-tag:
     when:
