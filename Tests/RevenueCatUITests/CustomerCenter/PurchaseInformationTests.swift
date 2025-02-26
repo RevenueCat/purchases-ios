@@ -62,7 +62,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: true,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -108,7 +109,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: true,
-                expiresDate: nil
+                expiresDate: nil,
+                isTrial: false
             )
         )
 
@@ -154,7 +156,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -200,7 +203,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: false,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
+                isTrial: false
             )
         )
 
@@ -233,7 +237,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: true,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -266,7 +271,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -299,7 +305,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: false,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
+                isTrial: false
             )
         )
 
@@ -332,7 +339,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -365,7 +373,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: false,
-                expiresDate: nil
+                expiresDate: nil,
+                isTrial: false
             )
         )
 
@@ -399,7 +408,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: true,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -432,7 +442,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: true,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
             )
         )
 
@@ -465,7 +476,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: false,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
+                isTrial: false
             )
         )
 
@@ -495,7 +507,8 @@ final class PurchaseInformationTests: TestCase {
             type: .subscription(
                 isActive: false,
                 willRenew: false,
-                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000")
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
+                isTrial: false
             )
         )
 
