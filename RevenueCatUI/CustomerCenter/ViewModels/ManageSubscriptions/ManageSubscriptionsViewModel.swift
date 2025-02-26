@@ -264,8 +264,8 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         }
 
         return filter {
-            // if it's cancel, it cannot be a lifetime subscription
-            ($0.type != .cancel || !purchaseInformation.isLifetime) &&
+            // if it's cancel, it cannot be a lifetime subscription nor within trial period
+            ($0.type != .cancel || (!purchaseInformation.isLifetime || !purchaseInformation.isTrial)) &&
 
             // if it's refundRequest, it cannot be free
             ($0.type != .refundRequest || purchaseInformation.price != .free) &&
