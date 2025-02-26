@@ -13,7 +13,7 @@
 
 import Foundation
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 /// `ClockType` implementation which can be used to mock time.
 /// By default, it's initialized with the current time, and that becomes frozen until modified.

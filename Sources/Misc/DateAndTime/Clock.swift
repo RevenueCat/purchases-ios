@@ -13,23 +13,23 @@
 
 import Foundation
 
-/// A type that can provide the current `Date`
-protocol ClockType: Sendable {
+// swiftlint:disable missing_docs
+@_spi(Internal) public protocol ClockType: Sendable {
 
     var now: Date { get }
     var currentTime: DispatchTime { get }
 
 }
 
-/// Default implementation of `ClockType` which simply provides the current date.
-final class Clock: ClockType {
+@_spi(Internal) public final class Clock: ClockType {
 
-    var now: Date { return Date() }
-    var currentTime: DispatchTime { return .now() }
+    @_spi(Internal) public var now: Date { return Date() }
+    @_spi(Internal) public var currentTime: DispatchTime { return .now() }
 
-    static let `default`: Clock = .init()
+    @_spi(Internal) public static let `default`: Clock = .init()
 
 }
+// swiftlint:enable missing_docs
 
 extension ClockType {
 

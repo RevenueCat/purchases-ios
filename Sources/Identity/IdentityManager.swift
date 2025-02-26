@@ -86,12 +86,22 @@ class IdentityManager: CurrentUserProvider {
     }
 
     func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID && appUserID != Self.uiPreviewModeAppUserID else {
+            completion(.failure(.unsupportedInUIPreviewMode()))
+            return
+        }
+
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             self.performLogIn(appUserID: appUserID, completion: completion)
         }
     }
 
     func logOut(completion: @escaping (PurchasesError?) -> Void) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
+            completion(ErrorUtils.unsupportedInUIPreviewModeError())
+            return
+        }
+
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             self.performLogOut(completion: completion)
         }

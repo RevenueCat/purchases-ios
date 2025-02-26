@@ -51,7 +51,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 url: nil,
                                 openMethod: nil,
                                 promotionalOffer: nil,
-                                feedbackSurvey: nil
+                                feedbackSurvey: nil,
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "path2",
@@ -66,7 +67,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         productMapping: [
                                                             "product_id": "offer_id"
                                                         ]),
-                                feedbackSurvey: nil
+                                feedbackSurvey: nil,
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "path3",
@@ -86,7 +88,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                       productMapping: [
                                                                                           "product_id": "offer_id"
                                                                                       ]))
-                                                      ])
+                                                      ]),
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "path4",
@@ -101,7 +104,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         productMapping: [
                                                             "product_id": "offer_id"
                                                         ]),
-                                feedbackSurvey: nil
+                                feedbackSurvey: nil,
+                                refundWindowDuration: nil
                             )
                         ]
                     )
