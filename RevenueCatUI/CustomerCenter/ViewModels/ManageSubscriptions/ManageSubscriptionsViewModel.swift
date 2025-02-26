@@ -268,7 +268,7 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             ($0.type != .cancel || !purchaseInformation.isLifetime) &&
 
             // if it's refundRequest, it cannot be free  nor within trial period
-            ($0.type != .refundRequest || (purchaseInformation.price != .free || !purchaseInformation.isTrial)) &&
+            ($0.type != .refundRequest || (purchaseInformation.price != .free && !purchaseInformation.isTrial)) &&
 
             // if it has a refundDuration, check it's still valid
             ($0.refundWindowDuration?.isWithin(purchaseInformation) ?? true)
