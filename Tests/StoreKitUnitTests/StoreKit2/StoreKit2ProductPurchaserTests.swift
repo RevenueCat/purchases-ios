@@ -70,7 +70,7 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
 
     // MARK: - macOS Purchase Tests
     func testMacOSPurchaseWithNSWindowCallsPurchaseWithConfirmInNSWindow() async throws {
-        #if os(macOS)
+        #if os(macOS) && !targetEnvironment(macCatalyst)
         let mockProduct: MockPurchasableSK2Product = MockPurchasableSK2Product()
 
         guard let window = await NSWindow.mock() else {
@@ -144,7 +144,7 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
     }
     #endif
 
-    #if canImport(AppKit)
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     private func confirmPurchaseConfirmInWindowWithOptionsExpectations(
         on product: MockPurchasableSK2Product,
         window: NSWindow,

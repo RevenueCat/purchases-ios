@@ -51,7 +51,7 @@ final class MockPurchasableSK2Product: PurchasableSK2Product, @unchecked Sendabl
     }
     #endif
 
-    #if canImport(AppKit)
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     var calledPurchaseConfirmInWindowWithOptions = false
     var calledPurchaseConfirmInWindowWithOptionsWindow: NSWindow?
     var calledPurchaseConfirmInWindowWithOptionsOptions: Set<Product.PurchaseOption>?

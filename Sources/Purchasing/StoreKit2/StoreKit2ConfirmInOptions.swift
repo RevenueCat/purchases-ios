@@ -33,7 +33,7 @@ internal struct StoreKit2ConfirmInOptions {
     let confirmInScene: UIScene?
     #endif
 
-    #if canImport(AppKit)
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     /// The window to show purchase confirmation UI in proximity to.
     let confirmInWindow: NSWindow?
     #endif

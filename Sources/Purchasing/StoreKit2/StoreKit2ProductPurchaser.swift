@@ -65,7 +65,7 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
         // purchase(confirmIn:options:) with NSWindows was introduced in macOS 15.2,
         // which shipped with Xcode 16.2 and the Swift 6.0.2 compiler.
-#elseif canImport(AppKit) && compiler(>=6.0.2)
+#elseif canImport(AppKit) && compiler(>=6.0.2) && !targetEnvironment(macCatalyst)
 
         if let confirmInWindow = storeKit2ConfirmInOptions?.confirmInWindow,
            #available(macOS 15.2, *) {

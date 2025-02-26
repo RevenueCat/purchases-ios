@@ -123,7 +123,7 @@ import AppKit
         }
         #endif
 
-        #if canImport(AppKit)
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
         /**
          * Set `confirmInWindow`.
          *
