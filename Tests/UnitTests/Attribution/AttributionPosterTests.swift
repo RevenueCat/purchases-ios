@@ -256,3 +256,18 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
 }
 #endif
+
+class AttributionPosterUIPreviewModeTests: BaseAttributionPosterTests {
+
+    func testPostPostponedAttributionDataDoesNothingAfterClearingData() {
+        AttributionPoster.store(postponedAttributionData: ["test": "data"],
+                                fromNetwork: .adjust,
+                                forNetworkUserId: "testUser")
+        attributionPoster.clearPostponedAttributionData()
+        attributionPoster.postPostponedAttributionDataIfNeeded()
+
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
+
+}
