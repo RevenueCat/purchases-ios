@@ -258,7 +258,6 @@ NSURL *url;
         case RCStoreMessageTypeGeneric:
         case RCStoreMessageTypeWinBackOffer:
             NSLog(@"%ld", (long)smt);
-            break;
     }
 
     RCPurchasesAreCompletedBy pacb = RCPurchasesAreCompletedByRevenueCat;
