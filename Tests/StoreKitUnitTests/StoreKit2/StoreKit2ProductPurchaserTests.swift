@@ -68,18 +68,6 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         #endif
     }
 
-    #if canImport(UIKit)
-    private func confirmPurchaseConfirmInSceneWithOptionsExpectations(
-        on product: MockPurchasableSK2Product,
-        scene: UIScene,
-        options: Set<StoreKit.Product.PurchaseOption>
-    ) {
-        expect(product.calledPurchaseConfirmInSceneWithOptions).to(beTrue())
-        expect(product.calledPurchaseConfirmInSceneWithOptionsScene).to(equal(scene))
-        expect(product.calledPurchaseConfirmInSceneWithOptionsOptions).to(equal(options))
-    }
-    #endif
-
     // MARK: - macOS Purchase Tests
     func testMacOSPurchaseWithNSWindowCallsPurchaseWithConfirmInNSWindow() async throws {
         #if os(macOS)
@@ -135,6 +123,27 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         #endif
     }
 
+    // MARK: - Expectation Confirmation Helpers
+    private func confirmPurchaseWithOptionsExpectations(
+        on product: MockPurchasableSK2Product,
+        options: Set<StoreKit.Product.PurchaseOption>
+    ) {
+        expect(product.calledPurchaseWithOptions).to(beTrue())
+        expect(product.calledPurchaseWithOptionsOptions).to(equal(options))
+    }
+
+    #if canImport(UIKit)
+    private func confirmPurchaseConfirmInSceneWithOptionsExpectations(
+        on product: MockPurchasableSK2Product,
+        scene: UIScene,
+        options: Set<StoreKit.Product.PurchaseOption>
+    ) {
+        expect(product.calledPurchaseConfirmInSceneWithOptions).to(beTrue())
+        expect(product.calledPurchaseConfirmInSceneWithOptionsScene).to(equal(scene))
+        expect(product.calledPurchaseConfirmInSceneWithOptionsOptions).to(equal(options))
+    }
+    #endif
+
     #if canImport(AppKit)
     private func confirmPurchaseConfirmInWindowWithOptionsExpectations(
         on product: MockPurchasableSK2Product,
@@ -146,12 +155,4 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         expect(product.calledPurchaseConfirmInWindowWithOptionsOptions).to(equal(options))
     }
     #endif
-
-    private func confirmPurchaseWithOptionsExpectations(
-        on product: MockPurchasableSK2Product,
-        options: Set<StoreKit.Product.PurchaseOption>
-    ) {
-        expect(product.calledPurchaseWithOptions).to(beTrue())
-        expect(product.calledPurchaseWithOptionsOptions).to(equal(options))
-    }
 }

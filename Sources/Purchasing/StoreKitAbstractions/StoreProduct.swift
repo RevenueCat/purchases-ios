@@ -30,12 +30,13 @@ public typealias SK2Product = StoreKit.Product
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal protocol PurchasableSK2Product: Sendable {
 
-    #if !os(visionOS) // Can't use unavailable since the protocol isn't @objc
+    #if !os(visionOS) && compiler(>=5.5.0) // Can't use @unavailable since the protocol isn't @objc
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func purchase(options: Set<Product.PurchaseOption>) async throws -> StoreKit.Product.PurchaseResult
     #endif
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) && compiler(>=5.9.0) && !os(watchOS)
+    // product.purchase(confirmIn:options:) was introduced in iOS 17.0/Swift 5.9.0
     @available(iOS 17.0, tvOS 17.0, visionOS 1.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -45,7 +46,8 @@ internal protocol PurchasableSK2Product: Sendable {
     ) async throws -> StoreKit.Product.PurchaseResult
     #endif
 
-    #if canImport(AppKit)
+    #if canImport(AppKit) && compiler(>=6.0.2) && os(macOS)
+    // product.purchase(confirmIn:options:) was introduced in macOS 15.2/Swift 6.0.2
     @available(macOS 15.2, *)
     @available(iOS, unavailable)
     @available(tvOS, unavailable)
