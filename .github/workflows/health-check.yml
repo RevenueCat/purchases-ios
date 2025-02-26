@@ -1,0 +1,30 @@
+name: Health Check Workflow [TEST]
+
+on:
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+jobs:
+  health-check:
+    runs-on: macos-latest
+    name: iOS PR Health Check
+    continue-on-error: true  # Don't block PRs for now
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Ruby environment
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.1'
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Check pods and deployment targets
+        run: bundle exec fastlane check_pods
