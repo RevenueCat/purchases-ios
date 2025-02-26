@@ -121,7 +121,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
-            price: .paid(""), // just to proove price is ignored if is in trial
+            price: .paid(""), // just to prove price is ignored if is in trial
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
