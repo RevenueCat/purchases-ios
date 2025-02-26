@@ -264,6 +264,7 @@ private enum VariableHandlerIOS15 {
                     length: string.distance(from: variableNameRange.lowerBound,
                                             to: variableNameRange.upperBound) + Self.pattern.count
                 )
+                // swiftlint:disable:next force_unwrapping
                 let replacementRange = Range(adjustedRange, in: replacedString)!
                 replacedString = replacedString.replacingCharacters(in: replacementRange, with: replacementValue)
             }

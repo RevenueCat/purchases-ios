@@ -220,6 +220,7 @@ extension Signing {
 
         /// Number of bytes where the component begins
         fileprivate var offset: Int {
+            // swiftlint:disable:next force_unwrapping
             return Self.offsets[self]!
         }
 

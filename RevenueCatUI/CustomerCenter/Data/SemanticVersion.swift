@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable force_unwrapping
+
 struct SemanticVersion: Comparable {
     let major: UInt
     let minor: UInt

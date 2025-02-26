@@ -14,6 +14,8 @@
 import Foundation
 import os
 
+// swiftlint:disable force_unwrapping
+
 /// A type that can receive logs of different levels.
 protocol LoggerType {
 

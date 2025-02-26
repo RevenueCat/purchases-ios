@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting force_unwrapping
 
 /// The processed data necessary to render a `TemplateViewType`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
