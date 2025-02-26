@@ -475,6 +475,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             winBackOfferEligibilityCalculator = nil
         }
 
+        let storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
+
         let notificationCenter: NotificationCenter = .default
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -492,10 +494,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
                     deviceCache: deviceCache,
                     allTransactionsProvider: SK2AllTransactionsProvider()
-                )
-
-                let storeKit2ProductPurchaser: StoreKit2ProductPurchaserType = StoreKit2ProductPurchaser(
-                    systemInfo: systemInfo
                 )
 
                 return .init(
@@ -550,6 +548,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     paywallEventsManager: paywallEventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,

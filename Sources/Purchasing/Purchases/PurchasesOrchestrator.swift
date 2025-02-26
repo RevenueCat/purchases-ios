@@ -81,7 +81,6 @@ final class PurchasesOrchestrator {
     var _diagnosticsSynchronizer: Any?
     var _diagnosticsTracker: Any?
     var _storeKit2ObserverModePurchaseDetector: Any?
-    var _storeKit2ProductPurchaser: Any?
     // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -105,11 +104,7 @@ final class PurchasesOrchestrator {
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    var storeKit2ProductPurchaser: StoreKit2ProductPurchaserType {
-        // swiftlint:disable:next force_cast
-        return self._storeKit2ProductPurchaser! as! StoreKit2ProductPurchaserType
-    }
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaserType
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
@@ -175,6 +170,7 @@ final class PurchasesOrchestrator {
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
+            storeKit2ProductPurchaser: storeKit2ProductPurchaser,
             paywallEventsManager: paywallEventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper
         )
@@ -185,7 +181,6 @@ final class PurchasesOrchestrator {
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
         self._storeKit2ObserverModePurchaseDetector = storeKit2ObserverModePurchaseDetector
-        self._storeKit2ProductPurchaser = storeKit2ProductPurchaser
 
         storeKit2StorefrontListener.delegate = self
         if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
@@ -232,6 +227,7 @@ final class PurchasesOrchestrator {
          beginRefundRequestHelper: BeginRefundRequestHelper,
          storeMessagesHelper: StoreMessagesHelperType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
+         storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
          paywallEventsManager: PaywallEventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     ) {
@@ -254,6 +250,7 @@ final class PurchasesOrchestrator {
         self.beginRefundRequestHelper = beginRefundRequestHelper
         self.storeMessagesHelper = storeMessagesHelper
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
+        self.storeKit2ProductPurchaser = storeKit2ProductPurchaser
         self.paywallEventsManager = paywallEventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
 
