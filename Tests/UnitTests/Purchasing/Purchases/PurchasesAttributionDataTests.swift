@@ -124,4 +124,23 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
     }
 
+    func testPostponedAttributionDataIsNotPostedWhenInitializedInUIPreviewMode() {
+        let data = ["test": "data"] as [String: Any]
+        Purchases.deprecated.addAttributionData(data, fromNetwork: .adjust)
+
+        self.setUpPurchasesUIPreviewModeOn()
+
+        // Verify that no attribution data was posted
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSet) == false
+    }
+
+    func testAttributionDataIsNotPostedAfterInitializedInUIPreviewMode() {
+        self.setUpPurchasesUIPreviewModeOn()
+
+        let data = ["test": "data"] as [String: Any]
+        Purchases.deprecated.addAttributionData(data, fromNetwork: .adjust)
+
+        // Verify that no attribution data was posted
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSet) == false
+    }
 }

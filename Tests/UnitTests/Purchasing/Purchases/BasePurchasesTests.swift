@@ -248,6 +248,13 @@ class BasePurchasesTests: TestCase {
         self.initializePurchasesInstance(appUserId: nil)
     }
 
+    func setUpPurchasesUIPreviewModeOn() {
+        self.systemInfo = MockSystemInfo(platformInfo: nil,
+                                         finishTransactions: true,
+                                         uiPreviewMode: true)
+        self.initializePurchasesInstance(appUserId: nil)
+    }
+
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
