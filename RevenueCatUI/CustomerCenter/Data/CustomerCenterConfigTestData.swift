@@ -151,6 +151,7 @@ enum CustomerCenterConfigTestData {
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
         store: .appStore,
+        isTrial: false,
         isLifetime: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date()
@@ -165,6 +166,7 @@ enum CustomerCenterConfigTestData {
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
         store: .appStore,
+        isTrial: false,
         isLifetime: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date()
@@ -179,6 +181,7 @@ enum CustomerCenterConfigTestData {
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
         store: .appStore,
+        isTrial: false,
         isLifetime: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date()
