@@ -256,7 +256,9 @@ NSURL *url;
         case RCStoreMessageTypeBillingIssue:
         case RCStoreMessageTypePriceIncreaseConsent:
         case RCStoreMessageTypeGeneric:
+        case RCStoreMessageTypeWinBackOffer:
             NSLog(@"%ld", (long)smt);
+            break;
     }
 
     RCPurchasesAreCompletedBy pacb = RCPurchasesAreCompletedByRevenueCat;
