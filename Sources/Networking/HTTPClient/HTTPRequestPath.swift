@@ -91,6 +91,7 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
+    // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
     var authenticated: Bool {

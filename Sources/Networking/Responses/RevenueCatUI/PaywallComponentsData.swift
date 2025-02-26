@@ -135,6 +135,7 @@ extension PaywallComponentsData {
             assetBaseURL = try container.decode(URL.self, forKey: .assetBaseURL)
         } catch {
             errors["assetBaseURL"] = .init(error)
+            // swiftlint:disable:next force_unwrapping
             assetBaseURL = URL(string: "https://example.com")!
         }
 

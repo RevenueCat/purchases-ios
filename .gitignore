@@ -62,3 +62,8 @@ Local.xcconfig
 
 # Gets created when Cursor is used with the sswg Swift extension
 /.index-build/
+
+# xcode-build-server
+/buildServer.json
+
+*.orig

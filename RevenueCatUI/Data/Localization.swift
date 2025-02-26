@@ -32,6 +32,7 @@ enum Localization {
             .lazy
             .compactMap { length in options.first { $0.count == length } }
             .first { _ in true } // See https://github.com/apple/swift/issues/55374
+        // swiftlint:disable:next force_unwrapping
         ?? options.last!
     }
 
@@ -44,6 +45,7 @@ enum Localization {
             for: period,
             styles: Self.preferedFullStyles(for: locale),
             locale: locale
+            // swiftlint:disable:next force_unwrapping
         ).first!
     }
 

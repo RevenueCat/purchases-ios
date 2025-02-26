@@ -569,6 +569,7 @@ private extension DeviceCache {
 
         var filteredAttributes: [String: Any] = [:]
 
+        // swiftlint:disable:next force_unwrapping
         let currentAppUserID = Self.cachedAppUserID(userDefaults)!
 
         filteredAttributes[currentAppUserID] = allStoredAttributes[currentAppUserID]

@@ -38,6 +38,7 @@ struct ConsistentTierContentView<Content: View>: View {
         self.creator = creator
     }
 
+    // swiftlint:disable force_unwrapping
     var body: some View {
         // We need to layout all possible tiers to accomodate for the longest text
         return ZStack {
@@ -47,5 +48,6 @@ struct ConsistentTierContentView<Content: View>: View {
             }
         }
     }
+    // swiftlint:enable force_unwrapping
 
 }

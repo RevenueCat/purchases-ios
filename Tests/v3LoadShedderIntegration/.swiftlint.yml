@@ -2,5 +2,6 @@ disabled_rules:
   - file_length
   - type_body_length
   - function_body_length
-  - missing_docs
+  - function_parameter_count
+  - force_try
   - force_unwrapping

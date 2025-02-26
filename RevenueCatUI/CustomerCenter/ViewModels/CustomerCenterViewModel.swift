@@ -175,16 +175,18 @@ private extension CustomerCenterViewModel {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-        self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
-                                                                       entitlement: entitlement)
+        self.purchaseInformation = try await createPurchaseInformation(
+            for: activeTransaction,
+            entitlement: entitlement,
+            customerInfo: customerInfo)
     }
 
     func loadCustomerCenterConfig() async throws {
         self.configuration = try await purchasesProvider.loadCustomerCenter()
-        if let productId = configuration?.productId {
+        if let productId = configuration?.productId,
+            let url = URL(string: "https://itunes.apple.com/app/id\(productId)") {
             self.onUpdateAppClick = {
                 // productId is a positive integer, so it should be safe to construct a URL from it.
-                let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
@@ -217,14 +219,16 @@ private extension CustomerCenterViewModel {
     }
 
     func createPurchaseInformation(for transaction: Transaction,
-                                   entitlement: EntitlementInfo?) async throws -> PurchaseInformation {
+                                   entitlement: EntitlementInfo?,
+                                   customerInfo: CustomerInfo) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
                     transaction: transaction,
-                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                    customerInfoRequestedDate: customerInfo.requestDate
                 )
             } else {
                 Logger.warning(
@@ -233,7 +237,8 @@ private extension CustomerCenterViewModel {
 
                 return PurchaseInformation(
                     entitlement: entitlement,
-                    transaction: transaction
+                    transaction: transaction,
+                    customerInfoRequestedDate: customerInfo.requestDate
                 )
             }
         }
@@ -241,13 +246,16 @@ private extension CustomerCenterViewModel {
 
         return PurchaseInformation(
             entitlement: entitlement,
-            transaction: transaction
+            transaction: transaction,
+            customerInfoRequestedDate: customerInfo.requestDate
         )
     }
 
 }
 
 fileprivate extension String {
+    // swiftlint:disable force_unwrapping
+
     /// Takes the first characters of this string, if they conform to Major.Minor.Patch. Returns nil otherwise.
     /// Note that Minor and Patch are optional. So if this string starts with a single number, that number is returned.
     func versionString() -> String? {

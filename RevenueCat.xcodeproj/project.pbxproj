@@ -3755,10 +3755,10 @@
 		3537565A2C382C2800A1B8D6 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				5767D0462D5B505A003D423C /* ManageSubscriptions */,
 				574BA2672D3E762E009B8EA6 /* PurchaseHistory */,
 				353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */,
 				353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */,
-				353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */,
 				3546355A2C391F38001D7E85 /* FeedbackSurveyViewModel.swift */,
 				3546355B2C391F38001D7E85 /* PromotionalOfferViewModel.swift */,
 			);
@@ -4451,6 +4451,14 @@
 				FDAC7B5A2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift */,
 			);
 			path = Purchases;
+			sourceTree = "<group>";
+		};
+		5767D0462D5B505A003D423C /* ManageSubscriptions */ = {
+			isa = PBXGroup;
+			children = (
+				353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */,
+			);
+			path = ManageSubscriptions;
 			sourceTree = "<group>";
 		};
 		5774F9BF2805EA1200997128 /* Responses */ = {

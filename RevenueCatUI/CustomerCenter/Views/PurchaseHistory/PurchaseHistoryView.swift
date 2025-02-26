@@ -78,6 +78,7 @@ struct PurchaseHistoryView: View {
                 }
 
                 // Account Details Section
+
                 Section(header: Text(
                     localization[.accountDetails]
                 )) {
@@ -86,7 +87,6 @@ struct PurchaseHistoryView: View {
                             localization[.dateWhenAppWasPurchased],
                             content: dateFormatter.string(from: originalPurchaseDate)
                         )
-
                     }
 
                     CompatibilityLabeledContent(

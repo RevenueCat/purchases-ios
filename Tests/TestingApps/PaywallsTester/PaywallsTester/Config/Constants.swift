@@ -23,6 +23,16 @@ enum Constants {
      REVENUECAT_PROXY_URL = your-api-key
      */
     static let proxyURL: String? = {
-        Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_PROXY_URL") as? String
+        guard
+            var scheme = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_PROXY_URL_SCHEME") as? String,
+            !scheme.isEmpty,
+            let host = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_PROXY_URL_HOST") as? String,
+            !host.isEmpty else {
+            return nil
+        }
+        if !scheme.hasSuffix(":") {
+            scheme.append(":")
+        }
+        return "\(scheme)//\(host)"
     }()
 }

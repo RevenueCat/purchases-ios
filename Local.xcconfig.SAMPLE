@@ -33,5 +33,8 @@
 // Set your RevenueCat API key for local development here (without quotes!):
 // REVENUECAT_API_KEY = your-api-key-without-quotes
 
-// Set your your RevenueCat Proxy URL for local development here (without quotes!):
-// REVENUECAT_PROXY_URL = your-revenuecat-proxy-url-without-quotes
+// Set your your RevenueCat Proxy URL scheme and host for local development here (without quotes!):
+// REVENUECAT_PROXY_URL_SCHEME = http
+// REVENUECAT_PROXY_URL_HOST = localhost:9000
+
+// Because two slashes are interpreted as a comment in this file, the scheme and host need to be set separately

@@ -103,8 +103,8 @@ struct WrongPlatformView: View {
             }
         }
         .dismissCircleButtonToolbar()
-        .applyIf(self.screen?.title != nil, apply: {
-            $0.navigationTitle(self.screen!.title).navigationBarTitleDisplayMode(.inline)
+        .applyIfLet(screen, apply: { view, screen in
+            view.navigationTitle(screen.title).navigationBarTitleDisplayMode(.inline)
         })
         .task {
             if store == nil {
@@ -163,6 +163,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
               displayName: "Amazon")
     ]
 
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         Group {
             ForEach(previewCases, id: \.displayName) { data in
@@ -178,8 +179,10 @@ struct WrongPlatformView_Previews: PreviewProvider {
     }
 
     private static func getPurchaseInformation(for customerInfo: CustomerInfo) -> PurchaseInformation {
-        return PurchaseInformation(entitlement: customerInfo.entitlements.active.first!.value,
-                                   transaction: customerInfo.subscriptionsByProductIdentifier.values.first!)
+        return PurchaseInformation(
+            entitlement: customerInfo.entitlements.active.first!.value,
+            transaction: customerInfo.subscriptionsByProductIdentifier.values.first!,
+            customerInfoRequestedDate: customerInfo.requestDate)
     }
 
 }

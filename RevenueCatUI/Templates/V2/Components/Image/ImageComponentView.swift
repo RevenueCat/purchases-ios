@@ -56,8 +56,10 @@ struct ImageComponentView: View {
                 }
                 .size(style.size)
                 .clipped()
-                .shape(border: nil,
+                .shape(border: style.border,
                        shape: style.shape)
+                .shadow(shadow: style.shadow,
+                        shape: style.shape?.toInsettableShape())
                 .padding(style.padding)
                 // WIP: Add border still
                 .padding(style.margin)
@@ -103,6 +105,7 @@ struct ImageComponentView: View {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
 struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
 
@@ -128,7 +131,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
-                        fitMode: .fit
+                        fitMode: .fit,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -157,7 +168,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                                 heicLowRes: catUrl
                             )
                         ),
-                        fitMode: .fill
+                        fitMode: .fill,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -190,7 +209,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                         colorOverlay: .init(light: .linear(0, [
                             .init(color: "#ffffff", percent: 0),
                             .init(color: "#ffffff00", percent: 40)
-                        ]))
+                        ])),
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -223,7 +250,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                         maskShape: .rectangle(.init(topLeading: 40,
                                                     topTrailing: 40,
                                                     bottomLeading: 40,
-                                                    bottomTrailing: 40))
+                                                    bottomTrailing: 40)),
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -253,7 +288,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        maskShape: .circle
+                        maskShape: .circle,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -283,7 +326,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        maskShape: .convex
+                        maskShape: .convex,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
@@ -313,7 +364,15 @@ struct ImageComponentView_Previews: PreviewProvider {
                             )
                         ),
                         fitMode: .fit,
-                        maskShape: .concave
+                        maskShape: .concave,
+                        border: .init(color: .init(light: .hex("#f8f81b")), width: 4),
+                        shadow: .init(
+                            color: .init(
+                                light: .hex("#000000"),
+                                dark: .hex("#000000")
+                            ),
+                            radius: 5, x: 5, y: 5
+                        )
                     )
                 )
             )
