@@ -28,7 +28,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class ManageSubscriptionsViewModelTests: TestCase {
+final class ManageSubscriptionsViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -105,6 +105,24 @@ class ManageSubscriptionsViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
             price: .free,
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testDoesNotShowRefundIfPurchaseIsWithinTrial() {
+        let latestPurchaseDate = Date()
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        let purchase = PurchaseInformation.mockNonLifetime(
+            price: .paid(""), // just to prove price is ignored if is in trial
+            isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -505,7 +523,9 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
 }
 
 private extension PurchaseInformation {
-    static func mockLifetime(customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
+    static func mockLifetime(
+        customerInfoRequestedDate: Date = Date()
+    ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
@@ -514,6 +534,7 @@ private extension PurchaseInformation {
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: .appStore,
+            isTrial: false,
             isLifetime: true,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: customerInfoRequestedDate
@@ -522,6 +543,7 @@ private extension PurchaseInformation {
 
     static func mockNonLifetime(
         price: PurchaseInformation.PriceDetails = .paid("5"),
+        isTrial: Bool = false,
         latestPurchaseDate: Date = Date(),
         customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
         PurchaseInformation(
@@ -535,6 +557,7 @@ private extension PurchaseInformation {
             ),
             productIdentifier: "",
             store: .appStore,
+            isTrial: isTrial,
             isLifetime: false,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: customerInfoRequestedDate

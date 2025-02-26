@@ -65,3 +65,5 @@ Local.xcconfig
 
 # xcode-build-server
 /buildServer.json
+
+*.orig

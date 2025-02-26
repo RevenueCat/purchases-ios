@@ -15,6 +15,8 @@ import Foundation
 
 extension UserDefaults {
 
+    // swiftlint:disable force_unwrapping
+
     // These are the only 2 documented reasons why `.init(suiteName:)` might return `nil`:
     // - "Because a suite manages the defaults of a specified app group, a suite name
     // must be distinct from your app’s main bundle identifier.
@@ -22,6 +24,8 @@ extension UserDefaults {
     //
     // Because we know at compile time that it's neither of those, this is a safe force-unwrap.
     static let revenueCatSuite: UserDefaults = .init(suiteName: UserDefaults.revenueCatSuiteName)!
+
+    // swiftlint:enable force_unwrapping
 
     private static let revenueCatSuiteName = "com.revenuecat.user_defaults"
 

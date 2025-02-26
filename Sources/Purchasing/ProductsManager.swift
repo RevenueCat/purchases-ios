@@ -58,7 +58,7 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._productsFetcherSK2! as! ProductsFetcherSK2
     }
 

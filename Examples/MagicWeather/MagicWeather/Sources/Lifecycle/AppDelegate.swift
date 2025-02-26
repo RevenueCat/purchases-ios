@@ -8,6 +8,8 @@
 import UIKit
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 

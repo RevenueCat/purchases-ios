@@ -85,7 +85,7 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var storeKit2TransactionListener: StoreKit2TransactionListenerType {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2TransactionListener! as! StoreKit2TransactionListenerType
     }
 
@@ -94,13 +94,13 @@ final class PurchasesOrchestrator {
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     var storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2PurchaseIntentListener! as! StoreKit2PurchaseIntentListenerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var storeKit2StorefrontListener: StoreKit2StorefrontListener {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
 
