@@ -654,6 +654,22 @@ final class PurchasesOrchestrator {
         #if VISION_OS
         return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
                                           options: options)
+        #elseif (os(iOS) || os(tvOS)) && compiler(>=6.0.3)
+        // iOS 18.2 introduces a new `purchase(confirmIn:options:)` method which accepts a UIViewController
+        // This new method is present starting on Xcode 16.2 which bundles Swift 6.0.3.
+        // The old `purchase(options:)` method uses some heuristics to retrieve the rootViewController of the
+        // key window of the currerntly active scene.
+        // However, it is possible the rootViewController's view is currently removed from the view hieararchy.
+        // For example, if there is a view controller with `modalPresentationStyle = .fullScreen` being presented.
+        // This will prevent the payment sheet from appearing.
+        // To workaround this we traverse the view controller hierarchy to try to find the current top-most one.
+        if #available(iOS 18.2, tvOS 18.2, *),
+           let currentViewController = try? await self.systemInfo.currentViewController {
+            return try await product.purchase(confirmIn: currentViewController,
+                                              options: options)
+        } else {
+            return try await product.purchase(options: options)
+        }
         #else
         return try await product.purchase(options: options)
         #endif
