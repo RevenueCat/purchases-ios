@@ -132,7 +132,7 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         expect(product.calledPurchaseWithOptionsOptions).to(equal(options))
     }
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     private func confirmPurchaseConfirmInSceneWithOptionsExpectations(
         on product: MockPurchasableSK2Product,
         scene: UIScene,

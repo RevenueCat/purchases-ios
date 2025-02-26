@@ -36,7 +36,7 @@ final class MockPurchasableSK2Product: PurchasableSK2Product, @unchecked Sendabl
         return .pending
     }
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     var calledPurchaseConfirmInSceneWithOptions = false
     var calledPurchaseConfirmInSceneWithOptionsScene: UIScene?
     var calledPurchaseConfirmInSceneWithOptionsOptions: Set<Product.PurchaseOption>?
