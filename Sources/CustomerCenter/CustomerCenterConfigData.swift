@@ -653,7 +653,7 @@ extension CustomerCenterConfigData.HelpPath {
             self.detail = nil
         }
 
-        if let window = response.refundWindowDuration {
+        if let window = response.refundWindow {
             self.refundWindowDuration = window == "forever"
                 ? RefundWindowDuration.forever
                 : ISODurationFormatter.parse(from: window).map { .duration($0) }
