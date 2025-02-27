@@ -37,6 +37,17 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
+    @State
+    var viewWidth: CGFloat = 0
+
+    private var maxWidth: CGFloat {
+        if viewWidth >= UIScreen.main.bounds.width {
+            UIScreen.main.bounds.width
+        } else {
+            .infinity
+        }
+    }
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
@@ -90,7 +101,19 @@ struct ImageComponentView: View {
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .frame(maxWidth: .infinity)
+            .applyIf(style.contentMode == .fill || style.size.width == .fill) { view in
+                // containerRelativeFrame is iOS 17.0+, so as a workaround for iOS 15/16 we
+                // define the maximum width as the screen's width.
+                if #available(iOS 17.0, *) {
+                    return AnyView(view.containerRelativeFrame([.horizontal]))
+                } else {
+                    return AnyView(view.frame(maxWidth: maxWidth))
+                }
+            }
+            .onWidthChange { width in
+                print("Width: \(width)")
+                self.viewWidth = width
+            }
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
