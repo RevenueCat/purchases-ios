@@ -340,7 +340,9 @@ public struct PaywallView: View {
             }
         } else {
 
-            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.preferredLocale ?? .current)
+            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
+                locale: self.preferredLocale ?? .current
+            )
 
             let paywallView = LoadedOfferingPaywallView(
                 offering: offering,
