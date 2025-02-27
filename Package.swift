@@ -86,7 +86,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags + virtualCurrenciesFlag),
+                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags + [virtualCurrenciesFlag]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
