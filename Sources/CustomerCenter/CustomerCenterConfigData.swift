@@ -343,7 +343,7 @@ public struct CustomerCenterConfigData: Equatable {
                     openMethod: OpenMethod? = nil,
                     type: PathType,
                     detail: PathDetail?,
-                    refundWindowDuration: RefundWindowDuration? = .forever) {
+                    refundWindowDuration: RefundWindowDuration? = nil) {
             self.id = id
             self.title = title
             self.url = url
