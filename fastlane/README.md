@@ -138,14 +138,6 @@ macOS build
 
 visionOS build
 
-### ios carthage_archive
-
-```sh
-[bundle exec] fastlane ios carthage_archive
-```
-
-Run the carthage archive steps to prepare for carthage distribution
-
 ### ios archive
 
 ```sh
@@ -208,7 +200,7 @@ replace API KEY for installation and integration tests
 [bundle exec] fastlane ios release
 ```
 
-Create Carthage archive, export XCFramework, and create GitHub release
+Create XCFramework, and create GitHub release
 
 ### ios push_revenuecat_pod
 
