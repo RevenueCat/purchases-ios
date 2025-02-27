@@ -43,6 +43,11 @@ extension CustomerInfoResponse {
         @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
 
+        #if ENABLE_VIRTUAL_CURRENCIES
+        @DefaultDecodable.EmptyDictionary
+        var virtualCurrencies: [String: VirtualCurrencyInfo]
+        #endif
+
     }
 
     struct Subscription {
@@ -100,6 +105,12 @@ extension CustomerInfoResponse {
 
     }
 
+    #if ENABLE_VIRTUAL_CURRENCIES
+    internal struct VirtualCurrencyInfo {
+        let balance: Int
+    }
+    #endif
+
 }
 
 // MARK: - Codable
@@ -107,6 +118,10 @@ extension CustomerInfoResponse {
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
 extension CustomerInfoResponse.PurchasePaidPrice: Codable, Hashable {}
+
+#if ENABLE_VIRTUAL_CURRENCIES
+extension CustomerInfoResponse.VirtualCurrencyInfo: Codable, Hashable {}
+#endif
 
 extension CustomerInfoResponse.Entitlement: Hashable {}
 extension CustomerInfoResponse.Entitlement: Encodable {}
