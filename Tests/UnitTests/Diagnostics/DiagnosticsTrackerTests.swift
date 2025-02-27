@@ -142,6 +142,8 @@ class DiagnosticsTrackerTests: TestCase {
                                           errorMessage: "test error message",
                                           errorCode: 1234,
                                           storeKitErrorDescription: "store_kit_error_type",
+                                          requestedProductIds: ["test_product_id_1", "test_product_id_2"],
+                                          notFoundProductIds: ["test_product_id_2"],
                                           responseTime: 50)
         let emptyErrorMessage: String? = nil
         let emptyErrorCode: Int? = nil
@@ -151,6 +153,8 @@ class DiagnosticsTrackerTests: TestCase {
                                           errorMessage: emptyErrorMessage,
                                           errorCode: emptyErrorCode,
                                           storeKitErrorDescription: emptySkErrorDescription,
+                                          requestedProductIds: ["test_product_id_3", "test_product_id_4"],
+                                          notFoundProductIds: [],
                                           responseTime: 20)
 
         let entries = await self.handler.getEntries()
@@ -162,6 +166,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .successfulKey: AnyEncodable(false),
                     .errorMessageKey: AnyEncodable("test error message"),
                     .skErrorDescriptionKey: AnyEncodable("store_kit_error_type"),
+                    .requestedProductIdsKey: AnyEncodable(["test_product_id_1", "test_product_id_2"]),
+                    .notFoundProductIdsKey: AnyEncodable(["test_product_id_2"]),
                     .errorCodeKey: AnyEncodable(1234)],
                   timestamp: Self.eventTimestamp1),
             .init(eventType: .appleProductsRequest,
@@ -171,6 +177,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .successfulKey: AnyEncodable(true),
                     .errorMessageKey: AnyEncodable(emptyErrorMessage),
                     .skErrorDescriptionKey: AnyEncodable(emptySkErrorDescription),
+                    .requestedProductIdsKey: AnyEncodable(["test_product_id_3", "test_product_id_4"]),
+                    .notFoundProductIdsKey: AnyEncodable([]),
                     .errorCodeKey: AnyEncodable(emptyErrorCode)],
                   timestamp: Self.eventTimestamp1)
         ]
