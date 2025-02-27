@@ -17,6 +17,13 @@ import StoreKit
 /// An error returned by a `RevenueCat` public API.
 public typealias PublicError = NSError
 
+extension PublicError {
+    /// Converts the current Error to a ``ErrorCode``
+    public var asErrorCode: ErrorCode? {
+        self as? ErrorCode
+    }
+}
+
 /// An internal error representation, containing an `ErrorCode` and additional `userInfo`.
 ///
 /// `ErrorCode` is essentially only domain (`ErrorCode.domain`) and a code, but can't contain any more information
