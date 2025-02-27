@@ -1,3 +1,6 @@
+## 4.43.4
+### Other Changes
+* v4: Fix crash in iOS 11-12 when using MainActor (#4718) via Mark Villacampa (@MarkVillacampa)
 ## 4.43.3
 ### Other Changes
 * Remove usage of adServicesToken in syncPurchases via Mark Villacampa (@MarkVillacampa)

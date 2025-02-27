@@ -1,4 +1,2 @@
 ### Other Changes
-* Remove usage of adServicesToken in syncPurchases via Mark Villacampa (@MarkVillacampa)
-* Update RevenueCat-Swift.h for version 4.43.2 via RCGitBot (@RCGitBot)
-* Version bump for 4.43.2 via RCGitBot (@RCGitBot)
+* v4: Fix crash in iOS 11-12 when using MainActor (#4718) via Mark Villacampa (@MarkVillacampa)
