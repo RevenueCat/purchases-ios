@@ -44,7 +44,10 @@ final class PurchasesOrchestrator {
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
     private let presentedPaywall: Atomic<PaywallEvent?> = nil
-    private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+    private let purchaseCompleteCallbacksByProductID: Atomic<[String: @Sendable (StoreTransaction?,
+                                                                                 CustomerInfo?,
+                                                                                 PublicError?,
+                                                                                 Bool) -> Void]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -969,14 +972,21 @@ private extension PurchasesOrchestrator {
                 return false
             }
 
-            callbacks[productIdentifier] = completion
+            callbacks[productIdentifier] = { [weak self] transaction, customerInfo, error, cancelled in
+                self?.operationDispatcher.dispatchOnMainActor {
+                    completion(transaction, customerInfo, error, cancelled)
+                }
+            }
             return true
         }
     }
 
     func getAndRemovePurchaseCompletedCallback(
         forTransaction transaction: StoreTransaction
-    ) -> PurchaseCompletedBlock? {
+    ) -> (@Sendable (StoreTransaction?,
+                     CustomerInfo?,
+                     PublicError?,
+                     Bool) -> Void)? {
         return self.purchaseCompleteCallbacksByProductID.modify {
             return $0.removeValue(forKey: transaction.productIdentifier)
         }
