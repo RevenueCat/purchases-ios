@@ -809,8 +809,6 @@
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
 		75DAE4822D7234C200AEC012 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
-		75DAE4842D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
-		75DAE4852D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
 		75DAE4862D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
 		75DAE4872D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
@@ -6715,7 +6713,6 @@
 				4F2018732A15797D0061F6EF /* TestLogHandler.swift in Sources */,
 				4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */,
 				4F15B4A22A678A9C005BEFE8 /* MockStoreTransaction.swift in Sources */,
-				75DAE4852D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */,
 				2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */,
 				4F83F6B82A5DB78C003F90A5 /* OSVersionEquivalent.swift in Sources */,
 				2D1015DB275A4EAE0086173F /* AvailabilityChecks.swift in Sources */,
@@ -6749,7 +6746,6 @@
 				4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */,
 				4F6BEE362A27B0F200CD9322 /* MainThreadMonitor.swift in Sources */,
 				4F83F6BB2A5DB80B003F90A5 /* OSVersionEquivalent.swift in Sources */,
-				75DAE4842D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */,
 				4F83F6BA2A5DB807003F90A5 /* CurrentTestCaseTracker.swift in Sources */,
 				4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */,
 				4F6BEE1F2A27B02400CD9322 /* CustomEntitlementsComputationIntegrationTests.swift in Sources */,
