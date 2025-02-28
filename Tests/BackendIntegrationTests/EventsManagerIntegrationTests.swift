@@ -84,7 +84,6 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                     path: .cancel,
                     url: nil,
                     surveyOptionID: "",
-                    surveyOptionTitleKey: "",
                     revisionID: 1
                 )
             )
@@ -96,7 +95,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             Strings.paywalls.event_flush_starting(count: 2)
         )
 
-        try self.logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
             level: .debug,
             expectedCount: 1
