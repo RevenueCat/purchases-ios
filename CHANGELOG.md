@@ -855,6 +855,16 @@ The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables fu
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
 
+## 4.43.4
+### Bugfixes
+* v4: Fix crash in iOS 11-12 when using MainActor (#4718) via Mark Villacampa (@MarkVillacampa)
+
+## 4.43.3
+### Other Changes
+* Remove usage of adServicesToken in syncPurchases via Mark Villacampa (@MarkVillacampa)
+* Update RevenueCat-Swift.h for version 4.43.2 via RCGitBot (@RCGitBot)
+* Version bump for 4.43.2 via RCGitBot (@RCGitBot)
+
 ## 4.43.2
 ### Bugfixes
 * Remove AdClient framework related code (#3993) via Cesar de la Vega (@vegaro)

@@ -52,7 +52,7 @@ class CustomerCenterConfigDataTests: TestCase {
                                 openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: nil,
-                                refundWindowDuration: nil
+                                refundWindow: nil
                             ),
                             .init(
                                 id: "path2",
@@ -68,7 +68,7 @@ class CustomerCenterConfigDataTests: TestCase {
                                                             "product_id": "offer_id"
                                                         ]),
                                 feedbackSurvey: nil,
-                                refundWindowDuration: nil
+                                refundWindow: nil
                             ),
                             .init(
                                 id: "path3",
@@ -89,7 +89,7 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                           "product_id": "offer_id"
                                                                                       ]))
                                                       ]),
-                                refundWindowDuration: nil
+                                refundWindow: nil
                             ),
                             .init(
                                 id: "path4",
@@ -105,7 +105,7 @@ class CustomerCenterConfigDataTests: TestCase {
                                                             "product_id": "offer_id"
                                                         ]),
                                 feedbackSurvey: nil,
-                                refundWindowDuration: nil
+                                refundWindow: nil
                             )
                         ]
                     )
