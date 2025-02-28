@@ -179,7 +179,7 @@ class DiagnosticsTrackerTests: TestCase {
                     .requestedProductIdsKey: AnyEncodable(["test_product_id_3", "test_product_id_4"]),
                     .notFoundProductIdsKey: AnyEncodable([]),
                     .errorCodeKey: AnyEncodable(emptyErrorCode)],
-                  timestamp: Self.eventTimestamp1)
+                  timestamp: Self.eventTimestamp2)
         ]
     }
 
