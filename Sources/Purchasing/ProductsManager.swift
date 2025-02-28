@@ -87,12 +87,22 @@ class ProductsManager: NSObject, ProductsManagerType {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
-                self.trackProductsRequestIfNeeded(startTime, storeKitVersion: .storeKit2, error: result.error)
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+                self.trackProductsRequestIfNeeded(startTime,
+                                                  requestedProductIds: identifiers,
+                                                  notFoundProductIds: notFoundProducts,
+                                                  storeKitVersion: .storeKit2,
+                                                  error: result.error)
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         } else {
             self.sk1Products(withIdentifiers: identifiers) { result in
-                self.trackProductsRequestIfNeeded(startTime, storeKitVersion: .storeKit1, error: result.error)
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+                self.trackProductsRequestIfNeeded(startTime,
+                                                  requestedProductIds: identifiers,
+                                                  notFoundProductIds: notFoundProducts,
+                                                  storeKitVersion: .storeKit1,
+                                                  error: result.error)
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         }
@@ -136,6 +146,8 @@ private extension ProductsManager {
     }
 
     func trackProductsRequestIfNeeded(_ startTime: Date,
+                                      requestedProductIds: Set<String>,
+                                      notFoundProductIds: Set<String>,
                                       storeKitVersion: StoreKitVersion,
                                       error: PurchasesError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
@@ -150,6 +162,8 @@ private extension ProductsManager {
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
                                                     storeKitErrorDescription: storeKitErrorDescription,
+                                                    requestedProductIds: requestedProductIds,
+                                                    notFoundProductIds: notFoundProductIds,
                                                     responseTime: responseTime)
         }
     }
