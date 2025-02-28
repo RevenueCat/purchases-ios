@@ -24,7 +24,10 @@ func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
                                             productId: productId)
 }
 
-func checkHelpPath(_ path: CustomerCenterConfigData.HelpPath) {
+func checkHelpPath(
+    _ path: CustomerCenterConfigData.HelpPath,
+    isoDuration: ISODuration
+) {
     let id: String = path.id
     let title: String = path.title
     let url: URL? = path.url
@@ -38,6 +41,14 @@ func checkHelpPath(_ path: CustomerCenterConfigData.HelpPath) {
                                                      openMethod: openMethod,
                                                      type: type,
                                                      detail: detail)
+
+    let _: CustomerCenterConfigData.HelpPath = .init(id: id,
+                                                     title: title,
+                                                     url: url,
+                                                     openMethod: openMethod,
+                                                     type: type,
+                                                     detail: detail,
+                                                     refundWindowDuration: .duration(isoDuration))
 }
 
 func checkHelpPathDetail(_ detail: CustomerCenterConfigData.HelpPath.PathDetail) {
