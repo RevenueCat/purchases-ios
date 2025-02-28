@@ -831,6 +831,11 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(params.errorMessage).to(beNil())
         expect(params.errorCode).to(beNil())
         expect(params.storeKitErrorDescription).to(beNil())
+        expect(params.productId) == Self.productID
+        expect(params.promotionalOfferId).to(beNil())
+        expect(params.winBackOfferApplied) == false
+        expect(params.purchaseResult).to(beNil())
+        expect(params.responseTime).to(beGreaterThan(0))
     }
 
     func testPurchaseWithInvalidPromotionalOfferSignatureTracksError() async throws {
@@ -851,7 +856,7 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         storeKit1Wrapper.mockTransactionError = NSError(domain: SKErrorDomain,
                                                         code: SKError.Code.invalidSignature.rawValue)
         let product = try await self.fetchSk1Product()
-        let offer = PromotionalOffer.SignedData(identifier: "",
+        let offer = PromotionalOffer.SignedData(identifier: "promotional-offer-id",
                                                 keyIdentifier: "",
                                                 nonce: UUID(),
                                                 signature: "",
@@ -879,6 +884,11 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(params.errorMessage) == "The operation couldn’t be completed. (SKErrorDomain error 12.)"
         expect(params.errorCode) == ErrorCode.invalidPromotionalOfferError.rawValue
         expect(params.storeKitErrorDescription) == SKError.Code.invalidSignature.trackingDescription
+        expect(params.productId) == Self.productID
+        expect(params.promotionalOfferId) == "promotional-offer-id"
+        expect(params.winBackOfferApplied) == false
+        expect(params.purchaseResult).to(beNil())
+        expect(params.responseTime).to(beGreaterThan(0))
     }
 
     #if compiler(>=6.0)
