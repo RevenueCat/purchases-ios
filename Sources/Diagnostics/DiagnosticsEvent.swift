@@ -53,7 +53,19 @@ extension DiagnosticsEvent {
         case eTagHitKey
         case requestedProductIdsKey
         case notFoundProductIdsKey
+        case productIdKey
+        case promotionalOfferIdKey
+        case winBackOfferAppliedKey
+        case purchaseResultKey
 
+    }
+
+    /// Value for `purchaseResultKey`.
+    enum PurchaseResult: String, Codable {
+        case verified = "verified"
+        case unverified = "unverified"
+        case userCancelled = "user_cancelled"
+        case pending = "pending"
     }
 
 }
