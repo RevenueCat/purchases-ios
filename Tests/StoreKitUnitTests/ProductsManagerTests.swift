@@ -159,8 +159,8 @@ class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
         expect(params?.wasSuccessful) == true
         expect(params?.storeKitVersion) == .storeKit1
-        expect(params?.requestedProductIds) == Set([identifier, notFoundIdentifier])
-        expect(params?.notFoundProductIds) == Set([notFoundIdentifier])
+        expect(params?.requestedProductIds) == [identifier, notFoundIdentifier]
+        expect(params?.notFoundProductIds) == [notFoundIdentifier]
         expect(params?.errorMessage).to(beNil())
         expect(params?.errorCode).to(beNil())
     }
@@ -198,8 +198,8 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
         expect(params?.wasSuccessful) == true
         expect(params?.storeKitVersion) == .storeKit2
-        expect(params?.requestedProductIds) == Set([identifier, notFoundIdentifier])
-        expect(params?.notFoundProductIds) == Set([notFoundIdentifier])
+        expect(params?.requestedProductIds) == [identifier, notFoundIdentifier]
+        expect(params?.notFoundProductIds) == [notFoundIdentifier]
         expect(params?.errorMessage).to(beNil())
         expect(params?.errorCode).to(beNil())
         expect(params?.storeKitErrorDescription).to(beNil())
