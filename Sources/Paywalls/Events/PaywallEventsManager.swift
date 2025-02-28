@@ -84,6 +84,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
 
         do {
             try await self.internalAPI.postPaywallEvents(events: events)
+            Logger.debug(Strings.analytics.flush_events_success)
 
             await self.store.clear(count)
 
