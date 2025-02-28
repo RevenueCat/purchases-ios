@@ -806,11 +806,9 @@
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		75425E0F2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */; };
 		756FFA1D2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
-		756FFA1E2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
-		756FFA1F2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
-		756FFA202D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
+		75DAE4822D7234C200AEC012 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -5955,7 +5953,7 @@
 				4D322E3A2B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift in Sources */,
 				1EFA95162CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift in Sources */,
 				4F5D52D92A5713A800E1C758 /* DebugViewSwiftUITests.swift in Sources */,
-				756FFA1E2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */,
+				75DAE4822D7234C200AEC012 /* DiagnosticsEvent+Equatable.swift in Sources */,
 				4D322E382B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift in Sources */,
 				FDAC7B572CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */,
 				2D9C5EC826F280510057FC45 /* StoreProductTests.swift in Sources */,
@@ -6688,7 +6686,6 @@
 				4F7E3A812B02DF5A0051234A /* MockSandboxEnvironmentDetector.swift in Sources */,
 				4F1E84022A6062C9000AF177 /* ImageSnapshot.swift in Sources */,
 				2D3BFAD326DEA47100370B11 /* MockSKProductDiscount.swift in Sources */,
-				756FFA202D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */,
 				4FDF10ED2A726291004F3680 /* SK1ProductFetcher.swift in Sources */,
 				4F83F6B72A5DB782003F90A5 /* CurrentTestCaseTracker.swift in Sources */,
 				57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */,
@@ -6742,7 +6739,6 @@
 			files = (
 				4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */,
 				4F6BEE362A27B0F200CD9322 /* MainThreadMonitor.swift in Sources */,
-				756FFA1F2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift in Sources */,
 				4F83F6BB2A5DB80B003F90A5 /* OSVersionEquivalent.swift in Sources */,
 				4F83F6BA2A5DB807003F90A5 /* CurrentTestCaseTracker.swift in Sources */,
 				4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */,
