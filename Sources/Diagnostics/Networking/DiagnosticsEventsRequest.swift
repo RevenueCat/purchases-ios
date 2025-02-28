@@ -98,6 +98,10 @@ private extension DiagnosticsEvent.DiagnosticsPropertyKey {
             return "sk_error_description"
         case .eTagHitKey:
             return "etag_hit"
+        case .requestedProductIdsKey:
+            return "requested_product_ids"
+        case .notFoundProductIdsKey:
+            return "not_found_product_ids"
         }
     }
 
