@@ -582,32 +582,32 @@ final class PurchasesOrchestrator {
             options.insert(.appAccountToken(uuid))
         }
 
-        if let signedData = promotionalOffer {
-            Logger.debug(
-                Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
-            )
-            options.insert(try signedData.sk2PurchaseOption)
-        }
-
-        var winBackOfferApplied: Bool = false
-        if let winBackOffer, #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
-            // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with
-            // version 6.0 of the Swift compiler. The win-back symbols won't be found if compiled on
-            // Xcode < 16.0, so we need to ensure that the Swift compiler 6.0 or higher is available.
-#if compiler(>=6.0)
-            Logger.debug(
-                Strings.storeKit.sk2_purchasing_added_winback_offer_option(winBackOffer.id ?? "unknown ID")
-            )
-            options.insert(.winBackOffer(winBackOffer))
-            winBackOfferApplied = true
-#endif
-        }
-
-        self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
-
         let startTime = self.dateProvider.now()
+        var winBackOfferApplied: Bool = false
 
         do {
+            if let signedData = promotionalOffer {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
+                )
+                options.insert(try signedData.sk2PurchaseOption)
+            }
+
+            if let winBackOffer, #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+                // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with
+                // version 6.0 of the Swift compiler. The win-back symbols won't be found if compiled on
+                // Xcode < 16.0, so we need to ensure that the Swift compiler 6.0 or higher is available.
+#if compiler(>=6.0)
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_winback_offer_option(winBackOffer.id ?? "unknown ID")
+                )
+                options.insert(.winBackOffer(winBackOffer))
+                winBackOfferApplied = true
+#endif
+            }
+
+            self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
+
             result = try await self.purchase(sk2Product, options)
         } catch StoreKitError.userCancelled {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
