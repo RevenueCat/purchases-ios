@@ -7,20 +7,23 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  DiagnosticsEvent+Equatable.swift
+//  AnyEncodable+Equatable.swift
 //
 //  Created by Antonio Pallares on 28/2/25.
 
 import Foundation
 @testable import RevenueCat
 
-extension DiagnosticsEvent: @retroactive Equatable {
+extension AnyEncodable: @retroactive Equatable {
 
-    public static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
-        return lhs.version == rhs.version &&
-               lhs.eventType == rhs.eventType &&
-               lhs.properties == rhs.properties &&
-               lhs.timestamp == rhs.timestamp
+    public static func == (lhs: AnyEncodable, rhs: AnyEncodable) -> Bool {
+        do {
+            let lhsData = try lhs.prettyPrintedData
+            let rhsData = try rhs.prettyPrintedData
+            return lhsData == rhsData
+        } catch {
+            return false
+        }
     }
 
 }

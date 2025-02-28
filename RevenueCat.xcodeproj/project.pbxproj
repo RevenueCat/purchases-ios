@@ -809,6 +809,10 @@
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
 		75DAE4822D7234C200AEC012 /* DiagnosticsEvent+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */; };
+		75DAE4842D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
+		75DAE4852D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
+		75DAE4862D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
+		75DAE4872D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -2117,6 +2121,7 @@
 		756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiagnosticsEvent+Equatable.swift"; sourceTree = "<group>"; };
 		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerUIPreviewModeTests.swift; sourceTree = "<group>"; };
+		75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyEncodable+Equatable.swift"; sourceTree = "<group>"; };
 		7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		7707A93B2CAD8AA2006E0313 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallButtonComponent.swift; sourceTree = "<group>"; };
@@ -4130,6 +4135,7 @@
 				575A8EE02922C56300936709 /* AsyncTestHelpers.swift */,
 				4F69EB082A14406E00ED6D4B /* Matchers.swift */,
 				756FFA1C2D722B46007C0A93 /* DiagnosticsEvent+Equatable.swift */,
+				75DAE4832D72356700AEC012 /* AnyEncodable+Equatable.swift */,
 			);
 			path = TestHelpers;
 			sourceTree = "<group>";
@@ -5991,6 +5997,7 @@
 				57544C29285FA95E004E54D5 /* MockAttributeSyncing.swift in Sources */,
 				57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */,
 				4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */,
+				75DAE4862D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */,
 				7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */,
 				2D90F8C226FD20F7009B9142 /* MockETagManager.swift in Sources */,
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
@@ -6651,6 +6658,7 @@
 				5722482727C2BD3200C524A7 /* LockTests.swift in Sources */,
 				351B514526D449E600BD2BD7 /* MockAttributionTypeFactory.swift in Sources */,
 				4FE0685F2A5F54C500B8F56C /* PackageTypeTests.swift in Sources */,
+				75DAE4872D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */,
 				4D72E8622B221EA600BF9EFE /* StoreEnvironmentTests.swift in Sources */,
 				575A8EE12922C56300936709 /* AsyncTestHelpers.swift in Sources */,
 				572247F727BF1ADF00C524A7 /* ArrayExtensionsTests.swift in Sources */,
@@ -6707,6 +6715,7 @@
 				4F2018732A15797D0061F6EF /* TestLogHandler.swift in Sources */,
 				4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */,
 				4F15B4A22A678A9C005BEFE8 /* MockStoreTransaction.swift in Sources */,
+				75DAE4852D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */,
 				2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */,
 				4F83F6B82A5DB78C003F90A5 /* OSVersionEquivalent.swift in Sources */,
 				2D1015DB275A4EAE0086173F /* AvailabilityChecks.swift in Sources */,
@@ -6740,6 +6749,7 @@
 				4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */,
 				4F6BEE362A27B0F200CD9322 /* MainThreadMonitor.swift in Sources */,
 				4F83F6BB2A5DB80B003F90A5 /* OSVersionEquivalent.swift in Sources */,
+				75DAE4842D72356700AEC012 /* AnyEncodable+Equatable.swift in Sources */,
 				4F83F6BA2A5DB807003F90A5 /* CurrentTestCaseTracker.swift in Sources */,
 				4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */,
 				4F6BEE1F2A27B02400CD9322 /* CustomEntitlementsComputationIntegrationTests.swift in Sources */,
