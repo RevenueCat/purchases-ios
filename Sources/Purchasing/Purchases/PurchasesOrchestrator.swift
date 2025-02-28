@@ -146,7 +146,8 @@ final class PurchasesOrchestrator {
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      paywallEventsManager: PaywallEventsManagerType?,
-                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
+                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+                     dateProvider: DateProvider = DateProvider()
     ) {
         self.init(
             productsManager: productsManager,
@@ -169,7 +170,8 @@ final class PurchasesOrchestrator {
             storeMessagesHelper: storeMessagesHelper,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             paywallEventsManager: paywallEventsManager,
-            webPurchaseRedemptionHelper: webPurchaseRedemptionHelper
+            webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
+            dateProvider: dateProvider
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer

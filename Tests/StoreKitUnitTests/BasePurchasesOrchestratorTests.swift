@@ -47,6 +47,11 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var paywallEventsManager: PaywallEventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
 
+    static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
+    static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
+    var mockDateProvider = MockDateProvider(stubbedNow: eventTimestamp1,
+                                            subsequentNows: eventTimestamp2)
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockPaywallEventsManager: MockPaywallEventsManager {
         get throws {
@@ -232,7 +237,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            dateProvider: self.mockDateProvider
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }

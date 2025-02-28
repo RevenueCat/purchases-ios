@@ -835,7 +835,9 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(params.promotionalOfferId).to(beNil())
         expect(params.winBackOfferApplied) == false
         expect(params.purchaseResult).to(beNil())
-        expect(params.responseTime).to(beGreaterThan(0))
+
+        expect(self.mockDateProvider.invokedNowCount) == 2
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
     func testPurchaseWithInvalidPromotionalOfferSignatureTracksError() async throws {
@@ -888,7 +890,9 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         expect(params.promotionalOfferId) == "promotional-offer-id"
         expect(params.winBackOfferApplied) == false
         expect(params.purchaseResult).to(beNil())
-        expect(params.responseTime).to(beGreaterThan(0))
+
+        expect(self.mockDateProvider.invokedNowCount) == 2
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
     #if compiler(>=6.0)
