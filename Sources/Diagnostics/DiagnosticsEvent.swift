@@ -51,6 +51,8 @@ extension DiagnosticsEvent {
         case errorCodeKey
         case skErrorDescriptionKey
         case eTagHitKey
+        case requestedProductIdsKey
+        case notFoundProductIdsKey
 
     }
 
