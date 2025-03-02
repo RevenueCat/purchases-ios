@@ -14,7 +14,8 @@
 import Foundation
 @testable import RevenueCat
 
-extension AnyEncodable: @retroactive Equatable {
+// Specifying the module names silences the warning in Xcode 16+
+extension RevenueCat.AnyEncodable: Swift.Equatable {
 
     public static func == (lhs: AnyEncodable, rhs: AnyEncodable) -> Bool {
         do {

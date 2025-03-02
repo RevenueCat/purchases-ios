@@ -14,7 +14,8 @@
 import Foundation
 @testable import RevenueCat
 
-extension DiagnosticsEvent: @retroactive Equatable {
+// Specifying the module names silences the warning in Xcode 16+
+extension RevenueCat.DiagnosticsEvent: Swift.Equatable {
 
     public static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
         return lhs.version == rhs.version &&
