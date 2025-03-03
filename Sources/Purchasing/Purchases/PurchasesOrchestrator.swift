@@ -681,7 +681,7 @@ final class PurchasesOrchestrator {
                 purchasesError = pError
             case let signedDataError as PromotionalOffer.SignedData.Error:
                 purchasesError = ErrorUtils.invalidPromotionalOfferError(error: signedDataError,
-                                                        message: signedDataError.localizedDescription)
+                                                                         message: signedDataError.localizedDescription)
             case let backendError as BackendError:
                 purchasesError = backendError.asPurchasesError
             default:
