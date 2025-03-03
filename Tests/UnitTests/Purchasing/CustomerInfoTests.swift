@@ -883,41 +883,81 @@ class BasicCustomerInfoTests: TestCase {
         == Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"])
     }
 
-//    #if ENABLE_VIRTUAL_CURRENCIES
-//    func testVirtualCurrenciesIncludesBalances() throws {
-//        let validJSONWithOneVirtualCurrency = """
-//            {
-//              "request_date": "2025-03-03T16:52:37Z",
-//              "request_date_ms": 1741020757019,
-//              "subscriber": {
-//                "entitlements": {},
-//                "first_seen": "2025-02-28T20:04:52Z",
-//                "last_seen": "2025-02-28T20:04:52Z",
-//                "management_url": null,
-//                "non_subscriptions": {},
-//                "original_app_user_id": "test_user",
-//                "original_application_version": "1",
-//                "original_purchase_date": "1970-01-01T00:00:00Z",
-//                "other_purchases": {},
-//                "subscriptions": {},
-//                "virtual_currencies": {
-//                  "WIL": {
-//                    "amount": 200
-//                  }
-//                }
-//              }
-//            }
-//            """
-//
-//        let customerInfo = CustomerInfo(fromJSON: validJSONWithOneVirtualCurrency)
-//        expect(customerInfo).toNot(beNil())
-//        expect(customerInfo?.virtualCurrencies).toNot(beEmpty())
-//
-//        let wilCurrency: VirtualCurrencyInfo = XCTUnwrap(customerInfo?.virtualCurrencies["WIL"])
-//        
-//
-//    }
-//    #endif
+    #if ENABLE_VIRTUAL_CURRENCIES
+    func testVirtualCurrenciesIncludesBalancesForOneCurrency() throws {
+        let validJSONWithOneVirtualCurrency = """
+            {
+              "request_date": "2025-03-03T16:52:37Z",
+              "request_date_ms": 1741020757019,
+              "subscriber": {
+                "entitlements": {},
+                "first_seen": "2025-02-28T20:04:52Z",
+                "last_seen": "2025-02-28T20:04:52Z",
+                "management_url": null,
+                "non_subscriptions": {},
+                "original_app_user_id": "test_user",
+                "original_application_version": "1",
+                "original_purchase_date": "1970-01-01T00:00:00Z",
+                "other_purchases": {},
+                "subscriptions": {},
+                "virtual_currencies": {
+                  "COIN": {
+                    "amount": 200
+                  }
+                }
+              }
+            }
+            """
+
+        let customerInfo = CustomerInfo(fromJSON: validJSONWithOneVirtualCurrency)
+        expect(customerInfo).toNot(beNil())
+        expect(customerInfo?.virtualCurrencies).toNot(beEmpty())
+        expect(customerInfo?.virtualCurrencies.count).to(equal(1))
+
+        let currency: VirtualCurrencyInfo = try XCTUnwrap(customerInfo?.virtualCurrencies["COIN"])
+        expect(currency.balance).to(equal(200))
+    }
+
+    func testVirtualCurrenciesIncludesBalancesForTwoCurrencies() throws {
+        let validJSONWithOneVirtualCurrency = """
+            {
+              "request_date": "2025-03-03T16:52:37Z",
+              "request_date_ms": 1741020757019,
+              "subscriber": {
+                "entitlements": {},
+                "first_seen": "2025-02-28T20:04:52Z",
+                "last_seen": "2025-02-28T20:04:52Z",
+                "management_url": null,
+                "non_subscriptions": {},
+                "original_app_user_id": "test_user",
+                "original_application_version": "1",
+                "original_purchase_date": "1970-01-01T00:00:00Z",
+                "other_purchases": {},
+                "subscriptions": {},
+                "virtual_currencies": {
+                  "COIN1": {
+                    "amount": 200
+                  },
+                  "COIN2": {
+                    "amount": 500
+                  }
+                }
+              }
+            }
+            """
+
+        let customerInfo = CustomerInfo(fromJSON: validJSONWithOneVirtualCurrency)
+        expect(customerInfo).toNot(beNil())
+        expect(customerInfo?.virtualCurrencies).toNot(beEmpty())
+        expect(customerInfo?.virtualCurrencies.count).to(equal(2))
+
+        let coin1: VirtualCurrencyInfo = try XCTUnwrap(customerInfo?.virtualCurrencies["COIN1"])
+        expect(coin1.balance).to(equal(200))
+
+        let coin2: VirtualCurrencyInfo = try XCTUnwrap(customerInfo?.virtualCurrencies["COIN2"])
+        expect(coin2.balance).to(equal(500))
+    }
+    #endif
 
     func testCopyWithSameVerificationResult() throws {
         expect(self.customerInfo.copy(with: .notRequested)) === self.customerInfo
