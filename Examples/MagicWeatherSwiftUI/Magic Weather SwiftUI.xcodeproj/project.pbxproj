@@ -3,11 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		4FDA13832A33D9B900C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13822A33D86100C45CFE /* PrivacyInfo.xcprivacy */; };
+		53B2B4B82D75EC720062EEA3 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53B2B4B72D75EC720062EEA3 /* RevenueCat */; };
 		55413BE725B735AF00ECCA5A /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BE625B735AF00ECCA5A /* UserView.swift */; };
 		55413BEC25B735C500ECCA5A /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BEB25B735C500ECCA5A /* WeatherView.swift */; };
 		55413BF125B73A6F00ECCA5A /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BF025B73A6F00ECCA5A /* PaywallView.swift */; };
@@ -62,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				53B2B4B82D75EC720062EEA3 /* RevenueCat in Frameworks */,
 				5791CEC42742EF2400E50C4B /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -182,6 +184,7 @@
 			);
 			name = "Magic Weather SwiftUI (iOS)";
 			packageProductDependencies = (
+				53B2B4B72D75EC720062EEA3 /* RevenueCat */,
 			);
 			productName = "Magic Weather SwiftUI (iOS)";
 			productReference = 5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */;
@@ -211,6 +214,7 @@
 			);
 			mainGroup = 5597797125ACDC3A00C33DFB;
 			packageReferences = (
+				53B2B4B62D75EC720062EEA3 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 5597797F25ACDC3E00C33DFB /* Products */;
 			projectDirPath = "";
@@ -439,6 +443,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		53B2B4B62D75EC720062EEA3 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		53B2B4B72D75EC720062EEA3 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 53B2B4B62D75EC720062EEA3 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5597797225ACDC3A00C33DFB /* Project object */;
 }

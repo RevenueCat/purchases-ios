@@ -4,7 +4,4 @@
    <FileRef
       location = "group:Magic Weather SwiftUI.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:../../RevenueCat.xcodeproj">
-   </FileRef>
 </Workspace>
