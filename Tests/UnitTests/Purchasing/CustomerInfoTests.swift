@@ -883,6 +883,42 @@ class BasicCustomerInfoTests: TestCase {
         == Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"])
     }
 
+//    #if ENABLE_VIRTUAL_CURRENCIES
+//    func testVirtualCurrenciesIncludesBalances() throws {
+//        let validJSONWithOneVirtualCurrency = """
+//            {
+//              "request_date": "2025-03-03T16:52:37Z",
+//              "request_date_ms": 1741020757019,
+//              "subscriber": {
+//                "entitlements": {},
+//                "first_seen": "2025-02-28T20:04:52Z",
+//                "last_seen": "2025-02-28T20:04:52Z",
+//                "management_url": null,
+//                "non_subscriptions": {},
+//                "original_app_user_id": "test_user",
+//                "original_application_version": "1",
+//                "original_purchase_date": "1970-01-01T00:00:00Z",
+//                "other_purchases": {},
+//                "subscriptions": {},
+//                "virtual_currencies": {
+//                  "WIL": {
+//                    "amount": 200
+//                  }
+//                }
+//              }
+//            }
+//            """
+//
+//        let customerInfo = CustomerInfo(fromJSON: validJSONWithOneVirtualCurrency)
+//        expect(customerInfo).toNot(beNil())
+//        expect(customerInfo?.virtualCurrencies).toNot(beEmpty())
+//
+//        let wilCurrency: VirtualCurrencyInfo = XCTUnwrap(customerInfo?.virtualCurrencies["WIL"])
+//        
+//
+//    }
+//    #endif
+
     func testCopyWithSameVerificationResult() throws {
         expect(self.customerInfo.copy(with: .notRequested)) === self.customerInfo
     }
@@ -942,6 +978,20 @@ extension CustomerInfo {
     convenience init?(testData: [String: Any]) {
         do {
             try self.init(data: testData)
+        } catch {
+            let errorDescription = (error as? DescribableError)?.description ?? error.localizedDescription
+            Logger.error("Caught error creating testData, this is probably expected, right? \(errorDescription).")
+
+            return nil
+        }
+    }
+
+    convenience init?(fromJSON jsonString: String) {
+        do {
+            guard let jsonData = jsonString.data(using: String.Encoding.utf8) else { return nil }
+            let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
+            guard let jsonDict = jsonObject as? [String: Any] else { return nil }
+            try self.init(data: jsonDict)
         } catch {
             let errorDescription = (error as? DescribableError)?.description ?? error.localizedDescription
             Logger.error("Caught error creating testData, this is probably expected, right? \(errorDescription).")
