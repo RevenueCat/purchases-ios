@@ -13,6 +13,7 @@
 
 import Foundation
 
+/// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used.
 struct DiagnosticsEvent: Codable {
 
     let version: Int = 1
@@ -24,19 +25,19 @@ struct DiagnosticsEvent: Codable {
         case version, properties, timestamp, eventType
     }
 
-    enum EventType: String, Codable {
-        case httpRequestPerformed = "http_request_performed"
-        case appleProductsRequest = "apple_products_request"
-        case customerInfoVerificationResult = "customer_info_verification_result"
-        case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
-        case applePurchaseAttempt = "apple_purchase_attempt"
+    enum EventType: Codable {
+        case httpRequestPerformed
+        case appleProductsRequest
+        case customerInfoVerificationResult
+        case maxEventsStoredLimitReached
+        case applePurchaseAttempt
     }
 
-    enum PurchaseResult: String, Codable {
-        case verified = "verified"
-        case unverified = "unverified"
-        case userCancelled = "user_cancelled"
-        case pending = "pending"
+    enum PurchaseResult: Codable {
+        case verified
+        case unverified
+        case userCancelled
+        case pending
     }
 
     struct Properties: Codable {
@@ -57,26 +58,6 @@ struct DiagnosticsEvent: Codable {
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
-
-        enum CodingKeys: String, CodingKey {
-            case verificationResult = "verification_result"
-            case endpointName = "endpoint_name"
-            case responseTimeMillis = "response_time_millis"
-            case storeKitVersion = "store_kit_version"
-            case successful
-            case responseCode = "response_code"
-            case backendErrorCode = "backend_error_code"
-            case errorMessage = "error_message"
-            case errorCode = "error_code"
-            case skErrorDescription = "sk_error_description"
-            case eTagHit = "etag_hit"
-            case requestedProductIds = "requested_product_ids"
-            case notFoundProductIds = "not_found_product_ids"
-            case productId = "product_id"
-            case promotionalOfferId = "promotional_offer_id"
-            case winBackOfferApplied = "win_back_offer_applied"
-            case purchaseResult = "purchase_result"
-        }
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
