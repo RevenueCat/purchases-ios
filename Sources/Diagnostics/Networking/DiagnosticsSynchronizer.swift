@@ -48,15 +48,17 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
         self.syncInProgress = true
         defer { self.syncInProgress = false }
 
-        let events = await self.handler.getEntries()
-        let count = events.count
+        let optionalEvents = await self.handler.getEntries()
+        let count = optionalEvents.count
 
-        guard !events.isEmpty else {
+        guard !optionalEvents.isEmpty else {
             Logger.verbose(Strings.diagnostics.event_sync_with_empty_store)
             return
         }
 
         Logger.verbose(Strings.diagnostics.event_sync_starting(count: count))
+
+        let events = optionalEvents.compactMap { $0 }
 
         do {
             try await self.internalAPI.postDiagnosticsEvents(events: events)
