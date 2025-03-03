@@ -14,18 +14,14 @@
 import Foundation
 
 /// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used.
-struct DiagnosticsEvent: Codable {
+struct DiagnosticsEvent: Codable, Equatable {
 
-    let version: Int = 1
+    private(set) var version: Int = 1
     let eventType: EventType
     let properties: Properties
     let timestamp: Date
 
-    enum CodingKeys: String, CodingKey {
-        case version, properties, timestamp, eventType
-    }
-
-    enum EventType: Codable {
+    enum EventType: Codable, Equatable {
         case httpRequestPerformed
         case appleProductsRequest
         case customerInfoVerificationResult
@@ -33,14 +29,14 @@ struct DiagnosticsEvent: Codable {
         case applePurchaseAttempt
     }
 
-    enum PurchaseResult: Codable {
+    enum PurchaseResult: Codable, Equatable {
         case verified
         case unverified
         case userCancelled
         case pending
     }
 
-    struct Properties: Codable {
+    struct Properties: Codable, Equatable {
         let verificationResult: String?
         let endpointName: String?
         let responseTimeMillis: Int?

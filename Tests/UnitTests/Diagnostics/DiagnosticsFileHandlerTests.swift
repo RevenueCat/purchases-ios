@@ -41,7 +41,7 @@ class DiagnosticsFileHandlerTests: TestCase {
 
     func testAppendEventWithProperties() async throws {
         let content = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                        timestamp: Date())
 
         var entries = await self.handler.getEntries()
@@ -82,11 +82,11 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712235359000))
 
         let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712238959000))
 
         let entries = await self.handler.getEntries()
@@ -203,7 +203,7 @@ private extension DiagnosticsFileHandlerTests {
 
     static func sampleEvent() -> DiagnosticsEvent {
         return DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                 timestamp: Date())
     }
 
