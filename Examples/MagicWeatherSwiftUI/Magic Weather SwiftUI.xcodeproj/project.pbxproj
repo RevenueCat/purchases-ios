@@ -21,8 +21,6 @@
 		559779AC25B72D3200C33DFB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779AB25B72D3200C33DFB /* Constants.swift */; };
 		559779B925B72DCF00C33DFB /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779B325B72DC000C33DFB /* SampleData.swift */; };
 		559779C025B72EE100C33DFB /* PurchasesDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */; };
-		5791CEC42742EF2400E50C4B /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5791CEC32742EF2400E50C4B /* RevenueCat.framework */; };
-		57BACC0E2745C119000021C5 /* RevenueCat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5791CEC32742EF2400E50C4B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,7 +30,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				57BACC0E2745C119000021C5 /* RevenueCat.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,7 +52,6 @@
 		559779B325B72DC000C33DFB /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
 		559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegateHandler.swift; sourceTree = "<group>"; };
 		5791CE812742E39900E50C4B /* Magic Weather SwiftUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Magic Weather SwiftUI.entitlements"; sourceTree = "<group>"; };
-		5791CEC32742EF2400E50C4B /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,7 +60,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				53B2B4B82D75EC720062EEA3 /* RevenueCat in Frameworks */,
-				5791CEC42742EF2400E50C4B /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,7 +69,6 @@
 		55413BF525B73F7200ECCA5A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5791CEC32742EF2400E50C4B /* RevenueCat.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
