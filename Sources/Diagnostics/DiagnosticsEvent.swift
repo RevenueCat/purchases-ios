@@ -16,51 +16,22 @@ import Foundation
 struct DiagnosticsEvent: Codable {
 
     let version: Int = 1
-    let eventType: DiagnosticsEvent.EventType
-    let properties: [DiagnosticsPropertyKey: AnyEncodable]
+    let eventType: EventType
+    let properties: Properties
     let timestamp: Date
 
     enum CodingKeys: String, CodingKey {
         case version, properties, timestamp, eventType
     }
 
-}
-
-extension DiagnosticsEvent {
-
     enum EventType: String, Codable {
-
-        case httpRequestPerformed
-        case appleProductsRequest
-        case customerInfoVerificationResult
-        case maxEventsStoredLimitReached
-        case applePurchaseAttempt
-
+        case httpRequestPerformed = "http_request_performed"
+        case appleProductsRequest = "apple_products_request"
+        case customerInfoVerificationResult = "customer_info_verification_result"
+        case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
+        case applePurchaseAttempt = "apple_purchase_attempt"
     }
 
-    enum DiagnosticsPropertyKey: String, Codable {
-
-        case verificationResultKey
-        case endpointNameKey
-        case responseTimeMillisKey
-        case storeKitVersion
-        case successfulKey
-        case responseCodeKey
-        case backendErrorCodeKey
-        case errorMessageKey
-        case errorCodeKey
-        case skErrorDescriptionKey
-        case eTagHitKey
-        case requestedProductIdsKey
-        case notFoundProductIdsKey
-        case productIdKey
-        case promotionalOfferIdKey
-        case winBackOfferAppliedKey
-        case purchaseResultKey
-
-    }
-
-    /// Value for `purchaseResultKey`.
     enum PurchaseResult: String, Codable {
         case verified = "verified"
         case unverified = "unverified"
@@ -68,4 +39,81 @@ extension DiagnosticsEvent {
         case pending = "pending"
     }
 
+    struct Properties: Codable {
+        let verificationResult: String?
+        let endpointName: String?
+        let responseTimeMillis: Int?
+        let storeKitVersion: String?
+        let successful: Bool?
+        let responseCode: Int?
+        let backendErrorCode: Int?
+        let errorMessage: String?
+        let errorCode: Int?
+        let skErrorDescription: String?
+        let eTagHit: Bool?
+        let requestedProductIds: Set<String>?
+        let notFoundProductIds: Set<String>?
+        let productId: String?
+        let promotionalOfferId: String?
+        let winBackOfferApplied: Bool?
+        let purchaseResult: PurchaseResult?
+
+        enum CodingKeys: String, CodingKey {
+            case verificationResult = "verification_result"
+            case endpointName = "endpoint_name"
+            case responseTimeMillis = "response_time_millis"
+            case storeKitVersion = "store_kit_version"
+            case successful
+            case responseCode = "response_code"
+            case backendErrorCode = "backend_error_code"
+            case errorMessage = "error_message"
+            case errorCode = "error_code"
+            case skErrorDescription = "sk_error_description"
+            case eTagHit = "etag_hit"
+            case requestedProductIds = "requested_product_ids"
+            case notFoundProductIds = "not_found_product_ids"
+            case productId = "product_id"
+            case promotionalOfferId = "promotional_offer_id"
+            case winBackOfferApplied = "win_back_offer_applied"
+            case purchaseResult = "purchase_result"
+        }
+
+        init(verificationResult: String? = nil,
+             endpointName: String? = nil,
+             responseTimeMillis: Int? = nil,
+             storeKitVersion: String? = nil,
+             successful: Bool? = nil,
+             responseCode: Int? = nil,
+             backendErrorCode: Int? = nil,
+             errorMessage: String? = nil,
+             errorCode: Int? = nil,
+             skErrorDescription: String? = nil,
+             eTagHit: Bool? = nil,
+             requestedProductIds: Set<String>? = nil,
+             notFoundProductIds: Set<String>? = nil,
+             productId: String? = nil,
+             promotionalOfferId: String? = nil,
+             winBackOfferApplied: Bool? = nil,
+             purchaseResult: PurchaseResult? = nil) {
+            self.verificationResult = verificationResult
+            self.endpointName = endpointName
+            self.responseTimeMillis = responseTimeMillis
+            self.storeKitVersion = storeKitVersion
+            self.successful = successful
+            self.responseCode = responseCode
+            self.backendErrorCode = backendErrorCode
+            self.errorMessage = errorMessage
+            self.errorCode = errorCode
+            self.skErrorDescription = skErrorDescription
+            self.eTagHit = eTagHit
+            self.requestedProductIds = requestedProductIds
+            self.notFoundProductIds = notFoundProductIds
+            self.productId = productId
+            self.promotionalOfferId = promotionalOfferId
+            self.winBackOfferApplied = winBackOfferApplied
+            self.purchaseResult = purchaseResult
+        }
+
+        static let empty = Properties()
+    }
 }
