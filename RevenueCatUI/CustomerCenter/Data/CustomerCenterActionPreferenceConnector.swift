@@ -39,7 +39,7 @@ struct CustomerCenterActionPreferenceConnector: ViewModifier {
             .onAppear {
                 // Set up direct binding to the state variables
                 viewModel.actionBridge.setRestoreStarted = { restoreStarted = true }
-                viewModel.actionBridge.setRestoreFailed = { restoreFailed = $0 }
+                viewModel.actionBridge.setRestoreFailed = { restoreFailed = $0 as NSError }
                 viewModel.actionBridge.setRestoreCompleted = { restoreCompleted = $0 }
                 viewModel.actionBridge.setShowingManageSubscriptions = { showingManageSubscriptions = true }
                 viewModel.actionBridge.setRefundRequestStarted = { refundRequestStarted = $0 }
@@ -47,13 +47,20 @@ struct CustomerCenterActionPreferenceConnector: ViewModifier {
                 viewModel.actionBridge.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
             }
             // Apply preferences based on state
-            .preference(key: CustomerCenterRestoreStartedPreferenceKey.self, value: restoreStarted)
-            .preference(key: CustomerCenterRestoreFailedPreferenceKey.self, value: restoreFailed)
-            .preference(key: CustomerCenterRestoreCompletedPreferenceKey.self, value: restoreCompleted)
-            .preference(key: CustomerCenterShowingManageSubscriptionsPreferenceKey.self, value: showingManageSubscriptions)
-            .preference(key: CustomerCenterRefundRequestStartedPreferenceKey.self, value: refundRequestStarted)
-            .preference(key: CustomerCenterRefundRequestCompletedPreferenceKey.self, value: refundRequestCompleted)
-            .preference(key: CustomerCenterFeedbackSurveyCompletedPreferenceKey.self, value: feedbackSurveyCompleted)
+            .preference(key: CustomerCenterRestoreStartedPreferenceKey.self,
+                        value: restoreStarted)
+            .preference(key: CustomerCenterRestoreFailedPreferenceKey.self,
+                        value: restoreFailed as NSError?)
+            .preference(key: CustomerCenterRestoreCompletedPreferenceKey.self,
+                        value: restoreCompleted)
+            .preference(key: CustomerCenterShowingManageSubscriptionsPreferenceKey.self,
+                        value: showingManageSubscriptions)
+            .preference(key: CustomerCenterRefundRequestStartedPreferenceKey.self,
+                        value: refundRequestStarted)
+            .preference(key: CustomerCenterRefundRequestCompletedPreferenceKey.self,
+                        value: refundRequestCompleted)
+            .preference(key: CustomerCenterFeedbackSurveyCompletedPreferenceKey.self,
+                        value: feedbackSurveyCompleted)
     }
 }
 

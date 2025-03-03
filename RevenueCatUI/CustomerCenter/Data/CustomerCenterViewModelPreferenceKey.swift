@@ -26,7 +26,8 @@ extension View {
     /// Internal method to set a preference value for restore failed
     @MainActor
     func setRestoreFailed(_ error: Error) -> some View {
-        self.preference(key: CustomerCenterRestoreFailedPreferenceKey.self, value: error)
+        self.preference(key: CustomerCenterRestoreFailedPreferenceKey.self,
+                        value: error as NSError?)
     }
 
     /// Internal method to set a preference value for restore completed
@@ -80,7 +81,17 @@ class CustomerCenterActionBridge {
         self.customerCenterActionHandler = customerCenterActionHandler
     }
 
-    func handleAction(_ action: CustomerCenterAction) {
+    /// Handles the action by calling both the deprecated handler and setting the preference
+    /// This is a convenience method for transitioning code to use the new system
+    func handleActionWithDeprecatedHandler(_ action: CustomerCenterAction) {
+        // Call the deprecated handler
+        customerCenterActionHandler?(action)
+
+        // Set the preference
+        handleAction(action)
+    }
+    
+    private func handleAction(_ action: CustomerCenterAction) {
         // Note: The deprecated handler should be called by the view model,
         // so we're not calling it here to avoid duplication
 
@@ -101,15 +112,5 @@ class CustomerCenterActionBridge {
         case .feedbackSurveyCompleted(let optionId):
             setFeedbackSurveyCompleted(optionId)
         }
-    }
-
-    /// Handles the action by calling both the deprecated handler and setting the preference
-    /// This is a convenience method for transitioning code to use the new system
-    func handleActionWithDeprecatedHandler(_ action: CustomerCenterAction) {
-        // Call the deprecated handler
-        customerCenterActionHandler?(action)
-
-        // Set the preference
-        handleAction(action)
     }
 }

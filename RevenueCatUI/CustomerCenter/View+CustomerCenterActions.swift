@@ -55,8 +55,8 @@ struct CustomerCenterRestoreStartedPreferenceKey: PreferenceKey {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CustomerCenterRestoreFailedPreferenceKey: PreferenceKey {
-    static var defaultValue: Error?
-    static func reduce(value: inout Error?, nextValue: () -> Error?) {
+    static var defaultValue: NSError? = nil
+    static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
         value = nextValue() ?? value
     }
 }
