@@ -125,7 +125,7 @@ struct PurchaseInformation {
                 }
                 self.isLifetime = false
                 self.isTrial = isTrial
-                self.latestPurchaseDate = (transaction as? SubscriptionInfo)?.purchaseDate
+                self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
 
             case .nonSubscription:
                 self.explanation = .lifetime

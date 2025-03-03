@@ -28,8 +28,8 @@ protocol DiagnosticsTrackerType {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: Set<String>,
-                              notFoundProductIds: Set<String>,
+                              requestedProductIds: [String],
+                              notFoundProductIds: [String],
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -98,8 +98,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: Set<String>,
-                              notFoundProductIds: Set<String>,
+                              requestedProductIds: [String],
+                              notFoundProductIds: [String],
                               responseTime: TimeInterval) {
         self.track(
             DiagnosticsEvent(eventType: .appleProductsRequest,

@@ -13,7 +13,7 @@
 
 import Foundation
 
-struct DiagnosticsEvent: Codable, Equatable {
+struct DiagnosticsEvent: Codable {
 
     let version: Int = 1
     let eventType: DiagnosticsEvent.EventType
@@ -66,17 +66,6 @@ extension DiagnosticsEvent {
         case unverified = "unverified"
         case userCancelled = "user_cancelled"
         case pending = "pending"
-    }
-
-}
-
-extension DiagnosticsEvent {
-
-    static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
-        return lhs.version == rhs.version &&
-               lhs.eventType == rhs.eventType &&
-               lhs.properties == rhs.properties &&
-               lhs.timestamp == rhs.timestamp
     }
 
 }
