@@ -27,7 +27,7 @@ public final class VirtualCurrencyInfo: NSObject {
     ///
     /// This property represents the amount of virtual currency currently available.
     /// The balance is represented as an integer value.
-    @objc public let balance: Int
+    @objc public let balance: Int64
 
     init(with virtualCurrencyInfo: CustomerInfoResponse.VirtualCurrencyInfo) {
         self.balance = virtualCurrencyInfo.amount

@@ -107,7 +107,7 @@ extension CustomerInfoResponse {
 
     #if ENABLE_VIRTUAL_CURRENCIES
     internal struct VirtualCurrencyInfo {
-        let amount: Int
+        let amount: Int64
     }
     #endif
 
