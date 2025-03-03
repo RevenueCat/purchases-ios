@@ -70,6 +70,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
     private var purchasesProvider: ManageSubscriptionsPurchaseType
+    private let actionBridge: CustomerCenterActionBridge
 
     init(
         screen: CustomerCenterConfigData.Screen,
@@ -84,6 +85,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.purchasesProvider = ManageSubscriptionPurchases()
             self.refundRequestStatus = refundRequestStatus
             self.customerCenterActionHandler = customerCenterActionHandler
+            self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
             self.state = .success
         }
@@ -181,17 +183,19 @@ private extension ManageSubscriptionsViewModel {
             do {
                 guard let purchaseInformation = self.purchaseInformation else { return }
                 let productId = purchaseInformation.productIdentifier
-                self.customerCenterActionHandler?(.refundRequestStarted(productId))
+                self.actionBridge.handleActionWithDeprecatedHandler(.refundRequestStarted(productId))
+
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.customerCenterActionHandler?(.refundRequestCompleted(status))
+                self.actionBridge.handleActionWithDeprecatedHandler(.refundRequestCompleted(status))
             } catch {
                 self.refundRequestStatus = .error
-                self.customerCenterActionHandler?(.refundRequestCompleted(.error))
+                self.actionBridge.handleActionWithDeprecatedHandler(.refundRequestCompleted(.error))
             }
         case .changePlans, .cancel:
             do {
-                self.customerCenterActionHandler?(.showingManageSubscriptions)
+                self.actionBridge.handleActionWithDeprecatedHandler(.showingManageSubscriptions)
+
                 try await purchasesProvider.showManageSubscriptions()
             } catch {
                 self.state = .error(error)

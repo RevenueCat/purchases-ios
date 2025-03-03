@@ -36,6 +36,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
+    private let actionBridge: CustomerCenterActionBridge
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
                      customerCenterActionHandler: CustomerCenterActionHandler?) {
@@ -53,6 +54,7 @@ class FeedbackSurveyViewModel: ObservableObject {
         self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
     }
 
     func handleAction(
@@ -64,7 +66,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     ) async {
         trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
 
-        self.customerCenterActionHandler?(.feedbackSurveyCompleted(option.id))
+        self.actionBridge.handleActionWithDeprecatedHandler(.feedbackSurveyCompleted(option.id))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {

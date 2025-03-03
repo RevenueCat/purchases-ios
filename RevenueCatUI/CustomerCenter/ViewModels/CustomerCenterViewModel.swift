@@ -74,7 +74,13 @@ import RevenueCat
     }
 
     private let currentVersionFetcher: CurrentVersionFetcher
+
+    /// The action handler for Customer Center actions. This property is deprecated.
+    @available(*, deprecated, message: "Use view modifiers like .onCustomerCenterRestoreStarted() instead")
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
+
+    /// The action bridge that handles both the deprecated handler and the new preference system
+    internal let actionBridge: CustomerCenterActionBridge
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
@@ -90,6 +96,7 @@ import RevenueCat
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
         self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
@@ -119,14 +126,17 @@ import RevenueCat
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.customerCenterActionHandler?(.restoreStarted)
+        self.actionBridge.handleActionWithDeprecatedHandler(.restoreStarted)
+
         do {
             let customerInfo = try await purchasesProvider.restorePurchases()
-            self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
+            self.actionBridge.handleActionWithDeprecatedHandler(.restoreCompleted(customerInfo))
+
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
             return hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
-            self.customerCenterActionHandler?(.restoreFailed(error))
+            self.actionBridge.handleActionWithDeprecatedHandler(.restoreFailed(error))
+
             return .purchasesNotFound
         }
     }

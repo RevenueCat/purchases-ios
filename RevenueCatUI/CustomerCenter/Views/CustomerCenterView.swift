@@ -98,6 +98,7 @@ public struct CustomerCenterView: View {
 #endif
                 self.trackImpression()
             }
+            .modifier(CustomerCenterActionPreferenceConnector(viewModel: viewModel))
     }
 
 }
