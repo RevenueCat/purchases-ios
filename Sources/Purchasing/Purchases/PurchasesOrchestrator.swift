@@ -675,16 +675,17 @@ final class PurchasesOrchestrator {
                 throw error
             }
 
-            let purchasesError: PurchasesError = switch error {
-            case let purchasesError as PurchasesError:
-                purchasesError
+            let purchasesError: PurchasesError
+            switch error {
+            case let pError as PurchasesError:
+                purchasesError = pError
             case let signedDataError as PromotionalOffer.SignedData.Error:
-                ErrorUtils.invalidPromotionalOfferError(error: signedDataError,
+                purchasesError = ErrorUtils.invalidPromotionalOfferError(error: signedDataError,
                                                         message: signedDataError.localizedDescription)
             case let backendError as BackendError:
-                backendError.asPurchasesError
+                purchasesError = backendError.asPurchasesError
             default:
-                ErrorUtils.purchasesError(withStoreKitError: error)
+                purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
             }
 
             self.trackPurchaseEventIfNeeded(startTime,
