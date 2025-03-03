@@ -75,8 +75,6 @@ import RevenueCat
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
-    /// The action handler for Customer Center actions. This property is deprecated.
-    @available(*, deprecated, message: "Use view modifiers like .onCustomerCenterRestoreStarted() instead")
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
     /// The action bridge that handles both the deprecated handler and the new preference system
