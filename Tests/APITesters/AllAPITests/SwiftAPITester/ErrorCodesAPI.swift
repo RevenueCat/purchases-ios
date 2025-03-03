@@ -60,3 +60,8 @@ func checkPurchasesErrorCodeEnums() {
         fatalError()
     }
 }
+
+var publicError: PublicError!
+func checkPublicError() {
+    var errorCode: ErrorCode? = publicError.asErrorCode
+}
