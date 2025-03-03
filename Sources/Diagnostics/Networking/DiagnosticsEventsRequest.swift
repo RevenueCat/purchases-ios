@@ -102,6 +102,14 @@ private extension DiagnosticsEvent.DiagnosticsPropertyKey {
             return "requested_product_ids"
         case .notFoundProductIdsKey:
             return "not_found_product_ids"
+        case .productIdKey:
+            return "product_id"
+        case .promotionalOfferIdKey:
+            return "promotional_offer_id"
+        case .winBackOfferAppliedKey:
+            return "win_back_offer_applied"
+        case .purchaseResultKey:
+            return "purchase_result"
         }
     }
 
