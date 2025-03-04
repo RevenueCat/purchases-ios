@@ -86,7 +86,7 @@ class ButtonComponentViewModel {
         switch self.action {
         case .restorePurchases:
             return true
-        case .navigateTo(destination: let destination):
+        case .navigateTo:
             return false
         case .navigateBack:
             return false
