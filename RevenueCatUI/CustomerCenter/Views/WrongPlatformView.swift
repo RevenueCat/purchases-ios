@@ -102,7 +102,7 @@ struct WrongPlatformView: View {
                 }
             }
         }
-        .dismissCircleButtonToolbar()
+        .dismissCircleButtonToolbarIfNeeded()
         .applyIfLet(screen, apply: { view, screen in
             view.navigationTitle(screen.title).navigationBarTitleDisplayMode(.inline)
         })

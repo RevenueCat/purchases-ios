@@ -151,7 +151,7 @@ struct ManageSubscriptionsView: View {
                 }
             }
         }
-        .dismissCircleButtonToolbar()
+        .dismissCircleButtonToolbarIfNeeded()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
