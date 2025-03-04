@@ -20,7 +20,7 @@ import XCTest
 class UIConfigDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesPaywallData() throws {
-        let uiConfig: UIConfig = try self.decodeFixture("UIConfig")
+        let uiConfig: UIConfig = try Self.decodeFixture("UIConfig")
 
         expect(uiConfig.app.colors).to(equal([
             "primary": .init(light: .hex("#ffcc00")),

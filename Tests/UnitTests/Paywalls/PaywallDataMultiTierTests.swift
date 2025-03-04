@@ -24,7 +24,7 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.paywall = try self.decodeFixture("PaywallData-multitier1")
+        self.paywall = try Self.decodeFixture("PaywallData-multitier1")
     }
 
     func testConfiguration() throws {

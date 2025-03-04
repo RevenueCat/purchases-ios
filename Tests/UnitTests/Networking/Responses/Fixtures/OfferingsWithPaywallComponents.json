@@ -188,6 +188,80 @@
                     }
                 }
             }
+        },
+        {
+            "description": "Offering with only draft paywall",
+            "identifier": "only_draft_paywall_components",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                }
+            ],
+            "draft_paywall_components": {
+                "default_locale": "en_US",
+                "revision": 4,
+                "template_name": "newComponentsTEST",
+                "asset_base_url": "https://assets.pawwalls.com",
+                "components_localizations": [],
+                "components_config": {
+                    "base": {
+                        "background": {
+                            "type": "color",
+                            "value": {
+                                "light": {
+                                    "type": "hex",
+                                    "value": "#110000ff"
+                                }
+                            }
+                        },
+                        "stack": {
+                            "type": "stack",
+                            "components": [
+                                {
+                                    "type": "text",
+                                    "fontWeight": "bold",
+                                    "text_lid": "title",
+                                    "font_size": 24,
+                                    "color": {
+                                        "light": {
+                                            "type": "hex",
+                                            "value": "#FFFFFFff"
+                                        }
+                                    },
+                                    "size": {
+                                        "width": {
+                                            "type": "fit"
+                                        },
+                                        "height": {
+                                            "type": "fill"
+                                        }
+                                    },
+                                    "horizontal_alignment": "center",
+                                    "margin": {},
+                                    "padding": {}
+                                }
+                            ],
+                            "margin": {},
+                            "padding": {},
+                            "size": {
+                                "width": {
+                                    "type": "fill"
+                                },
+                                "height": {
+                                    "type": "fill"
+                                }
+                            },
+                            "dimension": {
+                                "type": "vertical",
+                                "alignment": "leading",
+                                "distribution": "end"
+                            },
+                            "spacing": 0
+                        }
+                    }
+                }
+            }
         }
     ]
 }
