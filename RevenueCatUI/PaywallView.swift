@@ -95,8 +95,8 @@ public struct PaywallView: View {
     /// - Parameter fonts: An optional `PaywallFontProvider`.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     ///
-    /// - Note: if `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load due to invalid data,
-    /// a default paywall will be displayed.
+    /// - Note: if `offering` does not have a current paywall (`hasPaywall == false`), or it fails to load
+    /// due to invalid data, a default paywall will be displayed.
     /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     public init(
