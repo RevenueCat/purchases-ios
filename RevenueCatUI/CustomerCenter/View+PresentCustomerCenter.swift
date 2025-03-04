@@ -25,19 +25,36 @@ import SwiftUI
 #endif
 extension View {
 
-    /// Presents the ``CustomerCenter``.
-    /// Example:
+    /// Presents the ``CustomerCenter`` as a modal or sheet.
+    ///
+    /// This modifier allows you to display the Customer Center, which provides support and account-related actions.
+    ///
+    /// ## Example Usage:
     /// ```swift
-    /// var body: some View {
-    ///    YourApp()
-    ///      .presentCustomerCenter()
+    /// struct ContentView: View {
+    ///     @State private var isCustomerCenterPresented = false
+    ///
+    ///     var body: some View {
+    ///         Button("Open Customer Center") {
+    ///             isCustomerCenterPresented = true
+    ///         }
+    ///         .presentCustomerCenter(
+    ///             isPresented: $isCustomerCenterPresented
+    ///         )
+    ///     }
     /// }
     /// ```
-    /// - Parameter isPresented: Binding indicating whether the customer center should be displayed
-    /// - Parameter onDismiss: Callback executed when the customer center wants to be dismissed.
-    /// Make sure you stop presenting the customer center when this is called
-    /// - Parameter customerCenterActionHandler: Allows to listen to certain events during the customer center flow.
-    /// - Parameter presentationMode: The desired presentation mode of the customer center. Defaults to `.sheet`.
+    ///
+    /// - Parameters:
+    ///   - isPresented: A binding that determines whether the Customer Center is visible.
+    ///   - customerCenterActionHandler: An optional handler for responding to events within the Customer Center.
+    ///   - presentationMode: Specifies how the Customer Center should be presented (e.g., as a sheet or fullscreen).
+    ///   Defaults to `.default`.
+    ///   - onDismiss: A callback triggered when either the sheet / fullscreen present is dismissed
+    ///     Ensure you set `isPresented = false` when this is called.
+    ///   - onClose: A callback that replaces environment dismiss
+    ///
+    /// - Returns: A view modified to support presenting the Customer Center.
     public func presentCustomerCenter(
         isPresented: Binding<Bool>,
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
@@ -45,16 +62,17 @@ extension View {
         onDismiss: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) -> some View {
-        return self.modifier(PresentingCustomerCenterModifier(
-            isPresented: isPresented,
-            onDismiss: onDismiss,
-            onClose: onClose,
-            myAppPurchaseLogic: nil,
-            customerCenterActionHandler: customerCenterActionHandler,
-            presentationMode: presentationMode
-        ))
+        self.modifier(
+            PresentingCustomerCenterModifier(
+                isPresented: isPresented,
+                onDismiss: onDismiss,
+                onClose: onClose,
+                myAppPurchaseLogic: nil,
+                customerCenterActionHandler: customerCenterActionHandler,
+                presentationMode: presentationMode
+            )
+        )
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
