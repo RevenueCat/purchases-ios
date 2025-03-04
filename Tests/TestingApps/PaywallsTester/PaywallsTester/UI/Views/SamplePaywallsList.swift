@@ -164,6 +164,8 @@ struct SamplePaywallsList: View {
 
             #if os(iOS)
             Section("Customer Center") {
+                CustomerCenterView(navigationOptions: CustomerCenterNavigationOptions(shouldShowCloseButton: true))
+
                 NavigationLink {
                     CustomerCenterView(
                         customerCenterActionHandler: handleCustomerCenterAction,
@@ -210,15 +212,13 @@ struct SamplePaywallsList: View {
         .presentCustomerCenter(
             isPresented: self.$presentingCustomerCenterSheet,
             customerCenterActionHandler: self.handleCustomerCenterAction,
-            onDismiss: { self.presentingCustomerCenterFullScreen = false },
-            onClose: { self.presentingCustomerCenterFullScreen = false }
+            onDismiss: { self.presentingCustomerCenterFullScreen = false }
         )
         .presentCustomerCenter(
             isPresented: self.$presentingCustomerCenterFullScreen,
             customerCenterActionHandler: self.handleCustomerCenterAction,
             presentationMode: .fullScreen,
-            onDismiss: { self.presentingCustomerCenterFullScreen = false },
-            onClose: { self.presentingCustomerCenterFullScreen = false }
+            onDismiss: { self.presentingCustomerCenterFullScreen = false }
         )
         #endif
     }
