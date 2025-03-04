@@ -52,7 +52,6 @@ extension View {
     ///   Defaults to `.default`.
     ///   - onDismiss: A callback triggered when either the sheet / fullscreen present is dismissed
     ///     Ensure you set `isPresented = false` when this is called.
-    ///   - onClose: A callback that replaces environment dismiss
     ///
     /// - Returns: A view modified to support presenting the Customer Center.
     public func presentCustomerCenter(

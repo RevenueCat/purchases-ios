@@ -34,9 +34,9 @@ public struct CustomerCenterNavigationOptions {
     /// - `false`: Does not display a close button, avoiding redundancy with the back button in a stacked navigation.
     public let shouldShowCloseButton: Bool
 
-    /// A custom handler to execute when dismissing the Customer Center.
+    /// A custom handler to execute when closing the Customer Center from the close button in the navigation bar.
     ///
-    /// `dismissHandler` allows developers to define a custom method for handling the dismissal of
+    /// `onCloseHandler` allows developers to define a custom method for handling the dismissal of
     /// the Customer Center. This is useful in cases where the default SwiftUI dismissal (`@Environment(\.dismiss)`)
     /// is insufficient, such as when integrating with hybrid frameworks.
     ///
@@ -45,7 +45,7 @@ public struct CustomerCenterNavigationOptions {
     ///
     /// - Example Usage in SwiftUI:
     /// ```swift
-    /// let options = CustomerCenterNavigationOptions(dismissHandler: {
+    /// let options = CustomerCenterNavigationOptions(onCloseHandler: {
     ///     dismiss()
     /// })
     /// ```
