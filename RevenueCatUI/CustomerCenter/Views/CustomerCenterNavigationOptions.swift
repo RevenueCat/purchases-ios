@@ -50,7 +50,6 @@ public struct CustomerCenterNavigationOptions {
     /// })
     /// ```
     ///
-    ///
     public let onCloseHandler: (() -> Void)?
 
     /// Initializes a new instance of `CustomerCenterNavigationOptions`.
@@ -81,5 +80,6 @@ public extension CustomerCenterNavigationOptions {
     /// - `usesNavigationStack`: `true` (default to modern navigation).
     /// - `usesExistingNavigation`: `false` (wraps content in a new navigation stack by default).
     /// - `shouldShowCloseButton`: `true` (displays a close button by default).
+    /// - `onCloseHandler`: `nil` (environment dismiss is used instead when showing the close button).
     static let `default` = CustomerCenterNavigationOptions()
 }
