@@ -209,17 +209,17 @@ struct SamplePaywallsList: View {
         #if os(iOS)
         .presentCustomerCenter(
             isPresented: self.$presentingCustomerCenterSheet,
-            customerCenterActionHandler: self.handleCustomerCenterAction
-        ) {
-            self.presentingCustomerCenterSheet = false
-        }
+            customerCenterActionHandler: self.handleCustomerCenterAction,
+            onDismiss: { self.presentingCustomerCenterFullScreen = false },
+            onClose: { self.presentingCustomerCenterFullScreen = false }
+        )
         .presentCustomerCenter(
             isPresented: self.$presentingCustomerCenterFullScreen,
             customerCenterActionHandler: self.handleCustomerCenterAction,
-            presentationMode: .fullScreen
-        ) {
-            self.presentingCustomerCenterFullScreen = false
-        }
+            presentationMode: .fullScreen,
+            onDismiss: { self.presentingCustomerCenterFullScreen = false },
+            onClose: { self.presentingCustomerCenterFullScreen = false }
+        )
         #endif
     }
 

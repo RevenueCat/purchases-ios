@@ -42,11 +42,13 @@ extension View {
         isPresented: Binding<Bool>,
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         presentationMode: CustomerCenterPresentationMode = .default,
-        onDismiss: (() -> Void)? = nil
+        onDismiss: (() -> Void)? = nil,
+        onClose: (() -> Void)? = nil
     ) -> some View {
         return self.modifier(PresentingCustomerCenterModifier(
             isPresented: isPresented,
             onDismiss: onDismiss,
+            onClose: onClose,
             myAppPurchaseLogic: nil,
             customerCenterActionHandler: customerCenterActionHandler,
             presentationMode: presentationMode
@@ -63,11 +65,17 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
 
     let customerCenterActionHandler: CustomerCenterActionHandler?
     let presentationMode: CustomerCenterPresentationMode
+
+    /// The closure to execute when dismissing the sheet / fullScreen present
     let onDismiss: (() -> Void)?
+
+    /// The closure to execute when tapping on the close button
+    let onClose: (() -> Void)?
 
     init(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)?,
+        onClose: (() -> Void)?,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
         customerCenterActionHandler: CustomerCenterActionHandler?,
         presentationMode: CustomerCenterPresentationMode,
@@ -76,6 +84,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self._isPresented = isPresented
         self.presentationMode = presentationMode
         self.onDismiss = onDismiss
+        self.onClose = onClose
         self.customerCenterActionHandler = customerCenterActionHandler
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
@@ -93,20 +102,41 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             switch presentationMode {
             case .sheet:
                 content
-                    .sheet(isPresented: self.$isPresented, onDismiss: self.onDismiss) {
-                        self.customerCenterView()
+                    .sheet(isPresented: self.$isPresented, onDismiss: onDismiss) {
+                        self.customerCenterView(
+                            navigationOptions: CustomerCenterNavigationOptions(
+                                usesExistingNavigation: false,
+                                shouldShowCloseButton: true,
+                                onCloseHandler: onClose
+                            )
+                        )
                     }
+
             case .fullScreen:
                 content
-                    .fullScreenCover(isPresented: self.$isPresented, onDismiss: self.onDismiss) {
-                        self.customerCenterView()
+                    .fullScreenCover(isPresented: self.$isPresented, onDismiss: onDismiss) {
+                        self.customerCenterView(
+                            navigationOptions: CustomerCenterNavigationOptions(
+                                usesExistingNavigation: false,
+                                shouldShowCloseButton: true,
+                                onCloseHandler: onClose
+                            )
+                        )
                     }
+
+            @unknown default:
+                content
             }
         }
     }
 
-    private func customerCenterView() -> some View {
-        CustomerCenterView(customerCenterActionHandler: self.customerCenterActionHandler)
+    private func customerCenterView(
+        navigationOptions: CustomerCenterNavigationOptions
+    ) -> some View {
+        CustomerCenterView(
+            customerCenterActionHandler: self.customerCenterActionHandler,
+            navigationOptions: navigationOptions
+        )
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
