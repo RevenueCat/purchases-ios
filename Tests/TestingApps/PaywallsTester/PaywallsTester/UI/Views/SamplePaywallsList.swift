@@ -164,8 +164,6 @@ struct SamplePaywallsList: View {
 
             #if os(iOS)
             Section("Customer Center") {
-                CustomerCenterView(navigationOptions: CustomerCenterNavigationOptions(shouldShowCloseButton: true))
-
                 NavigationLink {
                     CustomerCenterView(
                         customerCenterActionHandler: handleCustomerCenterAction,
