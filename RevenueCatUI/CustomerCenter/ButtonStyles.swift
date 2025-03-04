@@ -61,7 +61,11 @@ struct DismissCircleButton: View {
 
     var body: some View {
         Button {
-            dismiss()
+            if let customDismiss {
+                customDismiss()
+            } else {
+                self.dismiss()
+            }
         } label: {
             Circle()
                 .fill(Color(uiColor: .secondarySystemFill))
