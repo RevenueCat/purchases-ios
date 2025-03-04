@@ -77,6 +77,13 @@ import Foundation
     public let paywallComponents: PaywallComponents?
 
     /**
+     Whether the offering contains a paywall.
+     */
+    public var hasPaywall: Bool {
+        return paywall != nil || paywallComponents != nil
+    }
+
+    /**
      Draft paywall components configuration defined in RevenueCat dashboard.
      */
     @_spi(Internal) public let draftPaywallComponents: PaywallComponents?
