@@ -82,6 +82,17 @@ class ButtonComponentViewModel {
         }
     }
 
+    var shouldDisableWithPurchaseHandlerAction: Bool {
+        switch self.action {
+        case .restorePurchases:
+            return true
+        case .navigateTo(destination: let destination):
+            return false
+        case .navigateBack:
+            return false
+        }
+    }
+
 }
 
 fileprivate extension PaywallComponent.LocalizationDictionary {

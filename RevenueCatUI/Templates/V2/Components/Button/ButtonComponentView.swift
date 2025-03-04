@@ -34,19 +34,30 @@ struct ButtonComponentView: View {
         self.onDismiss = onDismiss
     }
 
+    var showActivityIndicatorOverContent: Bool {
+        self.viewModel.shouldDisableWithPurchaseHandlerAction && self.purchaseHandler.actionInProgress
+    }
+
     var body: some View {
         AsyncButton {
             try await performAction()
         } label: {
-            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss)
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss,
+                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+            )
         }
+        .applyIf(self.viewModel.shouldDisableWithPurchaseHandlerAction, apply: { view in
+            view.disabled(self.purchaseHandler.actionInProgress)
+        })
         #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
-            SafariView(url: inAppBrowserURL!)
+        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+            SafariView(url: self.inAppBrowserURL!)
         }
         #if os(iOS)
-        .presentCustomerCenter(isPresented: $showCustomerCenter, onDismiss: {
-            showCustomerCenter = false
+        .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
+            self.showCustomerCenter = false
         })
         #endif
         #endif
