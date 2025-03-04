@@ -114,23 +114,13 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             case .sheet:
                 content
                     .sheet(isPresented: self.$isPresented, onDismiss: onDismiss) {
-                        self.customerCenterView(
-                            navigationOptions: CustomerCenterNavigationOptions(
-                                usesExistingNavigation: false,
-                                shouldShowCloseButton: true
-                            )
-                        )
+                        self.customerCenterView()
                     }
 
             case .fullScreen:
                 content
                     .fullScreenCover(isPresented: self.$isPresented, onDismiss: onDismiss) {
-                        self.customerCenterView(
-                            navigationOptions: CustomerCenterNavigationOptions(
-                                usesExistingNavigation: false,
-                                shouldShowCloseButton: true
-                            )
-                        )
+                        self.customerCenterView()
                     }
 
             @unknown default:
@@ -139,12 +129,9 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         }
     }
 
-    private func customerCenterView(
-        navigationOptions: CustomerCenterNavigationOptions
-    ) -> some View {
+    private func customerCenterView() -> some View {
         CustomerCenterView(
-            customerCenterActionHandler: self.customerCenterActionHandler,
-            navigationOptions: navigationOptions
+            customerCenterActionHandler: self.customerCenterActionHandler
         )
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
