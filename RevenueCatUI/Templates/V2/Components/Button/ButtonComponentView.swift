@@ -34,7 +34,7 @@ struct ButtonComponentView: View {
         self.onDismiss = onDismiss
     }
 
-    // Show activity indicator only if restore action in purchase handler
+    /// Show activity indicator only if restore action in purchase handler
     var showActivityIndicatorOverContent: Bool {
         guard self.viewModel.isRestoreAction,
                 let actionType = self.purchaseHandler.actionTypeInProgress else {
@@ -49,6 +49,11 @@ struct ButtonComponentView: View {
         }
     }
 
+    /// Disable for any type of purchase handler action
+    var shouldBeDisabled: Bool {
+        return self.viewModel.isRestoreAction && self.purchaseHandler.actionInProgress
+    }
+
     var body: some View {
         AsyncButton {
             try await performAction()
@@ -59,11 +64,10 @@ struct ButtonComponentView: View {
                 showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
             )
         }
-        // Disable for any type of purchase handler action
-        .applyIf(self.viewModel.isRestoreAction, apply: { view in
+        .applyIf(self.shouldBeDisabled, apply: { view in
             view
-                .disabled(self.purchaseHandler.actionInProgress)
-                .opacity(0.5)
+                .disabled(true)
+                .opacity(0.35)
         })
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {

@@ -35,6 +35,25 @@ struct PurchaseButtonComponentView: View {
         self.viewModel = viewModel
     }
 
+    /// Show activity indicator only if purchase action in purchase handler
+    var showActivityIndicatorOverContent: Bool {
+        guard let actionType = self.purchaseHandler.actionTypeInProgress else {
+            return false
+        }
+
+        switch actionType {
+        case .purchase:
+            return true
+        case .restore:
+            return false
+        }
+    }
+
+    /// Disable for any type of purchase handler action
+    var shouldBeDisabled: Bool {
+        return self.purchaseHandler.actionInProgress
+    }
+
     var body: some View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
@@ -53,10 +72,13 @@ struct PurchaseButtonComponentView: View {
             StackComponentView(
                 viewModel: viewModel.stackViewModel,
                 onDismiss: {},
-                showActivityIndicatorOverContent: self.purchaseHandler.actionInProgress
+                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
             )
         }
-        .disabled(self.purchaseHandler.actionInProgress)
+        .applyIf(self.shouldBeDisabled) {
+            $0.disabled(true)
+                .opacity(0.35)
+        }
     }
 
 }
