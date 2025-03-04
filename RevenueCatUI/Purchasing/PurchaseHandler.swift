@@ -21,6 +21,13 @@ import SwiftUI
 // @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
 
+    enum ActionType {
+
+        case purchase
+        case restore
+
+    }
+
     private let purchases: PaywallPurchasesType
 
     /// Where responsibiliy for completing purchases lies
@@ -37,7 +44,12 @@ final class PurchaseHandler: ObservableObject {
 
     /// Whether a purchase or restore is currently in progress
     @Published
-    fileprivate(set) var actionInProgress: Bool = false
+    fileprivate(set) var actionTypeInProgress: ActionType?
+
+    /// Whether a purchase or restore is currently in progress
+    var actionInProgress: Bool {
+        return actionTypeInProgress != nil
+    }
 
     /// Whether a purchase was successfully completed.
     @Published
@@ -159,10 +171,10 @@ extension PurchaseHandler {
 
         defer {
             self.packageBeingPurchased = nil
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
-        self.startAction()
+        self.startAction(.purchase)
 
         do {
             let result = try await self.purchases.purchase(package: package)
@@ -196,10 +208,10 @@ extension PurchaseHandler {
 
         defer {
             self.restoreInProgress = false
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
-        self.startAction()
+        self.startAction(.purchase)
 
         let result = await externalPurchaseMethod(package)
 
@@ -250,10 +262,10 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = nil
         self.restoreError = nil
 
-        self.startAction()
+        self.startAction(.restore)
         defer {
             self.restoreInProgress = false
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
         do {
@@ -277,14 +289,14 @@ extension PurchaseHandler {
 
         defer {
             self.restoreInProgress = false
-            self.actionInProgress = false
+            self.actionTypeInProgress = nil
         }
 
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
 
-        self.startAction()
+        self.startAction(.restore)
 
         let result = await externalRestoreMethod()
 
@@ -336,9 +348,9 @@ extension PurchaseHandler {
         return true
     }
 
-    private func startAction() {
+    private func startAction(_ type: PurchaseHandler.ActionType) {
         withAnimation(Constants.fastAnimation) {
-            self.actionInProgress = true
+            self.actionTypeInProgress = type
         }
     }
 
