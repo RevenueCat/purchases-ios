@@ -21,6 +21,13 @@ import SwiftUI
 // @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
 
+    enum ActionType {
+
+        case purchase
+        case restore
+
+    }
+
     private let purchases: PaywallPurchasesType
 
     /// Where responsibiliy for completing purchases lies
@@ -37,7 +44,12 @@ final class PurchaseHandler: ObservableObject {
 
     /// Whether a purchase or restore is currently in progress
     @Published
-    fileprivate(set) var actionInProgress: Bool = false
+    fileprivate(set) var actionTypeInProgress: ActionType? = nil
+
+    /// Whether a purchase or restore is currently in progress
+    var actionInProgress: Bool {
+        return actionTypeInProgress != nil
+    }
 
     /// Whether a purchase was successfully completed.
     @Published

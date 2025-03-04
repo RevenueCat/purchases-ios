@@ -82,7 +82,7 @@ class ButtonComponentViewModel {
         }
     }
 
-    var shouldDisableWithPurchaseHandlerAction: Bool {
+    var isRestoreAction: Bool {
         switch self.action {
         case .restorePurchases:
             return true
