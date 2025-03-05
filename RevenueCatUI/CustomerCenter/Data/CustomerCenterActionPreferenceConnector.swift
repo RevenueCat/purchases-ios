@@ -23,7 +23,7 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct CustomerCenterActionPreferenceConnector: ViewModifier {
 
-    @ObservedObject var viewModel: CustomerCenterViewModel
+    let actionBridge: CustomerCenterActionBridge
 
     // State to track preferences that should be set
     @State private var restoreStarted: Bool = false
@@ -38,13 +38,13 @@ struct CustomerCenterActionPreferenceConnector: ViewModifier {
         content
             .onAppear {
                 // Set up direct binding to the state variables
-                viewModel.actionBridge.setRestoreStarted = { restoreStarted = true }
-                viewModel.actionBridge.setRestoreFailed = { restoreFailed = $0 as NSError }
-                viewModel.actionBridge.setRestoreCompleted = { restoreCompleted = $0 }
-                viewModel.actionBridge.setShowingManageSubscriptions = { showingManageSubscriptions = true }
-                viewModel.actionBridge.setRefundRequestStarted = { refundRequestStarted = $0 }
-                viewModel.actionBridge.setRefundRequestCompleted = { refundRequestCompleted = $0 }
-                viewModel.actionBridge.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
+                actionBridge.setRestoreStarted = { restoreStarted = true }
+                actionBridge.setRestoreFailed = { restoreFailed = $0 as NSError }
+                actionBridge.setRestoreCompleted = { restoreCompleted = $0 }
+                actionBridge.setShowingManageSubscriptions = { showingManageSubscriptions = true }
+                actionBridge.setRefundRequestStarted = { refundRequestStarted = $0 }
+                actionBridge.setRefundRequestCompleted = { refundRequestCompleted = $0 }
+                actionBridge.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
             }
             // Apply preferences based on state
             .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,

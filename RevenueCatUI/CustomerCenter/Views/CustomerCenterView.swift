@@ -98,7 +98,6 @@ public struct CustomerCenterView: View {
 #endif
                 self.trackImpression()
             }
-            .modifier(CustomerCenterActionPreferenceConnector(viewModel: viewModel))
     }
 
 }
@@ -111,28 +110,31 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     var content: some View {
-        switch self.viewModel.state {
-        case .error:
-            ErrorView()
-                .environment(\.customerCenterPresentationMode, self.mode)
-                .environment(\.navigationOptions, self.navigationOptions)
-                .dismissCircleButtonToolbarIfNeeded()
-
-        case .notLoaded:
-            TintedProgressView()
-
-        case .success:
-            if let configuration = self.viewModel.configuration {
-                destinationView(configuration: configuration)
-                    .environment(\.appearance, configuration.appearance)
-                    .environment(\.localization, configuration.localization)
+        Group {
+            switch self.viewModel.state {
+            case .error:
+                ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
                     .environment(\.navigationOptions, self.navigationOptions)
-                    .environment(\.supportInformation, configuration.support)
-            } else {
+                    .dismissCircleButtonToolbarIfNeeded()
+
+            case .notLoaded:
                 TintedProgressView()
+
+            case .success:
+                if let configuration = self.viewModel.configuration {
+                    destinationView(configuration: configuration)
+                        .environment(\.appearance, configuration.appearance)
+                        .environment(\.localization, configuration.localization)
+                        .environment(\.customerCenterPresentationMode, self.mode)
+                        .environment(\.navigationOptions, self.navigationOptions)
+                        .environment(\.supportInformation, configuration.support)
+                } else {
+                    TintedProgressView()
+                }
             }
         }
+        .modifier(CustomerCenterActionPreferenceConnector(viewModel: viewModel))
     }
 
     @ViewBuilder
