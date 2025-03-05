@@ -16,7 +16,7 @@ import XCTest
 
 class BaseHTTPResponseTest: TestCase {
 
-    func decodeFixture<T: HTTPResponseBody>(
+    static func decodeFixture<T: HTTPResponseBody>(
         _ name: String,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -25,7 +25,7 @@ class BaseHTTPResponseTest: TestCase {
     }
 
     @_disfavoredOverload
-    func decodeFixture<T: Decodable>(
+    static func decodeFixture<T: Decodable>(
         _ name: String,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -33,7 +33,7 @@ class BaseHTTPResponseTest: TestCase {
         return try T.create(with: self.data(for: name, file: file, line: line))
     }
 
-    private func data(
+    private static func data(
         for fileName: String,
         file: StaticString,
         line: UInt
@@ -42,7 +42,7 @@ class BaseHTTPResponseTest: TestCase {
             Bundle(for: BundleToken.self).url(forResource: fileName,
                                               withExtension: "json",
                                               subdirectory: "Fixtures"),
-            "Could not find file with name: '\(name).json'",
+            "Could not find file with name: '\(fileName).json'",
             file: file, line: line
         )
         return try XCTUnwrap(Data(contentsOf: url), file: file, line: line)

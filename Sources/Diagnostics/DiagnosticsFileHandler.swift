@@ -16,7 +16,7 @@ import Foundation
 protocol DiagnosticsFileHandlerType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func getEntries() async -> [DiagnosticsEvent]
+    func getEntries() async -> [DiagnosticsEvent?]
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async
@@ -59,10 +59,10 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         await self.fileHandler.append(line: jsonString)
     }
 
-    func getEntries() async -> [DiagnosticsEvent] {
+    func getEntries() async -> [DiagnosticsEvent?] {
         do {
             return try await self.fileHandler.readLines()
-                .compactMap { try? JSONDecoder.default.decode(jsonData: $0.asData) }
+                .map { try? JSONDecoder.default.decode(jsonData: $0.asData) }
                 .extractValues()
         } catch {
             Logger.error(Strings.diagnostics.error_fetching_events(error: error))

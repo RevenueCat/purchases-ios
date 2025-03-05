@@ -164,12 +164,35 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(result).to(beTrue())
     }
 
+    // MARK: - Invalid entries
+
+    func testGetEntriesWithInvalidLine() async throws {
+        await self.fileHandler.append(line: Self.invalidEntryLine)
+        await self.fileHandler.append(line: Self.line1)
+        await self.fileHandler.append(line: Self.line2)
+
+        let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                        timestamp: Date(millisecondsSince1970: 1712235359000))
+
+        let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                        timestamp: Date(millisecondsSince1970: 1712238959000))
+
+        let entries = await self.handler.getEntries()
+        expect(entries[0]).to(beNil())
+        expect(entries[1]).to(equal(content1))
+        expect(entries[2]).to(equal(content2))
+    }
+
 }
 
 // MARK: - Private
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsFileHandlerTests {
+
+    static let invalidEntryLine = "This is an invalid diagnostics event entry"
 
     static let line1 = """
     {

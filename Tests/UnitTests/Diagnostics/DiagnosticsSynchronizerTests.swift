@@ -177,6 +177,19 @@ class DiagnosticsSynchronizerTests: TestCase {
         expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
     }
 
+    func testSyncMultipleEventsWithInvalidEvent() async throws {
+        let event1 = await self.storeEvent()
+        await fileHandler.append(line: "Invalid entry line")
+        let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)
+
+        try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == true
+        expect(self.api.invokedPostDiagnosticsEventsParameters) == [[ event1, event2 ]]
+
+        await self.verifyEmptyStore()
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
