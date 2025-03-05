@@ -47,19 +47,19 @@ struct CustomerCenterActionPreferenceConnector: ViewModifier {
                 viewModel.actionBridge.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
             }
             // Apply preferences based on state
-            .preference(key: CustomerCenterRestoreStartedPreferenceKey.self,
+            .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
                         value: restoreStarted)
-            .preference(key: CustomerCenterRestoreFailedPreferenceKey.self,
+            .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
                         value: restoreFailed as NSError?)
-            .preference(key: CustomerCenterRestoreCompletedPreferenceKey.self,
+            .preference(key: CustomerCenterView.RestoreCompletedPreferenceKey.self,
                         value: restoreCompleted)
-            .preference(key: CustomerCenterShowingManageSubscriptionsPreferenceKey.self,
+            .preference(key: CustomerCenterView.ShowingManageSubscriptionsPreferenceKey.self,
                         value: showingManageSubscriptions)
-            .preference(key: CustomerCenterRefundRequestStartedPreferenceKey.self,
+            .preference(key: CustomerCenterView.RefundRequestStartedPreferenceKey.self,
                         value: refundRequestStarted)
-            .preference(key: CustomerCenterRefundRequestCompletedPreferenceKey.self,
+            .preference(key: CustomerCenterView.RefundRequestCompletedPreferenceKey.self,
                         value: refundRequestCompleted)
-            .preference(key: CustomerCenterFeedbackSurveyCompletedPreferenceKey.self,
+            .preference(key: CustomerCenterView.FeedbackSurveyCompletedPreferenceKey.self,
                         value: feedbackSurveyCompleted)
     }
 }

@@ -75,8 +75,6 @@ import RevenueCat
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
-    internal let customerCenterActionHandler: CustomerCenterActionHandler?
-
     /// The action bridge that handles both the deprecated handler and the new preference system
     internal let actionBridge: CustomerCenterActionBridge
 
@@ -93,7 +91,6 @@ import RevenueCat
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
-        self.customerCenterActionHandler = customerCenterActionHandler
         self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities

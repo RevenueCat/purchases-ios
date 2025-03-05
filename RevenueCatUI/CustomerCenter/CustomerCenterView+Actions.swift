@@ -98,7 +98,7 @@ extension CustomerCenterView {
 
     // MARK: - View Modifiers
 
-    private struct OnRestoreStartedModifier: ViewModifier {
+    fileprivate struct OnRestoreStartedModifier: ViewModifier {
         let handler: RestoreStartedHandler
 
         func body(content: Content) -> some View {
@@ -111,7 +111,7 @@ extension CustomerCenterView {
         }
     }
 
-    private struct OnRestoreFailedModifier: ViewModifier {
+    fileprivate struct OnRestoreFailedModifier: ViewModifier {
         let handler: RestoreFailedHandler
 
         func body(content: Content) -> some View {
@@ -124,7 +124,7 @@ extension CustomerCenterView {
         }
     }
 
-    private struct OnRestoreCompletedModifier: ViewModifier {
+    fileprivate struct OnRestoreCompletedModifier: ViewModifier {
         let handler: RestoreCompletedHandler
 
         func body(content: Content) -> some View {
@@ -137,7 +137,7 @@ extension CustomerCenterView {
         }
     }
 
-    private struct OnShowingManageSubscriptionsModifier: ViewModifier {
+    fileprivate struct OnShowingManageSubscriptionsModifier: ViewModifier {
         let handler: ShowingManageSubscriptionsHandler
 
         func body(content: Content) -> some View {
@@ -150,7 +150,7 @@ extension CustomerCenterView {
         }
     }
 
-    private struct OnRefundRequestStartedModifier: ViewModifier {
+    fileprivate struct OnRefundRequestStartedModifier: ViewModifier {
         let handler: RefundRequestStartedHandler
 
         func body(content: Content) -> some View {
@@ -163,7 +163,7 @@ extension CustomerCenterView {
         }
     }
 
-    private struct OnRefundRequestCompletedModifier: ViewModifier {
+    fileprivate struct OnRefundRequestCompletedModifier: ViewModifier {
         let handler: RefundRequestCompletedHandler
 
         func body(content: Content) -> some View {
@@ -176,7 +176,7 @@ extension CustomerCenterView {
         }
     }
 
-    private struct OnFeedbackSurveyCompletedModifier: ViewModifier {
+    fileprivate struct OnFeedbackSurveyCompletedModifier: ViewModifier {
         let handler: FeedbackSurveyCompletedHandler
 
         func body(content: Content) -> some View {
