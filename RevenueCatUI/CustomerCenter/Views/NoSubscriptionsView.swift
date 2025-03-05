@@ -64,7 +64,7 @@ struct NoSubscriptionsView: View {
             }
 
         }
-        .dismissCircleButtonToolbar()
+        .dismissCircleButtonToolbarIfNeeded()
     }
 
 }

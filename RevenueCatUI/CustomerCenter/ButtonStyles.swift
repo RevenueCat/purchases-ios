@@ -51,12 +51,21 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
 @available(watchOS, unavailable)
 struct DismissCircleButton: View {
 
-    @Environment(\.localization) private var localization
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @Environment(\.localization)
+    private var localization
+
+    var customDismiss: (() -> Void)?
 
     var body: some View {
         Button {
-            self.dismiss()
+            if let customDismiss {
+                customDismiss()
+            } else {
+                self.dismiss()
+            }
         } label: {
             Circle()
                 .fill(Color(uiColor: .secondarySystemFill))
@@ -88,7 +97,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
             content
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        DismissCircleButton()
+                        DismissCircleButton(customDismiss: navigationOptions.onCloseHandler)
                     }
                 }
         } else {
@@ -104,7 +113,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
 @available(watchOS, unavailable)
 extension View {
     /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
-    func dismissCircleButtonToolbar() -> some View {
+    func dismissCircleButtonToolbarIfNeeded() -> some View {
         modifier(DismissCircleButtonToolbarModifier())
     }
 }
