@@ -33,7 +33,7 @@ class DiagnosticsTrackerTests: TestCase {
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
         self.diagnosticsDispatcher = MockOperationDispatcher()
-        self.dateProvider = .init(stubbedNow: Self.eventTimestamp1)
+        self.dateProvider = .init(stubbedNow: Self.eventTimestamp1, subsequentNows: Self.eventTimestamp2)
         self.tracker = .init(diagnosticsFileHandler: self.handler,
                              diagnosticsDispatcher: self.diagnosticsDispatcher,
                              dateProvider: self.dateProvider)
@@ -71,7 +71,6 @@ class DiagnosticsTrackerTests: TestCase {
                                       timestamp: Self.eventTimestamp2)
 
         self.tracker.track(event1)
-        self.dateProvider.stubbedNowResult = Self.eventTimestamp2
         self.tracker.track(event2)
 
         let entries = await self.handler.getEntries()
@@ -180,6 +179,72 @@ class DiagnosticsTrackerTests: TestCase {
                     .requestedProductIdsKey: AnyEncodable(["test_product_id_3", "test_product_id_4"]),
                     .notFoundProductIdsKey: AnyEncodable([]),
                     .errorCodeKey: AnyEncodable(emptyErrorCode)],
+                  timestamp: Self.eventTimestamp2)
+        ]
+    }
+
+    // MARK: - Purchase Request
+
+    func testTracksPurchaseRequestWithExpectedParameters() async {
+        self.tracker.trackPurchaseRequest(wasSuccessful: true,
+                                          storeKitVersion: .storeKit2,
+                                          errorMessage: nil,
+                                          errorCode: nil,
+                                          storeKitErrorDescription: nil,
+                                          productId: "com.revenuecat.product1",
+                                          promotionalOfferId: nil,
+                                          winBackOfferApplied: false,
+                                          purchaseResult: .verified,
+                                          responseTime: 75)
+
+        let emptyErrorMessage: String? = nil
+        let emptyErrorCode: Int? = nil
+        let emptyPromotionalOfferId: String? = nil
+        let emptySkErrorDescription: String? = nil
+        let entries = await self.handler.getEntries()
+        expect(entries) == [
+            .init(eventType: .applePurchaseAttempt,
+                  properties: [
+                    .responseTimeMillisKey: AnyEncodable(75000),
+                    .storeKitVersion: AnyEncodable("store_kit_2"),
+                    .successfulKey: AnyEncodable(true),
+                    .errorMessageKey: AnyEncodable(emptyErrorMessage),
+                    .skErrorDescriptionKey: AnyEncodable(emptySkErrorDescription),
+                    .productIdKey: AnyEncodable("com.revenuecat.product1"),
+                    .promotionalOfferIdKey: AnyEncodable(emptyPromotionalOfferId),
+                    .winBackOfferAppliedKey: AnyEncodable(false),
+                    .purchaseResultKey: AnyEncodable("verified"),
+                    .errorCodeKey: AnyEncodable(emptyErrorCode)],
+                  timestamp: Self.eventTimestamp1)
+        ]
+    }
+
+    func testTracksPurchaseRequestWithPromotionalOffer() async {
+        self.tracker.trackPurchaseRequest(wasSuccessful: false,
+                                          storeKitVersion: .storeKit1,
+                                          errorMessage: "purchase failed",
+                                          errorCode: 5678,
+                                          storeKitErrorDescription: "payment_cancelled",
+                                          productId: "com.revenuecat.premium",
+                                          promotionalOfferId: "summer_discount_2023",
+                                          winBackOfferApplied: true,
+                                          purchaseResult: .userCancelled,
+                                          responseTime: 120)
+
+        let entries = await self.handler.getEntries()
+        expect(entries) == [
+            .init(eventType: .applePurchaseAttempt,
+                  properties: [
+                    .responseTimeMillisKey: AnyEncodable(120000),
+                    .storeKitVersion: AnyEncodable("store_kit_1"),
+                    .successfulKey: AnyEncodable(false),
+                    .errorMessageKey: AnyEncodable("purchase failed"),
+                    .skErrorDescriptionKey: AnyEncodable("payment_cancelled"),
+                    .productIdKey: AnyEncodable("com.revenuecat.premium"),
+                    .promotionalOfferIdKey: AnyEncodable("summer_discount_2023"),
+                    .winBackOfferAppliedKey: AnyEncodable(true),
+                    .purchaseResultKey: AnyEncodable("user_cancelled"),
+                    .errorCodeKey: AnyEncodable(5678)],
                   timestamp: Self.eventTimestamp1)
         ]
     }

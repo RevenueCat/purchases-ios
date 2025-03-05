@@ -82,6 +82,17 @@ class ButtonComponentViewModel {
         }
     }
 
+    var isRestoreAction: Bool {
+        switch self.action {
+        case .restorePurchases:
+            return true
+        case .navigateTo:
+            return false
+        case .navigateBack:
+            return false
+        }
+    }
+
 }
 
 fileprivate extension PaywallComponent.LocalizationDictionary {

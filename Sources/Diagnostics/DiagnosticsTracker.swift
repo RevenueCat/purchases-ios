@@ -13,6 +13,7 @@
 
 import Foundation
 
+// swiftlint:disable function_parameter_count
 protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -22,18 +23,16 @@ protocol DiagnosticsTrackerType {
     func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: Set<String>,
-                              notFoundProductIds: Set<String>,
+                              requestedProductIds: [String],
+                              notFoundProductIds: [String],
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
@@ -47,7 +46,12 @@ protocol DiagnosticsTrackerType {
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              storeKitErrorDescription: String?)
+                              storeKitErrorDescription: String?,
+                              productId: String,
+                              promotionalOfferId: String?,
+                              winBackOfferApplied: Bool,
+                              purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              responseTime: TimeInterval)
 
 }
 
@@ -89,14 +93,13 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.track(event)
     }
 
-    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: Set<String>,
-                              notFoundProductIds: Set<String>,
+                              requestedProductIds: [String],
+                              notFoundProductIds: [String],
                               responseTime: TimeInterval) {
         self.track(
             DiagnosticsEvent(eventType: .appleProductsRequest,
@@ -108,13 +111,12 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
                                 .requestedProductIdsKey: AnyEncodable(requestedProductIds),
                                 .notFoundProductIdsKey: AnyEncodable(notFoundProductIds),
-                                .responseTimeMillisKey: AnyEncodable(responseTime * 1000)
+                                .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000))
                              ],
                              timestamp: self.dateProvider.now())
         )
     }
 
-    // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
@@ -127,7 +129,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                 eventType: DiagnosticsEvent.EventType.httpRequestPerformed,
                 properties: [
                     .endpointNameKey: AnyEncodable(endpointName),
-                    .responseTimeMillisKey: AnyEncodable(responseTime * 1000),
+                    .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000)),
                     .successfulKey: AnyEncodable(wasSuccessful),
                     .responseCodeKey: AnyEncodable(responseCode),
                     .backendErrorCodeKey: AnyEncodable(backendErrorCode),
@@ -143,7 +145,12 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              storeKitErrorDescription: String?) {
+                              storeKitErrorDescription: String?,
+                              productId: String,
+                              promotionalOfferId: String?,
+                              winBackOfferApplied: Bool,
+                              purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              responseTime: TimeInterval) {
         self.track(
             DiagnosticsEvent(eventType: .applePurchaseAttempt,
                              properties: [
@@ -151,7 +158,12 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
                                 .errorMessageKey: AnyEncodable(errorMessage),
                                 .errorCodeKey: AnyEncodable(errorCode),
-                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription)
+                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
+                                .productIdKey: AnyEncodable(productId),
+                                .promotionalOfferIdKey: AnyEncodable(promotionalOfferId),
+                                .winBackOfferAppliedKey: AnyEncodable(winBackOfferApplied),
+                                .purchaseResultKey: AnyEncodable(purchaseResult),
+                                .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000))
                              ],
                              timestamp: self.dateProvider.now())
         )

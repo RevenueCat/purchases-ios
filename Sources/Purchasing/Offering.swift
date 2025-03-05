@@ -68,13 +68,24 @@ import Foundation
 
     /**
      Paywall configuration defined in RevenueCat dashboard.
+
+     Use ``hasPaywall`` to check if the offering has a paywall.
      */
     public let paywall: PaywallData?
 
     /**
      Paywall components configuration defined in RevenueCat dashboard.
+
+     Use ``hasPaywall`` to check if the offering has a paywall.
      */
     public let paywallComponents: PaywallComponents?
+
+    /**
+     Whether the offering contains a paywall.
+     */
+    public var hasPaywall: Bool {
+        return paywall != nil || paywallComponents != nil
+    }
 
     /**
      Draft paywall components configuration defined in RevenueCat dashboard.
