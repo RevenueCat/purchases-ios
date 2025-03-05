@@ -1359,6 +1359,29 @@ jobs:
             git push origin
             git push --tags
 
+  deploy-rc-app:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run:
+          name: Trigger RC App Pipeline
+          command: |
+            # Read version from .version file
+            VERSION=$(cat .version)
+
+            # Trigger the pipeline in the RC app repo
+            curl -X POST \
+              --header "Circle-Token: ${RC_APP_CIRCLE_CI_TOKEN}" \
+              --header "Content-Type: application/json" \
+              --data "{
+                \"parameters\": {
+                  \"trigger_release\": true,
+                  \"sdk_version\": \"${SDK_VERSION}\"
+                }
+              }" \
+              "https://circleci.com/api/v2/project/${RC_APP_CIRCLE_CI_PROJECT_SLUG}/pipeline"
+
 workflows:
   version: 2
   generate-snapshot:
@@ -1442,6 +1465,10 @@ workflows:
           dry_run: false
           requires:
             - make-release
+          <<: *release-tags
+      - deploy-rc-app:
+          requires:
+            - deploy-to-spm
           <<: *release-tags
 
   snapshot-bump:
