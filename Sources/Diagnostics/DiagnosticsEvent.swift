@@ -21,18 +21,18 @@ struct DiagnosticsEvent: Codable, Equatable {
     let properties: Properties
     let timestamp: Date
 
-    enum EventType: Codable, Equatable {
-        case httpRequestPerformed
-        case appleProductsRequest
-        case customerInfoVerificationResult
-        case maxEventsStoredLimitReached
-        case applePurchaseAttempt
+    enum EventType: String, Codable, Equatable {
+        case httpRequestPerformed = "http_request_performed"
+        case appleProductsRequest = "apple_products_request"
+        case customerInfoVerificationResult = "customer_info_verification_result"
+        case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
+        case applePurchaseAttempt = "apple_purchase_attempt"
     }
 
-    enum PurchaseResult: Codable, Equatable {
+    enum PurchaseResult: String, Codable, Equatable {
         case verified
         case unverified
-        case userCancelled
+        case userCancelled = "user_cancelled"
         case pending
     }
 
