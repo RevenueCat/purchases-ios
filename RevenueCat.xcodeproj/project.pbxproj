@@ -316,6 +316,9 @@
 		354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */; };
 		3551E39D2C4A6A1400D27C25 /* TintedProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
+		355FDB5C2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift */; };
+		355FDB5D2D783FC400D20E65 /* CustomerCenterActionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5A2D783FC400D20E65 /* CustomerCenterActionBridge.swift */; };
+		355FDB5F2D783FDD00D20E65 /* CustomerCenterView+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */; };
 		35617C762D5A3BC500612B7A /* FeedbackSurveyViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35617C752D5A3BC000612B7A /* FeedbackSurveyViewModelTests.swift */; };
 		35617C782D5A460400612B7A /* MockLoadPromotionalOfferUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35617C772D5A45F900612B7A /* MockLoadPromotionalOfferUseCase.swift */; };
 		356523A82CF7719C00B6E3EA /* CustomerCenterPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356523A72CF7719B00B6E3EA /* CustomerCenterPresentationMode.swift */; };
@@ -1657,6 +1660,9 @@
 		354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReservedSubscriberAttributes.swift; sourceTree = "<group>"; };
 		3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedProgressView.swift; sourceTree = "<group>"; };
 		35549322269E298B005F9AE9 /* OfferingsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsFactory.swift; sourceTree = "<group>"; };
+		355FDB5A2D783FC400D20E65 /* CustomerCenterActionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionBridge.swift; sourceTree = "<group>"; };
+		355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionPreferenceConnector.swift; sourceTree = "<group>"; };
+		355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterView+Actions.swift"; sourceTree = "<group>"; };
 		35617C752D5A3BC000612B7A /* FeedbackSurveyViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyViewModelTests.swift; sourceTree = "<group>"; };
 		35617C772D5A45F900612B7A /* MockLoadPromotionalOfferUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLoadPromotionalOfferUseCase.swift; sourceTree = "<group>"; };
 		356523A72CF7719B00B6E3EA /* CustomerCenterPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPresentationMode.swift; sourceTree = "<group>"; };
@@ -3750,6 +3756,8 @@
 		353756562C382C2800A1B8D6 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				355FDB5A2D783FC400D20E65 /* CustomerCenterActionBridge.swift */,
+				355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift */,
 				77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */,
 				3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */,
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
@@ -3813,6 +3821,7 @@
 				3537565A2C382C2800A1B8D6 /* ViewModels */,
 				353756602C382C2800A1B8D6 /* Views */,
 				353756632C382C2800A1B8D6 /* URLUtilities.swift */,
+				355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */,
 				7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */,
 				1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */,
 				3511088E2C47F6DA0048C4D8 /* CustomerInfo+CurrentEntitlement.swift */,
@@ -6829,6 +6838,8 @@
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
 				887A60C32C1D037000E1A461 /* FooterView.swift in Sources */,
 				2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */,
+				355FDB5C2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift in Sources */,
+				355FDB5D2D783FC400D20E65 /* CustomerCenterActionBridge.swift in Sources */,
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
 				2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */,
 				356979E02CCFDAA100EE6A9E /* CustomerInfoFixtures.swift in Sources */,
@@ -6878,6 +6889,7 @@
 				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
 				3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */,
 				0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */,
+				355FDB5F2D783FDD00D20E65 /* CustomerCenterView+Actions.swift in Sources */,
 				030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */,
 				0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */,
 				0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */,
