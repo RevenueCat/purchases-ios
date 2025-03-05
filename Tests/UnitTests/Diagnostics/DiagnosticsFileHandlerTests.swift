@@ -112,30 +112,16 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - isDiagnosticsFileTooBig
 
     func testDiagnosticsFileIsNotTooBigIfEmpty() async {
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
+
         let result = await self.handler.isDiagnosticsFileTooBig()
         expect(result).to(beFalse())
     }
 
     func testDiagnosticsFileIsNotTooBigWithAFewEvents() async throws {
-        let line1 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T12:55:59Z",
-          "event_type": "httpRequestPerformed",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
-        let line2 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T13:55:59Z",
-          "event_type": "httpRequestPerformed",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
-
-        await self.fileHandler.append(line: line1)
-        await self.fileHandler.append(line: line2)
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
 
         let data = try await self.fileHandler.readFile()
         expect(data).toNot(beEmpty())
@@ -148,9 +134,9 @@ class DiagnosticsFileHandlerTests: TestCase {
         for iterator in 0...8000 {
             let line = """
             {
-              "properties": {"key\(iterator)": "value\(iterator)"},
+              "properties": {"verification_result": "FAILED"},
               "timestamp": "2024-04-04T12:55:59Z",
-              "event_type": "httpRequestPerformed",
+              "event_type": "http_request_performed",
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
@@ -158,7 +144,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         }
 
         let data = try await self.fileHandler.readFile()
-        expect(data).toNot(beEmpty())
+        expect(data.compactMap { $0 }).toNot(beEmpty())
 
         let result = await self.handler.isDiagnosticsFileTooBig()
         expect(result).to(beTrue())
@@ -172,11 +158,11 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: Self.line2)
 
         let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712235359000))
 
         let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712238959000))
 
         let entries = await self.handler.getEntries()
@@ -196,18 +182,18 @@ private extension DiagnosticsFileHandlerTests {
 
     static let line1 = """
     {
-      "properties": ["verificationResultKey", "FAILED"],
+      "properties": {"verification_result": "FAILED"},
       "timestamp": "2024-04-04T12:55:59Z",
-      "event_type": "customerInfoVerificationResult",
+      "event_type": "customer_info_verification_result",
       "version": 1
     }
     """.trimmingWhitespacesAndNewLines
 
     static let line2 = """
     {
-      "properties": ["verificationResultKey", "FAILED"],
+      "properties": {"verification_result": "FAILED"},
       "timestamp": "2024-04-04T13:55:59Z",
-      "event_type": "customerInfoVerificationResult",
+      "event_type": "customer_info_verification_result",
       "version": 1
     }
     """.trimmingWhitespacesAndNewLines
