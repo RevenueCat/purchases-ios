@@ -17,7 +17,7 @@ import SwiftUI
 /// Helper class that bridges the CustomerCenterActionHandler to the new preference-based system
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-class CustomerCenterActionBridge {
+final class CustomerCenterActionBridge {
 
     private let customerCenterActionHandler: CustomerCenterActionHandler?
 
