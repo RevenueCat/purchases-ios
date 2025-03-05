@@ -111,7 +111,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                        currentUserProvider: mockIdentityManager,
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
-                                                       subscriberAttributesManager: mockSubscriberAttributesManager)
+                                                       subscriberAttributesManager: mockSubscriberAttributesManager,
+                                                       systemInfo: self.systemInfo)
         self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
                                        currentUserProvider: self.mockIdentityManager,
                                        attributionPoster: self.mockAttributionPoster,

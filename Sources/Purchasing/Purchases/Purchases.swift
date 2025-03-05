@@ -436,7 +436,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
                                                   attributionFetcher: attributionFetcher,
-                                                  subscriberAttributesManager: subscriberAttributesManager)
+                                                  subscriberAttributesManager: subscriberAttributesManager,
+                                                  systemInfo: systemInfo)
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager,
                                                attributionPoster: attributionPoster,
@@ -701,11 +702,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.subscribeToAppStateNotifications()
 
-        if systemInfo.dangerousSettings.uiPreviewMode {
-            self.attributionPoster.clearPostponedAttributionData()
-        } else {
-            self.attributionPoster.postPostponedAttributionDataIfNeeded()
-        }
+        self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
             guard let self = self else { return }
@@ -763,9 +760,6 @@ extension Purchases {
     private func post(attributionData data: [String: Any],
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
-        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            return
-        }
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
     }
     #endif

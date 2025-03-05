@@ -97,7 +97,8 @@ class BasePurchasesTests: TestCase {
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
-                                                   subscriberAttributesManager: self.subscriberAttributesManager)
+                                                   subscriberAttributesManager: self.subscriberAttributesManager,
+                                                   systemInfo: self.systemInfo)
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
                                        attributionPoster: self.attributionPoster,
@@ -245,13 +246,6 @@ class BasePurchasesTests: TestCase {
                                          storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
         self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: true)
-        self.initializePurchasesInstance(appUserId: nil)
-    }
-
-    func setUpPurchasesUIPreviewModeOn() {
-        self.systemInfo = MockSystemInfo(platformInfo: nil,
-                                         finishTransactions: true,
-                                         uiPreviewMode: true)
         self.initializePurchasesInstance(appUserId: nil)
     }
 
