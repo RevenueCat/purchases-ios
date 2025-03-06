@@ -420,10 +420,6 @@ private extension HTTPClient {
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
 
-        self.trackHttpRequestPerformedIfNeeded(request: request,
-                                               requestStartTime: requestStartTime,
-                                               result: result)
-
         return result
     }
 
@@ -491,6 +487,10 @@ private extension HTTPClient {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
         }
+
+        self.trackHttpRequestPerformedIfNeeded(request: request,
+                                               requestStartTime: requestStartTime,
+                                               result: response)
 
         self.beginNextRequest()
     }
