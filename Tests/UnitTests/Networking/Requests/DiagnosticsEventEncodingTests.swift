@@ -43,7 +43,8 @@ class DiagnosticsEventEncodingTests: TestCase {
            productId: "test_productId",
            promotionalOfferId: "promotionalOfferId",
            winBackOfferApplied: false,
-           purchaseResult: .userCancelled
+           purchaseResult: .userCancelled,
+           isRetry: true
        ),
        timestamp: dateFormatter.date(from: "2022-03-08T17:42:58Z")!
    )
