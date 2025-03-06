@@ -20,6 +20,11 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class BackendPostDiagnosticsTests: BaseBackendTests {
 
+    static let eventId1 = UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!
+    static let eventId2 = UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!
+
+    static let appSessionId = UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -40,10 +45,11 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     }
 
     func testPostDiagnosticsEventsWithOneEvent() {
-        let event = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event = DiagnosticsEvent(id: Self.eventId1,
+                                     eventType: .customerInfoVerificationResult,
                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                      timestamp: Self.eventTimestamp1,
-                                     appSessionId: UUID())
+                                     appSessionId: Self.appSessionId)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postDiagnosticsEvents(events: [event], completion: completion)
@@ -53,15 +59,17 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     }
 
     func testPostDiagnosticsEventsWithMultipleEvents() {
-        let event1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event1 = DiagnosticsEvent(id: Self.eventId1,
+                                      eventType: .customerInfoVerificationResult,
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp1,
-                                      appSessionId: UUID())
+                                      appSessionId: Self.appSessionId)
 
-        let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event2 = DiagnosticsEvent(id: Self.eventId2,
+                                      eventType: .customerInfoVerificationResult,
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp2,
-                                      appSessionId: UUID())
+                                      appSessionId: Self.appSessionId)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postDiagnosticsEvents(events: [event1, event2], completion: completion)
