@@ -104,8 +104,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.track(
             DiagnosticsEvent(name: .appleProductsRequest,
                              properties: DiagnosticsEvent.Properties(
-                                responseTimeMillis: Int(responseTime * 1000),
-                                storeKitVersion: "store_kit_\(storeKitVersion.debugDescription)",
+                                responseTime: responseTime,
+                                storeKitVersion: storeKitVersion,
                                 successful: wasSuccessful,
                                 errorMessage: errorMessage,
                                 errorCode: errorCode,
@@ -130,7 +130,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                 properties: DiagnosticsEvent.Properties(
                     verificationResult: verificationResult.name,
                     endpointName: endpointName,
-                    responseTimeMillis: Int(responseTime * 1000),
+                    responseTime: responseTime,
                     successful: wasSuccessful,
                     responseCode: responseCode,
                     backendErrorCode: backendErrorCode,
@@ -154,8 +154,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.track(
             DiagnosticsEvent(name: .applePurchaseAttempt,
                              properties: DiagnosticsEvent.Properties(
-                                responseTimeMillis: Int(responseTime * 1000),
-                                storeKitVersion: "store_kit_\(storeKitVersion.debugDescription)",
+                                responseTime: responseTime,
+                                storeKitVersion: storeKitVersion,
                                 successful: wasSuccessful,
                                 errorMessage: errorMessage,
                                 errorCode: errorCode,

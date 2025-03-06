@@ -57,8 +57,8 @@ struct DiagnosticsEvent: Codable, Equatable {
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
-             responseTimeMillis: Int? = nil,
-             storeKitVersion: String? = nil,
+             responseTime: TimeInterval? = nil,
+             storeKitVersion: StoreKitVersion? = nil,
              successful: Bool? = nil,
              responseCode: Int? = nil,
              backendErrorCode: Int? = nil,
@@ -74,8 +74,8 @@ struct DiagnosticsEvent: Codable, Equatable {
              purchaseResult: PurchaseResult? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
-            self.responseTimeMillis = responseTimeMillis
-            self.storeKitVersion = storeKitVersion
+            self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
+            self.storeKitVersion = storeKitVersion.map { "store_kit_\($0.debugDescription)" }
             self.successful = successful
             self.responseCode = responseCode
             self.backendErrorCode = backendErrorCode

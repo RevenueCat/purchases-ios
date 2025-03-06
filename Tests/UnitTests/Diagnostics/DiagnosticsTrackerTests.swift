@@ -124,7 +124,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
                     endpointName: "mock_endpoint",
-                    responseTimeMillis: 50000,
+                    responseTime: 50,
                     successful: true,
                     responseCode: 200,
                     backendErrorCode: 7121,
@@ -161,8 +161,8 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries) == [
             .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
-                    responseTimeMillis: 50000,
-                    storeKitVersion: "store_kit_2",
+                    responseTime: 50,
+                    storeKitVersion: .storeKit2,
                     successful: false,
                     errorMessage: "test error message",
                     errorCode: 1234,
@@ -173,8 +173,8 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1),
             .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
-                    responseTimeMillis: 20000,
-                    storeKitVersion: "store_kit_1",
+                    responseTime: 20,
+                    storeKitVersion: .storeKit2,
                     successful: true,
                     errorMessage: emptyErrorMessage,
                     errorCode: emptyErrorCode,
@@ -208,8 +208,8 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries) == [
             .init(name: .applePurchaseAttempt,
                   properties: DiagnosticsEvent.Properties(
-                    responseTimeMillis: 75000,
-                    storeKitVersion: "store_kit_2",
+                    responseTime: 75,
+                    storeKitVersion: .storeKit2,
                     successful: true,
                     errorMessage: emptyErrorMessage,
                     errorCode: emptyErrorCode,
@@ -239,8 +239,8 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries) == [
             .init(name: .applePurchaseAttempt,
                   properties: DiagnosticsEvent.Properties(
-                    responseTimeMillis: 120000,
-                    storeKitVersion: "store_kit_1",
+                    responseTime: 120,
+                    storeKitVersion: .storeKit1,
                     successful: false,
                     errorMessage: "purchase failed",
                     errorCode: 5678,
