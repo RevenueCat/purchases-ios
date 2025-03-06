@@ -81,7 +81,7 @@ class DiagnosticsTrackerTests: TestCase {
         self.tracker.track(event2)
 
         let entries = await self.handler.getEntries()
-        expect(entries) == [
+        Self.expectEventArrayWithoutId(entries, [
             .init(id: event1.id,
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
@@ -92,7 +92,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: appSessionId)
-        ]
+        ])
     }
 
     // MARK: - customer info verification
@@ -113,10 +113,12 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries.count) == 1
-        expect(entries.first) == .init(name: .customerInfoVerificationResult,
-                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                       timestamp: Self.eventTimestamp1,
-                                       appSessionId: SystemInfo.appSessionID)
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .customerInfoVerificationResult,
+                                           properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                                           timestamp: Self.eventTimestamp1,
+                                           appSessionId: SystemInfo.appSessionID)
+        ])
     }
 
     // MARK: - http request performed
@@ -130,7 +132,7 @@ class DiagnosticsTrackerTests: TestCase {
                                                resultOrigin: .cache,
                                                verificationResult: .verified)
         let entries = await self.handler.getEntries()
-        expect(entries) == [
+        Self.expectEventArrayWithoutId(entries, [
             .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
@@ -143,7 +145,7 @@ class DiagnosticsTrackerTests: TestCase {
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
-        ]
+        ])
     }
 
     // MARK: - product request
@@ -170,7 +172,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           responseTime: 20)
 
         let entries = await self.handler.getEntries()
-        expect(entries) == [
+        Self.expectEventArrayWithoutId(entries, [
             .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
                     responseTime: 50,
@@ -197,7 +199,7 @@ class DiagnosticsTrackerTests: TestCase {
                   ),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: SystemInfo.appSessionID)
-        ]
+        ])
     }
 
     // MARK: - Purchase Request
@@ -219,7 +221,7 @@ class DiagnosticsTrackerTests: TestCase {
         let emptyPromotionalOfferId: String? = nil
         let emptySkErrorDescription: String? = nil
         let entries = await self.handler.getEntries()
-        expect(entries) == [
+        Self.expectEventArrayWithoutId(entries, [
             .init(name: .applePurchaseAttempt,
                   properties: DiagnosticsEvent.Properties(
                     responseTime: 75,
@@ -235,7 +237,7 @@ class DiagnosticsTrackerTests: TestCase {
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
-        ]
+        ])
     }
 
     func testTracksPurchaseRequestWithPromotionalOffer() async {
@@ -251,7 +253,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           responseTime: 120)
 
         let entries = await self.handler.getEntries()
-        expect(entries) == [
+        Self.expectEventArrayWithoutId(entries, [
             .init(name: .applePurchaseAttempt,
                   properties: DiagnosticsEvent.Properties(
                     responseTime: 120,
@@ -267,7 +269,7 @@ class DiagnosticsTrackerTests: TestCase {
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
-        ]
+        ])
     }
 
     // MARK: - empty diagnostics file when too big
@@ -292,7 +294,7 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries2 = await self.handler.getEntries()
         expect(entries2.count) == 2
-        expect(entries2) == [
+        Self.expectEventArrayWithoutId(entries2, [
             .init(name: .maxEventsStoredLimitReached,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
@@ -301,7 +303,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: SystemInfo.appSessionID)
-        ]
+        ])
     }
 
 }
@@ -322,5 +324,25 @@ private extension DiagnosticsTrackerTests {
 
     static func createWithTemporaryFile() throws -> FileHandler {
         return try FileHandler(Self.temporaryFileURL())
+    }
+
+    static func expectEventArrayWithoutId(_ obtained: [DiagnosticsEvent?], _ expected: [DiagnosticsEvent?]) {
+        expect(obtained.count) == expected.count
+        guard obtained.count == expected.count else {
+            return
+        }
+
+        for (index, obtainedEvent) in obtained.enumerated() {
+            let expectedEvent = expected[index]
+            Self.expectEventWithoutId(obtainedEvent, expectedEvent)
+        }
+    }
+
+    static func expectEventWithoutId(_ obtained: DiagnosticsEvent?, _ expected: DiagnosticsEvent?) {
+        expect(obtained?.version) == expected?.version
+        expect(obtained?.properties) == expected?.properties
+        expect(obtained?.timestamp) == expected?.timestamp
+        expect(obtained?.version) == expected?.version
+        expect(obtained?.appSessionId) == expected?.appSessionId
     }
 }
