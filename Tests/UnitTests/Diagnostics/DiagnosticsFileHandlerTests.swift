@@ -201,19 +201,23 @@ private extension DiagnosticsFileHandlerTests {
 
     static let line1 = """
     {
+      "id": "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC",
       "properties": ["verificationResultKey", "FAILED"],
       "timestamp": "2024-04-04T12:55:59Z",
       "event_type": "customerInfoVerificationResult",
-      "version": 1
+      "version": 1,
+      "app_session_id": "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF"
     }
     """.trimmingWhitespacesAndNewLines
 
     static let line2 = """
     {
+      "id": "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
       "properties": ["verificationResultKey", "FAILED"],
       "timestamp": "2024-04-04T13:55:59Z",
       "event_type": "customerInfoVerificationResult",
-      "version": 1
+      "version": 1,
+      "app_session_id": "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF"
     }
     """.trimmingWhitespacesAndNewLines
 
