@@ -91,12 +91,13 @@ func verifySnapshot<Value, Format>(
 
 extension Snapshotting where Value == Encodable, Format == String {
 
-    /// Uses SDK's `JSONEncoder.prettyPrinted`, but with `JSONEncoder.OutputFormatting.withoutEscapingSlashes`.
+    /// Uses a copy of the SDK's `JSONEncoder.prettyPrinted`,
+    /// but with `JSONEncoder.OutputFormatting.withoutEscapingSlashes`.
     static var formattedJson: Snapshotting {
         return self.formattedJson(backwardsCompatible: false)
     }
 
-    /// Uses SDK's `JSONEncoder.prettyPrinted`
+    /// Uses a copy of the SDK's `JSONEncoder.prettyPrinted`
     static var backwardsCompatibleFormattedJson: Snapshotting {
         return self.formattedJson(backwardsCompatible: true)
     }
