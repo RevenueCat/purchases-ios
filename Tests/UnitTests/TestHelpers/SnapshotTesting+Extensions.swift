@@ -177,6 +177,7 @@ private extension Encodable {
     func asFormattedData(backwardsCompatible: Bool) throws -> Data {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = backwardsCompatible
             ? backwardsCompatibleOutputFormatting
             : outputFormatting
