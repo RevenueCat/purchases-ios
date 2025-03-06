@@ -42,7 +42,8 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     func testPostDiagnosticsEventsWithOneEvent() {
         let event = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                     timestamp: Self.eventTimestamp1)
+                                     timestamp: Self.eventTimestamp1,
+                                     appSessionId: UUID())
 
         let error = waitUntilValue { completion in
             self.internalAPI.postDiagnosticsEvents(events: [event], completion: completion)
@@ -54,11 +55,13 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     func testPostDiagnosticsEventsWithMultipleEvents() {
         let event1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                      timestamp: Self.eventTimestamp1)
+                                      timestamp: Self.eventTimestamp1,
+                                      appSessionId: UUID())
 
         let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                      timestamp: Self.eventTimestamp2)
+                                      timestamp: Self.eventTimestamp2,
+                                      appSessionId: UUID())
 
         let error = waitUntilValue { completion in
             self.internalAPI.postDiagnosticsEvents(events: [event1, event2], completion: completion)

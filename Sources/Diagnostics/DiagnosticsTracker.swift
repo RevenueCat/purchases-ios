@@ -61,13 +61,16 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
+    private let appSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
          diagnosticsDispatcher: OperationDispatcher = .default,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         appSessionID: UUID = SystemInfo.appSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
+        self.appSessionID = appSessionID
     }
 
     func track(_ event: DiagnosticsEvent) {
@@ -88,7 +91,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         let event = DiagnosticsEvent(
             eventType: .customerInfoVerificationResult,
             properties: [.verificationResultKey: AnyEncodable(verificationResult.name)],
-            timestamp: self.dateProvider.now()
+            timestamp: self.dateProvider.now(),
+            appSessionId: self.appSessionID
         )
         self.track(event)
     }
@@ -113,7 +117,9 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 .notFoundProductIdsKey: AnyEncodable(notFoundProductIds),
                                 .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000))
                              ],
-                             timestamp: self.dateProvider.now())
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID
+                            )
         )
     }
 
@@ -136,7 +142,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                     .eTagHitKey: AnyEncodable(resultOrigin == .cache),
                     .verificationResultKey: AnyEncodable(verificationResult.name)
                 ],
-                timestamp: self.dateProvider.now()
+                timestamp: self.dateProvider.now(),
+                appSessionId: self.appSessionID
             )
         )
     }
@@ -165,7 +172,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 .purchaseResultKey: AnyEncodable(purchaseResult),
                                 .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000))
                              ],
-                             timestamp: self.dateProvider.now())
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
         )
     }
 
@@ -179,7 +187,8 @@ private extension DiagnosticsTracker {
             await self.diagnosticsFileHandler.emptyDiagnosticsFile()
             let maxEventsStoredEvent = DiagnosticsEvent(eventType: .maxEventsStoredLimitReached,
                                                         properties: [:],
-                                                        timestamp: self.dateProvider.now())
+                                                        timestamp: self.dateProvider.now(),
+                                                        appSessionId: self.appSessionID)
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)
         }
     }

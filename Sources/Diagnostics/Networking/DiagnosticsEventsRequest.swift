@@ -33,10 +33,12 @@ extension DiagnosticsEventsRequest {
 
     struct Event {
 
+        let id: String
         let version: Int
         let name: String
         let properties: [String: AnyEncodable]
         let timestamp: String
+        let appSessionID: String?
 
     }
 
@@ -47,10 +49,12 @@ extension DiagnosticsEventsRequest.Event {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init(event: DiagnosticsEvent) {
         self.init(
+            id: event.id.uuidString,
             version: event.version,
             name: event.eventType.name,
             properties: event.properties.mapKeys { $0.name },
-            timestamp: event.timestamp.ISO8601Format()
+            timestamp: event.timestamp.ISO8601Format(),
+            appSessionID: event.appSessionId?.uuidString
         )
     }
 
@@ -121,7 +125,7 @@ extension DiagnosticsEventsRequest.Event: Encodable {
 
     enum CodingKeys: String, CodingKey {
 
-        case version, name, properties, timestamp
+        case id, version, name, properties, timestamp, appSessionID = "app_session_id"
 
     }
 

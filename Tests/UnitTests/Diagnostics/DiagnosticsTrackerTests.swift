@@ -48,39 +48,50 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - trackEvent
 
     func testTrackEvent() async {
+        let appSessionId = SystemInfo.appSessionID
         let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                     timestamp: Self.eventTimestamp1)
+                                     timestamp: Self.eventTimestamp1,
+                                     appSessionId: appSessionId)
 
         self.tracker.track(event)
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .httpRequestPerformed,
+            .init(id: event.id,
+                  eventType: .httpRequestPerformed,
                   properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                  timestamp: Self.eventTimestamp1)
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: appSessionId)
         ]
     }
 
     func testTrackMultipleEvents() async {
+        let appSessionId = SystemInfo.appSessionID
         let event1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                      timestamp: Self.eventTimestamp1)
+                                      timestamp: Self.eventTimestamp1,
+                                      appSessionId: appSessionId)
         let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                      timestamp: Self.eventTimestamp2)
+                                      timestamp: Self.eventTimestamp2,
+                                      appSessionId: appSessionId)
 
         self.tracker.track(event1)
         self.tracker.track(event2)
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .httpRequestPerformed,
+            .init(id: event1.id,
+                  eventType: .httpRequestPerformed,
                   properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                  timestamp: Self.eventTimestamp1),
-            .init(eventType: .customerInfoVerificationResult,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: appSessionId),
+            .init(id: event1.id,
+                  eventType: .customerInfoVerificationResult,
                   properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                  timestamp: Self.eventTimestamp2)
+                  timestamp: Self.eventTimestamp2,
+                  appSessionId: appSessionId)
         ]
     }
 
@@ -101,11 +112,11 @@ class DiagnosticsTrackerTests: TestCase {
         self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
 
         let entries = await self.handler.getEntries()
-        expect(entries) == [
-            .init(eventType: .customerInfoVerificationResult,
-                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                  timestamp: Self.eventTimestamp1)
-        ]
+        expect(entries.count) == 1
+        expect(entries.first) == .init(eventType: .customerInfoVerificationResult,
+                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                       timestamp: Self.eventTimestamp1,
+                                       appSessionId: SystemInfo.appSessionID)
     }
 
     // MARK: - http request performed
@@ -129,7 +140,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .backendErrorCodeKey: AnyEncodable(7121),
                     .eTagHitKey: AnyEncodable(true),
                     .verificationResultKey: AnyEncodable("VERIFIED")],
-                  timestamp: Self.eventTimestamp1)
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
         ]
     }
 
@@ -168,7 +180,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .requestedProductIdsKey: AnyEncodable(["test_product_id_1", "test_product_id_2"]),
                     .notFoundProductIdsKey: AnyEncodable(["test_product_id_2"]),
                     .errorCodeKey: AnyEncodable(1234)],
-                  timestamp: Self.eventTimestamp1),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID),
             .init(eventType: .appleProductsRequest,
                   properties: [
                     .responseTimeMillisKey: AnyEncodable(20000),
@@ -179,7 +192,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .requestedProductIdsKey: AnyEncodable(["test_product_id_3", "test_product_id_4"]),
                     .notFoundProductIdsKey: AnyEncodable([]),
                     .errorCodeKey: AnyEncodable(emptyErrorCode)],
-                  timestamp: Self.eventTimestamp2)
+                  timestamp: Self.eventTimestamp2,
+                  appSessionId: SystemInfo.appSessionID)
         ]
     }
 
@@ -215,7 +229,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .winBackOfferAppliedKey: AnyEncodable(false),
                     .purchaseResultKey: AnyEncodable("verified"),
                     .errorCodeKey: AnyEncodable(emptyErrorCode)],
-                  timestamp: Self.eventTimestamp1)
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
         ]
     }
 
@@ -245,7 +260,8 @@ class DiagnosticsTrackerTests: TestCase {
                     .winBackOfferAppliedKey: AnyEncodable(true),
                     .purchaseResultKey: AnyEncodable("user_cancelled"),
                     .errorCodeKey: AnyEncodable(5678)],
-                  timestamp: Self.eventTimestamp1)
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
         ]
     }
 
@@ -255,7 +271,8 @@ class DiagnosticsTrackerTests: TestCase {
         for _ in 0...8000 {
             await self.handler.appendEvent(diagnosticsEvent: .init(eventType: .httpRequestPerformed,
                                                                    properties: [:],
-                                                                   timestamp: Date()))
+                                                                   timestamp: Date(),
+                                                                   appSessionId: SystemInfo.appSessionID))
         }
 
         let entries = await self.handler.getEntries()
@@ -263,7 +280,8 @@ class DiagnosticsTrackerTests: TestCase {
 
         let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                     timestamp: Self.eventTimestamp2)
+                                     timestamp: Self.eventTimestamp2,
+                                     appSessionId: SystemInfo.appSessionID)
 
         self.tracker.track(event)
 
@@ -272,10 +290,12 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries2) == [
             .init(eventType: .maxEventsStoredLimitReached,
                   properties: [:],
-                  timestamp: Self.eventTimestamp1),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID),
             .init(eventType: .httpRequestPerformed,
                   properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                  timestamp: Self.eventTimestamp2)
+                  timestamp: Self.eventTimestamp2,
+                  appSessionId: SystemInfo.appSessionID)
         ]
     }
 

@@ -15,13 +15,27 @@ import Foundation
 
 struct DiagnosticsEvent: Codable {
 
+    let id: UUID
     let version: Int = 1
     let eventType: DiagnosticsEvent.EventType
     let properties: [DiagnosticsPropertyKey: AnyEncodable]
     let timestamp: Date
+    let appSessionId: UUID?
+
+    init(id: UUID = UUID(),
+         eventType: DiagnosticsEvent.EventType,
+         properties: [DiagnosticsPropertyKey: AnyEncodable],
+         timestamp: Date,
+         appSessionId: UUID) {
+        self.id = id
+        self.eventType = eventType
+        self.properties = properties
+        self.timestamp = timestamp
+        self.appSessionId = appSessionId
+    }
 
     enum CodingKeys: String, CodingKey {
-        case version, properties, timestamp, eventType
+        case id, version, properties, timestamp, eventType, appSessionId
     }
 
 }

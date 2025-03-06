@@ -42,7 +42,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     func testAppendEventWithProperties() async throws {
         let content = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                       timestamp: Date())
+                                       timestamp: Date(),
+                                       appSessionId: UUID())
 
         var entries = await self.handler.getEntries()
         expect(entries.count).to(equal(0))
@@ -83,11 +84,13 @@ class DiagnosticsFileHandlerTests: TestCase {
 
         let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                         properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                        timestamp: Date(millisecondsSince1970: 1712235359000))
+                                        timestamp: Date(millisecondsSince1970: 1712235359000),
+                                        appSessionId: UUID())
 
         let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                         properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                        timestamp: Date(millisecondsSince1970: 1712238959000))
+                                        timestamp: Date(millisecondsSince1970: 1712238959000),
+                                        appSessionId: UUID())
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(equal(content1))
@@ -173,11 +176,13 @@ class DiagnosticsFileHandlerTests: TestCase {
 
         let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                         properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                        timestamp: Date(millisecondsSince1970: 1712235359000))
+                                        timestamp: Date(millisecondsSince1970: 1712235359000),
+                                        appSessionId: UUID())
 
         let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
                                         properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                        timestamp: Date(millisecondsSince1970: 1712238959000))
+                                        timestamp: Date(millisecondsSince1970: 1712238959000),
+                                        appSessionId: UUID())
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(beNil())
@@ -227,7 +232,8 @@ private extension DiagnosticsFileHandlerTests {
     static func sampleEvent() -> DiagnosticsEvent {
         return DiagnosticsEvent(eventType: .httpRequestPerformed,
                                 properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                timestamp: Date())
+                                timestamp: Date(),
+                                appSessionId: UUID())
     }
 
 }
