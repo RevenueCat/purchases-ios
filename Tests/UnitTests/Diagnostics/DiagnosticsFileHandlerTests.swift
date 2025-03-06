@@ -40,7 +40,7 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - append
 
     func testAppendEventWithProperties() async throws {
-        let content = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let content = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                        timestamp: Date())
 
@@ -81,11 +81,11 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: Self.line1)
         await self.fileHandler.append(line: Self.line2)
 
-        let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let content1 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712235359000))
 
-        let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let content2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712238959000))
 
@@ -136,7 +136,7 @@ class DiagnosticsFileHandlerTests: TestCase {
             {
               "properties": {"verification_result": "FAILED"},
               "timestamp": "2024-04-04T12:55:59Z",
-              "event_type": "http_request_performed",
+              "name": "http_request_performed",
               "version": \(iterator)
             }
             """.trimmingWhitespacesAndNewLines
@@ -157,11 +157,11 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: Self.line1)
         await self.fileHandler.append(line: Self.line2)
 
-        let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let content1 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712235359000))
 
-        let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let content2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                         timestamp: Date(millisecondsSince1970: 1712238959000))
 
@@ -184,7 +184,7 @@ private extension DiagnosticsFileHandlerTests {
     {
       "properties": {"verification_result": "FAILED"},
       "timestamp": "2024-04-04T12:55:59Z",
-      "event_type": "customer_info_verification_result",
+      "name": "customer_info_verification_result",
       "version": 1
     }
     """.trimmingWhitespacesAndNewLines
@@ -193,7 +193,7 @@ private extension DiagnosticsFileHandlerTests {
     {
       "properties": {"verification_result": "FAILED"},
       "timestamp": "2024-04-04T13:55:59Z",
-      "event_type": "customer_info_verification_result",
+      "name": "customer_info_verification_result",
       "version": 1
     }
     """.trimmingWhitespacesAndNewLines
@@ -211,7 +211,7 @@ private extension DiagnosticsFileHandlerTests {
     }
 
     static func sampleEvent() -> DiagnosticsEvent {
-        return DiagnosticsEvent(eventType: .httpRequestPerformed,
+        return DiagnosticsEvent(name: .httpRequestPerformed,
                                 properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                 timestamp: Date())
     }

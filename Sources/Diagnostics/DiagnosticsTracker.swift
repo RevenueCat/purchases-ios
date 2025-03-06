@@ -86,7 +86,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
 
         let event = DiagnosticsEvent(
-            eventType: .customerInfoVerificationResult,
+            name: .customerInfoVerificationResult,
             properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name),
             timestamp: self.dateProvider.now()
         )
@@ -102,7 +102,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
         self.track(
-            DiagnosticsEvent(eventType: .appleProductsRequest,
+            DiagnosticsEvent(name: .appleProductsRequest,
                              properties: DiagnosticsEvent.Properties(
                                 responseTimeMillis: Int(responseTime * 1000),
                                 storeKitVersion: "store_kit_\(storeKitVersion.debugDescription)",
@@ -126,7 +126,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    verificationResult: VerificationResult) {
         self.track(
             DiagnosticsEvent(
-                eventType: DiagnosticsEvent.EventType.httpRequestPerformed,
+                name: .httpRequestPerformed,
                 properties: DiagnosticsEvent.Properties(
                     verificationResult: verificationResult.name,
                     endpointName: endpointName,
@@ -152,7 +152,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
                               responseTime: TimeInterval) {
         self.track(
-            DiagnosticsEvent(eventType: .applePurchaseAttempt,
+            DiagnosticsEvent(name: .applePurchaseAttempt,
                              properties: DiagnosticsEvent.Properties(
                                 responseTimeMillis: Int(responseTime * 1000),
                                 storeKitVersion: "store_kit_\(storeKitVersion.debugDescription)",
@@ -177,7 +177,7 @@ private extension DiagnosticsTracker {
     func clearDiagnosticsFileIfTooBig() async {
         if await self.diagnosticsFileHandler.isDiagnosticsFileTooBig() {
             await self.diagnosticsFileHandler.emptyDiagnosticsFile()
-            let maxEventsStoredEvent = DiagnosticsEvent(eventType: .maxEventsStoredLimitReached,
+            let maxEventsStoredEvent = DiagnosticsEvent(name: .maxEventsStoredLimitReached,
                                                         properties: .empty,
                                                         timestamp: self.dateProvider.now())
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)

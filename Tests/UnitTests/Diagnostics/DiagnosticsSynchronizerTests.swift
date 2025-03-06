@@ -196,7 +196,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 private extension DiagnosticsSynchronizerTests {
 
     func storeEvent(timestamp: Date = eventTimestamp1) async -> DiagnosticsEvent {
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: timestamp)
         await self.handler.appendEvent(diagnosticsEvent: event)

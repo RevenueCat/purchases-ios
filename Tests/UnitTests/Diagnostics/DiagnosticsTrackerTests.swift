@@ -48,7 +48,7 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - trackEvent
 
     func testTrackEvent() async {
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1)
 
@@ -56,17 +56,17 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .httpRequestPerformed,
+            .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1)
         ]
     }
 
     func testTrackMultipleEvents() async {
-        let event1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
+        let event1 = DiagnosticsEvent(name: .httpRequestPerformed,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp1)
-        let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp2)
 
@@ -75,10 +75,10 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .httpRequestPerformed,
+            .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1),
-            .init(eventType: .customerInfoVerificationResult,
+            .init(name: .customerInfoVerificationResult,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2)
         ]
@@ -102,7 +102,7 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .customerInfoVerificationResult,
+            .init(name: .customerInfoVerificationResult,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1)
         ]
@@ -120,7 +120,7 @@ class DiagnosticsTrackerTests: TestCase {
                                                verificationResult: .verified)
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .httpRequestPerformed,
+            .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
                     endpointName: "mock_endpoint",
@@ -159,7 +159,7 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .appleProductsRequest,
+            .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
                     responseTimeMillis: 50000,
                     storeKitVersion: "store_kit_2",
@@ -171,7 +171,7 @@ class DiagnosticsTrackerTests: TestCase {
                     notFoundProductIds: ["test_product_id_2"]
                   ),
                   timestamp: Self.eventTimestamp1),
-            .init(eventType: .appleProductsRequest,
+            .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
                     responseTimeMillis: 20000,
                     storeKitVersion: "store_kit_1",
@@ -206,7 +206,7 @@ class DiagnosticsTrackerTests: TestCase {
         let emptySkErrorDescription: String? = nil
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .applePurchaseAttempt,
+            .init(name: .applePurchaseAttempt,
                   properties: DiagnosticsEvent.Properties(
                     responseTimeMillis: 75000,
                     storeKitVersion: "store_kit_2",
@@ -237,7 +237,7 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .applePurchaseAttempt,
+            .init(name: .applePurchaseAttempt,
                   properties: DiagnosticsEvent.Properties(
                     responseTimeMillis: 120000,
                     storeKitVersion: "store_kit_1",
@@ -258,7 +258,7 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
         for _ in 0...8000 {
-            await self.handler.appendEvent(diagnosticsEvent: .init(eventType: .httpRequestPerformed,
+            await self.handler.appendEvent(diagnosticsEvent: .init(name: .httpRequestPerformed,
                                                                    properties: .empty,
                                                                    timestamp: Date()))
         }
@@ -266,7 +266,7 @@ class DiagnosticsTrackerTests: TestCase {
         let entries = await self.handler.getEntries()
         expect(entries.count) == 8001
 
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp2)
 
@@ -275,10 +275,10 @@ class DiagnosticsTrackerTests: TestCase {
         let entries2 = await self.handler.getEntries()
         expect(entries2.count) == 2
         expect(entries2) == [
-            .init(eventType: .maxEventsStoredLimitReached,
+            .init(name: .maxEventsStoredLimitReached,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1),
-            .init(eventType: .httpRequestPerformed,
+            .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2)
         ]

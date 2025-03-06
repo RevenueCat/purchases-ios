@@ -40,7 +40,7 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     }
 
     func testPostDiagnosticsEventsWithOneEvent() {
-        let event = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1)
 
@@ -52,11 +52,11 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     }
 
     func testPostDiagnosticsEventsWithMultipleEvents() {
-        let event1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event1 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp1)
 
-        let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+        let event2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp2)
 

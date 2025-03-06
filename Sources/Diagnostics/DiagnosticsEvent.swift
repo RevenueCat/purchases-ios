@@ -17,11 +17,11 @@ import Foundation
 struct DiagnosticsEvent: Codable, Equatable {
 
     private(set) var version: Int = 1
-    let eventType: EventType
+    let name: EventName
     let properties: Properties
     let timestamp: Date
 
-    enum EventType: String, Codable, Equatable {
+    enum EventName: String, Codable, Equatable {
         case httpRequestPerformed = "http_request_performed"
         case appleProductsRequest = "apple_products_request"
         case customerInfoVerificationResult = "customer_info_verification_result"
