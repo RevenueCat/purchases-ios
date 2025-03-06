@@ -39,7 +39,8 @@ protocol DiagnosticsTrackerType {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult)
+                                   verificationResult: VerificationResult,
+                                   isRetry: Bool)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackPurchaseRequest(wasSuccessful: Bool,
@@ -123,7 +124,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult) {
+                                   verificationResult: VerificationResult,
+                                   isRetry: Bool) {
         self.track(
             DiagnosticsEvent(
                 name: .httpRequestPerformed,
@@ -134,7 +136,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                     successful: wasSuccessful,
                     responseCode: responseCode,
                     backendErrorCode: backendErrorCode,
-                    eTagHit: resultOrigin == .cache
+                    eTagHit: resultOrigin == .cache,
+                    isRetry: isRetry
                 ),
                 timestamp: self.dateProvider.now()
             )
