@@ -49,8 +49,8 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTrackEvent() async {
         let appSessionId = SystemInfo.appSessionID
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                     properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1,
                                      appSessionId: appSessionId)
 
@@ -59,8 +59,8 @@ class DiagnosticsTrackerTests: TestCase {
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(id: event.id,
-                  eventType: .httpRequestPerformed,
-                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                  name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: appSessionId)
         ]
@@ -68,12 +68,12 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTrackMultipleEvents() async {
         let appSessionId = SystemInfo.appSessionID
-        let event1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
+        let event1 = DiagnosticsEvent(name: .httpRequestPerformed,
+                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp1,
                                       appSessionId: appSessionId)
-        let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
+        let event2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
+                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp2,
                                       appSessionId: appSessionId)
 
@@ -83,13 +83,13 @@ class DiagnosticsTrackerTests: TestCase {
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(id: event1.id,
-                  eventType: .httpRequestPerformed,
-                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                  name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: appSessionId),
             .init(id: event1.id,
-                  eventType: .customerInfoVerificationResult,
-                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                  name: .customerInfoVerificationResult,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: appSessionId)
         ]
@@ -113,8 +113,8 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries.count) == 1
-        expect(entries.first) == .init(eventType: .customerInfoVerificationResult,
-                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
+        expect(entries.first) == .init(name: .customerInfoVerificationResult,
+                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                        timestamp: Self.eventTimestamp1,
                                        appSessionId: SystemInfo.appSessionID)
     }
@@ -131,15 +131,16 @@ class DiagnosticsTrackerTests: TestCase {
                                                verificationResult: .verified)
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .httpRequestPerformed,
-                  properties: [
-                    .endpointNameKey: AnyEncodable("mock_endpoint"),
-                    .responseTimeMillisKey: AnyEncodable(50000),
-                    .successfulKey: AnyEncodable(true),
-                    .responseCodeKey: AnyEncodable(200),
-                    .backendErrorCodeKey: AnyEncodable(7121),
-                    .eTagHitKey: AnyEncodable(true),
-                    .verificationResultKey: AnyEncodable("VERIFIED")],
+            .init(name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(
+                    verificationResult: "VERIFIED",
+                    endpointName: "mock_endpoint",
+                    responseTime: 50,
+                    successful: true,
+                    responseCode: 200,
+                    backendErrorCode: 7121,
+                    eTagHit: true
+                  ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ]
@@ -170,28 +171,30 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .appleProductsRequest,
-                  properties: [
-                    .responseTimeMillisKey: AnyEncodable(50000),
-                    .storeKitVersion: AnyEncodable("store_kit_2"),
-                    .successfulKey: AnyEncodable(false),
-                    .errorMessageKey: AnyEncodable("test error message"),
-                    .skErrorDescriptionKey: AnyEncodable("store_kit_error_type"),
-                    .requestedProductIdsKey: AnyEncodable(["test_product_id_1", "test_product_id_2"]),
-                    .notFoundProductIdsKey: AnyEncodable(["test_product_id_2"]),
-                    .errorCodeKey: AnyEncodable(1234)],
+            .init(name: .appleProductsRequest,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 50,
+                    storeKitVersion: .storeKit2,
+                    successful: false,
+                    errorMessage: "test error message",
+                    errorCode: 1234,
+                    skErrorDescription: "store_kit_error_type",
+                    requestedProductIds: ["test_product_id_1", "test_product_id_2"],
+                    notFoundProductIds: ["test_product_id_2"]
+                  ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID),
-            .init(eventType: .appleProductsRequest,
-                  properties: [
-                    .responseTimeMillisKey: AnyEncodable(20000),
-                    .storeKitVersion: AnyEncodable("store_kit_1"),
-                    .successfulKey: AnyEncodable(true),
-                    .errorMessageKey: AnyEncodable(emptyErrorMessage),
-                    .skErrorDescriptionKey: AnyEncodable(emptySkErrorDescription),
-                    .requestedProductIdsKey: AnyEncodable(["test_product_id_3", "test_product_id_4"]),
-                    .notFoundProductIdsKey: AnyEncodable([]),
-                    .errorCodeKey: AnyEncodable(emptyErrorCode)],
+            .init(name: .appleProductsRequest,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 20,
+                    storeKitVersion: .storeKit1,
+                    successful: true,
+                    errorMessage: emptyErrorMessage,
+                    errorCode: emptyErrorCode,
+                    skErrorDescription: emptySkErrorDescription,
+                    requestedProductIds: ["test_product_id_3", "test_product_id_4"],
+                    notFoundProductIds: []
+                  ),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: SystemInfo.appSessionID)
         ]
@@ -217,18 +220,19 @@ class DiagnosticsTrackerTests: TestCase {
         let emptySkErrorDescription: String? = nil
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .applePurchaseAttempt,
-                  properties: [
-                    .responseTimeMillisKey: AnyEncodable(75000),
-                    .storeKitVersion: AnyEncodable("store_kit_2"),
-                    .successfulKey: AnyEncodable(true),
-                    .errorMessageKey: AnyEncodable(emptyErrorMessage),
-                    .skErrorDescriptionKey: AnyEncodable(emptySkErrorDescription),
-                    .productIdKey: AnyEncodable("com.revenuecat.product1"),
-                    .promotionalOfferIdKey: AnyEncodable(emptyPromotionalOfferId),
-                    .winBackOfferAppliedKey: AnyEncodable(false),
-                    .purchaseResultKey: AnyEncodable("verified"),
-                    .errorCodeKey: AnyEncodable(emptyErrorCode)],
+            .init(name: .applePurchaseAttempt,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 75,
+                    storeKitVersion: .storeKit2,
+                    successful: true,
+                    errorMessage: emptyErrorMessage,
+                    errorCode: emptyErrorCode,
+                    skErrorDescription: emptySkErrorDescription,
+                    productId: "com.revenuecat.product1",
+                    promotionalOfferId: emptyPromotionalOfferId,
+                    winBackOfferApplied: false,
+                    purchaseResult: .verified
+                  ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ]
@@ -248,18 +252,19 @@ class DiagnosticsTrackerTests: TestCase {
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
-            .init(eventType: .applePurchaseAttempt,
-                  properties: [
-                    .responseTimeMillisKey: AnyEncodable(120000),
-                    .storeKitVersion: AnyEncodable("store_kit_1"),
-                    .successfulKey: AnyEncodable(false),
-                    .errorMessageKey: AnyEncodable("purchase failed"),
-                    .skErrorDescriptionKey: AnyEncodable("payment_cancelled"),
-                    .productIdKey: AnyEncodable("com.revenuecat.premium"),
-                    .promotionalOfferIdKey: AnyEncodable("summer_discount_2023"),
-                    .winBackOfferAppliedKey: AnyEncodable(true),
-                    .purchaseResultKey: AnyEncodable("user_cancelled"),
-                    .errorCodeKey: AnyEncodable(5678)],
+            .init(name: .applePurchaseAttempt,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 120,
+                    storeKitVersion: .storeKit1,
+                    successful: false,
+                    errorMessage: "purchase failed",
+                    errorCode: 5678,
+                    skErrorDescription: "payment_cancelled",
+                    productId: "com.revenuecat.premium",
+                    promotionalOfferId: "summer_discount_2023",
+                    winBackOfferApplied: true,
+                    purchaseResult: .userCancelled
+                  ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ]
@@ -269,8 +274,8 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
         for _ in 0...8000 {
-            await self.handler.appendEvent(diagnosticsEvent: .init(eventType: .httpRequestPerformed,
-                                                                   properties: [:],
+            await self.handler.appendEvent(diagnosticsEvent: .init(name: .httpRequestPerformed,
+                                                                   properties: .empty,
                                                                    timestamp: Date(),
                                                                    appSessionId: SystemInfo.appSessionID))
         }
@@ -278,8 +283,8 @@ class DiagnosticsTrackerTests: TestCase {
         let entries = await self.handler.getEntries()
         expect(entries.count) == 8001
 
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                     properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp2,
                                      appSessionId: SystemInfo.appSessionID)
 
@@ -288,12 +293,12 @@ class DiagnosticsTrackerTests: TestCase {
         let entries2 = await self.handler.getEntries()
         expect(entries2.count) == 2
         expect(entries2) == [
-            .init(eventType: .maxEventsStoredLimitReached,
-                  properties: [:],
+            .init(name: .maxEventsStoredLimitReached,
+                  properties: .empty,
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID),
-            .init(eventType: .httpRequestPerformed,
-                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
+            .init(name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: SystemInfo.appSessionID)
         ]
