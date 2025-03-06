@@ -15,6 +15,7 @@ import Foundation
 import Nimble
 import SnapshotTesting
 import XCTest
+@testable import RevenueCat
 
 #if swift(>=5.8) && canImport(SwiftUI)
 import SwiftUI
@@ -91,14 +92,12 @@ func verifySnapshot<Value, Format>(
 
 extension Snapshotting where Value == Encodable, Format == String {
 
-    /// Equivalent to `.json`, but with `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase`
-    /// and `JSONEncoder.OutputFormatting.withoutEscapingSlashes` if available.
+    /// Uses SDK's `JSONEncoder.prettyPrinted`, but with `JSONEncoder.OutputFormatting.withoutEscapingSlashes`.
     static var formattedJson: Snapshotting {
         return self.formattedJson(backwardsCompatible: false)
     }
 
-    /// Equivalent to `.formattedJson`, but not using `JSONEncoder.OutputFormatting.withoutEscapingSlashes`
-    /// so its output is equivalent regardless of iOS version.
+    /// Uses SDK's `JSONEncoder.prettyPrinted`
     static var backwardsCompatibleFormattedJson: Snapshotting {
         return self.formattedJson(backwardsCompatible: true)
     }
@@ -175,28 +174,22 @@ private extension Encodable {
     }
 
     func asFormattedData(backwardsCompatible: Bool) throws -> Data {
+        // Copy the encoder used in the SDK to get similar results
+        let sdkEncoder = JSONEncoder.prettyPrinted
+
         let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = backwardsCompatible
-            ? backwardsCompatibleOutputFormatting
-            : outputFormatting
+        encoder.keyEncodingStrategy = sdkEncoder.keyEncodingStrategy
+        encoder.dateEncodingStrategy = sdkEncoder.dateEncodingStrategy
+        encoder.dataEncodingStrategy = sdkEncoder.dataEncodingStrategy
+        encoder.nonConformingFloatEncodingStrategy = sdkEncoder.nonConformingFloatEncodingStrategy
+        encoder.userInfo = sdkEncoder.userInfo
+        var outputFormatting = sdkEncoder.outputFormatting
+        if !backwardsCompatible {
+            outputFormatting.update(with: .withoutEscapingSlashes)
+        }
+        encoder.outputFormatting = outputFormatting
 
         return try encoder.encode(self)
     }
 
 }
-
-private let backwardsCompatibleOutputFormatting: JSONEncoder.OutputFormatting = {
-    return [
-        .prettyPrinted,
-        .sortedKeys
-    ]
-}()
-
-private let outputFormatting: JSONEncoder.OutputFormatting = {
-    var result = backwardsCompatibleOutputFormatting
-    result.update(with: .withoutEscapingSlashes)
-
-    return result
-}()
