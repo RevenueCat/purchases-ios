@@ -174,7 +174,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
                     responseTime: 20,
-                    storeKitVersion: .storeKit2,
+                    storeKitVersion: .storeKit1,
                     successful: true,
                     errorMessage: emptyErrorMessage,
                     errorCode: emptyErrorCode,
