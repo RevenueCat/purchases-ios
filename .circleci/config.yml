@@ -1396,6 +1396,7 @@ workflows:
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
       - emerge_purchases_ui_snapshot_tests
+      - push-revenuecatui-pod
 
   create-tag:
     when:
