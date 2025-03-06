@@ -28,8 +28,8 @@ protocol DiagnosticsTrackerType {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: [String],
-                              notFoundProductIds: [String],
+                              requestedProductIds: Set<String>,
+                              notFoundProductIds: Set<String>,
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -86,8 +86,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
 
         let event = DiagnosticsEvent(
-            eventType: .customerInfoVerificationResult,
-            properties: [.verificationResultKey: AnyEncodable(verificationResult.name)],
+            name: .customerInfoVerificationResult,
+            properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name),
             timestamp: self.dateProvider.now()
         )
         self.track(event)
@@ -98,21 +98,21 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: [String],
-                              notFoundProductIds: [String],
+                              requestedProductIds: Set<String>,
+                              notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
         self.track(
-            DiagnosticsEvent(eventType: .appleProductsRequest,
-                             properties: [
-                                .successfulKey: AnyEncodable(wasSuccessful),
-                                .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
-                                .errorMessageKey: AnyEncodable(errorMessage),
-                                .errorCodeKey: AnyEncodable(errorCode),
-                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
-                                .requestedProductIdsKey: AnyEncodable(requestedProductIds),
-                                .notFoundProductIdsKey: AnyEncodable(notFoundProductIds),
-                                .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000))
-                             ],
+            DiagnosticsEvent(name: .appleProductsRequest,
+                             properties: DiagnosticsEvent.Properties(
+                                responseTime: responseTime,
+                                storeKitVersion: storeKitVersion,
+                                successful: wasSuccessful,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                skErrorDescription: storeKitErrorDescription,
+                                requestedProductIds: requestedProductIds,
+                                notFoundProductIds: notFoundProductIds
+                             ),
                              timestamp: self.dateProvider.now())
         )
     }
@@ -126,16 +126,16 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    verificationResult: VerificationResult) {
         self.track(
             DiagnosticsEvent(
-                eventType: DiagnosticsEvent.EventType.httpRequestPerformed,
-                properties: [
-                    .endpointNameKey: AnyEncodable(endpointName),
-                    .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000)),
-                    .successfulKey: AnyEncodable(wasSuccessful),
-                    .responseCodeKey: AnyEncodable(responseCode),
-                    .backendErrorCodeKey: AnyEncodable(backendErrorCode),
-                    .eTagHitKey: AnyEncodable(resultOrigin == .cache),
-                    .verificationResultKey: AnyEncodable(verificationResult.name)
-                ],
+                name: .httpRequestPerformed,
+                properties: DiagnosticsEvent.Properties(
+                    verificationResult: verificationResult.name,
+                    endpointName: endpointName,
+                    responseTime: responseTime,
+                    successful: wasSuccessful,
+                    responseCode: responseCode,
+                    backendErrorCode: backendErrorCode,
+                    eTagHit: resultOrigin == .cache
+                ),
                 timestamp: self.dateProvider.now()
             )
         )
@@ -152,19 +152,19 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
                               responseTime: TimeInterval) {
         self.track(
-            DiagnosticsEvent(eventType: .applePurchaseAttempt,
-                             properties: [
-                                .successfulKey: AnyEncodable(wasSuccessful),
-                                .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
-                                .errorMessageKey: AnyEncodable(errorMessage),
-                                .errorCodeKey: AnyEncodable(errorCode),
-                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
-                                .productIdKey: AnyEncodable(productId),
-                                .promotionalOfferIdKey: AnyEncodable(promotionalOfferId),
-                                .winBackOfferAppliedKey: AnyEncodable(winBackOfferApplied),
-                                .purchaseResultKey: AnyEncodable(purchaseResult),
-                                .responseTimeMillisKey: AnyEncodable(Int(responseTime * 1000))
-                             ],
+            DiagnosticsEvent(name: .applePurchaseAttempt,
+                             properties: DiagnosticsEvent.Properties(
+                                responseTime: responseTime,
+                                storeKitVersion: storeKitVersion,
+                                successful: wasSuccessful,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                skErrorDescription: storeKitErrorDescription,
+                                productId: productId,
+                                promotionalOfferId: promotionalOfferId,
+                                winBackOfferApplied: winBackOfferApplied,
+                                purchaseResult: purchaseResult
+                             ),
                              timestamp: self.dateProvider.now())
         )
     }
@@ -177,8 +177,8 @@ private extension DiagnosticsTracker {
     func clearDiagnosticsFileIfTooBig() async {
         if await self.diagnosticsFileHandler.isDiagnosticsFileTooBig() {
             await self.diagnosticsFileHandler.emptyDiagnosticsFile()
-            let maxEventsStoredEvent = DiagnosticsEvent(eventType: .maxEventsStoredLimitReached,
-                                                        properties: [:],
+            let maxEventsStoredEvent = DiagnosticsEvent(name: .maxEventsStoredLimitReached,
+                                                        properties: .empty,
                                                         timestamp: self.dateProvider.now())
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)
         }

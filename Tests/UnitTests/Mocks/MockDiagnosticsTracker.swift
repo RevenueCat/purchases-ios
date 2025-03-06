@@ -102,8 +102,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          errorMessage: String?,
          errorCode: Int?,
          storeKitErrorDescription: String?,
-         requestedProductIds: [String],
-         notFoundProductIds: [String],
+         requestedProductIds: Set<String>,
+         notFoundProductIds: Set<String>,
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
@@ -112,8 +112,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: [String],
-                              notFoundProductIds: [String],
+                              requestedProductIds: Set<String>,
+                              notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
         self.trackedProductsRequestParams.modify {
             $0.append(
