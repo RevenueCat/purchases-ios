@@ -6,6 +6,7 @@
     "endpoint_name" : "log_in",
     "error_code" : 1,
     "error_message" : "OK",
+    "is_retry" : true,
     "not_found_product_ids" : [
       "test_product_id2"
     ],
