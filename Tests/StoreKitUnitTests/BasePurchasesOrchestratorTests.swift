@@ -169,7 +169,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   currentUserProvider: self.currentUserProvider,
                                                   backend: self.backend,
                                                   attributionFetcher: self.attributionFetcher,
-                                                  subscriberAttributesManager: self.subscriberAttributesManager)
+                                                  subscriberAttributesManager: self.subscriberAttributesManager,
+                                                  systemInfo: self.systemInfo)
 
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.mockUserID),

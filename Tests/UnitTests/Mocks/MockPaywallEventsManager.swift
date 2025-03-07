@@ -33,12 +33,4 @@ actor MockPaywallEventsManager: PaywallEventsManagerType {
         return 0
     }
 
-    var invokedResetAppSessionID = false
-    var invokedResetAppSessionIDCount = 0
-
-    func resetAppSessionID() async {
-        self.invokedResetAppSessionID = true
-        self.invokedResetAppSessionIDCount += 1
-    }
-
 }
