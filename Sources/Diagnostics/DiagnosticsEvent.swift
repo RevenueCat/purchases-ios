@@ -47,7 +47,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let errorMessage: String?
         let errorCode: Int?
         let skErrorDescription: String?
-        let eTagHit: Bool?
+        let etagHit: Bool?
         let requestedProductIds: Set<String>?
         let notFoundProductIds: Set<String>?
         let productId: String?
@@ -66,7 +66,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              errorMessage: String? = nil,
              errorCode: Int? = nil,
              skErrorDescription: String? = nil,
-             eTagHit: Bool? = nil,
+             etagHit: Bool? = nil,
              requestedProductIds: Set<String>? = nil,
              notFoundProductIds: Set<String>? = nil,
              productId: String? = nil,
@@ -84,7 +84,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.errorMessage = errorMessage
             self.errorCode = errorCode
             self.skErrorDescription = skErrorDescription
-            self.eTagHit = eTagHit
+            self.etagHit = etagHit
             self.requestedProductIds = requestedProductIds
             self.notFoundProductIds = notFoundProductIds
             self.productId = productId
