@@ -30,7 +30,7 @@ class UserViewModel: ObservableObject {
         /* Listen to changes in the `customerInfo` object using an `AsyncStream` */
         Task {
             for await newCustomerInfo in Purchases.shared.customerInfoStream {
-                customerInfo = newCustomerInfo
+                await MainActor.run { customerInfo = newCustomerInfo }
             }
         }
     }
