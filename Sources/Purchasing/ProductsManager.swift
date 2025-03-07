@@ -162,8 +162,8 @@ private extension ProductsManager {
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
                                                     storeKitErrorDescription: storeKitErrorDescription,
-                                                    requestedProductIds: Array(requestedProductIds),
-                                                    notFoundProductIds: Array(notFoundProductIds),
+                                                    requestedProductIds: requestedProductIds,
+                                                    notFoundProductIds: notFoundProductIds,
                                                     responseTime: responseTime)
         }
     }

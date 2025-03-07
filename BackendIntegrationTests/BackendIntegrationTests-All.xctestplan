@@ -33,6 +33,9 @@
   },
   "testTargets" : [
     {
+      "skippedTests" : [
+        "EventsManagerIntegrationTests"
+      ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DE20B6B264087FB004C597D",

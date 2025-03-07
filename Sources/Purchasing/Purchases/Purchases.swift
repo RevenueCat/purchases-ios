@@ -436,7 +436,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
                                                   attributionFetcher: attributionFetcher,
-                                                  subscriberAttributesManager: subscriberAttributesManager)
+                                                  subscriberAttributesManager: subscriberAttributesManager,
+                                                  systemInfo: systemInfo)
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager,
                                                attributionPoster: attributionPoster,
@@ -700,6 +701,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
 
         self.subscribeToAppStateNotifications()
+
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
@@ -842,10 +844,6 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
-
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await self.paywallEventsManager?.resetAppSessionID()
-            }
         }
     }
 
@@ -877,10 +875,6 @@ public extension Purchases {
                     }
                 }
                 return
-            }
-
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {
