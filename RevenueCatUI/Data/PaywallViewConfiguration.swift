@@ -18,6 +18,7 @@ struct PaywallViewConfiguration {
     var customerInfo: CustomerInfo?
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
+    var spacing: CGFloat?
     var displayCloseButton: Bool
     let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
@@ -29,6 +30,7 @@ struct PaywallViewConfiguration {
         customerInfo: CustomerInfo? = nil,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        spacing: CGFloat? = nil,
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
@@ -39,6 +41,7 @@ struct PaywallViewConfiguration {
         self.customerInfo = customerInfo
         self.mode = mode
         self.fonts = fonts
+        self.spacing = spacing
         self.displayCloseButton = displayCloseButton
         self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
