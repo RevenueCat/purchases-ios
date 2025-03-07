@@ -139,7 +139,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
         let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
 
-        let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .internalServerError)
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
