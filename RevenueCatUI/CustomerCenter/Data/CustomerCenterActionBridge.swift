@@ -25,8 +25,6 @@ internal enum CustomerCenterInternalAction {
 @MainActor
 final class CustomerCenterActionBridge {
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
-
     // Direct setter closures that will be set by the preference connector
     var setRestoreStarted: () -> Void = {}
     var setRestoreFailed: (Error) -> Void = { _ in }
@@ -37,8 +35,11 @@ final class CustomerCenterActionBridge {
     var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
     var setButtonTapped: (String) -> Void = { _ in }
 
-    init(customerCenterActionHandler: CustomerCenterActionHandler?) {
-        self.customerCenterActionHandler = customerCenterActionHandler
+    // The handler for legacy actions
+    private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
+
+    init(legacyActionHandler: DeprecatedCustomerCenterActionHandler?) {
+        self.legacyActionHandler = legacyActionHandler
     }
 
     /// Main entry point for handling all actions
@@ -47,7 +48,7 @@ final class CustomerCenterActionBridge {
     func handleAction(_ internalAction: CustomerCenterInternalAction) {
         // For public legacy actions, call the legacy handler
         if case let .public(publicAction) = internalAction {
-            customerCenterActionHandler?(publicAction)
+            legacyActionHandler?(publicAction)
         }
 
         // Trigger callbacks for all actions
@@ -76,7 +77,6 @@ final class CustomerCenterActionBridge {
 
         case .buttonTapped(let buttonId):
             setButtonTapped(buttonId)
-
         }
     }
 }

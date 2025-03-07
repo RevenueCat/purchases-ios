@@ -5,6 +5,10 @@ import RevenueCat
 @available(*, deprecated, message: "Use the view modifiers in View+CustomerCenterActions.swift instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
 public typealias CustomerCenterActionHandler = @MainActor @Sendable (CustomerCenterAction) -> Void
 
+/// Internal typealias for the deprecated CustomerCenterActionHandler
+/// This isolates the usage of the deprecated type
+internal typealias DeprecatedCustomerCenterActionHandler = @MainActor @Sendable (CustomerCenterAction) -> Void
+
 /// Represents an event the customer may perform during the Customer Center flow
 public enum CustomerCenterAction {
 

@@ -102,7 +102,7 @@ import RevenueCat
         purchaseInformation: PurchaseInformation,
         configuration: CustomerCenterConfigData
     ) {
-        self.init(actionBridge: CustomerCenterActionBridge(customerCenterActionHandler: nil))
+        self.init(actionBridge: CustomerCenterActionBridge(legacyActionHandler: nil))
         self.purchaseInformation = purchaseInformation
         self.configuration = configuration
         self.state = .success

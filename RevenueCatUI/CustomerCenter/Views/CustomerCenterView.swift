@@ -54,8 +54,13 @@ public struct CustomerCenterView: View {
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
+
+        // Create a bridge with the deprecated handler
+        // The typealias in CustomerCenterActionBridge isolates the deprecated API usage
+        let actionBridge = CustomerCenterActionBridge(legacyActionHandler: customerCenterActionHandler)
+
         self.init(
-            actionBridge: CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler),
+            actionBridge: actionBridge,
             mode: .default,
             navigationOptions: navigationOptions
         )
