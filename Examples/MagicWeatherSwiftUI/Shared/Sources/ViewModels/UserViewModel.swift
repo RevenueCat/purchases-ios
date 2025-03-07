@@ -26,21 +26,13 @@ class UserViewModel: ObservableObject {
     /* Set from the didSet method of customerInfo above, based on the entitlement set in Constants.swift */
     @Published var subscriptionActive: Bool = false
     
-    /* Keep track of the task that listens for changes to the `customerInfoStream` so that it can be cancelled later on */
-    private var task = Task<Void, Never> {}
-    
     private init() {
         /* Listen to changes in the `customerInfo` object using an `AsyncStream` */
-        self.task = Task.detached {
-            for await customerInfo in Purchases.shared.customerInfoStream {
-                await MainActor.run { self.customerInfo = customerInfo }
+        Task {
+            for await newCustomerInfo in Purchases.shared.customerInfoStream {
+                customerInfo = newCustomerInfo
             }
         }
-    }
-    
-    /* Stop listening for updates to the `customerInfoStream` based on  */
-    deinit {
-        task.cancel()
     }
     
     /*
