@@ -27,10 +27,10 @@ internal enum CustomerCenterInternalAction {
     case refundRequestStarted(String)
     case refundRequestCompleted(RefundRequestStatus)
     case feedbackSurveyCompleted(String)
-    
+
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
     case buttonTapped(buttonId: String)
-    
+
     /// Converts this internal action to the corresponding public action if one exists
     /// Returns nil for actions that don't have a public CustomerCenterAction equivalent
     var asPublicAction: CustomerCenterAction? {

@@ -63,6 +63,17 @@ public struct CustomerCenterView: View {
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
+    ///   - navigationOptions: Options to control the navigation behavior
+    public init(navigationOptions: CustomerCenterNavigationOptions = .default) {
+        self.init(
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+            mode: .default,
+            navigationOptions: navigationOptions
+        )
+    }
+
+    /// Create a view to handle common customer support tasks
+    /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - mode: The presentation mode for the Customer Center
