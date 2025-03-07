@@ -134,7 +134,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                     successful: wasSuccessful,
                     responseCode: responseCode,
                     backendErrorCode: backendErrorCode,
-                    eTagHit: resultOrigin == .cache
+                    etagHit: resultOrigin == .cache
                 ),
                 timestamp: self.dateProvider.now()
             )

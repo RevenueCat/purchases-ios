@@ -2,7 +2,7 @@
   "name" : "http_request_performed",
   "properties" : {
     "backend_error_code" : 500,
-    "e_tag_hit" : false,
+    "etag_hit" : false,
     "endpoint_name" : "log_in",
     "error_code" : 1,
     "error_message" : "OK",

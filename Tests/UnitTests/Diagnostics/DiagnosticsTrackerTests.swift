@@ -128,7 +128,7 @@ class DiagnosticsTrackerTests: TestCase {
                     successful: true,
                     responseCode: 200,
                     backendErrorCode: 7121,
-                    eTagHit: true
+                    etagHit: true
                   ),
                   timestamp: Self.eventTimestamp1)
         ]
