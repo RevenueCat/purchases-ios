@@ -131,4 +131,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    let trackedMaxDiagnosticsSyncRetriesReachedCalls: Atomic<Int> = .init(0)
+    func trackMaxDiagnosticsSyncRetriesReached() {
+        trackedMaxDiagnosticsSyncRetriesReachedCalls.modify { $0 += 1 }
+    }
 }
