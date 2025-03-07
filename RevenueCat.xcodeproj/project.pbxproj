@@ -316,7 +316,7 @@
 		354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */; };
 		3551E39D2C4A6A1400D27C25 /* TintedProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
-		355FDB5C2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift */; };
+		355FDB5C2D783FC400D20E65 /* CustomerCenterActionPreferencesViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferencesViewModifier.swift */; };
 		355FDB5D2D783FC400D20E65 /* CustomerCenterActionWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */; };
 		355FDB5F2D783FDD00D20E65 /* CustomerCenterView+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */; };
 		35617C762D5A3BC500612B7A /* FeedbackSurveyViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35617C752D5A3BC000612B7A /* FeedbackSurveyViewModelTests.swift */; };
@@ -1661,7 +1661,7 @@
 		3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedProgressView.swift; sourceTree = "<group>"; };
 		35549322269E298B005F9AE9 /* OfferingsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsFactory.swift; sourceTree = "<group>"; };
 		355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionWrapper.swift; sourceTree = "<group>"; };
-		355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionPreferenceConnector.swift; sourceTree = "<group>"; };
+		355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferencesViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionPreferencesViewModifier.swift; sourceTree = "<group>"; };
 		355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterView+Actions.swift"; sourceTree = "<group>"; };
 		35617C752D5A3BC000612B7A /* FeedbackSurveyViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyViewModelTests.swift; sourceTree = "<group>"; };
 		35617C772D5A45F900612B7A /* MockLoadPromotionalOfferUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLoadPromotionalOfferUseCase.swift; sourceTree = "<group>"; };
@@ -3757,7 +3757,7 @@
 			isa = PBXGroup;
 			children = (
 				355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */,
-				355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift */,
+				355FDB5B2D783FC400D20E65 /* CustomerCenterActionPreferencesViewModifier.swift */,
 				77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */,
 				3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */,
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
@@ -6838,7 +6838,7 @@
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
 				887A60C32C1D037000E1A461 /* FooterView.swift in Sources */,
 				2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */,
-				355FDB5C2D783FC400D20E65 /* CustomerCenterActionPreferenceConnector.swift in Sources */,
+				355FDB5C2D783FC400D20E65 /* CustomerCenterActionPreferencesViewModifier.swift in Sources */,
 				355FDB5D2D783FC400D20E65 /* CustomerCenterActionWrapper.swift in Sources */,
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
 				2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */,

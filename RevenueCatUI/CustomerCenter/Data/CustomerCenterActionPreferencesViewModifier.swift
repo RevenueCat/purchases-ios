@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterActionPreferenceConnector.swift
+//  CustomerCenterActionPreferencesViewModifier.swift
 //  
 //  Created by Cesar de la Vega on 2024-06-17.
 
@@ -21,7 +21,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct CustomerCenterActionPreferenceConnector: ViewModifier {
+struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
 

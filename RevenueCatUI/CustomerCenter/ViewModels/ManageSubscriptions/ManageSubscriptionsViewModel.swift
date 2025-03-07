@@ -182,18 +182,18 @@ private extension ManageSubscriptionsViewModel {
             do {
                 guard let purchaseInformation = self.purchaseInformation else { return }
                 let productId = purchaseInformation.productIdentifier
-                self.actionWrapper.handleAction(.public(.refundRequestStarted(productId)))
+                self.actionWrapper.handleAction(.refundRequestStarted(productId))
 
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.actionWrapper.handleAction(.public(.refundRequestCompleted(status)))
+                self.actionWrapper.handleAction(.refundRequestCompleted(status))
             } catch {
                 self.refundRequestStatus = .error
-                self.actionWrapper.handleAction(.public(.refundRequestCompleted(.error)))
+                self.actionWrapper.handleAction(.refundRequestCompleted(.error))
             }
         case .changePlans, .cancel:
             do {
-                self.actionWrapper.handleAction(.public(.showingManageSubscriptions))
+                self.actionWrapper.handleAction(.showingManageSubscriptions)
 
                 try await purchasesProvider.showManageSubscriptions()
             } catch {

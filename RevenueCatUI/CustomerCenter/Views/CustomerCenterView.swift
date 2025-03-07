@@ -134,7 +134,7 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .modifier(CustomerCenterActionPreferenceConnector(actionWrapper: viewModel.actionWrapper))
+        .modifier(CustomerCenterActionPreferencesViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder

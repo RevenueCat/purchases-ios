@@ -64,7 +64,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     ) async {
         trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
 
-        self.actionWrapper.handleAction(.public(.feedbackSurveyCompleted(option.id)))
+        self.actionWrapper.handleAction(.feedbackSurveyCompleted(option.id))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
