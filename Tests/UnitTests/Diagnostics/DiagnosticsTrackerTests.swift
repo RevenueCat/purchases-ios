@@ -130,7 +130,8 @@ class DiagnosticsTrackerTests: TestCase {
                                                responseCode: 200,
                                                backendErrorCode: 7121,
                                                resultOrigin: .cache,
-                                               verificationResult: .verified)
+                                               verificationResult: .verified,
+                                               isRetry: false)
         let entries = await self.handler.getEntries()
         Self.expectEventArrayWithoutId(entries, [
             .init(name: .httpRequestPerformed,
@@ -141,7 +142,8 @@ class DiagnosticsTrackerTests: TestCase {
                     successful: true,
                     responseCode: 200,
                     backendErrorCode: 7121,
-                    eTagHit: true
+                    eTagHit: true,
+                    isRetry: false
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
