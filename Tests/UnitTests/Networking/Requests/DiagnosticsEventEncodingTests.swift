@@ -34,7 +34,7 @@ class DiagnosticsEventEncodingTests: TestCase {
             errorMessage: "OK",
             errorCode: 1,
             skErrorDescription: "test_skErrorDescription",
-            eTagHit: false,
+            etagHit: false,
 
             // Do not use more than 1 elements in sets for snapshot testing
             // as the order of elements is not defined
