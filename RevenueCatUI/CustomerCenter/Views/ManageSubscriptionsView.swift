@@ -44,10 +44,10 @@ struct ManageSubscriptionsView: View {
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
-         actionBridge: CustomerCenterActionBridge) {
+         actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
-            actionBridge: actionBridge,
+            actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation)
         self.init(viewModel: viewModel)
     }
@@ -64,7 +64,7 @@ struct ManageSubscriptionsView: View {
             ) { feedbackSurveyData in
                 FeedbackSurveyView(
                     feedbackSurveyData: feedbackSurveyData,
-                    actionBridge: self.viewModel.actionBridge,
+                    actionWrapper: self.viewModel.actionWrapper,
                     isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)

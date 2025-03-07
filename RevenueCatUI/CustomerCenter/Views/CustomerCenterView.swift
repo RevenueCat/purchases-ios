@@ -54,13 +54,8 @@ public struct CustomerCenterView: View {
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
-
-        // Create a bridge with the deprecated handler
-        // The typealias in CustomerCenterActionBridge isolates the deprecated API usage
-        let actionBridge = CustomerCenterActionBridge(legacyActionHandler: customerCenterActionHandler)
-
         self.init(
-            actionBridge: actionBridge,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: customerCenterActionHandler),
             mode: .default,
             navigationOptions: navigationOptions
         )
@@ -73,12 +68,12 @@ public struct CustomerCenterView: View {
     ///   - mode: The presentation mode for the Customer Center
     ///   - navigationOptions: Options to control the navigation behavior
     init(
-        actionBridge: CustomerCenterActionBridge,
+        actionWrapper: CustomerCenterActionWrapper,
         mode: CustomerCenterPresentationMode,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionBridge: actionBridge))
-        self.mode = mode
-        self.navigationOptions = navigationOptions
+            self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionWrapper: actionWrapper))
+            self.mode = mode
+            self.navigationOptions = navigationOptions
     }
 
     fileprivate init(
@@ -139,7 +134,7 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .modifier(CustomerCenterActionPreferenceConnector(actionBridge: viewModel.actionBridge))
+        .modifier(CustomerCenterActionPreferenceConnector(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder
@@ -177,7 +172,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(screen: screen,
                                             purchaseInformation: purchaseInformation,
-                                            actionBridge: self.viewModel.actionBridge)
+                                            actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
@@ -189,7 +184,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: nil,
-                                        actionBridge: self.viewModel.actionBridge)
+                                        actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration)

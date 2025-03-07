@@ -75,14 +75,14 @@ import RevenueCat
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
-    /// The action bridge that handles both the deprecated handler and the new preference system
-    internal let actionBridge: CustomerCenterActionBridge
+    /// The action wrapper that handles both the deprecated handler and the new preference system
+    internal let actionWrapper: CustomerCenterActionWrapper
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
     init(
-        actionBridge: CustomerCenterActionBridge,
+        actionWrapper: CustomerCenterActionWrapper,
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         },
@@ -91,7 +91,7 @@ import RevenueCat
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
-        self.actionBridge = actionBridge
+        self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
@@ -102,7 +102,7 @@ import RevenueCat
         purchaseInformation: PurchaseInformation,
         configuration: CustomerCenterConfigData
     ) {
-        self.init(actionBridge: CustomerCenterActionBridge(legacyActionHandler: nil))
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
         self.purchaseInformation = purchaseInformation
         self.configuration = configuration
         self.state = .success
@@ -121,16 +121,16 @@ import RevenueCat
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.actionBridge.handleAction(.public(.restoreStarted))
+        self.actionWrapper.handleAction(.public(.restoreStarted))
 
         do {
             let customerInfo = try await purchasesProvider.restorePurchases()
-            self.actionBridge.handleAction(.public(.restoreCompleted(customerInfo)))
+            self.actionWrapper.handleAction(.public(.restoreCompleted(customerInfo)))
 
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
             return hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
-            self.actionBridge.handleAction(.public(.restoreFailed(error)))
+            self.actionWrapper.handleAction(.public(.restoreFailed(error)))
 
             return .purchasesNotFound
         }

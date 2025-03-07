@@ -59,7 +59,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    let actionBridge: CustomerCenterActionBridge
+    let actionWrapper: CustomerCenterActionWrapper
 
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
@@ -74,7 +74,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     init(
         screen: CustomerCenterConfigData.Screen,
-        actionBridge: CustomerCenterActionBridge,
+        actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
@@ -84,7 +84,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = ManageSubscriptionPurchases()
             self.refundRequestStatus = refundRequestStatus
-            self.actionBridge = actionBridge
+            self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
             self.state = .success
         }
@@ -182,18 +182,18 @@ private extension ManageSubscriptionsViewModel {
             do {
                 guard let purchaseInformation = self.purchaseInformation else { return }
                 let productId = purchaseInformation.productIdentifier
-                self.actionBridge.handleAction(.public(.refundRequestStarted(productId)))
+                self.actionWrapper.handleAction(.public(.refundRequestStarted(productId)))
 
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.actionBridge.handleAction(.public(.refundRequestCompleted(status)))
+                self.actionWrapper.handleAction(.public(.refundRequestCompleted(status)))
             } catch {
                 self.refundRequestStatus = .error
-                self.actionBridge.handleAction(.public(.refundRequestCompleted(.error)))
+                self.actionWrapper.handleAction(.public(.refundRequestCompleted(.error)))
             }
         case .changePlans, .cancel:
             do {
-                self.actionBridge.handleAction(.public(.showingManageSubscriptions))
+                self.actionWrapper.handleAction(.public(.showingManageSubscriptions))
 
                 try await purchasesProvider.showManageSubscriptions()
             } catch {

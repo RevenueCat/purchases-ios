@@ -23,7 +23,7 @@ internal enum CustomerCenterInternalAction {
 
 /// Helper class that bridges the CustomerCenterActionHandler to the new preference-based system
 @MainActor
-final class CustomerCenterActionBridge {
+final class CustomerCenterActionWrapper {
 
     // Direct setter closures that will be set by the preference connector
     var setRestoreStarted: () -> Void = {}
