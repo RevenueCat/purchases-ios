@@ -61,17 +61,42 @@ extension View {
         presentationMode: CustomerCenterPresentationMode = .default,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
-        self.modifier(
+        // Convert the legacy handler to individual handlers if one is provided
+        var restoreStartedHandler: CustomerCenterView.RestoreStartedHandler?
+        var restoreCompletedHandler: CustomerCenterView.RestoreCompletedHandler?
+        var restoreFailedHandler: CustomerCenterView.RestoreFailedHandler?
+        var showingManageSubscriptionsHandler: CustomerCenterView.ShowingManageSubscriptionsHandler?
+        var refundRequestStartedHandler: CustomerCenterView.RefundRequestStartedHandler?
+        var refundRequestCompletedHandler: CustomerCenterView.RefundRequestCompletedHandler?
+        var feedbackSurveyCompletedHandler: CustomerCenterView.FeedbackSurveyCompletedHandler?
+
+        if let handler = customerCenterActionHandler {
+            restoreStartedHandler = { handler(.restoreStarted) }
+            restoreCompletedHandler = { handler(.restoreCompleted($0)) }
+            restoreFailedHandler = { handler(.restoreFailed($0)) }
+            showingManageSubscriptionsHandler = { handler(.showingManageSubscriptions) }
+            refundRequestStartedHandler = { handler(.refundRequestStarted($0)) }
+            refundRequestCompletedHandler = { handler(.refundRequestCompleted($0)) }
+            feedbackSurveyCompletedHandler = { handler(.feedbackSurveyCompleted($0)) }
+        }
+
+        return self.modifier(
             PresentingCustomerCenterModifier(
                 isPresented: isPresented,
                 onDismiss: onDismiss,
                 myAppPurchaseLogic: nil,
-                customerCenterActionHandler: customerCenterActionHandler,
-                presentationMode: presentationMode
+                presentationMode: presentationMode,
+                restoreStarted: restoreStartedHandler,
+                restoreCompleted: restoreCompletedHandler,
+                restoreFailed: restoreFailedHandler,
+                showingManageSubscriptions: showingManageSubscriptionsHandler,
+                refundRequestStarted: refundRequestStartedHandler,
+                refundRequestCompleted: refundRequestCompletedHandler,
+                feedbackSurveyCompleted: feedbackSurveyCompletedHandler
             )
         )
     }
-    
+
     /// Presents the ``CustomerCenter`` as a modal or sheet with individual action handlers.
     ///
     /// This modifier allows you to display the Customer Center, which provides support and account-related actions.
