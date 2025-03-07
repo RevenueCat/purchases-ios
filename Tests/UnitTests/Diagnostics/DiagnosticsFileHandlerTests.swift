@@ -42,7 +42,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     func testAppendEventWithProperties() async throws {
         let content = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                        properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                       timestamp: Date())
+                                       timestamp: Date(),
+                                       appSessionId: UUID())
 
         var entries = await self.handler.getEntries()
         expect(entries.count).to(equal(0))
@@ -81,13 +82,17 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: Self.line1)
         await self.fileHandler.append(line: Self.line2)
 
-        let content1 = DiagnosticsEvent(name: .customerInfoVerificationResult,
+        let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
+                                        name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                        timestamp: Date(millisecondsSince1970: 1712235359000))
+                                        timestamp: Date(millisecondsSince1970: 1712235359000),
+                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
-        let content2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
+        let content2 = DiagnosticsEvent(id: UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!,
+                                        name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                        timestamp: Date(millisecondsSince1970: 1712238959000))
+                                        timestamp: Date(millisecondsSince1970: 1712238959000),
+                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(equal(content1))
@@ -157,13 +162,17 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: Self.line1)
         await self.fileHandler.append(line: Self.line2)
 
-        let content1 = DiagnosticsEvent(name: .customerInfoVerificationResult,
+        let content1 = DiagnosticsEvent(id: UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!,
+                                        name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                        timestamp: Date(millisecondsSince1970: 1712235359000))
+                                        timestamp: Date(millisecondsSince1970: 1712235359000),
+                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
-        let content2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
+        let content2 = DiagnosticsEvent(id: UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!,
+                                        name: .customerInfoVerificationResult,
                                         properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                        timestamp: Date(millisecondsSince1970: 1712238959000))
+                                        timestamp: Date(millisecondsSince1970: 1712238959000),
+                                        appSessionId: UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!)
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(beNil())
@@ -182,19 +191,23 @@ private extension DiagnosticsFileHandlerTests {
 
     static let line1 = """
     {
+      "id": "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC",
       "properties": {"verification_result": "FAILED"},
       "timestamp": "2024-04-04T12:55:59Z",
       "name": "customer_info_verification_result",
-      "version": 1
+      "version": 1,
+      "app_session_id": "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF"
     }
     """.trimmingWhitespacesAndNewLines
 
     static let line2 = """
     {
+      "id": "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
       "properties": {"verification_result": "FAILED"},
       "timestamp": "2024-04-04T13:55:59Z",
       "name": "customer_info_verification_result",
-      "version": 1
+      "version": 1,
+      "app_session_id": "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF"
     }
     """.trimmingWhitespacesAndNewLines
 
@@ -213,7 +226,8 @@ private extension DiagnosticsFileHandlerTests {
     static func sampleEvent() -> DiagnosticsEvent {
         return DiagnosticsEvent(name: .httpRequestPerformed,
                                 properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                timestamp: Date())
+                                timestamp: Date(),
+                                appSessionId: UUID())
     }
 
 }

@@ -1,4 +1,6 @@
 {
+  "app_session_id" : "16D1E479-56B7-4AD9-974C-D6CC7C3DB338",
+  "id" : "9193C8A3-CCE2-4A3A-8BAE-59EF38CAEFE9",
   "name" : "http_request_performed",
   "properties" : {
     "backend_error_code" : 500,

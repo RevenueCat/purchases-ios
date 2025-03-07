@@ -16,10 +16,24 @@ import Foundation
 /// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used.
 struct DiagnosticsEvent: Codable, Equatable {
 
+    let id: UUID
     private(set) var version: Int = 1
     let name: EventName
     let properties: Properties
     let timestamp: Date
+    let appSessionId: UUID
+
+    init(id: UUID = UUID(),
+         name: EventName,
+         properties: Properties,
+         timestamp: Date,
+         appSessionId: UUID) {
+        self.id = id
+        self.name = name
+        self.properties = properties
+        self.timestamp = timestamp
+        self.appSessionId = appSessionId
+    }
 
     enum EventName: String, Codable, Equatable {
         case httpRequestPerformed = "http_request_performed"

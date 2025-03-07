@@ -844,10 +844,6 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
-
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await self.paywallEventsManager?.resetAppSessionID()
-            }
         }
     }
 
@@ -879,10 +875,6 @@ public extension Purchases {
                     }
                 }
                 return
-            }
-
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {

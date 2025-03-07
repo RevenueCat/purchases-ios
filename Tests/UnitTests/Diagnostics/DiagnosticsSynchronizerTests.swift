@@ -198,7 +198,8 @@ private extension DiagnosticsSynchronizerTests {
     func storeEvent(timestamp: Date = eventTimestamp1) async -> DiagnosticsEvent {
         let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                     timestamp: timestamp)
+                                     timestamp: timestamp,
+                                     appSessionId: UUID())
         await self.handler.appendEvent(diagnosticsEvent: event)
 
         return event

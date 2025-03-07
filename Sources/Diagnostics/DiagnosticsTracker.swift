@@ -62,13 +62,16 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
+    private let appSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
          diagnosticsDispatcher: OperationDispatcher = .default,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         appSessionID: UUID = SystemInfo.appSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
+        self.appSessionID = appSessionID
     }
 
     func track(_ event: DiagnosticsEvent) {
@@ -89,7 +92,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         let event = DiagnosticsEvent(
             name: .customerInfoVerificationResult,
             properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name),
-            timestamp: self.dateProvider.now()
+            timestamp: self.dateProvider.now(),
+            appSessionId: self.appSessionID
         )
         self.track(event)
     }
@@ -114,7 +118,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 requestedProductIds: requestedProductIds,
                                 notFoundProductIds: notFoundProductIds
                              ),
-                             timestamp: self.dateProvider.now())
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
         )
     }
 
@@ -139,7 +144,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                     etagHit: resultOrigin == .cache,
                     isRetry: isRetry
                 ),
-                timestamp: self.dateProvider.now()
+                timestamp: self.dateProvider.now(),
+                appSessionId: self.appSessionID
             )
         )
     }
@@ -168,7 +174,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 winBackOfferApplied: winBackOfferApplied,
                                 purchaseResult: purchaseResult
                              ),
-                             timestamp: self.dateProvider.now())
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
         )
     }
 
@@ -182,7 +189,8 @@ private extension DiagnosticsTracker {
             await self.diagnosticsFileHandler.emptyDiagnosticsFile()
             let maxEventsStoredEvent = DiagnosticsEvent(name: .maxEventsStoredLimitReached,
                                                         properties: .empty,
-                                                        timestamp: self.dateProvider.now())
+                                                        timestamp: self.dateProvider.now(),
+                                                        appSessionId: self.appSessionID)
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)
         }
     }

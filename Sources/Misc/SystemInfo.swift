@@ -149,6 +149,8 @@ class SystemInfo {
         }
     }
 
+    static let appSessionID = UUID()
+
     init(platformInfo: Purchases.PlatformInfo?,
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
