@@ -2,10 +2,10 @@
   "name" : "http_request_performed",
   "properties" : {
     "backend_error_code" : 500,
-    "etag_hit" : false,
     "endpoint_name" : "log_in",
     "error_code" : 1,
     "error_message" : "OK",
+    "etag_hit" : false,
     "not_found_product_ids" : [
       "test_product_id2"
     ],
