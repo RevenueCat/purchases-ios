@@ -115,9 +115,9 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries.count) == 1
         Self.expectEventArrayWithoutId(entries, [
             .init(name: .customerInfoVerificationResult,
-                                           properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
-                                           timestamp: Self.eventTimestamp1,
-                                           appSessionId: SystemInfo.appSessionID)
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
         ])
     }
 
