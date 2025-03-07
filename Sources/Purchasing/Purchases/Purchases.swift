@@ -485,6 +485,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
                         diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
                                                                           handler: diagnosticsFileHandler,
+                                                                          tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
