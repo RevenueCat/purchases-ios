@@ -50,11 +50,12 @@ public struct CustomerCenterView: View {
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - navigationOptions: Options to control the navigation behavior
+    @available(*, deprecated, message: "Use the view modifiers instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler? = nil,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
         self.init(
-            customerCenterActionHandler: customerCenterActionHandler,
+            actionBridge: CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler),
             mode: .default,
             navigationOptions: navigationOptions
         )
@@ -67,11 +68,10 @@ public struct CustomerCenterView: View {
     ///   - mode: The presentation mode for the Customer Center
     ///   - navigationOptions: Options to control the navigation behavior
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        actionBridge: CustomerCenterActionBridge,
         mode: CustomerCenterPresentationMode,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self._viewModel = .init(wrappedValue:
-                                    CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
+        self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionBridge: actionBridge))
         self.mode = mode
         self.navigationOptions = navigationOptions
     }
@@ -134,7 +134,7 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .modifier(CustomerCenterActionPreferenceConnector(viewModel: viewModel))
+        .modifier(CustomerCenterActionPreferenceConnector(actionBridge: viewModel.actionBridge))
     }
 
     @ViewBuilder
@@ -172,7 +172,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(screen: screen,
                                             purchaseInformation: purchaseInformation,
-                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                                            actionBridge: self.viewModel.actionBridge)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
@@ -184,7 +184,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: nil,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                                        actionBridge: self.viewModel.actionBridge)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration)

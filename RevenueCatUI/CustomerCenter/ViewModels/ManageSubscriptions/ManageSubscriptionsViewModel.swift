@@ -59,22 +59,22 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
+    let actionBridge: CustomerCenterActionBridge
+
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
     private var purchasesProvider: ManageSubscriptionsPurchaseType
-    private let actionBridge: CustomerCenterActionBridge
 
     init(
         screen: CustomerCenterConfigData.Screen,
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionBridge: CustomerCenterActionBridge,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
@@ -84,8 +84,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = ManageSubscriptionPurchases()
             self.refundRequestStatus = refundRequestStatus
-            self.customerCenterActionHandler = customerCenterActionHandler
-            self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
+            self.actionBridge = actionBridge
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
             self.state = .success
         }
@@ -183,18 +182,18 @@ private extension ManageSubscriptionsViewModel {
             do {
                 guard let purchaseInformation = self.purchaseInformation else { return }
                 let productId = purchaseInformation.productIdentifier
-                self.actionBridge.handleActionWithDeprecatedHandler(.refundRequestStarted(productId))
+                self.actionBridge.handleAction(.public(.refundRequestStarted(productId)))
 
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.actionBridge.handleActionWithDeprecatedHandler(.refundRequestCompleted(status))
+                self.actionBridge.handleAction(.public(.refundRequestCompleted(status)))
             } catch {
                 self.refundRequestStatus = .error
-                self.actionBridge.handleActionWithDeprecatedHandler(.refundRequestCompleted(.error))
+                self.actionBridge.handleAction(.public(.refundRequestCompleted(.error)))
             }
         case .changePlans, .cancel:
             do {
-                self.actionBridge.handleActionWithDeprecatedHandler(.showingManageSubscriptions)
+                self.actionBridge.handleAction(.public(.showingManageSubscriptions))
 
                 try await purchasesProvider.showManageSubscriptions()
             } catch {

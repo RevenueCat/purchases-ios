@@ -44,12 +44,12 @@ struct FeedbackSurveyView: View {
 
     init(
         feedbackSurveyData: FeedbackSurveyData,
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionBridge: CustomerCenterActionBridge,
         isPresented: Binding<Bool>
     ) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
             feedbackSurveyData: feedbackSurveyData,
-            customerCenterActionHandler: customerCenterActionHandler
+            actionBridge: actionBridge
         ))
         self._isPresented = isPresented
     }

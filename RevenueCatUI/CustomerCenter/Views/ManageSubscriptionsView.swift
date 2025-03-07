@@ -42,22 +42,18 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
-
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         actionBridge: CustomerCenterActionBridge) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
-            customerCenterActionHandler: customerCenterActionHandler,
+            actionBridge: actionBridge,
             purchaseInformation: purchaseInformation)
-        self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
+        self.init(viewModel: viewModel)
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
+    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
-        self.customerCenterActionHandler = customerCenterActionHandler
     }
 
     var body: some View {
@@ -68,7 +64,7 @@ struct ManageSubscriptionsView: View {
             ) { feedbackSurveyData in
                 FeedbackSurveyView(
                     feedbackSurveyData: feedbackSurveyData,
-                    customerCenterActionHandler: self.customerCenterActionHandler,
+                    actionBridge: self.viewModel.actionBridge,
                     isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
@@ -162,58 +158,57 @@ struct ManageSubscriptionsView: View {
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ManageSubscriptionsView_Previews: PreviewProvider {
-
-    // swiftlint:disable force_unwrapping
-    static var previews: some View {
-        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-            CompatibilityNavigationStack {
-                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    customerCenterActionHandler: nil,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-                    refundRequestStatus: .success)
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
-                                        customerCenterActionHandler: nil)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Monthly renewing - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    customerCenterActionHandler: nil,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-                                        customerCenterActionHandler: nil)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Yearly expiring - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    customerCenterActionHandler: nil,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-                                        customerCenterActionHandler: nil)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Free subscription - \(colorScheme)")
-        }
-    }
-
-}
+// @available(iOS 15.0, *)
+// @available(macOS, unavailable)
+// @available(tvOS, unavailable)
+// @available(watchOS, unavailable)
+// struct ManageSubscriptionsView_Previews: PreviewProvider {
+//
+//    // swiftlint:disable force_unwrapping
+//    static var previews: some View {
+//        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+//            CompatibilityNavigationStack {
+//                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
+//                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+//                    actionBridge: CustomerCenterActionBridge(customerCenterActionHandler: nil),
+//                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+//                    refundRequestStatus: .success)
+//                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+//                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+//                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+//            }
+//            .preferredColorScheme(colorScheme)
+//            .previewDisplayName("Monthly renewing - \(colorScheme)")
+//
+//            CompatibilityNavigationStack {
+//                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+//                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+//                    customerCenterActionHandler: nil,
+//                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
+//                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+//                                        customerCenterActionHandler: nil)
+//                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+//                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+//            }
+//            .preferredColorScheme(colorScheme)
+//            .previewDisplayName("Yearly expiring - \(colorScheme)")
+//
+//            CompatibilityNavigationStack {
+//                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+//                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+//                    customerCenterActionHandler: nil,
+//                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
+//                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+//                                        customerCenterActionHandler: nil)
+//                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+//                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+//            }
+//            .preferredColorScheme(colorScheme)
+//            .previewDisplayName("Free subscription - \(colorScheme)")
+//        }
+//    }
+//
+// }
 
 #endif
 

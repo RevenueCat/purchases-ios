@@ -14,8 +14,14 @@
 import RevenueCat
 import SwiftUI
 
+/// Internal enum to represent both public CustomerCenterAction cases and internal-only actions
+internal enum CustomerCenterInternalAction {
+    case `public`(CustomerCenterAction)
+    // Example of a new internal-only action that doesn't exist in the public API
+    case buttonTapped(buttonId: String)
+}
+
 /// Helper class that bridges the CustomerCenterActionHandler to the new preference-based system
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class CustomerCenterActionBridge {
 
@@ -29,41 +35,48 @@ final class CustomerCenterActionBridge {
     var setRefundRequestStarted: (String) -> Void = { _ in }
     var setRefundRequestCompleted: (RefundRequestStatus) -> Void = { _ in }
     var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
+    var setButtonTapped: (String) -> Void = { _ in }
 
     init(customerCenterActionHandler: CustomerCenterActionHandler?) {
         self.customerCenterActionHandler = customerCenterActionHandler
     }
 
-    /// Handles the action by calling both the deprecated handler and setting the preference
-    /// This is a convenience method for transitioning code to use the new system
-    func handleActionWithDeprecatedHandler(_ action: CustomerCenterAction) {
-        // Call the deprecated handler
-        customerCenterActionHandler?(action)
+    /// Main entry point for handling all actions
+    /// For legacy CustomerCenterAction, calls the legacy handler and triggers callbacks
+    /// For non-legacy actions, only triggers callbacks
+    func handleAction(_ internalAction: CustomerCenterInternalAction) {
+        // For public legacy actions, call the legacy handler
+        if case let .public(publicAction) = internalAction {
+            customerCenterActionHandler?(publicAction)
+        }
 
-        // Set the preference
-        handleAction(action)
+        // Trigger callbacks for all actions
+        triggerCallbacks(for: internalAction)
     }
 
-    private func handleAction(_ action: CustomerCenterAction) {
-        // Note: The deprecated handler should be called by the view model,
-        // so we're not calling it here to avoid duplication
-
-        // Directly invoke the appropriate setter based on the action
+    private func triggerCallbacks(for action: CustomerCenterInternalAction) {
         switch action {
-        case .restoreStarted:
-            setRestoreStarted()
-        case .restoreFailed(let error):
-            setRestoreFailed(error)
-        case .restoreCompleted(let customerInfo):
-            setRestoreCompleted(customerInfo)
-        case .showingManageSubscriptions:
-            setShowingManageSubscriptions()
-        case .refundRequestStarted(let productId):
-            setRefundRequestStarted(productId)
-        case .refundRequestCompleted(let status):
-            setRefundRequestCompleted(status)
-        case .feedbackSurveyCompleted(let optionId):
-            setFeedbackSurveyCompleted(optionId)
+        case .public(let publicAction):
+            switch publicAction {
+            case .restoreStarted:
+                setRestoreStarted()
+            case .restoreFailed(let error):
+                setRestoreFailed(error)
+            case .restoreCompleted(let customerInfo):
+                setRestoreCompleted(customerInfo)
+            case .showingManageSubscriptions:
+                setShowingManageSubscriptions()
+            case .refundRequestStarted(let productId):
+                setRefundRequestStarted(productId)
+            case .refundRequestCompleted(let status):
+                setRefundRequestCompleted(status)
+            case .feedbackSurveyCompleted(let optionId):
+                setFeedbackSurveyCompleted(optionId)
+            }
+
+        case .buttonTapped(let buttonId):
+            setButtonTapped(buttonId)
+
         }
     }
 }

@@ -35,26 +35,24 @@ class FeedbackSurveyViewModel: ObservableObject {
 
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
     private let actionBridge: CustomerCenterActionBridge
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
+                     actionBridge: CustomerCenterActionBridge) {
         self.init(feedbackSurveyData: feedbackSurveyData,
                   purchasesProvider: CustomerCenterPurchases(),
                   loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(),
-                  customerCenterActionHandler: customerCenterActionHandler)
+                  actionBridge: actionBridge)
     }
 
     init(feedbackSurveyData: FeedbackSurveyData,
          purchasesProvider: CustomerCenterPurchasesType,
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         actionBridge: CustomerCenterActionBridge) {
         self.feedbackSurveyData = feedbackSurveyData
         self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
-        self.customerCenterActionHandler = customerCenterActionHandler
-        self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
+        self.actionBridge = actionBridge
     }
 
     func handleAction(
@@ -66,7 +64,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     ) async {
         trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
 
-        self.actionBridge.handleActionWithDeprecatedHandler(.feedbackSurveyCompleted(option.id))
+        self.actionBridge.handleAction(.public(.feedbackSurveyCompleted(option.id)))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {

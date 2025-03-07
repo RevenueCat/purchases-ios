@@ -82,7 +82,7 @@ import RevenueCat
     private var impressionData: CustomerCenterEvent.Data?
 
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionBridge: CustomerCenterActionBridge,
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         },
@@ -91,7 +91,7 @@ import RevenueCat
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
-        self.actionBridge = CustomerCenterActionBridge(customerCenterActionHandler: customerCenterActionHandler)
+        self.actionBridge = actionBridge
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
@@ -102,7 +102,7 @@ import RevenueCat
         purchaseInformation: PurchaseInformation,
         configuration: CustomerCenterConfigData
     ) {
-        self.init(customerCenterActionHandler: nil)
+        self.init(actionBridge: CustomerCenterActionBridge(customerCenterActionHandler: nil))
         self.purchaseInformation = purchaseInformation
         self.configuration = configuration
         self.state = .success
@@ -121,16 +121,16 @@ import RevenueCat
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.actionBridge.handleActionWithDeprecatedHandler(.restoreStarted)
+        self.actionBridge.handleAction(.public(.restoreStarted))
 
         do {
             let customerInfo = try await purchasesProvider.restorePurchases()
-            self.actionBridge.handleActionWithDeprecatedHandler(.restoreCompleted(customerInfo))
+            self.actionBridge.handleAction(.public(.restoreCompleted(customerInfo)))
 
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
             return hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
-            self.actionBridge.handleActionWithDeprecatedHandler(.restoreFailed(error))
+            self.actionBridge.handleAction(.public(.restoreFailed(error)))
 
             return .purchasesNotFound
         }
