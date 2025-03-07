@@ -117,7 +117,8 @@ class DiagnosticsTrackerTests: TestCase {
                                                responseCode: 200,
                                                backendErrorCode: 7121,
                                                resultOrigin: .cache,
-                                               verificationResult: .verified)
+                                               verificationResult: .verified,
+                                               isRetry: false)
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(name: .httpRequestPerformed,
@@ -128,7 +129,8 @@ class DiagnosticsTrackerTests: TestCase {
                     successful: true,
                     responseCode: 200,
                     backendErrorCode: 7121,
-                    etagHit: true
+                    etagHit: true,
+                    isRetry: false
                   ),
                   timestamp: Self.eventTimestamp1)
         ]

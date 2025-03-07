@@ -54,6 +54,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
+        let isRetry: Bool?
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
@@ -71,7 +72,8 @@ struct DiagnosticsEvent: Codable, Equatable {
              productId: String? = nil,
              promotionalOfferId: String? = nil,
              winBackOfferApplied: Bool? = nil,
-             purchaseResult: PurchaseResult? = nil) {
+             purchaseResult: PurchaseResult? = nil,
+             isRetry: Bool? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
@@ -89,6 +91,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
+            self.isRetry = isRetry
         }
 
         static let empty = Properties()
