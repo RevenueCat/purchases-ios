@@ -18,7 +18,7 @@ import XCTest
 class PaywallDataTests: BaseHTTPResponseTest {
 
     func testSample1() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
 
         expect(paywall.templateName) == "1"
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
@@ -96,7 +96,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         // This logic only works on iOS 16+
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-chinese")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-chinese")
 
         let traditional = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hant")))
         let simplified = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hans")))
@@ -108,7 +108,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testModifyingImages() throws {
-        var paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        var paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
         var expected = paywall.config.images
 
         paywall.config.images.header = nil
@@ -118,7 +118,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testFindsLocaleWithOnlyLanguage() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en")))
         expect(enConfig.title) == "Paywall"
@@ -128,7 +128,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testLocalizedConfigurationFallsBackToLanguageWithDifferentRegion() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
 
         let (_, enConfig) = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
@@ -138,7 +138,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testLocalizedConfigurationLooksForCurrentLocaleWithoutRegionBeforePreferedLocales() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
 
         let (_, enConfig) = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
@@ -163,13 +163,13 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testDoesNotFindLocaleWithMissingLanguage() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
 
         expect(paywall.config(for: Locale(identifier: "fr"))).to(beNil())
     }
 
     func testMissingCurrentLocaleLoadsAvailableLocale() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_locale")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-missing_current_locale")
 
         let localization = try XCTUnwrap(paywall.localizedConfiguration)
         expect(localization.callToAction) == "Comprar"
@@ -177,7 +177,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testEmptyImageNamesAreParsedAsNil() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-empty_images")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-empty_images")
 
         let images = paywall.config.images
         expect(images.header).to(beNil())
@@ -186,7 +186,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testMultiTierLocalizationIsNil() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        let paywall: PaywallData = try Self.decodeFixture("PaywallData-Sample1")
         expect(paywall.localizedConfigurationByTier(for: [.init(identifier: "en_US")]))
             .to(beNil())
     }

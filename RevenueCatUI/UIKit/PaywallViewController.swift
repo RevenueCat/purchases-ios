@@ -21,7 +21,7 @@ import RevenueCat
 
 import UIKit
 
-/// A view controller for displaying `PaywallData` for an `Offering`.
+/// A view controller for displaying the paywall for an `Offering`.
 ///
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -43,7 +43,7 @@ public class PaywallViewController: UIViewController {
     }
 
     /// Initialize a `PaywallViewController` with an optional `Offering`.
-    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// `Offerings.current` will be used by default.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC
@@ -66,7 +66,7 @@ public class PaywallViewController: UIViewController {
     }
 
     /// Initialize a `PaywallViewController` with an optional `Offering` and ``PaywallFontProvider``.
-    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// `Offerings.current` will be used by default.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
@@ -90,7 +90,7 @@ public class PaywallViewController: UIViewController {
     }
 
     /// Initialize a `PaywallViewController` with an offering identifier.
-    /// - Parameter offeringIdentifier: The identifier for the offering with `PaywallData` to display.
+    /// - Parameter offeringIdentifier: The identifier for the offering with paywall to display.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC

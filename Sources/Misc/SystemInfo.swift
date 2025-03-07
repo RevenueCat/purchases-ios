@@ -84,7 +84,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.19.0-SNAPSHOT"
+        return "5.20.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -148,6 +148,8 @@ class SystemInfo {
             }
         }
     }
+
+    static let appSessionID = UUID()
 
     init(platformInfo: Purchases.PlatformInfo?,
          finishTransactions: Bool,

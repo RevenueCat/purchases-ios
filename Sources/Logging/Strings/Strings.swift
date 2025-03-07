@@ -15,6 +15,7 @@ import Foundation
 enum Strings {
 
     static let attribution = AttributionStrings.self
+    static let analytics = AnalyticsStrings.self
     static let codable = CodableStrings.self
     static let configure = ConfigureStrings.self
     static let backendError = BackendErrorStrings.self

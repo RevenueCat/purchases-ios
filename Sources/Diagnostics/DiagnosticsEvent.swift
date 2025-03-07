@@ -13,56 +13,101 @@
 
 import Foundation
 
+/// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used.
 struct DiagnosticsEvent: Codable, Equatable {
 
-    let version: Int = 1
-    let eventType: DiagnosticsEvent.EventType
-    let properties: [DiagnosticsPropertyKey: AnyEncodable]
+    let id: UUID
+    private(set) var version: Int = 1
+    let name: EventName
+    let properties: Properties
     let timestamp: Date
+    let appSessionId: UUID
 
-    enum CodingKeys: String, CodingKey {
-        case version, properties, timestamp, eventType
+    init(id: UUID = UUID(),
+         name: EventName,
+         properties: Properties,
+         timestamp: Date,
+         appSessionId: UUID) {
+        self.id = id
+        self.name = name
+        self.properties = properties
+        self.timestamp = timestamp
+        self.appSessionId = appSessionId
     }
 
-}
-
-extension DiagnosticsEvent {
-
-    enum EventType: String, Codable {
-
-        case httpRequestPerformed
-        case appleProductsRequest
-        case customerInfoVerificationResult
-        case maxEventsStoredLimitReached
-        case applePurchaseAttempt
-
+    enum EventName: String, Codable, Equatable {
+        case httpRequestPerformed = "http_request_performed"
+        case appleProductsRequest = "apple_products_request"
+        case customerInfoVerificationResult = "customer_info_verification_result"
+        case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
+        case applePurchaseAttempt = "apple_purchase_attempt"
     }
 
-    enum DiagnosticsPropertyKey: String, Codable {
-
-        case verificationResultKey
-        case endpointNameKey
-        case responseTimeMillisKey
-        case storeKitVersion
-        case successfulKey
-        case responseCodeKey
-        case backendErrorCodeKey
-        case errorMessageKey
-        case errorCodeKey
-        case skErrorDescriptionKey
-        case eTagHitKey
-
+    enum PurchaseResult: String, Codable, Equatable {
+        case verified
+        case unverified
+        case userCancelled = "user_cancelled"
+        case pending
     }
 
-}
+    struct Properties: Codable, Equatable {
+        let verificationResult: String?
+        let endpointName: String?
+        let responseTimeMillis: Int?
+        let storeKitVersion: String?
+        let successful: Bool?
+        let responseCode: Int?
+        let backendErrorCode: Int?
+        let errorMessage: String?
+        let errorCode: Int?
+        let skErrorDescription: String?
+        let etagHit: Bool?
+        let requestedProductIds: Set<String>?
+        let notFoundProductIds: Set<String>?
+        let productId: String?
+        let promotionalOfferId: String?
+        let winBackOfferApplied: Bool?
+        let purchaseResult: PurchaseResult?
+        let isRetry: Bool?
 
-extension DiagnosticsEvent {
+        init(verificationResult: String? = nil,
+             endpointName: String? = nil,
+             responseTime: TimeInterval? = nil,
+             storeKitVersion: StoreKitVersion? = nil,
+             successful: Bool? = nil,
+             responseCode: Int? = nil,
+             backendErrorCode: Int? = nil,
+             errorMessage: String? = nil,
+             errorCode: Int? = nil,
+             skErrorDescription: String? = nil,
+             etagHit: Bool? = nil,
+             requestedProductIds: Set<String>? = nil,
+             notFoundProductIds: Set<String>? = nil,
+             productId: String? = nil,
+             promotionalOfferId: String? = nil,
+             winBackOfferApplied: Bool? = nil,
+             purchaseResult: PurchaseResult? = nil,
+             isRetry: Bool? = nil) {
+            self.verificationResult = verificationResult
+            self.endpointName = endpointName
+            self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
+            self.storeKitVersion = storeKitVersion.map { "store_kit_\($0.debugDescription)" }
+            self.successful = successful
+            self.responseCode = responseCode
+            self.backendErrorCode = backendErrorCode
+            self.errorMessage = errorMessage
+            self.errorCode = errorCode
+            self.skErrorDescription = skErrorDescription
+            self.etagHit = etagHit
+            self.requestedProductIds = requestedProductIds
+            self.notFoundProductIds = notFoundProductIds
+            self.productId = productId
+            self.promotionalOfferId = promotionalOfferId
+            self.winBackOfferApplied = winBackOfferApplied
+            self.purchaseResult = purchaseResult
+            self.isRetry = isRetry
+        }
 
-    static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
-        return lhs.version == rhs.version &&
-               lhs.eventType == rhs.eventType &&
-               lhs.properties == rhs.properties &&
-               lhs.timestamp == rhs.timestamp
+        static let empty = Properties()
     }
-
 }

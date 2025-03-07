@@ -343,7 +343,7 @@ public struct CustomerCenterConfigData: Equatable {
                     openMethod: OpenMethod? = nil,
                     type: PathType,
                     detail: PathDetail?,
-                    refundWindowDuration: RefundWindowDuration?) {
+                    refundWindowDuration: RefundWindowDuration? = nil) {
             self.id = id
             self.title = title
             self.url = url
@@ -653,7 +653,7 @@ extension CustomerCenterConfigData.HelpPath {
             self.detail = nil
         }
 
-        if let window = response.refundWindowDuration {
+        if let window = response.refundWindow {
             self.refundWindowDuration = window == "forever"
                 ? RefundWindowDuration.forever
                 : ISODurationFormatter.parse(from: window).map { .duration($0) }
