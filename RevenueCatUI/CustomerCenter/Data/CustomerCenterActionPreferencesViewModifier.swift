@@ -55,27 +55,27 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
                 actionWrapper.setRestoreStarted = {
                     restoreStarted = UniqueWrapper(value: true)
                 }
-                
+
                 actionWrapper.setRestoreFailed = { error in
                     restoreFailed = UniqueWrapper(value: error as NSError)
                 }
-                
+
                 actionWrapper.setRestoreCompleted = { info in
                     restoreCompleted = UniqueWrapper(value: info)
                 }
-                
-                actionWrapper.setShowingManageSubscriptions = { 
+
+                actionWrapper.setShowingManageSubscriptions = {
                     showingManageSubscriptions = UniqueWrapper(value: true)
                 }
-                
+
                 actionWrapper.setRefundRequestStarted = { productId in
                     refundRequestStarted = UniqueWrapper(value: productId)
                 }
-                
+
                 actionWrapper.setRefundRequestCompleted = { status in
                     refundRequestCompleted = UniqueWrapper(value: status)
                 }
-                
+
                 actionWrapper.setFeedbackSurveyCompleted = { reason in
                     feedbackSurveyCompleted = UniqueWrapper(value: reason)
                 }
