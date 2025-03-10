@@ -111,7 +111,6 @@ extension CustomerCenterAnswerSubmittedEvent {
         public let path: CustomerCenterConfigData.HelpPath.PathType
         public let url: URL?
         public let surveyOptionID: String
-        public let surveyOptionTitleKey: String
         public let additionalContext: String?
         public let revisionID: Int
 
@@ -125,7 +124,6 @@ extension CustomerCenterAnswerSubmittedEvent {
             path: CustomerCenterConfigData.HelpPath.PathType,
             url: URL?,
             surveyOptionID: String,
-            surveyOptionTitleKey: String,
             additionalContext: String? = nil,
             revisionID: Int
         ) {
@@ -138,7 +136,6 @@ extension CustomerCenterAnswerSubmittedEvent {
             self.path = path
             self.url = url
             self.surveyOptionID = surveyOptionID
-            self.surveyOptionTitleKey = surveyOptionTitleKey
             self.additionalContext = additionalContext
             self.revisionID = revisionID
         }
@@ -217,13 +214,13 @@ extension CustomerCenterBaseData: Equatable, Codable, Sendable {}
 
 extension CustomerCenterAnswerSubmittedEvent.Data: Equatable, Codable, Sendable {
 
+    // These keys are used for `StoredEvent` only
     private enum CodingKeys: String, CodingKey {
 
         case base
         case path
         case url
         case surveyOptionID = "surveyOptionId"
-        case surveyOptionTitleKey = "surveyOptionTitleKey"
         case additionalContext = "additionalContext"
         case revisionID = "revisionId"
 

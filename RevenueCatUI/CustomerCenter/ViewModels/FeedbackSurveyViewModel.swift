@@ -127,7 +127,6 @@ private extension FeedbackSurveyViewModel {
                                                                        path: feedbackSurveyData.path.type,
                                                                        url: feedbackSurveyData.path.url,
                                                                        surveyOptionID: option.id,
-                                                                       surveyOptionTitleKey: option.title,
                                                                        additionalContext: nil,
                                                                        revisionID: 0)
         let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(CustomerCenterEventCreationData(),
