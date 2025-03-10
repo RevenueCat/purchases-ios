@@ -47,10 +47,10 @@ extension CustomerCenterView {
 
     // MARK: - Preference Keys
 
-    struct RestoreStartedPreferenceKey: PreferenceKey {
-        static var defaultValue: Bool = false
-        static func reduce(value: inout Bool, nextValue: () -> Bool) {
-            value = value || nextValue()
+    struct RestoreCounterPreferenceKey: PreferenceKey {
+        static var defaultValue: Int = 0
+        static func reduce(value: inout Int, nextValue: () -> Int) {
+            value = nextValue()
         }
     }
 
@@ -103,8 +103,10 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RestoreStartedPreferenceKey.self) { inProgress in
-                    if inProgress {
+                .onPreferenceChange(RestoreCounterPreferenceKey.self) { counter in
+                    // Only trigger handler when counter is positive (> 0)
+                    // This prevents the initial event when the view loads
+                    if counter > 0 {
                         self.handler()
                     }
                 }

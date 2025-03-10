@@ -25,8 +25,9 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
 
-    // State to track preferences that should be set
-    @State private var restoreStarted: Bool = false
+    // Use counter to track restore events instead of boolean flag
+    // Each increment creates a unique restore event
+    @State private var restoreCounter: Int = 0
     @State private var restoreFailed: Error?
     @State private var restoreCompleted: CustomerInfo?
     @State private var showingManageSubscriptions: Bool = false
@@ -38,17 +39,28 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
         content
             .onAppear {
                 // Set up direct binding to the state variables
-                actionWrapper.setRestoreStarted = { restoreStarted = true }
-                actionWrapper.setRestoreFailed = { restoreFailed = $0 as NSError }
-                actionWrapper.setRestoreCompleted = { restoreCompleted = $0 }
+                actionWrapper.setRestoreStarted = { 
+                    // Increment counter to create a new unique value
+                    // This guarantees preference change detection
+                    restoreCounter += 1
+                }
+                
+                actionWrapper.setRestoreFailed = { error in
+                    restoreFailed = error as NSError
+                }
+                
+                actionWrapper.setRestoreCompleted = { info in
+                    restoreCompleted = info
+                }
+                
                 actionWrapper.setShowingManageSubscriptions = { showingManageSubscriptions = true }
                 actionWrapper.setRefundRequestStarted = { refundRequestStarted = $0 }
                 actionWrapper.setRefundRequestCompleted = { refundRequestCompleted = $0 }
                 actionWrapper.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
             }
             // Apply preferences based on state
-            .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
-                        value: restoreStarted)
+            .preference(key: CustomerCenterView.RestoreCounterPreferenceKey.self,
+                        value: restoreCounter)
             .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
                         value: restoreFailed as NSError?)
             .preference(key: CustomerCenterView.RestoreCompletedPreferenceKey.self,
