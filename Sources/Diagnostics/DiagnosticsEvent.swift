@@ -41,6 +41,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case customerInfoVerificationResult = "customer_info_verification_result"
         case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
         case applePurchaseAttempt = "apple_purchase_attempt"
+        case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
