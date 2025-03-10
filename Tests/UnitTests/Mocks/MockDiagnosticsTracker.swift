@@ -32,7 +32,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedHttpRequestPerformedParams: Atomic<[
         // swiftlint:disable:next large_tuple
-        (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
+        (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
@@ -41,7 +41,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult) {
+                                   verificationResult: VerificationResult,
+                                   isRetry: Bool) {
         self.trackedHttpRequestPerformedParams.modify {
             $0.append(
                 (endpointName,
@@ -50,7 +51,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  responseCode,
                  backendErrorCode,
                  resultOrigin,
-                 verificationResult)
+                 verificationResult,
+                 isRetry)
             )
         }
     }
@@ -102,8 +104,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          errorMessage: String?,
          errorCode: Int?,
          storeKitErrorDescription: String?,
-         requestedProductIds: [String],
-         notFoundProductIds: [String],
+         requestedProductIds: Set<String>,
+         notFoundProductIds: Set<String>,
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
@@ -112,8 +114,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
-                              requestedProductIds: [String],
-                              notFoundProductIds: [String],
+                              requestedProductIds: Set<String>,
+                              notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
         self.trackedProductsRequestParams.modify {
             $0.append(
@@ -129,4 +131,13 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    let trackedMaxDiagnosticsSyncRetriesReachedCalls: Atomic<Int> = .init(0)
+    func trackMaxDiagnosticsSyncRetriesReached() {
+        trackedMaxDiagnosticsSyncRetriesReachedCalls.modify { $0 += 1 }
+    }
+
+    let trackedClearingDiagnosticsAfterFailedSyncCalls: Atomic<Int> = .init(0)
+    func trackClearingDiagnosticsAfterFailedSync() {
+        trackedClearingDiagnosticsAfterFailedSyncCalls.modify { $0 += 1 }
+    }
 }
