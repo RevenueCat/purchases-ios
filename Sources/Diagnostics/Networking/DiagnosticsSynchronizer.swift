@@ -75,6 +75,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
             if let backendError = error as? BackendError,
                backendError.successfullySynced {
                 await self.handler.cleanSentDiagnostics(diagnosticsSentCount: count)
+                self.tracker?.trackClearingDiagnosticsAfterFailedSync()
                 self.clearSyncRetries()
             } else {
                 let currentSyncRetries = self.getCurrentSyncRetries()
