@@ -159,6 +159,23 @@ class DiagnosticsSynchronizerTests: TestCase {
         }
     }
 
+    func testSendsTrackClearingDiagnosticsAfterFailedSyncCallsIfFailedEventIsConsideredSuccessfulSync() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.tracker.trackedMaxDiagnosticsSyncRetriesReachedCalls.value) == 0
+        expect(self.tracker.trackedClearingDiagnosticsAfterFailedSyncCalls.value) == 1
+    }
+
     func testClearsDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
         _ = await self.storeEvent()
 
@@ -194,6 +211,7 @@ class DiagnosticsSynchronizerTests: TestCase {
         try? await self.synchronizer.syncDiagnosticsIfNeeded()
 
         expect(self.tracker.trackedMaxDiagnosticsSyncRetriesReachedCalls.value) == 1
+        expect(self.tracker.trackedClearingDiagnosticsAfterFailedSyncCalls.value) == 0
     }
 
     func testMultipleErrorsEventuallyClearDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
