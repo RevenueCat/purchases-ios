@@ -902,7 +902,7 @@ class BasicCustomerInfoTests: TestCase {
                 "subscriptions": {},
                 "virtual_currencies": {
                   "COIN": {
-                    "amount": 200
+                    "balance": 200
                   }
                 }
               }
@@ -936,10 +936,10 @@ class BasicCustomerInfoTests: TestCase {
                 "subscriptions": {},
                 "virtual_currencies": {
                   "COIN1": {
-                    "amount": 200
+                    "balance": 200
                   },
                   "COIN2": {
-                    "amount": 500
+                    "balance": 500
                   }
                 }
               }

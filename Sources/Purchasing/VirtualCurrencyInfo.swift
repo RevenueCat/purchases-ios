@@ -30,7 +30,7 @@ public final class VirtualCurrencyInfo: NSObject {
     @objc public let balance: Int64
 
     init(with virtualCurrencyInfo: CustomerInfoResponse.VirtualCurrencyInfo) {
-        self.balance = virtualCurrencyInfo.amount
+        self.balance = virtualCurrencyInfo.balance
     }
 }
 
