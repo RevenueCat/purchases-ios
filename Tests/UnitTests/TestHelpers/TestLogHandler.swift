@@ -128,7 +128,7 @@ extension TestLogHandler {
     }
 
     func verifyMessageIsEventuallyLogged(
-        _ message: String,
+        _ message: CustomStringConvertible,
         level: LogLevel? = nil,
         expectedCount: Int? = nil,
         timeout: DispatchTimeInterval = AsyncDefaults.timeout,
