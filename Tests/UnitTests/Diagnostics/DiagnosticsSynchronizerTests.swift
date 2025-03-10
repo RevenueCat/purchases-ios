@@ -22,6 +22,7 @@ class DiagnosticsSynchronizerTests: TestCase {
     fileprivate var api: MockInternalAPI!
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
+    fileprivate var tracker: MockDiagnosticsTracker!
     fileprivate var synchronizer: DiagnosticsSynchronizer!
     fileprivate var userDefaults: MockUserDefaults!
 
@@ -33,9 +34,11 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.api = .init()
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
+        self.tracker = MockDiagnosticsTracker()
         self.userDefaults = .init()
         self.synchronizer = .init(internalAPI: self.api,
                                   handler: self.handler,
+                                  tracker: self.tracker,
                                   userDefaults: .init(userDefaults: self.userDefaults))
     }
 
@@ -134,12 +137,51 @@ class DiagnosticsSynchronizerTests: TestCase {
                                            expectedCount: 1)
     }
 
-    func testClearsDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
+    func testNoRetryIfFailedEventIsConsideredSuccessfulSync() async throws {
         _ = await self.storeEvent()
 
         let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
 
         let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await self.verifyEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+        }
+    }
+
+    func testSendsTrackClearingDiagnosticsAfterFailedSyncCallsIfFailedEventIsConsideredSuccessfulSync() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.tracker.trackedMaxDiagnosticsSyncRetriesReachedCalls.value) == 0
+        expect(self.tracker.trackedClearingDiagnosticsAfterFailedSyncCalls.value) == 1
+    }
+
+    func testClearsDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .internalServerError)
 
         self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
 
@@ -153,6 +195,23 @@ class DiagnosticsSynchronizerTests: TestCase {
             await self.verifyEmptyStore()
             expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
         }
+    }
+
+    func testSendsTrackMaxDiagnosticsSyncRetriesReachedIfMaxRetriesReached() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .internalServerError)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 3]
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.tracker.trackedMaxDiagnosticsSyncRetriesReachedCalls.value) == 1
+        expect(self.tracker.trackedClearingDiagnosticsAfterFailedSyncCalls.value) == 0
     }
 
     func testMultipleErrorsEventuallyClearDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
@@ -196,9 +255,10 @@ class DiagnosticsSynchronizerTests: TestCase {
 private extension DiagnosticsSynchronizerTests {
 
     func storeEvent(timestamp: Date = eventTimestamp1) async -> DiagnosticsEvent {
-        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
-                                     timestamp: timestamp)
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                     properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                                     timestamp: timestamp,
+                                     appSessionId: UUID())
         await self.handler.appendEvent(diagnosticsEvent: event)
 
         return event

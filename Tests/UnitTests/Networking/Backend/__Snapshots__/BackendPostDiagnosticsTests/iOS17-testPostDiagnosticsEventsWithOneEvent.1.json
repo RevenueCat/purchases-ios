@@ -24,6 +24,8 @@
     "body" : {
       "entries" : [
         {
+          "app_session_id" : "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
+          "id" : "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC",
           "name" : "customer_info_verification_result",
           "properties" : {
             "verification_result" : "FAILED"

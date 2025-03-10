@@ -43,6 +43,7 @@
         "LoadShedderStoreKit1IntegrationTests",
         "LoadShedderStoreKit2IntegrationTests",
         "LoadShedderStoreKit2JWSIntegrationTests",
+	"EventsManagerIntegrationTests",
         "OfflineStoreKit1IntegrationTests",
         "OfflineStoreKit2IntegrationTests",
         "OfflineStoreKit2JWSIntegrationTests",
