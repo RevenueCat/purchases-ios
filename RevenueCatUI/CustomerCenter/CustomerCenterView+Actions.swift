@@ -47,51 +47,51 @@ extension CustomerCenterView {
 
     // MARK: - Preference Keys
 
-    struct RestoreCounterPreferenceKey: PreferenceKey {
-        static var defaultValue: Int = 0
-        static func reduce(value: inout Int, nextValue: () -> Int) {
-            value = nextValue()
+    struct RestoreStartedPreferenceKey: PreferenceKey {
+        static var defaultValue: UniqueWrapper<Bool>?
+        static func reduce(value: inout UniqueWrapper<Bool>?, nextValue: () -> UniqueWrapper<Bool>?) {
+            value = nextValue() ?? value
         }
     }
 
     struct RestoreFailedPreferenceKey: PreferenceKey {
-        static var defaultValue: NSError?
-        static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
+        static var defaultValue: UniqueWrapper<NSError>?
+        static func reduce(value: inout UniqueWrapper<NSError>?, nextValue: () -> UniqueWrapper<NSError>?) {
             value = nextValue() ?? value
         }
     }
 
     struct RestoreCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: CustomerInfo?
-        static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
+        static var defaultValue: UniqueWrapper<CustomerInfo>?
+        static func reduce(value: inout UniqueWrapper<CustomerInfo>?, nextValue: () -> UniqueWrapper<CustomerInfo>?) {
             value = nextValue() ?? value
         }
     }
 
     struct ShowingManageSubscriptionsPreferenceKey: PreferenceKey {
-        static var defaultValue: Bool = false
-        static func reduce(value: inout Bool, nextValue: () -> Bool) {
-            value = value || nextValue()
+        static var defaultValue: UniqueWrapper<Bool>?
+        static func reduce(value: inout UniqueWrapper<Bool>?, nextValue: () -> UniqueWrapper<Bool>?) {
+            value = nextValue() ?? value
         }
     }
 
     struct RefundRequestStartedPreferenceKey: PreferenceKey {
-        static var defaultValue: String?
-        static func reduce(value: inout String?, nextValue: () -> String?) {
+        static var defaultValue: UniqueWrapper<String>?
+        static func reduce(value: inout UniqueWrapper<String>?, nextValue: () -> UniqueWrapper<String>?) {
             value = nextValue() ?? value
         }
     }
 
     struct RefundRequestCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: RefundRequestStatus?
-        static func reduce(value: inout RefundRequestStatus?, nextValue: () -> RefundRequestStatus?) {
+        static var defaultValue: UniqueWrapper<RefundRequestStatus>?
+        static func reduce(value: inout UniqueWrapper<RefundRequestStatus>?, nextValue: () -> UniqueWrapper<RefundRequestStatus>?) {
             value = nextValue() ?? value
         }
     }
 
     struct FeedbackSurveyCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: String?
-        static func reduce(value: inout String?, nextValue: () -> String?) {
+        static var defaultValue: UniqueWrapper<String>?
+        static func reduce(value: inout UniqueWrapper<String>?, nextValue: () -> UniqueWrapper<String>?) {
             value = nextValue() ?? value
         }
     }
@@ -103,10 +103,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RestoreCounterPreferenceKey.self) { counter in
-                    // Only trigger handler when counter is positive (> 0)
-                    // This prevents the initial event when the view loads
-                    if counter > 0 {
+                .onPreferenceChange(RestoreStartedPreferenceKey.self) { wrappedStarted in
+                    if wrappedStarted?.value == true {
                         self.handler()
                     }
                 }
@@ -118,8 +116,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RestoreFailedPreferenceKey.self) { error in
-                    if let error {
+                .onPreferenceChange(CustomerCenterView.RestoreFailedPreferenceKey.self) { wrappedError in
+                    if let error = wrappedError?.value {
                         self.handler(error)
                     }
                 }
@@ -131,8 +129,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RestoreCompletedPreferenceKey.self) { customerInfo in
-                    if let customerInfo {
+                .onPreferenceChange(RestoreCompletedPreferenceKey.self) { wrappedCustomerInfo in
+                    if let customerInfo = wrappedCustomerInfo?.value {
                         self.handler(customerInfo)
                     }
                 }
@@ -144,8 +142,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(ShowingManageSubscriptionsPreferenceKey.self) { isShowing in
-                    if isShowing {
+                .onPreferenceChange(ShowingManageSubscriptionsPreferenceKey.self) { wrappedIsShowing in
+                    if wrappedIsShowing?.value == true {
                         self.handler()
                     }
                 }
@@ -157,8 +155,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RefundRequestStartedPreferenceKey.self) { productId in
-                    if let productId {
+                .onPreferenceChange(RefundRequestStartedPreferenceKey.self) { wrappedProductId in
+                    if let productId = wrappedProductId?.value {
                         self.handler(productId)
                     }
                 }
@@ -170,8 +168,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { status in
-                    if let status {
+                .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { wrappedStatus in
+                    if let status = wrappedStatus?.value {
                         self.handler(status)
                     }
                 }
@@ -183,8 +181,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(FeedbackSurveyCompletedPreferenceKey.self) { optionId in
-                    if let optionId {
+                .onPreferenceChange(FeedbackSurveyCompletedPreferenceKey.self) { wrappedOptionId in
+                    if let optionId = wrappedOptionId?.value {
                         self.handler(optionId)
                     }
                 }
@@ -333,3 +331,4 @@ extension View {
         return self.modifier(CustomerCenterView.OnFeedbackSurveyCompletedModifier(handler: handler))
     }
 }
+

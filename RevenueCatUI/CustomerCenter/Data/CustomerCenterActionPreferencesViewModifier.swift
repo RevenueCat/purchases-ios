@@ -16,6 +16,18 @@ import SwiftUI
 
 #if os(iOS)
 
+/// A wrapper that makes any value unique by including a UUID
+struct UniqueWrapper<T> {
+    let id = UUID()
+    let value: T
+}
+
+extension UniqueWrapper: Equatable where T: Equatable {
+    static func == (lhs: UniqueWrapper<T>, rhs: UniqueWrapper<T>) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
 /// A view modifier that connects CustomerCenterViewModel actions to the SwiftUI preference system
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
@@ -27,42 +39,52 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
 
     // Use counter to track restore events instead of boolean flag
     // Each increment creates a unique restore event
-    @State private var restoreCounter: Int = 0
-    @State private var restoreFailed: Error?
-    @State private var restoreCompleted: CustomerInfo?
-    @State private var showingManageSubscriptions: Bool = false
-    @State private var refundRequestStarted: String?
-    @State private var refundRequestCompleted: RefundRequestStatus?
-    @State private var feedbackSurveyCompleted: String?
+    @State private var restoreStarted: UniqueWrapper<Bool> = .init(value: false)
+    @State private var restoreFailed: UniqueWrapper<NSError>?
+    @State private var restoreCompleted: UniqueWrapper<CustomerInfo>?
+    // Counter for manage subscriptions to ensure unique values
+    @State private var showingManageSubscriptions: UniqueWrapper<Bool> = .init(value: false)
+    @State private var refundRequestStarted: UniqueWrapper<String>?
+    @State private var refundRequestCompleted: UniqueWrapper<RefundRequestStatus>?
+    @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
 
     func body(content: Content) -> some View {
         content
             .onAppear {
                 // Set up direct binding to the state variables
-                actionWrapper.setRestoreStarted = { 
-                    // Increment counter to create a new unique value
-                    // This guarantees preference change detection
-                    restoreCounter += 1
+                actionWrapper.setRestoreStarted = {
+                    restoreStarted = UniqueWrapper(value: true)
                 }
                 
                 actionWrapper.setRestoreFailed = { error in
-                    restoreFailed = error as NSError
+                    restoreFailed = UniqueWrapper(value: error as NSError)
                 }
                 
                 actionWrapper.setRestoreCompleted = { info in
-                    restoreCompleted = info
+                    restoreCompleted = UniqueWrapper(value: info)
                 }
                 
-                actionWrapper.setShowingManageSubscriptions = { showingManageSubscriptions = true }
-                actionWrapper.setRefundRequestStarted = { refundRequestStarted = $0 }
-                actionWrapper.setRefundRequestCompleted = { refundRequestCompleted = $0 }
-                actionWrapper.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
+                actionWrapper.setShowingManageSubscriptions = { 
+                    showingManageSubscriptions = UniqueWrapper(value: true)
+                }
+                
+                actionWrapper.setRefundRequestStarted = { productId in
+                    refundRequestStarted = UniqueWrapper(value: productId)
+                }
+                
+                actionWrapper.setRefundRequestCompleted = { status in
+                    refundRequestCompleted = UniqueWrapper(value: status)
+                }
+                
+                actionWrapper.setFeedbackSurveyCompleted = { reason in
+                    feedbackSurveyCompleted = UniqueWrapper(value: reason)
+                }
             }
             // Apply preferences based on state
-            .preference(key: CustomerCenterView.RestoreCounterPreferenceKey.self,
-                        value: restoreCounter)
+            .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
+                        value: restoreStarted)
             .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
-                        value: restoreFailed as NSError?)
+                        value: restoreFailed)
             .preference(key: CustomerCenterView.RestoreCompletedPreferenceKey.self,
                         value: restoreCompleted)
             .preference(key: CustomerCenterView.ShowingManageSubscriptionsPreferenceKey.self,
