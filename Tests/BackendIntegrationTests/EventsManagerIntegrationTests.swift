@@ -76,16 +76,20 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                 )
             )
         )
+        // give background task a chance to run
+        await Task.yield()
 
-        try await flushAndVerify(eventsCount: 2, trackingIsAsync: true)
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Storing event:",
+            expectedCount: 2,
+            timeout: .seconds(3),
+            pollInterval: .seconds(1)
+        )
+
+        try await flushAndVerify(eventsCount: 2)
     }
 
-    private func flushAndVerify(eventsCount: Int, trackingIsAsync: Bool = false) async throws {
-        if trackingIsAsync {
-            // tracking customer center is async
-            try await Task.sleep(nanoseconds: 1_000_000_000)
-        }
-
+    private func flushAndVerify(eventsCount: Int) async throws {
         _ = try await Purchases.shared.flushPaywallEvents(count: 2)
 
         self.logger.verifyMessageWasLogged(
