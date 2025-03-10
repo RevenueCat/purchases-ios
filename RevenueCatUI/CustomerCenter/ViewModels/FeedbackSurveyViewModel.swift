@@ -35,24 +35,24 @@ class FeedbackSurveyViewModel: ObservableObject {
 
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
+    private let actionWrapper: CustomerCenterActionWrapper
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
+                     actionWrapper: CustomerCenterActionWrapper) {
         self.init(feedbackSurveyData: feedbackSurveyData,
                   purchasesProvider: CustomerCenterPurchases(),
                   loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(),
-                  customerCenterActionHandler: customerCenterActionHandler)
+                  actionWrapper: actionWrapper)
     }
 
     init(feedbackSurveyData: FeedbackSurveyData,
          purchasesProvider: CustomerCenterPurchasesType,
          loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         actionWrapper: CustomerCenterActionWrapper) {
         self.feedbackSurveyData = feedbackSurveyData
         self.purchasesProvider = purchasesProvider
         self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
-        self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionWrapper = actionWrapper
     }
 
     func handleAction(
@@ -64,7 +64,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     ) async {
         trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
 
-        self.customerCenterActionHandler?(.feedbackSurveyCompleted(option.id))
+        self.actionWrapper.handleAction(.feedbackSurveyCompleted(option.id))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
