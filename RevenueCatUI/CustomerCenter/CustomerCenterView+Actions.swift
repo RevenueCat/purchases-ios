@@ -48,9 +48,17 @@ extension CustomerCenterView {
     // MARK: - Preference Keys
 
     struct RestoreCounterPreferenceKey: PreferenceKey {
-        static var defaultValue: Int = 0
-        static func reduce(value: inout Int, nextValue: () -> Int) {
-            value = nextValue()
+        static var defaultValue: UUID = UUID()
+        static func reduce(value: inout UUID, nextValue: () -> UUID) {
+            let next = nextValue()
+            #if DEBUG
+            print("DEBUG: ⚙️ Counter reduce - current: \(value), next: \(next)")
+            #endif
+
+            // Only update if it's different from the default UUID
+            if next != UUID() {
+                value = next
+            }
         }
     }
 
@@ -97,21 +105,6 @@ extension CustomerCenterView {
     }
 
     // MARK: - View Modifiers
-
-    fileprivate struct OnRestoreStartedModifier: ViewModifier {
-        let handler: RestoreStartedHandler
-
-        func body(content: Content) -> some View {
-            content
-                .onPreferenceChange(RestoreCounterPreferenceKey.self) { counter in
-                    // Only trigger handler when counter is positive (> 0)
-                    // This prevents the initial event when the view loads
-                    if counter > 0 {
-                        self.handler()
-                    }
-                }
-        }
-    }
 
     fileprivate struct OnRestoreFailedModifier: ViewModifier {
         let handler: RestoreFailedHandler
@@ -216,7 +209,12 @@ extension View {
     public func onCustomerCenterRestoreStarted(
         _ handler: @escaping CustomerCenterView.RestoreStartedHandler
     ) -> some View {
-        return self.modifier(CustomerCenterView.OnRestoreStartedModifier(handler: handler))
+        return self.onPreferenceChange(CustomerCenterView.RestoreCounterPreferenceKey.self) { counter in
+                    // Only trigger handler when counter is positive (> 0)
+                    // This prevents the initial event when the view loads
+                    print("onPreferenceChange counter: \(counter)")
+                    handler()
+                }
     }
 
     /// Invokes the given closure when a restore fails in the Customer Center.

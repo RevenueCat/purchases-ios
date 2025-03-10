@@ -505,9 +505,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onPurchaseCancelled {
             self.purchaseCancelled?()
         }
-        .onRestoreStarted {
-            self.restoreStarted?()
-        }
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
 

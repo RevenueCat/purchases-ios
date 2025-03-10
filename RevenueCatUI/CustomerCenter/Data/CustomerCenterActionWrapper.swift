@@ -93,20 +93,44 @@ final class CustomerCenterActionWrapper {
     private func triggerCallbacks(for action: CustomerCenterInternalAction) {
         switch action {
         case .restoreStarted:
+            #if DEBUG
+            print("DEBUG: 🚀 Triggering RestoreStarted action")
+            #endif
             setRestoreStarted()
         case .restoreFailed(let error):
+            #if DEBUG
+            print("DEBUG: ❌ Triggering RestoreFailed action with error: \(error.localizedDescription)")
+            #endif
             setRestoreFailed(error)
         case .restoreCompleted(let customerInfo):
+            #if DEBUG
+            print("DEBUG: ✅ Triggering RestoreCompleted action for user: \(customerInfo.originalAppUserId)")
+            #endif
             setRestoreCompleted(customerInfo)
         case .showingManageSubscriptions:
+            #if DEBUG
+            print("DEBUG: 📱 Triggering ShowingManageSubscriptions action")
+            #endif
             setShowingManageSubscriptions()
         case .refundRequestStarted(let productId):
+            #if DEBUG
+            print("DEBUG: 💰 Triggering RefundRequestStarted action for product: \(productId)")
+            #endif
             setRefundRequestStarted(productId)
         case .refundRequestCompleted(let status):
+            #if DEBUG
+            print("DEBUG: 📋 Triggering RefundRequestCompleted action with status: \(status)")
+            #endif
             setRefundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
+            #if DEBUG
+            print("DEBUG: 📊 Triggering FeedbackSurveyCompleted action with option: \(optionId)")
+            #endif
             setFeedbackSurveyCompleted(optionId)
         case .buttonTapped(let buttonId):
+            #if DEBUG
+            print("DEBUG: 👆 Triggering ButtonTapped action for button: \(buttonId)")
+            #endif
             setButtonTapped(buttonId)
         }
     }

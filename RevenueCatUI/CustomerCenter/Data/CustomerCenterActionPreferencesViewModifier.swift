@@ -16,6 +16,50 @@ import SwiftUI
 
 #if os(iOS)
 
+/// A state container for tracking CustomerCenter events
+/// This class lives outside the ViewModifier to ensure state persists across view updates
+@available(iOS 15.0, *)
+@MainActor class CustomerCenterPreferenceState: ObservableObject {
+    @Published var restoreCounter: UUID = UUID()
+    @Published var restoreFailed: Error?
+    @Published var restoreCompleted: CustomerInfo?
+    @Published var showingManageSubscriptions: Bool = false
+    @Published var refundRequestStarted: String?
+    @Published var refundRequestCompleted: RefundRequestStatus?
+    @Published var feedbackSurveyCompleted: String?
+
+    func incrementRestoreCounter() {
+        restoreCounter = UUID()
+        #if DEBUG
+        print("DEBUG: 🔢 Incremented restore counter to: \(restoreCounter)")
+        #endif
+    }
+
+    func setRestoreFailed(_ error: Error) {
+        self.restoreFailed = error
+    }
+
+    func setRestoreCompleted(_ info: CustomerInfo) {
+        self.restoreCompleted = info
+    }
+
+    func setShowingManageSubscriptions() {
+        self.showingManageSubscriptions = true
+    }
+
+    func setRefundRequestStarted(_ productId: String) {
+        self.refundRequestStarted = productId
+    }
+
+    func setRefundRequestCompleted(_ status: RefundRequestStatus) {
+        self.refundRequestCompleted = status
+    }
+
+    func setFeedbackSurveyCompleted(_ optionId: String) {
+        self.feedbackSurveyCompleted = optionId
+    }
+}
+
 /// A view modifier that connects CustomerCenterViewModel actions to the SwiftUI preference system
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
@@ -25,54 +69,54 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
 
-    // Use counter to track restore events instead of boolean flag
-    // Each increment creates a unique restore event
-    @State private var restoreCounter: Int = 0
-    @State private var restoreFailed: Error?
-    @State private var restoreCompleted: CustomerInfo?
-    @State private var showingManageSubscriptions: Bool = false
-    @State private var refundRequestStarted: String?
-    @State private var refundRequestCompleted: RefundRequestStatus?
-    @State private var feedbackSurveyCompleted: String?
+    // Use StateObject to ensure the state persists across view updates
+    @StateObject private var state = CustomerCenterPreferenceState()
 
     func body(content: Content) -> some View {
         content
             .onAppear {
                 // Set up direct binding to the state variables
-                actionWrapper.setRestoreStarted = { 
-                    // Increment counter to create a new unique value
-                    // This guarantees preference change detection
-                    restoreCounter += 1
+                actionWrapper.setRestoreStarted = {
+                    state.incrementRestoreCounter()
                 }
-                
+
                 actionWrapper.setRestoreFailed = { error in
-                    restoreFailed = error as NSError
+                    state.setRestoreFailed(error)
                 }
-                
+
                 actionWrapper.setRestoreCompleted = { info in
-                    restoreCompleted = info
+                    state.setRestoreCompleted(info)
                 }
-                
-                actionWrapper.setShowingManageSubscriptions = { showingManageSubscriptions = true }
-                actionWrapper.setRefundRequestStarted = { refundRequestStarted = $0 }
-                actionWrapper.setRefundRequestCompleted = { refundRequestCompleted = $0 }
-                actionWrapper.setFeedbackSurveyCompleted = { feedbackSurveyCompleted = $0 }
+
+                actionWrapper.setShowingManageSubscriptions = {
+                    state.setShowingManageSubscriptions()
+                }
+
+                actionWrapper.setRefundRequestStarted = { productId in
+                    state.setRefundRequestStarted(productId)
+                }
+
+                actionWrapper.setRefundRequestCompleted = { status in
+                    state.setRefundRequestCompleted(status)
+                }
+
+                actionWrapper.setFeedbackSurveyCompleted = { optionId in
+                    state.setFeedbackSurveyCompleted(optionId)
+                }
             }
             // Apply preferences based on state
-            .preference(key: CustomerCenterView.RestoreCounterPreferenceKey.self,
-                        value: restoreCounter)
             .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
-                        value: restoreFailed as NSError?)
+                        value: state.restoreFailed as NSError?)
             .preference(key: CustomerCenterView.RestoreCompletedPreferenceKey.self,
-                        value: restoreCompleted)
+                        value: state.restoreCompleted)
             .preference(key: CustomerCenterView.ShowingManageSubscriptionsPreferenceKey.self,
-                        value: showingManageSubscriptions)
+                        value: state.showingManageSubscriptions)
             .preference(key: CustomerCenterView.RefundRequestStartedPreferenceKey.self,
-                        value: refundRequestStarted)
+                        value: state.refundRequestStarted)
             .preference(key: CustomerCenterView.RefundRequestCompletedPreferenceKey.self,
-                        value: refundRequestCompleted)
+                        value: state.refundRequestCompleted)
             .preference(key: CustomerCenterView.FeedbackSurveyCompletedPreferenceKey.self,
-                        value: feedbackSurveyCompleted)
+                        value: state.feedbackSurveyCompleted)
     }
 }
 

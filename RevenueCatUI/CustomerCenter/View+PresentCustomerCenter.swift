@@ -238,33 +238,16 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             @unknown default:
                 content
             }
+        }.onPreferenceChange(CustomerCenterView.RestoreCounterPreferenceKey.self) { counter in
+            // Only trigger handler when counter is positive (> 0)
+            // This prevents the initial event when the view loads
+            print("onPreferenceChange counter: \(counter)")
         }
     }
 
     private func customerCenterView() -> some View {
         // Otherwise use the individual action handlers
         return CustomerCenterView()
-            .onCustomerCenterRestoreStarted { [restoreStarted] in
-                restoreStarted?()
-            }
-            .onCustomerCenterRestoreCompleted { [restoreCompleted] customerInfo in
-                restoreCompleted?(customerInfo)
-            }
-            .onCustomerCenterRestoreFailed { [restoreFailed] error in
-                restoreFailed?(error)
-            }
-            .onCustomerCenterShowingManageSubscriptions { [showingManageSubscriptions] in
-                showingManageSubscriptions?()
-            }
-            .onCustomerCenterRefundRequestStarted { [refundRequestStarted] productId in
-                refundRequestStarted?(productId)
-            }
-            .onCustomerCenterRefundRequestCompleted { [refundRequestCompleted] status in
-                refundRequestCompleted?(status)
-            }
-            .onCustomerCenterFeedbackSurveyCompleted { [feedbackSurveyCompleted] optionId in
-                feedbackSurveyCompleted?(optionId)
-            }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 }

@@ -396,7 +396,6 @@ private struct PaywallContainerView: View {
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
             .onPurchaseFailure(self.purchaseFailure)
-            .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)

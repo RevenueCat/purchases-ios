@@ -35,6 +35,21 @@ import SwiftUI
 @available(watchOS, unavailable)
 public struct CustomerCenterView: View {
 
+    @State var restoreCounter: UUID = UUID()
+    @State var restoreFailed: Error?
+    @State var restoreCompleted: CustomerInfo?
+    @State var showingManageSubscriptions: Bool = false
+    @State var refundRequestStarted: String?
+    @State var refundRequestCompleted: RefundRequestStatus?
+    @State var feedbackSurveyCompleted: String?
+
+    func incrementRestoreCounter() {
+        restoreCounter = UUID()
+        #if DEBUG
+        print("DEBUG: 🔢 Incremented restore counter to: \(restoreCounter)")
+        #endif
+    }
+
     @StateObject private var viewModel: CustomerCenterViewModel
     @State private var ignoreAppUpdateWarning: Bool = false
 
@@ -140,12 +155,22 @@ private extension CustomerCenterView {
                         .environment(\.customerCenterPresentationMode, self.mode)
                         .environment(\.navigationOptions, self.navigationOptions)
                         .environment(\.supportInformation, configuration.support)
+                        .onChangeOf(restoreCounter) { newValue in
+                            print("DEBUG: 🔢 onChangeOf restore counter to: \(newValue)")
+                        }
                 } else {
                     TintedProgressView()
                 }
             }
         }
-        .modifier(CustomerCenterActionPreferencesViewModifier(actionWrapper: viewModel.actionWrapper))
+        .onAppear {
+            // Set up direct binding to the state variables
+            self.viewModel.actionWrapper.setRestoreStarted = {
+                incrementRestoreCounter()
+            }
+        }
+
+//        .modifier(CustomerCenterActionPreferencesViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder
@@ -196,6 +221,8 @@ private extension CustomerCenterView {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: nil,
                                         actionWrapper: self.viewModel.actionWrapper)
+                .preference(key: CustomerCenterView.RestoreCounterPreferenceKey.self,
+                            value: restoreCounter)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration)

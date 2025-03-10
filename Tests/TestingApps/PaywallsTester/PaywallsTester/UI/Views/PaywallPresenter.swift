@@ -43,9 +43,6 @@ struct PaywallPresenter: View {
                 .onPurchaseCancelled({
                     print("Paywall Handler - onPurchaseCancelled")
                 })
-                .onRestoreStarted({
-                    print("Paywall Handler - onRestoreStarted")
-                })
                 .onRestoreCompleted({ customerInfo in
                     print("Paywall Handler - onRestoreCompleted")
                 })

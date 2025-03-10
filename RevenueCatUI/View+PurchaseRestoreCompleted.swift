@@ -186,26 +186,6 @@ extension View {
         return self.modifier(OnPurchaseCancelledModifier(handler: handler))
     }
 
-    /// Invokes the given closure when a restore begins.
-    /// Example:
-    /// ```swift
-    ///  @State
-    ///  var body: some View {
-    ///     PaywallView()
-    ///         .onRestoreStarted {
-    ///             print("Restore started")
-    ///         }
-    ///  }
-    /// ```
-    ///
-    /// ### Related Articles
-    /// [Documentation](https://rev.cat/paywalls)
-    public func onRestoreStarted(
-        _ handler: @escaping RestoreStartedHandler
-    ) -> some View {
-        return self.modifier(OnRestoreStartedModifier(handler: handler))
-    }
-
     /// Invokes the given closure when restore purchases is completed.
     /// The closure includes the `CustomerInfo` after the process is completed.
     /// Example:
