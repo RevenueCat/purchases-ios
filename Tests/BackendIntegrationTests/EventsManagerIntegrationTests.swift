@@ -23,10 +23,6 @@ import XCTest
 @MainActor
 final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
-    override var apiKey: String { return Constants.customEntitlementComputationApiKey }
-
-    var eventsManager: PaywallEventsManager!
-
     func testPostingPaywallsDoesNotFail() async throws {
         let events = [
             PaywallEvent.cancel(
@@ -41,28 +37,19 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         ]
 
         for event in events {
-            await eventsManager.track(
-                featureEvent: event
+            await Purchases.shared.track(
+                paywallEvent: event
             )
         }
 
-        _ = try await eventsManager.flushEvents(count: 100)
-
-        self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: events.count)
-        )
-
-        try self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1
-        )
+        try await flushAndVerify(eventsCount: events.count)
     }
 
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
-        await eventsManager.track(
-            featureEvent: CustomerCenterEvent.impression(
+
+        Purchases.shared.track(
+            customerCenterEvent: CustomerCenterEvent.impression(
                 Self.customerCenterCreationData,
                 CustomerCenterEvent.Data(
                     locale: locale,
@@ -73,8 +60,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        await eventsManager.track(
-            featureEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
+        Purchases.shared.track(
+            customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
                 Self.customerCenterCreationData,
                 CustomerCenterAnswerSubmittedEvent.Data(
                     locale: locale,
@@ -90,13 +77,22 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        _ = try await eventsManager.flushEvents(count: 2)
+        try await flushAndVerify(eventsCount: 2, trackingIsAsync: true)
+    }
+
+    private func flushAndVerify(eventsCount: Int, trackingIsAsync: Bool = false) async throws {
+        if trackingIsAsync {
+            // tracking customer center is async
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+
+        _ = try await Purchases.shared.flushPaywallEvents(count: 2)
 
         self.logger.verifyMessageWasLogged(
             Strings.paywalls.event_flush_starting(count: 2)
         )
 
-        try self.logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
             level: .debug,
             expectedCount: 1
