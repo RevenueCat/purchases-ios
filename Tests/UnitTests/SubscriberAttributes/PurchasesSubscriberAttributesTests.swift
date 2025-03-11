@@ -147,7 +147,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                          systemInfo: systemInfo,
                                                          backend: mockBackend,
                                                          offeringsFactory: MockOfferingsFactory(),
-                                                         productsManager: mockProductsManager)
+                                                         productsManager: mockProductsManager,
+                                                         diagnosticsTracker: nil)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                   customerInfoManager: customerInfoManager,
                                                                   currentUserProvider: mockIdentityManager)

@@ -62,6 +62,19 @@ protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackEnteredOfflineEntitlementsMode()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackOfferingsStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackOfferingsResult(requestedProductIds: Set<String>?,
+                              notFoundProductIds: Set<String>?,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              verificationResult: VerificationResult?,
+                              cacheStatus: CacheStatus?,
+                              responseTime: TimeInterval)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -207,6 +220,38 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                     timestamp: self.dateProvider.now(),
                                     appSessionId: self.appSessionID))
     }
+
+    func trackOfferingsStarted() {
+        self.track(
+            DiagnosticsEvent(name: .getOfferingsStarted,
+                             properties: .empty,
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
+    func trackOfferingsResult(requestedProductIds: Set<String>?,
+                              notFoundProductIds: Set<String>?,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              verificationResult: VerificationResult?,
+                              cacheStatus: CacheStatus?,
+                              responseTime: TimeInterval) {
+        self.track(
+            DiagnosticsEvent(name: .getOfferingsResult,
+                             properties: DiagnosticsEvent.Properties(
+                                verificationResult: verificationResult?.name,
+                                responseTime: responseTime,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                requestedProductIds: requestedProductIds,
+                                notFoundProductIds: notFoundProductIds
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

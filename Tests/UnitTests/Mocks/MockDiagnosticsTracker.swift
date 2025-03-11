@@ -145,4 +145,41 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     func trackEnteredOfflineEntitlementsMode() {
         trackedEnteredOfflineEntitlementsModeCalls.modify { $0 += 1 }
     }
+
+    let trackedOfferingsStartedCount: Atomic<Int> = .init(0)
+    func trackOfferingsStarted() {
+        self.trackedOfferingsStartedCount.modify { $0 + 1 }
+    }
+
+    let trackOfferingsResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (requestedProductIds: Set<String>?,
+         notFoundProductIds: Set<String>?,
+         errorMessage: String?,
+         errorCode: Int?,
+         verificationResult: VerificationResult?,
+         cacheStatus: CacheStatus?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackOfferingsResult(requestedProductIds: Set<String>?,
+                              notFoundProductIds: Set<String>?,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              verificationResult: VerificationResult?,
+                              cacheStatus: CacheStatus?,
+                              responseTime: TimeInterval) {
+        self.trackOfferingsResultParams.modify {
+            $0.append(
+                (requestedProductIds,
+                 notFoundProductIds,
+                 errorMessage,
+                 errorCode,
+                 verificationResult,
+                 cacheStatus,
+                 responseTime)
+            )
+        }
+    }
+
 }

@@ -15,7 +15,7 @@ enum Constants {
      REVENUECAT_API_KEY = your-api-key
      */
     static let apiKey: String = {
-        Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String ?? ""
+        "appl_yBXmuJBTosTvPtfwIySkUzDkxAq"
     }()
 
     /*

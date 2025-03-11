@@ -449,7 +449,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 systemInfo: systemInfo,
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
-                                                productsManager: productsManager)
+                                                productsManager: productsManager,
+                                                diagnosticsTracker: diagnosticsTracker)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -2008,9 +2009,9 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(
             appUserID: self.appUserID,
             isAppBackgrounded: isAppBackgrounded
-        ) { [cache = self.paywallCache] offerings in
+        ) { [cache = self.paywallCache] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
-               let cache = cache, let offerings = offerings.value {
+               let cache = cache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await cache.warmUpEligibilityCache(offerings: offerings)
                     await cache.warmUpPaywallImagesCache(offerings: offerings)
