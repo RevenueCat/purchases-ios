@@ -52,7 +52,7 @@ public struct CustomerCenterView: View {
     ///   - navigationOptions: Options to control the navigation behavior
     @available(*, deprecated, message: "Use the view modifiers instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
         self.init(
             actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: customerCenterActionHandler),
