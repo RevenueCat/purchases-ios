@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5342D98A2D8030150082128A /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5342D9892D8030150082128A /* RevenueCat */; };
+		5342D98C2D8030150082128A /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 5342D98B2D8030150082128A /* RevenueCatUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		5342D9652D802CD70082128A /* SampleCat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleCat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5342D98C2D8030150082128A /* RevenueCatUI in Frameworks */,
+				5342D98A2D8030150082128A /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = SampleCat;
 			packageProductDependencies = (
+				5342D9892D8030150082128A /* RevenueCat */,
+				5342D98B2D8030150082128A /* RevenueCatUI */,
 			);
 			productName = SampleCat;
 			productReference = 5342D9652D802CD70082128A /* SampleCat.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = 5342D95C2D802CD60082128A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5342D9662D802CD70082128A /* Products */;
 			projectDirPath = "";
@@ -322,6 +334,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5342D9892D8030150082128A /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		5342D98B2D8030150082128A /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5342D95D2D802CD60082128A /* Project object */;
 }
