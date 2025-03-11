@@ -54,6 +54,12 @@ struct DiagnosticsEvent: Codable, Equatable {
         case pending
     }
 
+    enum OfflineEntitlementsModeErrorReason: String, Codable, Equatable {
+        case oneTimePurchaseFound = "one_time_purchase_found"
+        case noEntitlementMappingAvailable = "no_entitlement_mapping_available"
+        case unknown
+    }
+
     struct Properties: Codable, Equatable {
         let verificationResult: String?
         let endpointName: String?
@@ -62,7 +68,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let successful: Bool?
         let responseCode: Int?
         let backendErrorCode: Int?
-        let offlineEntitlementErrorReason: String?
+        let offlineEntitlementErrorReason: OfflineEntitlementsModeErrorReason?
         let errorMessage: String?
         let errorCode: Int?
         let skErrorDescription: String?
@@ -82,7 +88,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              successful: Bool? = nil,
              responseCode: Int? = nil,
              backendErrorCode: Int? = nil,
-             offlineEntitlementErrorReason: String? = nil,
+             offlineEntitlementErrorReason: OfflineEntitlementsModeErrorReason? = nil,
              errorMessage: String? = nil,
              errorCode: Int? = nil,
              skErrorDescription: String? = nil,

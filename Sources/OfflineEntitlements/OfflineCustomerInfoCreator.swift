@@ -99,26 +99,27 @@ class OfflineCustomerInfoCreator {
 
             return offlineCustomerInfo
         } catch {
-            let reason, errorMessage: String
+            let reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason
+            let errorMessage: String
             switch error {
             case let productsFetcherError as PurchasedProductsFetcher.Error:
                 switch productsFetcherError {
                 case .foundConsumablePurchase:
-                    reason = "one_time_purchase_found"
+                    reason = .oneTimePurchaseFound
                     errorMessage = productsFetcherError.errorUserInfo[NSLocalizedDescriptionKey] as? String ?? ""
                 }
             case let offlineCustomerInfoCreatorError as OfflineCustomerInfoCreator.Error:
                 switch offlineCustomerInfoCreatorError {
                 case .noEntitlementMappingAvailable:
-                    reason = "no_entitlement_mapping_available"
+                    reason = .noEntitlementMappingAvailable
                     errorMessage = offlineCustomerInfoCreatorError.description
                 }
             default:
-                reason = "unknown"
+                reason = .unknown
                 errorMessage = error.localizedDescription
             }
 
-            self.tracker?.trackErrorEnteringOfflineEntitlementsMode(errorReason: reason, errorMessage: errorMessage)
+            self.tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
             throw error
         }
     }

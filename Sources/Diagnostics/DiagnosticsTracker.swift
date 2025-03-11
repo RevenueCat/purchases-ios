@@ -64,7 +64,7 @@ protocol DiagnosticsTrackerType {
     func trackEnteredOfflineEntitlementsMode()
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackErrorEnteringOfflineEntitlementsMode(errorReason: String,
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
                                                    errorMessage: String)
 }
 
@@ -212,11 +212,11 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                     appSessionId: self.appSessionID))
     }
 
-    func trackErrorEnteringOfflineEntitlementsMode(errorReason: String,
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
                                                    errorMessage: String) {
         self.track(DiagnosticsEvent(name: .errorEnteringOfflineEntitlementsMode,
                                     properties: DiagnosticsEvent.Properties(
-                                        offlineEntitlementErrorReason: errorReason,
+                                        offlineEntitlementErrorReason: reason,
                                         errorMessage: errorMessage
                                     ),
                                     timestamp: self.dateProvider.now(),

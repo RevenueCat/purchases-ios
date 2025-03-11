@@ -74,7 +74,7 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         } catch {
             expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
             let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
-            expect(reason) == "no_entitlement_mapping_available"
+            expect(reason) == .noEntitlementMappingAvailable
             expect(msg) == Strings.offlineEntitlements
                 .computing_offline_customer_info_with_no_entitlement_mapping.description
         }
@@ -108,7 +108,7 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         } catch {
             expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
             let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
-            expect(reason) == "one_time_purchase_found"
+            expect(reason) == .oneTimePurchaseFound
             expect(msg) == Strings.offlineEntitlements
                 .computing_offline_customer_info_for_consumable_product.description
         }
@@ -126,7 +126,7 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         } catch {
             expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
             let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
-            expect(reason) == "unknown"
+            expect(reason) == .unknown
             expect(msg) == ErrorCode.invalidAppUserIdError.localizedDescription
         }
     }
