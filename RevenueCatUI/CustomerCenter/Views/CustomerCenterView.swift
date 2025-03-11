@@ -115,7 +115,7 @@ private extension CustomerCenterView {
             ErrorView()
                 .environment(\.customerCenterPresentationMode, self.mode)
                 .environment(\.navigationOptions, self.navigationOptions)
-                .dismissCircleButtonToolbar()
+                .dismissCircleButtonToolbarIfNeeded()
 
         case .notLoaded:
             TintedProgressView()

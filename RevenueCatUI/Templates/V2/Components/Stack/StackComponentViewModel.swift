@@ -191,7 +191,13 @@ struct StackComponentStyle {
         case .start, .center, .end:
             return .normal
         case .spaceBetween, .spaceAround, .spaceEvenly:
-            return .flex
+            // We dont want to use a flex stack if its axis is set to fit.
+            // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
+            if self.size.height == .fit {
+                return .normal
+            } else {
+                return .flex
+            }
         }
     }
 
@@ -205,7 +211,13 @@ struct StackComponentStyle {
         case .start, .center, .end:
             return .normal
         case .spaceBetween, .spaceAround, .spaceEvenly:
-            return .flex
+            // We dont want to use a flex stack if its axis is set to fit.
+            // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
+            if self.size.width == .fit {
+                return .normal
+            } else {
+                return .flex
+            }
         }
     }
 

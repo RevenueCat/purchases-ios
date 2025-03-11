@@ -22,7 +22,7 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.response = try self.decodeFixture("ProductsEntitlements")
+        self.response = try Self.decodeFixture("ProductsEntitlements")
     }
 
     func testDataIsCorrect() {

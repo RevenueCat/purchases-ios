@@ -20,6 +20,7 @@ final class AttributionPoster {
     private let backend: Backend
     private let attributionFetcher: AttributionFetcher
     private let subscriberAttributesManager: SubscriberAttributesManager
+    private let systemInfo: SystemInfo
 
     private static var postponedAttributionData: [AttributionData]?
 
@@ -27,17 +28,23 @@ final class AttributionPoster {
          currentUserProvider: CurrentUserProvider,
          backend: Backend,
          attributionFetcher: AttributionFetcher,
-         subscriberAttributesManager: SubscriberAttributesManager) {
+         subscriberAttributesManager: SubscriberAttributesManager,
+         systemInfo: SystemInfo) {
         self.deviceCache = deviceCache
         self.currentUserProvider = currentUserProvider
         self.backend = backend
         self.attributionFetcher = attributionFetcher
         self.subscriberAttributesManager = subscriberAttributesManager
+        self.systemInfo = systemInfo
     }
 
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            return
+        }
+
         Logger.debug(Strings.attribution.instance_configured_posting_attribution)
         if data[AttributionKey.AppsFlyer.id.rawValue] != nil {
             Logger.warn(Strings.attribution.appsflyer_id_deprecated)
@@ -141,14 +148,14 @@ final class AttributionPoster {
     }
 
     func postPostponedAttributionDataIfNeeded() {
-        guard let postponedAttributionData = Self.postponedAttributionData else {
-            return
-        }
+        if let postponedAttributionData = Self.postponedAttributionData,
+           !systemInfo.dangerousSettings.uiPreviewMode {
 
-        for attributionData in postponedAttributionData {
-            post(attributionData: attributionData.data,
-                 fromNetwork: attributionData.network,
-                 networkUserId: attributionData.networkUserId)
+            for attributionData in postponedAttributionData {
+                post(attributionData: attributionData.data,
+                     fromNetwork: attributionData.network,
+                     networkUserId: attributionData.networkUserId)
+            }
         }
 
         Self.postponedAttributionData = nil

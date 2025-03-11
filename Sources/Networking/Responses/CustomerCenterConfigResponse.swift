@@ -48,7 +48,7 @@ struct CustomerCenterConfigResponse {
         let openMethod: OpenMethod?
         let promotionalOffer: PromotionalOffer?
         let feedbackSurvey: FeedbackSurvey?
-        let refundWindowDuration: String?
+        let refundWindow: String?
 
         enum PathType: String {
 

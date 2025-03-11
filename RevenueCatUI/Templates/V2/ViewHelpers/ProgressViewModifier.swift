@@ -26,7 +26,9 @@ struct ProgressViewModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             #if !os(watchOS)
-            .background(.ultraThinMaterial)
+            .applyIfLet(self.backgroundStyle, apply: { view, _ in
+                view.background(.ultraThinMaterial)
+            })
             #endif
             .overlay(progressView)
     }
@@ -40,7 +42,7 @@ struct ProgressViewModifier: ViewModifier {
                 .progressViewStyle(CircularProgressViewStyle(tint: bestTint(for: colorInfo)))
         case .image, .none:
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .progressViewStyle(CircularProgressViewStyle(tint: .gray))
         }
     }
 
