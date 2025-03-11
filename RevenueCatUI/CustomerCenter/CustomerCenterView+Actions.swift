@@ -48,6 +48,9 @@ extension CustomerCenterView {
     /// A closure used for notifying when a feedback survey option is selected in the Customer Center.
     public typealias FeedbackSurveyCompletedHandler = @MainActor @Sendable (_ optionId: String) -> Void
 
+    /// A closure used for notifying when a management option is selected in the Customer Center.
+    public typealias ManagementOptionSelectedHandler = @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
+
     // MARK: - Preference Keys
 
     struct RestoreStartedPreferenceKey: PreferenceKey {
@@ -96,6 +99,13 @@ extension CustomerCenterView {
     struct FeedbackSurveyCompletedPreferenceKey: PreferenceKey {
         static var defaultValue: UniqueWrapper<String>?
         static func reduce(value: inout UniqueWrapper<String>?, nextValue: () -> UniqueWrapper<String>?) {
+            value = nextValue() ?? value
+        }
+    }
+
+    struct ManagementOptionSelectedPreferenceKey: PreferenceKey {
+        static var defaultValue: CustomerCenterManagementOptionWrapper?
+        static func reduce(value: inout CustomerCenterManagementOptionWrapper?, nextValue: () -> CustomerCenterManagementOptionWrapper?) {
             value = nextValue() ?? value
         }
     }
@@ -188,6 +198,19 @@ extension CustomerCenterView {
                 .onPreferenceChange(FeedbackSurveyCompletedPreferenceKey.self) { wrappedOptionId in
                     if let optionId = wrappedOptionId?.value {
                         self.handler(optionId)
+                    }
+                }
+        }
+    }
+
+    fileprivate struct OnManagementOptionModifier: ViewModifier {
+        let handler: ManagementOptionSelectedHandler
+
+        func body(content: Content) -> some View {
+            content
+                .onPreferenceChange(ManagementOptionSelectedPreferenceKey.self) { wrapper in
+                    if let wrapper = wrapper {
+                        handler(wrapper.action)
                     }
                 }
         }
@@ -333,6 +356,32 @@ extension View {
         _ handler: @escaping CustomerCenterView.FeedbackSurveyCompletedHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnFeedbackSurveyCompletedModifier(handler: handler))
+    }
+
+    /// Invokes the given closure when a management option is selected in the Customer Center.
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     ContentView()
+    ///         .sheet(isPresented: self.$displayCustomerCenter) {
+    ///             CustomerCenterView()
+    ///                 .onCustomerCenterManagementOptionSelected { action in
+    ///                     switch action {
+    ///                     case is CustomerCenterManagementOption.Cancel:
+    ///                         print("Cancel action triggered")
+    ///                     case let customUrl as CustomerCenterManagementOption.CustomUrl:
+    ///                         print("Opening URL: \(customUrl.url)")
+    ///                     default:
+    ///                         print("Unknown action")
+    ///                     }
+    ///                 }
+    ///         }
+    ///  }
+    /// ```
+    public func onCustomerCenterManagementOptionSelected(
+        _ handler: @escaping CustomerCenterView.ManagementOptionSelectedHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnManagementOptionModifier(handler: handler))
     }
 }
 
