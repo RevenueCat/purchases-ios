@@ -6,18 +6,27 @@
 @testable import RevenueCat
 
 class MockDateProvider: DateProvider {
-    var invokedNow = false
-    var invokedNowCount = 0
-    var stubbedNowResult: Date!
+
+    private var dates: [Date]
+    private var currentIndex = 0
+
+    private(set) var invokedNowCount: Int = 0
+    var invokedNow: Bool {
+        return invokedNowCount > 0
+    }
+
+    init(stubbedNow: Date, subsequentNows: Date...) {
+        self.dates = [stubbedNow] + subsequentNows
+    }
 
     init(stubbedNow: Date) {
-        self.stubbedNowResult = stubbedNow
+        self.dates = [stubbedNow]
     }
 
     override func now() -> Date {
-        invokedNow = true
         invokedNowCount += 1
-        return stubbedNowResult
+        defer { currentIndex += 1 }
+        return dates[min(currentIndex, dates.count - 1)]
     }
 }
 

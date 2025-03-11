@@ -53,7 +53,8 @@ class BaseAttributionPosterTests: TestCase {
                                                    currentUserProvider: self.currentUserProvider,
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
-                                                   subscriberAttributesManager: self.subscriberAttributesManager)
+                                                   subscriberAttributesManager: self.subscriberAttributesManager,
+                                                   systemInfo: self.systemInfo)
         self.resetAttributionStaticProperties()
         self.backend.stubbedPostAttributionDataCompletionResult = (nil, ())
         self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
@@ -256,3 +257,31 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
 }
 #endif
+
+class AttributionPosterUIPreviewModeTests: BaseAttributionPosterTests {
+
+    override func setUp() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, uiPreviewMode: true)
+        super.setUp()
+    }
+
+    func testPostPostponedAttributionDataDoesNothingInUIPreviewMode() {
+        AttributionPoster.store(postponedAttributionData: ["test": "data"],
+                                fromNetwork: .adjust,
+                                forNetworkUserId: "testUser")
+
+        attributionPoster.postPostponedAttributionDataIfNeeded()
+
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
+
+    func testPostAttributionDataDoesNothingInUIPreviewMode() {
+        attributionPoster.post(attributionData: ["test": "data"],
+                               fromNetwork: .adjust,
+                               networkUserId: "testUser")
+
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+    }
+}

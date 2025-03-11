@@ -37,6 +37,8 @@ func checkOfferingAPI() {
     let metadataOptionalInt: Int? = off.getMetadataValue(for: "", default: nil)
     let metadataDecodable: Data? = off.getMetadataValue(for: "")
     let _: PaywallData? = off.paywall
+    let _: Offering.PaywallComponents? = off.paywallComponents
+    let bool: Bool = off.hasPaywall
 
     print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!,
           mPack!, wPack!, pPack!, package!, metadata, metadataString, metadataInt, metadataOptionalInt!,

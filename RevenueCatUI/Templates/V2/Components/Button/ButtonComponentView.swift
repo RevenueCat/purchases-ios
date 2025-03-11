@@ -34,19 +34,48 @@ struct ButtonComponentView: View {
         self.onDismiss = onDismiss
     }
 
+    /// Show activity indicator only if restore action in purchase handler
+    var showActivityIndicatorOverContent: Bool {
+        guard self.viewModel.isRestoreAction,
+                let actionType = self.purchaseHandler.actionTypeInProgress else {
+            return false
+        }
+
+        switch actionType {
+        case .purchase:
+            return false
+        case .restore:
+            return true
+        }
+    }
+
+    /// Disable for any type of purchase handler action
+    var shouldBeDisabled: Bool {
+        return self.viewModel.isRestoreAction && self.purchaseHandler.actionInProgress
+    }
+
     var body: some View {
         AsyncButton {
             try await performAction()
         } label: {
-            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: self.onDismiss)
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss,
+                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+            )
         }
+        .applyIf(self.shouldBeDisabled, apply: { view in
+            view
+                .disabled(true)
+                .opacity(0.35)
+        })
         #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil($inAppBrowserURL)) {
-            SafariView(url: inAppBrowserURL!)
+        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+            SafariView(url: self.inAppBrowserURL!)
         }
         #if os(iOS)
-        .presentCustomerCenter(isPresented: $showCustomerCenter, onDismiss: {
-            showCustomerCenter = false
+        .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
+            self.showCustomerCenter = false
         })
         #endif
         #endif
