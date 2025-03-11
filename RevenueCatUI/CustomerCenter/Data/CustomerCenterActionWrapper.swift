@@ -31,9 +31,9 @@ internal enum CustomerCenterInternalAction {
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
     case buttonTapped(buttonId: String)
 
-    /// Converts this internal action to the corresponding public action if one exists
-    /// Returns nil for actions that don't have a public CustomerCenterAction equivalent
-    var asPublicAction: CustomerCenterAction? {
+    /// Converts this internal action to the corresponding legacy action if one exists
+    /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
+    var asLegacyAction: CustomerCenterAction? {
         switch self {
         case .restoreStarted:
             return .restoreStarted
@@ -82,7 +82,7 @@ final class CustomerCenterActionWrapper {
     /// For non-legacy actions, only triggers callbacks
     func handleAction(_ action: CustomerCenterInternalAction) {
         // For actions with a legacy equivalent, call the legacy handler
-        if let legacyAction = action.asPublicAction {
+        if let legacyAction = action.asLegacyAction {
             legacyActionHandler?(legacyAction)
         }
 
