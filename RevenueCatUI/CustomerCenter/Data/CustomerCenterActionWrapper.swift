@@ -25,7 +25,7 @@ internal enum CustomerCenterInternalAction {
     case restoreCompleted(CustomerInfo)
     case showingManageSubscriptions
     case refundRequestStarted(String)
-    case refundRequestCompleted(RefundRequestStatus)
+    case refundRequestCompleted(String, RefundRequestStatus)
     case feedbackSurveyCompleted(String)
 
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
@@ -45,7 +45,7 @@ internal enum CustomerCenterInternalAction {
             return .showingManageSubscriptions
         case .refundRequestStarted(let productId):
             return .refundRequestStarted(productId)
-        case .refundRequestCompleted(let status):
+        case .refundRequestCompleted(_, let status):
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
@@ -66,7 +66,7 @@ final class CustomerCenterActionWrapper {
     var setRestoreCompleted: (CustomerInfo) -> Void = { _ in }
     var setShowingManageSubscriptions: () -> Void = {}
     var setRefundRequestStarted: (String) -> Void = { _ in }
-    var setRefundRequestCompleted: (RefundRequestStatus) -> Void = { _ in }
+    var setRefundRequestCompleted: (String, RefundRequestStatus) -> Void = { _, _ in }
     var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
     var setButtonTapped: (String) -> Void = { _ in }
 
@@ -102,8 +102,8 @@ final class CustomerCenterActionWrapper {
             setShowingManageSubscriptions()
         case .refundRequestStarted(let productId):
             setRefundRequestStarted(productId)
-        case .refundRequestCompleted(let status):
-            setRefundRequestCompleted(status)
+        case .refundRequestCompleted(let productId, let status):
+            setRefundRequestCompleted(productId, status)
         case .feedbackSurveyCompleted(let optionId):
             setFeedbackSurveyCompleted(optionId)
         case .buttonTapped(let buttonId):

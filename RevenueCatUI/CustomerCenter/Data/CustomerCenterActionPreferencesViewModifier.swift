@@ -22,7 +22,7 @@ struct UniqueWrapper<T> {
     let value: T
 }
 
-extension UniqueWrapper: Equatable where T: Equatable {
+extension UniqueWrapper: Equatable {
     static func == (lhs: UniqueWrapper<T>, rhs: UniqueWrapper<T>) -> Bool {
         lhs.id == rhs.id
     }
@@ -45,7 +45,7 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
     // Counter for manage subscriptions to ensure unique values
     @State private var showingManageSubscriptions: UniqueWrapper<Bool> = .init(value: false)
     @State private var refundRequestStarted: UniqueWrapper<String>?
-    @State private var refundRequestCompleted: UniqueWrapper<RefundRequestStatus>?
+    @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
 
     func body(content: Content) -> some View {
@@ -72,8 +72,8 @@ struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
                     refundRequestStarted = UniqueWrapper(value: productId)
                 }
 
-                actionWrapper.setRefundRequestCompleted = { status in
-                    refundRequestCompleted = UniqueWrapper(value: status)
+                actionWrapper.setRefundRequestCompleted = { productId, status in
+                    refundRequestCompleted = UniqueWrapper(value: (productId, status))
                 }
 
                 actionWrapper.setFeedbackSurveyCompleted = { reason in

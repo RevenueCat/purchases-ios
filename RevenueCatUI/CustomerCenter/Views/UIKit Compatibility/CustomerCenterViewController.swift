@@ -133,7 +133,7 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
 private extension CustomerCenterViewController {
 
     func updateRootView() {
-        var childView = CustomerCenterView()
+        let childView = CustomerCenterView()
             .applyIfLet(self.restoreStartedHandler) { view, handler in
                 view.onCustomerCenterRestoreStarted(handler)
             }

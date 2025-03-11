@@ -83,8 +83,8 @@ extension CustomerCenterView {
     }
 
     struct RefundRequestCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<RefundRequestStatus>?
-        static func reduce(value: inout UniqueWrapper<RefundRequestStatus>?, nextValue: () -> UniqueWrapper<RefundRequestStatus>?) {
+        static var defaultValue: UniqueWrapper<(String, RefundRequestStatus)>?
+        static func reduce(value: inout UniqueWrapper<(String, RefundRequestStatus)>?, nextValue: () -> UniqueWrapper<(String, RefundRequestStatus)>?) {
             value = nextValue() ?? value
         }
     }
@@ -168,8 +168,8 @@ extension CustomerCenterView {
 
         func body(content: Content) -> some View {
             content
-                .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { wrappedStatus in
-                    if let status = wrappedStatus?.value {
+                .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { wrapped in
+                    if let (_, status) = wrapped?.value {
                         self.handler(status)
                     }
                 }

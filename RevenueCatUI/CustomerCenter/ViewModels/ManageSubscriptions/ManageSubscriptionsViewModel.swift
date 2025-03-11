@@ -179,17 +179,17 @@ private extension ManageSubscriptionsViewModel {
         case .missingPurchase:
             self.showRestoreAlert = true
         case .refundRequest:
+            guard let purchaseInformation = self.purchaseInformation else { return }
+            let productId = purchaseInformation.productIdentifier
             do {
-                guard let purchaseInformation = self.purchaseInformation else { return }
-                let productId = purchaseInformation.productIdentifier
                 self.actionWrapper.handleAction(.refundRequestStarted(productId))
 
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.actionWrapper.handleAction(.refundRequestCompleted(status))
+                self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
             } catch {
                 self.refundRequestStatus = .error
-                self.actionWrapper.handleAction(.refundRequestCompleted(.error))
+                self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
             }
         case .changePlans, .cancel:
             do {
