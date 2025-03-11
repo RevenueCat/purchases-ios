@@ -49,14 +49,35 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
     /// }
     /// ```
     ///
-    /// - Parameter label: A closure that returns the view to display as the navigation link’s label.
+    /// - Parameter label: A closure that returns the view to display as the navigation link's label.
+    @available(*, deprecated, message: "Use the view modifiers instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         @ViewBuilder label: @escaping () -> Label) {
             self.customerCenterActionHandler = customerCenterActionHandler
             self.label = label
         }
-
+        
+    /// Initializes the navigation link with a label view provided by a closure.
+    ///
+    /// Use this initializer when the label requires dynamic content or complex logic.
+    ///
+    /// Example:
+    /// ```swift
+    /// CustomerCenterNavigationLink {
+    ///     HStack {
+    ///         Image(systemName: "person.circle")
+    ///         Text("Customer Center")
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Parameter label: A closure that returns the view to display as the navigation link's label.
+    public init(@ViewBuilder label: @escaping () -> Label) {
+        self.customerCenterActionHandler = nil
+        self.label = label
+    }
+        
     /// The content and behavior of the navigation link.
     public var body: some View {
         NavigationLink {
