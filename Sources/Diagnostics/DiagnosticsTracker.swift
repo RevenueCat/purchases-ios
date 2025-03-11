@@ -54,6 +54,14 @@ protocol DiagnosticsTrackerType {
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
                               responseTime: TimeInterval)
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackMaxDiagnosticsSyncRetriesReached()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackClearingDiagnosticsAfterFailedSync()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackEnteredOfflineEntitlementsMode()
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -179,6 +187,26 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         )
     }
 
+    func trackMaxDiagnosticsSyncRetriesReached() {
+        self.track(DiagnosticsEvent(name: .maxEventsStoredLimitReached,
+                                    properties: .empty,
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
+
+    func trackClearingDiagnosticsAfterFailedSync() {
+        self.track(DiagnosticsEvent(name: .clearingDiagnosticsAfterFailedSync,
+                                    properties: .empty,
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
+
+    func trackEnteredOfflineEntitlementsMode() {
+        self.track(DiagnosticsEvent(name: .enteredOfflineEntitlementsMode,
+                                    properties: .empty,
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

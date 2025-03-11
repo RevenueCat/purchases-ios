@@ -25,6 +25,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 
     private let internalAPI: InternalAPI
     private let handler: DiagnosticsFileHandlerType
+    private let tracker: DiagnosticsTrackerType?
     private let userDefaults: SynchronizedUserDefaults
 
     private var syncInProgress = false
@@ -32,10 +33,12 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
     init(
         internalAPI: InternalAPI,
         handler: DiagnosticsFileHandlerType,
+        tracker: DiagnosticsTrackerType?,
         userDefaults: SynchronizedUserDefaults
     ) {
         self.internalAPI = internalAPI
         self.handler = handler
+        self.tracker = tracker
         self.userDefaults = userDefaults
     }
 
@@ -72,6 +75,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
             if let backendError = error as? BackendError,
                backendError.successfullySynced {
                 await self.handler.cleanSentDiagnostics(diagnosticsSentCount: count)
+                self.tracker?.trackClearingDiagnosticsAfterFailedSync()
                 self.clearSyncRetries()
             } else {
                 let currentSyncRetries = self.getCurrentSyncRetries()
@@ -79,6 +83,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
                 if currentSyncRetries >= Self.maxSyncRetries {
                     Logger.error(Strings.diagnostics.failed_diagnostics_sync_more_than_max_retries)
                     await self.handler.emptyDiagnosticsFile()
+                    self.tracker?.trackMaxDiagnosticsSyncRetriesReached()
                     self.clearSyncRetries()
                 } else {
                     self.increaseSyncRetries(currentRetries: currentSyncRetries)

@@ -152,7 +152,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -188,7 +187,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -260,7 +258,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())
@@ -296,7 +293,6 @@ class FeedbackSurveyViewModelTests: TestCase {
         expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
         expect(event.data.revisionID) == 0
         expect(event.data.additionalContext).to(beNil())
-        expect(event.data.surveyOptionTitleKey) == option.title
         expect(event.data.path) == .cancel
         expect(event.data.surveyOptionID) == option.id
         expect(event.data.url).to(beNil())

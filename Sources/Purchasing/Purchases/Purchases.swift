@@ -341,6 +341,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             offlineCustomerInfoCreator: .createIfAvailable(
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
+                tracker: diagnosticsTracker,
                 observerMode: observerMode
             ),
             diagnosticsTracker: diagnosticsTracker
@@ -485,6 +486,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
                         diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
                                                                           handler: diagnosticsFileHandler,
+                                                                          tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
