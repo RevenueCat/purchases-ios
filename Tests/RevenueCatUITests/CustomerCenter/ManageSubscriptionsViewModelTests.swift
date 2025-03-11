@@ -41,7 +41,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
     func testInitialState() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                                     customerCenterActionHandler: nil)
+                                                     actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
@@ -55,7 +55,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -67,7 +67,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
@@ -93,7 +93,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -110,7 +110,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -128,7 +128,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -154,7 +154,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             purchaseInformation: purchase)
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
@@ -163,7 +163,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
     func testStateChangeToError() {
         let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                                     customerCenterActionHandler: nil)
+                                                     actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
 
         viewModel.state = CustomerCenterViewState.error(error)
 
@@ -291,7 +291,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
             let viewModel = ManageSubscriptionsViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
-                customerCenterActionHandler: nil,
+                actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
                 purchasesProvider: MockManageSubscriptionsPurchases(
                     customerInfo: customerInfo,
                     products: products
@@ -393,7 +393,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: nil,
+                                                     actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
                                                      purchasesProvider: MockManageSubscriptionsPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
