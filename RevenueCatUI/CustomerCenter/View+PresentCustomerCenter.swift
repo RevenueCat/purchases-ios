@@ -57,7 +57,7 @@ extension View {
     @available(*, deprecated, message: "Use the version with individual action handlers instead")
     public func presentCustomerCenter(
         isPresented: Binding<Bool>,
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         presentationMode: CustomerCenterPresentationMode = .default,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
