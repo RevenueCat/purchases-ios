@@ -158,57 +158,55 @@ struct ManageSubscriptionsView: View {
 }
 
 #if DEBUG
-// @available(iOS 15.0, *)
-// @available(macOS, unavailable)
-// @available(tvOS, unavailable)
-// @available(watchOS, unavailable)
-// struct ManageSubscriptionsView_Previews: PreviewProvider {
-//
-//    // swiftlint:disable force_unwrapping
-//    static var previews: some View {
-//        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-//            CompatibilityNavigationStack {
-//                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-//                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-//                    actionBridge: CustomerCenterActionBridge(customerCenterActionHandler: nil),
-//                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-//                    refundRequestStatus: .success)
-//                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-//                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-//                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Monthly renewing - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-//                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-//                    customerCenterActionHandler: nil,
-//                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
-//                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-//                                        customerCenterActionHandler: nil)
-//                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-//                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Yearly expiring - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-//                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-//                    customerCenterActionHandler: nil,
-//                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
-//                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-//                                        customerCenterActionHandler: nil)
-//                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-//                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Free subscription - \(colorScheme)")
-//        }
-//    }
-//
-// }
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct ManageSubscriptionsView_Previews: PreviewProvider {
+
+    // swiftlint:disable force_unwrapping
+    static var previews: some View {
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                    refundRequestStatus: .success)
+                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Monthly renewing - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Yearly expiring - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - \(colorScheme)")
+        }
+    }
+
+ }
 
 #endif
 
