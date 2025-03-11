@@ -38,7 +38,7 @@ final class SamplePaywallLoader {
         )
     }
 
-    #if PAYWALL_COMPONENTS
+    #if !os(macOS) && !os(tvOS) // For Paywalls V2
     func offering(with components: PaywallComponentsData) -> Offering {
         return .init(
             identifier: Self.offeringIdentifier,

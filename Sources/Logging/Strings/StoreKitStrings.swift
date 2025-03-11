@@ -91,6 +91,10 @@ enum StoreKitStrings {
 
     case error_displaying_store_message(Error)
 
+    case unknown_storekit_error(Error)
+
+    case skunknown_purchase_result(String)
+
 }
 
 extension StoreKitStrings: LogMessage {
@@ -215,6 +219,12 @@ extension StoreKitStrings: LogMessage {
 
         case let .error_displaying_store_message(error):
             return "Error displaying StoreKit message: '\(error)'"
+
+        case let .unknown_storekit_error(error):
+            return "Unknown StoreKit error. Error: '\(error.localizedDescription)'"
+
+        case let .skunknown_purchase_result(name):
+            return "Unrecognized Product.PurchaseResult: \(name)"
         }
     }
 

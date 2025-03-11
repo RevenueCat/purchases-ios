@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
@@ -33,20 +33,29 @@ struct StackComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     private let viewModel: StackComponentViewModel
+    private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
+    private let showActivityIndicatorOverContent: Bool
 
     init(
         viewModel: StackComponentViewModel,
+        isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
-        additionalPadding: EdgeInsets? = nil
+        additionalPadding: EdgeInsets? = nil,
+        showActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
+        self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
     }
 
     var body: some View {
@@ -57,11 +66,14 @@ struct StackComponentView: View {
                 package: self.packageContext.package
             )
         ) { style in
-            self.make(style: style)
+            if style.visible {
+                self.make(style: style)
+            }
         }
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
         Group {
             switch style.dimension {
@@ -90,21 +102,110 @@ struct StackComponentView: View {
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
+                // This alignment defines the position of inner components relative to each other
                 ZStack(alignment: alignment.stackAlignment) {
-                    ComponentsView(componentViewModels: self.viewModel.viewModels, onDismiss: self.onDismiss)
+                    ComponentsView(
+                        componentViewModels: self.viewModel.viewModels,
+                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        onDismiss: self.onDismiss
+                    )
                 }
-                .size(style.size)
+                // These alignments define the position of inner components inside the ZStack
+                .size(style.size,
+                      horizontalAlignment: alignment.stackAlignment,
+                      verticalAlignment: alignment.stackAlignment)
             }
         }
+        .hidden(if: self.showActivityIndicatorOverContent)
         .padding(style.padding)
         .padding(additionalPadding)
-        .shape(border: style.border,
+        .applyIf(self.showActivityIndicatorOverContent, apply: { view in
+            view.progressOverlay(for: style.backgroundStyle)
+        })
+        .scrollableIfEnabled(
+            style.dimension,
+            enabled: style.scrollable ?? self.isScrollableByDefault
+        )
+        .shape(border: nil,
                shape: style.shape,
-               shadow: style.shadow,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
-        .stackBadge(style.badge)
+        .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
+    }
+
+}
+
+private extension Axis {
+
+    var scrollViewAxis: Axis.Set {
+        switch self {
+        case .horizontal: return .horizontal
+        case .vertical: return .vertical
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension View {
+
+    @ViewBuilder
+    // @PublicForExternalTesting
+    func scrollableIfEnabled(
+        _ dimension: PaywallComponent.Dimension,
+        enabled: Bool = true
+    ) -> some View {
+        if enabled {
+            switch dimension {
+            case .horizontal:
+                ScrollView(.horizontal) {
+                    self
+                }
+            case .vertical:
+                ScrollView(.vertical) {
+                    self
+                }
+            case .zlayer:
+                self
+            }
+        } else {
+            self
+        }
+    }
+
+    // Helper to compute the order or application of border, shadow and badge.
+    @ViewBuilder
+    func apply(badge: BadgeModifier.BadgeInfo?,
+               border: ShapeModifier.BorderInfo?,
+               shadow: ShadowModifier.ShadowInfo?,
+               shape: ShapeModifier.Shape?) -> some View {
+        switch badge?.style {
+        case .edgeToEdge:
+            switch badge?.alignment {
+            case .top, .bottom:
+                // Some badge types require us to clip so they do not extend outside the bounds of the stack,
+                // this requires the badge be added before the shadow so the shadow is not clipped.
+                // However for edge-to-edge top/bottom badges, the shadow should be applied first so the badge
+                // appears behind the shadow.
+                self.shape(border: border, shape: shape)
+                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+                    .stackBadge(badge)
+            default:
+                self.shape(border: border, shape: shape)
+                    .stackBadge(badge)
+                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+            }
+        case .nested:
+            // For nested badges, we want the border to be applied last so it appears over the badge.
+            self.stackBadge(badge)
+                .shape(border: border, shape: shape)
+                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+        default:
+            self.shape(border: border, shape: shape)
+                .stackBadge(badge)
+                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+        }
     }
 
 }
@@ -353,6 +454,108 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
 
+        // Scrollable - HStack
+        HStack(spacing: 0) {
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#ff0000"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#00ff00"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#0000ff"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#000000"))
+                            ))
+                        ],
+                        dimension: .horizontal(.center, .start),
+                        size: .init(
+                            width: .fixed(400),
+                            height: .fit
+                        ),
+                        spacing: 10,
+                        backgroundColor: .init(light: .hex("#ffcc00")),
+                        padding: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        margin: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        shape: .rectangle(.init(topLeading: 20,
+                                                topTrailing: 20,
+                                                bottomLeading: 20,
+                                                bottomTrailing: 20)),
+                        border: .init(color: .init(light: .hex("#0000ff")), width: 6),
+                        overflow: .scroll
+                    ),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
+                onDismiss: {}
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Scrollable - HStack")
+
+        // Progress
+        let colorOptions: [(String, String, PaywallComponent.ColorInfo)] = [
+            ("Solid color - white tint", "#ffffff", .hex("#ff0000")),
+            ("Solid color - black tint", "#000000", .hex("#f784ff")),
+            ("Gradient - white tint", "#ffffff", .linear(0, [
+                .init(color: "#1a2494", percent: 0),
+                .init(color: "#380303", percent: 80)
+            ])),
+            ("Gradient - black tint", "#000000", .linear(0, [
+                .init(color: "#d6ea92", percent: 0),
+                .init(color: "#6cacef", percent: 80)
+            ]))
+        ]
+        ForEach(colorOptions, id: \.self.0) { colorPair in
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .text(.init(
+                                text: "text_1",
+                                color: .init(light: .hex(colorPair.1))))
+                        ],
+                        size: .init(
+                            width: .fill,
+                            height: .fixed(100)
+                        ),
+                        backgroundColor: .init(light: colorPair.2)
+                    ),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
+                onDismiss: {},
+                showActivityIndicatorOverContent: true
+            )
+            .previewRequiredEnvironmentProperties()
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Progress - \(colorPair.0)")
+        }
+
         // Fits don't expand
         StackComponentView(
             // swiftlint:disable:next force_try
@@ -519,21 +722,34 @@ extension StackComponentViewModel {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
         let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+        let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
         let viewModels = try component.components.map { component in
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
+                firstImageInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+                uiConfigProvider: uiConfigProvider
+            )
+        }
+
+        let badgeViewModels = try component.badge?.stack.components.map { component in
+            try factory.toViewModel(
+                component: component,
+                packageValidator: validator,
+                firstImageInfo: nil,
+                offering: offering,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider
             )
         }
 
         try self.init(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: [],
+            badgeViewModels: badgeViewModels ?? [],
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             localizationProvider: localizationProvider
         )

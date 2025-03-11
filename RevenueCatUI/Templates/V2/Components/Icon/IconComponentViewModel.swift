@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 private typealias PresentedIconPartial = PaywallComponent.PartialIconComponent
 
@@ -45,7 +45,7 @@ class IconComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (IconComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedIconPartial.buildPartial(
             state: state,
@@ -55,7 +55,7 @@ class IconComponentViewModel {
         )
 
         let style = IconComponentStyle(
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             baseUrl: partial?.baseUrl ?? self.component.baseUrl,
             formats: partial?.formats ?? self.component.formats,
             size: partial?.size ?? self.component.size,
@@ -155,42 +155,16 @@ private extension PaywallComponent.IconBackgroundShape {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
                 ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading,
-                    topRight: cornerRadiuses.topTrailing,
-                    bottomLeft: cornerRadiuses.bottomLeading,
-                    bottomRight: cornerRadiuses.bottomTrailing
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
                 )
             }
             return .rectangle(corners)
         case .circle:
             return .circle
         }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.Border {
-
-    func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
-        return ShapeModifier.BorderInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
-            width: self.width
-        )
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.Shadow {
-
-    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
-        return ShadowModifier.ShadowInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
-            radius: self.radius,
-            x: self.x,
-            y: self.y
-        )
     }
 
 }

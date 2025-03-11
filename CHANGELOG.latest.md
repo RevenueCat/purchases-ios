@@ -1,46 +1,45 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Add convenience method for setting PostHog User ID (#4679) via Cody Kerns (@codykerns)
+* Add `hasPaywall` property to `Offering` (#4847) via Antonio Pallares (@ajpallares)
 ### 🐞 Bugfixes
-* Do not lint deleted files (#4687) via Facundo Menzella (@facumenzella)
-* fix: Set https urls for packages (#4669) via Facundo Menzella (@facumenzella)
-* Add purchaseWithParams to PurchasesType (#4663) via Will Taylor (@fire-at-will)
-* fix: Fix versions for swift-doc, snapshot-testing & nimble (#4661) via Facundo Menzella (@facumenzella)
-* fix: Use custom label for CompatibilityContentUnavailableView (#4647) via Facundo Menzella (@facumenzella)
-* Deprecate misnamed purchase(params) function in Obj-C (#4645) via Will Taylor (@fire-at-will)
-
-## RevenueCatUI SDK
+* Fix compilation issues in Xcode 16.3 beta (#4840) via Andy Boedo (@aboedo)
+* Correctly set PaywallsTester app API key by the CI (#4822) via Antonio Pallares (@ajpallares)
 ### Customer Center
 #### ✨ New Features
-* Introduce CompatibilityLabeledContent (#4659) via Facundo Menzella (@facumenzella)
-* Add support for `displayPurchaseHistoryLink` (#4686) via Facundo Menzella (@facumenzella)
-* Introduce `NavigationOptions` for custom navigation and `CustomerCenterNavigationLink` (#4682) via Facundo Menzella (@facumenzella)
+* feat: Add onClose handler support for CustomerCenter (#4850) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Add default refundWindowDuration to HelpPath.init (#4826) via Will Taylor (@fire-at-will)
+### Paywallv2
 #### 🐞 Bugfixes
-* Revert changes to public Customer Center API (#4681) via Cesar de la Vega (@vegaro)
-* Dismiss alert using binding instead of environment dismiss (#4653) via Facundo Menzella (@facumenzella)
+* Add activity indicator to restore purchases button behavior (#4848) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### ✨ New Features
+* feat: Hide refund for purchases in trial period (#4823) via Facundo Menzella (@facumenzella)
+* feat: Don't show refund if free subscription (#4805) via Facundo Menzella (@facumenzella)
+* feat: Introduce refund window to control if a refund is offered for a purchase (#4784) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add View extension based on CompatibilityNavigationStack (#4677) via Facundo Menzella (@facumenzella)
-* fix: Add missing test for support in CustomerCenter (#4691) via Facundo Menzella (@facumenzella)
-* Use config response for `displayPurchaseHistoryLink` (#4690) via Facundo Menzella (@facumenzella)
-* Improve syntax for `CommonLocalizedString` (#4688) via Facundo Menzella (@facumenzella)
-* [Trusted Entitlements] Enable Trusted Entitlements by default (#4672) via Toni Rico (@tonidero)
-* [Trusted Entitlements] Do not clear CustomerInfo upon enabling Trusted Entitlements (#4671) via Toni Rico (@tonidero)
-* [Paywalls V2] Move image mask after sizing (#4675) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Add masking (concave, convex, circle) and padding/margin to image (#4674) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Use V1 default paywall when footers are used with V2 paywalls (#4667) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Added V1 fallback paywall into Paywall V2 error logic (#4666) via Josh Holtz (@joshdholtz)
-* Do not warn when using mac API keys (#4668) via Toni Rico (@tonidero)
-* [Paywalls V2] Prefetch low res images (#4658) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Convert Codable structs to classes (#4665) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Icon Component (#4655) via Josh Holtz (@joshdholtz)
-* [Paywalls] Tabs (multi-tier / toggle) component (#4648) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Fix compilation errors (#4657) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Accept number as font size for text (#4654) via Josh Holtz (@joshdholtz)
-* [Paywalls] Add Badge Modifier (#4596) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Updated outdated image component properties (#4649) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Updating UIConfig aliased colors to contain both light and dark (#4650) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Fix vstack and hstack growing size when fit (#4646) via Josh Holtz (@joshdholtz)
-* [Paywalls] Use CALayer-backed shadows and refactor Shape.swift (#4630) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls V2] Optionalizing padding, margin, and corner radius properties for safety (#4644) via Josh Holtz (@joshdholtz)
-* [Paywalls V2] Decode rectangle corners as optional (#4640) via Josh Holtz (@joshdholtz)
+* feat: disable postAttributionData requests when in UI preview mode (#4824) via Antonio Pallares (@ajpallares)
+* chore: Disable EventsManagerIntegrationTests till fixed (#4852) via Facundo Menzella (@facumenzella)
+* Run `all-tests` on `main` and notify Slack (#4849) via Cesar de la Vega (@vegaro)
+* Fix potential wrong count on diagnosis sync (#4846) via Antonio Pallares (@ajpallares)
+* [Paywalls] Always use normal stack if the relevant axis size is fit (#4842) via Mark Villacampa (@MarkVillacampa)
+* Uses the remote version of `purchases-ios` for the SwiftUI sample app (#4841) via Pol Piella Abadia (@polpielladev)
+* [Diagnostics] Add extra parameters to `applePurchaseAttempt` (#4835) via Antonio Pallares (@ajpallares)
+* Use array instead of sets in diagnostics events (#4839) via Antonio Pallares (@ajpallares)
+* chore: Add integration test for analytics events (#4830) via Facundo Menzella (@facumenzella)
+* Update changelog with 4.43.3 and 4.43.4 (#4834) via Mark Villacampa (@MarkVillacampa)
+* [Diagnostics] Add `requestedProductIds` and `notFoundProductIds` to `appleProductsRequest` (#4828) via Toni Rico (@tonidero)
+* Add RCStoreMessageTypeWinBackOffer to Objc API Tester (#4827) via Will Taylor (@fire-at-will)
+* chore: Enable force_unwrapping for SwiftLint (#4820) via Facundo Menzella (@facumenzella)
+* chore: Delete .orig file and ignore in git ignore (#4821) via Facundo Menzella (@facumenzella)
+* Post error test results to Slack (#4404) via Toni Rico (@tonidero)
+* [Paywalls V2] Adds a note on publishing to the missing paywall error. (#4817) via JayShortway (@JayShortway)
+* Adds `buildServer.json` to `.gitignore` (#4819) via JayShortway (@JayShortway)
+* Empty strings in proxyURL parameters in `Local.xcconfig` (#4818) via Antonio Pallares (@ajpallares)
+* [Paywalls] Use CSS linear-gradient spec to compute gradient start/end points (#4789) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Add support for shadows in image components (#4797) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix badge background not using the new background field instead of ba… (#4811) via Mark Villacampa (@MarkVillacampa)
+* fix: workaround to allow using proxy URL in `Local.xcconfig` (#4810) via Antonio Pallares (@ajpallares)

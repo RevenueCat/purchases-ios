@@ -15,11 +15,13 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RootView: View {
-    @State private var additionalFooterPaddingBottom: CGFloat = 0
+
+    @Environment(\.safeAreaInsets)
+    private var safeAreaInsets
 
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
@@ -31,9 +33,11 @@ struct RootView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
-            ScrollView {
-                StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: onDismiss)
-            }
+            StackComponentView(
+                viewModel: viewModel.stackViewModel,
+                isScrollableByDefault: true,
+                onDismiss: onDismiss
+            )
 
             if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
                 StackComponentView(
@@ -42,7 +46,7 @@ struct RootView: View {
                     additionalPadding: EdgeInsets(
                         top: 0,
                         leading: 0,
-                        bottom: additionalFooterPaddingBottom,
+                        bottom: safeAreaInsets.bottom,
                         trailing: 0
                     )
                 )

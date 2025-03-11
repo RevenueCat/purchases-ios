@@ -102,7 +102,7 @@ private extension PaywallColor {
 
         if scanner.scanHexInt64(&hexNumber) {
             // If Alpha channel is missing, it's a fully opaque color.
-            if hexNumber <= 0xffffff {
+            if hexColor.count == 6 {
                 hexNumber <<= 8
                 hexNumber |= 0xff
             }

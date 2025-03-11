@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 // Note: this class is implicitly `@unchecked Sendable` through its parent
 // even though it's not actually thread safe.
@@ -21,12 +21,15 @@ class MockSystemInfo: SystemInfo {
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
+                     uiPreviewMode: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      clock: ClockType = TestClock()) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
-            customEntitlementComputation: customEntitlementsComputation
+            customEntitlementComputation: customEntitlementsComputation,
+            internalSettings: DangerousSettings.Internal.default,
+            uiPreviewMode: uiPreviewMode
         )
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,

@@ -13,6 +13,7 @@
 
 import Foundation
 
+// swiftlint:disable function_parameter_count
 protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -22,31 +23,45 @@ protocol DiagnosticsTrackerType {
     func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              requestedProductIds: Set<String>,
+                              notFoundProductIds: Set<String>,
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult)
+                                   verificationResult: VerificationResult,
+                                   isRetry: Bool)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackPurchaseRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              storeKitErrorDescription: String?)
+                              storeKitErrorDescription: String?,
+                              productId: String,
+                              promotionalOfferId: String?,
+                              winBackOfferApplied: Bool,
+                              purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              responseTime: TimeInterval)
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackMaxDiagnosticsSyncRetriesReached()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackClearingDiagnosticsAfterFailedSync()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackEnteredOfflineEntitlementsMode()
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -55,13 +70,16 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
+    private let appSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
          diagnosticsDispatcher: OperationDispatcher = .default,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         appSessionID: UUID = SystemInfo.appSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
+        self.appSessionID = appSessionID
     }
 
     func track(_ event: DiagnosticsEvent) {
@@ -80,55 +98,62 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
 
         let event = DiagnosticsEvent(
-            eventType: .customerInfoVerificationResult,
-            properties: [.verificationResultKey: AnyEncodable(verificationResult.name)],
-            timestamp: self.dateProvider.now()
+            name: .customerInfoVerificationResult,
+            properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name),
+            timestamp: self.dateProvider.now(),
+            appSessionId: self.appSessionID
         )
         self.track(event)
     }
 
-    // swiftlint:disable:next function_parameter_count
     func trackProductsRequest(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              requestedProductIds: Set<String>,
+                              notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
         self.track(
-            DiagnosticsEvent(eventType: .appleProductsRequest,
-                             properties: [
-                                .successfulKey: AnyEncodable(wasSuccessful),
-                                .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
-                                .errorMessageKey: AnyEncodable(errorMessage),
-                                .errorCodeKey: AnyEncodable(errorCode),
-                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription),
-                                .responseTimeMillisKey: AnyEncodable(responseTime * 1000)
-                             ],
-                             timestamp: self.dateProvider.now())
+            DiagnosticsEvent(name: .appleProductsRequest,
+                             properties: DiagnosticsEvent.Properties(
+                                responseTime: responseTime,
+                                storeKitVersion: storeKitVersion,
+                                successful: wasSuccessful,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                skErrorDescription: storeKitErrorDescription,
+                                requestedProductIds: requestedProductIds,
+                                notFoundProductIds: notFoundProductIds
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
         )
     }
 
-    // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult) {
+                                   verificationResult: VerificationResult,
+                                   isRetry: Bool) {
         self.track(
             DiagnosticsEvent(
-                eventType: DiagnosticsEvent.EventType.httpRequestPerformed,
-                properties: [
-                    .endpointNameKey: AnyEncodable(endpointName),
-                    .responseTimeMillisKey: AnyEncodable(responseTime * 1000),
-                    .successfulKey: AnyEncodable(wasSuccessful),
-                    .responseCodeKey: AnyEncodable(responseCode),
-                    .backendErrorCodeKey: AnyEncodable(backendErrorCode),
-                    .eTagHitKey: AnyEncodable(resultOrigin == .cache),
-                    .verificationResultKey: AnyEncodable(verificationResult.name)
-                ],
-                timestamp: self.dateProvider.now()
+                name: .httpRequestPerformed,
+                properties: DiagnosticsEvent.Properties(
+                    verificationResult: verificationResult.name,
+                    endpointName: endpointName,
+                    responseTime: responseTime,
+                    successful: wasSuccessful,
+                    responseCode: responseCode,
+                    backendErrorCode: backendErrorCode,
+                    etagHit: resultOrigin == .cache,
+                    isRetry: isRetry
+                ),
+                timestamp: self.dateProvider.now(),
+                appSessionId: self.appSessionID
             )
         )
     }
@@ -137,20 +162,51 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
-                              storeKitErrorDescription: String?) {
+                              storeKitErrorDescription: String?,
+                              productId: String,
+                              promotionalOfferId: String?,
+                              winBackOfferApplied: Bool,
+                              purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                              responseTime: TimeInterval) {
         self.track(
-            DiagnosticsEvent(eventType: .applePurchaseAttempt,
-                             properties: [
-                                .successfulKey: AnyEncodable(wasSuccessful),
-                                .storeKitVersion: AnyEncodable("store_kit_\(storeKitVersion.debugDescription)"),
-                                .errorMessageKey: AnyEncodable(errorMessage),
-                                .errorCodeKey: AnyEncodable(errorCode),
-                                .skErrorDescriptionKey: AnyEncodable(storeKitErrorDescription)
-                             ],
-                             timestamp: self.dateProvider.now())
+            DiagnosticsEvent(name: .applePurchaseAttempt,
+                             properties: DiagnosticsEvent.Properties(
+                                responseTime: responseTime,
+                                storeKitVersion: storeKitVersion,
+                                successful: wasSuccessful,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                skErrorDescription: storeKitErrorDescription,
+                                productId: productId,
+                                promotionalOfferId: promotionalOfferId,
+                                winBackOfferApplied: winBackOfferApplied,
+                                purchaseResult: purchaseResult
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
         )
     }
 
+    func trackMaxDiagnosticsSyncRetriesReached() {
+        self.track(DiagnosticsEvent(name: .maxEventsStoredLimitReached,
+                                    properties: .empty,
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
+
+    func trackClearingDiagnosticsAfterFailedSync() {
+        self.track(DiagnosticsEvent(name: .clearingDiagnosticsAfterFailedSync,
+                                    properties: .empty,
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
+
+    func trackEnteredOfflineEntitlementsMode() {
+        self.track(DiagnosticsEvent(name: .enteredOfflineEntitlementsMode,
+                                    properties: .empty,
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -159,9 +215,10 @@ private extension DiagnosticsTracker {
     func clearDiagnosticsFileIfTooBig() async {
         if await self.diagnosticsFileHandler.isDiagnosticsFileTooBig() {
             await self.diagnosticsFileHandler.emptyDiagnosticsFile()
-            let maxEventsStoredEvent = DiagnosticsEvent(eventType: .maxEventsStoredLimitReached,
-                                                        properties: [:],
-                                                        timestamp: self.dateProvider.now())
+            let maxEventsStoredEvent = DiagnosticsEvent(name: .maxEventsStoredLimitReached,
+                                                        properties: .empty,
+                                                        timestamp: self.dateProvider.now(),
+                                                        appSessionId: self.appSessionID)
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)
         }
     }

@@ -229,6 +229,7 @@ NSURL *url;
         case RCNormal:
         case RCIntro:
         case RCTrial:
+        case RCPrepaid:
             NSLog(@"%ld", (long)t);
     }
 
@@ -255,6 +256,7 @@ NSURL *url;
         case RCStoreMessageTypeBillingIssue:
         case RCStoreMessageTypePriceIncreaseConsent:
         case RCStoreMessageTypeGeneric:
+        case RCStoreMessageTypeWinBackOffer:
             NSLog(@"%ld", (long)smt);
     }
 

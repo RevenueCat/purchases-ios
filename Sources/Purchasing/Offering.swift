@@ -28,8 +28,6 @@ import Foundation
  */
 @objc(RCOffering) public final class Offering: NSObject {
 
-    #if PAYWALL_COMPONENTS
-
     /// Initialize a ``PaywallComponents``
     public struct PaywallComponents {
 
@@ -51,8 +49,6 @@ import Foundation
 
     }
 
-    #endif
-
     /**
      Unique identifier defined in RevenueCat dashboard.
      */
@@ -72,15 +68,29 @@ import Foundation
 
     /**
      Paywall configuration defined in RevenueCat dashboard.
+
+     Use ``hasPaywall`` to check if the offering has a paywall.
      */
     public let paywall: PaywallData?
 
-    #if PAYWALL_COMPONENTS
     /**
      Paywall components configuration defined in RevenueCat dashboard.
+
+     Use ``hasPaywall`` to check if the offering has a paywall.
      */
     public let paywallComponents: PaywallComponents?
-    #endif
+
+    /**
+     Whether the offering contains a paywall.
+     */
+    public var hasPaywall: Bool {
+        return paywall != nil || paywallComponents != nil
+    }
+
+    /**
+     Draft paywall components configuration defined in RevenueCat dashboard.
+     */
+    @_spi(Internal) public let draftPaywallComponents: PaywallComponents?
 
     /**
      Array of ``Package`` objects available for purchase.
@@ -171,7 +181,6 @@ import Foundation
         metadata: [String: Any] = [:],
         availablePackages: [Package]
     ) {
-        #if PAYWALL_COMPONENTS
         self.init(
             identifier: identifier,
             serverDescription: serverDescription,
@@ -180,25 +189,35 @@ import Foundation
             paywallComponents: nil,
             availablePackages: availablePackages
         )
-        #else
-        self.init(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: nil,
-            availablePackages: availablePackages
-        )
-        #endif
     }
 
-    #if PAYWALL_COMPONENTS
     /// Initialize an ``Offering`` given a list of ``Package``s.
-    public init(
+    public convenience init(
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
+        availablePackages: [Package]
+    ) {
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: nil,
+            availablePackages: availablePackages
+        )
+    }
+
+    init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponents: PaywallComponents? = nil,
+        draftPaywallComponents: PaywallComponents?,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
@@ -207,6 +226,7 @@ import Foundation
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
         self.paywallComponents = paywallComponents
+        self.draftPaywallComponents = draftPaywallComponents
 
         var foundPackages: [PackageType: Package] = [:]
 
@@ -255,69 +275,6 @@ import Foundation
 
         super.init()
     }
-    #else
-    /// Initialize an ``Offering`` given a list of ``Package``s.
-    public init(
-        identifier: String,
-        serverDescription: String,
-        metadata: [String: Any] = [:],
-        paywall: PaywallData? = nil,
-        availablePackages: [Package]
-    ) {
-        self.identifier = identifier
-        self.serverDescription = serverDescription
-        self.availablePackages = availablePackages
-        self._metadata = Metadata(data: metadata)
-        self.paywall = paywall
-
-        var foundPackages: [PackageType: Package] = [:]
-
-        var lifetime: Package?
-        var annual: Package?
-        var sixMonth: Package?
-        var threeMonth: Package?
-        var twoMonth: Package?
-        var monthly: Package?
-        var weekly: Package?
-
-        for package in availablePackages {
-            Self.checkForNilAndLogReplacement(previousPackages: foundPackages, newPackage: package)
-
-            switch package.packageType {
-            case .lifetime: lifetime = package
-            case .annual: annual = package
-            case .sixMonth: sixMonth = package
-            case .threeMonth: threeMonth = package
-            case .twoMonth: twoMonth = package
-            case .monthly: monthly = package
-            case .weekly: weekly = package
-            case .custom where package.storeProduct.productCategory == .nonSubscription:
-                // Non-subscription product, ignoring
-                continue
-
-            case .custom:
-                Logger.debug(Strings.offering.custom_package_type(package))
-                continue
-
-            case .unknown:
-                Logger.warn(Strings.offering.unknown_package_type(package))
-                continue
-            }
-
-            foundPackages[package.packageType] = package
-        }
-
-        self.lifetime = lifetime
-        self.annual = annual
-        self.sixMonth = sixMonth
-        self.threeMonth = threeMonth
-        self.twoMonth = twoMonth
-        self.monthly = monthly
-        self.weekly = weekly
-
-        super.init()
-    }
-    #endif
 
     // swiftlint:enable cyclomatic_complexity
 
@@ -363,9 +320,7 @@ extension Offering: Identifiable {
 
 }
 
-#if PAYWALL_COMPONENTS
 extension Offering.PaywallComponents: Sendable {}
-#endif
 
 extension Offering: Sendable {}
 

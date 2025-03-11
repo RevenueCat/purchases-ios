@@ -13,6 +13,8 @@
 
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
+
 class CustomerInfoFixtures {
 
     private init() {}
@@ -25,14 +27,14 @@ class CustomerInfoFixtures {
         init(id: String,
              store: String,
              purchaseDate: String,
-             expirationDate: String,
+             expirationDate: String?,
              unsubscribeDetectedAt: String? = nil) {
             self.id = id
             self.json = """
             {
                 "auto_resume_date": null,
                 "billing_issues_detected_at": null,
-                "expires_date": "\(expirationDate)",
+                "expires_date": \(expirationDate != nil ? "\"\(expirationDate!)\"" : "null"),
                 "grace_period_expires_date": null,
                 "is_sandbox": true,
                 "original_purchase_date": "\(purchaseDate)",
@@ -149,7 +151,7 @@ class CustomerInfoFixtures {
         store: String,
         productId: String = "com.revenuecat.product",
         purchaseDate: String = "2022-04-12T00:03:28Z",
-        expirationDate: String = "2062-04-12T00:03:35Z",
+        expirationDate: String? = "2062-04-12T00:03:35Z",
         unsubscribeDetectedAt: String? = nil
     ) -> CustomerInfo {
         return customerInfo(
@@ -182,6 +184,14 @@ class CustomerInfoFixtures {
             store: "app_store",
             purchaseDate: "1999-04-12T00:03:28Z",
             expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithLifetimeAppSubscrition: CustomerInfo = {
+        makeCustomerInfo(
+            store: "app_store",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: nil
         )
     }()
 

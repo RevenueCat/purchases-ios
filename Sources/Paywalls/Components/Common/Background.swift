@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     enum Background: Codable, Sendable, Hashable {
@@ -70,5 +68,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

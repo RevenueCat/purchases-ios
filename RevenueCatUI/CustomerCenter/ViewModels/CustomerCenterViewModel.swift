@@ -29,15 +29,18 @@ import RevenueCat
     typealias CurrentVersionFetcher = () -> String?
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
+
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
+
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
-    private(set) var purchasesProvider: CustomerCenterPurchasesType
-    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
+
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
     var shouldShowAppUpdateWarnings: Bool {
@@ -74,6 +77,7 @@ import RevenueCat
     internal let customerCenterActionHandler: CustomerCenterActionHandler?
 
     private var error: Error?
+    private var impressionData: CustomerCenterEvent.Data?
 
     init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
@@ -128,13 +132,17 @@ import RevenueCat
     }
 
     func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
-        let isSandbox = purchasesProvider.isSandbox
+        guard impressionData == nil else {
+            return
+        }
+
         let eventData = CustomerCenterEvent.Data(locale: .current,
                                                  darkMode: darkMode,
-                                                 isSandbox: isSandbox,
+                                                 isSandbox: purchasesProvider.isSandbox,
                                                  displayMode: displayMode)
-        let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
+        defer { self.impressionData = eventData }
 
+        let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
     }
 
@@ -147,36 +155,38 @@ import RevenueCat
 private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation() async throws {
-            let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+        let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
-            let hasActiveProducts =
-            !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
+        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
+        !customerInfo.nonSubscriptions.isEmpty
 
-            if !hasActiveProducts {
-                self.purchaseInformation = nil
-                self.state = .success
-                return
-            }
+        if !hasActiveProducts {
+            self.purchaseInformation = nil
+            self.state = .success
+            return
+        }
 
-            guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
-                Logger.warning(Strings.could_not_find_subscription_information)
-                self.purchaseInformation = nil
-                throw CustomerCenterError.couldNotFindSubscriptionInformation
-            }
+        guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
+            Logger.warning(Strings.could_not_find_subscription_information)
+            self.purchaseInformation = nil
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
 
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+        let entitlement = customerInfo.entitlements.all.values
+            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-            self.purchaseInformation = try await createPurchaseInformation(for: activeTransaction,
-                                                                           entitlement: entitlement)
+        self.purchaseInformation = try await createPurchaseInformation(
+            for: activeTransaction,
+            entitlement: entitlement,
+            customerInfo: customerInfo)
     }
 
     func loadCustomerCenterConfig() async throws {
         self.configuration = try await purchasesProvider.loadCustomerCenter()
-        if let productId = configuration?.productId {
+        if let productId = configuration?.productId,
+            let url = URL(string: "https://itunes.apple.com/app/id\(productId)") {
             self.onUpdateAppClick = {
                 // productId is a positive integer, so it should be safe to construct a URL from it.
-                let url = URL(string: "https://itunes.apple.com/app/id\(productId)")!
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
@@ -209,14 +219,16 @@ private extension CustomerCenterViewModel {
     }
 
     func createPurchaseInformation(for transaction: Transaction,
-                                   entitlement: EntitlementInfo?) async throws -> PurchaseInformation {
+                                   entitlement: EntitlementInfo?,
+                                   customerInfo: CustomerInfo) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
                     transaction: transaction,
-                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                    customerInfoRequestedDate: customerInfo.requestDate
                 )
             } else {
                 Logger.warning(
@@ -225,7 +237,8 @@ private extension CustomerCenterViewModel {
 
                 return PurchaseInformation(
                     entitlement: entitlement,
-                    transaction: transaction
+                    transaction: transaction,
+                    customerInfoRequestedDate: customerInfo.requestDate
                 )
             }
         }
@@ -233,13 +246,16 @@ private extension CustomerCenterViewModel {
 
         return PurchaseInformation(
             entitlement: entitlement,
-            transaction: transaction
+            transaction: transaction,
+            customerInfoRequestedDate: customerInfo.requestDate
         )
     }
 
 }
 
 fileprivate extension String {
+    // swiftlint:disable force_unwrapping
+
     /// Takes the first characters of this string, if they conform to Major.Minor.Patch. Returns nil otherwise.
     /// Note that Minor and Patch are optional. So if this string starts with a single number, that number is returned.
     func versionString() -> String? {

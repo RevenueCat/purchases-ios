@@ -14,7 +14,7 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 public struct UIConfig: Codable, Equatable, Sendable {
 
@@ -85,7 +85,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         private enum FontInfoTypes: String, Decodable {
 
             case name
-            case googleFonts
+            case googleFonts = "google_fonts"
 
         }
 

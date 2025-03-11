@@ -16,7 +16,7 @@
 // swiftlint:disable file_length type_body_length function_body_length
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import StoreKit
 import XCTest
@@ -28,7 +28,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class ManageSubscriptionsViewModelTests: TestCase {
+final class ManageSubscriptionsViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -40,7 +40,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                                      customerCenterActionHandler: nil)
 
         expect(viewModel.state) == CustomerCenterViewState.success
@@ -50,8 +50,119 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.showRestoreAlert) == false
     }
 
+    func testLifetimeSubscriptionDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mockLifetime()
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testShowsRefundIfRefundWindowIsForever() {
+        let purchase = PurchaseInformation.mockNonLifetime()
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 4
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+    }
+
+    func testDoesNotShowRefundIfPurchaseOutsideRefundWindow() {
+        let latestPurchaseDate = Date()
+        let oneDay = ISODuration(
+            years: 0,
+            months: 0,
+            weeks: 0,
+            days: 1,
+            hours: 0,
+            minutes: 0,
+            seconds: 0
+        )
+
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        let purchase = PurchaseInformation.mockNonLifetime(
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testDoesNotShowRefundIfPurchaseIsFree() {
+        let latestPurchaseDate = Date()
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        let purchase = PurchaseInformation.mockNonLifetime(
+            price: .free,
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testDoesNotShowRefundIfPurchaseIsWithinTrial() {
+        let latestPurchaseDate = Date()
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        let purchase = PurchaseInformation.mockNonLifetime(
+            price: .paid(""), // just to prove price is ignored if is in trial
+            isTrial: true,
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testShowsRefundIfPurchaseOutsideRefundWindow() {
+        let latestPurchaseDate = Date()
+        let oneDay = ISODuration(
+            years: 0,
+            months: 0,
+            weeks: 0,
+            days: 3,
+            hours: 0,
+            minutes: 0,
+            seconds: 0
+        )
+
+        let twoDays: TimeInterval = 2 * 24 * 60 * 60
+        let purchase = PurchaseInformation.mockNonLifetime(
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            customerCenterActionHandler: nil,
+            purchaseInformation: purchase)
+
+        expect(viewModel.relevantPathsForPurchase.count) == 4
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+    }
+
     func testStateChangeToError() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.screen,
+        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                                      customerCenterActionHandler: nil)
 
         viewModel.state = CustomerCenterViewState.error(error)
@@ -185,8 +296,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
                     customerInfo: customerInfo,
                     products: products
                 ),
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
-            )
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
             let screen = try XCTUnwrap(viewModel.screen)
             expect(viewModel.state) == .success
@@ -386,8 +496,16 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ManageSubscriptionsViewModelTests {
 
-    static let screen: CustomerCenterConfigData.Screen =
+    static let `default`: CustomerCenterConfigData.Screen =
     CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+
+    static func managementScreen(
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration
+    ) -> CustomerCenterConfigData.Screen {
+        CustomerCenterConfigTestData.customerCenterData(
+            lastPublishedAppVersion: "1.0.0",
+            refundWindowDuration: refundWindowDuration).screens[.management]!
+    }
 
 }
 
@@ -404,34 +522,47 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private class MockLoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
-
-    var offerToLoadPromoFor: RevenueCat.CustomerCenterConfigData.HelpPath.PromotionalOffer?
-
-    var mockedProduct: StoreProduct?
-    var mockedPromotionalOffer: PromotionalOffer?
-    var mockedPromoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer?
-
-    func execute(
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
-    ) async -> Result<PromotionalOfferData, Error> {
-        self.offerToLoadPromoFor = promoOfferDetails
-        if let mockedProduct = mockedProduct,
-           let mockedPromotionalOffer = mockedPromotionalOffer,
-           let mockedPromoOfferDetails = mockedPromoOfferDetails {
-            return .success(PromotionalOfferData(promotionalOffer: mockedPromotionalOffer,
-                                                 product: mockedProduct,
-                                                 promoOfferDetails: mockedPromoOfferDetails))
-        } else {
-            return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
-        }
-
+private extension PurchaseInformation {
+    static func mockLifetime(
+        customerInfoRequestedDate: Date = Date()
+    ) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "",
+            durationTitle: "",
+            explanation: .lifetime,
+            price: .paid(""),
+            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
+            productIdentifier: "",
+            store: .appStore,
+            isTrial: false,
+            isLifetime: true,
+            latestPurchaseDate: nil,
+            customerInfoRequestedDate: customerInfoRequestedDate
+        )
     }
 
+    static func mockNonLifetime(
+        price: PurchaseInformation.PriceDetails = .paid("5"),
+        isTrial: Bool = false,
+        latestPurchaseDate: Date = Date(),
+        customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "",
+            durationTitle: "",
+            explanation: .earliestExpiration,
+            price: price,
+            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
+                label: .expires,
+                date: .date("")
+            ),
+            productIdentifier: "",
+            store: .appStore,
+            isTrial: isTrial,
+            isLifetime: false,
+            latestPurchaseDate: latestPurchaseDate,
+            customerInfoRequestedDate: customerInfoRequestedDate
+        )
+    }
 }
 
 #endif

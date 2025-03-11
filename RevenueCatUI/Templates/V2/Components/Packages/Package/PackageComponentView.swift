@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageComponentView: View {
@@ -98,13 +98,13 @@ struct PackageComponentView_Previews: PreviewProvider {
                     color: .init(light: .hex("#000000")),
                     padding: .zero,
                     margin: .zero,
-                    overrides: .init(
-                        states: .init(
-                            selected: .init(
-                                color: .init(light: .hex("#ff0000"))
-                            )
-                        )
-                    )
+                    overrides: [
+                        .init(conditions: [
+                            .selected
+                        ], properties: .init(
+                            color: .init(light: .hex("#ff0000"))
+                        ))
+                    ]
                 )),
                 .text(.init(
                     text: "detail",
@@ -125,13 +125,13 @@ struct PackageComponentView_Previews: PreviewProvider {
                           leading: 10,
                           trailing: 10),
             border: .init(color: .init(light: .hex("#cccccc")), width: 2),
-            overrides: .init(
-                states: .init(
-                    selected: .init(
-                        border: .init(color: .init(light: .hex("#ff0000")), width: 2)
-                    )
-                )
-            )
+            overrides: [
+                .init(conditions: [
+                    .selected
+                ], properties: .init(
+                    border: .init(color: .init(light: .hex("#ff0000")), width: 2)
+                ))
+            ]
         )
     }
 
@@ -204,6 +204,7 @@ fileprivate extension PackageComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
+            firstImageInfo: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering

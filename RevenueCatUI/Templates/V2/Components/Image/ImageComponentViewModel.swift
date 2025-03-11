@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ImageComponentViewModel {
@@ -52,7 +52,7 @@ class ImageComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (ImageComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedImagePartial.buildPartial(
             state: state,
@@ -63,7 +63,7 @@ class ImageComponentViewModel {
         let partial = localizedPartial?.partial
 
         let style = ImageComponentStyle(
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             source: localizedPartial?.imageInfo ?? self.imageInfo,
             size: partial?.size ?? self.component.size,
             fitMode: partial?.fitMode ?? self.component.fitMode,
@@ -143,8 +143,8 @@ struct ImageComponentStyle {
     let colorOverlay: DisplayableColorScheme?
     let padding: EdgeInsets
     let margin: EdgeInsets
-    let border: PaywallComponent.Border?
-    let shadow: PaywallComponent.Shadow?
+    let border: ShapeModifier.BorderInfo?
+    let shadow: ShadowModifier.ShadowInfo?
     let contentMode: ContentMode
 
     init(
@@ -174,8 +174,8 @@ struct ImageComponentStyle {
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
-        self.border = border
-        self.shadow = shadow
+        self.border = border?.border(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
         self.contentMode = fitMode.contentMode
     }
 
@@ -189,10 +189,10 @@ private extension PaywallComponent.MaskShape {
         case .rectangle(let cornerRadiuses):
             let corners = cornerRadiuses.flatMap { cornerRadiuses in
                 ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading,
-                    topRight: cornerRadiuses.topTrailing,
-                    bottomLeft: cornerRadiuses.bottomLeading,
-                    bottomRight: cornerRadiuses.bottomTrailing
+                    topLeft: cornerRadiuses.topLeading ?? 0,
+                    topRight: cornerRadiuses.topTrailing ?? 0,
+                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
+                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
                 )
             }
             return .rectangle(corners)

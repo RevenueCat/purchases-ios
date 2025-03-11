@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchaseButtonComponentView: View {
@@ -35,6 +35,25 @@ struct PurchaseButtonComponentView: View {
         self.viewModel = viewModel
     }
 
+    /// Show activity indicator only if purchase action in purchase handler
+    var showActivityIndicatorOverContent: Bool {
+        guard let actionType = self.purchaseHandler.actionTypeInProgress else {
+            return false
+        }
+
+        switch actionType {
+        case .purchase:
+            return true
+        case .restore:
+            return false
+        }
+    }
+
+    /// Disable for any type of purchase handler action
+    var shouldBeDisabled: Bool {
+        return self.purchaseHandler.actionInProgress
+    }
+
     var body: some View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
@@ -50,7 +69,15 @@ struct PurchaseButtonComponentView: View {
             _ = try await self.purchaseHandler.purchase(package: selectedPackage)
         } label: {
             // Not passing an onDismiss - nothing in this stack should be able to dismiss
-            StackComponentView(viewModel: viewModel.stackViewModel, onDismiss: {})
+            StackComponentView(
+                viewModel: viewModel.stackViewModel,
+                onDismiss: {},
+                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+            )
+        }
+        .applyIf(self.shouldBeDisabled) {
+            $0.disabled(true)
+                .opacity(0.35)
         }
     }
 
@@ -152,6 +179,7 @@ fileprivate extension PurchaseButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
+            firstImageInfo: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering

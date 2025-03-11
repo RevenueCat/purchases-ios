@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable force_try
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -120,6 +120,7 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
         return try! factory.toViewModel(
             component: component,
             packageValidator: packageValidator,
+            firstImageInfo: nil,
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())

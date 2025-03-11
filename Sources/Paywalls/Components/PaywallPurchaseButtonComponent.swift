@@ -8,8 +8,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class PurchaseButtonComponent: PaywallComponentBase {
@@ -35,5 +33,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

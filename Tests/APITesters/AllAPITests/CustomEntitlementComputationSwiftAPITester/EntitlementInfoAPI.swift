@@ -61,7 +61,8 @@ func checkEntitlementInfoEnums() {
     switch pType! {
     case .intro,
          .trial,
-         .normal:
+         .normal,
+         .prepaid:
         print(pType!)
     @unknown default:
         fatalError()

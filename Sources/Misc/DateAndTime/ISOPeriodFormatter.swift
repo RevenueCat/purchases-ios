@@ -19,24 +19,20 @@ import StoreKit
 enum ISOPeriodFormatter {
 
     static func string(fromProductSubscriptionPeriod period: SubscriptionPeriod) -> String {
-        let unitString = Self.period(fromUnit: period.unit)
-        let stringResult = "P\(period.value)\(unitString)"
-        return stringResult
+        ISODurationFormatter.string(from: period.isoDuration)
     }
+}
 
-    private static func period(fromUnit unit: SubscriptionPeriod.Unit) -> String {
-        switch unit {
-        case .day:
-            return "D"
-        case .week:
-            return "W"
-        case .month:
-            return "M"
-        case .year:
-            return "Y"
-        @unknown default:
-            fatalError("New SKProduct.PeriodUnit \(unit) unaccounted for")
-        }
+extension SubscriptionPeriod {
+    var isoDuration: ISODuration {
+        ISODuration(
+            years: unit == .year ? value : 0,
+            months: unit == .month ? value : 0,
+            weeks: unit == .week ? value : 0,
+            days: unit == .day ? value : 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0
+        )
     }
-
 }

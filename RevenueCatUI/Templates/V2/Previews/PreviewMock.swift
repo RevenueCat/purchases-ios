@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
@@ -78,16 +78,14 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
     let packageContext: PackageContext?
-    let colorScheme: ColorScheme
 
     func body(content: Content) -> some View {
         content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
-            .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
-            .environment(\.colorScheme, colorScheme)
+            .environment(\.safeAreaInsets, EdgeInsets())
     }
 
 }
@@ -97,14 +95,12 @@ extension View {
     func previewRequiredEnvironmentProperties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
-        packageContext: PackageContext? = nil,
-        colorScheme: ColorScheme = .light
+        packageContext: PackageContext? = nil
     ) -> some View {
         self.modifier(PreviewRequiredEnvironmentProperties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
-            packageContext: packageContext,
-            colorScheme: colorScheme
+            packageContext: packageContext
         ))
     }
 }

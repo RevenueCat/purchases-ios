@@ -15,7 +15,7 @@
 import Foundation
 import RevenueCat
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {
@@ -29,35 +29,14 @@ protocol PresentedPartial {
 
 }
 
-/// Structure holding override configurations for different presentation states
-struct PresentedOverrides<T: PresentedPartial> {
+/// Array holding override configurations for different presentation states
+typealias PresentedOverrides<T: PresentedPartial> = [PresentedOverride<T>]
 
-    /// Override for intro offer state
-    public let introOffer: T?
-    /// Override for different selection states
-    public let states: PresentedStates<T>?
-    /// Override for different screen size conditions
-    public let conditions: PresentedConditions<T>?
+/// Structure holding override configurations for a presentation state
+struct PresentedOverride<T: PresentedPartial> {
 
-}
-
-/// Structure defining states for selected/unselected components
-struct PresentedStates<T: PresentedPartial> {
-
-    /// Override for selected state
-    let selected: T?
-
-}
-
-/// Structure defining overrides for different screen size conditions
-struct PresentedConditions<T: PresentedPartial> {
-
-    /// Override for compact size
-    let compact: T?
-    /// Override for medium size
-    let medium: T?
-    /// Override for expanded size
-    let expanded: T?
+    let conditions: [PaywallComponent.Condition]
+    let properties: T?
 
 }
 
@@ -75,44 +54,50 @@ extension PresentedPartial {
         isEligibleForIntroOffer: Bool,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
-        var conditionPartial = buildConditionPartial(for: condition, with: presentedOverrides)
-
-        if isEligibleForIntroOffer {
-            conditionPartial = Self.combine(conditionPartial, with: presentedOverrides?.introOffer)
+        guard let presentedOverrides else {
+            return nil
         }
 
-        switch state {
-        case .default:
-            break
-        case .selected:
-            conditionPartial = Self.combine(conditionPartial, with: presentedOverrides?.states?.selected)
+        var presentedPartial: Self?
+
+        for presentedOverride in presentedOverrides where self.shouldApply(
+            for: presentedOverride.conditions,
+            state: state,
+            activeCondition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer) {
+            presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
         }
 
-        return conditionPartial
+        return presentedPartial
     }
 
-    /// Builds a partial component based on screen conditions
-    /// - Parameters:
-    ///   - conditionType: Screen size condition
-    ///   - presentedOverrides: Override configurations to apply
-    /// - Returns: Configured partial component for the given condition
-    private static func buildConditionPartial(
-        for conditionType: ScreenCondition,
-        with presentedOverrides: PresentedOverrides<Self>?
-    ) -> Self? {
-        let conditions = presentedOverrides?.conditions
-        let applicableConditions = conditionType.applicableConditions
-            .compactMap { type -> Self? in
-                switch type {
-                case .compact: return conditions?.compact
-                case .medium: return conditions?.medium
-                case .expanded: return conditions?.expanded
+    private static func shouldApply(
+        for conditions: [PaywallComponent.Condition],
+        state: ComponentViewState,
+        activeCondition: ScreenCondition,
+        isEligibleForIntroOffer: Bool
+    ) -> Bool {
+        // Early return when any condition evaluates to false
+        for condition in conditions {
+            switch condition {
+            case .compact, .medium, .expanded:
+                if !activeCondition.applicableConditions.contains(condition) {
+                    return false
                 }
+            case .introOffer:
+                if !isEligibleForIntroOffer {
+                    return false
+                }
+            case .selected:
+                if state != .selected {
+                    return false
+                }
+            case .unsupported:
+                return false
             }
-
-        return applicableConditions.reduce(nil) { partial, next in
-            Self.combine(partial, with: next)
         }
+
+        return true
     }
 
 }
@@ -120,7 +105,7 @@ extension PresentedPartial {
 private extension ScreenCondition {
 
     /// Returns applicable condition types based on current screen condition
-    var applicableConditions: [PaywallComponent.ComponentConditionsType] {
+    var applicableConditions: [PaywallComponent.Condition] {
         switch self {
         case .compact: return [.compact]
         case .medium: return [.compact, .medium]
@@ -130,39 +115,26 @@ private extension ScreenCondition {
 
 }
 
-extension PaywallComponent.ComponentOverrides {
-
-    /// Maps a partial component using a conversion function
-    /// - Parameters:
-    ///   - partial: Source partial component
-    ///   - convert: Conversion function to apply
-    /// - Returns: Converted partial component
-    private func mapPartial<P: PresentedPartial>(
-        _ partial: T?,
-        using convert: (T) throws -> P
-    ) throws -> P? {
-        try partial.flatMap(convert)
-    }
+extension Array {
 
     /// Converts component overrides to presented overrides
     /// - Parameter convert: Conversion function to apply
     /// - Returns: Presented overrides with converted components
-    func toPresentedOverrides<P: PresentedPartial>(convert: (T) throws -> P) throws -> PresentedOverrides<P> {
-        PresentedOverrides(
-            introOffer: try mapPartial(self.introOffer, using: convert),
-            states: try self.states.flatMap { states in
-                PresentedStates(
-                    selected: try mapPartial(states.selected, using: convert)
-                )
-            },
-            conditions: try self.conditions.flatMap { condition in
-                PresentedConditions(
-                    compact: try mapPartial(condition.compact, using: convert),
-                    medium: try mapPartial(condition.medium, using: convert),
-                    expanded: try mapPartial(condition.expanded, using: convert)
-                )
-            }
-        )
+    func toPresentedOverrides<
+        T: PaywallPartialComponent,
+        P: PresentedPartial
+    >(
+        convert: (T) throws -> P
+    ) throws -> PresentedOverrides<P>
+    where Element == PaywallComponent.ComponentOverride<T> {
+        return try self.compactMap { partial in
+            let presentedPartial = try convert(partial.properties)
+
+            return PresentedOverride(
+                conditions: partial.conditions,
+                properties: presentedPartial
+            )
+        }
     }
 
 }

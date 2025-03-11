@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallComponentViewModel {
@@ -29,11 +29,14 @@ enum PaywallComponentViewModel {
     case package(PackageComponentViewModel)
     case purchaseButton(PurchaseButtonComponentViewModel)
     case stickyFooter(StickyFooterComponentViewModel)
+    case timeline(TimelineComponentViewModel)
 
     case tabs(TabsComponentViewModel)
     case tabControl(TabControlComponentViewModel)
     case tabControlButton(TabControlButtonComponentViewModel)
     case tabControlToggle(TabControlToggleComponentViewModel)
+
+    case carousel(CarouselComponentViewModel)
 
 }
 

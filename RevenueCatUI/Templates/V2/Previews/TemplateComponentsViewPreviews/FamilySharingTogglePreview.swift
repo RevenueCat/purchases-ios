@@ -16,9 +16,11 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 #if DEBUG
+
+// swiftlint:disable force_unwrapping
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
@@ -141,14 +143,14 @@ private enum FamilySharingTogglePreview {
                                     bottomLeading: 16,
                                     bottomTrailing: 20)),
             border: .init(color: .init(light: .hex("#cccccc")), width: 1),
-            overrides: .init(
-                states: .init(
-                    selected: .init(
-                        backgroundColor: .init(light: .hex("#ffdfdd")),
-                        border: .init(color: .init(light: .hex("#e89d89")), width: 1)
-                    )
-                )
-            )
+            overrides: [
+                .init(conditions: [
+                    .selected
+                ], properties: .init(
+                    backgroundColor: .init(light: .hex("#ffdfdd")),
+                    border: .init(color: .init(light: .hex("#e89d89")), width: 1)
+                ))
+            ]
         )
 
         return PaywallComponent.PackageComponent(
@@ -202,13 +204,13 @@ private enum FamilySharingTogglePreview {
                             text: "toggle_text",
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit, height: .fit),
-                            overrides: .init(
-                                states: .init(
-                                    selected: .init(
-                                        color: .init(light: .hex("#ffffff"))
-                                    )
-                                )
-                            )
+                            overrides: [
+                                .init(conditions: [
+                                    .selected
+                                ], properties: .init(
+                                    color: .init(light: .hex("#ffffff"))
+                                ))
+                            ]
                         )),
                         .tabControlToggle(.init(
                             defaultValue: false,
@@ -386,6 +388,7 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
                                 PreviewMock.weeklyPremiumPackage,
                                 PreviewMock.monthlyPremiumPackage
                                ]),
+            purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },

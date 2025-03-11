@@ -76,6 +76,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
+    /**
+     * The delegate for ``Purchases`` responsible for handling updating your app's state in response to updated
+     * customer info or promotional product purchases.
+     *
+     * - Warning: The delegate is not retained by ``Purchases``, so your app must retain a reference to the delegate
+     * to prevent it from being unintentionally deallocated.
+     */
     @objc public var delegate: PurchasesDelegate? {
         get { self.privateDelegate }
         set {
@@ -334,6 +341,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             offlineCustomerInfoCreator: .createIfAvailable(
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
+                tracker: diagnosticsTracker,
                 observerMode: observerMode
             ),
             diagnosticsTracker: diagnosticsTracker
@@ -401,6 +409,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                       attributionFetcher: attributionFetcher,
                                                                       attributionDataMigrator: attributionDataMigrator)
         let identityManager = IdentityManager(deviceCache: deviceCache,
+                                              systemInfo: systemInfo,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
@@ -428,7 +437,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
                                                   attributionFetcher: attributionFetcher,
-                                                  subscriberAttributesManager: subscriberAttributesManager)
+                                                  subscriberAttributesManager: subscriberAttributesManager,
+                                                  systemInfo: systemInfo)
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager,
                                                attributionPoster: attributionPoster,
@@ -476,6 +486,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
                         diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
                                                                           handler: diagnosticsFileHandler,
+                                                                          tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
@@ -692,6 +703,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
 
         self.subscribeToAppStateNotifications()
+
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
@@ -834,10 +846,6 @@ public extension Purchases {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
-
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await self.paywallEventsManager?.resetAppSessionID()
-            }
         }
     }
 
@@ -869,10 +877,6 @@ public extension Purchases {
                     }
                 }
                 return
-            }
-
-            self.operationDispatcher.dispatchOnWorkerThread {
-                await self.paywallEventsManager?.resetAppSessionID()
             }
 
             self.updateAllCaches {
@@ -1597,7 +1601,21 @@ extension Purchases: PurchasesOrchestratorDelegate {
      */
     func readyForPromotedProduct(_ product: StoreProduct,
                                  purchase startPurchase: @escaping StartPurchaseBlock) {
-        self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
+
+        switch self.systemInfo.storeKitVersion.effectiveVersion {
+        case .storeKit1:
+            // Calling the delegate method on the main actor causes test failures on iOS 14-16, so instead
+            // we dispatch to the main thread, which doesn't cause the failures.
+            OperationDispatcher.default.dispatchOnMainThread {
+                self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
+            }
+        case .storeKit2:
+            // Ensure that the delegate method is called on the main actor for StoreKit 2.
+            OperationDispatcher.default.dispatchOnMainActor {
+                self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
+            }
+        }
+
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
@@ -1908,6 +1926,11 @@ private extension Purchases {
     }
 
     func updateCachesIfInForeground() {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            // No need to update caches when in UI preview mode
+            return
+        }
+
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
@@ -1918,6 +1941,11 @@ private extension Purchases {
     }
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            // No need to update caches when in UI preview mode
+            return
+        }
+
         if !self.systemInfo.dangerousSettings.customEntitlementComputation {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,

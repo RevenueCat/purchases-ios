@@ -150,16 +150,19 @@ class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
                                          diagnosticsTracker: self.mockDiagnosticsTracker)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let notFoundIdentifier = "unknown_identifier"
         _ = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
-            manager.products(withIdentifiers: Set([identifier]), completion: completed)
+            manager.products(withIdentifiers: Set([identifier, notFoundIdentifier]), completion: completed)
         }
 
         expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
-        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
-        expect(params?.wasSuccessful) == true
-        expect(params?.storeKitVersion) == .storeKit1
-        expect(params?.errorMessage).to(beNil())
-        expect(params?.errorCode).to(beNil())
+        let params = try XCTUnwrap(self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first)
+        expect(params.wasSuccessful) == true
+        expect(params.storeKitVersion) == .storeKit1
+        expect(Set(params.requestedProductIds)) == [identifier, notFoundIdentifier]
+        expect(Set(params.notFoundProductIds)) == [notFoundIdentifier]
+        expect(params.errorMessage).to(beNil())
+        expect(params.errorCode).to(beNil())
     }
 
 }
@@ -186,16 +189,20 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
                                          diagnosticsTracker: self.mockDiagnosticsTracker)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let notFoundIdentifier = "unknown_identifier"
         _ = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
-            manager.products(withIdentifiers: Set([identifier]), completion: completed)
+            manager.products(withIdentifiers: Set([identifier, notFoundIdentifier]), completion: completed)
         }
 
         expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
-        let params = self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first
-        expect(params?.wasSuccessful) == true
-        expect(params?.storeKitVersion) == .storeKit2
-        expect(params?.errorMessage).to(beNil())
-        expect(params?.errorCode).to(beNil())
+        let params = try XCTUnwrap(self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first)
+        expect(params.wasSuccessful) == true
+        expect(params.storeKitVersion) == .storeKit2
+        expect(Set(params.requestedProductIds)) == [identifier, notFoundIdentifier]
+        expect(Set(params.notFoundProductIds)) == [notFoundIdentifier]
+        expect(params.errorMessage).to(beNil())
+        expect(params.errorCode).to(beNil())
+        expect(params.storeKitErrorDescription).to(beNil())
     }
 
     #if swift(>=5.9)
@@ -222,6 +229,7 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
         expect(params?.storeKitVersion) == .storeKit2
         expect(params?.errorMessage) == "Products request error: Unable to Complete Request"
         expect(params?.errorCode) == 2
+        expect(params?.storeKitErrorDescription) == StoreKitError.unknown.trackingDescription
     }
     #endif
 

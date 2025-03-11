@@ -100,6 +100,13 @@ struct OfferingsList: View {
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
+        .fullScreenCover(item: $viewModel.presentedPaywall) { paywall in
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: introEligility)
+                .onRestoreCompleted { _ in
+                    viewModel.dismissPaywall()
+                }
+                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
+        }
     }
 
     @ViewBuilder

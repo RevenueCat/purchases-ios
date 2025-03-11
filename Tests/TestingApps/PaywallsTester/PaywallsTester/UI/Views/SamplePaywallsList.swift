@@ -17,7 +17,10 @@ struct SamplePaywallsList: View {
     private var display: Display?
 
     @State
-    private var presentingCustomerCenter: Bool = false
+    private var presentingCustomerCenterSheet: Bool = false
+
+    @State
+    private var presentingCustomerCenterFullScreen: Bool = false
 
     var body: some View {
         NavigationView {
@@ -36,7 +39,7 @@ struct SamplePaywallsList: View {
         switch display {
         case let .template(template, mode):
             switch mode {
-            case .fullScreen:
+            case .fullScreen, .sheet:
                 PaywallView(configuration: .init(
                     offering: Self.loader.offering(for: template),
                     customerInfo: Self.loader.customerInfo,
@@ -87,13 +90,15 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
-        case .customerCenter:
-            CustomerCenterView(customerCenterActionHandler: self.handleCustomerCenterAction)
+        case .customerCenterSheet,
+                .customerCenterFullScreen,
+                .customerCenterNavigationView:
+            // handled by view modifier
+            EmptyView()
         case .uiKitCustomerCenter:
             CustomerCenterUIKitView(
                 customerCenterActionHandler: self.handleCustomerCenterAction
             )
-        #if PAYWALL_COMPONENTS
         case .componentPaywall(let data):
             PaywallView(configuration: .init(
                 offering: Self.loader.offering(with: data),
@@ -101,7 +106,6 @@ struct SamplePaywallsList: View {
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
             ))
-        #endif
         }
 
     }
@@ -111,7 +115,7 @@ struct SamplePaywallsList: View {
 
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
-                    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                    ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
                         Button {
                             self.display = .template(template, mode)
                         } label: {
@@ -122,7 +126,7 @@ struct SamplePaywallsList: View {
                     Button {
                         self.display = .customFont(template)
                     } label: {
-                        TemplateLabel(name: "Custom font", icon: "textformat")
+                        TemplateLabel(name: "Custsom font", icon: "textformat")
                             .font(.body.italic())
                     }
                 }
@@ -134,14 +138,14 @@ struct SamplePaywallsList: View {
                     self.display = .customPaywall(.footer)
                 } label: {
                     TemplateLabel(name: "Custom + footer",
-                                  icon: PaywallViewMode.footer.icon)
+                                  icon: PaywallTesterViewMode.footer.icon)
                 }
 
                 Button {
                     self.display = .customPaywall(.condensedFooter)
                 } label: {
                     TemplateLabel(name: "Custom + condensed footer",
-                                  icon: PaywallViewMode.condensedFooter.icon)
+                                  icon: PaywallTesterViewMode.condensedFooter.icon)
                 }
                 #endif
 
@@ -160,10 +164,16 @@ struct SamplePaywallsList: View {
 
             #if os(iOS)
             Section("Customer Center") {
-                Button {
-                    self.display = .customerCenter
+                NavigationLink {
+                    CustomerCenterView(
+                        customerCenterActionHandler: handleCustomerCenterAction,
+                        navigationOptions: CustomerCenterNavigationOptions(
+                            usesNavigationStack: false,
+                            usesExistingNavigation: true,
+                            shouldShowCloseButton: false
+                        ))
                 } label: {
-                    TemplateLabel(name: "SwiftUI", icon: "person.fill.questionmark")
+                    Text("Pushed in NavigationView")
                 }
 
                 Button {
@@ -173,7 +183,13 @@ struct SamplePaywallsList: View {
                 }
 
                 Button {
-                    self.presentingCustomerCenter = true
+                    self.presentingCustomerCenterFullScreen = true
+                } label: {
+                    TemplateLabel(name: "Fullscreen", icon: "person.fill")
+                }
+
+                Button {
+                    self.presentingCustomerCenterSheet = true
                 } label: {
                     TemplateLabel(name: "Sheet", icon: "person.fill")
                 }
@@ -191,9 +207,17 @@ struct SamplePaywallsList: View {
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
         #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$presentingCustomerCenter, customerCenterActionHandler: self.handleCustomerCenterAction) {
-            self.presentingCustomerCenter = false
-        }
+        .presentCustomerCenter(
+            isPresented: self.$presentingCustomerCenterSheet,
+            customerCenterActionHandler: self.handleCustomerCenterAction,
+            onDismiss: { self.presentingCustomerCenterFullScreen = false }
+        )
+        .presentCustomerCenter(
+            isPresented: self.$presentingCustomerCenterFullScreen,
+            customerCenterActionHandler: self.handleCustomerCenterAction,
+            presentationMode: .fullScreen,
+            onDismiss: { self.presentingCustomerCenterFullScreen = false }
+        )
         #endif
     }
 
@@ -266,17 +290,17 @@ private extension SamplePaywallsList {
 
     enum Display {
 
-        case template(PaywallTemplate, PaywallViewMode)
+        case template(PaywallTemplate, PaywallTesterViewMode)
         case customFont(PaywallTemplate)
         @available(watchOS, unavailable)
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
-        case customerCenter
+        case customerCenterSheet
+        case customerCenterFullScreen
+        case customerCenterNavigationView
         case uiKitCustomerCenter
-        #if PAYWALL_COMPONENTS
         case componentPaywall(PaywallComponentsData)
-        #endif
 
     }
 
@@ -301,12 +325,18 @@ extension SamplePaywallsList.Display: Identifiable {
         case .unrecognizedPaywall:
             return "unrecognized"
 
-        case .customerCenter:
-            return "customer-center"
-        #if PAYWALL_COMPONENTS
+        case .customerCenterSheet:
+            return "customer-center-sheet"
+
+        case .customerCenterFullScreen:
+            return "customer-center-fullscreen"
+
+        case .customerCenterNavigationView:
+            return "customer-center-navigationview"
+
         case .componentPaywall:
             return "component-paywall"
-        #endif
+
         case .uiKitCustomerCenter:
             return "customer-center-uikit"
         }

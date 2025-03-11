@@ -17,6 +17,8 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class VariableHandlerV2Test: TestCase {
 
@@ -62,13 +64,22 @@ class VariableHandlerV2Test: TestCase {
             "num_year_two": "%d years",
             "num_year_few": "%d years",
             "num_year_many": "%d years",
-            "num_year_other": "%d years"
+            "num_year_other": "%d years",
+            "num_days_short": "%dd",
+            "num_weeks_short": "%dwk",
+            "num_months_short": "%dmo",
+            "num_years_short": "%dyr"
         ]
     ]
 
     let locale = Locale(identifier: "en_US")
 
+    static let variableMapping: [String: String] = [:]
+    static let functionMapping: [String: String] = [:]
+
     let variableHandler = VariableHandlerV2(
+        variableCompatibilityMap: variableMapping,
+        functionCompatibilityMap: functionMapping,
         discountRelativeToMostExpensivePerMonth: nil,
         showZeroDecimalPlacePrices: false,
         dateProvider: {
@@ -109,6 +120,16 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("monthly"))
     }
 
+    func testProductPeriodlyMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.periodly }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("3 months"))
+    }
+
     func testProductPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.price }}",
@@ -129,6 +150,16 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$6.99/month"))
     }
 
+    func testProductPricePerPeriodMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$4.99/3 months"))
+    }
+
     func testProductPricePerPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_period_abbreviated }}",
@@ -137,6 +168,16 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("$6.99/mo"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$4.99/3mo"))
     }
 
     func testProductPricePerDay() {
@@ -189,6 +230,16 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("month"))
     }
 
+    func testProductPeriodMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("3 months"))
+    }
+
     func testProductPeriodAbbreviated() {
         let result = variableHandler.processVariables(
             in: "{{ product.period_abbreviated }}",
@@ -197,6 +248,16 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("mo"))
+    }
+
+    func testProductPeriodAbbreviatedMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("3mo"))
     }
 
     func testProductPeriodInDays() {
@@ -471,6 +532,8 @@ class VariableHandlerV2Test: TestCase {
 
     func testProductRelativeDiscount() {
         let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
             discountRelativeToMostExpensivePerMonth: 0.3,
             showZeroDecimalPlacePrices: false
         )
@@ -514,4 +577,78 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("Month"))
     }
 
+    func testVariableMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [
+                "product_name": "product.store_product_name"
+            ],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Name is {{ product_name }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Name is Monthly"))
+    }
+
+    func testVariableMappingWithNoMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Name is {{ product_name_that_does_not_exist }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Name is "))
+    }
+
+    func testFunctionMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [
+                "loud": "uppercase"
+            ],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.store_product_name || loud }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("MONTHLY"))
+    }
+
+    func testFunctionMappingWithNoMapping() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.3,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.store_product_name || loud }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("Monthly"))
+    }
+
 }
+
+#endif

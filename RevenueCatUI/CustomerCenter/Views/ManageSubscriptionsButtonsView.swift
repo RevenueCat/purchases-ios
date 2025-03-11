@@ -25,17 +25,13 @@ struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
     var viewModel: ManageSubscriptionsViewModel
-    @Binding
-    var loadingPath: CustomerCenterConfigData.HelpPath?
-    @Environment(\.openURL)
-    var openURL
-
-    @Environment(\.localization)
-    private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
-        ForEach(self.viewModel.paths, id: \.id) { path in
-            ManageSubscriptionButton(path: path, viewModel: self.viewModel)
+        ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
+            ManageSubscriptionButton(
+                path: path,
+                viewModel: self.viewModel
+            )
         }
     }
 
@@ -45,12 +41,12 @@ struct ManageSubscriptionsButtonsView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionButton: View {
+private struct ManageSubscriptionButton: View {
 
     let path: CustomerCenterConfigData.HelpPath
-    @ObservedObject var viewModel: ManageSubscriptionsViewModel
 
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
+    @ObservedObject
+    var viewModel: ManageSubscriptionsViewModel
 
     var body: some View {
         AsyncButton(action: {

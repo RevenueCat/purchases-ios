@@ -16,7 +16,7 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BadgeModifier: ViewModifier {
@@ -26,13 +26,15 @@ struct BadgeModifier: ViewModifier {
     struct BadgeInfo {
         let style: PaywallComponent.BadgeStyle
         let alignment: PaywallComponent.TwoDimensionAlignment
-        let stack: PaywallComponent.CodableBox<PaywallComponent.StackComponent>
+        let stack: PaywallComponent.StackComponent
         let badgeViewModels: [PaywallComponentViewModel]
         let stackShape: ShapeModifier.Shape?
+        let stackBorder: ShapeModifier.BorderInfo?
         let uiConfigProvider: UIConfigProvider
 
         var backgroundStyle: BackgroundStyle? {
-            stack.value.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+                ?? stack.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         }
     }
 
@@ -58,6 +60,7 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -65,7 +68,9 @@ fileprivate extension View {
                     .padding(effectiveMargin(badge: badge).edgeInsets)
                     .alignmentGuide(
                         effetiveVerticalAlinmentForOverlaidBadge(alignment: badge.alignment.stackAlignment),
-                        computeValue: { dim in dim[VerticalAlignment.center] })
+                        computeValue: { dim in
+                            dim[VerticalAlignment.center] + effetiveYTranslationForOverlaidBadge(badge: badge)
+                        })
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
@@ -74,72 +79,35 @@ fileprivate extension View {
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
-
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
+            .applyIfLet(badge.stackShape?.toInsettableShape()) { view, shape in
+                view.clipShape(shape)
+            }
+        @unknown default:
+            self
         }
     }
 
     // Helper to apply the edge-to-edge badge style
     @ViewBuilder
-    // swiftlint:disable:next function_body_length
     private func applyBadgeEdgeToEdge(badge: BadgeModifier.BadgeInfo) -> some View {
         switch badge.alignment {
-        case .bottom:
-            self.background(
-                VStack(alignment: .leading) {
-                    VStack {
-                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
-                    }
-                    .alignmentGuide(.bottom) { dim in dim[VerticalAlignment.top] }
-                }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
-            )
-            .background(
-                VStack(alignment: .leading, spacing: 0) {
-                    Rectangle()
-                        .fill(Color.clear)
-                    Rectangle()
-                        .fill(Color.clear)
-                        .backgroundStyle(badge.backgroundStyle)
-                }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            )
-        case .top:
-            self.background(
-                VStack(alignment: .leading) {
-                    VStack {
-                        ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
-                            .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
-                    }
-                    .alignmentGuide(.top) { dim in dim[VerticalAlignment.bottom] }
-                }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
-            )
-            .background(
-                VStack(alignment: .leading, spacing: 0) {
-                    Rectangle()
-                        .fill(Color.clear)
-                        .backgroundStyle(badge.backgroundStyle)
-                    Rectangle()
-                        .fill(Color.clear)
-                }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            )
+        case .top, .bottom:
+            self.modifier(EdgeToEdgeTopBottomModifier(badge: badge))
         case .bottomLeading, .bottomTrailing, .topLeading, .topTrailing:
             self.overlay(
                 VStack(alignment: .leading) {
                     VStack {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                            .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
                             .shape(border: nil, shape: effectiveShape(badge: badge))
                     }
@@ -147,6 +115,9 @@ fileprivate extension View {
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: badge.alignment.stackAlignment)
             )
+            .applyIfLet(badge.stackShape?.toInsettableShape()) { view, shape in
+                view.clipShape(shape)
+            }
         default:
             self
         }
@@ -164,10 +135,23 @@ fileprivate extension View {
         }
     }
 
+    // Helper to calculate the position of an overlaid badge to place it at the center of the parent stack's border
+    private func effetiveYTranslationForOverlaidBadge(badge: BadgeModifier.BadgeInfo) -> CGFloat {
+        switch badge.alignment {
+        case .top, .topLeading, .topTrailing:
+            return -(badge.stackBorder?.width ?? 0)/2
+        case .bottom, .bottomLeading, .bottomTrailing:
+            return +(badge.stackBorder?.width ?? 0)/2
+        default:
+            return 0
+        }
+    }
+
     // Helper to calculate the effective margins of a badge depending on its type:
     // - Edge-to-ege: No margin allowed.
     // - Overlaid: Only leading/trailing margins allowed if in the leading/trailing positions respectively.
-    // - Nested: Margin only allowed in the sides adjacent to the stack borders.
+    // - Nested: Margin only allowed in the sides adjacent to the stack borders. Also the
+    //  margin will include the stack border.
     // swiftlint:disable:next cyclomatic_complexity
     private func effectiveMargin(badge: BadgeModifier.BadgeInfo) -> PaywallComponent.Padding {
         switch badge.style {
@@ -178,107 +162,173 @@ fileprivate extension View {
             case .top, .bottom, .center:
                 return .zero
             case .leading, .topLeading, .bottomLeading:
-                return .init(top: 0, bottom: 0, leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: 0, leading: badge.stack.margin.leading, trailing: 0)
             case .trailing, .topTrailing, .bottomTrailing:
-                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: 0, bottom: 0, leading: 0, trailing: badge.stack.margin.trailing)
+            @unknown default:
+                return .zero
             }
         case .nested:
+            let borderWidth = badge.stackBorder?.width ?? 0
             switch badge.alignment {
             case .center, .leading, .trailing:
                 return .zero
             case .top:
-                return .init(top: badge.stack.value.margin.top, bottom: 0, leading: 0, trailing: 0)
+                return .init(top: (badge.stack.margin.top ?? 0) + borderWidth, bottom: 0,
+                             leading: 0, trailing: 0)
             case .bottom:
-                return .init(top: 0, bottom: badge.stack.value.margin.bottom, leading: 0, trailing: 0)
+                return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
+                             leading: 0, trailing: 0)
             case .topLeading:
-                return .init(top: badge.stack.value.margin.top, bottom: 0,
-                             leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: (badge.stack.margin.top ?? 0) + borderWidth, bottom: 0,
+                             leading: (badge.stack.margin.leading ?? 0) + borderWidth, trailing: 0)
             case .topTrailing:
-                return .init(top: badge.stack.value.margin.top, bottom: 0,
-                             leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: (badge.stack.margin.top ?? 0) + borderWidth, bottom: 0,
+                             leading: 0, trailing: (badge.stack.margin.trailing ?? 0) + borderWidth)
             case .bottomLeading:
-                return .init(top: 0, bottom: badge.stack.value.margin.bottom,
-                             leading: badge.stack.value.margin.leading, trailing: 0)
+                return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
+                             leading: (badge.stack.margin.leading ?? 0) + borderWidth, trailing: 0)
             case .bottomTrailing:
-                return .init(top: 0, bottom: badge.stack.value.margin.bottom,
-                             leading: 0, trailing: badge.stack.value.margin.trailing)
+                return .init(top: 0, bottom: (badge.stack.margin.bottom ?? 0) + borderWidth,
+                             leading: 0, trailing: (badge.stack.margin.trailing ?? 0) + borderWidth)
+            @unknown default:
+                return .zero
             }
+        @unknown default:
+            return .zero
         }
     }
+}
 
-    // Helper to calculate the shape of the edge-to-edge badge in trailing/leading positions.
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
-    private func effectiveShape(badge: BadgeModifier.BadgeInfo) -> ShapeModifier.Shape? {
-        switch badge.style {
-        case .edgeToEdge:
-            switch badge.stack.value.shape {
-            case .pill, .none:
-                // Edge-to-edge badge cannot have pill shape
-                return nil
-            case .rectangle(let corners):
-                switch badge.alignment {
-                case .center, .leading, .trailing:
-                    return nil
-                case .top:
-                    return .rectangle(.init(
-                        topLeft: corners?.topLeading,
-                        topRight: corners?.topTrailing,
-                        bottomLeft: 0,
-                        bottomRight: 0))
-                case .bottom:
-                    return .rectangle(.init(
-                        topLeft: 0,
-                        topRight: 0,
-                        bottomLeft: corners?.bottomLeading,
-                        bottomRight: corners?.bottomTrailing))
-                case .topLeading:
-                    return .rectangle(.init(
-                        topLeft: radiusInfo(shape: badge.stackShape)?.topLeft,
-                        topRight: 0,
-                        bottomLeft: 0,
-                        bottomRight: corners?.bottomTrailing))
-                case .topTrailing:
-                    return .rectangle(.init(
-                        topLeft: 0.0,
-                        topRight: radiusInfo(shape: badge.stackShape)?.topRight,
-                        bottomLeft: corners?.bottomLeading,
-                        bottomRight: 0))
-                case .bottomLeading:
-                    return .rectangle(.init(
-                        topLeft: 0.0,
-                        topRight: corners?.topTrailing,
-                        bottomLeft: radiusInfo(shape: badge.stackShape)?.bottomLeft,
-                        bottomRight: 0))
-                case .bottomTrailing:
-                    return .rectangle(.init(
-                        topLeft: corners?.topLeading,
-                        topRight: 0,
-                        bottomLeft: 0,
-                        bottomRight: radiusInfo(shape: badge.stackShape)?.bottomRight))
-                }
-            }
-        case .nested, .overlaid:
-            switch badge.stack.value.shape {
-            case .rectangle(let radius):
-                return .rectangle(.init(topLeft: radius?.topLeading,
-                                        topRight: radius?.topTrailing,
-                                        bottomLeft: radius?.bottomLeading,
-                                        bottomRight: radius?.bottomTrailing))
-            case .pill:
-                return .pill
-            case .none:
-                return nil
-            }
-        }
-    }
-
-    // Helper to extract the RadiusInfo from a rectanle shape
-    private func radiusInfo(shape: ShapeModifier.Shape?) -> ShapeModifier.RadiusInfo? {
-        switch shape {
-        case .rectangle(let radius):
-            return radius
-        default:
+// Helper to calculate the shape of the edge-to-edge badge badge in trailing/leading positions.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next cyclomatic_complexity function_body_length
+private func effectiveShape(badge: BadgeModifier.BadgeInfo, pillStackRadius: Double? = 0) -> ShapeModifier.Shape? {
+    switch badge.style {
+    case .edgeToEdge:
+        switch badge.stack.shape {
+        case .pill, .none:
+            // Edge-to-edge badge cannot have pill shape
             return nil
+        case .rectangle(let corners):
+            let stackRadius = radiusInfo(shape: badge.stackShape, pillRadius: pillStackRadius)
+            switch badge.alignment {
+            case .center, .leading, .trailing:
+                return nil
+            case .top:
+                return .rectangle(.init(
+                    topLeft: corners?.topLeading,
+                    topRight: corners?.topTrailing,
+                    bottomLeft: stackRadius.bottomLeft,
+                    bottomRight: stackRadius.bottomRight))
+            case .bottom:
+                return .rectangle(.init(
+                    topLeft: stackRadius.topLeft,
+                    topRight: stackRadius.topRight,
+                    bottomLeft: corners?.bottomLeading,
+                    bottomRight: corners?.bottomTrailing))
+            case .topLeading:
+                return .rectangle(.init(
+                    topLeft: radiusInfo(shape: badge.stackShape).topLeft,
+                    topRight: 0,
+                    bottomLeft: 0,
+                    bottomRight: corners?.bottomTrailing))
+            case .topTrailing:
+                return .rectangle(.init(
+                    topLeft: 0.0,
+                    topRight: radiusInfo(shape: badge.stackShape).topRight,
+                    bottomLeft: corners?.bottomLeading,
+                    bottomRight: 0))
+            case .bottomLeading:
+                return .rectangle(.init(
+                    topLeft: 0.0,
+                    topRight: corners?.topTrailing,
+                    bottomLeft: radiusInfo(shape: badge.stackShape).bottomLeft,
+                    bottomRight: 0))
+            case .bottomTrailing:
+                return .rectangle(.init(
+                    topLeft: corners?.topLeading,
+                    topRight: 0,
+                    bottomLeft: 0,
+                    bottomRight: radiusInfo(shape: badge.stackShape).bottomRight))
+            @unknown default:
+                return nil
+            }
+        @unknown default:
+            return nil
+        }
+    case .nested, .overlaid:
+        switch badge.stack.shape {
+        case .rectangle(let radius):
+            return .rectangle(.init(topLeft: radius?.topLeading,
+                                    topRight: radius?.topTrailing,
+                                    bottomLeft: radius?.bottomLeading,
+                                    bottomRight: radius?.bottomTrailing))
+        case .pill:
+            return .pill
+        case .none:
+            return nil
+        @unknown default:
+            return nil
+        }
+    @unknown default:
+        return nil
+    }
+}
+
+// Helper to extract the RadiusInfo from a shape.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func radiusInfo(shape: ShapeModifier.Shape?, pillRadius: Double? = 0) -> ShapeModifier.RadiusInfo {
+    switch shape {
+    case .rectangle(let radius):
+        return radius ?? .init(topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0)
+    case .pill:
+        return .init(topLeft: pillRadius, topRight: pillRadius, bottomLeft: pillRadius, bottomRight: pillRadius)
+    default:
+        return .init(topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0)
+    }
+}
+
+// This modifier is used exclusively for edge-to-edge badges in top and bottom positions.
+// In case the stack has pill shape, we can calculate its radius by using the stack's size.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct EdgeToEdgeTopBottomModifier: ViewModifier {
+
+    @State private var stackSize: CGSize = .zero
+    var badge: BadgeModifier.BadgeInfo
+
+    var badgeView: some View {
+        VStack {
+            ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
+                .padding(badge.stack.padding.edgeInsets)
+        }.zIndex(-1)
+    }
+
+    func body(content: Content) -> some View {
+        VStack(spacing: 0) {
+            if badge.alignment == .top {
+                badgeView
+            }
+            content
+                .background(
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear {
+                                stackSize = geometry.size
+                            }
+                    }
+                )
+            if badge.alignment == .bottom {
+                badgeView
+            }
+        }
+        .background {
+            VStack {}
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .backgroundStyle(badge.backgroundStyle)
+                .shape(border: nil,
+                       shape: effectiveShape(badge: badge,
+                                             pillStackRadius: min(stackSize.width, stackSize.height)/2))
         }
     }
 
@@ -291,115 +341,99 @@ extension View {
     }
 }
 
+#if DEBUG
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@ViewBuilder
-// swiftlint:disable:next function_body_length
-private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallComponent.TwoDimensionAlignment) -> some View {
-    VStack(spacing: 16) {
-        Text("Standard")
-            .font(.title)
-            .fontWeight(.bold)
-            .foregroundColor(.black)
+struct BadgePreviews: View {
 
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                Text("Feature 1")
-                    .foregroundColor(.black)
-            }
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                Text("Feature 2")
-                    .foregroundColor(.black)
-            }
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                Text("Feature 3")
-                    .foregroundColor(.black)
-            }
-        }
-
-        Text("$9.99/month")
-            .font(.title)
-            .fontWeight(.bold)
-            .foregroundColor(.black)
-
-        Text("Includes 7 Day Free Trial")
-            .font(.caption)
-            .foregroundColor(.gray)
-
-        Text("Continue")
-            .fontWeight(.bold)
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(12)
-
-    }
-    .padding()
-    .padding(.vertical, 34)
-    .backgroundStyle(.color(.init(light: .hex("#ffffff"))).backgroundStyle)
-    .shape(
-        border: .init(color: .blue, width: 10),
-        shape: .rectangle(ShapeModifier.RadiusInfo(topLeft: 12.0, topRight: 12, bottomLeft: 12, bottomRight: 12))
-    )
-    .compositingGroup()
-    .shadow(color: Color.black.opacity(0.5), radius: 4, x: 0, y: 4)
-    .stackBadge(
-        BadgeModifier.BadgeInfo(
-            style: style,
-            alignment: alignment,
-            stack: PaywallComponent.CodableBox(PaywallComponent.StackComponent(
-                components: [
-                    PaywallComponent.text(
-                        PaywallComponent.TextComponent(
-                            text: "id_1",
-                            fontName: nil,
-                            fontWeight: .bold,
+    @ViewBuilder
+    // swiftlint:disable:next function_body_length
+    private func badge(style: PaywallComponent.BadgeStyle,
+                       alignment: PaywallComponent.TwoDimensionAlignment,
+                       shape: PaywallComponent.Shape) -> some View {
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! StackComponentViewModel(
+                component: PaywallComponent.StackComponent(
+                    components: [
+                        .text(PaywallComponent.TextComponent(
+                            text: "text_1",
                             color: .init(light: .hex("#000000")),
+                            size: .init(width: .fit, height: .fit),
+                            margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                        ))
+                    ],
+                    dimension: .horizontal(.center, .center),
+                    size: .init(width: .fill, height: .fixed(100)),
+                    spacing: 10,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
+                    shape: shape,
+                    border: .init(color: .init(light: .hex("#0074F3")), width: 10),
+                    shadow: .init(color: .init(light: .hex("#00000080")), radius: 4, x: 0, y: 4),
+                    badge: .init(
+                        style: style,
+                        alignment: alignment,
+                        stack: PaywallComponent.StackComponent(
+                            components: [
+                                .text(PaywallComponent.TextComponent(
+                                    text: "text_2",
+                                    fontWeight: .bold,
+                                    color: .init(light: .hex("#000000")),
+                                    size: .init(width: .fit, height: .fit),
+                                    fontSize: 13
+                                ))
+                            ],
+                            dimension: .horizontal(),
+                            size: .init(width: .fill, height: .fixed(150)),
+                            spacing: 10,
+                            backgroundColor: .init(light: .hex("#F67E70")),
                             padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
-                            margin: .zero,
-                            fontSize: 13,
-                            horizontalAlignment: .center
+                            margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
+                            shape: .rectangle(.init(topLeading: 12, topTrailing: 12,
+                                                    bottomLeading: 12, bottomTrailing: 12))
                         )
                     )
-                ],
-                backgroundColor: .init(light: .hex("#FA8072")),
-                padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
-                margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
-                shape: .rectangle(.init(topLeading: 8.0, topTrailing: 8, bottomLeading: 8, bottomTrailing: 8))
-            )), badgeViewModels: [
-                .text(
-                    // swiftlint:disable:next force_try
-                    try! TextComponentViewModel(
-                        localizationProvider: .init(
-                            locale: Locale.current,
-                            localizedStrings: [
-                                "id_1": .string("Special Discount\nSave 50%")
-                            ]
-                        ),
-                        uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                        component: PaywallComponent.TextComponent(
-                            text: "id_1",
-                            fontName: nil,
-                            fontWeight: .bold,
-                            color: .init(light: .hex("#000000")),
-                            padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
-                            margin: .zero,
-                            fontSize: 13,
-                            horizontalAlignment: .center
-                        )
-                    )
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "text_1": .string("Feature 1\nFeature 2\nFeature 3\nFeature 4"),
+                        "text_2": .string("Special Discount\nSave 50%")
+                    ]
                 )
-            ],
-            stackShape: .rectangle(.init(topLeft: 12.0, topRight: 12.0, bottomLeft: 12.0, bottomRight: 12.0)),
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            ),
+            onDismiss: {}
         )
-    )
+    }
+
+    var style: PaywallComponent.BadgeStyle
+
+    var body: some View {
+        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
+            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
+        ]
+        let shapes: [PaywallComponent.Shape] = [
+            .pill,
+            .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
+            .rectangle(.init(topLeading: 999, topTrailing: 12, bottomLeading: 12, bottomTrailing: 999))
+        ]
+        ForEach(alignments, id: \.self) { alignment in
+            VStack(spacing: 50) {
+                ForEach(shapes, id: \.self) { shape in
+                    badge(style: style,
+                          alignment: alignment,
+                          shape: shape)
+
+                }
+            }
+            .previewDisplayName("\(style) - \(alignment)")
+        }
+        .previewLayout(.sizeThatFits)
+        .padding(30)
+        .padding(.vertical, 50)
+        .previewRequiredEnvironmentProperties()
+    }
 }
 
 // As of Xcode 16, there is a limit of 15 views per PreviewProvider.
@@ -409,17 +443,7 @@ private func badge(style: PaywallComponent.BadgeStyle, alignment: PaywallCompone
 struct BadgeEdgeToEdge_Previews: PreviewProvider {
 
     static var previews: some View {
-        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
-            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
-        ]
-        ForEach(alignments, id: \.self) { alignment in
-            badge(style: .edgeToEdge, alignment: alignment)
-                .previewDisplayName("edgeToEdge - \(alignment)")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding(30)
-        .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
+        BadgePreviews(style: .edgeToEdge)
     }
 
 }
@@ -428,17 +452,7 @@ struct BadgeEdgeToEdge_Previews: PreviewProvider {
 struct BadgeOverlaid_Previews: PreviewProvider {
 
     static var previews: some View {
-        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
-            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
-        ]
-        ForEach(alignments, id: \.self) { alignment in
-            badge(style: .overlaid, alignment: alignment)
-                .previewDisplayName("overlaid - \(alignment)")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding(30)
-        .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
+        BadgePreviews(style: .overlaid)
     }
 
 }
@@ -447,19 +461,11 @@ struct BadgeOverlaid_Previews: PreviewProvider {
 struct BadgeNested_Previews: PreviewProvider {
 
     static var previews: some View {
-        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
-            .topLeading, .top, .topTrailing, .bottomLeading, .bottom, .bottomTrailing
-        ]
-        ForEach(alignments, id: \.self) { alignment in
-            badge(style: .nested, alignment: alignment)
-                .previewDisplayName("nested - \(alignment)")
-        }
-        .previewLayout(.sizeThatFits)
-        .padding(30)
-        .padding(.vertical, 50)
-        .previewRequiredEnvironmentProperties()
+        BadgePreviews(style: .nested)
     }
 
 }
+
+#endif
 
 #endif

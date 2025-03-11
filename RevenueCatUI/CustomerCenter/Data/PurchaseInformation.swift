@@ -18,15 +18,44 @@ import RevenueCat
 import StoreKit
 
 // swiftlint:disable nesting
+
+/// Information about a purchase.
 struct PurchaseInformation {
 
+    /// The title of the storekit product, if applicable.
+    /// - Note: See `StoreProduct.localizedTitle` for more details.
     let title: String?
+
+    /// The duration of the product, if applicable.
+    /// - Note: See `StoreProduct.localizedDetails` for more details.
     let durationTitle: String?
+
     let explanation: Explanation
+
+    /// Pricing details of the purchase.
     let price: PriceDetails
+
+    /// Subscription expiration or renewal details, if applicable.
     let expirationOrRenewal: ExpirationOrRenewal?
+
+    /// The unique product identifier for the purchase.
     let productIdentifier: String
+
+    /// The store from which the purchase was made (e.g., App Store, Play Store).
     let store: Store
+
+    /// Indicates whether the purchase grants lifetime access.
+    /// - `true` for non-subscription purchases.
+    /// - `false` for subscriptions, even if the expiration date is set far in the future.
+    let isLifetime: Bool
+
+    /// Indicates whether the purchase is under a trial period.
+    /// - `true` for purchases within the trial period.
+    /// - `false` for purchases outside the trial period.
+    let isTrial: Bool
+
+    let latestPurchaseDate: Date?
+    let customerInfoRequestedDate: Date
 
     init(title: String,
          durationTitle: String,
@@ -34,7 +63,11 @@ struct PurchaseInformation {
          price: PriceDetails,
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
-         store: Store
+         store: Store,
+         isTrial: Bool,
+         isLifetime: Bool,
+         latestPurchaseDate: Date?,
+         customerInfoRequestedDate: Date
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -43,18 +76,25 @@ struct PurchaseInformation {
         self.expirationOrRenewal = expirationOrRenewal
         self.productIdentifier = productIdentifier
         self.store = store
+        self.isLifetime = isLifetime
+        self.isTrial = isTrial
+        self.latestPurchaseDate = latestPurchaseDate
+        self.customerInfoRequestedDate = customerInfoRequestedDate
     }
 
+    // swiftlint:disable:next function_body_length
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
+         customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = DateFormatter()) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
+        self.customerInfoRequestedDate = customerInfoRequestedDate
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -67,9 +107,12 @@ struct PurchaseInformation {
             } else {
                 self.price = entitlement.priceBestEffort(product: subscribedProduct)
             }
+            self.isLifetime = entitlement.expirationDate == nil
+            self.isTrial = entitlement.periodType == .trial
+            self.latestPurchaseDate = entitlement.latestPurchaseDate
         } else {
             switch transaction.type {
-            case .subscription(let isActive, let willRenew, let expiresDate):
+            case let .subscription(isActive, willRenew, expiresDate, isTrial):
                 self.explanation = expiresDate != nil
                     ? (isActive ? (willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
                     : .lifetime
@@ -80,13 +123,21 @@ struct PurchaseInformation {
                         : .expired
                     return ExpirationOrRenewal(label: label, date: .date(dateString))
                 }
+                self.isLifetime = false
+                self.isTrial = isTrial
+                self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
+
             case .nonSubscription:
                 self.explanation = .lifetime
                 self.expirationOrRenewal = nil
+                self.isLifetime = true
+                self.isTrial = false
+                self.latestPurchaseDate = (transaction as? NonSubscriptionTransaction)?.purchaseDate
             }
 
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
+
             if transaction.store == .promotional {
                 self.price = .free
             } else {
@@ -155,7 +206,8 @@ extension PurchaseInformation {
         entitlement: EntitlementInfo? = nil,
         subscribedProduct: StoreProduct,
         transaction: Transaction,
-        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
+        customerInfoRequestedDate: Date
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -165,7 +217,8 @@ extension PurchaseInformation {
             entitlement: entitlement,
             subscribedProduct: subscribedProduct,
             transaction: transaction,
-            renewalPrice: renewalPriceDetails
+            renewalPrice: renewalPriceDetails,
+            customerInfoRequestedDate: customerInfoRequestedDate
         )
     }
 
@@ -293,22 +346,21 @@ protocol Transaction {
     var productIdentifier: String { get }
     var store: Store { get }
     var type: TransactionType { get }
-
 }
 
 enum TransactionType {
 
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?)
+    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
     case nonSubscription
-
 }
 
-extension SubscriptionInfo: Transaction {
+extension RevenueCat.SubscriptionInfo: Transaction {
 
     var type: TransactionType {
         .subscription(isActive: isActive,
                       willRenew: willRenew,
-                      expiresDate: expiresDate)
+                      expiresDate: expiresDate,
+                      isTrial: periodType == .trial)
     }
 
 }
@@ -318,5 +370,4 @@ extension NonSubscriptionTransaction: Transaction {
     var type: TransactionType {
         .nonSubscription
     }
-
 }

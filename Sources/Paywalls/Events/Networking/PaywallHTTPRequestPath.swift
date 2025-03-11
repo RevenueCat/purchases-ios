@@ -15,6 +15,7 @@ import Foundation
 
 extension HTTPRequest.PaywallPath: HTTPRequestPath {
 
+    // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api-paywalls.revenuecat.com")!
 
     var authenticated: Bool {

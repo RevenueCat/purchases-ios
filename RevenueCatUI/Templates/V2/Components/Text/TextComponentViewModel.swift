@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
@@ -48,7 +48,7 @@ class TextComponentViewModel {
         condition: ScreenCondition,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
-        apply: @escaping (TextComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
@@ -59,18 +59,17 @@ class TextComponentViewModel {
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
-        let fontFamily = self.uiConfigProvider.getFontFamily(for: partial?.fontName ?? self.component.fontName)
-
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
-            visible: partial?.visible ?? true,
+            visible: partial?.visible ?? self.component.visible ?? true,
             text: Self.processText(
                 text,
                 packageContext: packageContext,
+                variableConfig: uiConfigProvider.variableConfig,
                 locale: self.localizationProvider.locale,
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
-            fontFamily: fontFamily,
+            fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
@@ -86,11 +85,13 @@ class TextComponentViewModel {
 
     private static func processText(_ text: String,
                                     packageContext: PackageContext,
+                                    variableConfig: UIConfig.VariableConfig,
                                     locale: Locale,
                                     localizations: [String: String]) -> String {
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
+            variableConfig: variableConfig,
             locale: locale,
             localizations: localizations
         )
@@ -106,6 +107,7 @@ class TextComponentViewModel {
 
     private static func processTextV2(_ text: String,
                                       packageContext: PackageContext,
+                                      variableConfig: UIConfig.VariableConfig,
                                       locale: Locale,
                                       localizations: [String: String]) -> String {
         guard let package = packageContext.package else {
@@ -118,6 +120,8 @@ class TextComponentViewModel {
         )
 
         let handler = VariableHandlerV2(
+            variableCompatibilityMap: variableConfig.variableCompatibilityMap,
+            functionCompatibilityMap: variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
             showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
         )
@@ -130,7 +134,9 @@ class TextComponentViewModel {
         )
     }
 
-    private static func processTextV1(_ text: String, packageContext: PackageContext, locale: Locale) -> String {
+    private static func processTextV1(_ text: String,
+                                      packageContext: PackageContext,
+                                      locale: Locale) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -225,7 +231,7 @@ struct TextComponentStyle {
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
         text: String,
-        fontFamily: String?,
+        fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
         color: PaywallComponent.ColorScheme,
         backgroundColor: PaywallComponent.ColorScheme?,
@@ -241,7 +247,7 @@ struct TextComponentStyle {
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.font = Self.makeFont(size: fontSize, familyName: fontFamily)
+        self.font = Self.makeFont(size: fontSize, name: fontName, uiConfigProvider: uiConfigProvider)
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
@@ -254,24 +260,58 @@ struct TextComponentStyle {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum GenericFont: String {
+
+    case serif, monospace, sansSerif = "sans-serif"
+
+    func makeFont(fontSize: CGFloat) -> Font {
+        switch self {
+        case .serif:
+            return Font.system(size: fontSize, weight: .regular, design: .serif)
+        case .monospace:
+            return Font.system(size: fontSize, weight: .regular, design: .monospaced)
+        case .sansSerif:
+            return Font.system(size: fontSize, weight: .regular, design: .default)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentStyle {
 
-    static func makeFont(size fontSize: CGFloat, familyName: String?) -> Font {
-        // Create the base font, with fallback to the system font
-        let baseFont: UIFont
-        if let familyName = familyName {
-            if let customFont = UIFont(name: familyName, size: fontSize) {
-                baseFont = customFont
-            } else {
-                Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
-            }
-        } else {
-            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+    static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
+        // Use default font if no name given
+        guard let name = name else {
+            return GenericFont.sansSerif.makeFont(fontSize: fontSize)
+        }
+
+        let customFont = self.resolveFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
+        return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
+    }
+
+    static private func resolveFont(
+        size fontSize: CGFloat,
+        name: String,
+        uiConfigProvider: UIConfigProvider
+    ) -> Font? {
+        guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
+            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
+            return nil
+        }
+
+        // Check if the family name is a generic font (serif, sans-serif, monospace)
+        if let genericFont = GenericFont(rawValue: familyName) {
+            return genericFont.makeFont(fontSize: fontSize)
+        }
+
+        guard let customFont = UIFont(name: familyName, size: fontSize) else {
+            Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+            return nil
         }
 
         // Apply dynamic type scaling
-        let uiFont = UIFontMetrics.default.scaledFont(for: baseFont)
+        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
         return Font(uiFont)
     }
 

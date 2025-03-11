@@ -72,6 +72,7 @@ final class PurchasesOrchestrator {
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
     private let paywallEventsManager: PaywallEventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
+    private let dateProvider: DateProvider
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -85,7 +86,7 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var storeKit2TransactionListener: StoreKit2TransactionListenerType {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2TransactionListener! as! StoreKit2TransactionListenerType
     }
 
@@ -94,13 +95,13 @@ final class PurchasesOrchestrator {
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     var storeKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2PurchaseIntentListener! as! StoreKit2PurchaseIntentListenerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var storeKit2StorefrontListener: StoreKit2StorefrontListener {
-        // swiftlint:disable:next force_cast
+        // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
 
@@ -145,7 +146,8 @@ final class PurchasesOrchestrator {
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      paywallEventsManager: PaywallEventsManagerType?,
-                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
+                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+                     dateProvider: DateProvider = DateProvider()
     ) {
         self.init(
             productsManager: productsManager,
@@ -168,7 +170,8 @@ final class PurchasesOrchestrator {
             storeMessagesHelper: storeMessagesHelper,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             paywallEventsManager: paywallEventsManager,
-            webPurchaseRedemptionHelper: webPurchaseRedemptionHelper
+            webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
+            dateProvider: dateProvider
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -224,7 +227,8 @@ final class PurchasesOrchestrator {
          storeMessagesHelper: StoreMessagesHelperType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          paywallEventsManager: PaywallEventsManagerType?,
-         webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
+         webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+         dateProvider: DateProvider = DateProvider()
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -247,6 +251,7 @@ final class PurchasesOrchestrator {
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.paywallEventsManager = paywallEventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
+        self.dateProvider = dateProvider
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
@@ -454,14 +459,12 @@ final class PurchasesOrchestrator {
 
         guard let productIdentifier = payment.extractProductIdentifier() else {
             self.operationDispatcher.dispatchOnMainActor {
-                completion(
-                    nil,
-                    nil,
-                    ErrorUtils.storeProblemError(
-                        withMessage: Strings.purchase.could_not_purchase_product_id_not_found.description
-                    ).asPublicError,
-                    false
-                )
+                completion(nil,
+                           nil,
+                           ErrorUtils.storeProblemError(
+                            withMessage: Strings.purchase.could_not_purchase_product_id_not_found.description
+                           ).asPublicError,
+                           false)
             }
             return
         }
@@ -476,13 +479,23 @@ final class PurchasesOrchestrator {
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
+        let startTime = self.dateProvider.now()
+        let promotionalOfferID = payment.paymentDiscount?.identifier
+
         let addPayment: Bool = self.addPurchaseCompletedCallback(
             productIdentifier: productIdentifier,
             completion: { [weak self] transaction, customerInfo, error, cancelled in
                 guard let self = self else { return }
 
+                self.trackPurchaseEventIfNeeded(startTime,
+                                                successful: !cancelled && error == nil,
+                                                productId: productIdentifier,
+                                                promotionalOfferId: promotionalOfferID,
+                                                winBackOfferApplied: false, // SK2 only
+                                                storeKitVersion: .storeKit1,
+                                                purchaseResult: nil, // SK2 only
+                                                error: error)
                 if !cancelled {
-                    self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit1, error: error)
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
                             productIdentifier: productIdentifier,
@@ -551,31 +564,27 @@ final class PurchasesOrchestrator {
         }
     }
 
-    // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_body_length
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: Product.SubscriptionOffer? = nil,
                   metadata: [String: String]? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
+        var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
+
+        if let uuid = UUID(uuidString: self.appUserID) {
+            Logger.debug(Strings.storeKit.sk2_purchasing_added_uuid_option(uuid))
+            options.insert(.appAccountToken(uuid))
+        }
+
+        let startTime = self.dateProvider.now()
+        var winBackOfferApplied: Bool = false
 
         do {
-            var options: Set<Product.PurchaseOption> = [
-                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
-            ]
-
-            if let uuid = UUID(uuidString: self.appUserID) {
-                Logger.debug(
-                    Strings.storeKit.sk2_purchasing_added_uuid_option(uuid)
-                )
-                options.insert(.appAccountToken(uuid))
-            }
-
             if let signedData = promotionalOffer {
-                Logger.debug(
-                    Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
-                )
+                Logger.debug(Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier))
                 options.insert(try signedData.sk2PurchaseOption)
             }
 
@@ -583,68 +592,114 @@ final class PurchasesOrchestrator {
                 // Win-back offers weren't introduced until iOS 18 and Xcode 16, which shipped with
                 // version 6.0 of the Swift compiler. The win-back symbols won't be found if compiled on
                 // Xcode < 16.0, so we need to ensure that the Swift compiler 6.0 or higher is available.
-                #if compiler(>=6.0)
+#if compiler(>=6.0)
                 Logger.debug(
                     Strings.storeKit.sk2_purchasing_added_winback_offer_option(winBackOffer.id ?? "unknown ID")
                 )
                 options.insert(.winBackOffer(winBackOffer))
-                #endif
+                winBackOfferApplied = true
+#endif
             }
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
             result = try await self.purchase(sk2Product, options)
-        } catch StoreKitError.userCancelled {
+
+            // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
+            // This detects if `Product.PurchaseResult.userCancelled` is true.
+            let (userCancelled, transaction) = try await self.storeKit2TransactionListener
+                .handle(purchaseResult: result, fromTransactionUpdate: false)
+
+            if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
+                throw ErrorUtils.purchaseCancelledError()
+            }
+
+            let customerInfo: CustomerInfo
+
+            if let transaction = transaction {
+                customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                self.postPaywallEventsIfNeeded()
+            } else {
+                // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
+                // `Product.PurchaseResult.userCancelled`.
+                customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                               fetchPolicy: .cachedOrFetched)
+            }
+
+            self.trackPurchaseEventIfNeeded(startTime,
+                                            successful: !userCancelled,
+                                            productId: sk2Product.id,
+                                            promotionalOfferId: promotionalOffer?.identifier,
+                                            winBackOfferApplied: winBackOfferApplied,
+                                            storeKitVersion: .storeKit2,
+                                            purchaseResult: .init(purchaseResult: result),
+                                            error: nil)
+            return (transaction, customerInfo, userCancelled)
+        } catch {
+            return try await self.handleSK2ProductPurchaseError(error,
+                                                                startTime: startTime,
+                                                                productId: sk2Product.id,
+                                                                promotionalOfferId: promotionalOffer?.identifier,
+                                                                winBackOfferApplied: winBackOfferApplied)
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func handleSK2ProductPurchaseError(
+        _ error: Error,
+        startTime: Date,
+        productId: String,
+        promotionalOfferId: String?,
+        winBackOfferApplied: Bool
+    ) async throws -> PurchaseResultData {
+
+        if case StoreKitError.userCancelled = error {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()
             }
 
-            return (
-                transaction: nil,
-                customerInfo: try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                              fetchPolicy: .cachedOrFetched),
-                userCancelled: true
-            )
-        } catch let error as PromotionalOffer.SignedData.Error {
-            let error = ErrorUtils.invalidPromotionalOfferError(error: error,
-                                                                message: error.localizedDescription)
-            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: error.asPublicError)
-            throw error
-        } catch {
-            let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
-            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: purchasesError.asPublicError)
-            throw error
-        }
+            self.trackPurchaseEventIfNeeded(startTime,
+                                            successful: false,
+                                            productId: productId,
+                                            promotionalOfferId: promotionalOfferId,
+                                            winBackOfferApplied: winBackOfferApplied,
+                                            storeKitVersion: .storeKit2,
+                                            purchaseResult: .userCancelled,
+                                            error: StoreKitError.userCancelled.asPublicError)
 
-        // `userCancelled` above comes from `StoreKitError.userCancelled`.
-        // This detects if `Product.PurchaseResult.userCancelled` is true.
-        let (userCancelled, transaction) = try await self.storeKit2TransactionListener
-            .handle(purchaseResult: result, fromTransactionUpdate: false)
-
-        if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
-            throw ErrorUtils.purchaseCancelledError()
-        }
-
-        let customerInfo: CustomerInfo
-
-        if let transaction = transaction {
-            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
-
-            self.postPaywallEventsIfNeeded()
+            let customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                               fetchPolicy: .cachedOrFetched)
+            return (transaction: nil, customerInfo: customerInfo, userCancelled: true)
         } else {
-            // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
-            // `Product.PurchaseResult.userCancelled`.
-            customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                           fetchPolicy: .cachedOrFetched)
-        }
+            guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+                throw error
+            }
 
-        if !userCancelled {
-            self.trackPurchaseEventIfNeeded(storeKitVersion: .storeKit2, error: nil)
-        }
+            let purchasesError: PurchasesError
+            switch error {
+            case let pError as PurchasesError:
+                purchasesError = pError
+            case let signedDataError as PromotionalOffer.SignedData.Error:
+                purchasesError = ErrorUtils.invalidPromotionalOfferError(error: signedDataError,
+                                                                         message: signedDataError.localizedDescription)
+            case let backendError as BackendError:
+                purchasesError = backendError.asPurchasesError
+            default:
+                purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
+            }
 
-        return (transaction, customerInfo, userCancelled)
+            self.trackPurchaseEventIfNeeded(startTime,
+                                            successful: false,
+                                            productId: productId,
+                                            promotionalOfferId: promotionalOfferId,
+                                            winBackOfferApplied: winBackOfferApplied,
+                                            storeKitVersion: .storeKit2,
+                                            purchaseResult: nil,
+                                            error: purchasesError.asPublicError)
+
+            throw purchasesError
+        }
     }
-    // swiftlint:enable function_body_length
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func purchase(
@@ -1010,19 +1065,32 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func trackPurchaseEventIfNeeded(storeKitVersion: StoreKitVersion,
+    // swiftlint:disable:next function_parameter_count
+    func trackPurchaseEventIfNeeded(_ startTime: Date,
+                                    successful: Bool,
+                                    productId: String,
+                                    promotionalOfferId: String?,
+                                    winBackOfferApplied: Bool,
+                                    storeKitVersion: StoreKitVersion,
+                                    purchaseResult: DiagnosticsEvent.PurchaseResult?,
                                     error: PublicError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
         let diagnosticsTracker = self.diagnosticsTracker {
+            let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
             let errorMessage = (error?.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
                 ?? error?.localizedDescription
             let errorCode = error?.code
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-            diagnosticsTracker.trackPurchaseRequest(wasSuccessful: error == nil,
+            diagnosticsTracker.trackPurchaseRequest(wasSuccessful: successful,
                                                     storeKitVersion: storeKitVersion,
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
-                                                    storeKitErrorDescription: storeKitErrorDescription)
+                                                    storeKitErrorDescription: storeKitErrorDescription,
+                                                    productId: productId,
+                                                    promotionalOfferId: promotionalOfferId,
+                                                    winBackOfferApplied: winBackOfferApplied,
+                                                    purchaseResult: purchaseResult,
+                                                    responseTime: responseTime)
         }
     }
 
@@ -1829,6 +1897,27 @@ extension PurchasesOrchestrator: StoreKit2ObserverModePurchaseDetectorDelegate {
             verifiedTransaction: verifiedTransaction,
             jwsRepresentation: jwsRepresentation
         )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+fileprivate extension DiagnosticsEvent.PurchaseResult {
+
+    init?(purchaseResult: Product.PurchaseResult) {
+        switch purchaseResult {
+        case .success(.verified):
+            self = .verified
+        case .success(.unverified):
+            self = .unverified
+        case .userCancelled:
+            self = .userCancelled
+        case .pending:
+            self = .pending
+        @unknown default:
+            Logger.appleWarning(Strings.storeKit.skunknown_purchase_result(String(describing: purchaseResult)))
+            return nil
+        }
     }
 
 }

@@ -8,13 +8,11 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
     final class IconComponent: PaywallComponentBase {
 
-        final public class Formats: PaywallComponentBase {
+        final public class Formats: Codable, Sendable, Hashable, Equatable {
 
             public let svg: String
             public let png: String
@@ -46,7 +44,7 @@ public extension PaywallComponent {
             }
         }
 
-        final public class IconBackground: PaywallComponentBase {
+        final public class IconBackground: Codable, Sendable, Hashable, Equatable {
 
             public let color: ColorScheme
             public let shape: IconBackgroundShape
@@ -79,6 +77,7 @@ public extension PaywallComponent {
         }
 
         let type: ComponentType
+        public let visible: Bool?
         public let baseUrl: String
         public let iconName: String
         public let formats: Formats
@@ -91,6 +90,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialIconComponent>?
 
         public init(
+            visible: Bool? = nil,
             baseUrl: String,
             iconName: String,
             formats: Formats,
@@ -102,6 +102,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialIconComponent>? = nil
         ) {
             self.type = .image
+            self.visible = visible
             self.baseUrl = baseUrl
             self.iconName = iconName
             self.formats = formats
@@ -115,6 +116,7 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(visible)
             hasher.combine(baseUrl)
             hasher.combine(iconName)
             hasher.combine(formats)
@@ -128,6 +130,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: IconComponent, rhs: IconComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.visible == rhs.visible &&
                    lhs.baseUrl == rhs.baseUrl &&
                    lhs.iconName == rhs.iconName &&
                    lhs.formats == rhs.formats &&
@@ -140,7 +143,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialIconComponent: PartialComponent {
+    final class PartialIconComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let baseUrl: String?
@@ -200,5 +203,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

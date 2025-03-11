@@ -14,11 +14,9 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public extension PaywallComponent {
 
-    final class TabControlButtonComponent: PaywallComponentBase {
+    final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
         public let tabIndex: Int
@@ -41,7 +39,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class TabControlToggleComponent: PaywallComponentBase {
+    final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
         public let defaultValue: Bool
@@ -82,7 +80,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class TabControlComponent: PaywallComponentBase {
+    final class TabControlComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
 
@@ -101,7 +99,7 @@ public extension PaywallComponent {
 
     final class TabsComponent: PaywallComponentBase {
 
-        final public class Tab: PaywallComponentBase {
+        final public class Tab: Codable, Sendable, Hashable, Equatable {
 
             public let stack: StackComponent
 
@@ -118,9 +116,9 @@ public extension PaywallComponent {
             }
         }
 
-        final public class TabControl: PaywallComponentBase {
+        final public class TabControl: Codable, Sendable, Hashable, Equatable {
 
-            public enum TabControlType: PaywallComponentBase {
+            public enum TabControlType: Codable, Sendable, Hashable, Equatable {
                 case buttons
                 case toggle
             }
@@ -145,6 +143,7 @@ public extension PaywallComponent {
         }
 
         let type: ComponentType
+        public let visible: Bool?
         public let size: Size
         public let padding: Padding
         public let margin: Padding
@@ -159,6 +158,7 @@ public extension PaywallComponent {
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
         public init(
+            visible: Bool? = nil,
             size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
             margin: Padding = .zero,
@@ -173,6 +173,7 @@ public extension PaywallComponent {
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
         ) {
             self.type = .stack
+            self.visible = visible
             self.size = size
             self.padding = padding
             self.margin = margin
@@ -189,6 +190,7 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
@@ -203,6 +205,7 @@ public extension PaywallComponent {
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.visible == rhs.visible &&
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
@@ -216,7 +219,7 @@ public extension PaywallComponent {
         }
     }
 
-    final class PartialTabsComponent: PartialComponent {
+    final class PartialTabsComponent: PaywallPartialComponent {
 
         public let visible: Bool?
         public let size: Size?
@@ -271,5 +274,3 @@ public extension PaywallComponent {
     }
 
 }
-
-#endif

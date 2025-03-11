@@ -15,12 +15,12 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if PAYWALL_COMPONENTS
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 class UIConfigDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesPaywallData() throws {
-        let uiConfig: UIConfig = try self.decodeFixture("UIConfig")
+        let uiConfig: UIConfig = try Self.decodeFixture("UIConfig")
 
         expect(uiConfig.app.colors).to(equal([
             "primary": .init(light: .hex("#ffcc00")),

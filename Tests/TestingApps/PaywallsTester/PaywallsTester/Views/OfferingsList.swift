@@ -188,11 +188,11 @@ private struct PaywallPresenter: View {
             #if !os(watchOS)
             case .footer:
                 CustomPaywallContent(selectedTierName: self.selectedTierName)
-                    .paywallFooter(offering: self.offering)
+                    .originalTemplatePaywallFooter(offering: self.offering)
 
             case .condensedFooter:
                 CustomPaywallContent(selectedTierName: self.selectedTierName)
-                    .paywallFooter(offering: self.offering, condensed: true)
+                    .originalTemplatePaywallFooter(offering: self.offering, condensed: true)
             #endif
             }
         }

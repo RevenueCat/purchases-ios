@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -24,24 +24,32 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class ManageSubscriptionsViewModel: ObservableObject {
+final class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
-    let paths: [CustomerCenterConfigData.HelpPath]
+
+    var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
+        paths.relevantPathsForPurchase(purchaseInformation)
+    }
 
     @Published
     var showRestoreAlert: Bool = false
+
     @Published
     var showPurchases: Bool = false
 
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
+
     @Published
     var loadingPath: CustomerCenterConfigData.HelpPath?
+
     @Published
     var promotionalOfferData: PromotionalOfferData?
+
     @Published
     var inAppBrowserURL: IdentifiableURL?
+
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -53,29 +61,32 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
+
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private var purchasesProvider: ManageSubscriptionsPurchaseType
-    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
+    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
+    private let paths: [CustomerCenterConfigData.HelpPath]
+    private var purchasesProvider: ManageSubscriptionsPurchaseType
 
-    init(screen: CustomerCenterConfigData.Screen,
-         customerCenterActionHandler: CustomerCenterActionHandler?,
-         purchaseInformation: PurchaseInformation? = nil,
-         refundRequestStatus: RefundRequestStatus? = nil,
-         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
-         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-        self.screen = screen
-        self.paths = screen.filteredPaths
-        self.purchaseInformation = purchaseInformation
-        self.purchasesProvider = ManageSubscriptionPurchases()
-        self.refundRequestStatus = refundRequestStatus
-        self.customerCenterActionHandler = customerCenterActionHandler
-        self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
-        self.state = .success
-    }
+    init(
+        screen: CustomerCenterConfigData.Screen,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
+        purchaseInformation: PurchaseInformation? = nil,
+        refundRequestStatus: RefundRequestStatus? = nil,
+        purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+            self.screen = screen
+            self.paths = screen.filteredPaths
+            self.purchaseInformation = purchaseInformation
+            self.purchasesProvider = ManageSubscriptionPurchases()
+            self.refundRequestStatus = refundRequestStatus
+            self.customerCenterActionHandler = customerCenterActionHandler
+            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+            self.state = .success
+        }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
@@ -238,14 +249,71 @@ private extension CustomerCenterConfigData.Screen {
 
     var filteredPaths: [CustomerCenterConfigData.HelpPath] {
         return self.paths.filter { path in
-            #if targetEnvironment(macCatalyst)
-                return path.type == .refundRequest
-            #else
-                return path.type != .unknown
-            #endif
+            return path.type != .unknown
         }
     }
 
+}
+
+private extension Array<CustomerCenterConfigData.HelpPath> {
+    func relevantPathsForPurchase(
+        _ purchaseInformation: PurchaseInformation?
+    ) -> [CustomerCenterConfigData.HelpPath] {
+        guard let purchaseInformation else {
+            return self
+        }
+
+        return filter {
+            // if it's cancel, it cannot be a lifetime subscription
+            ($0.type != .cancel || !purchaseInformation.isLifetime) &&
+
+            // if it's refundRequest, it cannot be free  nor within trial period
+            ($0.type != .refundRequest || (purchaseInformation.price != .free && !purchaseInformation.isTrial)) &&
+
+            // if it has a refundDuration, check it's still valid
+            ($0.refundWindowDuration?.isWithin(purchaseInformation) ?? true)
+        }
+    }
+}
+
+private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {
+    func isWithin(_ purchaseInformation: PurchaseInformation) -> Bool {
+        switch self {
+        case .forever:
+            return true
+
+        case let .duration(duration):
+            return duration.isWithin(
+                from: purchaseInformation.latestPurchaseDate,
+                now: purchaseInformation.customerInfoRequestedDate
+            )
+
+        @unknown default:
+            return true
+        }
+    }
+}
+
+private extension ISODuration {
+    func isWithin(from startDate: Date?, now: Date) -> Bool {
+        guard let startDate else {
+            return true
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = self.years
+        dateComponents.month = self.months
+        dateComponents.weekOfYear = self.weeks
+        dateComponents.day = self.days
+        dateComponents.hour = self.hours
+        dateComponents.minute = self.minutes
+        dateComponents.second = self.seconds
+
+        let calendar = Calendar.current
+        let endDate = calendar.date(byAdding: dateComponents, to: startDate) ?? startDate
+
+        return startDate < endDate && now <= endDate
+    }
 }
 
 #endif

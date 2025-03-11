@@ -29,6 +29,7 @@ struct ManageSubscriptionsView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
+
     @Environment(\.supportInformation)
     private var support
 
@@ -60,15 +61,49 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
-        content.compatibleNavigation(
-            item: $viewModel.feedbackSurveyData,
-            usesNavigationStack: navigationOptions.usesExistingNavigation
-        ) { feedbackSurveyData in
-            FeedbackSurveyView(
-                feedbackSurveyData: feedbackSurveyData,
-                customerCenterActionHandler: self.customerCenterActionHandler,
-                isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-        }
+        content
+            .compatibleNavigation(
+                item: $viewModel.feedbackSurveyData,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) { feedbackSurveyData in
+                FeedbackSurveyView(
+                    feedbackSurveyData: feedbackSurveyData,
+                    customerCenterActionHandler: self.customerCenterActionHandler,
+                    isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
+            .compatibleNavigation(
+                isPresented: $viewModel.showPurchases,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
+            }
+            .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
+                PromotionalOfferView(
+                    promotionalOffer: promotionalOfferData.promotionalOffer,
+                    product: promotionalOfferData.product,
+                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    onDismissPromotionalOfferView: { userAction in
+                        Task(priority: .userInitiated) {
+                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
+                        }
+                    }
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .interactiveDismissDisabled()
+            }
+            .sheet(item: self.$viewModel.inAppBrowserURL,
+                   onDismiss: {
+                self.viewModel.onDismissInAppBrowser()
+            }, content: { inAppBrowserURL in
+                SafariView(url: inAppBrowserURL.url)
+            })
     }
 
     @ViewBuilder
@@ -86,14 +121,13 @@ struct ManageSubscriptionsView: View {
                     } label: {
                         Text(localization[.seeAllPurchases])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
                 }
 
                 Section {
                     ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel,
-                        loadingPath: self.$viewModel.loadingPath
+                        viewModel: self.viewModel
                     )
                 } header: {
                     if let subtitle = self.viewModel.screen.subtitle {
@@ -113,40 +147,12 @@ struct ManageSubscriptionsView: View {
                 }
 
                 Section {
-                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                   loadingPath: self.$viewModel.loadingPath)
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel)
                 }
             }
         }
-        .compatibleNavigation(
-            isPresented: $viewModel.showPurchases,
-            usesNavigationStack: navigationOptions.usesNavigationStack
-        ) {
-            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
-        }
-        .dismissCircleButtonToolbar()
+        .dismissCircleButtonToolbarIfNeeded()
         .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-        .sheet(
-            item: self.$viewModel.promotionalOfferData,
-            content: { promotionalOfferData in
-                PromotionalOfferView(
-                    promotionalOffer: promotionalOfferData.promotionalOffer,
-                    product: promotionalOfferData.product,
-                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                    onDismissPromotionalOfferView: { userAction in
-                        Task(priority: .userInitiated) {
-                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
-                        }
-                    }
-                )
-                .interactiveDismissDisabled()
-            })
-        .sheet(item: self.$viewModel.inAppBrowserURL,
-               onDismiss: {
-            self.viewModel.onDismissInAppBrowser()
-        }, content: { inAppBrowserURL in
-            SafariView(url: inAppBrowserURL.url)
-        })
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
@@ -162,6 +168,7 @@ struct ManageSubscriptionsView: View {
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
@@ -174,7 +181,8 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }.preferredColorScheme(colorScheme)
+            }
+            .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
             CompatibilityNavigationStack {
@@ -186,8 +194,22 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                                         customerCenterActionHandler: nil)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-            }.preferredColorScheme(colorScheme)
+            }
+            .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    customerCenterActionHandler: nil,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
+                                        customerCenterActionHandler: nil)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - \(colorScheme)")
         }
     }
 

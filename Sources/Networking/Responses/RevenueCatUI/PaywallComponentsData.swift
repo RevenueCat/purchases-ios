@@ -14,8 +14,6 @@
 
 import Foundation
 
-#if PAYWALL_COMPONENTS
-
 public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct ComponentsConfig: Codable, Equatable, Sendable {
@@ -137,6 +135,7 @@ extension PaywallComponentsData {
             assetBaseURL = try container.decode(URL.self, forKey: .assetBaseURL)
         } catch {
             errors["assetBaseURL"] = .init(error)
+            // swiftlint:disable:next force_unwrapping
             assetBaseURL = URL(string: "https://example.com")!
         }
 
@@ -208,5 +207,3 @@ extension PaywallComponentsData {
     }
 
 }
-
-#endif

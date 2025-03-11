@@ -97,7 +97,8 @@ class BasePurchasesTests: TestCase {
                                                    currentUserProvider: self.identityManager,
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
-                                                   subscriberAttributesManager: self.subscriberAttributesManager)
+                                                   subscriberAttributesManager: self.subscriberAttributesManager,
+                                                   systemInfo: self.systemInfo)
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
                                        attributionPoster: self.attributionPoster,

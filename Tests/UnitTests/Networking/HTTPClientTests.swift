@@ -11,7 +11,7 @@ import OHHTTPStubs
 import OHHTTPStubsSwift
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 /// Generic `ETagManager` type allows subclasses to use either `MockETagManager`
 /// or the real `ETagManager`.
@@ -1017,6 +1017,52 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent.value) == true
     }
 
+    func testPassesUIPreviewModeHeaderCorrectlyWhenEnabled() {
+        let headerName = "X-UI-Preview-Mode"
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    dangerousSettings: .init(uiPreviewMode: true))
+        self.client = self.createClient(systemInfo)
+
+        let header: Atomic<String?> = nil
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "true"
+    }
+
+    func testDoesNotPassUIPreviewModeHeaderWhenDisabled() {
+        let headerName = "X-UI-Preview-Mode"
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    dangerousSettings: .init(uiPreviewMode: false))
+        self.client = self.createClient(systemInfo)
+
+        let header: Atomic<String?> = nil
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        stub(condition: isPath(request.path)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == nil
+    }
+
     func testRequestsWithCustomEntitlementsSendHeader() {
         self.client = self.createClient(MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true))
 
@@ -1693,7 +1739,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             200,
             nil,
             .backend,
-            .notRequested
+            .notRequested,
+            false
         )))
     }
 
@@ -1721,7 +1768,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             401,
             7225,
             nil,
-            .notRequested
+            .notRequested,
+            false
         )))
     }
 
@@ -2312,8 +2360,8 @@ extension HTTPClientTests {
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
-    _ data: (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)
-) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult)> {
+    _ data: (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
+) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.1 ?? -1
@@ -2323,7 +2371,8 @@ private func matchTrackParams(
                        other?.3 == data.3 &&
                        other?.4 == data.4 &&
                        other?.5 == data.5 &&
-                       other?.6 == data.6)
+                       other?.6 == data.6 &&
+                       other?.7 == data.7)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }

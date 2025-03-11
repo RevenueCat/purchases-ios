@@ -18,15 +18,22 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
 
+    private let variableCompatibilityMap: [String: String]
+    private let functionCompatibilityMap: [String: String]
+
     private let showZeroDecimalPlacePrices: Bool
     private let discountRelativeToMostExpensivePerMonth: Double?
     private let dateProvider: () -> Date
 
     init(
+        variableCompatibilityMap: [String: String],
+        functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
         showZeroDecimalPlacePrices: Bool,
         dateProvider: @escaping () -> Date = { Date() }
     ) {
+        self.variableCompatibilityMap = variableCompatibilityMap
+        self.functionCompatibilityMap = functionCompatibilityMap
         self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.dateProvider = dateProvider
@@ -39,8 +46,8 @@ struct VariableHandlerV2 {
         localizations: [String: String]
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
-            let variable = VariablesV2(rawValue: variableRaw)
-            let function = functionRaw.flatMap { FunctionsV2(rawValue: $0) }
+            let variable = self.findVariable(variableRaw)
+            let function = functionRaw.flatMap { self.findFunction($0) }
 
             let processedVariable = variable?.process(
                 package: package,
@@ -48,14 +55,71 @@ struct VariableHandlerV2 {
                 localizations: localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
                 date: self.dateProvider()
-            )
+            ) ?? ""
 
-            return processedVariable.flatMap {
-                function?.process($0) ?? $0
-            }
+            return function?.process(processedVariable) ?? processedVariable
         }
 
         return whisker.render()
+    }
+
+    private func findVariable(_ variableRaw: String) -> VariablesV2? {
+        guard let originalVariable = VariablesV2(rawValue: variableRaw) else {
+
+            let backSupportedVariableRaw = self.variableCompatibilityMap[variableRaw]
+
+            guard let backSupportedVariableRaw else {
+                Logger.error(
+                    "Paywall variable '\(variableRaw)' is not supported " +
+                    "and no backward compatible replacement found."
+                )
+                return nil
+            }
+
+            guard let backSupportedVariable = VariablesV2(rawValue: backSupportedVariableRaw) else {
+                Logger.error(
+                    "Paywall variable '\(variableRaw)' is not supported " +
+                    "and could not find backward compatible '\(backSupportedVariableRaw)'."
+                )
+                return nil
+            }
+
+            Logger.warning(
+                "Paywall variable '\(variableRaw)' is not supported. " +
+                "Using backward compatible '\(backSupportedVariableRaw)' instead."
+            )
+            return backSupportedVariable
+        }
+
+        return originalVariable
+    }
+
+    private func findFunction(_ functionRaw: String) -> FunctionsV2? {
+        guard let originalFunction = FunctionsV2(rawValue: functionRaw) else {
+
+            let backSupportedFunctionRaw = self.functionCompatibilityMap[functionRaw]
+
+            guard let backSupportedFunctionRaw else {
+                Logger.error(
+                    "Paywall function '\(functionRaw)' is not supported " +
+                    "and no backward compatible replacement found.")
+                return nil
+            }
+
+            guard let backSupportedFunction = FunctionsV2(rawValue: backSupportedFunctionRaw) else {
+                Logger.error(
+                    "Paywall variable '\(functionRaw)' is not supported " +
+                    "and could not find backward compatible '\(backSupportedFunctionRaw)'.")
+                return nil
+            }
+
+            Logger.warning(
+                "Paywall function '\(functionRaw)' is not supported. " +
+                "Using backward compatible '\(backSupportedFunction)' instead.")
+            return backSupportedFunction
+        }
+
+        return originalFunction
     }
 
 }
@@ -103,6 +167,10 @@ private enum VariableLocalizationKey: String {
     case numYearFew = "num_year_few"
     case numYearMany = "num_year_many"
     case numYearOther = "num_year_other"
+    case numDaysShort = "num_days_short"
+    case numWeeksShort = "num_weeks_short"
+    case numMonthsShort = "num_months_short"
+    case numYearsShort = "num_years_short"
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -272,6 +340,11 @@ extension VariablesV2 {
             return ""
         }
 
+        // Ex: "3 months" will return as "3 months"
+        if period.value > 1 {
+            return self.productPeriodWithUnit(package: package, localizations: localizations)
+        }
+
         let value: String
         switch period.unit {
         case .day:
@@ -308,7 +381,11 @@ extension VariablesV2 {
             return ""
         }
 
-        return localizations[period.periodLocalizationKey] ?? ""
+        if period.value > 1 {
+            return self.productPeriodWithUnit(package: package, localizations: localizations)
+        } else {
+            return localizations[period.periodLocalizationKey] ?? ""
+        }
     }
 
     func productPeriodAbbreviated(package: Package, localizations: [String: String]) -> String {
@@ -316,7 +393,31 @@ extension VariablesV2 {
             return ""
         }
 
-        return localizations[period.periodAbbreviatedLocalizationKey] ?? ""
+        if period.value > 1 {
+            let localizedFormatKey: String
+            switch period.unit {
+            case .day:
+                localizedFormatKey = VariableLocalizationKey.numDaysShort.rawValue
+            case .week:
+                localizedFormatKey = VariableLocalizationKey.numWeeksShort.rawValue
+            case .month:
+                localizedFormatKey = VariableLocalizationKey.numMonthsShort.rawValue
+            case .year:
+                localizedFormatKey = VariableLocalizationKey.numYearsShort.rawValue
+            }
+
+            guard let localizedFormat = localizations[localizedFormatKey] else {
+                return ""
+            }
+            return String(format: localizedFormat, period.value)
+
+        } else {
+            guard let abbreviation = localizations[period.periodAbbreviatedLocalizationKey] else {
+                return ""
+            }
+
+            return abbreviation
+        }
     }
 
     func productPeriodInDays(package: Package) -> String {

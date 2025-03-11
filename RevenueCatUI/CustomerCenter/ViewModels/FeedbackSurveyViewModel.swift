@@ -59,12 +59,12 @@ class FeedbackSurveyViewModel: ObservableObject {
         for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
         darkMode: Bool,
         displayMode: CustomerCenterPresentationMode,
+        locale: Locale = .current,
         dismissView: () -> Void
     ) async {
-        if let customerCenterActionHandler = self.customerCenterActionHandler {
-            trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode)
-            customerCenterActionHandler(.feedbackSurveyCompleted(option.id))
-        }
+        trackSurveyAnswerSubmitted(option: option, darkMode: darkMode, displayMode: displayMode, locale: locale)
+
+        self.customerCenterActionHandler?(.feedbackSurveyCompleted(option.id))
 
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
@@ -117,16 +117,16 @@ private extension FeedbackSurveyViewModel {
 
     func trackSurveyAnswerSubmitted(option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option,
                                     darkMode: Bool,
-                                    displayMode: CustomerCenterPresentationMode) {
+                                    displayMode: CustomerCenterPresentationMode,
+                                    locale: Locale) {
         let isSandbox = purchasesProvider.isSandbox
-        let surveyOptionData = CustomerCenterAnswerSubmittedEvent.Data(locale: .current,
+        let surveyOptionData = CustomerCenterAnswerSubmittedEvent.Data(locale: locale,
                                                                        darkMode: darkMode,
                                                                        isSandbox: isSandbox,
                                                                        displayMode: displayMode,
                                                                        path: feedbackSurveyData.path.type,
                                                                        url: feedbackSurveyData.path.url,
                                                                        surveyOptionID: option.id,
-                                                                       surveyOptionTitleKey: option.title,
                                                                        additionalContext: nil,
                                                                        revisionID: 0)
         let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(CustomerCenterEventCreationData(),

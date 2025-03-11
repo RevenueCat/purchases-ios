@@ -22,6 +22,7 @@ class OfflineCustomerInfoCreator {
 
     private let purchasedProductsFetcher: PurchasedProductsFetcherType
     private let productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
+    private let tracker: DiagnosticsTrackerType?
     private let creator: Creator
 
     static func createPurchasedProductsFetcherIfAvailable() -> PurchasedProductsFetcherType? {
@@ -35,6 +36,7 @@ class OfflineCustomerInfoCreator {
     static func createIfAvailable(
         with purchasedProductsFetcher: PurchasedProductsFetcherType?,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+        tracker: DiagnosticsTrackerType?,
         observerMode: Bool
     ) -> OfflineCustomerInfoCreator? {
         guard let fetcher = purchasedProductsFetcher, !observerMode else {
@@ -43,14 +45,17 @@ class OfflineCustomerInfoCreator {
         }
 
         return .init(purchasedProductsFetcher: fetcher,
-                     productEntitlementMappingFetcher: productEntitlementMappingFetcher)
+                     productEntitlementMappingFetcher: productEntitlementMappingFetcher,
+                     tracker: tracker)
     }
 
     convenience init(purchasedProductsFetcher: PurchasedProductsFetcherType,
-                     productEntitlementMappingFetcher: ProductEntitlementMappingFetcher) {
+                     productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+                     tracker: DiagnosticsTrackerType?) {
         self.init(
             purchasedProductsFetcher: purchasedProductsFetcher,
             productEntitlementMappingFetcher: productEntitlementMappingFetcher,
+            tracker: tracker,
             creator: { products, mapping, userID in
                 CustomerInfo(from: products, mapping: mapping, userID: userID)
             }
@@ -60,10 +65,12 @@ class OfflineCustomerInfoCreator {
     init(
         purchasedProductsFetcher: PurchasedProductsFetcherType,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+        tracker: DiagnosticsTrackerType?,
         creator: @escaping Creator
     ) {
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.productEntitlementMappingFetcher = productEntitlementMappingFetcher
+        self.tracker = tracker
         self.creator = creator
     }
 
@@ -79,6 +86,8 @@ class OfflineCustomerInfoCreator {
         let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
 
         let offlineCustomerInfo = creator(products, mapping, userID)
+
+        self.tracker?.trackEnteredOfflineEntitlementsMode()
 
         Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
             products, offlineCustomerInfo.entitlements
