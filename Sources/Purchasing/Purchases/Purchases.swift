@@ -341,6 +341,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             offlineCustomerInfoCreator: .createIfAvailable(
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
+                tracker: diagnosticsTracker,
                 observerMode: observerMode
             ),
             diagnosticsTracker: diagnosticsTracker
