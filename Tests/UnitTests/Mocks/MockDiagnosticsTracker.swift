@@ -148,10 +148,10 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedOfferingsStartedCount: Atomic<Int> = .init(0)
     func trackOfferingsStarted() {
-        self.trackedOfferingsStartedCount.modify { $0 + 1 }
+        self.trackedOfferingsStartedCount.modify { $0 += 1 }
     }
 
-    let trackOfferingsResultParams: Atomic<[
+    let trackedOfferingsResultParams: Atomic<[
         // swiftlint:disable:next large_tuple
         (requestedProductIds: Set<String>?,
          notFoundProductIds: Set<String>?,
@@ -169,7 +169,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               verificationResult: VerificationResult?,
                               cacheStatus: CacheStatus?,
                               responseTime: TimeInterval) {
-        self.trackOfferingsResultParams.modify {
+        self.trackedOfferingsResultParams.modify {
             $0.append(
                 (requestedProductIds,
                  notFoundProductIds,

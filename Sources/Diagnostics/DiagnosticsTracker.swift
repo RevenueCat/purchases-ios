@@ -237,6 +237,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               verificationResult: VerificationResult?,
                               cacheStatus: CacheStatus?,
                               responseTime: TimeInterval) {
+        // WIP Add verification result property once we expose verification result in offerings object
         self.track(
             DiagnosticsEvent(name: .getOfferingsResult,
                              properties: DiagnosticsEvent.Properties(
@@ -245,7 +246,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 errorMessage: errorMessage,
                                 errorCode: errorCode,
                                 requestedProductIds: requestedProductIds,
-                                notFoundProductIds: notFoundProductIds
+                                notFoundProductIds: notFoundProductIds,
+                                cacheStatus: cacheStatus
                              ),
                              timestamp: self.dateProvider.now(),
                              appSessionId: self.appSessionID)

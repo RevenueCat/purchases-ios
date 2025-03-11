@@ -591,6 +591,91 @@ extension OfferingsManagerTests {
 
 }
 
+// MARK: - Diagnostics tracking
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension OfferingsManagerTests {
+
+    func testOfferingsTracksOfferingsStartAndResultEvent() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsStartedCount.value) == 1
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 1
+        let params = try XCTUnwrap(mockDiagnosticsTracker.trackedOfferingsResultParams.value.first)
+        expect(params.requestedProductIds) == ["monthly_freetrial"]
+        expect(params.notFoundProductIds) == []
+        expect(params.errorMessage) == nil
+        expect(params.errorCode) == nil
+        expect(params.verificationResult) == nil
+        expect(params.cacheStatus) == .notFound
+        expect(params.responseTime) >= 0
+    }
+
+    func testOfferingsTracksOfferingsResultEventWhenObtainingOfferingsFromCache() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
+        self.mockDeviceCache.stubbedOfferingCacheStatus = .valid
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 1
+        let params = try XCTUnwrap(mockDiagnosticsTracker.trackedOfferingsResultParams.value.first)
+        expect(params.requestedProductIds) == nil
+        expect(params.notFoundProductIds) == nil
+        expect(params.errorMessage) == nil
+        expect(params.errorCode) == nil
+        expect(params.verificationResult) == nil
+        expect(params.cacheStatus) == .valid
+        expect(params.responseTime) >= 0
+    }
+
+    func testOfferingsDoesNotTrackEventsIfDiagnosticsTrackingDisabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, trackDiagnostics: false) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsStartedCount.value) == 0
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 0
+    }
+}
+
 private extension OfferingsManagerTests {
 
     enum MockData {

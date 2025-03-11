@@ -73,7 +73,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
-        let cacheStatus: CacheStatus?
+        let cacheStatus: String?
         let isRetry: Bool?
 
         init(verificationResult: String? = nil,
@@ -112,7 +112,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
-            self.cacheStatus = cacheStatus
+            self.cacheStatus = cacheStatus?.name
             self.isRetry = isRetry
         }
 
