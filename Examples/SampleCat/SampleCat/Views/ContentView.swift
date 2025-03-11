@@ -11,7 +11,7 @@ struct ContentView: View {
             
             Settings()
                 .tabItem {
-                    Image(systemName: "cog.fill")
+                    Image(systemName: "gear")
                     Text("Settings")
                 }
         }
