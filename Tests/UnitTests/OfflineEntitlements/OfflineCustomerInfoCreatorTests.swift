@@ -75,7 +75,8 @@ class OfflineCustomerInfoCreatorTests: TestCase {
             expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
             let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
             expect(reason) == "no_entitlement_mapping_available"
-            expect(msg) == Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping.description
+            expect(msg) == Strings.offlineEntitlements
+                .computing_offline_customer_info_with_no_entitlement_mapping.description
         }
     }
 
@@ -83,7 +84,8 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         self.mockProductEntitlementMappingFetcher.stubbedResult = .init(
             entitlementsByProduct: ["product": ["entitlement"]]
         )
-        self.mockPurchasedProductsFetcher.stubbedResult = .failure(PurchasedProductsFetcher.Error.foundConsumablePurchase)
+        let error = PurchasedProductsFetcher.Error.foundConsumablePurchase
+        self.mockPurchasedProductsFetcher.stubbedResult = .failure(error)
 
         do {
             _ = try await self.creator.create(for: "user")
@@ -97,7 +99,8 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         self.mockProductEntitlementMappingFetcher.stubbedResult = .init(
             entitlementsByProduct: ["product": ["entitlement"]]
         )
-        self.mockPurchasedProductsFetcher.stubbedResult = .failure(PurchasedProductsFetcher.Error.foundConsumablePurchase)
+        let error = PurchasedProductsFetcher.Error.foundConsumablePurchase
+        self.mockPurchasedProductsFetcher.stubbedResult = .failure(error)
 
         do {
             _ = try await self.creator.create(for: "user")
