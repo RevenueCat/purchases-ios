@@ -19,6 +19,7 @@ class MockOfflineCustomerInfoCreator: OfflineCustomerInfoCreator {
         super.init(
             purchasedProductsFetcher: MockPurchasedProductsFetcher(),
             productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
+            tracker: nil,
             creator: { CustomerInfo(from: $0, mapping: $1, userID: $2) }
         )
     }
