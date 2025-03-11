@@ -76,7 +76,7 @@ extension View {
             restoreFailedHandler = { handler(.restoreFailed($0)) }
             showingManageSubscriptionsHandler = { handler(.showingManageSubscriptions) }
             refundRequestStartedHandler = { handler(.refundRequestStarted($0)) }
-            refundRequestCompletedHandler = { handler(.refundRequestCompleted($0)) }
+            refundRequestCompletedHandler = { handler(.refundRequestCompleted($1)) }
             feedbackSurveyCompletedHandler = { handler(.feedbackSurveyCompleted($0)) }
         }
 
@@ -259,8 +259,8 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             .onCustomerCenterRefundRequestStarted { [refundRequestStarted] productId in
                 refundRequestStarted?(productId)
             }
-            .onCustomerCenterRefundRequestCompleted { [refundRequestCompleted] status in
-                refundRequestCompleted?(status)
+            .onCustomerCenterRefundRequestCompleted { [refundRequestCompleted] productId, status in
+                refundRequestCompleted?(productId, status)
             }
             .onCustomerCenterFeedbackSurveyCompleted { [feedbackSurveyCompleted] optionId in
                 feedbackSurveyCompleted?(optionId)

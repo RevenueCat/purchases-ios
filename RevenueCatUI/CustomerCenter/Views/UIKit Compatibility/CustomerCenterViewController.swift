@@ -63,7 +63,7 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
             self.restoreFailedHandler = { handler(.restoreFailed($0)) }
             self.showingManageSubscriptionsHandler = { handler(.showingManageSubscriptions) }
             self.refundRequestStartedHandler = { handler(.refundRequestStarted($0)) }
-            self.refundRequestCompletedHandler = { handler(.refundRequestCompleted($0)) }
+            self.refundRequestCompletedHandler = { handler(.refundRequestCompleted($1)) }
             self.feedbackSurveyCompletedHandler = { handler(.feedbackSurveyCompleted($0)) }
         }
 

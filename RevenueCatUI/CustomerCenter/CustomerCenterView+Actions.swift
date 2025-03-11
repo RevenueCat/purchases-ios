@@ -42,7 +42,7 @@ extension CustomerCenterView {
     public typealias RefundRequestStartedHandler = @MainActor @Sendable (_ productId: String) -> Void
 
     /// A closure used for notifying of refund request completion in the Customer Center.
-    public typealias RefundRequestCompletedHandler = @MainActor @Sendable (_ status: RefundRequestStatus) -> Void
+    public typealias RefundRequestCompletedHandler = @MainActor @Sendable (_ productId: String, _ status: RefundRequestStatus) -> Void
 
     /// A closure used for notifying when a feedback survey option is selected in the Customer Center.
     public typealias FeedbackSurveyCompletedHandler = @MainActor @Sendable (_ optionId: String) -> Void
@@ -171,8 +171,8 @@ extension CustomerCenterView {
         func body(content: Content) -> some View {
             content
                 .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { wrapped in
-                    if let (_, status) = wrapped?.value {
-                        self.handler(status)
+                    if let (productId, status) = wrapped?.value {
+                        self.handler(productId, status)
                     }
                 }
         }
