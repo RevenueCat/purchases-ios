@@ -59,7 +59,7 @@ struct CarouselComponentView: View {
                         initialIndex: style.initialPageIndex,
                         loop: style.loop,
                         spacing: style.pageSpacing,
-                        cardWidth: reader.size.width - (style.pagePeek * 2) - style.pageSpacing,
+                        cardWidth: reader.size.width - (style.pagePeek * 2) - (style.pageSpacing * 2),
                         pageControl: style.pageControl,
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime
@@ -73,8 +73,13 @@ struct CarouselComponentView: View {
                 // Style the carousel
                 .size(style.size)
                 .padding(style.padding)
+                // TODO: Test with ricks-ugly-pill
+                // TODO: HACK: This padding is needed for peek to not go behind the border
+                // TODO: But this doesn't fix for shape clipping (need to clip inside border)
+                .padding(.horizontal, style.border?.width ?? 0)
                 .shape(border: style.border,
                        shape: style.shape,
+                       // TODO: Background image isn't doing "fit"
                        background: style.backgroundStyle,
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
@@ -162,7 +167,7 @@ private struct CarouselView<Content: View>: View {
     // MARK: - Body
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             // If top page control
             if let pageControl = self.pageControl, pageControl.position == .top {
                 PageControlView(
@@ -264,6 +269,7 @@ private struct CarouselView<Content: View>: View {
 
         autoTimer?.invalidate() // Stop any existing timer
 
+        // TODO: Need to separate time per slide and transition time
         autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide) / 1000, repeats: true) { _ in
             guard !isPaused else {
                 // If paused, check if 10 seconds have passed
@@ -297,7 +303,9 @@ private struct CarouselView<Content: View>: View {
     // MARK: - Drag Handling
 
     private func handleDragEnd(translation: CGFloat) {
-        let threshold = cardWidth / 2
+        let threshold = cardWidth * 0.2
+
+        // TODO: Snapback is very agressive
 
         if translation < -threshold {
             // Swipe left => next
@@ -409,6 +417,7 @@ struct PageControlView: View {
 
     var body: some View {
         if self.originalCount > 1 {
+            // TODO: Add page alignment
             HStack(spacing: self.pageControl.spacing) {
                 ForEach(0..<originalCount, id: \.self) { index in
                     Capsule()
@@ -425,6 +434,7 @@ struct PageControlView: View {
                    shape: pageControl.shape,
                    background: pageControl.backgroundStyle,
                    uiConfigProvider: pageControl.uiConfigProvider)
+            // TODO: Shadow is being clipped
             .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
             .padding(self.pageControl.margin)
             .onChangeOf(self.currentIndex) { newValue in
