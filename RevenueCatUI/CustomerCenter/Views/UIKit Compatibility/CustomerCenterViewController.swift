@@ -45,9 +45,6 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
     private var refundRequestCompletedHandler: CustomerCenterView.RefundRequestCompletedHandler?
     private var feedbackSurveyCompletedHandler: CustomerCenterView.FeedbackSurveyCompletedHandler?
 
-    // Legacy handler for backward compatibility
-    private var legacyHandler: DeprecatedCustomerCenterActionHandler?
-
     // MARK: - Initialization
 
     /// Create a view controller to handle common customer support tasks
@@ -56,17 +53,25 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
     ///   from the Customer Center.
     @available(*, deprecated, message: "Use the initializer with individual action handlers instead")
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil
+        customerCenterActionHandler: CustomerCenterActionHandler?
     ) {
         // Initialize with a basic view first
         let view = CustomerCenterView()
         super.init(rootView: view)
 
-        // Store the legacy handler
-        self.legacyHandler = customerCenterActionHandler
+        // Map the legacy handler to individual handlers
+        if let handler = customerCenterActionHandler {
+            self.restoreStartedHandler = { handler(.restoreStarted) }
+            self.restoreCompletedHandler = { handler(.restoreCompleted($0)) }
+            self.restoreFailedHandler = { handler(.restoreFailed($0)) }
+            self.showingManageSubscriptionsHandler = { handler(.showingManageSubscriptions) }
+            self.refundRequestStartedHandler = { handler(.refundRequestStarted($0)) }
+            self.refundRequestCompletedHandler = { handler(.refundRequestCompleted($0)) }
+            self.feedbackSurveyCompletedHandler = { handler(.feedbackSurveyCompleted($0)) }
+        }
 
         // Update the view after init
-        updateRootViewWithLegacyHandler()
+        updateRootView()
     }
 
     /// Create a view controller to handle common customer support tasks with individual action handlers
@@ -104,7 +109,7 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         self.feedbackSurveyCompletedHandler = feedbackSurveyCompleted
 
         // Update the view after init
-        updateRootViewWithIndividualHandlers()
+        updateRootView()
     }
 
     @available(*, unavailable, message: "Use init with handlers instead.")
@@ -127,37 +132,7 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
 @available(watchOS, unavailable)
 private extension CustomerCenterViewController {
 
-    func updateRootViewWithLegacyHandler() {
-        guard let handler = self.legacyHandler else { return }
-
-        // Create child content view with all the handlers from the legacy handler
-        var childView = CustomerCenterView()
-            .onCustomerCenterRestoreStarted {
-                handler(.restoreStarted)
-            }
-            .onCustomerCenterRestoreCompleted { customerInfo in
-                handler(.restoreCompleted(customerInfo))
-            }
-            .onCustomerCenterRestoreFailed { error in
-                handler(.restoreFailed(error))
-            }
-            .onCustomerCenterShowingManageSubscriptions {
-                handler(.showingManageSubscriptions)
-            }
-            .onCustomerCenterRefundRequestStarted { productID in
-                handler(.refundRequestStarted(productID))
-            }
-            .onCustomerCenterRefundRequestCompleted { status in
-                handler(.refundRequestCompleted(status))
-            }
-            .onCustomerCenterFeedbackSurveyCompleted { optionID in
-                handler(.feedbackSurveyCompleted(optionID))
-            }
-
-        addViewAsChild(childView)
-    }
-
-    func updateRootViewWithIndividualHandlers() {
+    func updateRootView() {
         var childView = CustomerCenterView()
             .applyIfLet(self.restoreStartedHandler) { view, handler in
                 view.onCustomerCenterRestoreStarted(handler)
