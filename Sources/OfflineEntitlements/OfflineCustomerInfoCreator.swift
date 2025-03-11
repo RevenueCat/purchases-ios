@@ -76,27 +76,51 @@ class OfflineCustomerInfoCreator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func create(for userID: String) async throws -> CustomerInfo {
-        Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
+        do {
+            Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
-        guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping else {
-            Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
-            throw Error.noEntitlementMappingAvailable
+            guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping else {
+                Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
+                throw Error.noEntitlementMappingAvailable
+            }
+
+            let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
+
+            let offlineCustomerInfo = creator(products, mapping, userID)
+
+            self.tracker?.trackEnteredOfflineEntitlementsMode()
+
+            Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
+                products, offlineCustomerInfo.entitlements
+            ))
+            Logger.debug(Strings.offlineEntitlements.computed_offline_customer_info_details(
+                products, offlineCustomerInfo.entitlements
+            ))
+
+            return offlineCustomerInfo
+        } catch {
+            let reason, errorMessage: String
+            switch error {
+            case let productsFetcherError as PurchasedProductsFetcher.Error:
+                switch productsFetcherError {
+                case .foundConsumablePurchase:
+                    reason = "one_time_purchase_found"
+                    errorMessage = productsFetcherError.errorUserInfo[NSLocalizedDescriptionKey] as? String ?? ""
+                }
+            case let offlineCustomerInfoCreatorError as OfflineCustomerInfoCreator.Error:
+                switch offlineCustomerInfoCreatorError {
+                case .noEntitlementMappingAvailable:
+                    reason = "no_entitlement_mapping_available"
+                    errorMessage = offlineCustomerInfoCreatorError.description
+                }
+            default:
+                reason = "unknown"
+                errorMessage = error.localizedDescription
+            }
+
+            self.tracker?.trackErrorEnteringOfflineEntitlementsMode(errorReason: reason, errorMessage: errorMessage)
+            throw error
         }
-
-        let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
-
-        let offlineCustomerInfo = creator(products, mapping, userID)
-
-        self.tracker?.trackEnteredOfflineEntitlementsMode()
-
-        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
-            products, offlineCustomerInfo.entitlements
-        ))
-        Logger.debug(Strings.offlineEntitlements.computed_offline_customer_info_details(
-            products, offlineCustomerInfo.entitlements
-        ))
-
-        return offlineCustomerInfo
     }
 
 }

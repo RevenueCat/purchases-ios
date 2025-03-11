@@ -42,6 +42,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
         case clearingDiagnosticsAfterFailedSync = "clearing_diagnostics_after_failed_sync"
         case enteredOfflineEntitlementsMode = "entered_offline_entitlements_mode"
+        case errorEnteringOfflineEntitlementsMode = "error_entering_offline_entitlements_mode"
         case applePurchaseAttempt = "apple_purchase_attempt"
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
     }
@@ -61,6 +62,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let successful: Bool?
         let responseCode: Int?
         let backendErrorCode: Int?
+        let offlineEntitlementErrorReason: String?
         let errorMessage: String?
         let errorCode: Int?
         let skErrorDescription: String?
@@ -80,6 +82,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              successful: Bool? = nil,
              responseCode: Int? = nil,
              backendErrorCode: Int? = nil,
+             offlineEntitlementErrorReason: String? = nil,
              errorMessage: String? = nil,
              errorCode: Int? = nil,
              skErrorDescription: String? = nil,
@@ -98,6 +101,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.successful = successful
             self.responseCode = responseCode
             self.backendErrorCode = backendErrorCode
+            self.offlineEntitlementErrorReason = offlineEntitlementErrorReason
             self.errorMessage = errorMessage
             self.errorCode = errorCode
             self.skErrorDescription = skErrorDescription
