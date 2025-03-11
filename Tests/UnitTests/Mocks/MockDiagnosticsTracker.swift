@@ -158,7 +158,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          errorMessage: String?,
          errorCode: Int?,
          verificationResult: VerificationResult?,
-         cacheStatus: CacheStatus?,
+         cacheStatus: CacheStatus,
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
@@ -167,7 +167,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               verificationResult: VerificationResult?,
-                              cacheStatus: CacheStatus?,
+                              cacheStatus: CacheStatus,
                               responseTime: TimeInterval) {
         self.trackedOfferingsResultParams.modify {
             $0.append(

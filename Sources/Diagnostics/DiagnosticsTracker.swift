@@ -72,7 +72,7 @@ protocol DiagnosticsTrackerType {
                               errorMessage: String?,
                               errorCode: Int?,
                               verificationResult: VerificationResult?,
-                              cacheStatus: CacheStatus?,
+                              cacheStatus: CacheStatus,
                               responseTime: TimeInterval)
 
 }
@@ -235,7 +235,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               verificationResult: VerificationResult?,
-                              cacheStatus: CacheStatus?,
+                              cacheStatus: CacheStatus,
                               responseTime: TimeInterval) {
         // WIP Add verification result property once we expose verification result in offerings object
         self.track(
