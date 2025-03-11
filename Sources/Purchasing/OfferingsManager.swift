@@ -431,6 +431,8 @@ private extension OfferingsManager {
                                                     notFoundProductIds: notFoundProductIds,
                                                     errorMessage: error?.localizedDescription,
                                                     errorCode: error?.errorCode,
+                                                    // WIP Add verification result property once we
+                                                    // expose verification result in offerings object
                                                     verificationResult: nil,
                                                     cacheStatus: cacheStatus,
                                                     responseTime: responseTime)
