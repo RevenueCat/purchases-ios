@@ -140,4 +140,9 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     func trackClearingDiagnosticsAfterFailedSync() {
         trackedClearingDiagnosticsAfterFailedSyncCalls.modify { $0 += 1 }
     }
+
+    let trackedEnteredOfflineEntitlementsModeCalls: Atomic<Int> = .init(0)
+    func trackEnteredOfflineEntitlementsMode() {
+        trackedEnteredOfflineEntitlementsModeCalls.modify { $0 += 1 }
+    }
 }
