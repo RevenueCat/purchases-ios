@@ -58,7 +58,10 @@ public struct CustomerCenterNavigationLink<Label: View>: View {
     /// ```
     ///
     /// - Parameter label: A closure that returns the view to display as the navigation link's label.
-    @available(*, deprecated, message: "Use the view modifiers instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
+    @available(*, deprecated, message: """
+    Use the view modifiers instead.
+    For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.
+    """)
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
         @ViewBuilder label: @escaping () -> Label) {

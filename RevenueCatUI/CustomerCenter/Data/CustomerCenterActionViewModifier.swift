@@ -33,7 +33,7 @@ extension UniqueWrapper: Equatable {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct CustomerCenterActionPreferencesViewModifier: ViewModifier {
+struct CustomerCenterActionViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
 

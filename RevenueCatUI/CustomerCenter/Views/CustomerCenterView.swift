@@ -50,7 +50,11 @@ public struct CustomerCenterView: View {
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - navigationOptions: Options to control the navigation behavior
-    @available(*, deprecated, message: "Use the view modifiers instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
+    @available(*, deprecated, message: """
+    Use the view modifiers instead.
+    For example, use .onCustomerCenterRestoreStarted(),
+    .onCustomerCenterRestoreCompleted(), etc.
+    """)
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
@@ -145,7 +149,7 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .modifier(CustomerCenterActionPreferencesViewModifier(actionWrapper: viewModel.actionWrapper))
+        .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder

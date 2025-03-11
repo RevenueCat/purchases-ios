@@ -73,7 +73,7 @@ final class CustomerCenterActionWrapper {
     // The handler for legacy actions
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
 
-    init(legacyActionHandler: DeprecatedCustomerCenterActionHandler?) {
+    init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
     }
 

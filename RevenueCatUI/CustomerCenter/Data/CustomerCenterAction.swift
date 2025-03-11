@@ -2,7 +2,10 @@ import RevenueCat
 
 /// Typealias for handler for Customer center actions
 /// - Note: This handler is deprecated. Please use the view modifiers in View+CustomerCenterActions.swift instead.
-@available(*, deprecated, message: "Use the view modifiers in View+CustomerCenterActions.swift instead. For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.")
+@available(*, deprecated, message: """
+Use the view modifiers in View+CustomerCenterActions.swift instead.
+For example, use .onCustomerCenterRestoreStarted(), .onCustomerCenterRestoreCompleted(), etc.
+""")
 public typealias CustomerCenterActionHandler = @MainActor @Sendable (CustomerCenterAction) -> Void
 
 /// Internal typealias for the deprecated CustomerCenterActionHandler
