@@ -12,22 +12,7 @@
 //  Created by Toni Rico Diez on 10/3/25.
 
 enum CacheStatus: String, Codable {
-    case stale
-    case notFound = "not_found"
-    case valid
-}
-
-extension CacheStatus {
-
-    var name: String {
-        switch self {
-        case .stale:
-            return "STALE"
-        case .notFound:
-            return "NOT_FOUND"
-        case .valid:
-            return "VALID"
-        }
-    }
-
+    case stale = "STALE"
+    case notFound = "NOT_FOUND"
+    case valid = "VALID"
 }

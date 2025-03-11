@@ -409,7 +409,6 @@ private extension OfferingsManager {
     func trackPurchaseStartedIfNeeded(trackDiagnostics: Bool) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
             trackDiagnostics,
-           !self.systemInfo.dangerousSettings.uiPreviewMode,
            let diagnosticsTracker = self.diagnosticsTracker {
             diagnosticsTracker.trackOfferingsStarted()
         }
@@ -424,7 +423,6 @@ private extension OfferingsManager {
                                      notFoundProductIds: Set<String>?) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
             trackDiagnostics,
-           !self.systemInfo.dangerousSettings.uiPreviewMode,
            let diagnosticsTracker = self.diagnosticsTracker {
 
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
