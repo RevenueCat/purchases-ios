@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+#if os(iOS)
+
 // MARK: - CustomerCenterView Extension
 
 @available(iOS 15.0, *)
@@ -331,3 +333,5 @@ extension View {
         return self.modifier(CustomerCenterView.OnFeedbackSurveyCompletedModifier(handler: handler))
     }
 }
+
+#endif
