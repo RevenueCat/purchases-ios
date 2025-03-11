@@ -33,9 +33,6 @@ import SwiftUI
 @available(watchOS, unavailable)
 public class CustomerCenterViewController: UIHostingController<CustomerCenterView> {
 
-    // Handler for when the view controller is dismissed
-    public var onDismiss: (() -> Void)?
-
     // Stored handlers for later updating if needed
     private var restoreStartedHandler: CustomerCenterView.RestoreStartedHandler?
     private var restoreCompletedHandler: CustomerCenterView.RestoreCompletedHandler?
@@ -83,7 +80,6 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
     ///   - refundRequestStarted: Handler called when a refund request starts.
     ///   - refundRequestCompleted: Handler called when a refund request completes.
     ///   - feedbackSurveyCompleted: Handler called when a feedback survey is completed.
-    ///   - onDismiss: Handler called when the view controller is dismissed.
     public init(
         restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
         restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
@@ -91,15 +87,13 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         showingManageSubscriptions: CustomerCenterView.ShowingManageSubscriptionsHandler? = nil,
         refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
-        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
-        onDismiss: (() -> Void)? = nil
+        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil
     ) {
         // Initialize with a basic view first
         let view = CustomerCenterView()
         super.init(rootView: view)
 
         // Store all handlers
-        self.onDismiss = onDismiss
         self.restoreStartedHandler = restoreStarted
         self.restoreCompletedHandler = restoreCompleted
         self.restoreFailedHandler = restoreFailed
@@ -115,13 +109,6 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
     @available(*, unavailable, message: "Use init with handlers instead.")
     required dynamic init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    public override func viewDidDisappear(_ animated: Bool) {
-        if self.isBeingDismissed {
-            self.onDismiss?()
-        }
-        super.viewDidDisappear(animated)
     }
 
 }
