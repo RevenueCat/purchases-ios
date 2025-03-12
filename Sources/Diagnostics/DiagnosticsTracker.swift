@@ -64,6 +64,10 @@ protocol DiagnosticsTrackerType {
     func trackEnteredOfflineEntitlementsMode()
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                   errorMessage: String)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackOfferingsStarted()
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -74,7 +78,6 @@ protocol DiagnosticsTrackerType {
                               verificationResult: VerificationResult?,
                               cacheStatus: CacheStatus,
                               responseTime: TimeInterval)
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -221,6 +224,17 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                     appSessionId: self.appSessionID))
     }
 
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                   errorMessage: String) {
+        self.track(DiagnosticsEvent(name: .errorEnteringOfflineEntitlementsMode,
+                                    properties: DiagnosticsEvent.Properties(
+                                        offlineEntitlementErrorReason: reason,
+                                        errorMessage: errorMessage
+                                    ),
+                                    timestamp: self.dateProvider.now(),
+                                    appSessionId: self.appSessionID))
+    }
+
     func trackOfferingsStarted() {
         self.track(
             DiagnosticsEvent(name: .getOfferingsStarted,
@@ -237,7 +251,6 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               verificationResult: VerificationResult?,
                               cacheStatus: CacheStatus,
                               responseTime: TimeInterval) {
-        // WIP Add verification result property once we expose verification result in offerings object
         self.track(
             DiagnosticsEvent(name: .getOfferingsResult,
                              properties: DiagnosticsEvent.Properties(

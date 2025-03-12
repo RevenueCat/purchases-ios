@@ -42,6 +42,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case maxEventsStoredLimitReached = "max_events_stored_limit_reached"
         case clearingDiagnosticsAfterFailedSync = "clearing_diagnostics_after_failed_sync"
         case enteredOfflineEntitlementsMode = "entered_offline_entitlements_mode"
+        case errorEnteringOfflineEntitlementsMode = "error_entering_offline_entitlements_mode"
         case applePurchaseAttempt = "apple_purchase_attempt"
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
         case getOfferingsStarted = "get_offerings_started"
@@ -55,6 +56,12 @@ struct DiagnosticsEvent: Codable, Equatable {
         case pending
     }
 
+    enum OfflineEntitlementsModeErrorReason: String, Codable, Equatable {
+        case oneTimePurchaseFound = "one_time_purchase_found"
+        case noEntitlementMappingAvailable = "no_entitlement_mapping_available"
+        case unknown
+    }
+
     struct Properties: Codable, Equatable {
         let verificationResult: String?
         let endpointName: String?
@@ -63,6 +70,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let successful: Bool?
         let responseCode: Int?
         let backendErrorCode: Int?
+        let offlineEntitlementErrorReason: OfflineEntitlementsModeErrorReason?
         let errorMessage: String?
         let errorCode: Int?
         let skErrorDescription: String?
@@ -83,6 +91,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              successful: Bool? = nil,
              responseCode: Int? = nil,
              backendErrorCode: Int? = nil,
+             offlineEntitlementErrorReason: OfflineEntitlementsModeErrorReason? = nil,
              errorMessage: String? = nil,
              errorCode: Int? = nil,
              skErrorDescription: String? = nil,
@@ -102,6 +111,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.successful = successful
             self.responseCode = responseCode
             self.backendErrorCode = backendErrorCode
+            self.offlineEntitlementErrorReason = offlineEntitlementErrorReason
             self.errorMessage = errorMessage
             self.errorCode = errorCode
             self.skErrorDescription = skErrorDescription

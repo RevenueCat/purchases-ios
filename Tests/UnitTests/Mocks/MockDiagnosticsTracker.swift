@@ -146,6 +146,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         trackedEnteredOfflineEntitlementsModeCalls.modify { $0 += 1 }
     }
 
+<<<<<<< HEAD
     let trackedOfferingsStartedCount: Atomic<Int> = .init(0)
     func trackOfferingsStarted() {
         self.trackedOfferingsStartedCount.modify { $0 += 1 }
@@ -182,4 +183,17 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+=======
+    let trackedErrorEnteringOfflineEntitlementsModeCalls: Atomic<[
+        (DiagnosticsEvent.OfflineEntitlementsModeErrorReason, String)]> = .init([])
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                   errorMessage: String) {
+        self.trackedErrorEnteringOfflineEntitlementsModeCalls.modify {
+            $0.append(
+                (reason,
+                 errorMessage)
+            )
+        }
+    }
+>>>>>>> f719448ec1170883da138f91816eb9bc95ea1af9
 }
