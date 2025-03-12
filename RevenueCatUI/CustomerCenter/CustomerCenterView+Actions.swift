@@ -305,7 +305,7 @@ extension View {
     ///         .sheet(isPresented: self.$displayCustomerCenter) {
     ///             CustomerCenterView()
     ///                 .onCustomerCenterRefundRequestCompleted { productId, status in
-    ///                     print("Customer Center refund request for product \(productId) completed with status: \(status)")
+    ///                     print("Customer Center refund request \(productId) with status: \(status)")
     ///                 }
     ///         }
     ///  }
