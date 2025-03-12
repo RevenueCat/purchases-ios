@@ -51,8 +51,8 @@ extension CustomerCenterView {
     // MARK: - Preference Keys
 
     struct RestoreStartedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<Bool>?
-        static func reduce(value: inout UniqueWrapper<Bool>?, nextValue: () -> UniqueWrapper<Bool>?) {
+        static var defaultValue: UniqueWrapper<Void>?
+        static func reduce(value: inout UniqueWrapper<Void>?, nextValue: () -> UniqueWrapper<Void>?) {
             value = nextValue() ?? value
         }
     }
@@ -72,8 +72,8 @@ extension CustomerCenterView {
     }
 
     struct ShowingManageSubscriptionsPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<Bool>?
-        static func reduce(value: inout UniqueWrapper<Bool>?, nextValue: () -> UniqueWrapper<Bool>?) {
+        static var defaultValue: UniqueWrapper<Void>?
+        static func reduce(value: inout UniqueWrapper<Void>?, nextValue: () -> UniqueWrapper<Void>?) {
             value = nextValue() ?? value
         }
     }
@@ -108,7 +108,7 @@ extension CustomerCenterView {
         func body(content: Content) -> some View {
             content
                 .onPreferenceChange(RestoreStartedPreferenceKey.self) { wrappedStarted in
-                    if wrappedStarted?.value == true {
+                    if wrappedStarted != nil {
                         self.handler()
                     }
                 }
@@ -147,7 +147,7 @@ extension CustomerCenterView {
         func body(content: Content) -> some View {
             content
                 .onPreferenceChange(ShowingManageSubscriptionsPreferenceKey.self) { wrappedIsShowing in
-                    if wrappedIsShowing?.value == true {
+                    if wrappedIsShowing != nil {
                         self.handler()
                     }
                 }
