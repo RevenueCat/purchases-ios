@@ -20,7 +20,6 @@ import XCTest
 class LocaleFinderTest: TestCase {
 
     static let expectedTranslations = ["expected": "translations"]
-    static let wrongTranslations = ["wrong": "translations"]
 
     static let simplifiedChineseLanguages = [
         "zh", "zh_CN", "zh_SG", "zh_MY"
@@ -32,7 +31,7 @@ class LocaleFinderTest: TestCase {
     func test_en_US() {
         let localizations = [
             "en_US": Self.expectedTranslations,
-            "es_ES": Self.wrongTranslations
+            "es_ES": ["wrong": "this is es_ES"]
         ]
 
         let locale = Locale(identifier: "en_US")
@@ -44,7 +43,7 @@ class LocaleFinderTest: TestCase {
     func test_zh_Hans() {
         let localizations = [
             "zh_Hans": Self.expectedTranslations,
-            "es_ES": Self.wrongTranslations
+            "es_ES": ["wrong": "this is es_ES"]
         ]
 
         let locale = Locale(identifier: "zh-Hans")
@@ -55,9 +54,9 @@ class LocaleFinderTest: TestCase {
 
     func test_es_MX() {
         let localizations = [
-            "zh_Hans": Self.wrongTranslations,
+            "zh_Hans": ["wrong": "this is zh_Hans"],
             "es": Self.expectedTranslations,
-            "es_ES": Self.wrongTranslations
+            "es_ES": ["wrong": "this is es_ES"]
         ]
 
         let locale = Locale(identifier: "es_MX")
@@ -66,12 +65,10 @@ class LocaleFinderTest: TestCase {
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
 
-    func testSimplifiedChinese() {
+    func testSimplifiedChineseForLanguageAndScript() {
         let localizations = [
             "zh_Hans": Self.expectedTranslations,
-            "zh_Hant": Self.wrongTranslations,
-            "es": Self.wrongTranslations,
-            "es_ES": Self.wrongTranslations
+            "zh_Hant": ["wrong": "this is zh_Hant"]
         ]
 
         for languageCode in Self.simplifiedChineseLanguages {
@@ -82,12 +79,10 @@ class LocaleFinderTest: TestCase {
         }
     }
 
-    func testTraditionalChinese() {
+    func testTraditionalChineseForLanguageAndScript() {
         let localizations = [
-            "zh_Hans": Self.wrongTranslations,
-            "zh_Hant": Self.expectedTranslations,
-            "es": Self.wrongTranslations,
-            "es_ES": Self.wrongTranslations
+            "zh_Hans": ["wrong": "this is zh_Hans"],
+            "zh_Hant": Self.expectedTranslations
         ]
 
         for languageCode in Self.traditionalChineseLanguages {
@@ -96,6 +91,45 @@ class LocaleFinderTest: TestCase {
             let foundLocalizations = localizations.findLocale(locale)
             expect(foundLocalizations).to(equal(Self.expectedTranslations))
         }
+    }
+
+    func test_zh_CN_UsingMaxIdentifier() {
+        let localizations = [
+            "zh_Hans_CN": Self.expectedTranslations,
+            "zh_Hans": ["wrong": "this is zh_Hans"],
+            "zh": ["wrong": "this is zh"]
+        ]
+
+        let locale = Locale(identifier: "zh_CN")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
+
+    func test_zh_HK_UsingMaxIdentifier() {
+        let localizations = [
+            "zh_Hant_HK": Self.expectedTranslations,
+            "zh_Hant": ["wrong": "this is zh_Hant"],
+            "zh": ["wrong": "this is zh"]
+        ]
+
+        let locale = Locale(identifier: "zh_HK")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
+
+    func test_zh_TW_UsingMaxIdentifier() {
+        let localizations = [
+            "zh_Hant_TW": Self.expectedTranslations,
+            "zh_Hant": ["wrong": "this is zh_Hant"],
+            "zh": ["wrong": "this is zh"]
+        ]
+
+        let locale = Locale(identifier: "zh_TW")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
 
 }

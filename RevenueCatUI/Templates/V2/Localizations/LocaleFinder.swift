@@ -22,18 +22,23 @@ extension Dictionary where Key == String {
             return exactMatch
         }
 
-        // For matching unknown locales with language code and script
-        // Ex: `zh_CN` will is `zh` and `Hans` and `zh_HK` will be `zh-Hant`
-        if let languageCode = locale.rc_languageCode, let languageScript = locale.rc_languageScript {
-            let codeAndScriptIdentifier = "\(languageCode)_\(languageScript)"
-            if let exactMatch = self.valueForLocaleString(codeAndScriptIdentifier) {
+        // For matching unknown locales with full identifier
+        // Ex: `zh_CN` will become `zh_Hans_CN`
+        if let maxIdentifier = locale.rc_lanuageMaxIdentifier {
+            if let exactMatch = self.valueForLocaleString(maxIdentifier) {
                 return exactMatch
             }
         }
 
-        // For matching language without region
-        if let noRegionLocaleIdentifier = locale.rc_languageCode,
-           let exactMatch = self.valueForLocaleString(noRegionLocaleIdentifier) {
+        // For matching language and script without region
+        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript,
+           let exactMatch = self.valueForLocaleString(onlyLanguageAndScriptIdentifier) {
+            return exactMatch
+        }
+
+        // For matching language without script or region
+        if let onlyLanguageIdentifier = locale.rc_languageCode,
+           let exactMatch = self.valueForLocaleString(onlyLanguageIdentifier) {
             return exactMatch
         }
 
