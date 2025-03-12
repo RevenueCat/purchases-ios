@@ -50,11 +50,27 @@ public struct CustomerCenterView: View {
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
     ///   - navigationOptions: Options to control the navigation behavior
+    @available(*, deprecated, message: """
+    Use the view modifiers instead.
+    For example, use .onCustomerCenterRestoreStarted(),
+    .onCustomerCenterRestoreCompleted(), etc.
+    """)
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
         self.init(
-            customerCenterActionHandler: customerCenterActionHandler,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: customerCenterActionHandler),
+            mode: .default,
+            navigationOptions: navigationOptions
+        )
+    }
+
+    /// Create a view to handle common customer support tasks
+    /// - Parameters:
+    ///   - navigationOptions: Options to control the navigation behavior
+    public init(navigationOptions: CustomerCenterNavigationOptions = .default) {
+        self.init(
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
             mode: .default,
             navigationOptions: navigationOptions
         )
@@ -67,13 +83,12 @@ public struct CustomerCenterView: View {
     ///   - mode: The presentation mode for the Customer Center
     ///   - navigationOptions: Options to control the navigation behavior
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        actionWrapper: CustomerCenterActionWrapper,
         mode: CustomerCenterPresentationMode,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self._viewModel = .init(wrappedValue:
-                                    CustomerCenterViewModel(customerCenterActionHandler: customerCenterActionHandler))
-        self.mode = mode
-        self.navigationOptions = navigationOptions
+            self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionWrapper: actionWrapper))
+            self.mode = mode
+            self.navigationOptions = navigationOptions
     }
 
     fileprivate init(
@@ -110,28 +125,31 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     var content: some View {
-        switch self.viewModel.state {
-        case .error:
-            ErrorView()
-                .environment(\.customerCenterPresentationMode, self.mode)
-                .environment(\.navigationOptions, self.navigationOptions)
-                .dismissCircleButtonToolbarIfNeeded()
-
-        case .notLoaded:
-            TintedProgressView()
-
-        case .success:
-            if let configuration = self.viewModel.configuration {
-                destinationView(configuration: configuration)
-                    .environment(\.appearance, configuration.appearance)
-                    .environment(\.localization, configuration.localization)
+        Group {
+            switch self.viewModel.state {
+            case .error:
+                ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
                     .environment(\.navigationOptions, self.navigationOptions)
-                    .environment(\.supportInformation, configuration.support)
-            } else {
+                    .dismissCircleButtonToolbarIfNeeded()
+
+            case .notLoaded:
                 TintedProgressView()
+
+            case .success:
+                if let configuration = self.viewModel.configuration {
+                    destinationView(configuration: configuration)
+                        .environment(\.appearance, configuration.appearance)
+                        .environment(\.localization, configuration.localization)
+                        .environment(\.customerCenterPresentationMode, self.mode)
+                        .environment(\.navigationOptions, self.navigationOptions)
+                        .environment(\.supportInformation, configuration.support)
+                } else {
+                    TintedProgressView()
+                }
             }
         }
+        .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder
@@ -169,7 +187,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(screen: screen,
                                             purchaseInformation: purchaseInformation,
-                                            customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                                            actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
@@ -181,7 +199,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: nil,
-                                        customerCenterActionHandler: viewModel.customerCenterActionHandler)
+                                        actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration)

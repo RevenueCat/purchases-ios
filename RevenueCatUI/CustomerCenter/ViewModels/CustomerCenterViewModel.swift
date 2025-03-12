@@ -74,13 +74,15 @@ import RevenueCat
     }
 
     private let currentVersionFetcher: CurrentVersionFetcher
-    internal let customerCenterActionHandler: CustomerCenterActionHandler?
+
+    /// The action wrapper that handles both the deprecated handler and the new preference system
+    internal let actionWrapper: CustomerCenterActionWrapper
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionWrapper: CustomerCenterActionWrapper,
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         },
@@ -89,7 +91,7 @@ import RevenueCat
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
-        self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
@@ -100,7 +102,7 @@ import RevenueCat
         purchaseInformation: PurchaseInformation,
         configuration: CustomerCenterConfigData
     ) {
-        self.init(customerCenterActionHandler: nil)
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
         self.purchaseInformation = purchaseInformation
         self.configuration = configuration
         self.state = .success
@@ -119,14 +121,17 @@ import RevenueCat
     }
 
     func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.customerCenterActionHandler?(.restoreStarted)
+        self.actionWrapper.handleAction(.restoreStarted)
+
         do {
             let customerInfo = try await purchasesProvider.restorePurchases()
-            self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
+            self.actionWrapper.handleAction(.restoreCompleted(customerInfo))
+
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
             return hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
-            self.customerCenterActionHandler?(.restoreFailed(error))
+            self.actionWrapper.handleAction(.restoreFailed(error))
+
             return .purchasesNotFound
         }
     }
