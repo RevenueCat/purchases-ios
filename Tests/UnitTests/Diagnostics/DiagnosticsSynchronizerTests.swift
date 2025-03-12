@@ -137,7 +137,7 @@ class DiagnosticsSynchronizerTests: TestCase {
                                            expectedCount: 1)
     }
 
-    func testNoRetryIfFailedEventIsConsideredSuccessfulSync() async throws {
+    func testNoRetryOnInvalidRequestError() async throws {
         _ = await self.storeEvent()
 
         let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
@@ -156,6 +156,50 @@ class DiagnosticsSynchronizerTests: TestCase {
             await self.verifyEmptyStore()
             expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
             expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+        }
+    }
+
+    func testNoRetryOnDecodingError() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .decoding(NSError(domain: "", code: 1), Data())
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await self.verifyEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+            expect(self.userDefaults.mockValues[cacheKey]).to(beNil())
+        }
+    }
+
+    func testRetryOnNetworkErrorNetworkError() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .networkError(NSError(domain: "", code: 1))
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 1]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await verifyNonEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues).to(beEmpty())
+            expect(self.userDefaults.mockValues[cacheKey] as? Int) == 2
         }
     }
 
@@ -282,6 +326,11 @@ private extension DiagnosticsSynchronizerTests {
     func verifyEmptyStore(file: StaticString = #file, line: UInt = #line) async {
         let events = await self.handler.getEntries()
         expect(file: file, line: line, events).to(beEmpty())
+    }
+
+    func verifyNonEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+        let events = await self.handler.getEntries()
+        expect(file: file, line: line, events).toNot(beEmpty())
     }
 
     func verifyEvents(
