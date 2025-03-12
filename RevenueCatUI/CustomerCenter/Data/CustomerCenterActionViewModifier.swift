@@ -39,11 +39,11 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
     // Use counter to track restore events instead of boolean flag
     // Each increment creates a unique restore event
-    @State private var restoreStarted: UniqueWrapper<Void> = .init(value: ())
+    @State private var restoreStarted: UniqueWrapper<Void>?
     @State private var restoreFailed: UniqueWrapper<NSError>?
     @State private var restoreCompleted: UniqueWrapper<CustomerInfo>?
     // Counter for manage subscriptions to ensure unique values
-    @State private var showingManageSubscriptions: UniqueWrapper<Void> = .init(value: ())
+    @State private var showingManageSubscriptions: UniqueWrapper<Void>?
     @State private var refundRequestStarted: UniqueWrapper<String>?
     @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
