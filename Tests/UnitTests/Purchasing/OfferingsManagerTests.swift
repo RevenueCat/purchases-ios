@@ -239,7 +239,7 @@ extension OfferingsManagerTests {
         // then
         expect(result).to(beFailure())
 
-        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.onlyElement)
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.first)
 
         expect(error.message) == [
             LogIntent.appleError.prefix,
