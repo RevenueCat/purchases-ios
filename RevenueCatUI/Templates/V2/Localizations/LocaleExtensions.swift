@@ -26,7 +26,6 @@ extension Locale {
     }
 
     static func normalizedLocaleIdentifier(_ identifier: String) -> String {
-        // zh_CN is shorthand for zh-Hans-CN
         if let normalizedZH = Self.mapZHToHansOrHant(identifier) {
             return normalizedZH
         }
@@ -34,6 +33,8 @@ extension Locale {
         return identifier
     }
 
+    // Mapping other Chinese language codes to either simplified or traditional as
+    // those are the Chinese identifier that we support
     static func mapZHToHansOrHant(_ identifier: String) -> String? {
         let underscoreLocaleIdentifier = identifier.replacingOccurrences(of: "-", with: "_")
 
