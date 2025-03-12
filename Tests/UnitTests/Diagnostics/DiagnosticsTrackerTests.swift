@@ -308,6 +308,72 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - Diagnostics sync events
+
+    func testTrackingEventMaxDiagnosticsSyncRetriesReached() async throws {
+        // When
+        self.tracker.trackMaxDiagnosticsSyncRetriesReached()
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .maxDiagnosticsSyncRetriesReached,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingEventClearingDiagnosticsAfterFailedSync() async throws {
+        // When
+        self.tracker.trackClearingDiagnosticsAfterFailedSync()
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .clearingDiagnosticsAfterFailedSync,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingEnteredOfflineEntitlementsMode() async throws {
+        // When
+        self.tracker.trackEnteredOfflineEntitlementsMode()
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .enteredOfflineEntitlementsMode,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingErrorEnteringOfflineEntitlementsModeWithExpectedParameters() async throws {
+        // When
+        self.tracker.trackErrorEnteringOfflineEntitlementsMode(reason: .oneTimePurchaseFound,
+                                                               errorMessage: "custom error msg")
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .errorEnteringOfflineEntitlementsMode,
+                  properties: DiagnosticsEvent.Properties(
+                    offlineEntitlementErrorReason: .oneTimePurchaseFound,
+                    errorMessage: "custom error msg"
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

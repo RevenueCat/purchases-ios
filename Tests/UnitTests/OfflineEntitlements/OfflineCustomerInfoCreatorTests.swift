@@ -42,6 +42,16 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         expect(self.mockDiagnosticsTracker.trackedEnteredOfflineEntitlementsModeCalls.value) == 1
     }
 
+    func testTrackErrorEnteringOfflineEntitlementsModeNotCalledOnSuccessfulCreation() async throws {
+        self.mockProductEntitlementMappingFetcher.stubbedResult = .init(
+            entitlementsByProduct: ["product": ["entitlement"]]
+        )
+        self.mockPurchasedProductsFetcher.stubbedResult = .success([])
+
+        _ = try await self.creator.create(for: "user")
+        expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value).to(beEmpty())
+    }
+
     func testTrackEnteredOfflineEntitlementsModeNotCalledWhenMappingMissing() async throws {
         self.mockProductEntitlementMappingFetcher.stubbedResult = nil
         self.mockPurchasedProductsFetcher.stubbedResult = .success([])
@@ -54,7 +64,57 @@ class OfflineCustomerInfoCreatorTests: TestCase {
         }
     }
 
+    func testTrackErrorEnteringOfflineEntitlementsModeCalledWhenMappingMissing() async throws {
+        self.mockProductEntitlementMappingFetcher.stubbedResult = nil
+        self.mockPurchasedProductsFetcher.stubbedResult = .success([])
+
+        do {
+            _ = try await self.creator.create(for: "user")
+            fail("Expected error")
+        } catch {
+            expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
+            let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
+            expect(reason) == .noEntitlementMappingAvailable
+            expect(msg) == Strings.offlineEntitlements
+                .computing_offline_customer_info_with_no_entitlement_mapping.description
+        }
+    }
+
     func testTrackEnteredOfflineEntitlementsModeNotCalledWhenFetcherFails() async throws {
+        self.mockProductEntitlementMappingFetcher.stubbedResult = .init(
+            entitlementsByProduct: ["product": ["entitlement"]]
+        )
+        let error = PurchasedProductsFetcher.Error.foundConsumablePurchase
+        self.mockPurchasedProductsFetcher.stubbedResult = .failure(error)
+
+        do {
+            _ = try await self.creator.create(for: "user")
+            fail("Expected error")
+        } catch {
+            expect(self.mockDiagnosticsTracker.trackedEnteredOfflineEntitlementsModeCalls.value) == 0
+        }
+    }
+
+    func testTrackErrorEnteringOfflineEntitlementsModeCalledWhenFetcherFails() async throws {
+        self.mockProductEntitlementMappingFetcher.stubbedResult = .init(
+            entitlementsByProduct: ["product": ["entitlement"]]
+        )
+        let error = PurchasedProductsFetcher.Error.foundConsumablePurchase
+        self.mockPurchasedProductsFetcher.stubbedResult = .failure(error)
+
+        do {
+            _ = try await self.creator.create(for: "user")
+            fail("Expected error")
+        } catch {
+            expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
+            let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
+            expect(reason) == .oneTimePurchaseFound
+            expect(msg) == Strings.offlineEntitlements
+                .computing_offline_customer_info_for_consumable_product.description
+        }
+    }
+
+    func testTrackErrorEnteringOfflineEntitlementsModeCalledWhenFetcherFailsWithOtherError() async throws {
         self.mockProductEntitlementMappingFetcher.stubbedResult = .init(
             entitlementsByProduct: ["product": ["entitlement"]]
         )
@@ -64,7 +124,10 @@ class OfflineCustomerInfoCreatorTests: TestCase {
             _ = try await self.creator.create(for: "user")
             fail("Expected error")
         } catch {
-            expect(self.mockDiagnosticsTracker.trackedEnteredOfflineEntitlementsModeCalls.value) == 0
+            expect(self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value.count) == 1
+            let (reason, msg) = self.mockDiagnosticsTracker.trackedErrorEnteringOfflineEntitlementsModeCalls.value[0]
+            expect(reason) == .unknown
+            expect(msg) == ErrorCode.invalidAppUserIdError.localizedDescription
         }
     }
 }
