@@ -71,7 +71,6 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                     path: .cancel,
                     url: nil,
                     surveyOptionID: "",
-                    surveyOptionTitleKey: "",
                     revisionID: 1
                 )
             )
