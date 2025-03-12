@@ -187,6 +187,8 @@ class ErrorUtilsTests: TestCase {
             expect(rootErrorInfo!["domain"] as? String) == "StoreKit.Product.PurchaseError"
             // swiftlint:disable:next force_cast
             let description = rootErrorInfo!["localizedDescription"] as! String
+            // In iOS 15, localizedDescription does not return "Item Unavailable",
+            // and returns "ERROR_UNAVAILABLE_DESC" instead.
             let validDescriptions = Set(["Item Unavailable", "ERROR_UNAVAILABLE_DESC"])
             expect(validDescriptions.contains(description)) == true
             let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
