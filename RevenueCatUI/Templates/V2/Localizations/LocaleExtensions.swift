@@ -61,7 +61,7 @@ extension Locale {
             return self.regionCode
         }
         #else
-        return self.scriptCode
+        return self.regionCode
         #endif
     }
 
