@@ -45,6 +45,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         case errorEnteringOfflineEntitlementsMode = "error_entering_offline_entitlements_mode"
         case applePurchaseAttempt = "apple_purchase_attempt"
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
+        case getOfferingsStarted = "get_offerings_started"
+        case getOfferingsResult = "get_offerings_result"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
@@ -79,6 +81,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
+        let cacheStatus: CacheStatus?
         let isRetry: Bool?
 
         init(verificationResult: String? = nil,
@@ -99,6 +102,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              promotionalOfferId: String? = nil,
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
+             cacheStatus: CacheStatus? = nil,
              isRetry: Bool? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
@@ -118,6 +122,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
+            self.cacheStatus = cacheStatus
             self.isRetry = isRetry
         }
 
