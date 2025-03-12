@@ -274,6 +274,32 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - Offerings result
+
+    func testTrackingOfferingsResult() async {
+        let requestedProductIds: Set<String> = ["test-product-id-1", "test-product-id-2"]
+        let notFoundProductIds: Set<String> = ["test-product-id-1"]
+        self.tracker.trackOfferingsResult(requestedProductIds: requestedProductIds,
+                                          notFoundProductIds: notFoundProductIds,
+                                          errorMessage: nil,
+                                          errorCode: nil,
+                                          verificationResult: nil,
+                                          cacheStatus: .notFound,
+                                          responseTime: 1234)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getOfferingsResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 1234,
+                    requestedProductIds: requestedProductIds,
+                    notFoundProductIds: notFoundProductIds,
+                    cacheStatus: .notFound
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {

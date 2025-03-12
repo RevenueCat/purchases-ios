@@ -116,7 +116,8 @@ class BasePurchasesTests: TestCase {
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
-                                                         productsManager: self.mockProductsManager)
+                                                         productsManager: self.mockProductsManager,
+                                                         diagnosticsTracker: self.diagnosticsTracker)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
