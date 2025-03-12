@@ -52,7 +52,7 @@ class OfferingsManager {
         trackDiagnostics: Bool = true,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        self.trackPurchaseStartedIfNeeded(trackDiagnostics: trackDiagnostics)
+        self.trackGetOfferingsStartedIfNeeded(trackDiagnostics: trackDiagnostics)
         let startTime = self.dateProvider.now()
 
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -60,12 +60,12 @@ class OfferingsManager {
 
             let completionFromNetworkWithTracking: @MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void =
             { result in
-                self.trackPurchaseResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                 startTime: startTime,
-                                                 cacheStatus: .notFound,
-                                                 error: result.error,
-                                                 requestedProductIds: result.value?.requestedProductIds,
-                                                 notFoundProductIds: result.value?.notFoundProductIds)
+                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                     startTime: startTime,
+                                                     cacheStatus: .notFound,
+                                                     error: result.error,
+                                                     requestedProductIds: result.value?.requestedProductIds,
+                                                     notFoundProductIds: result.value?.notFoundProductIds)
                 completion?(result.map(\.offerings))
             }
 
@@ -84,12 +84,12 @@ class OfferingsManager {
             }
 
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
-            self.trackPurchaseResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                             startTime: startTime,
-                                             cacheStatus: cacheStatus,
-                                             error: nil,
-                                             requestedProductIds: nil,
-                                             notFoundProductIds: nil)
+            self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                 startTime: startTime,
+                                                 cacheStatus: cacheStatus,
+                                                 error: nil,
+                                                 requestedProductIds: nil,
+                                                 notFoundProductIds: nil)
 
             self.dispatchCompletionOnMainThreadIfPossible(completion,
                                                           value: .success(memoryCachedOfferings))
@@ -406,7 +406,7 @@ private extension OfferingsManager {
         }
     }
 
-    func trackPurchaseStartedIfNeeded(trackDiagnostics: Bool) {
+    func trackGetOfferingsStartedIfNeeded(trackDiagnostics: Bool) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
             trackDiagnostics,
            let diagnosticsTracker = self.diagnosticsTracker {
@@ -415,12 +415,12 @@ private extension OfferingsManager {
     }
 
     // swiftlint:disable:next function_parameter_count
-    func trackPurchaseResultIfNeeded(trackDiagnostics: Bool,
-                                     startTime: Date,
-                                     cacheStatus: CacheStatus,
-                                     error: Error?,
-                                     requestedProductIds: Set<String>?,
-                                     notFoundProductIds: Set<String>?) {
+    func trackGetOfferingsResultIfNeeded(trackDiagnostics: Bool,
+                                         startTime: Date,
+                                         cacheStatus: CacheStatus,
+                                         error: Error?,
+                                         requestedProductIds: Set<String>?,
+                                         notFoundProductIds: Set<String>?) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
             trackDiagnostics,
            let diagnosticsTracker = self.diagnosticsTracker {
@@ -430,7 +430,7 @@ private extension OfferingsManager {
             diagnosticsTracker.trackOfferingsResult(requestedProductIds: requestedProductIds,
                                                     notFoundProductIds: notFoundProductIds,
                                                     errorMessage: error?.localizedDescription,
-                                                    errorCode: error?.errorCode,
+                                                    errorCode: error?.asPurchasesError.errorCode,
                                                     // WIP Add verification result property once we
                                                     // expose verification result in offerings object
                                                     verificationResult: nil,
