@@ -18,22 +18,36 @@ extension Dictionary where Key == String {
     func findLocale(_ locale: Locale) -> Value? {
         let localeIdentifier = locale.identifier
 
-        if let exactMatch = self[localeIdentifier] {
+        if let exactMatch = self.valueForLocaleString(localeIdentifier) {
             return exactMatch
         }
 
-        // For zh-Hans and zh-Hant
-        let underscoreLocaleIdentifier = localeIdentifier.replacingOccurrences(of: "-", with: "_")
-        if let exactMatch = self[underscoreLocaleIdentifier] {
-            return exactMatch
+        // For matching unknown locales with language code and script
+        // Ex: `zh_CN` will is `zh` and `Hans` and `zh_HK` will be `zh-Hant`
+        if let languageCode = locale.rc_languageCode, let languageScript = locale.rc_languageScript {
+            let codeAndScriptIdentifier = "\(languageCode)_\(languageScript)"
+            if let exactMatch = self.valueForLocaleString(codeAndScriptIdentifier) {
+                return exactMatch
+            }
         }
 
         // For matching language without region
-        if let noRegionLocaleIdentifier = locale.rc_languageCode, let exactMatch = self[noRegionLocaleIdentifier] {
+        if let noRegionLocaleIdentifier = locale.rc_languageCode,
+           let exactMatch = self.valueForLocaleString(noRegionLocaleIdentifier) {
             return exactMatch
         }
 
         return nil
+    }
+
+    private func valueForLocaleString(_ localeIdentifier: String) -> Value? {
+        if let exactMatch = self[localeIdentifier] {
+            return exactMatch
+        }
+
+        // For cases like zh-Hans and zh-Hant
+        let underscoreLocaleIdentifier = localeIdentifier.replacingOccurrences(of: "-", with: "_")
+        return self[underscoreLocaleIdentifier]
     }
 
 }

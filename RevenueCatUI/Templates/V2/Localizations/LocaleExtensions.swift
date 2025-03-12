@@ -16,42 +16,7 @@ import Foundation
 extension Locale {
 
     static var preferredLocales: [Self] {
-        return Self.normalizedLocales(from: Self.preferredLanguages)
-    }
-
-    static func normalizedLocales(from preferredLanguages: [String]) -> [Self] {
-        return preferredLanguages
-            .map(Locale.normalizedLocaleIdentifier)
-            .map(Locale.init(identifier:))
-    }
-
-    static func normalizedLocaleIdentifier(_ identifier: String) -> String {
-        if let normalizedZH = Self.mapZHToHansOrHant(identifier) {
-            return normalizedZH
-        }
-
-        return identifier
-    }
-
-    // Mapping other Chinese language codes to either simplified or traditional as
-    // those are the Chinese identifier that we support
-    static func mapZHToHansOrHant(_ identifier: String) -> String? {
-        let underscoreLocaleIdentifier = identifier.replacingOccurrences(of: "-", with: "_")
-
-        let hansLocales: Set<String> = [
-            "zh", "zh_CN", "zh_SG", "zh_MY"
-        ]
-        let hantLocales: Set<String> = [
-            "zh_TW", "zh_HK", "zh_MO"
-        ]
-
-        if hansLocales.contains(underscoreLocaleIdentifier) {
-            return "zh_Hans"
-        } else if hantLocales.contains(underscoreLocaleIdentifier) {
-            return "zh_Hant"
-        } else {
-            return nil
-        }
+        return Self.preferredLanguages.map(Locale.init(identifier:))
     }
 
     func matchesLanguage(_ rhs: Locale) -> Bool {
@@ -69,6 +34,20 @@ extension Locale {
         }
         #else
         return self.languageCode
+        #endif
+    }
+
+    // swiftlint:disable:next identifier_name
+    var rc_languageScript: String? {
+        #if swift(>=5.9)
+        // `Locale.languageCode` is deprecated
+        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
+            return self.language.script?.identifier
+        } else {
+            return self.scriptCode
+        }
+        #else
+        return self.scriptCode
         #endif
     }
 
