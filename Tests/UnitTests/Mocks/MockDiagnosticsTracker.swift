@@ -193,4 +193,38 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             )
         }
     }
+
+    let trackedGetCustomerInfoStartedCalls: Atomic<Int> = .init(0)
+    func trackGetCustomerInfoStarted() {
+        trackedGetCustomerInfoStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedGetCustomerInfoResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (cacheFetchPolicy: RevenueCat.CacheFetchPolicy,
+         verificationResult: RevenueCat.VerificationResult?,
+         hadUnsyncedPurchasesBefore: Bool?,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackGetCustomerInfoResult(cacheFetchPolicy: RevenueCat.CacheFetchPolicy,
+                                    verificationResult: RevenueCat.VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval) {
+        self.trackedGetCustomerInfoResultParams.modify {
+            $0.append(
+                (cacheFetchPolicy,
+                 verificationResult,
+                 hadUnsyncedPurchasesBefore,
+                 errorMessage,
+                 errorCode,
+                 responseTime
+                )
+            )
+        }
+    }
 }

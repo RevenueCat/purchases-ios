@@ -218,7 +218,9 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
 
         let receivedCustomerInfo = waitUntilValue { completed in
-            self.customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { result in
+            self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                  fetchPolicy: .default,
+                                                  trackDiagnostics: false) { result in
                 completed(result.value)
             }
         }
@@ -234,7 +236,9 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
 
         let info = waitUntilValue { completed in
-            self.customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) {
+            self.customerInfoManager.customerInfo(appUserID: Self.appUserID,
+                                                  fetchPolicy: .default,
+                                                  trackDiagnostics: false) {
                 completed($0.value)
             }
         }
@@ -248,7 +252,9 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let appUserID = "myUser"
 
         waitUntil { completed in
-            self.customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default) { _ in
+            self.customerInfoManager.customerInfo(appUserID: appUserID,
+                                                  fetchPolicy: .default,
+                                                  trackDiagnostics: false) { _ in
                 // checking here to ensure that completion gets called from the backend call
                 expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
 
@@ -359,8 +365,8 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(receivedCustomerInfo) == info
     }
 
-    func testCachedCustomerInfoReturnsNilIfNotAvailable() {
-        let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: "myUser")
+    func testCachedCustomerInfoReturnsNilIfNotAvailable() throws {
+        let receivedCustomerInfo = try customerInfoManager.cachedCustomerInfo(appUserID: "myUser")
         expect(receivedCustomerInfo).to(beNil())
     }
 
@@ -394,16 +400,16 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let object = try info.jsonEncodedData
         mockDeviceCache.cachedCustomerInfo["firstUser"] = object
 
-        let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: "secondUser")
+        let receivedCustomerInfo = try customerInfoManager.cachedCustomerInfo(appUserID: "secondUser")
         expect(receivedCustomerInfo).to(beNil())
     }
 
-    func testCachedCustomerInfoReturnsNilIfCantBeParsed() {
+    func testCachedCustomerInfoReturnsNilIfCantBeParsed() throws {
         let appUserID = "myUser"
 
         mockDeviceCache.cachedCustomerInfo[appUserID] = Data()
 
-        let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        let receivedCustomerInfo = try customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
         expect(receivedCustomerInfo).to(beNil())
     }
 
@@ -440,7 +446,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
-        let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        let receivedCustomerInfo = try customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
         expect(receivedCustomerInfo).to(beNil())
     }
 
@@ -477,7 +483,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let appUserID = "myUser"
         self.mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
-        let receivedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+        let receivedCustomerInfo = try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
         expect(receivedCustomerInfo).toNot(beNil())
     }
 
@@ -485,7 +491,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let appUserID = "myUser"
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
 
-        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == mockCustomerInfo
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == mockCustomerInfo
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
@@ -495,7 +501,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
@@ -505,7 +511,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
@@ -515,7 +521,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) == info
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
@@ -525,7 +531,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
-        expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)).to(beNil())
+        expect(try self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)).to(beNil())
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
         expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
 
@@ -801,7 +807,9 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
             // Re-fetch customer info when it changes.
             // This isn't necessary since it's passed as part of the change,
             // but it should not deadlock.
-            manager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .fetchCurrent) { _ in }
+            manager.customerInfo(appUserID: Self.appUserID,
+                                 fetchPolicy: .fetchCurrent,
+                                 trackDiagnostics: false) { _ in }
             expectation.fulfill()
         }
         defer { removeObservation() }
