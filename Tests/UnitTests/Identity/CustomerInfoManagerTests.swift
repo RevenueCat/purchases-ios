@@ -414,8 +414,12 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         mockDeviceCache.cachedCustomerInfo[appUserID] = Data()
 
-        let receivedCustomerInfo = try customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
-        expect(receivedCustomerInfo).to(beNil())
+        do {
+            _ = try customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+            fail("Expected to fail")
+        } catch {
+            expect(error as? DecodingError).toNot(beNil())
+        }
     }
 
     func testCachedCustomerInfoReturnsNilIfDifferentSchema() throws {
@@ -451,8 +455,16 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
-        let receivedCustomerInfo = try customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
-        expect(receivedCustomerInfo).to(beNil())
+        do {
+            _ = try customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
+            fail("Expected to fail")
+        } catch {
+            let purchasesError = try XCTUnwrap(error as? PurchasesError)
+            let expectedMessage = Strings.customerInfo.cached_customerinfo_incompatible_schema.description
+            let expectedError = ErrorUtils.customerInfoError(withMessage: expectedMessage)
+            expect(purchasesError.error) == expectedError.error
+            expect(purchasesError.localizedDescription) == expectedError.localizedDescription
+        }
     }
 
     func testCachedCustomerInfoParsesVersion2() throws {
