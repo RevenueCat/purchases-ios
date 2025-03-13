@@ -78,6 +78,17 @@ protocol DiagnosticsTrackerType {
                               verificationResult: VerificationResult?,
                               cacheStatus: CacheStatus,
                               responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackProductsStarted(requestedProductIds: Set<String>)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackProductsResult(requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -261,6 +272,36 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 requestedProductIds: requestedProductIds,
                                 notFoundProductIds: notFoundProductIds,
                                 cacheStatus: cacheStatus
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
+    func trackProductsStarted(requestedProductIds: Set<String>) {
+        self.track(
+            DiagnosticsEvent(name: .getProductsStarted,
+                             properties: DiagnosticsEvent.Properties(
+                                requestedProductIds: requestedProductIds
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
+    func trackProductsResult(requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.track(
+            DiagnosticsEvent(name: .getProductsResult,
+                             properties: DiagnosticsEvent.Properties(
+                                responseTime: responseTime,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                requestedProductIds: requestedProductIds,
+                                notFoundProductIds: notFoundProductIds
                              ),
                              timestamp: self.dateProvider.now(),
                              appSessionId: self.appSessionID)
