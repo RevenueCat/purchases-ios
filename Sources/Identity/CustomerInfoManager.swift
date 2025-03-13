@@ -15,9 +15,27 @@ import Foundation
 
 // swiftlint:disable file_length
 
+/// Wrapper around `Result<CustomerInfo, BackendError>` to hold some additional information
+/// useful for diagnostics.
+struct CustomerInfoDataResult {
+    let result: Result<CustomerInfo, BackendError>
+    let hadUnsyncedPurchasesBefore: Bool
+    let usedOfflineEntitlements: Bool
+
+    init(result: Result<CustomerInfo, BackendError>,
+         hadUnsyncedPurchasesBefore: Bool = false,
+         usedOfflineEntitlements: Bool = false) {
+        self.result = result
+        self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
+        self.usedOfflineEntitlements = usedOfflineEntitlements
+    }
+
+}
+
 class CustomerInfoManager {
 
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
+    typealias CustomerInfoDataCompletion = @MainActor @Sendable (CustomerInfoDataResult) -> Void
 
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
@@ -75,10 +93,10 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
-                                   completion: CustomerInfoCompletion?) {
-        self.getCustomerInfo(appUserID: appUserID,
-                             isAppBackgrounded: isAppBackgrounded) { result in
-            switch result {
+                                   completion: CustomerInfoDataCompletion?) {
+        self.getCustomerInfoData(appUserID: appUserID,
+                                 isAppBackgrounded: isAppBackgrounded) { customerInfoDataResult in
+            switch customerInfoDataResult.result {
             case let .failure(error):
                 self.withData { $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID) }
                 Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error))
@@ -94,7 +112,7 @@ class CustomerInfoManager {
 
             if let completion = completion {
                 self.operationDispatcher.dispatchOnMainActor {
-                    completion(result)
+                    completion(customerInfoDataResult)
                 }
             }
         }
@@ -103,6 +121,22 @@ class CustomerInfoManager {
     func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                           isAppBackgrounded: Bool,
                                           completion: CustomerInfoCompletion?) {
+        let mappedCompetion: CustomerInfoDataCompletion?
+        if let completion {
+            mappedCompetion = { customerInfoData in
+                completion(customerInfoData.result)
+            }
+        } else {
+            mappedCompetion = nil
+        }
+        self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
+                                                  isAppBackgrounded: isAppBackgrounded,
+                                                  completion: mappedCompetion)
+    }
+
+    private func fetchAndCacheCustomerInfoDataIfStale(appUserID: String,
+                                                      isAppBackgrounded: Bool,
+                                                      completion: CustomerInfoDataCompletion?) {
         let isCacheStale = self.withData {
             $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
         }
@@ -119,7 +153,7 @@ class CustomerInfoManager {
 
         if let completion = completion {
             self.operationDispatcher.dispatchOnMainActor {
-                completion(.success(customerInfo))
+                completion(CustomerInfoDataResult(result: .success(customerInfo)))
             }
         }
     }
@@ -140,13 +174,13 @@ class CustomerInfoManager {
                 let result = Result { try self.cachedCustomerInfo(appUserID: appUserID) }
 
                 // We want the specific error for diagnostics
-                let diagnosticsResult = Result(result.value as? CustomerInfo,
-                                               result.error ?? BackendError .missingCachedCustomerInfo())
+                let resultForDiagnostics = Result(result.value as? CustomerInfo,
+                                                  result.error ?? BackendError .missingCachedCustomerInfo())
                 self.trackGetCustomerInfoResultIfNeeded(trackDiagnostics: trackDiagnostics,
                                                         startTime: startTime,
                                                         cacheFetchPolicy: fetchPolicy,
                                                         hadUnsyncedPurchasesBefore: nil, usedOfflineEntitlements: false,
-                                                        result: diagnosticsResult)
+                                                        result: resultForDiagnostics)
 
                 // But for callers we only pass `.missingCachedCustomerInfo()` error
                 completion?(
@@ -157,14 +191,18 @@ class CustomerInfoManager {
         case .fetchCurrent:
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.fetchAndCacheCustomerInfo(appUserID: appUserID,
-                                               isAppBackgrounded: isAppBackgrounded,
-                                               completion: completion)
-                // TODO: Track getCustomerInfoResult
+                                               isAppBackgrounded: isAppBackgrounded) { [weak self] customerInfoData in
+                    completion?(customerInfoData.result)
+                    self?.trackGetCustomerInfoResultIfNeeded(
+                        trackDiagnostics: trackDiagnostics,
+                        startTime: startTime,
+                        cacheFetchPolicy: fetchPolicy,
+                        customerInfoDataResult: customerInfoData)
+                }
             }
 
         case .cachedOrFetched:
-            var completionCalled = false
-
+            let completionCalled: Bool
             if let infoFromCache = try? self.cachedCustomerInfo(appUserID: appUserID) {
                 Logger.debug(Strings.customerInfo.vending_cache)
                 completionCalled = true
@@ -180,16 +218,30 @@ class CustomerInfoManager {
                         completion(.success(infoFromCache))
                     }
                 }
+            } else {
+                completionCalled = false
             }
 
             // Prevent calling completion twice.
-            let completionIfNotCalledAlready = completionCalled ? nil : completion
+            let completionIfNotCalledAlready: CustomerInfoDataCompletion?
+            if completionCalled {
+                completionIfNotCalledAlready = nil
+            } else {
+                completionIfNotCalledAlready = { [weak self] customerInfoData in
+                    completion?(customerInfoData.result)
+                    self?.trackGetCustomerInfoResultIfNeeded(
+                        // Only track diagnostics upon calling completion
+                        trackDiagnostics: trackDiagnostics && !completionCalled,
+                        startTime: startTime,
+                        cacheFetchPolicy: fetchPolicy,
+                        customerInfoDataResult: customerInfoData)
+                }
+            }
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                self.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
-                                                      isAppBackgrounded: isAppBackgrounded,
-                                                      completion: completionIfNotCalledAlready)
-                // TODO: Track getCustomerInfoResult if !completionCalled
+                self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
+                                                          isAppBackgrounded: isAppBackgrounded,
+                                                          completion: completionIfNotCalledAlready)
             }
 
         case .notStaleCachedOrFetched:
@@ -214,10 +266,17 @@ class CustomerInfoManager {
                         }
                     }
                 } else {
-                    self.fetchAndCacheCustomerInfo(appUserID: appUserID,
-                                                   isAppBackgrounded: isAppBackgrounded,
-                                                   completion: completion)
-                    // TODO: Track getCustomerInfoResult if !completionCalled
+                    self.fetchAndCacheCustomerInfo(
+                        appUserID: appUserID,
+                        isAppBackgrounded: isAppBackgrounded
+                    ) { [weak self] customerInfoData in
+                        self?.trackGetCustomerInfoResultIfNeeded(
+                            trackDiagnostics: trackDiagnostics,
+                            startTime: startTime,
+                            cacheFetchPolicy: fetchPolicy,
+                            customerInfoDataResult: customerInfoData)
+                        completion?(customerInfoData.result)
+                    }
                 }
             }
         }
@@ -385,11 +444,12 @@ extension CustomerInfoManager {
 
 private extension CustomerInfoManager {
 
-    func getCustomerInfo(appUserID: String,
-                         isAppBackgrounded: Bool,
-                         completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+    func getCustomerInfoData(appUserID: String,
+                             isAppBackgrounded: Bool,
+                             completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            completion(.success(self.createPreviewCustomerInfo()))
+            let previewCustomerInfo = self.createPreviewCustomerInfo()
+            completion(CustomerInfoDataResult(result: .success(previewCustomerInfo)))
             return
         }
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -419,20 +479,23 @@ private extension CustomerInfoManager {
                     // Return the result of posting the first transaction.
                     // The posted receipt will include the content of every other transaction
                     // so we don't need to wait for those.
-                    completion(await self.transactionPoster.handlePurchasedTransaction(
+                    let result = await self.transactionPoster.handlePurchasedTransaction(
                         transactionToPost,
                         data: transactionData
-                    ))
+                    )
+                    completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
-                                             isAppBackgrounded: isAppBackgrounded,
-                                             completion: completion)
+                                             isAppBackgrounded: isAppBackgrounded) { result in
+                        completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: false))
+                    }
                 }
             }
         } else {
             return self.requestCustomerInfo(appUserID: appUserID,
-                                            isAppBackgrounded: isAppBackgrounded,
-                                            completion: completion)
+                                            isAppBackgrounded: isAppBackgrounded) { result in
+                completion(CustomerInfoDataResult(result: result))
+            }
         }
     }
 
@@ -504,6 +567,20 @@ private extension CustomerInfoManager {
     private func trackGetCustomerInfoResultIfNeeded(trackDiagnostics: Bool,
                                                     startTime: Date,
                                                     cacheFetchPolicy: CacheFetchPolicy,
+                                                    customerInfoDataResult: CustomerInfoDataResult) {
+        self.trackGetCustomerInfoResultIfNeeded(
+            trackDiagnostics: trackDiagnostics,
+            startTime: startTime,
+            cacheFetchPolicy: cacheFetchPolicy,
+            hadUnsyncedPurchasesBefore: customerInfoDataResult.hadUnsyncedPurchasesBefore,
+            usedOfflineEntitlements: customerInfoDataResult.usedOfflineEntitlements,
+            result: customerInfoDataResult.result.mapError({ $0 as Error })
+        )
+    }
+
+    private func trackGetCustomerInfoResultIfNeeded(trackDiagnostics: Bool,
+                                                    startTime: Date,
+                                                    cacheFetchPolicy: CacheFetchPolicy,
                                                     hadUnsyncedPurchasesBefore: Bool?,
                                                     usedOfflineEntitlements: Bool,
                                                     result: Swift.Result<CustomerInfo, Error>) {
@@ -511,11 +588,11 @@ private extension CustomerInfoManager {
 
             let error: PurchasesError?
             switch result.error {
-                case let purchasesError as PurchasesError:
+            case let purchasesError as PurchasesError:
                 error = purchasesError
-                case let purchasesErrorConvertible as PurchasesErrorConvertible:
+            case let purchasesErrorConvertible as PurchasesErrorConvertible:
                 error = purchasesErrorConvertible.asPurchasesError
-                case let otherError:
+            case let otherError:
                 error = otherError.map { PurchasesError(error: .unknownError, userInfo: ($0 as NSError).userInfo) }
             }
             let customerInfo = result.value
