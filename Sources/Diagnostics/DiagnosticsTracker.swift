@@ -78,6 +78,18 @@ protocol DiagnosticsTrackerType {
                               verificationResult: VerificationResult?,
                               cacheStatus: CacheStatus,
                               responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackGetCustomerInfoStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
+                                    verificationResult: VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    usedOfflineEntitlements: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval)
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -267,6 +279,37 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         )
     }
 
+    func trackGetCustomerInfoStarted() {
+        self.track(
+            DiagnosticsEvent(name: .getCustomerInfoStarted,
+                             properties: .empty,
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
+    func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
+                                    verificationResult: VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    usedOfflineEntitlements: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval) {
+        self.track(
+            DiagnosticsEvent(name: .getCustomerInfoResult,
+                             properties: DiagnosticsEvent.Properties(
+                                verificationResult: verificationResult?.name,
+                                responseTime: responseTime,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                cacheFetchPolicy: cacheFetchPolicy,
+                                hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore,
+                                usedOfflineEntitlements: usedOfflineEntitlements
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

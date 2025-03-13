@@ -27,6 +27,7 @@ class CustomerInfoManager {
     private let transactionPoster: TransactionPosterType
 
     private var diagnosticsTracker: DiagnosticsTrackerType?
+    private let dateProvider: DateProvider
 
     /// Underlying synchronized data.
     private let data: Atomic<Data>
@@ -37,7 +38,8 @@ class CustomerInfoManager {
          backend: Backend,
          transactionFetcher: StoreKit2TransactionFetcherType,
          transactionPoster: TransactionPosterType,
-         systemInfo: SystemInfo
+         systemInfo: SystemInfo,
+         dateProvider: DateProvider = DateProvider()
     ) {
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.operationDispatcher = operationDispatcher
@@ -45,6 +47,7 @@ class CustomerInfoManager {
         self.transactionFetcher = transactionFetcher
         self.transactionPoster = transactionPoster
         self.systemInfo = systemInfo
+        self.dateProvider = dateProvider
 
         self.data = .init(.init(deviceCache: deviceCache))
     }
@@ -57,7 +60,8 @@ class CustomerInfoManager {
                      transactionFetcher: StoreKit2TransactionFetcherType,
                      transactionPoster: TransactionPosterType,
                      systemInfo: SystemInfo,
-                     diagnosticsTracker: DiagnosticsTrackerType?
+                     diagnosticsTracker: DiagnosticsTrackerType?,
+                     dateProvider: DateProvider = DateProvider()
     ) {
         self.init(offlineEntitlementsManager: offlineEntitlementsManager,
                   operationDispatcher: operationDispatcher,
@@ -457,6 +461,36 @@ private extension CustomerInfoManager {
                                                entitlementVerification: .verified,
                                                sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
         return previewCustomerInfo
+    }
+
+    private func trackGetCustomerInfoStartedIfNeeded(trackDiagnostics: Bool) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *), trackDiagnostics {
+            self.diagnosticsTracker?.trackGetCustomerInfoStarted()
+        }
+    }
+
+    private func trackGetCustomerInfoResultIfNeeded(trackDiagnostics: Bool,
+                                                    startTime: Date,
+                                                    cacheFetchPolicy: CacheFetchPolicy,
+                                                    hadUnsyncedPurchasesBefore: Bool,
+                                                    usedOfflineEntitlements: Bool,
+                                                    result: Swift.Result<CustomerInfo, BackendError>) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *), trackDiagnostics {
+
+            let error = result.error
+            let customerInfo = result.value
+            let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
+
+            self.diagnosticsTracker?.trackGetCustomerInfoResult(
+                cacheFetchPolicy: cacheFetchPolicy,
+                verificationResult: customerInfo?.entitlements.verification,
+                hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore,
+                usedOfflineEntitlements: usedOfflineEntitlements,
+                errorMessage: error?.localizedDescription,
+                errorCode: error?.asPurchasesError.errorCode,
+                responseTime: responseTime
+            )
+        }
     }
 }
 

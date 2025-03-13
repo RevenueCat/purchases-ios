@@ -47,19 +47,21 @@ struct DiagnosticsEvent: Codable, Equatable {
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
         case getOfferingsStarted = "get_offerings_started"
         case getOfferingsResult = "get_offerings_result"
+        case getCustomerInfoStarted = "get_customer_info_started"
+        case getCustomerInfoResult = "get_customer_info_result"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
-        case verified
-        case unverified
-        case userCancelled = "user_cancelled"
-        case pending
+        case verified = "VERIFIED"
+        case unverified = "UNVERIFIED"
+        case userCancelled = "USER_CANCELLED"
+        case pending = "PENDING"
     }
 
     enum OfflineEntitlementsModeErrorReason: String, Codable, Equatable {
-        case oneTimePurchaseFound = "one_time_purchase_found"
-        case noEntitlementMappingAvailable = "no_entitlement_mapping_available"
-        case unknown
+        case oneTimePurchaseFound = "ONT_TIME_PURCHASE_FOUND"
+        case noEntitlementMappingAvailable = "NO_ENTITLEMENT_MAPPING_AVAILABLE"
+        case unknown = "UNKNOWN"
     }
 
     struct Properties: Codable, Equatable {
@@ -82,6 +84,9 @@ struct DiagnosticsEvent: Codable, Equatable {
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
         let cacheStatus: CacheStatus?
+        let cacheFetchPolicy: String?
+        let hadUnsyncedPurchasesBefore: Bool?
+        let usedOfflineEntitlements: Bool?
         let isRetry: Bool?
 
         init(verificationResult: String? = nil,
@@ -103,6 +108,9 @@ struct DiagnosticsEvent: Codable, Equatable {
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
              cacheStatus: CacheStatus? = nil,
+             cacheFetchPolicy: CacheFetchPolicy? = nil,
+             hadUnsyncedPurchasesBefore: Bool? = nil,
+             usedOfflineEntitlements: Bool? = nil,
              isRetry: Bool? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
@@ -123,9 +131,24 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
             self.cacheStatus = cacheStatus
+            self.cacheFetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
+            self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
+            self.usedOfflineEntitlements = usedOfflineEntitlements
             self.isRetry = isRetry
         }
 
         static let empty = Properties()
+    }
+}
+
+fileprivate extension CacheFetchPolicy {
+
+    var diagnosticsName: String {
+        switch self {
+        case .fromCacheOnly: return "FROM_CACHE_ONLY"
+        case .fetchCurrent: return "FETCH_CURRENT"
+        case .notStaleCachedOrFetched: return "NOT_STALE_CACHED_OR_FETCHED"
+        case .cachedOrFetched: return "CACHED_OR_FETCHED"
+        }
     }
 }
