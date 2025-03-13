@@ -28,7 +28,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class CustomerCenterViewModelTests: TestCase {
+final class CustomerCenterViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -879,6 +879,39 @@ class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.purchaseInformation?.price).to(equal(.paid("$5.00")))
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
+    }
+
+    func testSucessfulRestoreRefreshesCustomerCenter() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithAppleSubscriptions)
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        _ = await viewModel.performRestore()
+        expect(mockPurchases.loadCustomerCenterCallCount) == 1
+    }
+
+    func testUnSucessfulRestoreRefreshesCustomerCenter() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        _ = await viewModel.performRestore()
+        expect(mockPurchases.loadCustomerCenterCallCount) == 0
     }
 }
 
