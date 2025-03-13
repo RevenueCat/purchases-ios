@@ -419,14 +419,6 @@ class CustomerInfoManager {
 
 extension CustomerInfoManager {
 
-    func fetchAndCacheCustomerInfo(appUserID: String, isAppBackgrounded: Bool) async throws -> CustomerInfo {
-        return try await Async.call { completion in
-            return self.fetchAndCacheCustomerInfo(appUserID: appUserID,
-                                                  isAppBackgrounded: isAppBackgrounded,
-                                                  completion: completion)
-        }
-    }
-
     func customerInfo(
         appUserID: String,
         fetchPolicy: CacheFetchPolicy
