@@ -69,7 +69,8 @@ class CustomerInfoManager {
                   backend: backend,
                   transactionFetcher: transactionFetcher,
                   transactionPoster: transactionPoster,
-                  systemInfo: systemInfo)
+                  systemInfo: systemInfo,
+                  dateProvider: dateProvider)
         self.diagnosticsTracker = diagnosticsTracker
     }
 
@@ -122,7 +123,7 @@ class CustomerInfoManager {
 
                 // We want the specific error for diagnostics
                 let resultForDiagnostics = Result(result.value as? CustomerInfo,
-                                                  result.error ?? BackendError .missingCachedCustomerInfo())
+                                                  result.error ?? BackendError.missingCachedCustomerInfo())
                 self.trackGetCustomerInfoResultIfNeeded(trackDiagnostics: trackDiagnostics,
                                                         startTime: startTime,
                                                         cacheFetchPolicy: fetchPolicy,
@@ -142,12 +143,12 @@ class CustomerInfoManager {
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
                 ) { [weak self] customerInfoData in
-                    completion?(customerInfoData.result)
                     self?.trackGetCustomerInfoResultIfNeeded(
                         trackDiagnostics: trackDiagnostics,
                         startTime: startTime,
                         cacheFetchPolicy: fetchPolicy,
                         customerInfoDataResult: customerInfoData)
+                    completion?(customerInfoData.result)
                 }
             }
 
@@ -178,13 +179,13 @@ class CustomerInfoManager {
                 completionIfNotCalledAlready = nil
             } else {
                 completionIfNotCalledAlready = { [weak self] customerInfoData in
-                    completion?(customerInfoData.result)
                     self?.trackGetCustomerInfoResultIfNeeded(
                         // Only track diagnostics upon calling completion
                         trackDiagnostics: trackDiagnostics && !completionCalled,
                         startTime: startTime,
                         cacheFetchPolicy: fetchPolicy,
                         customerInfoDataResult: customerInfoData)
+                    completion?(customerInfoData.result)
                 }
             }
 
@@ -379,12 +380,13 @@ extension CustomerInfoManager {
 
     func customerInfo(
         appUserID: String,
+        trackDiagnostics: Bool,
         fetchPolicy: CacheFetchPolicy
     ) async throws -> CustomerInfo {
         return try await Async.call { completion in
             return self.customerInfo(appUserID: appUserID,
                                      fetchPolicy: fetchPolicy,
-                                     trackDiagnostics: true,
+                                     trackDiagnostics: trackDiagnostics,
                                      completion: completion)
         }
     }
@@ -411,9 +413,9 @@ private extension CustomerInfoManager {
             self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
             self.usedOfflineEntitlements = usedOfflineEntitlements
         }
-        
+
     }
-    
+
     private func getCustomerInfoData(appUserID: String,
                                      isAppBackgrounded: Bool,
                                      completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {

@@ -623,6 +623,7 @@ final class PurchasesOrchestrator {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
                 // `Product.PurchaseResult.userCancelled`.
                 customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                               trackDiagnostics: false,
                                                                                fetchPolicy: .cachedOrFetched)
             }
 
@@ -668,6 +669,7 @@ final class PurchasesOrchestrator {
                                             error: StoreKitError.userCancelled.asPublicError)
 
             let customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                               trackDiagnostics: false,
                                                                                fetchPolicy: .cachedOrFetched)
             return (transaction: nil, customerInfo: customerInfo, userCancelled: true)
         } else {
