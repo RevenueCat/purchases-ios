@@ -616,7 +616,6 @@ private extension CustomerInfoManager {
                 cacheFetchPolicy: cacheFetchPolicy,
                 verificationResult: customerInfo?.entitlements.verification,
                 hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore,
-                usedOfflineEntitlements: usedOfflineEntitlements,
                 errorMessage: error?.localizedDescription,
                 errorCode: error?.errorCode,
                 responseTime: responseTime

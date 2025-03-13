@@ -86,7 +86,6 @@ protocol DiagnosticsTrackerType {
     func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
                                     verificationResult: VerificationResult?,
                                     hadUnsyncedPurchasesBefore: Bool?,
-                                    usedOfflineEntitlements: Bool?,
                                     errorMessage: String?,
                                     errorCode: Int?,
                                     responseTime: TimeInterval)
@@ -291,7 +290,6 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
                                     verificationResult: VerificationResult?,
                                     hadUnsyncedPurchasesBefore: Bool?,
-                                    usedOfflineEntitlements: Bool?,
                                     errorMessage: String?,
                                     errorCode: Int?,
                                     responseTime: TimeInterval) {
@@ -303,8 +301,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 errorMessage: errorMessage,
                                 errorCode: errorCode,
                                 cacheFetchPolicy: cacheFetchPolicy,
-                                hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore,
-                                usedOfflineEntitlements: usedOfflineEntitlements
+                                hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore
                              ),
                              timestamp: self.dateProvider.now(),
                              appSessionId: self.appSessionID)

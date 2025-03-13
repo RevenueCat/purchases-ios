@@ -86,7 +86,6 @@ struct DiagnosticsEvent: Codable, Equatable {
         let cacheStatus: CacheStatus?
         let cacheFetchPolicy: String?
         let hadUnsyncedPurchasesBefore: Bool?
-        let usedOfflineEntitlements: Bool?
         let isRetry: Bool?
 
         init(verificationResult: String? = nil,
@@ -110,7 +109,6 @@ struct DiagnosticsEvent: Codable, Equatable {
              cacheStatus: CacheStatus? = nil,
              cacheFetchPolicy: CacheFetchPolicy? = nil,
              hadUnsyncedPurchasesBefore: Bool? = nil,
-             usedOfflineEntitlements: Bool? = nil,
              isRetry: Bool? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
@@ -133,7 +131,6 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.cacheStatus = cacheStatus
             self.cacheFetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
             self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
-            self.usedOfflineEntitlements = usedOfflineEntitlements
             self.isRetry = isRetry
         }
 
