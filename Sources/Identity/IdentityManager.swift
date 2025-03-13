@@ -143,7 +143,8 @@ private extension IdentityManager {
         guard newAppUserID != oldAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
             self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
-                                                  fetchPolicy: .cachedOrFetched) { @Sendable result in
+                                                  fetchPolicy: .cachedOrFetched,
+                                                  trackDiagnostics: false) { @Sendable result in
                 completion(
                     result.map { (info: $0, created: false) }
                 )

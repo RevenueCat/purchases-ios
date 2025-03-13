@@ -1025,7 +1025,8 @@ private extension PurchasesOrchestrator {
                     }
                 } else {
                     self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                          fetchPolicy: .cachedOrFetched) { @Sendable customerInfo in
+                                                          fetchPolicy: .cachedOrFetched,
+                                                          trackDiagnostics: false) { @Sendable customerInfo in
                         self.operationDispatcher.dispatchOnMainActor {
                             completion(storeTransaction,
                                        customerInfo.value,
