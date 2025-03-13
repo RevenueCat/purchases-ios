@@ -3,13 +3,13 @@
 ### 🐞 Bugfixes
 * Fallback to using variations of language code, script, and region for unknown `Locale` (ex: `zh_CN` will look for `zh_Hans`) (#4870) via Josh Holtz (@joshdholtz)
 ### Customer Center
+* Deprecates `CustomerCenterActionHandler` in favor of modifiers (#4844) via Cesar de la Vega (@vegaro)
 #### ✨ New Features
 * feat: Refresh customer center and purchases after restore (#4880) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
 * feat: Use pod_push_with_error_handling instead of pod_push for pushing Pods (#4878) via Facundo Menzella (@facumenzella)
 * Update fastlane plugin (#4879) via Toni Rico (@tonidero)
-* Deprecates `CustomerCenterActionHandler` in favor of modifiers (#4844) via Cesar de la Vega (@vegaro)
 * [Diagnostics] Add offerings start and result events (#4866) via Toni Rico (@tonidero)
 * [Diagnostics] fix diagnostics sync retry logic (#4868) via Antonio Pallares (@ajpallares)
 * Fix iOS 14 + 15 unit tests after root error issues (#4873) via Toni Rico (@tonidero)
