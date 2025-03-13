@@ -1,45 +1,28 @@
-## RevenueCat SDK
-### ✨ New Features
-* Add `hasPaywall` property to `Offering` (#4847) via Antonio Pallares (@ajpallares)
-### 🐞 Bugfixes
-* Fix compilation issues in Xcode 16.3 beta (#4840) via Andy Boedo (@aboedo)
-* Correctly set PaywallsTester app API key by the CI (#4822) via Antonio Pallares (@ajpallares)
-### Customer Center
-#### ✨ New Features
-* feat: Add onClose handler support for CustomerCenter (#4850) via Facundo Menzella (@facumenzella)
-
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes
-* Add default refundWindowDuration to HelpPath.init (#4826) via Will Taylor (@fire-at-will)
-### Paywallv2
-#### 🐞 Bugfixes
-* Add activity indicator to restore purchases button behavior (#4848) via Josh Holtz (@joshdholtz)
+* Fallback to using variations of language code, script, and region for unknown `Locale` (ex: `zh_CN` will look for `zh_Hans`) (#4870) via Josh Holtz (@joshdholtz)
 ### Customer Center
 #### ✨ New Features
-* feat: Hide refund for purchases in trial period (#4823) via Facundo Menzella (@facumenzella)
-* feat: Don't show refund if free subscription (#4805) via Facundo Menzella (@facumenzella)
-* feat: Introduce refund window to control if a refund is offered for a purchase (#4784) via Facundo Menzella (@facumenzella)
+* feat: Refresh customer center and purchases after restore (#4880) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* feat: disable postAttributionData requests when in UI preview mode (#4824) via Antonio Pallares (@ajpallares)
-* chore: Disable EventsManagerIntegrationTests till fixed (#4852) via Facundo Menzella (@facumenzella)
-* Run `all-tests` on `main` and notify Slack (#4849) via Cesar de la Vega (@vegaro)
-* Fix potential wrong count on diagnosis sync (#4846) via Antonio Pallares (@ajpallares)
-* [Paywalls] Always use normal stack if the relevant axis size is fit (#4842) via Mark Villacampa (@MarkVillacampa)
-* Uses the remote version of `purchases-ios` for the SwiftUI sample app (#4841) via Pol Piella Abadia (@polpielladev)
-* [Diagnostics] Add extra parameters to `applePurchaseAttempt` (#4835) via Antonio Pallares (@ajpallares)
-* Use array instead of sets in diagnostics events (#4839) via Antonio Pallares (@ajpallares)
-* chore: Add integration test for analytics events (#4830) via Facundo Menzella (@facumenzella)
-* Update changelog with 4.43.3 and 4.43.4 (#4834) via Mark Villacampa (@MarkVillacampa)
-* [Diagnostics] Add `requestedProductIds` and `notFoundProductIds` to `appleProductsRequest` (#4828) via Toni Rico (@tonidero)
-* Add RCStoreMessageTypeWinBackOffer to Objc API Tester (#4827) via Will Taylor (@fire-at-will)
-* chore: Enable force_unwrapping for SwiftLint (#4820) via Facundo Menzella (@facumenzella)
-* chore: Delete .orig file and ignore in git ignore (#4821) via Facundo Menzella (@facumenzella)
-* Post error test results to Slack (#4404) via Toni Rico (@tonidero)
-* [Paywalls V2] Adds a note on publishing to the missing paywall error. (#4817) via JayShortway (@JayShortway)
-* Adds `buildServer.json` to `.gitignore` (#4819) via JayShortway (@JayShortway)
-* Empty strings in proxyURL parameters in `Local.xcconfig` (#4818) via Antonio Pallares (@ajpallares)
-* [Paywalls] Use CSS linear-gradient spec to compute gradient start/end points (#4789) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls] Add support for shadows in image components (#4797) via Mark Villacampa (@MarkVillacampa)
-* [Paywalls] Fix badge background not using the new background field instead of ba… (#4811) via Mark Villacampa (@MarkVillacampa)
-* fix: workaround to allow using proxy URL in `Local.xcconfig` (#4810) via Antonio Pallares (@ajpallares)
+* feat: Use pod_push_with_error_handling instead of pod_push for pushing Pods (#4878) via Facundo Menzella (@facumenzella)
+* Update fastlane plugin (#4879) via Toni Rico (@tonidero)
+* Deprecates `CustomerCenterActionHandler` in favor of modifiers (#4844) via Cesar de la Vega (@vegaro)
+* [Diagnostics] Add offerings start and result events (#4866) via Toni Rico (@tonidero)
+* [Diagnostics] fix diagnostics sync retry logic (#4868) via Antonio Pallares (@ajpallares)
+* Fix iOS 14 + 15 unit tests after root error issues (#4873) via Toni Rico (@tonidero)
+* [Diagnostics] add `error_entering_offline_entitlements_mode` event (#4867) via Antonio Pallares (@ajpallares)
+* Fix crash in SwiftUI previews (#4871) via Antonio Pallares (@ajpallares)
+* chore: Remove unused key from customer center event (#4837) via Facundo Menzella (@facumenzella)
+* chore: `EventsManagerIntegrationTests` working as expected (#4862) via Facundo Menzella (@facumenzella)
+* [Diagnostics] add `entered_offline_entitlements_mode` event (#4865) via Antonio Pallares (@ajpallares)
+* Add root error info to public error (#4680) via Toni Rico (@tonidero)
+* [Diagnostics] add `clearing_diagnostics_after_failed_sync` event (#4863) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `max_diagnostics_sync_retries_reached` event (#4861) via Antonio Pallares (@ajpallares)
+* Update `customerInfo` from an `AsyncStream` instead of the `PurchasesDelegate` in the SwiftUI sample app (#4860) via Pol Piella Abadia (@polpielladev)
+* Remove resetting `appSessionId` for customer center + add `appSessionId` and `eventId` to diagnostics events (#4855) via Toni Rico (@tonidero)
+* fix: diagnostics parameter key name (#4859) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add missing parameter to `http_request_performed` event (#4857) via Antonio Pallares (@ajpallares)
+* Create `DiagnosticsEvent.Properties` for type safe diagnostics (#4843) via Antonio Pallares (@ajpallares)
+* Have snapshot tests use same encoding as SDK (#4856) via Antonio Pallares (@ajpallares)
