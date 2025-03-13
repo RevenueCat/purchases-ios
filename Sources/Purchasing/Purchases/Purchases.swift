@@ -1986,7 +1986,7 @@ private extension Purchases {
         } else {
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                                isAppBackgrounded: isAppBackgrounded) { @Sendable in
-                completion?($0.result.mapError { $0.asPublicError })
+                completion?($0.mapError { $0.asPublicError })
             }
 
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
