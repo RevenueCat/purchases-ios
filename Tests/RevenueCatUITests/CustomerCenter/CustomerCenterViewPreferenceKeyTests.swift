@@ -20,15 +20,13 @@ struct CustomerCenterActionWrapperTests {
 
     @Test
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-    func testActionWrapperAndModifiers() async {
+    func restoreStarted() async {
         let actionWrapper = await CustomerCenterActionWrapper()
 
-        var onCustomerCenterRestoreStarted = false
         await confirmation { @MainActor confirmation1 in
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
                 .onCustomerCenterRestoreStarted {
-                    onCustomerCenterRestoreStarted = true
                     confirmation1()
                 }
 
