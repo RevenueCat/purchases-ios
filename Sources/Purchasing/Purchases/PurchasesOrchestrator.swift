@@ -1375,7 +1375,7 @@ private extension PurchasesOrchestrator {
 
             self.operationDispatcher.dispatchOnWorkerThread {
                 let hasTransactions = self.transactionsManager.customerHasTransactions(receiptData: receiptData)
-                let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+                let cachedCustomerInfo = try? self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
 
                 if !hasTransactions,
                     let customerInfo = cachedCustomerInfo,
@@ -1428,7 +1428,7 @@ private extension PurchasesOrchestrator {
             guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation else {
                 // No transactions are present. If we have the originalPurchaseDate and originalApplicationVersion
                 // in the cached CustomerInfo, return it. Otherwise, post the AppTransaction.
-                let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
+                let cachedCustomerInfo = try? self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
 
                 if let cachedCustomerInfo,
                    cachedCustomerInfo.originalPurchaseDate != nil,
