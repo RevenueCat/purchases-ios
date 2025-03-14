@@ -59,13 +59,13 @@ class OfferingsManager {
             let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
 
             let completionFromNetworkWithTracking: @MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void =
-            { result in
-                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                     startTime: startTime,
-                                                     cacheStatus: .notFound,
-                                                     error: result.error,
-                                                     requestedProductIds: result.value?.requestedProductIds,
-                                                     notFoundProductIds: result.value?.notFoundProductIds)
+            { [weak self] result in
+                self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                      startTime: startTime,
+                                                      cacheStatus: .notFound,
+                                                      error: result.error,
+                                                      requestedProductIds: result.value?.requestedProductIds,
+                                                      notFoundProductIds: result.value?.notFoundProductIds)
                 completion?(result.map(\.offerings))
             }
 
