@@ -202,6 +202,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: self.mockDiagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)

@@ -47,6 +47,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
         case getOfferingsStarted = "get_offerings_started"
         case getOfferingsResult = "get_offerings_result"
+        case getProductsStarted = "get_products_started"
+        case getProductsResult = "get_products_result"
         case getCustomerInfoStarted = "get_customer_info_started"
         case getCustomerInfoResult = "get_customer_info_result"
     }

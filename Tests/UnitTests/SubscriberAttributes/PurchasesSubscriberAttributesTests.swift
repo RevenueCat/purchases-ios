@@ -195,6 +195,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: nil,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)

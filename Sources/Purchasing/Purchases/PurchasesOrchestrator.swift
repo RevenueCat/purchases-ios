@@ -168,6 +168,7 @@ final class PurchasesOrchestrator {
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper,
+            diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             paywallEventsManager: paywallEventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
@@ -175,7 +176,6 @@ final class PurchasesOrchestrator {
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
-        self._diagnosticsTracker = diagnosticsTracker
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
@@ -225,6 +225,7 @@ final class PurchasesOrchestrator {
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
          storeMessagesHelper: StoreMessagesHelperType?,
+         diagnosticsTracker: DiagnosticsTrackerType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          paywallEventsManager: PaywallEventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
@@ -248,6 +249,7 @@ final class PurchasesOrchestrator {
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
         self.storeMessagesHelper = storeMessagesHelper
+        self._diagnosticsTracker = diagnosticsTracker
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.paywallEventsManager = paywallEventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
@@ -312,12 +314,22 @@ final class PurchasesOrchestrator {
 
     func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
+        self.trackProductsStartedIfNeeded(requestedProductIds: productIdentifiersSet)
+        let startTime = self.dateProvider.now()
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
             return
         }
 
         self.productsManager.products(withIdentifiers: productIdentifiersSet) { products in
+            let notFoundProductIds = productIdentifiersSet.subtracting(
+                products.map { $0.map(\.productIdentifier) }.value.map { Set($0) } ?? []
+            )
+            let error = products.error
+            self.trackProductsResultIfNeeded(requestedProductIds: productIdentifiersSet,
+                                             notFoundProductIds: notFoundProductIds,
+                                             error: error,
+                                             startTime: startTime)
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products.value ?? []))
             }
@@ -1091,6 +1103,28 @@ private extension PurchasesOrchestrator {
                                                     winBackOfferApplied: winBackOfferApplied,
                                                     purchaseResult: purchaseResult,
                                                     responseTime: responseTime)
+        }
+    }
+
+    func trackProductsStartedIfNeeded(requestedProductIds: Set<String>) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+           let diagnosticsTracker = self.diagnosticsTracker {
+            diagnosticsTracker.trackProductsStarted(requestedProductIds: requestedProductIds)
+        }
+    }
+
+    func trackProductsResultIfNeeded(requestedProductIds: Set<String>,
+                                     notFoundProductIds: Set<String>?,
+                                     error: PurchasesError?,
+                                     startTime: Date) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+           let diagnosticsTracker = self.diagnosticsTracker {
+            let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
+            diagnosticsTracker.trackProductsResult(requestedProductIds: requestedProductIds,
+                                                   notFoundProductIds: notFoundProductIds,
+                                                   errorMessage: error?.localizedDescription,
+                                                   errorCode: error?.errorCode,
+                                                   responseTime: responseTime)
         }
     }
 
