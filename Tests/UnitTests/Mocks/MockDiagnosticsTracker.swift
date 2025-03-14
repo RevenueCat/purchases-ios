@@ -262,7 +262,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedSyncPurchasesStartedCalls.modify { $0 += 1 }
     }
 
-    let trackedSyncPurchasesResult: Atomic<[
+    let trackedSyncPurchasesResultParams: Atomic<[
         (errorMessage: String?,
          errorCode: Int?,
          responseTime: TimeInterval)
@@ -270,7 +270,25 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     func trackSyncPurchasesResult(errorMessage: String?,
                                   errorCode: Int?,
                                   responseTime: TimeInterval) {
-        self.trackedSyncPurchasesResult.modify {
+        self.trackedSyncPurchasesResultParams.modify {
+            $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
+
+    let trackedRestorePurchasesStartedCalls: Atomic<Int> = .init(0)
+    func trackRestorePurchasesStarted() {
+        self.trackedRestorePurchasesStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedRestorePurchasesResultParams: Atomic<[
+        (errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval) {
+        self.trackedRestorePurchasesResultParams.modify {
             $0.append((errorMessage, errorCode, responseTime))
         }
     }
