@@ -1134,6 +1134,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     func trackPurchaseResultIfNeeded(trackDiagnostics: Bool,
                                      productId: String,
                                      productType: StoreProduct.ProductType,
