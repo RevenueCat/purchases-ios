@@ -49,7 +49,8 @@ extension CustomerCenterView {
     public typealias FeedbackSurveyCompletedHandler = @MainActor @Sendable (_ optionId: String) -> Void
 
     /// A closure used for notifying when a management option is selected in the Customer Center.
-    public typealias ManagementOptionSelectedHandler = @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
+    public typealias ManagementOptionSelectedHandler =
+    @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
 
     // MARK: - Preference Keys
 
@@ -105,7 +106,8 @@ extension CustomerCenterView {
 
     struct ManagementOptionSelectedPreferenceKey: PreferenceKey {
         static var defaultValue: CustomerCenterManagementOptionWrapper?
-        static func reduce(value: inout CustomerCenterManagementOptionWrapper?, nextValue: () -> CustomerCenterManagementOptionWrapper?) {
+        static func reduce(value: inout CustomerCenterManagementOptionWrapper?,
+                           nextValue: () -> CustomerCenterManagementOptionWrapper?) {
             value = nextValue() ?? value
         }
     }
