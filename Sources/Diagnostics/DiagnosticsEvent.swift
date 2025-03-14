@@ -51,6 +51,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         case getProductsResult = "get_products_result"
         case getCustomerInfoStarted = "get_customer_info_started"
         case getCustomerInfoResult = "get_customer_info_result"
+        case syncPurchasesStarted = "sync_purchases_started"
+        case syncPurchasesResult = "sync_purchases_result"
     }
 
     enum PurchaseResult: String, Codable, Equatable {

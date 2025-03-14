@@ -256,4 +256,22 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             )
         }
     }
+
+    let trackedSyncPurchasesStartedCalls: Atomic<Int> = .init(0)
+    func trackSyncPurchasesStarted() {
+        self.trackedSyncPurchasesStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedSyncPurchasesResult: Atomic<[
+        (errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackSyncPurchasesResult(errorMessage: String?,
+                                  errorCode: Int?,
+                                  responseTime: TimeInterval) {
+        self.trackedSyncPurchasesResult.modify {
+            $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
 }
