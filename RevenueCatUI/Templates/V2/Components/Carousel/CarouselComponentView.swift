@@ -76,7 +76,6 @@ struct CarouselComponentView: View {
                 .padding(style.padding)
                 .shape(border: style.border,
                        shape: style.shape,
-                       // TODO: Background image isn't doing "fit"
                        background: style.backgroundStyle,
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
@@ -293,7 +292,10 @@ private struct CarouselView<Content: View>: View {
 
         autoTimer?.invalidate() // Stop any existing timer
 
-        autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide + msTransitionTime) / 1000, repeats: true) { _ in
+        autoTimer = Timer.scheduledTimer(
+            withTimeInterval: Double(msTimePerSlide + msTransitionTime) / 1000,
+            repeats: true
+        ) { _ in
             guard !isPaused else {
                 // If paused, check if 10 seconds have passed
                 if let pauseEndDate = pauseEndDate, Date() >= pauseEndDate {
@@ -458,7 +460,6 @@ struct PageControlView: View {
                    shape: pageControl.shape,
                    background: pageControl.backgroundStyle,
                    uiConfigProvider: pageControl.uiConfigProvider)
-            // TODO: Shadow is being clipped
             .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
             .padding(self.pageControl.margin)
             .onChangeOf(self.currentIndex) { newValue in
