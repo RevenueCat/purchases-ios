@@ -407,6 +407,20 @@ commands:
           destination: scan-test-output
 
 jobs:
+
+  validate-package-swift:
+    parameters:
+       xcode_version:
+         type: string
+    executor:
+      name: macos-executor
+      xcode_version: << parameters.xcode_version >> 
+    steps:
+      - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
+
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
@@ -1390,6 +1404,12 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
+      - validate-package-swift:
+          name: validate-package-swift-5.7
+          xcode_version: "14.0.1"
+      - validate-package-swift:
+          name: validate-package-swift-5.8
+          xcode_version: "14.3.1"
       - run-test-ios-17
       - run-test-ios-18
       - pod-lib-lint
