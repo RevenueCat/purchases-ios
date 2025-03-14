@@ -137,7 +137,7 @@ struct CarouselComponentStyle {
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
 
-    let pageAlignment: PaywallComponent.VerticalAlignment
+    let pageAlignment: SwiftUI.VerticalAlignment
     let pageSpacing: CGFloat
     let pagePeek: CGFloat
     let initialPageIndex: Int
@@ -172,7 +172,7 @@ struct CarouselComponentStyle {
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
-        self.pageAlignment = pageAlignment
+        self.pageAlignment = pageAlignment.stackAlignment
         self.pageSpacing = CGFloat(pageSpacing)
         self.pagePeek = CGFloat(pagePeek)
         self.initialPageIndex = initialPageIndex
