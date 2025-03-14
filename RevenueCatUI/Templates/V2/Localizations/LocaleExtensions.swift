@@ -100,7 +100,7 @@ extension Locale {
         return self.rc_languageCode.map(Locale.init(identifier:))
     }
 
-    /// iOS 15 returns a nil scrippCode for these locale identifiers so hardcoding fallbacks
+    /// iOS 15 returns a nil scriptCode for these locale identifiers so hardcoding fallbacks
     private var fallbackScriptForiOS15: String? {
         let map: [String: String] = [
             "zh_CN": "Hans",
