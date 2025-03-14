@@ -73,9 +73,6 @@ struct CarouselComponentView: View {
                 // Style the carousel
                 .size(style.size)
                 .padding(style.padding)
-                // TODO: Test with ricks-ugly-pill
-                // This padding is needed for peek to not go behind the border
-//                .padding(.horizontal, style.border?.width ?? 0)
                 .shape(border: style.border,
                        shape: style.shape,
                        // TODO: Background image isn't doing "fit"
@@ -135,8 +132,13 @@ private struct CarouselView<Content: View>: View {
 
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
+    
     @State private var isPaused: Bool = false
     @State private var pauseEndDate: Date?
+    @State private var isInitialized = false
+
+    /// Used to keep the drag position for better animations
+    @State private var dragOffset: CGFloat = 0
 
     // MARK: - Init
 
@@ -165,6 +167,20 @@ private struct CarouselView<Content: View>: View {
 
     // MARK: - Body
 
+    var transitionTime: Double {
+        guard let msTransitionTime = self.msTransitionTime else {
+            return 0.25
+        }
+
+        if !isInitialized {
+            return 0
+        } else if isPaused {
+            return 0.25
+        } else {
+            return Double(msTransitionTime) / 1000
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // If top page control
@@ -184,9 +200,9 @@ private struct CarouselView<Content: View>: View {
                 }
             }
             .frame(width: self.width, alignment: .leading)
-            .offset(x: xOffset(in: self.width))
+            .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
             // Animate only final snaps (or auto transitions), not real-time dragging
-            .animation(.spring(), value: index)
+            .animation(.easeInOut(duration: self.transitionTime), value: index)
             .gesture(
                 DragGesture()
                     .onChanged({ _ in
@@ -196,6 +212,7 @@ private struct CarouselView<Content: View>: View {
                         state = value.translation.width
                     }
                     .onEnded { value in
+                        self.dragOffset = value.translation.width
                         handleDragEnd(translation: value.translation.width)
                     }
             )
@@ -221,6 +238,10 @@ private struct CarouselView<Content: View>: View {
         .onAppear {
             setupData()
             startAutoPlayIfNeeded()
+
+            DispatchQueue.main.async {
+                self.isInitialized = true
+            }
         }
         .onDisappear {
             // Stop the timer if view disappears
@@ -269,7 +290,7 @@ private struct CarouselView<Content: View>: View {
         autoTimer?.invalidate() // Stop any existing timer
 
         // TODO: Need to separate time per slide and transition time
-        autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide) / 1000, repeats: true) { _ in
+        autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide + msTransitionTime) / 1000, repeats: true) { _ in
             guard !isPaused else {
                 // If paused, check if 10 seconds have passed
                 if let pauseEndDate = pauseEndDate, Date() >= pauseEndDate {
@@ -306,20 +327,24 @@ private struct CarouselView<Content: View>: View {
 
         // TODO: Snapback is very agressive
 
-        if translation < -threshold {
-            // Swipe left => next
-            index += 1
-        } else if translation > threshold {
-            // Swipe right => prev
-            index -= 1
-        }
+        withAnimation(.easeInOut(duration: 0.25)) { // Smooth snapback animation
+            self.dragOffset = 0
 
-        if loop {
-            expandDataIfNeeded()
-            pruneDataIfNeeded()
-        } else {
-            // Non-loop clamp
-            index = max(0, min(index, data.count - 1))
+            if translation < -threshold {
+                // Swipe left => next
+                index += 1
+            } else if translation > threshold {
+                // Swipe right => prev
+                index -= 1
+            }
+
+            if loop {
+                expandDataIfNeeded()
+                pruneDataIfNeeded()
+            } else {
+                // Non-loop clamp
+                index = max(0, min(index, data.count - 1))
+            }
         }
 
         // Pause auto-play for 10 seconds
