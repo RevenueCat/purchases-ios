@@ -103,7 +103,6 @@ extension Locale {
     /// iOS 15 returns a nil scrippCode for these locale identifiers so hardcoding fallbacks
     private var fallbackScriptForiOS15: String? {
         let map: [String: String] = [
-            "zh": "Hans",
             "zh_CN": "Hans",
             "zh_SG": "Hans",
             "zh_MY": "Hans",
