@@ -293,18 +293,18 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
-    let trackedPurchasesStarted: Atomic<[
+    let trackedPurchasesStartedParams: Atomic<[
         (productId: String?,
          productType: StoreProduct.ProductType?)
     ]> = .init([])
     func trackPurchaseStarted(productId: String,
                               productType: StoreProduct.ProductType) {
-        self.trackedPurchasesStarted.modify {
+        self.trackedPurchasesStartedParams.modify {
             $0.append((productId, productType))
         }
     }
 
-    let trackedPurchasesResult: Atomic<[
+    let trackedPurchasesResultParams: Atomic<[
         // swiftlint:disable:next large_tuple
         (productId: String,
          productType: StoreProduct.ProductType,
@@ -320,7 +320,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                              errorMessage: String?,
                              errorCode: Int?,
                              responseTime: TimeInterval) {
-        self.trackedPurchasesResult.modify {
+        self.trackedPurchasesResultParams.modify {
             $0.append((productId, productType, verificationResult, errorMessage, errorCode, responseTime))
         }
     }

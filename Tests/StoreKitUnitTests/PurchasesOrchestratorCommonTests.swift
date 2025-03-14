@@ -274,13 +274,13 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(haveCount(1))
-        let startedParams = mockDiagnosticsTracker.trackedPurchasesStarted.value[0]
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = mockDiagnosticsTracker.trackedPurchasesStartedParams.value[0]
         expect(startedParams.productId) == storeProduct.productIdentifier
         expect(startedParams.productType) == storeProduct.productType
 
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(haveCount(1))
-        let resultParams = mockDiagnosticsTracker.trackedPurchasesResult.value[0]
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = mockDiagnosticsTracker.trackedPurchasesResultParams.value[0]
         expect(resultParams.productId) == storeProduct.productIdentifier
         expect(resultParams.productType) == storeProduct.productType
         expect(resultParams.verificationResult) == mockCustomerInfo.entitlements.verification
@@ -312,13 +312,13 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(haveCount(1))
-        let startedParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesStarted.value.first)
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesStartedParams.value.first)
         expect(startedParams.productId) == storeProduct.productIdentifier
         expect(startedParams.productType) == storeProduct.productType
 
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(haveCount(1))
-        let resultParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesResult.value.first)
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesResultParams.value.first)
         expect(resultParams.productId) == storeProduct.productIdentifier
         expect(resultParams.productType) == storeProduct.productType
         expect(resultParams.verificationResult).to(beNil())
@@ -344,8 +344,8 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(beEmpty())
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
     }
 
     func testDoesNotTrackPurchaseSK1ProductFailureWhenDisabledDiagnostics() async throws {
@@ -372,8 +372,8 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(beEmpty())
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
     }
 
     func testTracksPurchaseSK2ProductSuccessWhenEnabledDiagnostics() async throws {
@@ -394,13 +394,13 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(haveCount(1))
-        let startedParams = mockDiagnosticsTracker.trackedPurchasesStarted.value[0]
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = mockDiagnosticsTracker.trackedPurchasesStartedParams.value[0]
         expect(startedParams.productId) == storeProduct.productIdentifier
         expect(startedParams.productType) == storeProduct.productType
 
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(haveCount(1))
-        let resultParams = mockDiagnosticsTracker.trackedPurchasesResult.value[0]
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = mockDiagnosticsTracker.trackedPurchasesResultParams.value[0]
         expect(resultParams.productId) == storeProduct.productIdentifier
         expect(resultParams.productType) == storeProduct.productType
         expect(resultParams.verificationResult) == mockCustomerInfo.entitlements.verification
@@ -432,13 +432,13 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(haveCount(1))
-        let startedParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesStarted.value.first)
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesStartedParams.value.first)
         expect(startedParams.productId) == storeProduct.productIdentifier
         expect(startedParams.productType) == storeProduct.productType
 
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(haveCount(1))
-        let resultParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesResult.value.first)
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesResultParams.value.first)
         expect(resultParams.productId) == storeProduct.productIdentifier
         expect(resultParams.productType) == storeProduct.productType
         expect(resultParams.verificationResult).to(beNil())
@@ -464,8 +464,8 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(beEmpty())
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
     }
 
     func testDoesNotTrackPurchaseSK2ProductFailureWhenDisabledDiagnostics() async throws {
@@ -492,7 +492,7 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
         let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
 
-        expect(mockDiagnosticsTracker.trackedPurchasesStarted.value).to(beEmpty())
-        expect(mockDiagnosticsTracker.trackedPurchasesResult.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
     }
 }
