@@ -256,6 +256,8 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
         return try XCTUnwrap(self.mockDiagnosticsTracker as? MockDiagnosticsTracker)
     }
 
+    // MARK: - Purchase Product events
+
     func testTracksPurchaseSK1ProductSuccessWhenEnabledDiagnostics() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
@@ -495,4 +497,59 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
         expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
         expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
     }
+
 }
+
+#if !os(tvOS) && !os(watchOS) && compiler(>=5.10)
+
+// MARK: - Purchase Intent Received events
+
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+final class MockStoreKit2PurchaseIntent: StoreKit2PurchaseIntentType {
+
+    let product: StoreKit.Product
+    let offer: StoreKit.Product.SubscriptionOffer? = nil
+    let id: StoreKit.Product.ID
+
+    init(product: StoreKit.Product, id: StoreKit.Product.ID) {
+        self.product = product
+        self.id = id
+    }
+
+    static func == (lhs: MockStoreKit2PurchaseIntent, rhs: MockStoreKit2PurchaseIntent) -> Bool {
+        lhs.product == rhs.product && lhs.id == rhs.id
+    }
+
+}
+
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension PurchasesOrchestratorTrackingTests {
+
+    func test() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let sk2Product = try await self.fetchSk2Product()
+        let storePurchaseIntent = StorePurchaseIntent(purchaseIntent: MockStoreKit2PurchaseIntent(product: sk2Product,
+                                                                                                  id: sk2Product.id))
+        await self.orchestrator.storeKit2PurchaseIntentListener(MockStoreKit2PurchaseIntentListener(),
+                                                                purchaseIntent: storePurchaseIntent)
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchaseIntentReceivedParams.value.count) == 1
+        let params = mockDiagnosticsTracker.trackedPurchaseIntentReceivedParams.value[0]
+        expect(params.productId) == sk2Product.id
+        expect(params.offerId) == nil
+        expect(params.offerType) == nil
+
+    }
+
+}
+
+#endif
