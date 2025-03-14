@@ -71,6 +71,7 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     override func customerInfo(appUserID: String,
                                fetchPolicy: CacheFetchPolicy,
+                               trackDiagnostics: Bool,
                                completion: CustomerInfoCompletion?) {
         self.invokedCustomerInfo = true
         self.invokedCustomerInfoCount += 1
@@ -88,7 +89,7 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedCachedCustomerInfoParametersList = [(appUserID: String, Void)]()
     var stubbedCachedCustomerInfoResult: CustomerInfo?
 
-    override func cachedCustomerInfo(appUserID: String) -> CustomerInfo? {
+    override func cachedCustomerInfo(appUserID: String) throws -> CustomerInfo? {
         self.invokedCachedCustomerInfo = true
         self.invokedCachedCustomerInfoCount += 1
         self.invokedCachedCustomerInfoParameters = (appUserID, ())
