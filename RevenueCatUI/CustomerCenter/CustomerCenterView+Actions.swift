@@ -109,7 +109,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(RestoreStartedPreferenceKey.self) { wrappedStarted in
                     if wrappedStarted != nil {
-                        self.handler()
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                          self.handler()
+                        }
                     }
                 }
         }
@@ -122,7 +125,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(CustomerCenterView.RestoreFailedPreferenceKey.self) { wrappedError in
                     if let error = wrappedError?.value {
-                        self.handler(error)
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                          self.handler(error)
+                        }
                     }
                 }
         }
@@ -135,7 +141,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(RestoreCompletedPreferenceKey.self) { wrappedCustomerInfo in
                     if let customerInfo = wrappedCustomerInfo?.value {
-                        self.handler(customerInfo)
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                          self.handler(customerInfo)
+                        }
                     }
                 }
         }
@@ -148,7 +157,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(ShowingManageSubscriptionsPreferenceKey.self) { wrappedIsShowing in
                     if wrappedIsShowing != nil {
-                        self.handler()
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                            self.handler()
+                        }
                     }
                 }
         }
@@ -161,7 +173,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(RefundRequestStartedPreferenceKey.self) { wrappedProductId in
                     if let productId = wrappedProductId?.value {
-                        self.handler(productId)
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                            self.handler(productId)
+                        }
                     }
                 }
         }
@@ -174,7 +189,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(RefundRequestCompletedPreferenceKey.self) { wrapped in
                     if let (productId, status) = wrapped?.value {
-                        self.handler(productId, status)
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                            self.handler(productId, status)
+                        }
                     }
                 }
         }
@@ -187,7 +205,10 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(FeedbackSurveyCompletedPreferenceKey.self) { wrappedOptionId in
                     if let optionId = wrappedOptionId?.value {
-                        self.handler(optionId)
+                        Task { @MainActor in
+                          guard !Task.isCancelled else { return }
+                            self.handler(optionId)
+                        }
                     }
                 }
         }
