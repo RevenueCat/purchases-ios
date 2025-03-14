@@ -91,6 +91,12 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
+        // Convert the path to an appropriate action using the extension
+        if let action = path.asAction() {
+            // Send the action through the action wrapper
+            self.actionWrapper.handleAction(.buttonTapped(action: action))
+        }
+
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
