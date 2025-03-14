@@ -193,4 +193,33 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             )
         }
     }
+
+    let trackedProductsStartedParams: Atomic<[
+        Set<String>
+    ]> = .init([])
+    func trackProductsStarted(requestedProductIds: Set<String>) {
+        self.trackedProductsStartedParams.modify {
+            $0.append(requestedProductIds)
+        }
+    }
+
+    let trackedProductsResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (requestedProductIds: Set<String>?,
+         notFoundProductIds: Set<String>?,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackProductsResult(requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.trackedProductsResultParams.modify {
+            $0.append(
+                (requestedProductIds, notFoundProductIds, errorMessage, errorCode, responseTime)
+            )
+        }
+    }
 }

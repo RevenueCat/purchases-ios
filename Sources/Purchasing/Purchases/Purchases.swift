@@ -550,6 +550,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
+                    diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     paywallEventsManager: paywallEventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,

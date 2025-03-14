@@ -270,6 +270,7 @@ class BasePurchasesTests: TestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
