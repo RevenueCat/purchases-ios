@@ -1206,7 +1206,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-
     @available(iOS 16.4, macOS 14.4, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
