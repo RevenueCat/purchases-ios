@@ -34,8 +34,7 @@ class ManageSubscriptionsHelper {
     func showManageSubscriptions(completion: @escaping (Result<Void, PurchasesError>) -> Void) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
-                                              fetchPolicy: .cachedOrFetched,
-                                              trackDiagnostics: false) { @Sendable result in
+                                              fetchPolicy: .cachedOrFetched) { @Sendable result in
             let result: Result<URL, PurchasesError> = result
                 .mapError { error in
                     let message = Strings.failed_to_get_management_url_error_unknown(error: error)

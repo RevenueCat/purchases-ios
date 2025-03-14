@@ -59,7 +59,7 @@ struct DiagnosticsEvent: Codable, Equatable {
     }
 
     enum OfflineEntitlementsModeErrorReason: String, Codable, Equatable {
-        case oneTimePurchaseFound = "ONT_TIME_PURCHASE_FOUND"
+        case oneTimePurchaseFound = "ONE_TIME_PURCHASE_FOUND"
         case noEntitlementMappingAvailable = "NO_ENTITLEMENT_MAPPING_AVAILABLE"
         case unknown = "UNKNOWN"
     }

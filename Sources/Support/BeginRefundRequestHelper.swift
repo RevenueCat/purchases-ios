@@ -120,7 +120,6 @@ private extension BeginRefundRequestHelper {
         do {
             customerInfo = try await self.customerInfoManager.customerInfo(
                 appUserID: self.currentUserProvider.currentAppUserID,
-                trackDiagnostics: false,
                 fetchPolicy: .cachedOrFetched
             )
         } catch {

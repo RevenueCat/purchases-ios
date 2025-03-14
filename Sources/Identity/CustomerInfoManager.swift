@@ -110,7 +110,7 @@ class CustomerInfoManager {
     func customerInfo(
         appUserID: String,
         fetchPolicy: CacheFetchPolicy,
-        trackDiagnostics: Bool,
+        trackDiagnostics: Bool = false,
         completion: CustomerInfoCompletion?
     ) {
         self.trackGetCustomerInfoStartedIfNeeded(trackDiagnostics: trackDiagnostics)
@@ -380,7 +380,7 @@ extension CustomerInfoManager {
 
     func customerInfo(
         appUserID: String,
-        trackDiagnostics: Bool,
+        trackDiagnostics: Bool = false,
         fetchPolicy: CacheFetchPolicy
     ) async throws -> CustomerInfo {
         return try await Async.call { completion in
