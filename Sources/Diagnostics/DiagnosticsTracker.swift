@@ -102,11 +102,12 @@ protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackPurchaseStarted(productId: String,
-                              productType: String)
+                              productType: StoreProduct.ProductType)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackPurchaseResult(productId: String,
-                             productType: String,
+                             productType: StoreProduct.ProductType,
+                             verificationResult: VerificationResult?,
                              errorMessage: String?,
                              errorCode: Int?,
                              responseTime: TimeInterval)
@@ -361,7 +362,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     }
 
     func trackPurchaseStarted(productId: String,
-                              productType: String) {
+                              productType: StoreProduct.ProductType) {
         self.track(
             DiagnosticsEvent(name: .purchaseStarted,
                              properties: DiagnosticsEvent.Properties(
@@ -374,13 +375,15 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     }
 
     func trackPurchaseResult(productId: String,
-                             productType: String,
+                             productType: StoreProduct.ProductType,
+                             verificationResult: VerificationResult?,
                              errorMessage: String?,
                              errorCode: Int?,
                              responseTime: TimeInterval) {
         self.track(
             DiagnosticsEvent(name: .purchaseResult,
                              properties: DiagnosticsEvent.Properties(
+                                verificationResult: verificationResult?.name,
                                 responseTime: responseTime,
                                 errorMessage: errorMessage,
                                 errorCode: errorCode,

@@ -416,17 +416,34 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: WinBackOffer? = nil,
                   metadata: [String: String]? = nil,
+                  trackDiagnostics: Bool = false,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
+        self.trackPurchaseStartedIfNeeded(trackDiagnostics: trackDiagnostics,
+                                          productId: product.productIdentifier,
+                                          productType: product.productType)
+        let startTime = self.dateProvider.now()
+
+        let completionWithTracking: PurchaseCompletedBlock =
+        { [weak self] transaction, customerInfo, error, userCancelled in
+            self?.trackPurchaseResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                              productId: product.productIdentifier,
+                                              productType: product.productType,
+                                              verificationResult: customerInfo?.entitlements.verification,
+                                              error: error,
+                                              startTime: startTime)
+            completion(transaction, customerInfo, error, userCancelled)
+        }
+
         if let sk1Product = product.sk1Product {
-            guard let storeKit1Wrapper = self.storeKit1Wrapper(orFailWith: completion) else { return }
+            guard let storeKit1Wrapper = self.storeKit1Wrapper(orFailWith: completionWithTracking) else { return }
             let payment = storeKit1Wrapper.payment(with: sk1Product, discount: promotionalOffer?.sk1PromotionalOffer)
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
                           package: package,
                           wrapper: storeKit1Wrapper,
-                          completion: completion)
+                          completion: completionWithTracking)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
                   let sk2Product = product.sk2Product {
             self.purchase(sk2Product: sk2Product,
@@ -434,9 +451,9 @@ final class PurchasesOrchestrator {
                           promotionalOffer: promotionalOffer,
                           winBackOffer: winBackOffer,
                           metadata: metadata,
-                          completion: completion)
+                          completion: completionWithTracking)
         } else if product.isTestProduct {
-            self.handleTestProduct(completion)
+            self.handleTestProduct(completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1103,6 +1120,32 @@ private extension PurchasesOrchestrator {
                                                     winBackOfferApplied: winBackOfferApplied,
                                                     purchaseResult: purchaseResult,
                                                     responseTime: responseTime)
+        }
+    }
+
+    func trackPurchaseStartedIfNeeded(trackDiagnostics: Bool,
+                                      productId: String,
+                                      productType: StoreProduct.ProductType) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *), trackDiagnostics {
+            self.diagnosticsTracker?.trackPurchaseStarted(productId: productId, productType: productType)
+        }
+    }
+
+    func trackPurchaseResultIfNeeded(trackDiagnostics: Bool,
+                                     productId: String,
+                                     productType: StoreProduct.ProductType,
+                                     verificationResult: RevenueCat.VerificationResult?,
+                                     error: PublicError?,
+                                     startTime: Date) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *), trackDiagnostics,
+           let diagnosticsTracker = self.diagnosticsTracker {
+            let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
+            diagnosticsTracker.trackPurchaseResult(productId: productId,
+                                                   productType: productType,
+                                                   verificationResult: verificationResult,
+                                                   errorMessage: error?.localizedDescription,
+                                                   errorCode: error?.asErrorCode?.rawValue,
+                                                   responseTime: responseTime)
         }
     }
 
