@@ -293,7 +293,7 @@ struct ContentView_Previews: PreviewProvider {
             ),
             icon: iconComponent(name: "star", color: "#11D483", size: .init(width: .fixed(50), height: .fixed(50))),
             connector: .init(
-                width: 100,
+                width: 8,
                 color: .init(
                     light: .linear(180, [
                         .init(color: "#11D483", percent: 0),
