@@ -50,6 +50,7 @@ struct CarouselComponentView: View {
                 GeometryReader { reader in
                     CarouselView(
                         width: reader.size.width,
+                        pageAlignment: style.pageAlignment,
                         pages: self.viewModel.pageStackViewModels.map({ stackViewModel in
                             StackComponentView(
                                 viewModel: stackViewModel,
@@ -103,6 +104,7 @@ private struct CarouselItem<Content: View>: Identifiable {
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
 
+    private let pageAlignment: VerticalAlignment
     private let width: CGFloat
     private let initialIndex: Int
     private let originalPages: [Content]
@@ -132,7 +134,7 @@ private struct CarouselView<Content: View>: View {
 
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
-    
+
     @State private var isPaused: Bool = false
     @State private var pauseEndDate: Date?
     @State private var isInitialized = false
@@ -144,6 +146,7 @@ private struct CarouselView<Content: View>: View {
 
     init(
         width: CGFloat,
+        pageAlignment: VerticalAlignment,
         pages: [Content],
         initialIndex: Int,
         loop: Bool,
@@ -155,6 +158,7 @@ private struct CarouselView<Content: View>: View {
         msTransitionTime: Int?
     ) {
         self.width = width
+        self.pageAlignment = pageAlignment
         self.initialIndex = initialIndex
         self.originalPages = pages
         self.loop = loop
@@ -193,7 +197,7 @@ private struct CarouselView<Content: View>: View {
             }
 
             // Main horizontal “strip” of pages:
-            HStack(spacing: spacing) {
+            HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(data) { item in
                     item.view
                         .frame(width: cardWidth)
@@ -289,7 +293,6 @@ private struct CarouselView<Content: View>: View {
 
         autoTimer?.invalidate() // Stop any existing timer
 
-        // TODO: Need to separate time per slide and transition time
         autoTimer = Timer.scheduledTimer(withTimeInterval: Double(msTimePerSlide + msTransitionTime) / 1000, repeats: true) { _ in
             guard !isPaused else {
                 // If paused, check if 10 seconds have passed
@@ -325,9 +328,7 @@ private struct CarouselView<Content: View>: View {
     private func handleDragEnd(translation: CGFloat) {
         let threshold = cardWidth * 0.2
 
-        // TODO: Snapback is very agressive
-
-        withAnimation(.easeInOut(duration: 0.25)) { // Smooth snapback animation
+        withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
 
             if translation < -threshold {
@@ -441,7 +442,6 @@ struct PageControlView: View {
 
     var body: some View {
         if self.originalCount > 1 {
-            // TODO: Add page alignment
             HStack(spacing: self.pageControl.spacing) {
                 ForEach(0..<originalCount, id: \.self) { index in
                     Capsule()
