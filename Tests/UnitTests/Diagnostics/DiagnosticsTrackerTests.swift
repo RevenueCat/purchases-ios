@@ -207,7 +207,7 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - Purchase Request
 
     func testTracksPurchaseRequestWithExpectedParameters() async {
-        self.tracker.trackPurchaseRequest(wasSuccessful: true,
+        self.tracker.trackPurchaseAttempt(wasSuccessful: true,
                                           storeKitVersion: .storeKit2,
                                           errorMessage: nil,
                                           errorCode: nil,
@@ -243,7 +243,7 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testTracksPurchaseRequestWithPromotionalOffer() async {
-        self.tracker.trackPurchaseRequest(wasSuccessful: false,
+        self.tracker.trackPurchaseAttempt(wasSuccessful: false,
                                           storeKitVersion: .storeKit1,
                                           errorMessage: "purchase failed",
                                           errorCode: 5678,

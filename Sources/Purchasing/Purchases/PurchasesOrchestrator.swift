@@ -499,14 +499,14 @@ final class PurchasesOrchestrator {
             completion: { [weak self] transaction, customerInfo, error, cancelled in
                 guard let self = self else { return }
 
-                self.trackPurchaseEventIfNeeded(startTime,
-                                                successful: !cancelled && error == nil,
-                                                productId: productIdentifier,
-                                                promotionalOfferId: promotionalOfferID,
-                                                winBackOfferApplied: false, // SK2 only
-                                                storeKitVersion: .storeKit1,
-                                                purchaseResult: nil, // SK2 only
-                                                error: error)
+                self.trackPurchaseAttemptEventIfNeeded(startTime,
+                                                       successful: !cancelled && error == nil,
+                                                       productId: productIdentifier,
+                                                       promotionalOfferId: promotionalOfferID,
+                                                       winBackOfferApplied: false, // SK2 only
+                                                       storeKitVersion: .storeKit1,
+                                                       purchaseResult: nil, // SK2 only
+                                                       error: error)
                 if !cancelled {
                     if let error = error {
                         Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
@@ -638,14 +638,14 @@ final class PurchasesOrchestrator {
                                                                                fetchPolicy: .cachedOrFetched)
             }
 
-            self.trackPurchaseEventIfNeeded(startTime,
-                                            successful: !userCancelled,
-                                            productId: sk2Product.id,
-                                            promotionalOfferId: promotionalOffer?.identifier,
-                                            winBackOfferApplied: winBackOfferApplied,
-                                            storeKitVersion: .storeKit2,
-                                            purchaseResult: .init(purchaseResult: result),
-                                            error: nil)
+            self.trackPurchaseAttemptEventIfNeeded(startTime,
+                                                   successful: !userCancelled,
+                                                   productId: sk2Product.id,
+                                                   promotionalOfferId: promotionalOffer?.identifier,
+                                                   winBackOfferApplied: winBackOfferApplied,
+                                                   storeKitVersion: .storeKit2,
+                                                   purchaseResult: .init(purchaseResult: result),
+                                                   error: nil)
             return (transaction, customerInfo, userCancelled)
         } catch {
             return try await self.handleSK2ProductPurchaseError(error,
@@ -670,14 +670,14 @@ final class PurchasesOrchestrator {
                 throw ErrorUtils.purchaseCancelledError()
             }
 
-            self.trackPurchaseEventIfNeeded(startTime,
-                                            successful: false,
-                                            productId: productId,
-                                            promotionalOfferId: promotionalOfferId,
-                                            winBackOfferApplied: winBackOfferApplied,
-                                            storeKitVersion: .storeKit2,
-                                            purchaseResult: .userCancelled,
-                                            error: StoreKitError.userCancelled.asPublicError)
+            self.trackPurchaseAttemptEventIfNeeded(startTime,
+                                                   successful: false,
+                                                   productId: productId,
+                                                   promotionalOfferId: promotionalOfferId,
+                                                   winBackOfferApplied: winBackOfferApplied,
+                                                   storeKitVersion: .storeKit2,
+                                                   purchaseResult: .userCancelled,
+                                                   error: StoreKitError.userCancelled.asPublicError)
 
             let customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                                                                fetchPolicy: .cachedOrFetched)
@@ -700,14 +700,14 @@ final class PurchasesOrchestrator {
                 purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
             }
 
-            self.trackPurchaseEventIfNeeded(startTime,
-                                            successful: false,
-                                            productId: productId,
-                                            promotionalOfferId: promotionalOfferId,
-                                            winBackOfferApplied: winBackOfferApplied,
-                                            storeKitVersion: .storeKit2,
-                                            purchaseResult: nil,
-                                            error: purchasesError.asPublicError)
+            self.trackPurchaseAttemptEventIfNeeded(startTime,
+                                                   successful: false,
+                                                   productId: productId,
+                                                   promotionalOfferId: promotionalOfferId,
+                                                   winBackOfferApplied: winBackOfferApplied,
+                                                   storeKitVersion: .storeKit2,
+                                                   purchaseResult: nil,
+                                                   error: purchasesError.asPublicError)
 
             throw purchasesError
         }
@@ -1078,14 +1078,14 @@ private extension PurchasesOrchestrator {
     }
 
     // swiftlint:disable:next function_parameter_count
-    func trackPurchaseEventIfNeeded(_ startTime: Date,
-                                    successful: Bool,
-                                    productId: String,
-                                    promotionalOfferId: String?,
-                                    winBackOfferApplied: Bool,
-                                    storeKitVersion: StoreKitVersion,
-                                    purchaseResult: DiagnosticsEvent.PurchaseResult?,
-                                    error: PublicError?) {
+    func trackPurchaseAttemptEventIfNeeded(_ startTime: Date,
+                                           successful: Bool,
+                                           productId: String,
+                                           promotionalOfferId: String?,
+                                           winBackOfferApplied: Bool,
+                                           storeKitVersion: StoreKitVersion,
+                                           purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                                           error: PublicError?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
         let diagnosticsTracker = self.diagnosticsTracker {
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
@@ -1093,7 +1093,7 @@ private extension PurchasesOrchestrator {
                 ?? error?.localizedDescription
             let errorCode = error?.code
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-            diagnosticsTracker.trackPurchaseRequest(wasSuccessful: successful,
+            diagnosticsTracker.trackPurchaseAttempt(wasSuccessful: successful,
                                                     storeKitVersion: storeKitVersion,
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
