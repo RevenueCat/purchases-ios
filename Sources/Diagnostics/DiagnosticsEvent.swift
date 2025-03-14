@@ -51,6 +51,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         case getProductsResult = "get_products_result"
         case getCustomerInfoStarted = "get_customer_info_started"
         case getCustomerInfoResult = "get_customer_info_result"
+        case purchaseStarted = "purchase_started"
+        case purchaseResult = "purchase_result"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
@@ -82,6 +84,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let requestedProductIds: Set<String>?
         let notFoundProductIds: Set<String>?
         let productId: String?
+        let productType: String?
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
@@ -105,6 +108,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              requestedProductIds: Set<String>? = nil,
              notFoundProductIds: Set<String>? = nil,
              productId: String? = nil,
+             productType: String? = nil,
              promotionalOfferId: String? = nil,
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
@@ -127,6 +131,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.requestedProductIds = requestedProductIds
             self.notFoundProductIds = notFoundProductIds
             self.productId = productId
+            self.productType = productType
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult

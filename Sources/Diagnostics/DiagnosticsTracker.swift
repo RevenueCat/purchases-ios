@@ -99,6 +99,18 @@ protocol DiagnosticsTrackerType {
                                     errorMessage: String?,
                                     errorCode: Int?,
                                     responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackPurchaseStarted(productId: String,
+                              productType: String)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackPurchaseResult(productId: String,
+                             productType: String,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -342,6 +354,38 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                 errorCode: errorCode,
                                 cacheFetchPolicy: cacheFetchPolicy,
                                 hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
+    func trackPurchaseStarted(productId: String,
+                              productType: String) {
+        self.track(
+            DiagnosticsEvent(name: .purchaseStarted,
+                             properties: DiagnosticsEvent.Properties(
+                                productId: productId,
+                                productType: productType
+                             ),
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
+
+    func trackPurchaseResult(productId: String,
+                             productType: String,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.track(
+            DiagnosticsEvent(name: .purchaseResult,
+                             properties: DiagnosticsEvent.Properties(
+                                responseTime: responseTime,
+                                errorMessage: errorMessage,
+                                errorCode: errorCode,
+                                productId: productId,
+                                productType: productType
                              ),
                              timestamp: self.dateProvider.now(),
                              appSessionId: self.appSessionID)
