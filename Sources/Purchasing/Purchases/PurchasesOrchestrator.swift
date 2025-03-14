@@ -1128,6 +1128,37 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    func trackSyncOrRestorePurchasesStartedIfNeeded(_ receiptRefreshPolicy: ReceiptRefreshPolicy) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+           let diagnosticsTracker = self.diagnosticsTracker {
+            let isRestore = receiptRefreshPolicy == .always
+            if isRestore {
+                diagnosticsTracker.trackRestorePurchasesStarted()
+            } else {
+                diagnosticsTracker.trackSyncPurchasesStarted()
+            }
+        }
+    }
+
+    func trackSyncOrRestorePurchasesResultIfNeeded(_ receiptRefreshPolicy: ReceiptRefreshPolicy,
+                                                   startTime: Date,
+                                                   error: PurchasesError?) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+           let diagnosticsTracker = self.diagnosticsTracker {
+            let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
+            let isRestore = receiptRefreshPolicy == .always
+            if isRestore {
+                diagnosticsTracker.trackRestorePurchasesResult(errorMessage: error?.localizedDescription,
+                                                               errorCode: error?.errorCode,
+                                                               responseTime: responseTime)
+            } else {
+                diagnosticsTracker.trackSyncPurchasesResult(errorMessage: error?.localizedDescription,
+                                                            errorCode: error?.errorCode,
+                                                            responseTime: responseTime)
+            }
+        }
+    }
+
     /// - Parameter restored: whether the transaction state was `.restored` instead of `.purchased`.
     private func purchaseSource(
         for productIdentifier: String,
@@ -1364,22 +1395,31 @@ private extension PurchasesOrchestrator {
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource,
                        completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
+        let startTime = self.dateProvider.now()
         // Don't log anything unless the flag was explicitly set.
         let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
         if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
+        let completionWithTracking: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void) = { result in
+            self.trackSyncOrRestorePurchasesResultIfNeeded(receiptRefreshPolicy,
+                                                           startTime: startTime,
+                                                           error: result.error)
+            completion?(result)
+        }
+
         if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.syncPurchasesSK2(isRestore: isRestore,
                                   initiationSource: initiationSource,
-                                  completion: completion)
+                                  completion: completionWithTracking)
         } else {
             self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshPolicy,
                                   isRestore: isRestore,
                                   initiationSource: initiationSource,
-                                  completion: completion)
+                                  completion: completionWithTracking)
         }
     }
 
