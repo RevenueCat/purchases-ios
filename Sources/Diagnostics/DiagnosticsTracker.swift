@@ -55,6 +55,11 @@ protocol DiagnosticsTrackerType {
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackPurchaseIntentReceived(productId: String,
+                                     offerId: String?,
+                                     offerType: String?)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackMaxDiagnosticsSyncRetriesReached()
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -231,6 +236,17 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             promotionalOfferId: promotionalOfferId,
                             winBackOfferApplied: winBackOfferApplied,
                             purchaseResult: purchaseResult
+                        ))
+    }
+
+    func trackPurchaseIntentReceived(productId: String,
+                                     offerId: String?,
+                                     offerType: String?) {
+        self.trackEvent(name: .applePurchaseIntentReceived,
+                        properties: DiagnosticsEvent.Properties(
+                            productId: productId,
+                            offerId: offerId,
+                            offerType: offerType
                         ))
     }
 

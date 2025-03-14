@@ -1206,6 +1206,28 @@ private extension PurchasesOrchestrator {
         }
     }
 
+
+    @available(iOS 16.4, macOS 14.4, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    func trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: StoreKit.PurchaseIntent) {
+        let offerId: String?
+        let offerType: String?
+
+        if #available(iOSApplicationExtension 18.0, *) {
+            offerId = purchaseIntent.offer?.id
+            offerType = purchaseIntent.offer?.type.rawValue
+        } else {
+            offerId = nil
+            offerType = nil
+        }
+
+        self.diagnosticsTracker?.trackPurchaseIntentReceived(productId: purchaseIntent.product.id,
+                                                             offerId: offerId,
+                                                             offerType: offerType)
+    }
+
     /// - Parameter restored: whether the transaction state was `.restored` instead of `.purchased`.
     private func purchaseSource(
         for productIdentifier: String,
@@ -1300,6 +1322,8 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
 
         guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
         let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)
+
+        self.trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: purchaseIntent)
 
         delegate?.readyForPromotedProduct(storeProduct) { completion in
 
