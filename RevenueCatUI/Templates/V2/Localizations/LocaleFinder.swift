@@ -13,16 +13,6 @@
 
 import Foundation
 
-fileprivate let iOS15ScriptMapping: [String: String] = [
-    "zh": "zh-Hans",
-    "zh-CN": "zh-Hans-CN",
-    "zh-SG": "zh-Hans-SG",
-    "zh-MY": "zh-Hans-MY",
-    "zh-TW": "zh-Hant-TW",
-    "zh-HK": "zh-Hant-HK",
-    "zh-MO": "zh-Hant-MO"
-]
-
 extension Dictionary where Key == String {
 
     func findLocale(_ locale: Locale) -> Value? {
