@@ -24,7 +24,9 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
 
     func testPurchasingTestProductFails() async throws {
         let error = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(product: Self.testProduct, package: nil) { _, _, error, _ in
+            self.orchestrator.purchase(product: Self.testProduct,
+                                       package: nil,
+                                       trackDiagnostics: false) { _, _, error, _ in
                 continuation.resume(returning: error)
             }
         }
@@ -42,7 +44,8 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
             self.orchestrator.purchase(
                 product: Self.testProduct,
                 package: nil,
-                promotionalOffer: offer
+                promotionalOffer: offer,
+                trackDiagnostics: false
             ) { _, _, error, _ in
                 continuation.resume(returning: error)
             }

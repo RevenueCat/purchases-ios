@@ -274,4 +274,36 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             $0.append((errorMessage, errorCode, responseTime))
         }
     }
+
+    let trackedPurchasesStarted: Atomic<[
+        (productId: String?,
+         productType: StoreProduct.ProductType?)
+    ]> = .init([])
+    func trackPurchaseStarted(productId: String,
+                              productType: StoreProduct.ProductType) {
+        self.trackedPurchasesStarted.modify {
+            $0.append((productId, productType))
+        }
+    }
+
+    let trackedPurchasesResult: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (productId: String,
+         productType: StoreProduct.ProductType,
+         verificationResult: VerificationResult?,
+         errorMessage: String?,
+         errorCode: Int?,
+        responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackPurchaseResult(productId: String,
+                             productType: StoreProduct.ProductType,
+                             verificationResult: VerificationResult?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.trackedPurchasesResult.modify {
+            $0.append((productId, productType, verificationResult, errorMessage, errorCode, responseTime))
+        }
+    }
 }
