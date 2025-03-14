@@ -1059,7 +1059,7 @@ class GetCustomerInfoTrackingTests: BaseCustomerInfoManagerTests {
     func testTrackDiagnosticsGetCustomerInfoFetchCurrentPolicyWithUnfinishedTransactionsWhenFailure() async throws {
         self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
 
-        let backendError = BackendError.missingReceiptFile(URL("file://receipt"))
+        let backendError = BackendError.missingReceiptFile(URL(string: "file://receipt"))
         self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .failure(backendError)
 
         do {
