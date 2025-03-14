@@ -88,6 +88,32 @@ class PurchasesGetProductsTests: BasePurchasesTests {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testTracksExpectedProductResultSuccessWithNotFoundProducts() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let productIdentifiers = ["com.product.id1", "com.product.id2", "com.product.id3"]
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success(
+            Set([StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id2"))])
+        )
+
+        _ = waitUntilValue { completed in
+            self.purchases.getProducts(productIdentifiers, completion: completed)
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        let trackedProductResultCalls = mockDiagnosticsTracker.trackedProductsResultParams.value
+        expect(trackedProductResultCalls.count) == 1
+        let firstTrackedProductsResultCall = trackedProductResultCalls[0]
+        expect(firstTrackedProductsResultCall.requestedProductIds) == Set(productIdentifiers)
+        expect(firstTrackedProductsResultCall.notFoundProductIds) == Set(["com.product.id1", "com.product.id3"])
+        expect(firstTrackedProductsResultCall.errorCode) == nil
+        expect(firstTrackedProductsResultCall.errorMessage) == nil
+        expect(firstTrackedProductsResultCall.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     func testTracksExpectedProductResultEventUponError() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
