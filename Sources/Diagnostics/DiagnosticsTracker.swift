@@ -11,6 +11,7 @@
 //
 //  Created by Cesar de la Vega on 4/4/24.
 
+// swiftlint:disable file_length
 import Foundation
 
 // swiftlint:disable function_parameter_count
