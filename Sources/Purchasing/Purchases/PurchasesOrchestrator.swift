@@ -392,7 +392,7 @@ final class PurchasesOrchestrator {
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    func purchase(params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(params: PurchaseParams, trackDiagnostics: Bool, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
             product = params.package?.storeProduct
@@ -407,6 +407,7 @@ final class PurchasesOrchestrator {
                  promotionalOffer: params.promotionalOffer?.signedData,
                  winBackOffer: params.winBackOffer,
                  metadata: params.metadata,
+                 trackDiagnostics: trackDiagnostics,
                  completion: completion)
     }
     #endif
@@ -416,7 +417,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: WinBackOffer? = nil,
                   metadata: [String: String]? = nil,
-                  trackDiagnostics: Bool = false,
+                  trackDiagnostics: Bool,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
 
@@ -999,7 +1000,8 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
                     self.purchase(product: product,
                                   package: nil,
                                   promotionalOffer: discount,
-                                  metadata: nil) { transaction, customerInfo, error, cancelled in
+                                  metadata: nil,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, cancelled in
                         completion(transaction, customerInfo, error, cancelled)
                     }
                 }
@@ -1008,7 +1010,8 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
                     self.purchase(product: product,
                                   package: nil,
                                   promotionalOffer: nil,
-                                  metadata: nil) { transaction, customerInfo, error, cancelled in
+                                  metadata: nil,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, cancelled in
                         completion(transaction, customerInfo, error, cancelled)
                     }
                 }
@@ -1315,7 +1318,8 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
             if !attemptedToPurchaseWithASubscriptionOffer {
                 self.purchase(
                     product: storeProduct,
-                    package: nil
+                    package: nil,
+                    trackDiagnostics: false
                 ) { transaction, customerInfo, publicError, userCancelled in
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(transaction, customerInfo, publicError, userCancelled)
