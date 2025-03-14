@@ -120,6 +120,14 @@ protocol DiagnosticsTrackerType {
                                   errorCode: Int?,
                                   responseTime: TimeInterval)
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackRestorePurchasesStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -321,6 +329,21 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                   errorCode: Int?,
                                   responseTime: TimeInterval) {
         self.trackEvent(name: .syncPurchasesResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode
+                        ))
+    }
+
+    func trackRestorePurchasesStarted() {
+        self.trackEvent(name: .restorePurchasesStarted, properties: .empty)
+    }
+
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval) {
+        self.trackEvent(name: .restorePurchasesResult,
                         properties: DiagnosticsEvent.Properties(
                             responseTime: responseTime,
                             errorMessage: errorMessage,

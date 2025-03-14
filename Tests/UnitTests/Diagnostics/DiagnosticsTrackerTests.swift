@@ -429,6 +429,36 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - Restore Purchases
+
+    func testTrackingRestorePurchasesStarted() async {
+        self.tracker.trackRestorePurchasesStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingRestorePurchasesResult() async {
+        self.tracker.trackRestorePurchasesResult(errorMessage: "an error msg",
+                                                 errorCode: 20,
+                                                 responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
