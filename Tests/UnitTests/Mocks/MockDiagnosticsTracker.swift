@@ -223,7 +223,6 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
-
     let trackedGetCustomerInfoStartedCalls: Atomic<Int> = .init(0)
     func trackGetCustomerInfoStarted() {
         trackedGetCustomerInfoStartedCalls.modify { $0 += 1 }
