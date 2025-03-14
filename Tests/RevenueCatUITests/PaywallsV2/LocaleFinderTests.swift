@@ -22,7 +22,7 @@ class LocaleFinderTest: TestCase {
     static let expectedTranslations = ["expected": "translations"]
 
     static let simplifiedChineseLanguages = [
-        "zh", "zh_CN", "zh_SG", "zh_MY"
+        "zh_CN", "zh_SG", "zh_MY"
     ]
     static let traditionalChineseLanguages = [
         "zh_TW", "zh_HK", "zh_MO"
