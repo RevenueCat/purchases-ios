@@ -284,9 +284,8 @@ class PurchasesRestoreTrackingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    func getMockDiagnosticsTracker() -> MockDiagnosticsTracker {
-        // swiftlint:disable:next force_cast
-        return self.diagnosticsTracker as! MockDiagnosticsTracker
+    private func getMockDiagnosticsTracker() throws -> MockDiagnosticsTracker {
+        return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
     }
 
     func testRestoringPurchasesTracksRestoreStarted() throws {
@@ -301,7 +300,7 @@ class PurchasesRestoreTrackingTests: BasePurchasesTests {
             }
         }
 
-        let mockDiagnosticsTracker = self.getMockDiagnosticsTracker()
+        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
         let callCount = mockDiagnosticsTracker.trackedRestorePurchasesStartedCalls.value
         expect(callCount) == 1
     }
@@ -318,7 +317,7 @@ class PurchasesRestoreTrackingTests: BasePurchasesTests {
             }
         }
 
-        let mockDiagnosticsTracker = self.getMockDiagnosticsTracker()
+        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
         let calls = mockDiagnosticsTracker.trackedRestorePurchasesResultParams.value
         expect(calls.count) == 1
         let callParams = calls[0]
@@ -340,7 +339,7 @@ class PurchasesRestoreTrackingTests: BasePurchasesTests {
             }
         }
 
-        let mockDiagnosticsTracker = self.getMockDiagnosticsTracker()
+        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
         let calls = mockDiagnosticsTracker.trackedRestorePurchasesResultParams.value
         expect(calls.count) == 1
         let callParams = calls[0]
