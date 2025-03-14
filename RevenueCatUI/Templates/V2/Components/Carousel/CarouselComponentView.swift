@@ -74,9 +74,8 @@ struct CarouselComponentView: View {
                 .size(style.size)
                 .padding(style.padding)
                 // TODO: Test with ricks-ugly-pill
-                // TODO: HACK: This padding is needed for peek to not go behind the border
-                // TODO: But this doesn't fix for shape clipping (need to clip inside border)
-                .padding(.horizontal, style.border?.width ?? 0)
+                // This padding is needed for peek to not go behind the border
+//                .padding(.horizontal, style.border?.width ?? 0)
                 .shape(border: style.border,
                        shape: style.shape,
                        // TODO: Background image isn't doing "fit"
