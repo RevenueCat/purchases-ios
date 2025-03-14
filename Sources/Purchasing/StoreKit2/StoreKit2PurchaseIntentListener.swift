@@ -125,7 +125,7 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 struct StorePurchaseIntent: Sendable, Equatable {
 
     #if compiler(>=5.10)
-    init(purchaseIntent: PurchaseIntent?) {
+    init(purchaseIntent: (any StoreKit2PurchaseIntentType)?) {
         self.purchaseIntent = purchaseIntent
     }
     #else
@@ -139,6 +139,39 @@ struct StorePurchaseIntent: Sendable, Equatable {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    let purchaseIntent: PurchaseIntent?
+    let purchaseIntent: (any StoreKit2PurchaseIntentType)?
     #endif
+
+    static func == (lhs: StorePurchaseIntent, rhs: StorePurchaseIntent) -> Bool {
+    #if compiler(>=5.10)
+        return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
+    #else
+        return true
+    #endif
+    }
 }
+
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+protocol StoreKit2PurchaseIntentType: Equatable, Identifiable, Sendable {
+
+    var product: StoreKit.Product { get }
+
+    @available(iOS 18.0, macOS 15.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    var offer: StoreKit.Product.SubscriptionOffer? { get }
+
+    var id: StoreKit.Product.ID { get }
+}
+
+#if compiler(>=5.10)
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension StoreKit.PurchaseIntent: StoreKit2PurchaseIntentType { }
+#endif

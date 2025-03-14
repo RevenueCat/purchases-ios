@@ -1210,7 +1210,7 @@ private extension PurchasesOrchestrator {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    func trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: StoreKit.PurchaseIntent) {
+    func trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: any StoreKit2PurchaseIntentType) {
         let offerId: String?
         let offerType: String?
 
