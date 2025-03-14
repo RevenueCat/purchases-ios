@@ -59,6 +59,63 @@ protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackClearingDiagnosticsAfterFailedSync()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackEnteredOfflineEntitlementsMode()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                   errorMessage: String)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackOfferingsStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackOfferingsResult(requestedProductIds: Set<String>?,
+                              notFoundProductIds: Set<String>?,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              verificationResult: VerificationResult?,
+                              cacheStatus: CacheStatus,
+                              responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackProductsStarted(requestedProductIds: Set<String>)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackProductsResult(requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackGetCustomerInfoStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
+                                    verificationResult: VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackSyncPurchasesStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackSyncPurchasesResult(errorMessage: String?,
+                                  errorCode: Int?,
+                                  responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackRestorePurchasesStarted()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -94,13 +151,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             return
         }
 
-        let event = DiagnosticsEvent(
-            name: .customerInfoVerificationResult,
-            properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name),
-            timestamp: self.dateProvider.now(),
-            appSessionId: self.appSessionID
-        )
-        self.track(event)
+        self.trackEvent(name: .customerInfoVerificationResult,
+                        properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name))
     }
 
     func trackProductsRequest(wasSuccessful: Bool,
@@ -111,21 +163,17 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               requestedProductIds: Set<String>,
                               notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
-        self.track(
-            DiagnosticsEvent(name: .appleProductsRequest,
-                             properties: DiagnosticsEvent.Properties(
-                                responseTime: responseTime,
-                                storeKitVersion: storeKitVersion,
-                                successful: wasSuccessful,
-                                errorMessage: errorMessage,
-                                errorCode: errorCode,
-                                skErrorDescription: storeKitErrorDescription,
-                                requestedProductIds: requestedProductIds,
-                                notFoundProductIds: notFoundProductIds
-                             ),
-                             timestamp: self.dateProvider.now(),
-                             appSessionId: self.appSessionID)
-        )
+        self.trackEvent(name: .appleProductsRequest,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            storeKitVersion: storeKitVersion,
+                            successful: wasSuccessful,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            skErrorDescription: storeKitErrorDescription,
+                            requestedProductIds: requestedProductIds,
+                            notFoundProductIds: notFoundProductIds
+                        ))
     }
 
     func trackHttpRequestPerformed(endpointName: String,
@@ -136,23 +184,17 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult,
                                    isRetry: Bool) {
-        self.track(
-            DiagnosticsEvent(
-                name: .httpRequestPerformed,
-                properties: DiagnosticsEvent.Properties(
-                    verificationResult: verificationResult.name,
-                    endpointName: endpointName,
-                    responseTime: responseTime,
-                    successful: wasSuccessful,
-                    responseCode: responseCode,
-                    backendErrorCode: backendErrorCode,
-                    etagHit: resultOrigin == .cache,
-                    isRetry: isRetry
-                ),
-                timestamp: self.dateProvider.now(),
-                appSessionId: self.appSessionID
-            )
-        )
+        self.trackEvent(name: .httpRequestPerformed,
+                        properties: DiagnosticsEvent.Properties(
+                            verificationResult: verificationResult.name,
+                            endpointName: endpointName,
+                            responseTime: responseTime,
+                            successful: wasSuccessful,
+                            responseCode: responseCode,
+                            backendErrorCode: backendErrorCode,
+                            etagHit: resultOrigin == .cache,
+                            isRetry: isRetry
+                        ))
     }
 
     func trackPurchaseRequest(wasSuccessful: Bool,
@@ -165,42 +207,151 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               winBackOfferApplied: Bool,
                               purchaseResult: DiagnosticsEvent.PurchaseResult?,
                               responseTime: TimeInterval) {
-        self.track(
-            DiagnosticsEvent(name: .applePurchaseAttempt,
-                             properties: DiagnosticsEvent.Properties(
-                                responseTime: responseTime,
-                                storeKitVersion: storeKitVersion,
-                                successful: wasSuccessful,
-                                errorMessage: errorMessage,
-                                errorCode: errorCode,
-                                skErrorDescription: storeKitErrorDescription,
-                                productId: productId,
-                                promotionalOfferId: promotionalOfferId,
-                                winBackOfferApplied: winBackOfferApplied,
-                                purchaseResult: purchaseResult
-                             ),
-                             timestamp: self.dateProvider.now(),
-                             appSessionId: self.appSessionID)
-        )
+        self.trackEvent(name: .applePurchaseAttempt,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            storeKitVersion: storeKitVersion,
+                            successful: wasSuccessful,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            skErrorDescription: storeKitErrorDescription,
+                            productId: productId,
+                            promotionalOfferId: promotionalOfferId,
+                            winBackOfferApplied: winBackOfferApplied,
+                            purchaseResult: purchaseResult
+                        ))
     }
 
     func trackMaxDiagnosticsSyncRetriesReached() {
-        self.track(DiagnosticsEvent(name: .maxEventsStoredLimitReached,
-                                    properties: .empty,
-                                    timestamp: self.dateProvider.now(),
-                                    appSessionId: self.appSessionID))
+        self.trackEvent(name: .maxEventsStoredLimitReached, properties: .empty)
     }
 
     func trackClearingDiagnosticsAfterFailedSync() {
-        self.track(DiagnosticsEvent(name: .clearingDiagnosticsAfterFailedSync,
-                                    properties: .empty,
-                                    timestamp: self.dateProvider.now(),
-                                    appSessionId: self.appSessionID))
+        self.trackEvent(name: .clearingDiagnosticsAfterFailedSync, properties: .empty)
     }
+
+    func trackEnteredOfflineEntitlementsMode() {
+        self.trackEvent(name: .enteredOfflineEntitlementsMode, properties: .empty)
+    }
+
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                   errorMessage: String) {
+        self.trackEvent(name: .errorEnteringOfflineEntitlementsMode,
+                        properties: DiagnosticsEvent.Properties(
+                            offlineEntitlementErrorReason: reason,
+                            errorMessage: errorMessage
+                        ))
+    }
+
+    func trackOfferingsStarted() {
+        self.trackEvent(name: .getOfferingsStarted, properties: .empty)
+    }
+
+    func trackOfferingsResult(requestedProductIds: Set<String>?,
+                              notFoundProductIds: Set<String>?,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              verificationResult: VerificationResult?,
+                              cacheStatus: CacheStatus,
+                              responseTime: TimeInterval) {
+        self.trackEvent(name: .getOfferingsResult,
+                        properties: DiagnosticsEvent.Properties(
+                            verificationResult: verificationResult?.name,
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            requestedProductIds: requestedProductIds,
+                            notFoundProductIds: notFoundProductIds,
+                            cacheStatus: cacheStatus
+                        ))
+    }
+
+    func trackProductsStarted(requestedProductIds: Set<String>) {
+        self.trackEvent(name: .getProductsResult,
+                        properties: DiagnosticsEvent.Properties(
+                            requestedProductIds: requestedProductIds
+                        ))
+    }
+
+    func trackProductsResult(requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.trackEvent(name: .getProductsResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            requestedProductIds: requestedProductIds,
+                            notFoundProductIds: notFoundProductIds
+                        ))
+    }
+
+    func trackGetCustomerInfoStarted() {
+        self.trackEvent(name: .getCustomerInfoStarted, properties: .empty)
+    }
+
+    func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
+                                    verificationResult: VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval) {
+        self.trackEvent(name: .getCustomerInfoResult,
+                        properties: DiagnosticsEvent.Properties(
+                            verificationResult: verificationResult?.name,
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            cacheFetchPolicy: cacheFetchPolicy,
+                            hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore
+                        ))
+    }
+
+    func trackSyncPurchasesStarted() {
+        self.trackEvent(name: .syncPurchasesStarted, properties: .empty)
+    }
+
+    func trackSyncPurchasesResult(errorMessage: String?,
+                                  errorCode: Int?,
+                                  responseTime: TimeInterval) {
+        self.trackEvent(name: .syncPurchasesResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode
+                        ))
+    }
+
+    func trackRestorePurchasesStarted() {
+        self.trackEvent(name: .restorePurchasesStarted, properties: .empty)
+    }
+
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval) {
+        self.trackEvent(name: .restorePurchasesResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode
+                        ))
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension DiagnosticsTracker {
+
+    func trackEvent(name: DiagnosticsEvent.EventName, properties: DiagnosticsEvent.Properties) {
+        self.track(
+            DiagnosticsEvent(name: name,
+                             properties: properties,
+                             timestamp: self.dateProvider.now(),
+                             appSessionId: self.appSessionID)
+        )
+    }
 
     func clearDiagnosticsFileIfTooBig() async {
         if await self.diagnosticsFileHandler.isDiagnosticsFileTooBig() {

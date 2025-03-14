@@ -140,4 +140,156 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     func trackClearingDiagnosticsAfterFailedSync() {
         trackedClearingDiagnosticsAfterFailedSyncCalls.modify { $0 += 1 }
     }
+
+    let trackedEnteredOfflineEntitlementsModeCalls: Atomic<Int> = .init(0)
+    func trackEnteredOfflineEntitlementsMode() {
+        trackedEnteredOfflineEntitlementsModeCalls.modify { $0 += 1 }
+    }
+
+    let trackedErrorEnteringOfflineEntitlementsModeCalls: Atomic<[
+        (DiagnosticsEvent.OfflineEntitlementsModeErrorReason, String)]> = .init([])
+    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                   errorMessage: String) {
+        self.trackedErrorEnteringOfflineEntitlementsModeCalls.modify {
+            $0.append(
+                (reason,
+                 errorMessage)
+            )
+        }
+    }
+
+    let trackedOfferingsStartedCount: Atomic<Int> = .init(0)
+    func trackOfferingsStarted() {
+        self.trackedOfferingsStartedCount.modify { $0 += 1 }
+    }
+
+    let trackedOfferingsResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (requestedProductIds: Set<String>?,
+         notFoundProductIds: Set<String>?,
+         errorMessage: String?,
+         errorCode: Int?,
+         verificationResult: VerificationResult?,
+         cacheStatus: CacheStatus,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackOfferingsResult(requestedProductIds: Set<String>?,
+                              notFoundProductIds: Set<String>?,
+                              errorMessage: String?,
+                              errorCode: Int?,
+                              verificationResult: VerificationResult?,
+                              cacheStatus: CacheStatus,
+                              responseTime: TimeInterval) {
+        self.trackedOfferingsResultParams.modify {
+            $0.append(
+                (requestedProductIds,
+                 notFoundProductIds,
+                 errorMessage,
+                 errorCode,
+                 verificationResult,
+                 cacheStatus,
+                 responseTime)
+            )
+        }
+    }
+
+    let trackedProductsStartedParams: Atomic<[
+        Set<String>
+    ]> = .init([])
+    func trackProductsStarted(requestedProductIds: Set<String>) {
+        self.trackedProductsStartedParams.modify {
+            $0.append(requestedProductIds)
+        }
+    }
+
+    let trackedProductsResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (requestedProductIds: Set<String>?,
+         notFoundProductIds: Set<String>?,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackProductsResult(requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.trackedProductsResultParams.modify {
+            $0.append(
+                (requestedProductIds, notFoundProductIds, errorMessage, errorCode, responseTime)
+            )
+        }
+    }
+
+    let trackedGetCustomerInfoStartedCalls: Atomic<Int> = .init(0)
+    func trackGetCustomerInfoStarted() {
+        trackedGetCustomerInfoStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedGetCustomerInfoResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (cacheFetchPolicy: RevenueCat.CacheFetchPolicy,
+         verificationResult: RevenueCat.VerificationResult?,
+         hadUnsyncedPurchasesBefore: Bool?,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackGetCustomerInfoResult(cacheFetchPolicy: RevenueCat.CacheFetchPolicy,
+                                    verificationResult: RevenueCat.VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval) {
+        self.trackedGetCustomerInfoResultParams.modify {
+            $0.append(
+                (cacheFetchPolicy,
+                 verificationResult,
+                 hadUnsyncedPurchasesBefore,
+                 errorMessage,
+                 errorCode,
+                 responseTime
+                )
+            )
+        }
+    }
+
+    let trackedSyncPurchasesStartedCalls: Atomic<Int> = .init(0)
+    func trackSyncPurchasesStarted() {
+        self.trackedSyncPurchasesStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedSyncPurchasesResultParams: Atomic<[
+        (errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackSyncPurchasesResult(errorMessage: String?,
+                                  errorCode: Int?,
+                                  responseTime: TimeInterval) {
+        self.trackedSyncPurchasesResultParams.modify {
+            $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
+
+    let trackedRestorePurchasesStartedCalls: Atomic<Int> = .init(0)
+    func trackRestorePurchasesStarted() {
+        self.trackedRestorePurchasesStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedRestorePurchasesResultParams: Atomic<[
+        (errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval) {
+        self.trackedRestorePurchasesResultParams.modify {
+            $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
 }

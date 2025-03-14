@@ -116,7 +116,8 @@ class BasePurchasesTests: TestCase {
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
-                                                         productsManager: self.mockProductsManager)
+                                                         productsManager: self.mockProductsManager,
+                                                         diagnosticsTracker: self.diagnosticsTracker)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
@@ -269,6 +270,7 @@ class BasePurchasesTests: TestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper

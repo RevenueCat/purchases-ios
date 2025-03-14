@@ -147,7 +147,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                          systemInfo: systemInfo,
                                                          backend: mockBackend,
                                                          offeringsFactory: MockOfferingsFactory(),
-                                                         productsManager: mockProductsManager)
+                                                         productsManager: mockProductsManager,
+                                                         diagnosticsTracker: nil)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                   customerInfoManager: customerInfoManager,
                                                                   currentUserProvider: mockIdentityManager)
@@ -194,6 +195,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: nil,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)

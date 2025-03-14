@@ -316,7 +316,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionFetcher = StoreKit2TransactionFetcher()
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
-            guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
+            guard diagnosticsEnabled,
+                  dangerousSettings?.uiPreviewMode != true,
+                  #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
             return DiagnosticsFileHandler()
         }()
 
@@ -341,6 +343,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             offlineCustomerInfoCreator: .createIfAvailable(
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
+                tracker: diagnosticsTracker,
                 observerMode: observerMode
             ),
             diagnosticsTracker: diagnosticsTracker
@@ -448,7 +451,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 systemInfo: systemInfo,
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
-                                                productsManager: productsManager)
+                                                productsManager: productsManager,
+                                                diagnosticsTracker: diagnosticsTracker)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -546,6 +550,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeMessagesHelper: storeMessagesHelper,
+                    diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     paywallEventsManager: paywallEventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
@@ -961,7 +966,8 @@ public extension Purchases {
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     ) {
         self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                              fetchPolicy: fetchPolicy) { @Sendable result in
+                                              fetchPolicy: fetchPolicy,
+                                              trackDiagnostics: true) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -975,7 +981,7 @@ public extension Purchases {
     }
 
     var cachedCustomerInfo: CustomerInfo? {
-        return self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
+        return try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
     }
 
     #endif
@@ -1995,7 +2001,7 @@ private extension Purchases {
 
     // Used when delegate is being set
     func sendCachedCustomerInfoToDelegateIfExists() {
-        guard let info = self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID) else {
+        guard let info = try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID) else {
             return
         }
 
@@ -2007,9 +2013,9 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(
             appUserID: self.appUserID,
             isAppBackgrounded: isAppBackgrounded
-        ) { [cache = self.paywallCache] offerings in
+        ) { [cache = self.paywallCache] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
-               let cache = cache, let offerings = offerings.value {
+               let cache = cache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await cache.warmUpEligibilityCache(offerings: offerings)
                     await cache.warmUpPaywallImagesCache(offerings: offerings)

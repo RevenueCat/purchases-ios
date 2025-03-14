@@ -183,3 +183,77 @@ class PurchasesSyncPurchasesAnonymousTests: BasePurchasesTests {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class PurchasesSyncPurchasesTrackingTests: BasePurchasesTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.setupPurchases()
+    }
+
+    private func getMockDiagnosticsTracker() throws -> MockDiagnosticsTracker {
+        return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
+    }
+
+    func testSyncPurchasesTracksSyncStarted() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
+        self.backend.postReceiptResult = .success(customerInfo)
+
+        _ = waitUntilValue { completed in
+            self.purchases.syncPurchases { (_, error) in
+                completed(error as NSError?)
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
+        let callCount = mockDiagnosticsTracker.trackedSyncPurchasesStartedCalls.value
+        expect(callCount) == 1
+    }
+
+    func testSyncPurchasesTracksSyncResultSuccess() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let customerInfo = try CustomerInfo(data: Self.emptyCustomerInfoData)
+        self.backend.postReceiptResult = .success(customerInfo)
+
+        _ = waitUntilValue { completed in
+            self.purchases.syncPurchases { (_, error) in
+                completed(error as NSError?)
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
+        let calls = mockDiagnosticsTracker.trackedSyncPurchasesResultParams.value
+        expect(calls.count) == 1
+        let callParams = calls[0]
+        expect(callParams.errorCode).to(beNil())
+        expect(callParams.errorMessage).to(beNil())
+        expect(callParams.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+
+    func testSyncPurchasesTracksSyncResultError() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let error: BackendError = .missingAppUserID()
+
+        self.backend.postReceiptResult = .failure(error)
+
+        _ = waitUntilValue { completed in
+            self.purchases.syncPurchases { (_, error) in
+                completed(error as NSError?)
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
+        let calls = mockDiagnosticsTracker.trackedSyncPurchasesResultParams.value
+        expect(calls.count) == 1
+        let callParams = calls[0]
+        expect(callParams.errorCode) == ErrorCode.invalidAppUserIdError.rawValue
+        expect(callParams.errorMessage) == "The app user id is not valid."
+        expect(callParams.responseTime).to(beGreaterThanOrEqualTo(0))
+    }
+}

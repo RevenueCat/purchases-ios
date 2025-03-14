@@ -274,6 +274,151 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - Offerings result
+
+    func testTrackingOfferingsResult() async {
+        let requestedProductIds: Set<String> = ["test-product-id-1", "test-product-id-2"]
+        let notFoundProductIds: Set<String> = ["test-product-id-1"]
+        self.tracker.trackOfferingsResult(requestedProductIds: requestedProductIds,
+                                          notFoundProductIds: notFoundProductIds,
+                                          errorMessage: nil,
+                                          errorCode: nil,
+                                          verificationResult: nil,
+                                          cacheStatus: .notFound,
+                                          responseTime: 1234)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getOfferingsResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 1234,
+                    requestedProductIds: requestedProductIds,
+                    notFoundProductIds: notFoundProductIds,
+                    cacheStatus: .notFound
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Products result
+
+    func testTrackingProductsResult() async {
+        let requestedProductIds: Set<String> = ["test-product-id-1", "test-product-id-2"]
+        let notFoundProductIds: Set<String> = ["test-product-id-1"]
+        self.tracker.trackProductsResult(requestedProductIds: requestedProductIds,
+                                         notFoundProductIds: notFoundProductIds,
+                                         errorMessage: nil,
+                                         errorCode: nil,
+                                         responseTime: 1234)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getProductsResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 1234,
+                    requestedProductIds: requestedProductIds,
+                    notFoundProductIds: notFoundProductIds
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Get customer info
+
+    func testTrackingGetCustomerInfoStarted() async {
+        self.tracker.trackGetCustomerInfoStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getCustomerInfoStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingGetCustomerInfoResult() async {
+        self.tracker.trackGetCustomerInfoResult(cacheFetchPolicy: .cachedOrFetched,
+                                                verificationResult: .verifiedOnDevice,
+                                                hadUnsyncedPurchasesBefore: true,
+                                                errorMessage: "an error msg",
+                                                errorCode: 20,
+                                                responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getCustomerInfoResult,
+                  properties: DiagnosticsEvent.Properties(
+                    verificationResult: "VERIFIED_ON_DEVICE",
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20,
+                    cacheFetchPolicy: .cachedOrFetched,
+                    hadUnsyncedPurchasesBefore: true
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Sync Purchases
+
+    func testTrackingSyncPurchasesStarted() async {
+        self.tracker.trackSyncPurchasesStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .syncPurchasesStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingSyncPurchasesResult() async {
+        self.tracker.trackSyncPurchasesResult(errorMessage: "an error msg",
+                                              errorCode: 20,
+                                              responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .syncPurchasesResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Restore Purchases
+
+    func testTrackingRestorePurchasesStarted() async {
+        self.tracker.trackRestorePurchasesStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingRestorePurchasesResult() async {
+        self.tracker.trackRestorePurchasesResult(errorMessage: "an error msg",
+                                                 errorCode: 20,
+                                                 responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
@@ -304,6 +449,72 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Diagnostics sync events
+
+    func testTrackingEventMaxDiagnosticsSyncRetriesReached() async throws {
+        // When
+        self.tracker.trackMaxDiagnosticsSyncRetriesReached()
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .maxDiagnosticsSyncRetriesReached,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingEventClearingDiagnosticsAfterFailedSync() async throws {
+        // When
+        self.tracker.trackClearingDiagnosticsAfterFailedSync()
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .clearingDiagnosticsAfterFailedSync,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingEnteredOfflineEntitlementsMode() async throws {
+        // When
+        self.tracker.trackEnteredOfflineEntitlementsMode()
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .enteredOfflineEntitlementsMode,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingErrorEnteringOfflineEntitlementsModeWithExpectedParameters() async throws {
+        // When
+        self.tracker.trackErrorEnteringOfflineEntitlementsMode(reason: .oneTimePurchaseFound,
+                                                               errorMessage: "custom error msg")
+
+        // Then
+        let entries = await self.handler.getEntries()
+
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .errorEnteringOfflineEntitlementsMode,
+                  properties: DiagnosticsEvent.Properties(
+                    offlineEntitlementErrorReason: .oneTimePurchaseFound,
+                    errorMessage: "custom error msg"
+                  ),
+                  timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ])
     }
