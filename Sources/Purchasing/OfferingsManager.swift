@@ -410,7 +410,7 @@ private extension OfferingsManager {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
             trackDiagnostics,
            let diagnosticsTracker = self.diagnosticsTracker {
-            diagnosticsTracker.trackOfferingsStarted()
+            diagnosticsTracker.track(.offeringsStarted)
         }
     }
 
@@ -427,15 +427,15 @@ private extension OfferingsManager {
 
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
 
-            diagnosticsTracker.trackOfferingsResult(requestedProductIds: requestedProductIds,
-                                                    notFoundProductIds: notFoundProductIds,
-                                                    errorMessage: error?.localizedDescription,
-                                                    errorCode: error?.asPurchasesError.errorCode,
-                                                    // WIP Add verification result property once we
-                                                    // expose verification result in offerings object
-                                                    verificationResult: nil,
-                                                    cacheStatus: cacheStatus,
-                                                    responseTime: responseTime)
+            diagnosticsTracker.track(.offeringsResult(requestedProductIds: requestedProductIds,
+                                                      notFoundProductIds: notFoundProductIds,
+                                                      errorMessage: error?.localizedDescription,
+                                                      errorCode: error?.asPurchasesError.errorCode,
+                                                      // WIP Add verification result property once we
+                                                      // expose verification result in offerings object
+                                                      verificationResult: nil,
+                                                      cacheStatus: cacheStatus,
+                                                      responseTime: responseTime))
         }
     }
 }
