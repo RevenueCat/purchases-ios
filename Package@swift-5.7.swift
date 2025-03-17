@@ -83,7 +83,7 @@ let package = Package(
                         .product(name: "Nimble", package: "nimble"),
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
-                    exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
+                    exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans", "**/Swift6/**"],
                     resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic")])
     ]
 )

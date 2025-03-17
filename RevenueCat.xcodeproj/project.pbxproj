@@ -3923,7 +3923,7 @@
 		3544DA6B2C2C848E00704E9D /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
-				57803F562D82FEFA00CE7D4F /* CustomerCenterViewPreferenceKeyTests.swift */,
+				57A0DCAC2D882E67003B7716 /* Swift6 */,
 				FD6186522D1393E2007843DA /* Mocks */,
 				35A99C822CCB95950074AB41 /* SubscriptionInformationFixtures.swift */,
 				3544DA692C2C848E00704E9D /* CustomerCenterViewModelTests.swift */,
@@ -4534,6 +4534,14 @@
 				35F38B472C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift */,
 			);
 			path = Backend;
+			sourceTree = "<group>";
+		};
+		57A0DCAC2D882E67003B7716 /* Swift6 */ = {
+			isa = PBXGroup;
+			children = (
+				57803F562D82FEFA00CE7D4F /* CustomerCenterViewPreferenceKeyTests.swift */,
+			);
+			path = Swift6;
 			sourceTree = "<group>";
 		};
 		57B425A3275800B60075BDC4 /* Test Plans */ = {
