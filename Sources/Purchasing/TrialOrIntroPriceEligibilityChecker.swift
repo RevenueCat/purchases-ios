@@ -302,16 +302,19 @@ private extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        let (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
-            switch $1.value.status {
-            case .unknown:
-                $0.0 += 1
-            case .ineligible:
-                $0.1 += 1
-            case .eligible:
-                $0.2 += 1
-            case .noIntroOfferExists:
-                $0.3 += 1
+        var unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount: Int?
+        if !result.isEmpty {
+            (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
+                switch $1.value.status {
+                case .unknown:
+                    $0.0 += 1
+                case .ineligible:
+                    $0.1 += 1
+                case .eligible:
+                    $0.2 += 1
+                case .noIntroOfferExists:
+                    $0.3 += 1
+                }
             }
         }
 
