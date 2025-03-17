@@ -1214,7 +1214,7 @@ private extension PurchasesOrchestrator {
         let offerId: String?
         let offerType: String?
 
-        if #available(iOSApplicationExtension 18.0, *) {
+        if #available(iOS 18.0, macOS 15.0, *) {
             offerId = purchaseIntent.offer?.id
             offerType = purchaseIntent.offer?.type.rawValue
         } else {

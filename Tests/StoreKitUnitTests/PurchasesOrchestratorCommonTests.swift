@@ -547,7 +547,6 @@ extension PurchasesOrchestratorTrackingTests {
         expect(params.productId) == sk2Product.id
         expect(params.offerId) == nil
         expect(params.offerType) == nil
-
     }
 
 }
