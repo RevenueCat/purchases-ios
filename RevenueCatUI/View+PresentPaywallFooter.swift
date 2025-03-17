@@ -399,7 +399,10 @@ private struct PaywallTierChangeModifier: ViewModifier {
         content
             .onPreferenceChange(PaywallCurrentTierPreferenceKey.self) { data in
                 if let data {
-                    self.handler(data.tier, data.localizedName)
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler(data.tier, data.localizedName)
+                    }
                 }
             }
     }

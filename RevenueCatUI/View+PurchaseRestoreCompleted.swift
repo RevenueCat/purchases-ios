@@ -305,7 +305,10 @@ private struct OnPurchaseStartedModifier: ViewModifier {
         content
             .onPreferenceChange(PurchaseInProgressPreferenceKey.self) { package in
                 if let package {
-                    self.handler(package)
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler(package)
+                    }
                 }
             }
     }
@@ -329,7 +332,10 @@ private struct OnPurchaseCompletedModifier: ViewModifier {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, !result.userCancelled {
-                    self.handler(result.transaction, result.customerInfo)
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler(result.transaction, result.customerInfo)
+                    }
                 }
             }
     }
@@ -349,7 +355,10 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, result.userCancelled {
-                    self.handler()
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler()
+                    }
                 }
             }
     }
@@ -365,7 +374,10 @@ private struct OnRestoreStartedModifier: ViewModifier {
         content
             .onPreferenceChange(RestoreInProgressPreferenceKey.self) { inProgress in
                 if inProgress {
-                    self.handler()
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler()
+                    }
                 }
             }
     }
@@ -381,7 +393,10 @@ private struct OnRestoreCompletedModifier: ViewModifier {
         content
             .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { customerInfo in
                 if let customerInfo {
-                    self.handler(customerInfo)
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler(customerInfo)
+                    }
                 }
             }
     }
@@ -397,7 +412,10 @@ private struct PurchaseFailureModifier: ViewModifier {
         content
             .onPreferenceChange(PurchaseErrorPreferenceKey.self) { error in
                 if let error {
-                    self.handler(error)
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler(error)
+                    }
                 }
             }
     }
@@ -413,7 +431,10 @@ private struct RestoreFailureModifier: ViewModifier {
         content
             .onPreferenceChange(RestoreErrorPreferenceKey.self) { error in
                 if let error {
-                    self.handler(error)
+                    Task { @MainActor in
+                      guard !Task.isCancelled else { return }
+                        self.handler(error)
+                    }
                 }
             }
     }
