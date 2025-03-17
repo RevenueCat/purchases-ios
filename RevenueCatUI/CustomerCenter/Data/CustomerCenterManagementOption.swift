@@ -19,19 +19,19 @@ public protocol CustomerCenterActionable {}
 /// Management options that can be triggered by buttons in the Customer Center
 public enum CustomerCenterManagementOption {
     /// Represents a cancel action
-    struct Cancel: CustomerCenterActionable {}
+    public struct Cancel: CustomerCenterActionable {}
 
     /// Represents an action to open a custom URL
-    struct CustomUrl: CustomerCenterActionable {
-        let url: URL
+    public struct CustomUrl: CustomerCenterActionable {
+        public let url: URL
     }
 
     /// Represents a missing purchase (restore) action
-    struct MissingPurchase: CustomerCenterActionable {}
+    public struct MissingPurchase: CustomerCenterActionable {}
 
     /// Represents a refund request action
-    struct RefundRequest: CustomerCenterActionable {}
+    public struct RefundRequest: CustomerCenterActionable {}
 
     /// Represents a change plans action
-    struct ChangePlans: CustomerCenterActionable {}
+    public struct ChangePlans: CustomerCenterActionable {}
 }
