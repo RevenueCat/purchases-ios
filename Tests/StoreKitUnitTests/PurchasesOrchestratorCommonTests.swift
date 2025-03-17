@@ -500,7 +500,7 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
 
 }
 
-#if !os(tvOS) && !os(watchOS) && compiler(>=5.10)
+#if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
 
 // MARK: - Purchase Intent Received events
 
