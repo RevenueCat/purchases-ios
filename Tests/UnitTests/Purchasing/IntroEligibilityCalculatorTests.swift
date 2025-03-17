@@ -120,7 +120,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionInDifferentGroup() throws {
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionInDifferentGroup()
+    throws {
         try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 "com.revenuecat.product1": Date().addingTimeInterval(-1000)
@@ -240,7 +241,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithTrial() throws {
+    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithTrial()
+    throws {
         try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", Date().addingTimeInterval(-1000), true)
