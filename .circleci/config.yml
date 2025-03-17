@@ -528,6 +528,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -558,6 +561,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -592,6 +598,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -625,6 +634,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -655,6 +667,9 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
