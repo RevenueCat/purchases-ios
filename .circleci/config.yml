@@ -267,6 +267,9 @@ commands:
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
       - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - run:
           name: Run tests
           working_directory: << parameters.directory >>
           command: bundle exec fastlane scan
@@ -284,6 +287,9 @@ commands:
       - run:
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
@@ -307,6 +313,9 @@ commands:
       - run:
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
@@ -672,6 +681,9 @@ jobs:
       - checkout
       - install-dependencies
       - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - run:
           name: Run tests
           command: bundle exec fastlane mac test_macos
           no_output_timeout: 15m
@@ -698,6 +710,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -727,6 +742,9 @@ jobs:
       - install-dependencies:
           install_swiftlint: false
       - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - run:
           name: Run tests
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
@@ -754,6 +772,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -792,6 +813,9 @@ jobs:
       - install-runtime:
           runtime-name: iOS 15.5
       - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - run:
           name: Run tests
           command: bundle exec fastlane test_ios
           no_output_timeout: 5m
@@ -818,6 +842,9 @@ jobs:
       - checkout
       - install-dependencies
       - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - run:
           name: Run tests
           command: bundle exec fastlane test_tvos
           no_output_timeout: 5m
@@ -837,6 +864,9 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - run:
           name: Run tests
           command: bundle exec fastlane test_watchos
@@ -877,6 +907,9 @@ jobs:
       - install-runtime:
           runtime-name: iOS 14.5
       - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - run:
           name: Run tests
           command: bundle exec fastlane test_ios skip_sk_tests:true
           no_output_timeout: 5m
@@ -912,6 +945,9 @@ jobs:
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
+      - run:
+          name: Enable Macros for Xcode
+          command: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
