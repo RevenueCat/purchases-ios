@@ -144,8 +144,6 @@ platform :ios do
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
 
-    defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
-   
     # For platforms that fail to run StoreKit tests.
     # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
     skip_sk_tests = options[:skip_sk_tests]
