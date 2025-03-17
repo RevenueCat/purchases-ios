@@ -222,4 +222,74 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             )
         }
     }
+
+    let trackedGetCustomerInfoStartedCalls: Atomic<Int> = .init(0)
+    func trackGetCustomerInfoStarted() {
+        trackedGetCustomerInfoStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedGetCustomerInfoResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (cacheFetchPolicy: RevenueCat.CacheFetchPolicy,
+         verificationResult: RevenueCat.VerificationResult?,
+         hadUnsyncedPurchasesBefore: Bool?,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackGetCustomerInfoResult(cacheFetchPolicy: RevenueCat.CacheFetchPolicy,
+                                    verificationResult: RevenueCat.VerificationResult?,
+                                    hadUnsyncedPurchasesBefore: Bool?,
+                                    errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval) {
+        self.trackedGetCustomerInfoResultParams.modify {
+            $0.append(
+                (cacheFetchPolicy,
+                 verificationResult,
+                 hadUnsyncedPurchasesBefore,
+                 errorMessage,
+                 errorCode,
+                 responseTime
+                )
+            )
+        }
+    }
+
+    let trackedSyncPurchasesStartedCalls: Atomic<Int> = .init(0)
+    func trackSyncPurchasesStarted() {
+        self.trackedSyncPurchasesStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedSyncPurchasesResultParams: Atomic<[
+        (errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackSyncPurchasesResult(errorMessage: String?,
+                                  errorCode: Int?,
+                                  responseTime: TimeInterval) {
+        self.trackedSyncPurchasesResultParams.modify {
+            $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
+
+    let trackedRestorePurchasesStartedCalls: Atomic<Int> = .init(0)
+    func trackRestorePurchasesStarted() {
+        self.trackedRestorePurchasesStartedCalls.modify { $0 += 1 }
+    }
+
+    let trackedRestorePurchasesResultParams: Atomic<[
+        (errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    func trackRestorePurchasesResult(errorMessage: String?,
+                                     errorCode: Int?,
+                                     responseTime: TimeInterval) {
+        self.trackedRestorePurchasesResultParams.modify {
+            $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
 }
