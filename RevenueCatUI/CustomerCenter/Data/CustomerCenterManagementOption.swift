@@ -23,6 +23,7 @@ public enum CustomerCenterManagementOption {
 
     /// Represents an action to open a custom URL
     public struct CustomUrl: CustomerCenterActionable {
+        /// The URL that will be opened
         public let url: URL
     }
 
