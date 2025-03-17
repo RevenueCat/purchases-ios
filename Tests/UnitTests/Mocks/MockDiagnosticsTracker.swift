@@ -292,4 +292,42 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             $0.append((errorMessage, errorCode, responseTime))
         }
     }
+
+    let trackedAppleTrialOrIntroEligibilityRequestParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (wasSuccessful: Bool,
+         storeKitVersion: StoreKitVersion,
+         requestedProductIds: Set<String>,
+         eligibilityUnknownCount: Int,
+         eligibilityIneligibleCount: Int,
+         eligibilityEligibleCount: Int,
+         eligibilityNoIntroOfferCount: Int,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: Bool,
+                                                  storeKitVersion: StoreKitVersion,
+                                                  requestedProductIds: Set<String>,
+                                                  eligibilityUnknownCount: Int,
+                                                  eligibilityIneligibleCount: Int,
+                                                  eligibilityEligibleCount: Int,
+                                                  eligibilityNoIntroOfferCount: Int,
+                                                  errorMessage: String?,
+                                                  errorCode: Int?,
+                                                  responseTime: TimeInterval) {
+        self.trackedAppleTrialOrIntroEligibilityRequestParams.modify {
+            $0.append((wasSuccessful,
+                       storeKitVersion,
+                       requestedProductIds,
+                       eligibilityUnknownCount,
+                       eligibilityIneligibleCount,
+                       eligibilityEligibleCount,
+                       eligibilityNoIntroOfferCount,
+                       errorMessage,
+                       errorCode,
+                       responseTime))
+        }
+    }
 }

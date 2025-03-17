@@ -27,6 +27,20 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     var mockProductsManager: MockProductsManager!
     var mockSystemInfo: MockSystemInfo!
 
+    private var diagnosticsTracker: DiagnosticsTrackerType?
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockDiagnosticsTracker: MockDiagnosticsTracker {
+        get throws {
+            return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
+        }
+    }
+
+    static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
+    static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
+    let mockDateProvider = MockDateProvider(stubbedNow: eventTimestamp1,
+                                            subsequentNows: eventTimestamp2)
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
@@ -46,6 +60,12 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let mockOperationDispatcher = MockOperationDispatcher()
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
+
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: mockSystemInfo,
             receiptFetcher: receiptFetcher,
@@ -53,7 +73,9 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             backend: mockBackend,
             currentUserProvider: currentUserProvider,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
+            productsManager: mockProductsManager,
+            diagnosticsTracker: self.diagnosticsTracker,
+            dateProvider: self.mockDateProvider
         )
     }
 
