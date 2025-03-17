@@ -209,7 +209,22 @@ struct SamplePaywallsList: View {
         #if os(iOS)
         .presentCustomerCenter(
             isPresented: self.$presentingCustomerCenterSheet,
-            customerCenterActionHandler: self.handleCustomerCenterAction,
+            managementOptionSelected: { button in
+                switch button {
+                    case is CustomerCenterManagementOption.Cancel:
+                        print("Cancel action triggered")
+                    case let customUrl as CustomerCenterManagementOption.CustomUrl:
+                        print("Opening URL: \(customUrl.url)")
+                case is CustomerCenterManagementOption  .MissingPurchase:
+                        print("Missing purchase triggered")
+                case is CustomerCenterManagementOption.RefundRequest:
+                        print("RefundRequest triggered")
+                case is CustomerCenterManagementOption.ChangePlans:
+                        print("ChangePlans triggered")
+                    default:
+                        print("Unknown action")
+                 }
+            },
             onDismiss: { self.presentingCustomerCenterFullScreen = false }
         )
         .presentCustomerCenter(
