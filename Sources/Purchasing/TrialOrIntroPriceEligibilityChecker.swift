@@ -84,6 +84,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         let completionBlock: ([String: IntroEligibility], Error?, StoreKitVersion) -> Void =
         { [weak self] (result, error, storeKitVersion) in
             self?.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
+                                                              requestedProductIds: productIdentifiers,
                                                               result: result,
                                                               error: error,
                                                               storeKitVersion: storeKitVersion)
@@ -292,6 +293,7 @@ extension TrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}
 private extension TrialOrIntroPriceEligibilityChecker {
 
     func trackTrialOrIntroEligibilityRequestIfNeeded(startTime: Date,
+                                                     requestedProductIds: Set<String>,
                                                      result: [String: IntroEligibility],
                                                      error: Error?,
                                                      storeKitVersion: StoreKitVersion) {
@@ -299,8 +301,6 @@ private extension TrialOrIntroPriceEligibilityChecker {
               let diagnosticsTracker = self.diagnosticsTracker else {
             return
         }
-
-        let requestedProductIds = Set(result.keys)
 
         let (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
             switch $1.value.status {
