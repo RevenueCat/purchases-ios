@@ -105,9 +105,9 @@ extension CustomerCenterView {
     }
 
     struct ManagementOptionSelectedPreferenceKey: PreferenceKey {
-        static var defaultValue: CustomerCenterManagementOptionWrapper?
-        static func reduce(value: inout CustomerCenterManagementOptionWrapper?,
-                           nextValue: () -> CustomerCenterManagementOptionWrapper?) {
+        static var defaultValue: UniqueWrapper<CustomerCenterActionable>?
+        static func reduce(value: inout UniqueWrapper<CustomerCenterActionable>?,
+                           nextValue: () -> UniqueWrapper<CustomerCenterActionable>?) {
             value = nextValue() ?? value
         }
     }
@@ -212,7 +212,7 @@ extension CustomerCenterView {
             content
                 .onPreferenceChange(ManagementOptionSelectedPreferenceKey.self) { wrapper in
                     if let wrapper = wrapper {
-                        handler(wrapper.action)
+                        handler(wrapper.value)
                     }
                 }
         }

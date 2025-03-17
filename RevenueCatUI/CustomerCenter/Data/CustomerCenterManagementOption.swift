@@ -16,24 +16,6 @@ import Foundation
 /// Protocol for action types that can be handled by the Customer Center
 public protocol CustomerCenterActionable {}
 
-/// A wrapper for CustomerCenterActionable that conforms to Equatable
-/// This allows us to use CustomerCenterActionable with SwiftUI's preference system
-public struct CustomerCenterManagementOptionWrapper: Equatable {
-
-    let id = UUID()
-    let action: CustomerCenterActionable
-
-    init(action: CustomerCenterActionable) {
-        self.action = action
-    }
-
-    static func == (lhs: CustomerCenterManagementOptionWrapper,
-                    rhs: CustomerCenterManagementOptionWrapper) -> Bool {
-        return lhs.id == rhs.id
-    }
-
-}
-
 /// Management options that can be triggered by buttons in the Customer Center
 public enum CustomerCenterManagementOption {
     /// Represents a cancel action
