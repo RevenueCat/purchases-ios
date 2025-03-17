@@ -155,14 +155,19 @@ class SK1ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
             manager.products(withIdentifiers: Set([identifier, notFoundIdentifier]), completion: completed)
         }
 
-        expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).toEventually(haveCount(1))
-        let params = try XCTUnwrap(self.mockDiagnosticsTracker.trackedProductsRequestParams.value.first)
-        expect(params.wasSuccessful) == true
-        expect(params.storeKitVersion) == .storeKit1
-        expect(Set(params.requestedProductIds)) == [identifier, notFoundIdentifier]
-        expect(Set(params.notFoundProductIds)) == [notFoundIdentifier]
-        expect(params.errorMessage).to(beNil())
-        expect(params.errorCode).to(beNil())
+        expect(self.mockDiagnosticsTracker.trackedEvents.value).toEventually(haveCount(1))
+        let event = try XCTUnwrap(self.mockDiagnosticsTracker.trackedEvents.value.first)
+        guard case .productsRequest(wasSuccessful: true,
+                                    storeKitVersion: .storeKit1,
+                                    errorMessage: nil,
+                                    errorCode: nil,
+                                    storeKitErrorDescription: _,
+                                    requestedProductIds: [identifier, notFoundIdentifier],
+                                    notFoundProductIds: [notFoundIdentifier],
+                                    responseTime: _) = event else {
+            XCTFail("Event does not match")
+        }
+
     }
 
 }
