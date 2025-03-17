@@ -147,7 +147,7 @@ extension View {
         refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
-        buttonSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         self.modifier(
@@ -163,7 +163,7 @@ extension View {
                 refundRequestStarted: refundRequestStarted,
                 refundRequestCompleted: refundRequestCompleted,
                 feedbackSurveyCompleted: feedbackSurveyCompleted,
-                buttonSelected: buttonSelected
+                managementOptionSelected: managementOptionSelected
             )
         )
     }
@@ -200,7 +200,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
-        buttonSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
@@ -213,7 +213,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self.refundRequestStarted = refundRequestStarted
         self.refundRequestCompleted = refundRequestCompleted
         self.feedbackSurveyCompleted = feedbackSurveyCompleted
-        self.managementOptionSelected = buttonSelected
+        self.managementOptionSelected = managementOptionSelected
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
