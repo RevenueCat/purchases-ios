@@ -531,7 +531,7 @@ final class MockStoreKit2PurchaseIntent: StoreKit2PurchaseIntentType {
 @available(visionOS, unavailable)
 extension PurchasesOrchestratorTrackingTests {
 
-    func test() async throws {
+    func testTracksPurchaseIntentReceived() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let sk2Product = try await self.fetchSk2Product()
