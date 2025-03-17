@@ -338,7 +338,7 @@ class CustomerInfoManager {
 
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 if let tracker = self.diagnosticsTracker, lastSentCustomerInfo != customerInfo {
-                    tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
+                    tracker.track(.customerInfoVerification(result: customerInfo.entitlements.verification))
                 }
             }
 
@@ -583,7 +583,7 @@ private extension CustomerInfoManager {
 
     private func trackGetCustomerInfoStartedIfNeeded(trackDiagnostics: Bool) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *), trackDiagnostics {
-            self.diagnosticsTracker?.trackGetCustomerInfoStarted()
+            self.diagnosticsTracker?.track(.getCustomerInfoStarted)
         }
     }
 
@@ -622,14 +622,14 @@ private extension CustomerInfoManager {
             let customerInfo = result.value
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
 
-            self.diagnosticsTracker?.trackGetCustomerInfoResult(
+            self.diagnosticsTracker?.track(.getCustomerInfoResult(
                 cacheFetchPolicy: cacheFetchPolicy,
                 verificationResult: customerInfo?.entitlements.verification,
                 hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore,
                 errorMessage: error?.localizedDescription,
                 errorCode: error?.errorCode,
                 responseTime: responseTime
-            )
+            ))
         }
     }
 }

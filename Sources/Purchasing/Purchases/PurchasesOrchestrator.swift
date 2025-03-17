@@ -1093,23 +1093,23 @@ private extension PurchasesOrchestrator {
                 ?? error?.localizedDescription
             let errorCode = error?.code
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-            diagnosticsTracker.trackPurchaseRequest(wasSuccessful: successful,
-                                                    storeKitVersion: storeKitVersion,
-                                                    errorMessage: errorMessage,
-                                                    errorCode: errorCode,
-                                                    storeKitErrorDescription: storeKitErrorDescription,
-                                                    productId: productId,
-                                                    promotionalOfferId: promotionalOfferId,
-                                                    winBackOfferApplied: winBackOfferApplied,
-                                                    purchaseResult: purchaseResult,
-                                                    responseTime: responseTime)
+            diagnosticsTracker.track(.purchaseRequest(wasSuccessful: successful,
+                                                      storeKitVersion: storeKitVersion,
+                                                      errorMessage: errorMessage,
+                                                      errorCode: errorCode,
+                                                      storeKitErrorDescription: storeKitErrorDescription,
+                                                      productId: productId,
+                                                      promotionalOfferId: promotionalOfferId,
+                                                      winBackOfferApplied: winBackOfferApplied,
+                                                      purchaseResult: purchaseResult,
+                                                      responseTime: responseTime))
         }
     }
 
     func trackProductsStartedIfNeeded(requestedProductIds: Set<String>) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            let diagnosticsTracker = self.diagnosticsTracker {
-            diagnosticsTracker.trackProductsStarted(requestedProductIds: requestedProductIds)
+            diagnosticsTracker.track(.productsStarted(requestedProductIds: requestedProductIds))
         }
     }
 
@@ -1120,11 +1120,11 @@ private extension PurchasesOrchestrator {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            let diagnosticsTracker = self.diagnosticsTracker {
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
-            diagnosticsTracker.trackProductsResult(requestedProductIds: requestedProductIds,
-                                                   notFoundProductIds: notFoundProductIds,
-                                                   errorMessage: error?.localizedDescription,
-                                                   errorCode: error?.errorCode,
-                                                   responseTime: responseTime)
+            diagnosticsTracker.track(.productsResult(requestedProductIds: requestedProductIds,
+                                                     notFoundProductIds: notFoundProductIds,
+                                                     errorMessage: error?.localizedDescription,
+                                                     errorCode: error?.errorCode,
+                                                     responseTime: responseTime))
         }
     }
 
@@ -1133,9 +1133,9 @@ private extension PurchasesOrchestrator {
            let diagnosticsTracker = self.diagnosticsTracker {
             let isRestore = receiptRefreshPolicy == .always
             if isRestore {
-                diagnosticsTracker.trackRestorePurchasesStarted()
+                diagnosticsTracker.track(.restorePurchasesStarted)
             } else {
-                diagnosticsTracker.trackSyncPurchasesStarted()
+                diagnosticsTracker.track(.syncPurchasesStarted)
             }
         }
     }
@@ -1148,13 +1148,13 @@ private extension PurchasesOrchestrator {
             let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
             let isRestore = receiptRefreshPolicy == .always
             if isRestore {
-                diagnosticsTracker.trackRestorePurchasesResult(errorMessage: error?.localizedDescription,
-                                                               errorCode: error?.errorCode,
-                                                               responseTime: responseTime)
+                diagnosticsTracker.track(.restorePurchasesResult(errorMessage: error?.localizedDescription,
+                                                                 errorCode: error?.errorCode,
+                                                                 responseTime: responseTime))
             } else {
-                diagnosticsTracker.trackSyncPurchasesResult(errorMessage: error?.localizedDescription,
-                                                            errorCode: error?.errorCode,
-                                                            responseTime: responseTime)
+                diagnosticsTracker.track(.syncPurchasesResult(errorMessage: error?.localizedDescription,
+                                                              errorCode: error?.errorCode,
+                                                              responseTime: responseTime))
             }
         }
     }

@@ -88,7 +88,7 @@ class OfflineCustomerInfoCreator {
 
             let offlineCustomerInfo = creator(products, mapping, userID)
 
-            self.tracker?.trackEnteredOfflineEntitlementsMode()
+            self.tracker?.track(.enteredOfflineEntitlementsMode)
 
             Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
                 products, offlineCustomerInfo.entitlements
@@ -119,7 +119,7 @@ class OfflineCustomerInfoCreator {
                 errorMessage = error.localizedDescription
             }
 
-            self.tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
+            self.tracker?.track(.errorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage))
             throw error
         }
     }

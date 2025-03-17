@@ -591,14 +591,14 @@ private extension HTTPClient {
             case let .success(response):
                 let httpStatusCode = response.httpStatusCode.rawValue
                 let verificationResult = response.verificationResult
-                diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
-                                                             responseTime: responseTime,
-                                                             wasSuccessful: true,
-                                                             responseCode: httpStatusCode,
-                                                             backendErrorCode: nil,
-                                                             resultOrigin: response.origin,
-                                                             verificationResult: verificationResult,
-                                                             isRetry: request.retried)
+                diagnosticsTracker.track(.httpRequestPerformed(endpointName: requestPathName,
+                                                               responseTime: responseTime,
+                                                               wasSuccessful: true,
+                                                               responseCode: httpStatusCode,
+                                                               backendErrorCode: nil,
+                                                               resultOrigin: response.origin,
+                                                               verificationResult: verificationResult,
+                                                               isRetry: request.retried))
             case let .failure(error):
                 var responseCode = -1
                 var backendErrorCode: Int?
@@ -606,14 +606,14 @@ private extension HTTPClient {
                     responseCode = code.rawValue
                     backendErrorCode = errorResponse.code.rawValue
                 }
-                diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
-                                                             responseTime: responseTime,
-                                                             wasSuccessful: false,
-                                                             responseCode: responseCode,
-                                                             backendErrorCode: backendErrorCode,
-                                                             resultOrigin: nil,
-                                                             verificationResult: .notRequested,
-                                                             isRetry: request.retried)
+                diagnosticsTracker.track(.httpRequestPerformed(endpointName: requestPathName,
+                                                               responseTime: responseTime,
+                                                               wasSuccessful: false,
+                                                               responseCode: responseCode,
+                                                               backendErrorCode: backendErrorCode,
+                                                               resultOrigin: nil,
+                                                               verificationResult: .notRequested,
+                                                               isRetry: request.retried))
             }
         }
     }

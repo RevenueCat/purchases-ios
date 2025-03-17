@@ -13,113 +13,15 @@
 
 import Foundation
 
-// swiftlint:disable function_parameter_count
 protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func track(_ event: DiagnosticsEvent)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackProductsRequest(wasSuccessful: Bool,
-                              storeKitVersion: StoreKitVersion,
-                              errorMessage: String?,
-                              errorCode: Int?,
-                              storeKitErrorDescription: String?,
-                              requestedProductIds: Set<String>,
-                              notFoundProductIds: Set<String>,
-                              responseTime: TimeInterval)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackHttpRequestPerformed(endpointName: String,
-                                   responseTime: TimeInterval,
-                                   wasSuccessful: Bool,
-                                   responseCode: Int,
-                                   backendErrorCode: Int?,
-                                   resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult,
-                                   isRetry: Bool)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackPurchaseRequest(wasSuccessful: Bool,
-                              storeKitVersion: StoreKitVersion,
-                              errorMessage: String?,
-                              errorCode: Int?,
-                              storeKitErrorDescription: String?,
-                              productId: String,
-                              promotionalOfferId: String?,
-                              winBackOfferApplied: Bool,
-                              purchaseResult: DiagnosticsEvent.PurchaseResult?,
-                              responseTime: TimeInterval)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackMaxDiagnosticsSyncRetriesReached()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackClearingDiagnosticsAfterFailedSync()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackEnteredOfflineEntitlementsMode()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
-                                                   errorMessage: String)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackOfferingsStarted()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackOfferingsResult(requestedProductIds: Set<String>?,
-                              notFoundProductIds: Set<String>?,
-                              errorMessage: String?,
-                              errorCode: Int?,
-                              verificationResult: VerificationResult?,
-                              cacheStatus: CacheStatus,
-                              responseTime: TimeInterval)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackProductsStarted(requestedProductIds: Set<String>)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackProductsResult(requestedProductIds: Set<String>,
-                             notFoundProductIds: Set<String>?,
-                             errorMessage: String?,
-                             errorCode: Int?,
-                             responseTime: TimeInterval)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackGetCustomerInfoStarted()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
-                                    verificationResult: VerificationResult?,
-                                    hadUnsyncedPurchasesBefore: Bool?,
-                                    errorMessage: String?,
-                                    errorCode: Int?,
-                                    responseTime: TimeInterval)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackSyncPurchasesStarted()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackSyncPurchasesResult(errorMessage: String?,
-                                  errorCode: Int?,
-                                  responseTime: TimeInterval)
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackRestorePurchasesStarted()
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackRestorePurchasesResult(errorMessage: String?,
-                                     errorCode: Int?,
-                                     responseTime: TimeInterval)
+    func track(_ event: DiagnosticsTracker.Event)
 
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
+final class DiagnosticsTracker: Sendable, DiagnosticsTrackerType {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
     private let diagnosticsDispatcher: OperationDispatcher
@@ -136,221 +38,19 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.appSessionID = appSessionID
     }
 
-    func track(_ event: DiagnosticsEvent) {
-        self.diagnosticsDispatcher.dispatchOnWorkerThread {
-            await self.clearDiagnosticsFileIfTooBig()
-            await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
-        }
-    }
-
-    func trackCustomerInfoVerificationResultIfNeeded(
-        _ customerInfo: CustomerInfo
-    ) {
-        let verificationResult = customerInfo.entitlements.verification
-        if verificationResult == .notRequested {
+    func track(_ event: DiagnosticsTracker.Event) {
+        guard let (name, properties) = event.diagnosticsEvent else {
             return
         }
 
-        self.trackEvent(name: .customerInfoVerificationResult,
-                        properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name))
-    }
-
-    func trackProductsRequest(wasSuccessful: Bool,
-                              storeKitVersion: StoreKitVersion,
-                              errorMessage: String?,
-                              errorCode: Int?,
-                              storeKitErrorDescription: String?,
-                              requestedProductIds: Set<String>,
-                              notFoundProductIds: Set<String>,
-                              responseTime: TimeInterval) {
-        self.trackEvent(name: .appleProductsRequest,
-                        properties: DiagnosticsEvent.Properties(
-                            responseTime: responseTime,
-                            storeKitVersion: storeKitVersion,
-                            successful: wasSuccessful,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode,
-                            skErrorDescription: storeKitErrorDescription,
-                            requestedProductIds: requestedProductIds,
-                            notFoundProductIds: notFoundProductIds
-                        ))
-    }
-
-    func trackHttpRequestPerformed(endpointName: String,
-                                   responseTime: TimeInterval,
-                                   wasSuccessful: Bool,
-                                   responseCode: Int,
-                                   backendErrorCode: Int?,
-                                   resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult,
-                                   isRetry: Bool) {
-        self.trackEvent(name: .httpRequestPerformed,
-                        properties: DiagnosticsEvent.Properties(
-                            verificationResult: verificationResult.name,
-                            endpointName: endpointName,
-                            responseTime: responseTime,
-                            successful: wasSuccessful,
-                            responseCode: responseCode,
-                            backendErrorCode: backendErrorCode,
-                            etagHit: resultOrigin == .cache,
-                            isRetry: isRetry
-                        ))
-    }
-
-    func trackPurchaseRequest(wasSuccessful: Bool,
-                              storeKitVersion: StoreKitVersion,
-                              errorMessage: String?,
-                              errorCode: Int?,
-                              storeKitErrorDescription: String?,
-                              productId: String,
-                              promotionalOfferId: String?,
-                              winBackOfferApplied: Bool,
-                              purchaseResult: DiagnosticsEvent.PurchaseResult?,
-                              responseTime: TimeInterval) {
-        self.trackEvent(name: .applePurchaseAttempt,
-                        properties: DiagnosticsEvent.Properties(
-                            responseTime: responseTime,
-                            storeKitVersion: storeKitVersion,
-                            successful: wasSuccessful,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode,
-                            skErrorDescription: storeKitErrorDescription,
-                            productId: productId,
-                            promotionalOfferId: promotionalOfferId,
-                            winBackOfferApplied: winBackOfferApplied,
-                            purchaseResult: purchaseResult
-                        ))
-    }
-
-    func trackMaxDiagnosticsSyncRetriesReached() {
-        self.trackEvent(name: .maxEventsStoredLimitReached, properties: .empty)
-    }
-
-    func trackClearingDiagnosticsAfterFailedSync() {
-        self.trackEvent(name: .clearingDiagnosticsAfterFailedSync, properties: .empty)
-    }
-
-    func trackEnteredOfflineEntitlementsMode() {
-        self.trackEvent(name: .enteredOfflineEntitlementsMode, properties: .empty)
-    }
-
-    func trackErrorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
-                                                   errorMessage: String) {
-        self.trackEvent(name: .errorEnteringOfflineEntitlementsMode,
-                        properties: DiagnosticsEvent.Properties(
-                            offlineEntitlementErrorReason: reason,
-                            errorMessage: errorMessage
-                        ))
-    }
-
-    func trackOfferingsStarted() {
-        self.trackEvent(name: .getOfferingsStarted, properties: .empty)
-    }
-
-    func trackOfferingsResult(requestedProductIds: Set<String>?,
-                              notFoundProductIds: Set<String>?,
-                              errorMessage: String?,
-                              errorCode: Int?,
-                              verificationResult: VerificationResult?,
-                              cacheStatus: CacheStatus,
-                              responseTime: TimeInterval) {
-        self.trackEvent(name: .getOfferingsResult,
-                        properties: DiagnosticsEvent.Properties(
-                            verificationResult: verificationResult?.name,
-                            responseTime: responseTime,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode,
-                            requestedProductIds: requestedProductIds,
-                            notFoundProductIds: notFoundProductIds,
-                            cacheStatus: cacheStatus
-                        ))
-    }
-
-    func trackProductsStarted(requestedProductIds: Set<String>) {
-        self.trackEvent(name: .getProductsResult,
-                        properties: DiagnosticsEvent.Properties(
-                            requestedProductIds: requestedProductIds
-                        ))
-    }
-
-    func trackProductsResult(requestedProductIds: Set<String>,
-                             notFoundProductIds: Set<String>?,
-                             errorMessage: String?,
-                             errorCode: Int?,
-                             responseTime: TimeInterval) {
-        self.trackEvent(name: .getProductsResult,
-                        properties: DiagnosticsEvent.Properties(
-                            responseTime: responseTime,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode,
-                            requestedProductIds: requestedProductIds,
-                            notFoundProductIds: notFoundProductIds
-                        ))
-    }
-
-    func trackGetCustomerInfoStarted() {
-        self.trackEvent(name: .getCustomerInfoStarted, properties: .empty)
-    }
-
-    func trackGetCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
-                                    verificationResult: VerificationResult?,
-                                    hadUnsyncedPurchasesBefore: Bool?,
-                                    errorMessage: String?,
-                                    errorCode: Int?,
-                                    responseTime: TimeInterval) {
-        self.trackEvent(name: .getCustomerInfoResult,
-                        properties: DiagnosticsEvent.Properties(
-                            verificationResult: verificationResult?.name,
-                            responseTime: responseTime,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode,
-                            cacheFetchPolicy: cacheFetchPolicy,
-                            hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore
-                        ))
-    }
-
-    func trackSyncPurchasesStarted() {
-        self.trackEvent(name: .syncPurchasesStarted, properties: .empty)
-    }
-
-    func trackSyncPurchasesResult(errorMessage: String?,
-                                  errorCode: Int?,
-                                  responseTime: TimeInterval) {
-        self.trackEvent(name: .syncPurchasesResult,
-                        properties: DiagnosticsEvent.Properties(
-                            responseTime: responseTime,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode
-                        ))
-    }
-
-    func trackRestorePurchasesStarted() {
-        self.trackEvent(name: .restorePurchasesStarted, properties: .empty)
-    }
-
-    func trackRestorePurchasesResult(errorMessage: String?,
-                                     errorCode: Int?,
-                                     responseTime: TimeInterval) {
-        self.trackEvent(name: .restorePurchasesResult,
-                        properties: DiagnosticsEvent.Properties(
-                            responseTime: responseTime,
-                            errorMessage: errorMessage,
-                            errorCode: errorCode
-                        ))
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension DiagnosticsTracker {
-
-    func trackEvent(name: DiagnosticsEvent.EventName, properties: DiagnosticsEvent.Properties) {
-        self.track(
-            DiagnosticsEvent(name: name,
-                             properties: properties,
-                             timestamp: self.dateProvider.now(),
-                             appSessionId: self.appSessionID)
-        )
+        let diagnosticsEvent = DiagnosticsEvent(name: name,
+                                                properties: properties,
+                                                timestamp: self.dateProvider.now(),
+                                                appSessionId: self.appSessionID)
+        self.diagnosticsDispatcher.dispatchOnWorkerThread {
+            await self.clearDiagnosticsFileIfTooBig()
+            await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: diagnosticsEvent)
+        }
     }
 
     func clearDiagnosticsFileIfTooBig() async {
@@ -364,4 +64,253 @@ private extension DiagnosticsTracker {
         }
     }
 
+}
+
+// MARK: - DiagnosticsTracker.Event
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension DiagnosticsTracker {
+
+    enum Event: Equatable {
+        case customerInfoVerification(result: VerificationResult)
+
+        case productsRequest(wasSuccessful: Bool,
+                             storeKitVersion: StoreKitVersion,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             storeKitErrorDescription: String?,
+                             requestedProductIds: Set<String>,
+                             notFoundProductIds: Set<String>,
+                             responseTime: TimeInterval)
+
+        case httpRequestPerformed(endpointName: String,
+                                  responseTime: TimeInterval,
+                                  wasSuccessful: Bool,
+                                  responseCode: Int,
+                                  backendErrorCode: Int?,
+                                  resultOrigin: HTTPResponseOrigin?,
+                                  verificationResult: VerificationResult,
+                                  isRetry: Bool)
+
+        case purchaseRequest(wasSuccessful: Bool,
+                             storeKitVersion: StoreKitVersion,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             storeKitErrorDescription: String?,
+                             productId: String,
+                             promotionalOfferId: String?,
+                             winBackOfferApplied: Bool,
+                             purchaseResult: DiagnosticsEvent.PurchaseResult?,
+                             responseTime: TimeInterval)
+
+        case maxDiagnosticsSyncRetriesReached
+
+        case clearingDiagnosticsAfterFailedSync
+
+        case enteredOfflineEntitlementsMode
+
+        case errorEnteringOfflineEntitlementsMode(reason: DiagnosticsEvent.OfflineEntitlementsModeErrorReason,
+                                                  errorMessage: String)
+
+        case offeringsStarted
+
+        case offeringsResult(requestedProductIds: Set<String>?,
+                             notFoundProductIds: Set<String>?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             verificationResult: VerificationResult?,
+                             cacheStatus: CacheStatus,
+                             responseTime: TimeInterval)
+
+        case productsStarted(requestedProductIds: Set<String>)
+
+        case productsResult(requestedProductIds: Set<String>,
+                            notFoundProductIds: Set<String>?,
+                            errorMessage: String?,
+                            errorCode: Int?,
+                            responseTime: TimeInterval)
+
+        case getCustomerInfoStarted
+
+        case getCustomerInfoResult(cacheFetchPolicy: CacheFetchPolicy,
+                                   verificationResult: VerificationResult?,
+                                   hadUnsyncedPurchasesBefore: Bool?,
+                                   errorMessage: String?,
+                                   errorCode: Int?,
+                                   responseTime: TimeInterval)
+
+        case syncPurchasesStarted
+
+        case syncPurchasesResult(errorMessage: String?,
+                                 errorCode: Int?,
+                                 responseTime: TimeInterval)
+
+        case restorePurchasesStarted
+
+        case restorePurchasesResult(errorMessage: String?,
+                                    errorCode: Int?,
+                                    responseTime: TimeInterval)
+
+        var diagnosticsEvent: (name: DiagnosticsEvent.EventName, properties: DiagnosticsEvent.Properties)? {
+            switch self {
+            case .customerInfoVerification(let verificationResult):
+                if verificationResult == .notRequested {
+                    return nil
+                } else {
+                    return (name: .customerInfoVerificationResult,
+                            properties: DiagnosticsEvent.Properties(verificationResult: verificationResult.name))
+
+                }
+            case .productsRequest(let wasSuccessful,
+                                  let storeKitVersion,
+                                  let errorMessage,
+                                  let errorCode,
+                                  let storeKitErrorDescription,
+                                  let requestedProductIds,
+                                  let notFoundProductIds,
+                                  let responseTime):
+                return (name: .appleProductsRequest,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            storeKitVersion: storeKitVersion,
+                            successful: wasSuccessful,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            skErrorDescription: storeKitErrorDescription,
+                            requestedProductIds: requestedProductIds,
+                            notFoundProductIds: notFoundProductIds
+                        ))
+            case .httpRequestPerformed(let endpointName,
+                                       let responseTime,
+                                       let wasSuccessful,
+                                       let responseCode,
+                                       let backendErrorCode,
+                                       let resultOrigin,
+                                       let verificationResult,
+                                       let isRetry):
+                return (name: .httpRequestPerformed,
+                        properties: DiagnosticsEvent.Properties(
+                            verificationResult: verificationResult.name,
+                            endpointName: endpointName,
+                            responseTime: responseTime,
+                            successful: wasSuccessful,
+                            responseCode: responseCode,
+                            backendErrorCode: backendErrorCode,
+                            etagHit: resultOrigin == .cache,
+                            isRetry: isRetry
+                        ))
+            case .purchaseRequest(let wasSuccessful,
+                                  let storeKitVersion,
+                                  let errorMessage,
+                                  let errorCode,
+                                  let storeKitErrorDescription,
+                                  let productId,
+                                  let promotionalOfferId,
+                                  let winBackOfferApplied,
+                                  let purchaseResult,
+                                  let responseTime):
+                return (name: .applePurchaseAttempt,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            storeKitVersion: storeKitVersion,
+                            successful: wasSuccessful,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            skErrorDescription: storeKitErrorDescription,
+                            productId: productId,
+                            promotionalOfferId: promotionalOfferId,
+                            winBackOfferApplied: winBackOfferApplied,
+                            purchaseResult: purchaseResult
+                        ))
+            case .maxDiagnosticsSyncRetriesReached:
+                return (name: .maxEventsStoredLimitReached, properties: .empty)
+            case .clearingDiagnosticsAfterFailedSync:
+                return (name: .clearingDiagnosticsAfterFailedSync, properties: .empty)
+            case .enteredOfflineEntitlementsMode:
+                return (name: .enteredOfflineEntitlementsMode, properties: .empty)
+            case .errorEnteringOfflineEntitlementsMode(let reason, let errorMessage):
+                return (name: .errorEnteringOfflineEntitlementsMode,
+                        properties: DiagnosticsEvent.Properties(
+                            offlineEntitlementErrorReason: reason,
+                            errorMessage: errorMessage
+                        ))
+            case .offeringsStarted:
+                return (name: .getOfferingsStarted, properties: .empty)
+            case .offeringsResult(let requestedProductIds,
+                                  let notFoundProductIds,
+                                  let errorMessage,
+                                  let errorCode,
+                                  let verificationResult,
+                                  let cacheStatus,
+                                  let responseTime):
+                return (name: .getOfferingsResult,
+                        properties: DiagnosticsEvent.Properties(
+                            verificationResult: verificationResult?.name,
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            requestedProductIds: requestedProductIds,
+                            notFoundProductIds: notFoundProductIds,
+                            cacheStatus: cacheStatus
+                        ))
+            case .productsStarted(let requestedProductIds):
+                return (name: .getProductsResult,
+                        properties: DiagnosticsEvent.Properties(
+                            requestedProductIds: requestedProductIds
+                        ))
+            case .productsResult(let requestedProductIds,
+                                 let notFoundProductIds,
+                                 let errorMessage,
+                                 let errorCode,
+                                 let responseTime):
+                return (name: .getProductsResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            requestedProductIds: requestedProductIds,
+                            notFoundProductIds: notFoundProductIds
+                        ))
+            case .getCustomerInfoStarted:
+                return (name: .getCustomerInfoStarted, properties: .empty)
+            case .getCustomerInfoResult(let cacheFetchPolicy,
+                                        let verificationResult,
+                                        let hadUnsyncedPurchasesBefore,
+                                        let errorMessage,
+                                        let errorCode,
+                                        let responseTime):
+                return (name: .getCustomerInfoResult,
+                        properties: DiagnosticsEvent.Properties(
+                            verificationResult: verificationResult?.name,
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            cacheFetchPolicy: cacheFetchPolicy,
+                            hadUnsyncedPurchasesBefore: hadUnsyncedPurchasesBefore
+                        ))
+            case .syncPurchasesStarted:
+                return (name: .syncPurchasesStarted, properties: .empty)
+            case .syncPurchasesResult(let errorMessage,
+                                      let errorCode,
+                                      let responseTime):
+                return (name: .syncPurchasesResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode
+                        ))
+            case .restorePurchasesStarted:
+                return (name: .restorePurchasesStarted, properties: .empty)
+            case .restorePurchasesResult(let errorMessage,
+                                         let errorCode,
+                                         let responseTime):
+                return (name: .restorePurchasesResult,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode
+                        ))
+            }
+        }
+    }
 }

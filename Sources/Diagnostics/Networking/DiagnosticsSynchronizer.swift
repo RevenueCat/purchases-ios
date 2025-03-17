@@ -79,14 +79,14 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
                 if currentSyncRetries >= Self.maxSyncRetries {
                     Logger.error(Strings.diagnostics.failed_diagnostics_sync_more_than_max_retries)
                     await self.handler.emptyDiagnosticsFile()
-                    self.tracker?.trackMaxDiagnosticsSyncRetriesReached()
+                    self.tracker?.track(.maxDiagnosticsSyncRetriesReached)
                     self.clearSyncRetries()
                 } else {
                     self.increaseSyncRetries(currentRetries: currentSyncRetries)
                 }
             } else {
                 await self.handler.cleanSentDiagnostics(diagnosticsSentCount: count)
-                self.tracker?.trackClearingDiagnosticsAfterFailedSync()
+                self.tracker?.track(.clearingDiagnosticsAfterFailedSync)
                 self.clearSyncRetries()
             }
 
