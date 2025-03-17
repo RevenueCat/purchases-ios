@@ -1206,31 +1206,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
-
-    @available(iOS 16.4, macOS 14.4, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(visionOS, unavailable)
-    func trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: any StoreKit2PurchaseIntentType) {
-        let offerId: String?
-        let offerType: String?
-
-        if #available(iOS 18.0, macOS 15.0, *) {
-            offerId = purchaseIntent.offer?.id
-            offerType = purchaseIntent.offer?.type.rawValue
-        } else {
-            offerId = nil
-            offerType = nil
-        }
-
-        self.diagnosticsTracker?.trackPurchaseIntentReceived(productId: purchaseIntent.product.id,
-                                                             offerId: offerId,
-                                                             offerType: offerType)
-    }
-
-    #endif
-
     /// - Parameter restored: whether the transaction state was `.restored` instead of `.purchased`.
     private func purchaseSource(
         for productIdentifier: String,
@@ -1321,18 +1296,16 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
         // stop the compiler from checking availability in the functions.
         // We also need to ensure that we're on Xcode >= 15.3, since that is when
         // PurchaseIntents were first made available on macOS.
-        #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+        #if !os(tvOS) && !os(watchOS) && compiler(>=5.10)
 
         guard let purchaseIntent = purchaseIntent.purchaseIntent else { return }
         let storeProduct = StoreProduct(sk2Product: purchaseIntent.product)
-
-        self.trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: purchaseIntent)
 
         delegate?.readyForPromotedProduct(storeProduct) { completion in
 
             var attemptedToPurchaseWithASubscriptionOffer = false
 
-            if #available(iOS 18.0, macOS 15.0, *) {
+            if #available(iOS 18.0, macOS 15.0, visionOS 2.0, *) {
                 #if compiler(>=6.0)
                 if let offer = purchaseIntent.offer {
                     switch offer.type {

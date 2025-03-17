@@ -60,7 +60,7 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 
     init(delegate: StoreKit2PurchaseIntentListenerDelegate? = nil) {
 
-        #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+        #if compiler(>=5.10)
         let storePurchaseIntentSequence = StoreKit.PurchaseIntent.intents.map { purchaseIntent in
             return StorePurchaseIntent(purchaseIntent: purchaseIntent)
         }.toAsyncStream()
@@ -124,8 +124,8 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 @available(visionOS, unavailable)
 struct StorePurchaseIntent: Sendable, Equatable {
 
-    #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
-    init(purchaseIntent: (any StoreKit2PurchaseIntentType)?) {
+    #if compiler(>=5.10)
+    init(purchaseIntent: PurchaseIntent?) {
         self.purchaseIntent = purchaseIntent
     }
     #else
@@ -134,40 +134,11 @@ struct StorePurchaseIntent: Sendable, Equatable {
 
     // PurchaseIntents became available on macOS starting in macOS 14.4, which isn't available
     // until Xcode 15.3, which shipped with version 5.10 of the Swift compiler
-    #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+    #if compiler(>=5.10)
     @available(iOS 16.4, macOS 14.4, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    let purchaseIntent: (any StoreKit2PurchaseIntentType)?
+    let purchaseIntent: PurchaseIntent?
     #endif
-
-    static func == (lhs: StorePurchaseIntent, rhs: StorePurchaseIntent) -> Bool {
-    #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
-        return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
-    #else
-        return true
-    #endif
-    }
 }
-
-#if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
-
-@available(iOS 16.4, macOS 14.4, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-@available(visionOS, unavailable)
-protocol StoreKit2PurchaseIntentType: Equatable, Identifiable, Sendable {
-
-    var product: StoreKit.Product { get }
-
-    @available(iOS 18.0, macOS 15.0, *)
-    var offer: StoreKit.Product.SubscriptionOffer? { get }
-
-    var id: StoreKit.Product.ID { get }
-}
-
-@available(iOS 16.4, macOS 14.4, *)
-extension StoreKit.PurchaseIntent: StoreKit2PurchaseIntentType { }
-
-#endif

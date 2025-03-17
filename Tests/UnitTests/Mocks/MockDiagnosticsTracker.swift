@@ -97,19 +97,6 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
-    let trackedPurchaseIntentReceivedParams: Atomic<[
-        (productId: String,
-         offerId: String?,
-         offerType: String?)
-    ]> = .init([])
-    func trackPurchaseIntentReceived(productId: String,
-                                     offerId: String?,
-                                     offerType: String?) {
-        self.trackedPurchaseIntentReceivedParams.modify {
-            $0.append((productId, offerId, offerType))
-        }
-    }
-
     let trackedProductsRequestParams: Atomic<[
         // swiftlint:disable:next large_tuple
         (wasSuccessful: Bool,

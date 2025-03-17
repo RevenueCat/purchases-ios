@@ -459,25 +459,6 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
-    // MARK: - Purchase Intent Received
-
-    func testTrackingApplePurchaseIntentReceived() async {
-        self.tracker.trackPurchaseIntentReceived(productId: "product_id",
-                                                 offerId: "offer_id",
-                                                 offerType: "offer_type")
-        let entries = await self.handler.getEntries()
-        Self.expectEventArrayWithoutId(entries, [
-            .init(name: .restorePurchasesResult,
-                  properties: DiagnosticsEvent.Properties(
-                    productId: "product_id",
-                    offerId: "offer_id",
-                    offerType: "offer_type"
-                  ),
-                  timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
-        ])
-    }
-
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
