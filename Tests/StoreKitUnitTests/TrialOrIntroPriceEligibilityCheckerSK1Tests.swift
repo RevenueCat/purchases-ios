@@ -115,9 +115,9 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
 
     func testSK1EligibilityProductsWithKnownIntroEligibilityStatus() throws {
         let productIdentifiersAndDiscounts = [("product_id", nil),
-                        ("com.revenuecat.monthly_4.99.1_week_intro", MockSKProductDiscount()),
-                        ("com.revenuecat.annual_39.99.2_week_intro", MockSKProductDiscount()),
-                        ("lifetime", MockSKProductDiscount())
+                                              ("com.revenuecat.monthly_4.99.1_week_intro", MockSKProductDiscount()),
+                                              ("com.revenuecat.annual_39.99.2_week_intro", MockSKProductDiscount()),
+                                              ("lifetime", MockSKProductDiscount())
         ]
         let productIdentifiers = Set(productIdentifiersAndDiscounts.map(\.0))
         let storeProducts = productIdentifiersAndDiscounts.map { (productIdentifier, discount) -> StoreProduct in
@@ -221,6 +221,109 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         let receivedEligibilities = try XCTUnwrap(eligibilities)
         expect(receivedEligibilities).to(haveCount(1))
         expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.unknown
+    }
+
+}
+
+// MARK: - Diagnostics
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
+
+    func testSK1DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() throws {
+        self.receiptFetcher.shouldReturnReceipt = false
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
+                completion()
+            }
+        }
+
+        expect(try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(beEmpty())
+    }
+
+    func testSK1DoesNotTrackDiagnosticsWhenReceiptFetchedAndEmptyProductIds() throws {
+        self.receiptFetcher.shouldReturnReceipt = true
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
+                completion()
+            }
+        }
+
+        expect(try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(beEmpty())
+    }
+
+    func testSK1TracksDiagnosticsWhenReceiptFetchedAndEligibilityCalculatorSuccess() throws {
+        self.receiptFetcher.shouldReturnReceipt = true
+
+        let productIds = Set(["product_id",
+                              "com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let stubbedEligibility = ["product_id": IntroEligibilityStatus.unknown,
+                                  "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.eligible,
+                                  "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.ineligible,
+                                  "lifetime": IntroEligibilityStatus.noIntroOfferExists]
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = .success(stubbedEligibility)
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                completion()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        expect(params.wasSuccessful) == true
+        expect(params.storeKitVersion) == .storeKit1
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount) == 1
+        expect(params.eligibilityIneligibleCount) == 1
+        expect(params.eligibilityEligibleCount) == 1
+        expect(params.eligibilityNoIntroOfferCount) == 1
+        expect(params.errorMessage).to(beNil())
+        expect(params.errorCode).to(beNil())
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
+    }
+
+    func testSK1TracksDiagnosticsWhenReceiptFetchedAndEligibilityCalculatorFailure() throws {
+        self.receiptFetcher.shouldReturnReceipt = true
+
+        let productIds = Set(["product_id",
+                              "com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let error = PurchasesReceiptParser.Error.receiptParsingError
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult =
+            .failure(error)
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                completion()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        expect(params.wasSuccessful) == false
+        expect(params.storeKitVersion) == .storeKit1
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount).to(beNil())
+        expect(params.eligibilityIneligibleCount).to(beNil())
+        expect(params.eligibilityEligibleCount).to(beNil())
+        expect(params.eligibilityNoIntroOfferCount).to(beNil())
+        expect(params.errorMessage) == error.errorDescription
+        expect(params.errorCode) == ErrorCode.invalidReceiptError.errorCode
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
 }

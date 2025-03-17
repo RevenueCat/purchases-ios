@@ -318,16 +318,22 @@ private extension TrialOrIntroPriceEligibilityChecker {
             }
         }
 
-        let purchasesError: PurchasesError?
+        let errorCode: Int?
+        let errorMessage: String?
         switch error {
-        case let asPurchasesError as PurchasesError:
-            purchasesError = asPurchasesError
+        case let purchasesError as PurchasesError:
+            errorCode = purchasesError.errorCode
+            errorMessage = purchasesError.localizedDescription
         case let purchasesErrorConvertible as PurchasesErrorConvertible:
-            purchasesError = purchasesErrorConvertible.asPurchasesError
+            let purchasesError = purchasesErrorConvertible.asPurchasesError
+            errorCode = purchasesError.errorCode
+            errorMessage = purchasesError.localizedDescription
+        case let receiptParserError as PurchasesReceiptParser.Error:
+            errorCode = ErrorCode.invalidReceiptError.rawValue
+            errorMessage = receiptParserError.errorDescription ?? receiptParserError.localizedDescription
         case let otherError:
-            purchasesError = otherError.map {
-                PurchasesError(error: .unknownError, userInfo: ($0 as NSError).userInfo)
-            }
+            errorCode = otherError != nil ? ErrorCode.unknownError.rawValue : nil
+            errorMessage = otherError?.localizedDescription
         }
 
         let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
@@ -339,8 +345,8 @@ private extension TrialOrIntroPriceEligibilityChecker {
                                                                     eligibilityIneligibleCount: ineligibleCount,
                                                                     eligibilityEligibleCount: eligibleCount,
                                                                     eligibilityNoIntroOfferCount: noIntroOfferCount,
-                                                                    errorMessage: purchasesError?.localizedDescription,
-                                                                    errorCode: purchasesError?.errorCode,
+                                                                    errorMessage: errorMessage,
+                                                                    errorCode: errorCode,
 
                                                                     responseTime: responseTime)
     }
