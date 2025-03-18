@@ -297,4 +297,20 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     func trackApplePresentCodeRedemptionSheetRequest() {
         self.trackedApplePresentCodeRedemptionSheetRequestCalls.modify { $0 += 1 }
     }
+
+    let trackedAppleTransactionQueueReceivedParams: Atomic<[
+        (productId: String?,
+         paymentDiscountId: String?,
+         transactionState: String,
+         errorMessage: String?)
+    ]> = .init([])
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?) {
+        self.trackedAppleTransactionQueueReceivedParams.modify {
+            $0.append((productId, paymentDiscountId, transactionState, errorMessage))
+        }
+    }
+
 }
