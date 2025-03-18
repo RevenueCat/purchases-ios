@@ -31,6 +31,8 @@ class PurchasesDiagnosticsTrackingTests: BasePurchasesTests {
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     func testPresentCodeRedepmtionSheetTracksDiagnostics() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.purchases.presentCodeRedemptionSheet()
 
         expect(try self.mockDiagnosticsTracker.trackedApplePresentCodeRedemptionSheetRequestCalls.value) == 1
