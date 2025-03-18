@@ -120,13 +120,13 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedProductsRequestParams.modify {
             $0.append(
                 (wasSuccessful,
-                storeKitVersion,
-                errorMessage,
-                errorCode,
-                storeKitErrorDescription,
-                requestedProductIds,
-                notFoundProductIds,
-                responseTime)
+                 storeKitVersion,
+                 errorMessage,
+                 errorCode,
+                 storeKitErrorDescription,
+                 requestedProductIds,
+                 notFoundProductIds,
+                 responseTime)
             )
         }
     }
@@ -335,4 +335,20 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                        responseTime))
         }
     }
+
+    let trackedAppleTransactionQueueReceivedParams: Atomic<[
+        (productId: String?,
+         paymentDiscountId: String?,
+         transactionState: String,
+         errorMessage: String?)
+    ]> = .init([])
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?) {
+        self.trackedAppleTransactionQueueReceivedParams.modify {
+            $0.append((productId, paymentDiscountId, transactionState, errorMessage))
+        }
+    }
+
 }

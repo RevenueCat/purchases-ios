@@ -355,7 +355,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             : .left(.init(
                 operationDispatcher: operationDispatcher,
                 observerMode: observerMode,
-                sandboxEnvironmentDetector: systemInfo
+                sandboxEnvironmentDetector: systemInfo,
+                diagnosticsTracker: diagnosticsTracker
             ))
 
         let offeringsFactory = OfferingsFactory()

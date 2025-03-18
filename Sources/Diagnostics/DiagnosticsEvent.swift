@@ -57,6 +57,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case restorePurchasesResult = "restore_purchases_result"
         case applePresentCodeRedemptionSheetRequest = "apple_present_code_redemption_sheet_request"
         case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
+        case appleTransactionQueueReceived = "apple_transaction_queue_received"
     }
 
     enum PurchaseResult: String, Codable, Equatable {

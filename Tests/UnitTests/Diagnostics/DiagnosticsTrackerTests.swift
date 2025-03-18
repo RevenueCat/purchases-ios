@@ -421,12 +421,37 @@ class DiagnosticsTrackerTests: TestCase {
 
     // MARK: - Present Code Redemption Sheet Request
 
-    func testApplePresentCodeRedemptionSheetRequest() async {
+    func testTrackingApplePresentCodeRedemptionSheetRequest() async throws {
         self.tracker.trackApplePresentCodeRedemptionSheetRequest()
+
         let entries = await self.handler.getEntries()
         Self.expectEventArrayWithoutId(entries, [
             .init(name: .applePresentCodeRedemptionSheetRequest,
                   properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Transaction Queue Received
+
+    func testTrackingAppleTransactionQueueReceived() async throws {
+        self.tracker.trackAppleTransactionQueueReceived(
+            productId: "test.product",
+            paymentDiscountId: "discount_123",
+            transactionState: "purchased",
+            errorMessage: "error message"
+        )
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .appleTransactionQueueReceived,
+                  properties: DiagnosticsEvent.Properties(
+                    errorMessage: "error message",
+                    skErrorDescription: "purchased",
+                    productId: "test.product",
+                    promotionalOfferId: "discount_123"
+                  ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ])
