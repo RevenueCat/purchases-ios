@@ -419,6 +419,19 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - Present Code Redemption Sheet Request
+
+    func testApplePresentCodeRedemptionSheetRequest() async {
+        self.tracker.trackApplePresentCodeRedemptionSheetRequest()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .applePresentCodeRedemptionSheetRequest,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
