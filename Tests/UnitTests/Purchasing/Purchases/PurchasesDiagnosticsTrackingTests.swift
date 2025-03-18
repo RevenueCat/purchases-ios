@@ -24,7 +24,7 @@ class PurchasesDiagnosticsTrackingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
