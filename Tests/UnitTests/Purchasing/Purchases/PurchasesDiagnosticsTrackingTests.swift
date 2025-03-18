@@ -24,14 +24,18 @@ class PurchasesDiagnosticsTrackingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
+    #if os(iOS) || os(visionOS)
     @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     func testPresentCodeRedepmtionSheetTracksDiagnostics() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.purchases.presentCodeRedemptionSheet()
 
         expect(try self.mockDiagnosticsTracker.trackedApplePresentCodeRedemptionSheetRequestCalls.value) == 1
     }
+    #endif
 }
