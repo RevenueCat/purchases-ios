@@ -119,6 +119,12 @@ protocol DiagnosticsTrackerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackApplePresentCodeRedemptionSheetRequest()
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?)
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -344,6 +350,19 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     func trackApplePresentCodeRedemptionSheetRequest() {
         self.trackEvent(name: .applePresentCodeRedemptionSheetRequest, properties: .empty)
+    }
+
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?) {
+        self.trackEvent(name: .appleTransactionQueueReceived,
+                        properties: DiagnosticsEvent.Properties(
+                            errorMessage: errorMessage,
+                            skErrorDescription: transactionState,
+                            productId: productId,
+                            promotionalOfferId: paymentDiscountId
+                        ))
     }
 
 }
