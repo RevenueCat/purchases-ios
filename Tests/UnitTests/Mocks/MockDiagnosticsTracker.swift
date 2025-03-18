@@ -293,6 +293,11 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    let trackedApplePresentCodeRedemptionSheetRequestCalls: Atomic<Int> = .init(0)
+    func trackApplePresentCodeRedemptionSheetRequest() {
+        self.trackedApplePresentCodeRedemptionSheetRequestCalls.modify { $0 += 1 }
+    }
+
     let trackedAppleTrialOrIntroEligibilityRequestParams: Atomic<[
         // swiftlint:disable:next large_tuple
         (wasSuccessful: Bool,

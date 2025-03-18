@@ -118,6 +118,9 @@ protocol DiagnosticsTrackerType {
                                      responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackApplePresentCodeRedemptionSheetRequest()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: Bool,
                                                   storeKitVersion: StoreKitVersion,
                                                   requestedProductIds: Set<String>,
@@ -350,6 +353,10 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             errorMessage: errorMessage,
                             errorCode: errorCode
                         ))
+    }
+
+    func trackApplePresentCodeRedemptionSheetRequest() {
+        self.trackEvent(name: .applePresentCodeRedemptionSheetRequest, properties: .empty)
     }
 
     func trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: Bool,
