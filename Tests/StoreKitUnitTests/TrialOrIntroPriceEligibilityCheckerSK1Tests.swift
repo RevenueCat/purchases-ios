@@ -299,10 +299,13 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
                               "com.revenuecat.annual_39.99.2_week_intro",
                               "lifetime"])
 
-        let error = PurchasesReceiptParser.Error.receiptParsingError
+        let receiptError = PurchasesReceiptParser.Error.receiptParsingError
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult =
-            .failure(error)
+            .failure(receiptError)
 
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(
+            ErrorUtils.productNotAvailableForPurchaseError()
+        )
         waitUntil { completion in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
                 completion()
@@ -321,7 +324,94 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.eligibilityIneligibleCount).to(beNil())
         expect(params.eligibilityEligibleCount).to(beNil())
         expect(params.eligibilityNoIntroOfferCount).to(beNil())
-        expect(params.errorMessage) == error.errorDescription
+        expect(params.errorMessage) == receiptError.errorDescription
+        expect(params.errorCode) == ErrorCode.invalidReceiptError.errorCode
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
+    }
+
+    func testSK1TracksDiagnosticsWhenEligibilityCalculatorFailurePartialGetProductsAndBackendError() throws {
+        self.receiptFetcher.shouldReturnReceipt = true
+
+        let productIds = Set(["product_id",
+                              "com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let receiptError = PurchasesReceiptParser.Error.receiptParsingError
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult =
+            .failure(receiptError)
+
+        let sk1Product = MockSK1Product(mockProductIdentifier: "product_id")
+        sk1Product.mockDiscount = nil
+        let storeProduct =  StoreProduct(sk1Product: sk1Product)
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([storeProduct])
+
+        let backendError = BackendError.networkError(.unexpectedResponse(nil))
+        self.mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = ([:], backendError)
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                completion()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        let expectedError = backendError.asPurchasesError
+        expect(params.wasSuccessful) == false
+        expect(params.storeKitVersion) == .storeKit1
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount) == 3
+        expect(params.eligibilityIneligibleCount) == 0
+        expect(params.eligibilityEligibleCount) == 0
+        expect(params.eligibilityNoIntroOfferCount) == 1
+        expect(params.errorMessage) == expectedError.localizedDescription
+        expect(params.errorCode) == expectedError.errorCode
+        expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
+    }
+
+    func testSK1TracksDiagnosticsWhenEligibilityCalculatorFailurePartialGetProductsAndBackendSuccess() throws {
+        self.receiptFetcher.shouldReturnReceipt = true
+
+        let productIds = Set(["product_id",
+                              "com.revenuecat.monthly_4.99.1_week_intro",
+                              "com.revenuecat.annual_39.99.2_week_intro",
+                              "lifetime"])
+
+        let receiptError = PurchasesReceiptParser.Error.receiptParsingError
+        mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult =
+            .failure(receiptError)
+
+        let sk1Product = MockSK1Product(mockProductIdentifier: "product_id")
+        sk1Product.mockDiscount = nil
+        let storeProduct =  StoreProduct(sk1Product: sk1Product)
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([storeProduct])
+
+        let stubbedBackendEligibility = ["lifetime": IntroEligibility(eligibilityStatus: .eligible)]
+        self.mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedBackendEligibility, nil)
+
+        waitUntil { completion in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
+                completion()
+            }
+        }
+
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
+
+        expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
+        let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
+
+        expect(params.wasSuccessful) == false
+        expect(params.storeKitVersion) == .storeKit1
+        expect(params.requestedProductIds) == productIds
+        expect(params.eligibilityUnknownCount) == 0
+        expect(params.eligibilityIneligibleCount) == 0
+        expect(params.eligibilityEligibleCount) == 1
+        expect(params.eligibilityNoIntroOfferCount) == 1
+        expect(params.errorMessage) == receiptError.errorDescription
         expect(params.errorCode) == ErrorCode.invalidReceiptError.errorCode
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
