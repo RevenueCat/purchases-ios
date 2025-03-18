@@ -1403,10 +1403,10 @@ private extension PurchasesOrchestrator {
             Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
-        let completionWithTracking: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void) = { result in
-            self.trackSyncOrRestorePurchasesResultIfNeeded(receiptRefreshPolicy,
-                                                           startTime: startTime,
-                                                           error: result.error)
+        let completionWithTracking: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void) = { [weak self] result in
+            self?.trackSyncOrRestorePurchasesResultIfNeeded(receiptRefreshPolicy,
+                                                            startTime: startTime,
+                                                            error: result.error)
             completion?(result)
         }
 
