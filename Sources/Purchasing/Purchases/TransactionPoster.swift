@@ -258,30 +258,48 @@ private extension TransactionPoster {
 
     func fetchEncodedReceipt(transaction: StoreTransactionType,
                              completion: @escaping (Result<EncodedAppleReceipt, BackendError>) -> Void) {
-        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
-           let jwsRepresentation = transaction.jwsRepresentation {
-            if transaction.environment == .xcode, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+
+        func handleTransactionWithJWSRepresentation(jwsRepresentation: String) {
+            if transaction.environment == .xcode, #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
                 _ = Task<Void, Never> {
                     completion(.success(
-                        .sk2receipt(await self.transactionFetcher.fetchReceipt(containing: transaction))
-                    ))
+                        .sk2receipt(await self.transactionFetcher.fetchReceipt(containing: transaction)))
+                    )
                 }
             } else {
                 completion(.success(.jws(jwsRepresentation)))
             }
-        } else {
-            self.receiptFetcher.receiptData(
-                refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
-            ) { receiptData, receiptURL in
-                if let receiptData = receiptData, !receiptData.isEmpty {
-                    completion(.success(.receipt(receiptData)))
-                } else {
-                    completion(.failure(BackendError.missingReceiptFile(receiptURL)))
-                }
+        }
+
+        if systemInfo.observerMode &&
+            systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailableWhenPurchasesAreCompletedByMyApp,
+           let jwsRepresentation = transaction.jwsRepresentation {
+            // On iOS 15, we allow developers to make purchases with SK2 when PurchasesAreCompletedBy==.myApp.
+            // In this case, we should POST the SK2 receipt despite running on iOS 15, where we would normally
+            // POST a SK1 receipt if PurchasesAreCompletedBy==.revenueCat
+
+            handleTransactionWithJWSRepresentation(jwsRepresentation: jwsRepresentation)
+            return
+        }
+
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
+           let jwsRepresentation = transaction.jwsRepresentation {
+
+            handleTransactionWithJWSRepresentation(jwsRepresentation: jwsRepresentation)
+            return
+        }
+
+        // Fetch a SK1 receipt
+        self.receiptFetcher.receiptData(
+            refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+        ) { receiptData, receiptURL in
+            if let receiptData = receiptData, !receiptData.isEmpty {
+                completion(.success(.receipt(receiptData)))
+            } else {
+                completion(.failure(BackendError.missingReceiptFile(receiptURL)))
             }
         }
     }
-
 }
 
 // MARK: - Properties

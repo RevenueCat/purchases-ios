@@ -350,13 +350,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             diagnosticsTracker: diagnosticsTracker
         )
 
-        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
-            ? .right(.init())
-            : .left(.init(
-                operationDispatcher: operationDispatcher,
-                observerMode: observerMode,
-                sandboxEnvironmentDetector: systemInfo
-            ))
+        let paymentQueueWrapper = Purchases.buildPaymentQueueWrapper(
+            systemInfo: systemInfo,
+            operationDispatcher: operationDispatcher
+        )
 
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
@@ -735,6 +732,30 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             purchases?.delegate = nil
             purchases = nil
         }
+    }
+
+    private static func buildPaymentQueueWrapper(
+        systemInfo: SystemInfo,
+        operationDispatcher: OperationDispatcher
+    ) -> EitherPaymentQueueWrapper {
+        if systemInfo.observerMode &&
+            systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailableWhenPurchasesAreCompletedByMyApp {
+            // On iOS 15, we allow developers to make purchases with SK2 when PurchasesAreCompletedBy==.myApp.
+            // We need to specifically check for this case because otherwise we use SK1 on iOS 15, and if
+            // We are on iOS 15 with PurchasesAreCompletedBy==.myApp and SK2, we need to only listen to purchases
+            // via SK2.
+            return .right(PaymentQueueWrapper())
+        }
+
+        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
+            ? .right(.init())
+            : .left(.init(
+                operationDispatcher: operationDispatcher,
+                observerMode: systemInfo.observerMode,
+                sandboxEnvironmentDetector: systemInfo
+            ))
+
+        return paymentQueueWrapper
     }
 
     /// - Parameter purchases: this is an `@autoclosure` to be able to clear the previous instance
