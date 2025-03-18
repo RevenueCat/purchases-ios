@@ -120,13 +120,13 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedProductsRequestParams.modify {
             $0.append(
                 (wasSuccessful,
-                storeKitVersion,
-                errorMessage,
-                errorCode,
-                storeKitErrorDescription,
-                requestedProductIds,
-                notFoundProductIds,
-                responseTime)
+                 storeKitVersion,
+                 errorMessage,
+                 errorCode,
+                 storeKitErrorDescription,
+                 requestedProductIds,
+                 notFoundProductIds,
+                 responseTime)
             )
         }
     }
