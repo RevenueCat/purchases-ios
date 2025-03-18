@@ -338,8 +338,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
 
         let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
 
-        diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: error == nil,
-                                                                    storeKitVersion: storeKitVersion,
+        diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: storeKitVersion,
                                                                     requestedProductIds: requestedProductIds,
                                                                     eligibilityUnknownCount: unknownCount,
                                                                     eligibilityIneligibleCount: ineligibleCount,

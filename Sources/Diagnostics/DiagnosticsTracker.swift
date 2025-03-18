@@ -121,8 +121,7 @@ protocol DiagnosticsTrackerType {
     func trackApplePresentCodeRedemptionSheetRequest()
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: Bool,
-                                                  storeKitVersion: StoreKitVersion,
+    func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
                                                   requestedProductIds: Set<String>,
                                                   eligibilityUnknownCount: Int?,
                                                   eligibilityIneligibleCount: Int?,
@@ -365,8 +364,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackEvent(name: .applePresentCodeRedemptionSheetRequest, properties: .empty)
     }
 
-    func trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: Bool,
-                                                  storeKitVersion: StoreKitVersion,
+    func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
                                                   requestedProductIds: Set<String>,
                                                   eligibilityUnknownCount: Int?,
                                                   eligibilityIneligibleCount: Int?,
@@ -379,7 +377,6 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         properties: DiagnosticsEvent.Properties(
                             responseTime: responseTime,
                             storeKitVersion: storeKitVersion,
-                            successful: wasSuccessful,
                             errorMessage: errorMessage,
                             errorCode: errorCode,
                             requestedProductIds: requestedProductIds,

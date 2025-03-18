@@ -300,8 +300,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedAppleTrialOrIntroEligibilityRequestParams: Atomic<[
         // swiftlint:disable:next large_tuple
-        (wasSuccessful: Bool,
-         storeKitVersion: StoreKitVersion,
+        (storeKitVersion: StoreKitVersion,
          requestedProductIds: Set<String>,
          eligibilityUnknownCount: Int?,
          eligibilityIneligibleCount: Int?,
@@ -312,8 +311,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
-    func trackAppleTrialOrIntroEligibilityRequest(wasSuccessful: Bool,
-                                                  storeKitVersion: StoreKitVersion,
+    func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
                                                   requestedProductIds: Set<String>,
                                                   eligibilityUnknownCount: Int?,
                                                   eligibilityIneligibleCount: Int?,
@@ -323,8 +321,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                                   errorCode: Int?,
                                                   responseTime: TimeInterval) {
         self.trackedAppleTrialOrIntroEligibilityRequestParams.modify {
-            $0.append((wasSuccessful,
-                       storeKitVersion,
+            $0.append((storeKitVersion,
                        requestedProductIds,
                        eligibilityUnknownCount,
                        eligibilityIneligibleCount,

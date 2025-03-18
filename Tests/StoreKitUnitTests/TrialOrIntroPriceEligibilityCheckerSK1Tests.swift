@@ -279,7 +279,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
         let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
 
-        expect(params.wasSuccessful) == true
         expect(params.storeKitVersion) == .storeKit1
         expect(params.requestedProductIds) == productIds
         expect(params.eligibilityUnknownCount) == 1
@@ -317,7 +316,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
         let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
 
-        expect(params.wasSuccessful) == false
         expect(params.storeKitVersion) == .storeKit1
         expect(params.requestedProductIds) == productIds
         expect(params.eligibilityUnknownCount).to(beNil())
@@ -361,7 +359,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
 
         let expectedError = backendError.asPurchasesError
-        expect(params.wasSuccessful) == false
         expect(params.storeKitVersion) == .storeKit1
         expect(params.requestedProductIds) == productIds
         expect(params.eligibilityUnknownCount) == 3
@@ -404,7 +401,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value).to(haveCount(1))
         let params = mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value[0]
 
-        expect(params.wasSuccessful) == false
         expect(params.storeKitVersion) == .storeKit1
         expect(params.requestedProductIds) == productIds
         expect(params.eligibilityUnknownCount) == 0
