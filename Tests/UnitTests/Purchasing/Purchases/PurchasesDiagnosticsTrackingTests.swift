@@ -24,6 +24,7 @@ class PurchasesDiagnosticsTrackingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
+    #if os(iOS)
     @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -34,4 +35,5 @@ class PurchasesDiagnosticsTrackingTests: BasePurchasesTests {
 
         expect(try self.mockDiagnosticsTracker.trackedApplePresentCodeRedemptionSheetRequestCalls.value) == 1
     }
+    #endif
 }
