@@ -356,7 +356,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          productId: String,
          purchaseDate: Date,
          expirationDate: Date?,
-         price: Double?,
+         price: Float?,
          currency: String?,
          reason: String?)
     ]> = .init([])
@@ -368,7 +368,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                              productId: String,
                                              purchaseDate: Date,
                                              expirationDate: Date?,
-                                             price: Double?,
+                                             price: Float?,
                                              currency: String?,
                                              reason: String?) {
         self.trackedAppleTransactionUpdateReceivedParams.modify {

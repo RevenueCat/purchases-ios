@@ -26,6 +26,7 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
 
     fileprivate var listener: StoreKit2TransactionListener! = nil
     fileprivate var delegate: MockStoreKit2TransactionListenerDelegate! = nil
+    fileprivate let mockDiagnosticsTracker = MockDiagnosticsTracker()
 
     var updates: AsyncStream<TransactionResult> {
         get async throws {
@@ -43,7 +44,7 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
 
         self.delegate = .init()
         self.listener = .init(delegate: self.delegate,
-                              diagnosticsTracker: nil,
+                              diagnosticsTracker: self.mockDiagnosticsTracker,
                               updates: try await self.updates)
     }
 
@@ -328,6 +329,79 @@ private extension StoreKit2TransactionListenerBaseTests {
             line: line
         ) { [delegate = self.delegate!] in
             delegate.invokedTransactionUpdated == true
+        }
+    }
+
+}
+
+// MARK: - Diagnostics tests
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListenerBaseTests {
+
+    func testTracksDiagnosticsWhenPurchasingOutside() async throws {
+        await self.listener.listenForTransactions()
+
+        try self.testSession.buyProduct(productIdentifier: "com.revenuecat.annual_39.99_no_trial")
+
+        try await asyncWait { [delegate = self.delegate!] in
+            delegate.invokedTransactionUpdated == true
+        }
+
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value.count) == 1
+        let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
+        expect(params.productId) == "com.revenuecat.annual_39.99_no_trial"
+        expect(params.environment) == "xcode"
+        expect(params.price) == 39.99
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+            //            expect(params.storefront) == "US"
+            expect(params.reason) == "PURCHASE"
+        }
+    }
+
+    func testTracksDiagnosticsWhenNotifiedForExistingTransactions() async throws {
+        try self.testSession.buyProduct(productIdentifier: "com.revenuecat.annual_39.99_no_trial")
+
+        await self.listener.listenForTransactions()
+
+        try await asyncWait { [delegate = self.delegate!] in
+            delegate.invokedTransactionUpdated == true
+        }
+
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value.count) == 1
+        let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
+        expect(params.productId) == "com.revenuecat.annual_39.99_no_trial"
+        expect(params.environment) == "xcode"
+        expect(params.price) == 39.99
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+            //            expect(params.storefront) == "US"
+            expect(params.reason) == "PURCHASE"
+        }
+    }
+
+    @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
+    func testTracksDiagnosticsForRenewals() async throws {
+
+        setShortestTestSessionTimeRate(self.testSession)
+
+        try await self.simulateAnyPurchase(finishTransaction: true)
+
+        await self.listener.listenForTransactions()
+
+        try await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+
+        try await self.waitForTransactionUpdated()
+
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value).to(haveCount(1))
+        let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
+        expect(params.productId) == Self.productID
+        expect(params.environment) == "xcode"
+        expect(params.price) == 4.99
+        let expirationDate = try XCTUnwrap(params.expirationDate)
+        expect(expirationDate.timeIntervalSince(params.purchaseDate)) == 2 // see setShortestTestSessionTimeRate()
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+            //            expect(params.storefront) == "US"
+            expect(params.reason) == "RENEWAL"
         }
     }
 
