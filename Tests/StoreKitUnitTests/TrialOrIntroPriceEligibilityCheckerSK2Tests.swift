@@ -244,6 +244,8 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
 
     func testSK2DoesNotTrackDiagnosticsWhenReceiptNotFetchedAndEmptyProductIds() throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         waitUntil { completion in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: []) { _ in
                 completion()
@@ -254,6 +256,8 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
     }
 
     func testSK2TracksDiagnosticsWhenSK2ProductsSuccess() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let productIds = Set(["com.revenuecat.monthly_4.99.1_week_intro",
                               "com.revenuecat.annual_39.99.2_week_intro",
                               "lifetime"])
@@ -286,6 +290,8 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
     }
 
     func testSK2TracksDiagnosticsWhenSK2PartialProductsSuccess() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let productIds = Set(["com.revenuecat.monthly_4.99.1_week_intro",
                               "com.revenuecat.annual_39.99.2_week_intro",
                               "lifetime"])
@@ -316,6 +322,8 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
     }
 
     func testSK2TracksDiagnosticsWhenSK2ProductsFailure() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let productIds = Set(["com.revenuecat.monthly_4.99.1_week_intro",
                               "com.revenuecat.annual_39.99.2_week_intro",
                               "lifetime"])
