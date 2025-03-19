@@ -58,6 +58,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case applePresentCodeRedemptionSheetRequest = "apple_present_code_redemption_sheet_request"
         case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
         case appleTransactionQueueReceived = "apple_transaction_queue_received"
+        case appleTransactionUpdateReceived = "apple_transaction_update_received"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
@@ -100,6 +101,14 @@ struct DiagnosticsEvent: Codable, Equatable {
         let eligibilityIneligibleCount: Int?
         let eligibilityEligibleCount: Int?
         let eligibilityNoIntroOfferCount: Int?
+        let transactionId: UInt64?
+        let environment: String?
+        let storefront: String?
+        let purchaseDate: Int?
+        let expirationDate: Int?
+        let price: Double?
+        let currency: String?
+        let reason: String?
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
@@ -126,8 +135,15 @@ struct DiagnosticsEvent: Codable, Equatable {
              eligibilityUnknownCount: Int? = nil,
              eligibilityIneligibleCount: Int? = nil,
              eligibilityEligibleCount: Int? = nil,
-             eligibilityNoIntroOfferCount: Int? = nil
-        ) {
+             eligibilityNoIntroOfferCount: Int? = nil,
+             transactionId: UInt64? = nil,
+             environment: String? = nil,
+             storefront: String? = nil,
+             purchaseDate: Date? = nil,
+             expirationDate: Date? = nil,
+             price: Double? = nil,
+             currency: String? = nil,
+             reason: String? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
@@ -154,6 +170,14 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.eligibilityIneligibleCount = eligibilityIneligibleCount
             self.eligibilityEligibleCount = eligibilityEligibleCount
             self.eligibilityNoIntroOfferCount = eligibilityNoIntroOfferCount
+            self.transactionId = transactionId
+            self.environment = environment
+            self.storefront = storefront
+            self.purchaseDate = purchaseDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.expirationDate = expirationDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.price = price
+            self.currency = currency
+            self.reason = reason
         }
 
         static let empty = Properties()
