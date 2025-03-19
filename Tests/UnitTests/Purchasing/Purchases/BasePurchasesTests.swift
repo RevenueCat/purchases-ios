@@ -289,7 +289,8 @@ class BasePurchasesTests: TestCase {
             backend: self.backend,
             currentUserProvider: self.identityManager,
             operationDispatcher: self.mockOperationDispatcher,
-            productsManager: self.mockProductsManager
+            productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.diagnosticsTracker
         )
         self.cachingTrialOrIntroPriceEligibilityChecker = .init(checker: self.trialOrIntroPriceEligibilityChecker)
 

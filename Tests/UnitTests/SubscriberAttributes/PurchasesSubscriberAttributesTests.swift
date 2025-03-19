@@ -206,7 +206,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: mockBackend,
             currentUserProvider: mockIdentityManager,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
+            productsManager: mockProductsManager,
+            diagnosticsTracker: nil
         )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,

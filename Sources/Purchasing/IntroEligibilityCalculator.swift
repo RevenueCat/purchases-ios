@@ -28,9 +28,9 @@ class IntroEligibilityCalculator {
 
     func checkEligibility(with receiptData: Data,
                           productIdentifiers candidateProductIdentifiers: Set<String>,
-                          completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
+                          completion: @escaping (Result<[String: IntroEligibilityStatus], Error>) -> Void) {
         guard candidateProductIdentifiers.count > 0 else {
-            completion([:], nil)
+            completion(.success([:]))
             return
         }
         Logger.debug(Strings.customerInfo.checking_intro_eligibility_locally)
@@ -70,12 +70,11 @@ class IntroEligibilityCalculator {
                 Logger.debug(
                     Strings.customerInfo.checking_intro_eligibility_locally_result(productIdentifiers: result)
                 )
-                completion(result, nil)
+                completion(.success(result))
             }
         } catch {
             Logger.error(Strings.customerInfo.checking_intro_eligibility_locally_error(error: error))
-            completion([:], error)
-            return
+            completion(.failure(error))
         }
     }
 }
