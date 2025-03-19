@@ -19,7 +19,7 @@ import SwiftUI
 enum BackgroundStyle: Hashable {
 
     case color(DisplayableColorScheme)
-    case image(PaywallComponent.ThemeImageUrls)
+    case image(PaywallComponent.ThemeImageUrls, PaywallComponent.FitMode)
 
 }
 
@@ -30,11 +30,16 @@ struct BackgroundStyleModifier: ViewModifier {
     var colorScheme
 
     var backgroundStyle: BackgroundStyle?
+    var alignment: Alignment
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
-                .apply(backgroundStyle: backgroundStyle, colorScheme: colorScheme)
+                .apply(
+                    backgroundStyle: backgroundStyle,
+                    colorScheme: colorScheme,
+                    alignment: alignment
+                )
         } else {
             content
         }
@@ -48,7 +53,8 @@ fileprivate extension View {
     @ViewBuilder
     func apply(
         backgroundStyle: BackgroundStyle,
-        colorScheme: ColorScheme
+        colorScheme: ColorScheme,
+        alignment: Alignment
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):
@@ -77,8 +83,8 @@ fileprivate extension View {
                     .edgesIgnoringSafeArea(.all)
                 }
             }
-        case .image(let imageInfo):
-            self.background {
+        case .image(let imageInfo, let fitMode):
+            self.background(alignment: alignment) {
                 RemoteImage(
                     url: imageInfo.light.heic,
                     lowResUrl: imageInfo.light.heicLowRes,
@@ -87,7 +93,7 @@ fileprivate extension View {
                 ) { (image, _) in
                     image
                         .resizable()
-                        .scaledToFill()
+                        .aspectRatio(contentMode: fitMode.contentMode)
                         .ignoresSafeArea()
                 }
                 .edgesIgnoringSafeArea(.all)
@@ -100,8 +106,8 @@ fileprivate extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func backgroundStyle(_ backgroundStyle: BackgroundStyle?) -> some View {
-        self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle))
+    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, alignment: Alignment = .center) -> some View {
+        self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle, alignment: alignment))
     }
 
 }
@@ -112,8 +118,8 @@ extension BackgroundStyle {
         switch self {
         case .color(let value):
             return .color(value)
-        case .image(let value):
-            return .image(value)
+        case .image(let value, let fitMode):
+            return .image(value, fitMode)
         }
     }
 
@@ -192,7 +198,7 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                     heic: darkUrl,
                     heicLowRes: darkUrl
                 )
-            )))
+            ), .fill))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Light (should be pink cat)")
 
@@ -213,7 +219,7 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                     heic: darkUrl,
                     heicLowRes: darkUrl
                 )
-            )))
+            ), .fill))
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Dark (should be japan cats)")
