@@ -354,7 +354,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         expect(params.environment) == "xcode"
         expect(params.price) == 39.99
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
-            //            expect(params.storefront) == "US"
+            expect(params.storefront) == "USA"
             expect(params.reason) == "PURCHASE"
         }
     }
@@ -374,7 +374,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         expect(params.environment) == "xcode"
         expect(params.price) == 39.99
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
-            //            expect(params.storefront) == "US"
+            expect(params.storefront) == "USA"
             expect(params.reason) == "PURCHASE"
         }
     }
@@ -400,7 +400,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         let expirationDate = try XCTUnwrap(params.expirationDate)
         expect(expirationDate.timeIntervalSince(params.purchaseDate)) == 2 // see setShortestTestSessionTimeRate()
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
-            //            expect(params.storefront) == "US"
+            expect(params.storefront) == "USA"
             expect(params.reason) == "RENEWAL"
         }
     }

@@ -237,7 +237,7 @@ private extension StoreKit2TransactionListener {
         diagnosticsTracker.trackAppleTransactionUpdateReceived(
             transactionId: sk2Transaction.id,
             environment: transaction.environment?.rawValue,
-            storefront: transaction.storefront?.identifier,
+            storefront: transaction.storefront?.countryCode,
             productId: transaction.productIdentifier,
             purchaseDate: transaction.purchaseDate,
             expirationDate: sk2Transaction.expirationDate,
