@@ -37,16 +37,14 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
 
-    // Use counter to track restore events instead of boolean flag
-    // Each increment creates a unique restore event
     @State private var restoreStarted: UniqueWrapper<Void>?
     @State private var restoreFailed: UniqueWrapper<NSError>?
     @State private var restoreCompleted: UniqueWrapper<CustomerInfo>?
-    // Counter for manage subscriptions to ensure unique values
     @State private var showingManageSubscriptions: UniqueWrapper<Void>?
     @State private var refundRequestStarted: UniqueWrapper<String>?
     @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
+    @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
 
     func body(content: Content) -> some View {
         content
@@ -79,6 +77,10 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                 actionWrapper.setFeedbackSurveyCompleted = { reason in
                     feedbackSurveyCompleted = UniqueWrapper(value: reason)
                 }
+
+                actionWrapper.setManagementOptionSelected = { action in
+                    managementOptionSelected = UniqueWrapper(value: action)
+                }
             }
             // Apply preferences based on state
             .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
@@ -95,6 +97,8 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: refundRequestCompleted)
             .preference(key: CustomerCenterView.FeedbackSurveyCompletedPreferenceKey.self,
                         value: feedbackSurveyCompleted)
+            .preference(key: CustomerCenterView.ManagementOptionSelectedPreferenceKey.self,
+                        value: managementOptionSelected)
     }
 }
 

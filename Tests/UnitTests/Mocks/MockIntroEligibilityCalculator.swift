@@ -18,18 +18,16 @@ class MockIntroEligibilityCalculator: IntroEligibilityCalculator {
                                                                 candidateProductIdentifiers: Set<String>)?
     var invokedCheckTrialOrIntroDiscountEligibilityParametersList = [(receiptData: Data,
                                                                           candidateProductIdentifiers: Set<String>)]()
-    var stubbedCheckTrialOrIntroDiscountEligibilityResult: ([String: IntroEligibilityStatus], Error?)?
+    var stubbedCheckTrialOrIntroDiscountEligibilityResult: (Result<[String: IntroEligibilityStatus], Error>)?
 
     override func checkEligibility(with receiptData: Data,
                                    productIdentifiers candidateProductIdentifiers: Set<String>,
-                                   completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
+                                   completion: @escaping (Result<[String: IntroEligibilityStatus], Error>) -> Void) {
         invokedCheckTrialOrIntroDiscountEligibility = true
         invokedCheckTrialOrIntroDiscountEligibilityCount += 1
         invokedCheckTrialOrIntroDiscountEligibilityParameters = (receiptData, candidateProductIdentifiers)
         invokedCheckTrialOrIntroDiscountEligibilityParametersList.append((receiptData, candidateProductIdentifiers))
-        if let result = stubbedCheckTrialOrIntroDiscountEligibilityResult {
-            completion(result.0, result.1)
-        }
+        completion(stubbedCheckTrialOrIntroDiscountEligibilityResult ?? .success([:]))
     }
 
 }

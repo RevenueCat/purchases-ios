@@ -57,6 +57,9 @@ struct DiagnosticsEvent: Codable, Equatable {
         case syncPurchasesResult = "sync_purchases_result"
         case restorePurchasesStarted = "restore_purchases_started"
         case restorePurchasesResult = "restore_purchases_result"
+        case applePresentCodeRedemptionSheetRequest = "apple_present_code_redemption_sheet_request"
+        case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
+        case appleTransactionQueueReceived = "apple_transaction_queue_received"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
@@ -96,6 +99,10 @@ struct DiagnosticsEvent: Codable, Equatable {
         let cacheFetchPolicy: String?
         let hadUnsyncedPurchasesBefore: Bool?
         let isRetry: Bool?
+        let eligibilityUnknownCount: Int?
+        let eligibilityIneligibleCount: Int?
+        let eligibilityEligibleCount: Int?
+        let eligibilityNoIntroOfferCount: Int?
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
@@ -119,7 +126,12 @@ struct DiagnosticsEvent: Codable, Equatable {
              cacheStatus: CacheStatus? = nil,
              cacheFetchPolicy: CacheFetchPolicy? = nil,
              hadUnsyncedPurchasesBefore: Bool? = nil,
-             isRetry: Bool? = nil) {
+             isRetry: Bool? = nil,
+             eligibilityUnknownCount: Int? = nil,
+             eligibilityIneligibleCount: Int? = nil,
+             eligibilityEligibleCount: Int? = nil,
+             eligibilityNoIntroOfferCount: Int? = nil
+        ) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
@@ -143,6 +155,10 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.cacheFetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
             self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
             self.isRetry = isRetry
+            self.eligibilityUnknownCount = eligibilityUnknownCount
+            self.eligibilityIneligibleCount = eligibilityIneligibleCount
+            self.eligibilityEligibleCount = eligibilityEligibleCount
+            self.eligibilityNoIntroOfferCount = eligibilityNoIntroOfferCount
         }
 
         static let empty = Properties()

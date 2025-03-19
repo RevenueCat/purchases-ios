@@ -22,17 +22,16 @@ class IntroEligibilityCalculatorTests: TestCase {
                                                      receiptParser: mockReceiptParser)
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEmptyIfNoProductIds() {
-        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEmptyIfNoProductIds() throws {
+        let result: Result<[String: IntroEligibilityStatus], Error>? = waitUntilValue { completed in
             self.calculator.checkEligibility(with: Data(),
-                                             productIdentifiers: Set()) { eligibilityByProductId, error in
-                completed((eligibilityByProductId, error))
-            }
+                                             productIdentifiers: Set(),
+                                             completion: completed)
         }
 
-        expect(result?.error).to(beNil())
-        expect(result?.eligibility).toNot(beNil())
-        expect(result?.eligibility).to(beEmpty())
+        let eligibility = try result?.get()
+        expect(eligibility).toNot(beNil())
+        expect(eligibility).to(beEmpty())
     }
 
     func testCheckTrialOrIntroDiscountEligibilityReturnsErrorIfReceiptParserThrows() {
@@ -40,16 +39,13 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         self.mockReceiptParser.stubbedParseError = .receiptParsingError
 
-        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+        let result: Result<[String: IntroEligibilityStatus], Error>? = waitUntilValue { completed in
             self.calculator.checkEligibility(with: Data(),
-                                             productIdentifiers: productIdentifiers) { eligibilityByProductId, error in
-                completed((eligibilityByProductId, error))
-            }
+                                             productIdentifiers: productIdentifiers,
+                                             completion: completed)
         }
 
         expect(result?.error).to(matchError(PurchasesReceiptParser.Error.receiptParsingError))
-        expect(result?.eligibility).toNot(beNil())
-        expect(result?.eligibility).to(beEmpty())
     }
 
     func testCheckTrialOrIntroDiscountEligibilityMakesOnlyOneProductsRequest() {
@@ -67,7 +63,7 @@ class IntroEligibilityCalculatorTests: TestCase {
         let candidateIdentifiers = Set(["a", "b", "c"])
         waitUntil { completed in
             self.calculator.checkEligibility(with: Data(),
-                                             productIdentifiers: Set(candidateIdentifiers)) { _, _ in
+                                             productIdentifiers: Set(candidateIdentifiers)) { _ in
                 completed()
             }
         }
@@ -77,8 +73,8 @@ class IntroEligibilityCalculatorTests: TestCase {
             .union(receipt.activeSubscriptionsProductIdentifiers)
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityGetsCorrectResult() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 (productID: "com.revenuecat.product1", expiration: nil, inTrial: false),
                 (productID: "com.revenuecat.product2", expiration: Date().addingTimeInterval(1000), inTrial: false),
@@ -96,8 +92,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleForPreviouslyOwnedSubscription() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleForPreviouslyOwnedSubscription() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", Date().addingTimeInterval(-1000), true)
             ],
@@ -110,8 +106,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionWithUnusedTrial() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionWithUnusedTrial() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", Date().addingTimeInterval(-1000), false)
             ],
@@ -124,8 +120,9 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionInDifferentGroup() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleForPreviouslyOwnedSubscriptionInDifferentGroup()
+    throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 "com.revenuecat.product1": Date().addingTimeInterval(-1000)
             ],
@@ -139,8 +136,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleWithActiveSubscriptionInSameGroup() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleWithActiveSubscriptionInSameGroup() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 "com.revenuecat.product2": Date().addingTimeInterval(1000)
             ],
@@ -154,8 +151,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithActiveSubscriptionInDifferentGroup() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithActiveSubscriptionInDifferentGroup() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 "com.revenuecat.product2": Date().addingTimeInterval(1000)
             ],
@@ -169,8 +166,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithExpiredSubscriptionWithNoTrialInSameGroup() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsEligibleWithExpiredSubscriptionWithNoTrialInSameGroup() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", nil, false),
                 ("com.revenuecat.product2", Date().addingTimeInterval(-1000), false)
@@ -185,8 +182,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleWithExpiredSubscriptionWithTrialInSameGroup() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityReturnsIneligibleWithExpiredSubscriptionWithTrialInSameGroup() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", nil, false),
                 ("com.revenuecat.product2", Date().addingTimeInterval(-1000), true)
@@ -201,8 +198,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsNoIntroOfferExists() {
-        self.testEligibility(
+    func testCheckTrialOrIntroDiscountEligibilityForProductWithoutIntroTrialReturnsNoIntroOfferExists() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", nil, false)
             ],
@@ -215,8 +212,8 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndActiveSubscription() {
-        self.testEligibility(
+    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndActiveSubscription() throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 "com.revenuecat.product1": Date().addingTimeInterval(1000)
             ],
@@ -229,8 +226,9 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialEligibilityReturnsEligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithNoTrial() {
-        self.testEligibility(
+    func testCheckTrialEligibilityReturnsEligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithNoTrial()
+    throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", Date().addingTimeInterval(-1000), false)
             ],
@@ -243,8 +241,9 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithTrial() {
-        self.testEligibility(
+    func testCheckTrialEligibilityReturnsIneligibleForProductWithNoSubscriptionGroupAndExpiredSubscriptionWithTrial()
+    throws {
+        try self.testEligibility(
             purchaseExpirationsByProductIdentifier: [
                 ("com.revenuecat.product1", Date().addingTimeInterval(-1000), true)
             ],
@@ -257,7 +256,7 @@ class IntroEligibilityCalculatorTests: TestCase {
         )
     }
 
-    func testCheckTrialOrIntroDiscountEligibilityForConsumableReturnsUnknown() {
+    func testCheckTrialOrIntroDiscountEligibilityForConsumableReturnsUnknown() throws {
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
         let mockProduct = MockSK1Product(mockProductIdentifier: "lifetime",
@@ -268,17 +267,15 @@ class IntroEligibilityCalculatorTests: TestCase {
 
         let candidateIdentifiers = Set(["lifetime"])
 
-        let result: (eligibility: [String: IntroEligibilityStatus], error: Error?)? = waitUntilValue { completed in
+        let result: Result<[String: IntroEligibilityStatus], Error>? = waitUntilValue { completed in
             self.calculator.checkEligibility(
                 with: Data(),
-                productIdentifiers: Set(candidateIdentifiers)
-            ) { eligibilityByProductId, error in
-                completed((eligibilityByProductId, error))
-            }
+                productIdentifiers: Set(candidateIdentifiers),
+                completion: completed)
         }
 
-        expect(result?.error).to(beNil())
-        expect(result?.eligibility) == [
+        let eligibility = try result?.get()
+        expect(eligibility) == [
             "lifetime": IntroEligibilityStatus.unknown
         ]
     }
@@ -292,8 +289,8 @@ private extension IntroEligibilityCalculatorTests {
         expectedResult: [String: IntroEligibilityStatus],
         file: FileString = #file,
         line: UInt = #line
-    ) {
-        return self.testEligibility(
+    ) throws {
+        return try self.testEligibility(
             purchaseExpirationsByProductIdentifier: purchaseExpirationsByProductIdentifier.map { ($0, $1, false) },
             productsInGroups: productsInGroups.mapValues { (groupID: $0, hasTrial: true) },
             expectedResult: expectedResult,
@@ -308,7 +305,7 @@ private extension IntroEligibilityCalculatorTests {
         expectedResult: [String: IntroEligibilityStatus],
         file: FileString = #file,
         line: UInt = #line
-    ) {
+    ) throws {
         let receipt = AppleReceipt(
             environment: .sandbox,
             bundleId: "com.revenuecat.test",
@@ -351,17 +348,15 @@ private extension IntroEligibilityCalculatorTests {
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success(Set(products))
 
-        let result: [String: IntroEligibilityStatus]? = waitUntilValue { completed in
+        let result: Result<[String: IntroEligibilityStatus], Error>? = waitUntilValue { completed in
             self.calculator.checkEligibility(
                 with: Data(),
-                productIdentifiers: Set(expectedResult.keys)
-            ) { result, error in
-                expect(error).to(beNil())
-                completed(result)
-            }
+                productIdentifiers: Set(expectedResult.keys),
+                completion: completed)
         }
 
-        expect(file: file, line: line, result) == expectedResult
+        let eligibility = try result?.get()
+        expect(file: file, line: line, eligibility) == expectedResult
     }
 
     func testEligibilityStatusIsEligible() {

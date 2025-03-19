@@ -193,10 +193,6 @@ class PurchasesSyncPurchasesTrackingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    private func getMockDiagnosticsTracker() throws -> MockDiagnosticsTracker {
-        return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
-    }
-
     func testSyncPurchasesTracksSyncStarted() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
@@ -209,7 +205,7 @@ class PurchasesSyncPurchasesTrackingTests: BasePurchasesTests {
             }
         }
 
-        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
         let callCount = mockDiagnosticsTracker.trackedSyncPurchasesStartedCalls.value
         expect(callCount) == 1
     }
@@ -226,7 +222,7 @@ class PurchasesSyncPurchasesTrackingTests: BasePurchasesTests {
             }
         }
 
-        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
         let calls = mockDiagnosticsTracker.trackedSyncPurchasesResultParams.value
         expect(calls.count) == 1
         let callParams = calls[0]
@@ -248,7 +244,7 @@ class PurchasesSyncPurchasesTrackingTests: BasePurchasesTests {
             }
         }
 
-        let mockDiagnosticsTracker = try self.getMockDiagnosticsTracker()
+        let mockDiagnosticsTracker = try self.mockDiagnosticsTracker
         let calls = mockDiagnosticsTracker.trackedSyncPurchasesResultParams.value
         expect(calls.count) == 1
         let callParams = calls[0]
