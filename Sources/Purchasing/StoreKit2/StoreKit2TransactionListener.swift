@@ -241,7 +241,7 @@ private extension StoreKit2TransactionListener {
             productId: transaction.productIdentifier,
             purchaseDate: transaction.purchaseDate,
             expirationDate: sk2Transaction.expirationDate,
-            price: sk2Transaction.price.map { ($0 as NSDecimalNumber).doubleValue },
+            price: sk2Transaction.price.map { ($0 as NSDecimalNumber).floatValue },
             currency: currency,
             reason: reason
         )

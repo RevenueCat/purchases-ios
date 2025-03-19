@@ -145,7 +145,7 @@ protocol DiagnosticsTrackerType: Sendable {
                                              productId: String,
                                              purchaseDate: Date,
                                              expirationDate: Date?,
-                                             price: Double?,
+                                             price: Float?,
                                              currency: String?,
                                              reason: String?)
 }
@@ -381,7 +381,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                              productId: String,
                                              purchaseDate: Date,
                                              expirationDate: Date?,
-                                             price: Double?,
+                                             price: Float?,
                                              currency: String?,
                                              reason: String?) {
         self.trackEvent(name: .appleTransactionUpdateReceived,

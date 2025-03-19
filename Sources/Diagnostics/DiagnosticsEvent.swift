@@ -106,7 +106,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let storefront: String?
         let purchaseDate: Int?
         let expirationDate: Int?
-        let price: Double?
+        let price: Float?
         let currency: String?
         let reason: String?
 
@@ -141,7 +141,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              storefront: String? = nil,
              purchaseDate: Date? = nil,
              expirationDate: Date? = nil,
-             price: Double? = nil,
+             price: Float? = nil,
              currency: String? = nil,
              reason: String? = nil) {
             self.verificationResult = verificationResult
