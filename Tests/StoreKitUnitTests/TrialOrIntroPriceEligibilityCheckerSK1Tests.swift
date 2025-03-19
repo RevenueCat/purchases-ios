@@ -154,7 +154,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
 
         let eligibilities = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([]) { eligibilities, _ in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([productId]) { eligibilities, _ in
                 completed(eligibilities)
             }
         }
@@ -212,7 +212,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         mockOfferingsAPI.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
 
         let eligibilities = waitUntilValue { completed in
-            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([]) { eligibilities, _ in
+            self.trialOrIntroPriceEligibilityChecker.sk1CheckEligibility([productId]) { eligibilities, _ in
                 completed(eligibilities)
             }
         }
