@@ -181,7 +181,7 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Color - Dark (should be red because fallback)")
 
-        // Image - Light (should be pink cat)
+        // Image (Fill) - Light (should be pink cat)
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
@@ -200,9 +200,9 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                 )
             ), .fill))
             .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image - Light (should be pink cat)")
+            .previewDisplayName("Image (Fill) - Light (should be pink cat)")
 
-        // Image - Dark (should be japan cats)
+        // Image (Fill) - Dark (should be japan cats)
         testContent
             .backgroundStyle(.image(.init(
                 light: .init(
@@ -223,6 +223,27 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Dark (should be japan cats)")
+
+        // Image (Fit) - Light (should be pink cat)
+        testContent
+            .backgroundStyle(.image(.init(
+                light: .init(
+                    width: 750,
+                    height: 530,
+                    original: lightUrl,
+                    heic: lightUrl,
+                    heicLowRes: lightUrl
+                ),
+                dark: .init(
+                    width: 1024,
+                    height: 853,
+                    original: darkUrl,
+                    heic: darkUrl,
+                    heicLowRes: darkUrl
+                )
+            ), .fit))
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Image (Fit) - Light (should be pink cat)")
 
         testContent
             .backgroundStyle(
