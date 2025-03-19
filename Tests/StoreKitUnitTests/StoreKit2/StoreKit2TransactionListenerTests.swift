@@ -42,7 +42,9 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
         await self.verifyNoUnfinishedTransactions()
 
         self.delegate = .init()
-        self.listener = .init(delegate: self.delegate, updates: try await self.updates)
+        self.listener = .init(delegate: self.delegate,
+                              diagnosticsTracker: nil,
+                              updates: try await self.updates)
     }
 
 }
