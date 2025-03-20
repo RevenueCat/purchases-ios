@@ -176,6 +176,7 @@ private struct CarouselView<Content: View>: View {
         }
 
         if !isInitialized {
+            // Prevents any animation when carousel is first coming into view
             return 0
         } else if isPaused {
             return 0.25
@@ -215,6 +216,7 @@ private struct CarouselView<Content: View>: View {
                         state = value.translation.width
                     }
                     .onEnded { value in
+                        // Store drag offset to apply nice snap animation when done
                         self.dragOffset = value.translation.width
                         handleDragEnd(translation: value.translation.width)
                     }
