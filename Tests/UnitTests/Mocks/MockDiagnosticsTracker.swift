@@ -71,7 +71,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
-    func trackPurchaseRequest(wasSuccessful: Bool,
+    func trackPurchaseAttempt(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
@@ -290,6 +290,38 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                      responseTime: TimeInterval) {
         self.trackedRestorePurchasesResultParams.modify {
             $0.append((errorMessage, errorCode, responseTime))
+        }
+    }
+
+    let trackedPurchasesStartedParams: Atomic<[
+        (productId: String?,
+         productType: StoreProduct.ProductType?)
+    ]> = .init([])
+    func trackPurchaseStarted(productId: String,
+                              productType: StoreProduct.ProductType) {
+        self.trackedPurchasesStartedParams.modify {
+            $0.append((productId, productType))
+        }
+    }
+
+    let trackedPurchasesResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (productId: String,
+         productType: StoreProduct.ProductType,
+         verificationResult: VerificationResult?,
+         errorMessage: String?,
+         errorCode: Int?,
+        responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackPurchaseResult(productId: String,
+                             productType: StoreProduct.ProductType,
+                             verificationResult: VerificationResult?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.trackedPurchasesResultParams.modify {
+            $0.append((productId, productType, verificationResult, errorMessage, errorCode, responseTime))
         }
     }
 
