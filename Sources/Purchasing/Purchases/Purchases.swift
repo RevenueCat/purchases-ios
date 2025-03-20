@@ -520,7 +520,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
-                    storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
+                    storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil,
+                                                                               diagnosticsTracker: diagnosticsTracker),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
@@ -1011,6 +1012,7 @@ public extension Purchases {
                                        package: nil,
                                        promotionalOffer: nil,
                                        metadata: nil,
+                                       trackDiagnostics: true,
                                        completion: completion)
     }
 
@@ -1024,6 +1026,7 @@ public extension Purchases {
                                        package: package,
                                        promotionalOffer: nil,
                                        metadata: nil,
+                                       trackDiagnostics: true,
                                        completion: completion)
     }
 
@@ -1045,7 +1048,7 @@ public extension Purchases {
 
     @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(params: params, completion: completion)
+        purchasesOrchestrator.purchase(params: params, trackDiagnostics: true, completion: completion)
     }
 
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
@@ -1074,6 +1077,7 @@ public extension Purchases {
                                        package: nil,
                                        promotionalOffer: promotionalOffer.signedData,
                                        metadata: nil,
+                                       trackDiagnostics: true,
                                        completion: completion)
     }
 
@@ -1087,6 +1091,7 @@ public extension Purchases {
                                        package: package,
                                        promotionalOffer: promotionalOffer.signedData,
                                        metadata: nil,
+                                       trackDiagnostics: true,
                                        completion: completion)
     }
 
