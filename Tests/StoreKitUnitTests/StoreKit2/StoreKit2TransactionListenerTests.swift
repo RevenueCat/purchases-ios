@@ -352,11 +352,14 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
         expect(params.productId) == "com.revenuecat.annual_39.99_no_trial"
         expect(params.environment) == "xcode"
+
+        #if compiler(>=6.0)
         expect(params.price) == 39.99
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
             expect(params.storefront) == "USA"
             expect(params.reason) == "PURCHASE"
         }
+        #endif
     }
 
     func testTracksDiagnosticsWhenNotifiedForExistingTransactions() async throws {
@@ -372,11 +375,15 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
         expect(params.productId) == "com.revenuecat.annual_39.99_no_trial"
         expect(params.environment) == "xcode"
+        
+        #if compiler(>=6.0)
         expect(params.price) == 39.99
+
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
             expect(params.storefront) == "USA"
             expect(params.reason) == "PURCHASE"
         }
+        #endif
     }
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
@@ -396,13 +403,18 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
         expect(params.productId) == Self.productID
         expect(params.environment) == "xcode"
-        expect(params.price) == 4.99
+
         let expirationDate = try XCTUnwrap(params.expirationDate)
         expect(expirationDate.timeIntervalSince(params.purchaseDate)) == 2 // see setShortestTestSessionTimeRate()
+
+        #if compiler(>=6.0)
+        expect(params.price) == 4.99
+
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
             expect(params.storefront) == "USA"
             expect(params.reason) == "RENEWAL"
         }
+        #endif
     }
 
 }
