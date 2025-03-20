@@ -1138,7 +1138,7 @@ private extension PurchasesOrchestrator {
     func trackPurchaseResultIfNeeded(trackDiagnostics: Bool,
                                      productId: String,
                                      productType: StoreProduct.ProductType,
-                                     verificationResult: RevenueCat.VerificationResult?,
+                                     verificationResult: VerificationResult?,
                                      error: PublicError?,
                                      startTime: Date) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *), trackDiagnostics,
