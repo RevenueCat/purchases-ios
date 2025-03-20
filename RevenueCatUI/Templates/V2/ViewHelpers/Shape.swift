@@ -73,24 +73,23 @@ struct ShapeModifier: ViewModifier {
         case .circle, .pill, .rectangle:
             if let shape = self.shape.toInsettableShape() {
                 content
-                // We want to clip only in case there is a non-Rectangle shape
-                // or if there's a border
-                .applyIf(!shape.isRectangle() || border != nil) { view in
-                    view
-                        .clipShape(
-                            // Adding inset to clip contents within the border
-                            // Mainly to handle transparent borders not showing content
-                            shape.inset(by: border?.width ?? 0 / 2)
-                        )
-                }
-                // Background needs to be after the clip
-                .backgroundStyle(background)
-                // Place border on top of content
-                .applyIfLet(border) { view, border in
-                    view.clipShape(shape).overlay {
-                        shape.strokeBorder(border.color, lineWidth: border.width)
+                    .backgroundStyle(background)
+                    // We want to clip only in case there is a non-Rectangle shape
+                    // or if there's a border
+                    .applyIf(!shape.isRectangle() || border != nil) { view in
+                        view
+                            .clipShape(
+                                // Adding inset to clip contents within the border
+                                // Mainly to handle transparent borders not showing content
+                                shape.inset(by: border?.width ?? 0 / 2)
+                            )
                     }
-                }
+                    // Place border on top of content
+                    .applyIfLet(border) { view, border in
+                        view.clipShape(shape).overlay {
+                            shape.strokeBorder(border.color, lineWidth: border.width)
+                        }
+                    }
             }
         case .concave:
             // WIP: Need to implement
