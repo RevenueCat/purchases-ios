@@ -375,7 +375,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
         expect(params.productId) == "com.revenuecat.annual_39.99_no_trial"
         expect(params.environment) == "xcode"
-        
+
         #if compiler(>=6.0)
         expect(params.price) == 39.99
 
