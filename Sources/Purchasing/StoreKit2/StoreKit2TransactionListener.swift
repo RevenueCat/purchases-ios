@@ -228,7 +228,7 @@ private extension StoreKit2TransactionListener {
         }
 
         let currency: String?
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             currency = sk2Transaction.currency?.identifier
         } else {
             currency = nil
