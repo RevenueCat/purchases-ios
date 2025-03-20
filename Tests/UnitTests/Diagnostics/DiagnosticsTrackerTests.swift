@@ -497,6 +497,38 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - Transaction Update Received
+
+    func testTrackingAppleTransactionUpdateReceived() async throws {
+        self.tracker.trackAppleTransactionUpdateReceived(transactionId: 12326654321,
+                                                         environment: "production",
+                                                         storefront: "storefront_id",
+                                                         productId: "product_id",
+                                                         purchaseDate: Date(timeIntervalSince1970: 100_000_000_000),
+                                                         expirationDate: Date(timeIntervalSince1970: 101_000_000_000),
+                                                         price: 9.99,
+                                                         currency: "USD",
+                                                         reason: "purchase")
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .appleTransactionUpdateReceived,
+                  properties: DiagnosticsEvent.Properties(
+                    productId: "product_id",
+                    transactionId: 12326654321,
+                    environment: "production",
+                    storefront: "storefront_id",
+                    purchaseDate: Date(timeIntervalSince1970: 100_000_000_000),
+                    expirationDate: Date(timeIntervalSince1970: 101_000_000_000),
+                    price: 9.99,
+                    currency: "USD",
+                    reason: "purchase"
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
