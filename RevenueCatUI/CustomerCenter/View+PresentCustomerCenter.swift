@@ -147,6 +147,7 @@ extension View {
         refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         self.modifier(
@@ -161,7 +162,8 @@ extension View {
                 showingManageSubscriptions: showingManageSubscriptions,
                 refundRequestStarted: refundRequestStarted,
                 refundRequestCompleted: refundRequestCompleted,
-                feedbackSurveyCompleted: feedbackSurveyCompleted
+                feedbackSurveyCompleted: feedbackSurveyCompleted,
+                managementOptionSelected: managementOptionSelected
             )
         )
     }
@@ -181,6 +183,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     let refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler?
     let refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler?
     let feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler?
+    let managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler?
 
     /// The closure to execute when dismissing the sheet / fullScreen present
     let onDismiss: (() -> Void)?
@@ -197,6 +200,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
@@ -209,6 +213,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self.refundRequestStarted = refundRequestStarted
         self.refundRequestCompleted = refundRequestCompleted
         self.feedbackSurveyCompleted = feedbackSurveyCompleted
+        self.managementOptionSelected = managementOptionSelected
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
@@ -264,6 +269,9 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             }
             .onCustomerCenterFeedbackSurveyCompleted { [feedbackSurveyCompleted] optionId in
                 feedbackSurveyCompleted?(optionId)
+            }
+            .onCustomerCenterManagementOptionSelected { action in
+                managementOptionSelected?(action)
             }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }

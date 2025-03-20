@@ -133,13 +133,13 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedProductsRequestParams.modify {
             $0.append(
                 (wasSuccessful,
-                storeKitVersion,
-                errorMessage,
-                errorCode,
-                storeKitErrorDescription,
-                requestedProductIds,
-                notFoundProductIds,
-                responseTime)
+                 storeKitVersion,
+                 errorMessage,
+                 errorCode,
+                 storeKitErrorDescription,
+                 requestedProductIds,
+                 notFoundProductIds,
+                 responseTime)
             )
         }
     }
@@ -337,4 +337,60 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
             $0.append((productId, productType, verificationResult, errorMessage, errorCode, responseTime))
         }
     }
+
+    let trackedApplePresentCodeRedemptionSheetRequestCalls: Atomic<Int> = .init(0)
+    func trackApplePresentCodeRedemptionSheetRequest() {
+        self.trackedApplePresentCodeRedemptionSheetRequestCalls.modify { $0 += 1 }
+    }
+
+    let trackedAppleTrialOrIntroEligibilityRequestParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (storeKitVersion: StoreKitVersion,
+         requestedProductIds: Set<String>,
+         eligibilityUnknownCount: Int?,
+         eligibilityIneligibleCount: Int?,
+         eligibilityEligibleCount: Int?,
+         eligibilityNoIntroOfferCount: Int?,
+         errorMessage: String?,
+         errorCode: Int?,
+         responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
+                                                  requestedProductIds: Set<String>,
+                                                  eligibilityUnknownCount: Int?,
+                                                  eligibilityIneligibleCount: Int?,
+                                                  eligibilityEligibleCount: Int?,
+                                                  eligibilityNoIntroOfferCount: Int?,
+                                                  errorMessage: String?,
+                                                  errorCode: Int?,
+                                                  responseTime: TimeInterval) {
+        self.trackedAppleTrialOrIntroEligibilityRequestParams.modify {
+            $0.append((storeKitVersion,
+                       requestedProductIds,
+                       eligibilityUnknownCount,
+                       eligibilityIneligibleCount,
+                       eligibilityEligibleCount,
+                       eligibilityNoIntroOfferCount,
+                       errorMessage,
+                       errorCode,
+                       responseTime))
+        }
+    }
+
+    let trackedAppleTransactionQueueReceivedParams: Atomic<[
+        (productId: String?,
+         paymentDiscountId: String?,
+         transactionState: String,
+         errorMessage: String?)
+    ]> = .init([])
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?) {
+        self.trackedAppleTransactionQueueReceivedParams.modify {
+            $0.append((productId, paymentDiscountId, transactionState, errorMessage))
+        }
+    }
+
 }

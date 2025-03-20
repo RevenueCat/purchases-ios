@@ -15,6 +15,8 @@
 import Foundation
 
 // swiftlint:disable function_parameter_count
+// swiftlint:disable file_length
+// swiftlint:disable type_body_length
 protocol DiagnosticsTrackerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -133,6 +135,26 @@ protocol DiagnosticsTrackerType {
     func trackRestorePurchasesResult(errorMessage: String?,
                                      errorCode: Int?,
                                      responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackApplePresentCodeRedemptionSheetRequest()
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
+                                                  requestedProductIds: Set<String>,
+                                                  eligibilityUnknownCount: Int?,
+                                                  eligibilityIneligibleCount: Int?,
+                                                  eligibilityEligibleCount: Int?,
+                                                  eligibilityNoIntroOfferCount: Int?,
+                                                  errorMessage: String?,
+                                                  errorCode: Int?,
+                                                  responseTime: TimeInterval)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?)
 
 }
 
@@ -395,6 +417,47 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         )
         )
     }
+
+    func trackApplePresentCodeRedemptionSheetRequest() {
+        self.trackEvent(name: .applePresentCodeRedemptionSheetRequest, properties: .empty)
+    }
+
+    func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
+                                                  requestedProductIds: Set<String>,
+                                                  eligibilityUnknownCount: Int?,
+                                                  eligibilityIneligibleCount: Int?,
+                                                  eligibilityEligibleCount: Int?,
+                                                  eligibilityNoIntroOfferCount: Int?,
+                                                  errorMessage: String?,
+                                                  errorCode: Int?,
+                                                  responseTime: TimeInterval) {
+        self.trackEvent(name: .appleTrialOrIntroEligibilityRequest,
+                        properties: DiagnosticsEvent.Properties(
+                            responseTime: responseTime,
+                            storeKitVersion: storeKitVersion,
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            requestedProductIds: requestedProductIds,
+                            eligibilityUnknownCount: eligibilityUnknownCount,
+                            eligibilityIneligibleCount: eligibilityIneligibleCount,
+                            eligibilityEligibleCount: eligibilityEligibleCount,
+                            eligibilityNoIntroOfferCount: eligibilityNoIntroOfferCount
+                        ))
+    }
+
+    func trackAppleTransactionQueueReceived(productId: String?,
+                                            paymentDiscountId: String?,
+                                            transactionState: String,
+                                            errorMessage: String?) {
+        self.trackEvent(name: .appleTransactionQueueReceived,
+                        properties: DiagnosticsEvent.Properties(
+                            errorMessage: errorMessage,
+                            skErrorDescription: transactionState,
+                            productId: productId,
+                            promotionalOfferId: paymentDiscountId
+                        ))
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

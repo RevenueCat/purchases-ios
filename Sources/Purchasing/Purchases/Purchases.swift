@@ -274,6 +274,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private var customerInfoObservationDisposable: (() -> Void)?
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
+    private let diagnosticsTracker: DiagnosticsTrackerType?
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -354,7 +355,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             : .left(.init(
                 operationDispatcher: operationDispatcher,
                 observerMode: observerMode,
-                sandboxEnvironmentDetector: systemInfo
+                sandboxEnvironmentDetector: systemInfo,
+                diagnosticsTracker: diagnosticsTracker
             ))
 
         let offeringsFactory = OfferingsFactory()
@@ -567,7 +569,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       backend: backend,
                                                       currentUserProvider: identityManager,
                                                       operationDispatcher: operationDispatcher,
-                                                      productsManager: productsManager)
+                                                      productsManager: productsManager,
+                                                      diagnosticsTracker: diagnosticsTracker)
         )
 
         let paywallCache: PaywallCacheWarmingType?
@@ -602,7 +605,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
-                  storeMessagesHelper: storeMessagesHelper
+                  storeMessagesHelper: storeMessagesHelper,
+                  diagnosticsTracker: diagnosticsTracker
         )
     }
 
@@ -631,7 +635,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
-         storeMessagesHelper: StoreMessagesHelperType?
+         storeMessagesHelper: StoreMessagesHelperType?,
+         diagnosticsTracker: DiagnosticsTrackerType?
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -679,6 +684,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
+        self.diagnosticsTracker = diagnosticsTracker
 
         super.init()
 
@@ -1141,6 +1147,9 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     @objc func presentCodeRedemptionSheet() {
+        if #available(iOS 15.0, *) {
+            self.diagnosticsTracker?.trackApplePresentCodeRedemptionSheetRequest()
+        }
         self.paymentQueueWrapper.paymentQueueWrapperType.presentCodeRedemptionSheet()
     }
 #endif
