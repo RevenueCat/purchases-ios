@@ -179,7 +179,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let product = try await self.fetchSk1Product()
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
             orchestrator.purchase(product: StoreProduct(sk1Product: product),
-                                  package: nil) { transaction, customerInfo, error, userCancelled in
+                                  package: nil,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -350,7 +351,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         #endif
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params.build()) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params.build(),
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -395,7 +397,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 .build()
 
         let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(params: params) { transaction, customerInfo, error, userCancelled in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }

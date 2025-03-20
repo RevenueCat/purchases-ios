@@ -51,6 +51,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         case getProductsResult = "get_products_result"
         case getCustomerInfoStarted = "get_customer_info_started"
         case getCustomerInfoResult = "get_customer_info_result"
+        case purchaseStarted = "purchase_started"
+        case purchaseResult = "purchase_result"
         case syncPurchasesStarted = "sync_purchases_started"
         case syncPurchasesResult = "sync_purchases_result"
         case restorePurchasesStarted = "restore_purchases_started"
@@ -90,6 +92,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let requestedProductIds: Set<String>?
         let notFoundProductIds: Set<String>?
         let productId: String?
+        let productType: String?
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
@@ -125,6 +128,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              requestedProductIds: Set<String>? = nil,
              notFoundProductIds: Set<String>? = nil,
              productId: String? = nil,
+             productType: StoreProduct.ProductType? = nil,
              promotionalOfferId: String? = nil,
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
@@ -159,6 +163,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.requestedProductIds = requestedProductIds
             self.notFoundProductIds = notFoundProductIds
             self.productId = productId
+            self.productType = productType?.diagnosticsName
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
@@ -192,6 +197,18 @@ fileprivate extension CacheFetchPolicy {
         case .fetchCurrent: return "FETCH_CURRENT"
         case .notStaleCachedOrFetched: return "NOT_STALE_CACHED_OR_FETCHED"
         case .cachedOrFetched: return "CACHED_OR_FETCHED"
+        }
+    }
+}
+
+fileprivate extension StoreProduct.ProductType {
+
+    var diagnosticsName: String {
+        switch self {
+        case .consumable: return "CONSUMABLE"
+        case .nonConsumable: return "NON_CONSUMABLE"
+        case .nonRenewableSubscription: return "NON_RENEWABLE_SUBSCRIPTION"
+        case .autoRenewableSubscription: return "AUTO_RENEWABLE_SUBSCRIPTION"
         }
     }
 }

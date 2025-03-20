@@ -204,10 +204,10 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
-    // MARK: - Purchase Request
+    // MARK: - Purchase Attempt
 
-    func testTracksPurchaseRequestWithExpectedParameters() async {
-        self.tracker.trackPurchaseRequest(wasSuccessful: true,
+    func testTracksPurchaseAttemptWithExpectedParameters() async {
+        self.tracker.trackPurchaseAttempt(wasSuccessful: true,
                                           storeKitVersion: .storeKit2,
                                           errorMessage: nil,
                                           errorCode: nil,
@@ -242,8 +242,8 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
-    func testTracksPurchaseRequestWithPromotionalOffer() async {
-        self.tracker.trackPurchaseRequest(wasSuccessful: false,
+    func testTracksPurchaseAttemptWithPromotionalOffer() async {
+        self.tracker.trackPurchaseAttempt(wasSuccessful: false,
                                           storeKitVersion: .storeKit1,
                                           errorMessage: "purchase failed",
                                           errorCode: 5678,
@@ -353,6 +353,46 @@ class DiagnosticsTrackerTests: TestCase {
                     errorCode: 20,
                     cacheFetchPolicy: .cachedOrFetched,
                     hadUnsyncedPurchasesBefore: true
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Purchase
+
+    func testTrackPurchaseStarted() async {
+        self.tracker.trackPurchaseStarted(productId: "product_id_1",
+                                          productType: .autoRenewableSubscription)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .purchaseStarted,
+                  properties: DiagnosticsEvent.Properties(
+                    productId: "product_id_1",
+                    productType: .autoRenewableSubscription
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackPurchaseResult() async {
+        self.tracker.trackPurchaseResult(productId: "product_id_2",
+                                         productType: .consumable,
+                                         verificationResult: .verifiedOnDevice,
+                                         errorMessage: "one_error",
+                                         errorCode: 101,
+                                         responseTime: 123.45)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .purchaseStarted,
+                  properties: DiagnosticsEvent.Properties(
+                    verificationResult: "VERIFIED_ON_DEVICE",
+                    responseTime: 123.45,
+                    errorMessage: "one_error",
+                    errorCode: 101,
+                    productId: "product_id_2",
+                    productType: .consumable
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
