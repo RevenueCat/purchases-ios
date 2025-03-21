@@ -161,8 +161,10 @@ protocol StoreKit2PurchaseIntentType: Equatable, Identifiable, Sendable {
 
     var product: StoreKit.Product { get }
 
+    #if compiler(>=6.0)
     @available(iOS 18.0, macOS 15.0, *)
     var offer: StoreKit.Product.SubscriptionOffer? { get }
+    #endif
 
     var id: StoreKit.Product.ID { get }
 }

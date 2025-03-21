@@ -1213,16 +1213,15 @@ private extension PurchasesOrchestrator {
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     func trackApplePurchaseIntentReceivedIfNeeded(purchaseIntent: any StoreKit2PurchaseIntentType) {
-        let offerId: String?
-        let offerType: String?
+        var offerId: String?
+        var offerType: String?
 
+        #if compiler(>=6.0)
         if #available(iOS 18.0, macOS 15.0, *) {
             offerId = purchaseIntent.offer?.id
             offerType = purchaseIntent.offer?.type.rawValue
-        } else {
-            offerId = nil
-            offerType = nil
         }
+        #endif
 
         self.diagnosticsTracker?.trackPurchaseIntentReceived(productId: purchaseIntent.product.id,
                                                              offerId: offerId,
