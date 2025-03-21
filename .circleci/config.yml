@@ -37,7 +37,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '16.0'
+        default: '16.2'
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
