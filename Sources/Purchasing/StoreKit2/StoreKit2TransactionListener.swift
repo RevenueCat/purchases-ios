@@ -220,19 +220,20 @@ private extension StoreKit2TransactionListener {
             return
         }
 
-        let reason: String?
+        var reason: String?
+        var currency: String?
+        var price: Float?
+        #if compiler(>=6.0)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             reason = sk2Transaction.reason.rawValue
-        } else {
-            reason = nil
         }
 
-        let currency: String?
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             currency = sk2Transaction.currency?.identifier
-        } else {
-            currency = nil
         }
+
+        price = sk2Transaction.price.map { ($0 as NSDecimalNumber).floatValue }
+        #endif
 
         diagnosticsTracker.trackAppleTransactionUpdateReceived(
             transactionId: sk2Transaction.id,
@@ -241,7 +242,7 @@ private extension StoreKit2TransactionListener {
             productId: transaction.productIdentifier,
             purchaseDate: transaction.purchaseDate,
             expirationDate: sk2Transaction.expirationDate,
-            price: sk2Transaction.price.map { ($0 as NSDecimalNumber).floatValue },
+            price: price,
             currency: currency,
             reason: reason
         )

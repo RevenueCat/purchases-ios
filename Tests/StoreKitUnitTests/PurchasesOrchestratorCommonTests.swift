@@ -264,7 +264,7 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
         let product = try await self.fetchSk1Product()
         let storeProduct = StoreProduct(sk1Product: product)
 
-        await withCheckedContinuation { continuation in
+        _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(product: storeProduct,
                                        package: nil,
                                        trackDiagnostics: true) { _, _, _, _ in
@@ -334,7 +334,7 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
         let product = try await self.fetchSk1Product()
         let storeProduct = StoreProduct(sk1Product: product)
 
-        await withCheckedContinuation { continuation in
+        _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(product: storeProduct,
                                        package: nil,
                                        trackDiagnostics: false) { _, _, _, _ in
@@ -379,12 +379,14 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
     func testTracksPurchaseSK2ProductSuccessWhenEnabledDiagnostics() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
         let storeProduct = StoreProduct(sk2Product: product)
 
-        await withCheckedContinuation { continuation in
+        _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(product: storeProduct,
                                        package: nil,
                                        trackDiagnostics: true) { _, _, _, _ in
@@ -449,12 +451,14 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
     func testDoesNotTrackPurchaseSK2ProductSuccessWhenDisabledDiagnostics() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
         let storeProduct = StoreProduct(sk2Product: product)
 
-        await withCheckedContinuation { continuation in
+        _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(product: storeProduct,
                                        package: nil,
                                        trackDiagnostics: false) { _, _, _, _ in
