@@ -452,7 +452,7 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
-        
+
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
