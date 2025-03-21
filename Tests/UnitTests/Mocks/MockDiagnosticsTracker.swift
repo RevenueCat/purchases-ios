@@ -393,4 +393,40 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    let trackedAppleTransactionUpdateReceivedParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (transactionId: UInt64,
+         environment: String?,
+         storefront: String?,
+         productId: String,
+         purchaseDate: Date,
+         expirationDate: Date?,
+         price: Float?,
+         currency: String?,
+         reason: String?)
+    ]> = .init([])
+
+    // swiftlint:disable:next function_parameter_count
+    func trackAppleTransactionUpdateReceived(transactionId: UInt64,
+                                             environment: String?,
+                                             storefront: String?,
+                                             productId: String,
+                                             purchaseDate: Date,
+                                             expirationDate: Date?,
+                                             price: Float?,
+                                             currency: String?,
+                                             reason: String?) {
+        self.trackedAppleTransactionUpdateReceivedParams.modify {
+            $0.append((transactionId: transactionId,
+                       environment: environment,
+                       storefront: storefront,
+                       productId: productId,
+                       purchaseDate: purchaseDate,
+                       expirationDate: expirationDate,
+                       price: price,
+                       currency: currency,
+                       reason: reason))
+        }
+    }
+
 }

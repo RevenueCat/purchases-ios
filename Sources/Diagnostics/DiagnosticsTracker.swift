@@ -11,13 +11,12 @@
 //
 //  Created by Cesar de la Vega on 4/4/24.
 
-// swiftlint:disable file_length
 import Foundation
 
 // swiftlint:disable function_parameter_count
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
-protocol DiagnosticsTrackerType {
+protocol DiagnosticsTrackerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent)
@@ -156,6 +155,16 @@ protocol DiagnosticsTrackerType {
                                             transactionState: String,
                                             errorMessage: String?)
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackAppleTransactionUpdateReceived(transactionId: UInt64,
+                                             environment: String?,
+                                             storefront: String?,
+                                             productId: String,
+                                             purchaseDate: Date,
+                                             expirationDate: Date?,
+                                             price: Float?,
+                                             currency: String?,
+                                             reason: String?)
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -420,6 +429,29 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     func trackApplePresentCodeRedemptionSheetRequest() {
         self.trackEvent(name: .applePresentCodeRedemptionSheetRequest, properties: .empty)
+    }
+
+    func trackAppleTransactionUpdateReceived(transactionId: UInt64,
+                                             environment: String?,
+                                             storefront: String?,
+                                             productId: String,
+                                             purchaseDate: Date,
+                                             expirationDate: Date?,
+                                             price: Float?,
+                                             currency: String?,
+                                             reason: String?) {
+        self.trackEvent(name: .appleTransactionUpdateReceived,
+                        properties: DiagnosticsEvent.Properties(
+                            productId: productId,
+                            transactionId: transactionId,
+                            environment: environment,
+                            storefront: storefront,
+                            purchaseDate: purchaseDate,
+                            expirationDate: expirationDate,
+                            price: price,
+                            currency: currency,
+                            reason: reason
+                        ))
     }
 
     func trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: StoreKitVersion,
