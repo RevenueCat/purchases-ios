@@ -22,7 +22,7 @@ struct PaywallViewConfiguration {
     let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
-    var locale: Locale
+    var preferredLocale: Locale?
 
     init(
         content: Content,
@@ -33,7 +33,7 @@ struct PaywallViewConfiguration {
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
-        locale: Locale = .current
+        preferredLocale: Locale? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -43,7 +43,7 @@ struct PaywallViewConfiguration {
         self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
-        self.locale = locale
+        self.preferredLocale = preferredLocale
     }
 
 }
@@ -78,7 +78,7 @@ extension PaywallViewConfiguration {
         useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler = PurchaseHandler.default(),
-        locale: Locale = .current
+        preferredLocale: Locale?
     ) {
         let handler = purchaseHandler
 
@@ -91,7 +91,7 @@ extension PaywallViewConfiguration {
             useDraftPaywall: useDraftPaywall,
             introEligibility: introEligibility,
             purchaseHandler: handler,
-            locale: locale
+            preferredLocale: preferredLocale
         )
     }
 
