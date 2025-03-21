@@ -219,10 +219,12 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         let mockDiagnosticsSynchronizer = MockDiagnosticsSynchronizer()
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let storeKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                                storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                                diagnosticsSynchronizer: mockDiagnosticsSynchronizer)
         expect(self.orchestrator.diagnosticsSynchronizer).toNot(beNil())
         expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).toEventually(beTrue())
