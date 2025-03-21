@@ -186,7 +186,7 @@ struct ViewModelFactory {
                         component: descriptionComponent
                     )
                 }
-                return TimelineItemViewModel(
+                return try TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
