@@ -379,6 +379,8 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
     func testTracksPurchaseSK2ProductSuccessWhenEnabledDiagnostics() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
@@ -449,6 +451,8 @@ class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
     func testDoesNotTrackPurchaseSK2ProductSuccessWhenDisabledDiagnostics() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
