@@ -44,6 +44,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case enteredOfflineEntitlementsMode = "entered_offline_entitlements_mode"
         case errorEnteringOfflineEntitlementsMode = "error_entering_offline_entitlements_mode"
         case applePurchaseAttempt = "apple_purchase_attempt"
+        case applePurchaseIntentReceived = "apple_purchase_intent_received"
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
         case getOfferingsStarted = "get_offerings_started"
         case getOfferingsResult = "get_offerings_result"
@@ -94,6 +95,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         let productId: String?
         let productType: String?
         let promotionalOfferId: String?
+        let offerId: String?
+        let offerType: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
         let cacheStatus: CacheStatus?
@@ -130,6 +133,8 @@ struct DiagnosticsEvent: Codable, Equatable {
              productId: String? = nil,
              productType: StoreProduct.ProductType? = nil,
              promotionalOfferId: String? = nil,
+             offerId: String? = nil,
+             offerType: String? = nil,
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
              cacheStatus: CacheStatus? = nil,
@@ -165,6 +170,8 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.productId = productId
             self.productType = productType?.diagnosticsName
             self.promotionalOfferId = promotionalOfferId
+            self.offerId = offerId
+            self.offerType = offerType
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
             self.cacheStatus = cacheStatus
