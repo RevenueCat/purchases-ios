@@ -99,25 +99,24 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
-            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
-                                                         path: path) { [weak self] in
-                Task {
-                    await self?.onPathSelected(path: path)
+            self.feedbackSurveyData = FeedbackSurveyData(
+                configuration: feedbackSurvey,
+                path: path) { [weak self] in
+                    Task {
+                        await self?.onPathSelected(path: path)
+                    }
                 }
-            }
+
         case let .promotionalOffer(promotionalOffer):
-            if promotionalOffer.eligible {
-                self.loadingPath = path
-                let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
-                switch result {
-                case .success(let promotionalOfferData):
-                    self.promotionalOfferData = promotionalOfferData
-                case .failure:
-                    await self.onPathSelected(path: path)
-                    self.loadingPath = nil
-                }
-            } else {
+            self.loadingPath = path
+            let result = await loadPromotionalOfferUseCase.execute(
+                promoOfferDetails: promotionalOffer)
+            switch result {
+            case .success(let promotionalOfferData):
+                self.promotionalOfferData = promotionalOfferData
+            case .failure:
                 await self.onPathSelected(path: path)
+                self.loadingPath = nil
             }
 
         default:
@@ -158,6 +157,13 @@ extension ManageSubscriptionsViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
     func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        switch userAction {
+        case .successfullyRedeemedPromotionalOffer:
+            self.actionWrapper.handleAction(.promotionalOfferSuccess)
+        case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
+            break
+        }
+
         // Clear the promotional offer data to dismiss the sheet
         self.promotionalOfferData = nil
 
@@ -191,6 +197,7 @@ private extension ManageSubscriptionsViewModel {
                 self.actionWrapper.handleAction(.refundRequestStarted(productId))
 
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
+                self.refundRequestStatus = status
                 self.refundRequestStatus = status
                 self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
             } catch {
