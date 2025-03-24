@@ -71,7 +71,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
-    func trackPurchaseRequest(wasSuccessful: Bool,
+    func trackPurchaseAttempt(wasSuccessful: Bool,
                               storeKitVersion: StoreKitVersion,
                               errorMessage: String?,
                               errorCode: Int?,
@@ -293,6 +293,38 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    let trackedPurchasesStartedParams: Atomic<[
+        (productId: String?,
+         productType: StoreProduct.ProductType?)
+    ]> = .init([])
+    func trackPurchaseStarted(productId: String,
+                              productType: StoreProduct.ProductType) {
+        self.trackedPurchasesStartedParams.modify {
+            $0.append((productId, productType))
+        }
+    }
+
+    let trackedPurchasesResultParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (productId: String,
+         productType: StoreProduct.ProductType,
+         verificationResult: VerificationResult?,
+         errorMessage: String?,
+         errorCode: Int?,
+        responseTime: TimeInterval)
+    ]> = .init([])
+    // swiftlint:disable:next function_parameter_count
+    func trackPurchaseResult(productId: String,
+                             productType: StoreProduct.ProductType,
+                             verificationResult: VerificationResult?,
+                             errorMessage: String?,
+                             errorCode: Int?,
+                             responseTime: TimeInterval) {
+        self.trackedPurchasesResultParams.modify {
+            $0.append((productId, productType, verificationResult, errorMessage, errorCode, responseTime))
+        }
+    }
+
     let trackedApplePresentCodeRedemptionSheetRequestCalls: Atomic<Int> = .init(0)
     func trackApplePresentCodeRedemptionSheetRequest() {
         self.trackedApplePresentCodeRedemptionSheetRequestCalls.modify { $0 += 1 }
@@ -345,6 +377,42 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                             errorMessage: String?) {
         self.trackedAppleTransactionQueueReceivedParams.modify {
             $0.append((productId, paymentDiscountId, transactionState, errorMessage))
+        }
+    }
+
+    let trackedAppleTransactionUpdateReceivedParams: Atomic<[
+        // swiftlint:disable:next large_tuple
+        (transactionId: UInt64,
+         environment: String?,
+         storefront: String?,
+         productId: String,
+         purchaseDate: Date,
+         expirationDate: Date?,
+         price: Float?,
+         currency: String?,
+         reason: String?)
+    ]> = .init([])
+
+    // swiftlint:disable:next function_parameter_count
+    func trackAppleTransactionUpdateReceived(transactionId: UInt64,
+                                             environment: String?,
+                                             storefront: String?,
+                                             productId: String,
+                                             purchaseDate: Date,
+                                             expirationDate: Date?,
+                                             price: Float?,
+                                             currency: String?,
+                                             reason: String?) {
+        self.trackedAppleTransactionUpdateReceivedParams.modify {
+            $0.append((transactionId: transactionId,
+                       environment: environment,
+                       storefront: storefront,
+                       productId: productId,
+                       purchaseDate: purchaseDate,
+                       expirationDate: expirationDate,
+                       price: price,
+                       currency: currency,
+                       reason: reason))
         }
     }
 

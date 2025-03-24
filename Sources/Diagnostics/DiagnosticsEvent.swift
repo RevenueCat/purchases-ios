@@ -51,6 +51,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         case getProductsResult = "get_products_result"
         case getCustomerInfoStarted = "get_customer_info_started"
         case getCustomerInfoResult = "get_customer_info_result"
+        case purchaseStarted = "purchase_started"
+        case purchaseResult = "purchase_result"
         case syncPurchasesStarted = "sync_purchases_started"
         case syncPurchasesResult = "sync_purchases_result"
         case restorePurchasesStarted = "restore_purchases_started"
@@ -58,6 +60,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case applePresentCodeRedemptionSheetRequest = "apple_present_code_redemption_sheet_request"
         case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
         case appleTransactionQueueReceived = "apple_transaction_queue_received"
+        case appleTransactionUpdateReceived = "apple_transaction_update_received"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
@@ -89,6 +92,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let requestedProductIds: Set<String>?
         let notFoundProductIds: Set<String>?
         let productId: String?
+        let productType: String?
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
@@ -100,6 +104,14 @@ struct DiagnosticsEvent: Codable, Equatable {
         let eligibilityIneligibleCount: Int?
         let eligibilityEligibleCount: Int?
         let eligibilityNoIntroOfferCount: Int?
+        let transactionId: UInt64?
+        let environment: String?
+        let storefront: String?
+        let purchaseDate: Int?
+        let expirationDate: Int?
+        let price: Float?
+        let currency: String?
+        let reason: String?
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
@@ -116,6 +128,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              requestedProductIds: Set<String>? = nil,
              notFoundProductIds: Set<String>? = nil,
              productId: String? = nil,
+             productType: StoreProduct.ProductType? = nil,
              promotionalOfferId: String? = nil,
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
@@ -126,8 +139,15 @@ struct DiagnosticsEvent: Codable, Equatable {
              eligibilityUnknownCount: Int? = nil,
              eligibilityIneligibleCount: Int? = nil,
              eligibilityEligibleCount: Int? = nil,
-             eligibilityNoIntroOfferCount: Int? = nil
-        ) {
+             eligibilityNoIntroOfferCount: Int? = nil,
+             transactionId: UInt64? = nil,
+             environment: String? = nil,
+             storefront: String? = nil,
+             purchaseDate: Date? = nil,
+             expirationDate: Date? = nil,
+             price: Float? = nil,
+             currency: String? = nil,
+             reason: String? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
@@ -143,6 +163,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.requestedProductIds = requestedProductIds
             self.notFoundProductIds = notFoundProductIds
             self.productId = productId
+            self.productType = productType?.diagnosticsName
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
@@ -154,6 +175,14 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.eligibilityIneligibleCount = eligibilityIneligibleCount
             self.eligibilityEligibleCount = eligibilityEligibleCount
             self.eligibilityNoIntroOfferCount = eligibilityNoIntroOfferCount
+            self.transactionId = transactionId
+            self.environment = environment
+            self.storefront = storefront
+            self.purchaseDate = purchaseDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.expirationDate = expirationDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.price = price
+            self.currency = currency
+            self.reason = reason
         }
 
         static let empty = Properties()
@@ -168,6 +197,18 @@ fileprivate extension CacheFetchPolicy {
         case .fetchCurrent: return "FETCH_CURRENT"
         case .notStaleCachedOrFetched: return "NOT_STALE_CACHED_OR_FETCHED"
         case .cachedOrFetched: return "CACHED_OR_FETCHED"
+        }
+    }
+}
+
+fileprivate extension StoreProduct.ProductType {
+
+    var diagnosticsName: String {
+        switch self {
+        case .consumable: return "CONSUMABLE"
+        case .nonConsumable: return "NON_CONSUMABLE"
+        case .nonRenewableSubscription: return "NON_RENEWABLE_SUBSCRIPTION"
+        case .autoRenewableSubscription: return "AUTO_RENEWABLE_SUBSCRIPTION"
         }
     }
 }
