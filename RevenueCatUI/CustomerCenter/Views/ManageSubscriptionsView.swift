@@ -203,6 +203,18 @@ struct ManageSubscriptionsView: View {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Free subscription - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.consumable)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Consumable - \(colorScheme)")
         }
     }
 
