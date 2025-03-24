@@ -58,7 +58,7 @@ struct PurchaseInformation {
     let customerInfoRequestedDate: Date
 
     init(title: String,
-         durationTitle: String,
+         durationTitle: String?,
          explanation: Explanation,
          price: PriceDetails,
          expirationOrRenewal: ExpirationOrRenewal?,
