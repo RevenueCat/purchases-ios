@@ -37,9 +37,8 @@ class FeedbackSurveyViewModelTests: TestCase {
             onOptionSelected: {}
         )
 
-        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: data) { _ in
-
-        }
+        let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: data,
+                                                actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.feedbackSurveyData).to(equal(data))
     }
@@ -57,7 +56,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         let dismissViewExpectation = expectation(description: "Dismiss view should be called")
@@ -84,7 +83,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -112,7 +111,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -136,7 +135,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -171,7 +170,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: { _ in}
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
         )
 
         await viewModel.handleAction(for: option,
@@ -207,7 +206,8 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { action in
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { action in
                 switch action {
                 case .feedbackSurveyCompleted(let option):
                     handlerCalledExpectation.fulfill()
@@ -215,7 +215,8 @@ class FeedbackSurveyViewModelTests: TestCase {
                 default:
                     return
                 }
-            }
+            })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -240,7 +241,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: { _ in }
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
         )
 
         await viewModel.handleAction(for: option,
@@ -275,7 +276,7 @@ class FeedbackSurveyViewModelTests: TestCase {
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
             loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
-            customerCenterActionHandler: nil
+            actionWrapper: CustomerCenterActionWrapper()
         )
 
         await viewModel.handleAction(for: option,
@@ -311,7 +312,8 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { action in
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { action in
                 switch action {
                 case .feedbackSurveyCompleted(let option):
                     handlerCalledExpectation.fulfill()
@@ -319,7 +321,8 @@ class FeedbackSurveyViewModelTests: TestCase {
                 default:
                     return
                 }
-            }
+            })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -370,7 +373,9 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { _ in }
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,
@@ -400,7 +405,9 @@ class FeedbackSurveyViewModelTests: TestCase {
         let viewModel = FeedbackSurveyViewModel(
             feedbackSurveyData: data,
             purchasesProvider: mockPurchases,
-            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase) { _ in }
+            loadPromotionalOfferUseCase: mockLoadPromotionalOfferUseCase,
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: { _ in })
+        )
 
         await viewModel.handleAction(for: option,
                                      darkMode: false,

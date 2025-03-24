@@ -105,7 +105,10 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     func testPublicErrorsRootErrorContainsSKErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         let underlyingError = SKError(SKError.Code.paymentInvalid, userInfo: [:])
 
         func throwing() throws {
@@ -182,8 +185,12 @@ class ErrorUtilsTests: TestCase {
             expect(rootErrorInfo).notTo(beNil())
             expect(rootErrorInfo!["code"] as? Int) == 1
             expect(rootErrorInfo!["domain"] as? String) == "StoreKit.Product.PurchaseError"
-            expect(rootErrorInfo!["localizedDescription"] as? String)
-                == "Item Unavailable"
+            // swiftlint:disable:next force_cast
+            let description = rootErrorInfo!["localizedDescription"] as! String
+            // In iOS 15, localizedDescription does not return "Item Unavailable",
+            // and returns "ERROR_UNAVAILABLE_DESC" instead.
+            let validDescriptions = Set(["Item Unavailable", "ERROR_UNAVAILABLE_DESC"])
+            expect(validDescriptions.contains(description)) == true
             let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
             expect(rootErrorInfo?.keys.count) == 4
             expect(storeKitError).notTo(beNil())

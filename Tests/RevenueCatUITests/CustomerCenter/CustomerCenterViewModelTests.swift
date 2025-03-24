@@ -28,7 +28,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class CustomerCenterViewModelTests: TestCase {
+final class CustomerCenterViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -40,7 +40,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.state) == .notLoaded
         expect(viewModel.purchaseInformation).to(beNil())
@@ -48,7 +48,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testStateChangeToError() {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper())
 
         viewModel.state = .error(error)
 
@@ -61,7 +61,7 @@ class CustomerCenterViewModelTests: TestCase {
     }
 
     func testIsLoaded() {
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil)
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.state) == .notLoaded
 
@@ -77,7 +77,7 @@ class CustomerCenterViewModelTests: TestCase {
         )
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
 
@@ -92,7 +92,7 @@ class CustomerCenterViewModelTests: TestCase {
         )
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
 
@@ -109,7 +109,7 @@ class CustomerCenterViewModelTests: TestCase {
         )
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
 
@@ -126,7 +126,7 @@ class CustomerCenterViewModelTests: TestCase {
         )
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
 
@@ -140,7 +140,7 @@ class CustomerCenterViewModelTests: TestCase {
         let mockPurchases = MockCustomerCenterPurchases(customerInfoError: error)
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
 
@@ -183,7 +183,7 @@ class CustomerCenterViewModelTests: TestCase {
             ]
         )
 
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: MockCustomerCenterPurchases(
                                                     customerInfo: customerInfo,
                                                     products: products
@@ -230,7 +230,7 @@ class CustomerCenterViewModelTests: TestCase {
             ]
         )
 
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: MockCustomerCenterPurchases(
                                                     customerInfo: customerInfo,
                                                     products: products
@@ -310,7 +310,7 @@ class CustomerCenterViewModelTests: TestCase {
                 ]
             )
 
-            let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+            let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
@@ -401,7 +401,7 @@ class CustomerCenterViewModelTests: TestCase {
                 ]
             )
 
-            let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+            let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
@@ -452,7 +452,7 @@ class CustomerCenterViewModelTests: TestCase {
             ]
         )
 
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: MockCustomerCenterPurchases(
                                                     customerInfo: customerInfo,
                                                     products: products
@@ -526,7 +526,7 @@ class CustomerCenterViewModelTests: TestCase {
                 }
             )
 
-            let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+            let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
@@ -609,7 +609,7 @@ class CustomerCenterViewModelTests: TestCase {
                 }
             )
 
-            let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+            let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
@@ -661,7 +661,7 @@ class CustomerCenterViewModelTests: TestCase {
             ]
         )
 
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: MockCustomerCenterPurchases(
                                                     customerInfo: customerInfo,
                                                     products: []
@@ -688,7 +688,7 @@ class CustomerCenterViewModelTests: TestCase {
     func testLoadScreenNoActiveSubscription() async throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: mockPurchases)
 
         await viewModel.loadScreen()
@@ -699,7 +699,7 @@ class CustomerCenterViewModelTests: TestCase {
 
     func testLoadScreenFailure() async throws {
         let mockPurchases = MockCustomerCenterPurchases(customerInfoError: error)
-        let viewModel = CustomerCenterViewModel(customerCenterActionHandler: nil,
+        let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: mockPurchases)
 
         await viewModel.loadScreen()
@@ -750,7 +750,7 @@ class CustomerCenterViewModelTests: TestCase {
                 "expectedAppIsLatestVersion = \(expectedAppIsLatestVersion)"
             ) { _ in
                 let viewModel = CustomerCenterViewModel(
-                    customerCenterActionHandler: nil,
+                    actionWrapper: CustomerCenterActionWrapper(),
                     currentVersionFetcher: { return currentVersion }
                 )
                 viewModel.state = .success
@@ -767,7 +767,7 @@ class CustomerCenterViewModelTests: TestCase {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.isSandbox = true
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
 
@@ -798,7 +798,7 @@ class CustomerCenterViewModelTests: TestCase {
         let latestVersion = "3.0.0"
         let currentVersion = "2.0.0"
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             currentVersionFetcher: { return currentVersion },
             purchasesProvider: mockPurchases
         )
@@ -814,7 +814,7 @@ class CustomerCenterViewModelTests: TestCase {
         let mockPurchases = MockCustomerCenterPurchases()
         let latestVersion = "3.0.0"
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             currentVersionFetcher: { return latestVersion },
             purchasesProvider: mockPurchases
         )
@@ -830,7 +830,7 @@ class CustomerCenterViewModelTests: TestCase {
         let mockPurchases = MockCustomerCenterPurchases()
         let latestVersion = "3.0.0"
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             currentVersionFetcher: { return latestVersion },
             purchasesProvider: mockPurchases
         )
@@ -847,7 +847,7 @@ class CustomerCenterViewModelTests: TestCase {
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             currentVersionFetcher: { return "3.0.0" },
             purchasesProvider: mockPurchases,
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
@@ -867,7 +867,7 @@ class CustomerCenterViewModelTests: TestCase {
         mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
 
         let viewModel = CustomerCenterViewModel(
-            customerCenterActionHandler: nil,
+            actionWrapper: CustomerCenterActionWrapper(),
             currentVersionFetcher: { return "3.0.0" },
             purchasesProvider: mockPurchases,
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
@@ -879,6 +879,39 @@ class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.purchaseInformation?.price).to(equal(.paid("$5.00")))
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
+    }
+
+    func testSucessfulRestoreRefreshesCustomerCenter() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        mockPurchases.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithAppleSubscriptions)
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        _ = await viewModel.performRestore()
+        expect(mockPurchases.loadCustomerCenterCallCount) == 1
+    }
+
+    func testUnSucessfulRestoreRefreshesCustomerCenter() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        _ = await viewModel.performRestore()
+        expect(mockPurchases.loadCustomerCenterCallCount) == 0
     }
 }
 

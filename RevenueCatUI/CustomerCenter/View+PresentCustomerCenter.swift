@@ -54,10 +54,100 @@ extension View {
     ///     Ensure you set `isPresented = false` when this is called.
     ///
     /// - Returns: A view modified to support presenting the Customer Center.
+    @available(*, deprecated, message: "Use the version with individual action handlers instead")
     public func presentCustomerCenter(
         isPresented: Binding<Bool>,
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil,
+        customerCenterActionHandler: CustomerCenterActionHandler?,
         presentationMode: CustomerCenterPresentationMode = .default,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        // Convert the legacy handler to individual handlers if one is provided
+        var restoreStartedHandler: CustomerCenterView.RestoreStartedHandler?
+        var restoreCompletedHandler: CustomerCenterView.RestoreCompletedHandler?
+        var restoreFailedHandler: CustomerCenterView.RestoreFailedHandler?
+        var showingManageSubscriptionsHandler: CustomerCenterView.ShowingManageSubscriptionsHandler?
+        var refundRequestStartedHandler: CustomerCenterView.RefundRequestStartedHandler?
+        var refundRequestCompletedHandler: CustomerCenterView.RefundRequestCompletedHandler?
+        var feedbackSurveyCompletedHandler: CustomerCenterView.FeedbackSurveyCompletedHandler?
+
+        if let handler = customerCenterActionHandler {
+            restoreStartedHandler = { handler(.restoreStarted) }
+            restoreCompletedHandler = { handler(.restoreCompleted($0)) }
+            restoreFailedHandler = { handler(.restoreFailed($0)) }
+            showingManageSubscriptionsHandler = { handler(.showingManageSubscriptions) }
+            refundRequestStartedHandler = { handler(.refundRequestStarted($0)) }
+            refundRequestCompletedHandler = { handler(.refundRequestCompleted($1)) }
+            feedbackSurveyCompletedHandler = { handler(.feedbackSurveyCompleted($0)) }
+        }
+
+        return self.modifier(
+            PresentingCustomerCenterModifier(
+                isPresented: isPresented,
+                onDismiss: onDismiss,
+                myAppPurchaseLogic: nil,
+                presentationMode: presentationMode,
+                restoreStarted: restoreStartedHandler,
+                restoreCompleted: restoreCompletedHandler,
+                restoreFailed: restoreFailedHandler,
+                showingManageSubscriptions: showingManageSubscriptionsHandler,
+                refundRequestStarted: refundRequestStartedHandler,
+                refundRequestCompleted: refundRequestCompletedHandler,
+                feedbackSurveyCompleted: feedbackSurveyCompletedHandler
+            )
+        )
+    }
+
+    /// Presents the ``CustomerCenter`` as a modal or sheet with individual action handlers.
+    ///
+    /// This modifier allows you to display the Customer Center, which provides support and account-related actions.
+    ///
+    /// ## Example Usage:
+    /// ```swift
+    /// struct ContentView: View {
+    ///     @State private var isCustomerCenterPresented = false
+    ///
+    ///     var body: some View {
+    ///         Button("Open Customer Center") {
+    ///             isCustomerCenterPresented = true
+    ///         }
+    ///         .presentCustomerCenter(
+    ///             isPresented: $isCustomerCenterPresented,
+    ///             restoreStarted: {
+    ///                 print("Restore started")
+    ///             },
+    ///             restoreCompleted: { customerInfo in
+    ///                 print("Restore completed with customer info: \(customerInfo)")
+    ///             }
+    ///         )
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - isPresented: A binding that determines whether the Customer Center is visible.
+    ///   - presentationMode: Specifies how the Customer Center should be presented (e.g., as a sheet or fullscreen).
+    ///   - myAppPurchaseLogic: Optional custom purchase logic for "my app" purchases.
+    ///   - restoreStarted: Handler called when a restore operation starts.
+    ///   - restoreCompleted: Handler called when a restore operation completes successfully.
+    ///   - restoreFailed: Handler called when a restore operation fails.
+    ///   - showingManageSubscriptions: Handler called when the user navigates to manage subscriptions.
+    ///   - refundRequestStarted: Handler called when a refund request starts.
+    ///   - refundRequestCompleted: Handler called when a refund request completes.
+    ///   - feedbackSurveyCompleted: Handler called when a feedback survey is completed.
+    ///   - onDismiss: A callback triggered when either the sheet / fullscreen present is dismissed.
+    ///
+    /// - Returns: A view modified to support presenting the Customer Center.
+    public func presentCustomerCenter(
+        isPresented: Binding<Bool>,
+        presentationMode: CustomerCenterPresentationMode = .default,
+        restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
+        restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
+        restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
+        showingManageSubscriptions: CustomerCenterView.ShowingManageSubscriptionsHandler? = nil,
+        refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
+        refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
+        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         self.modifier(
@@ -65,8 +155,15 @@ extension View {
                 isPresented: isPresented,
                 onDismiss: onDismiss,
                 myAppPurchaseLogic: nil,
-                customerCenterActionHandler: customerCenterActionHandler,
-                presentationMode: presentationMode
+                presentationMode: presentationMode,
+                restoreStarted: restoreStarted,
+                restoreCompleted: restoreCompleted,
+                restoreFailed: restoreFailed,
+                showingManageSubscriptions: showingManageSubscriptions,
+                refundRequestStarted: refundRequestStarted,
+                refundRequestCompleted: refundRequestCompleted,
+                feedbackSurveyCompleted: feedbackSurveyCompleted,
+                managementOptionSelected: managementOptionSelected
             )
         )
     }
@@ -78,8 +175,15 @@ extension View {
 @available(watchOS, unavailable)
 private struct PresentingCustomerCenterModifier: ViewModifier {
 
-    let customerCenterActionHandler: CustomerCenterActionHandler?
     let presentationMode: CustomerCenterPresentationMode
+    let restoreStarted: CustomerCenterView.RestoreStartedHandler?
+    let restoreCompleted: CustomerCenterView.RestoreCompletedHandler?
+    let restoreFailed: CustomerCenterView.RestoreFailedHandler?
+    let showingManageSubscriptions: CustomerCenterView.ShowingManageSubscriptionsHandler?
+    let refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler?
+    let refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler?
+    let feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler?
+    let managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler?
 
     /// The closure to execute when dismissing the sheet / fullScreen present
     let onDismiss: (() -> Void)?
@@ -88,14 +192,28 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)?,
         myAppPurchaseLogic: MyAppPurchaseLogic?,
-        customerCenterActionHandler: CustomerCenterActionHandler?,
         presentationMode: CustomerCenterPresentationMode,
+        restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
+        restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
+        restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
+        showingManageSubscriptions: CustomerCenterView.ShowingManageSubscriptionsHandler? = nil,
+        refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
+        refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
+        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
         self.presentationMode = presentationMode
         self.onDismiss = onDismiss
-        self.customerCenterActionHandler = customerCenterActionHandler
+        self.restoreStarted = restoreStarted
+        self.restoreCompleted = restoreCompleted
+        self.restoreFailed = restoreFailed
+        self.showingManageSubscriptions = showingManageSubscriptions
+        self.refundRequestStarted = refundRequestStarted
+        self.refundRequestCompleted = refundRequestCompleted
+        self.feedbackSurveyCompleted = feedbackSurveyCompleted
+        self.managementOptionSelected = managementOptionSelected
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
@@ -129,12 +247,34 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
     private func customerCenterView() -> some View {
-        CustomerCenterView(
-            customerCenterActionHandler: self.customerCenterActionHandler
-        )
+        // Otherwise use the individual action handlers
+        return CustomerCenterView()
+            .onCustomerCenterRestoreStarted { [restoreStarted] in
+                restoreStarted?()
+            }
+            .onCustomerCenterRestoreCompleted { [restoreCompleted] customerInfo in
+                restoreCompleted?(customerInfo)
+            }
+            .onCustomerCenterRestoreFailed { [restoreFailed] error in
+                restoreFailed?(error)
+            }
+            .onCustomerCenterShowingManageSubscriptions { [showingManageSubscriptions] in
+                showingManageSubscriptions?()
+            }
+            .onCustomerCenterRefundRequestStarted { [refundRequestStarted] productId in
+                refundRequestStarted?(productId)
+            }
+            .onCustomerCenterRefundRequestCompleted { [refundRequestCompleted] productId, status in
+                refundRequestCompleted?(productId, status)
+            }
+            .onCustomerCenterFeedbackSurveyCompleted { [feedbackSurveyCompleted] optionId in
+                feedbackSurveyCompleted?(optionId)
+            }
+            .onCustomerCenterManagementOptionSelected { action in
+                managementOptionSelected?(action)
+            }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
-
 }
 
 #endif
