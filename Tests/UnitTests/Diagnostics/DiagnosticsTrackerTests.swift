@@ -204,10 +204,10 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
-    // MARK: - Purchase Request
+    // MARK: - Purchase Attempt
 
-    func testTracksPurchaseRequestWithExpectedParameters() async {
-        self.tracker.trackPurchaseRequest(wasSuccessful: true,
+    func testTracksPurchaseAttemptWithExpectedParameters() async {
+        self.tracker.trackPurchaseAttempt(wasSuccessful: true,
                                           storeKitVersion: .storeKit2,
                                           errorMessage: nil,
                                           errorCode: nil,
@@ -242,8 +242,8 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
-    func testTracksPurchaseRequestWithPromotionalOffer() async {
-        self.tracker.trackPurchaseRequest(wasSuccessful: false,
+    func testTracksPurchaseAttemptWithPromotionalOffer() async {
+        self.tracker.trackPurchaseAttempt(wasSuccessful: false,
                                           storeKitVersion: .storeKit1,
                                           errorMessage: "purchase failed",
                                           errorCode: 5678,
@@ -294,6 +294,235 @@ class DiagnosticsTrackerTests: TestCase {
                     requestedProductIds: requestedProductIds,
                     notFoundProductIds: notFoundProductIds,
                     cacheStatus: .notFound
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Products result
+
+    func testTrackingProductsResult() async {
+        let requestedProductIds: Set<String> = ["test-product-id-1", "test-product-id-2"]
+        let notFoundProductIds: Set<String> = ["test-product-id-1"]
+        self.tracker.trackProductsResult(requestedProductIds: requestedProductIds,
+                                         notFoundProductIds: notFoundProductIds,
+                                         errorMessage: nil,
+                                         errorCode: nil,
+                                         responseTime: 1234)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getProductsResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 1234,
+                    requestedProductIds: requestedProductIds,
+                    notFoundProductIds: notFoundProductIds
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Get customer info
+
+    func testTrackingGetCustomerInfoStarted() async {
+        self.tracker.trackGetCustomerInfoStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getCustomerInfoStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingGetCustomerInfoResult() async {
+        self.tracker.trackGetCustomerInfoResult(cacheFetchPolicy: .cachedOrFetched,
+                                                verificationResult: .verifiedOnDevice,
+                                                hadUnsyncedPurchasesBefore: true,
+                                                errorMessage: "an error msg",
+                                                errorCode: 20,
+                                                responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .getCustomerInfoResult,
+                  properties: DiagnosticsEvent.Properties(
+                    verificationResult: "VERIFIED_ON_DEVICE",
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20,
+                    cacheFetchPolicy: .cachedOrFetched,
+                    hadUnsyncedPurchasesBefore: true
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Purchase
+
+    func testTrackPurchaseStarted() async {
+        self.tracker.trackPurchaseStarted(productId: "product_id_1",
+                                          productType: .autoRenewableSubscription)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .purchaseStarted,
+                  properties: DiagnosticsEvent.Properties(
+                    productId: "product_id_1",
+                    productType: .autoRenewableSubscription
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackPurchaseResult() async {
+        self.tracker.trackPurchaseResult(productId: "product_id_2",
+                                         productType: .consumable,
+                                         verificationResult: .verifiedOnDevice,
+                                         errorMessage: "one_error",
+                                         errorCode: 101,
+                                         responseTime: 123.45)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .purchaseStarted,
+                  properties: DiagnosticsEvent.Properties(
+                    verificationResult: "VERIFIED_ON_DEVICE",
+                    responseTime: 123.45,
+                    errorMessage: "one_error",
+                    errorCode: 101,
+                    productId: "product_id_2",
+                    productType: .consumable
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Sync Purchases
+
+    func testTrackingSyncPurchasesStarted() async {
+        self.tracker.trackSyncPurchasesStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .syncPurchasesStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingSyncPurchasesResult() async {
+        self.tracker.trackSyncPurchasesResult(errorMessage: "an error msg",
+                                              errorCode: 20,
+                                              responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .syncPurchasesResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Restore Purchases
+
+    func testTrackingRestorePurchasesStarted() async {
+        self.tracker.trackRestorePurchasesStarted()
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesStarted,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    func testTrackingRestorePurchasesResult() async {
+        self.tracker.trackRestorePurchasesResult(errorMessage: "an error msg",
+                                                 errorCode: 20,
+                                                 responseTime: 100.1)
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesResult,
+                  properties: DiagnosticsEvent.Properties(
+                    responseTime: 100.1,
+                    errorMessage: "an error msg",
+                    errorCode: 20
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Present Code Redemption Sheet Request
+
+    func testTrackingApplePresentCodeRedemptionSheetRequest() async throws {
+        self.tracker.trackApplePresentCodeRedemptionSheetRequest()
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .applePresentCodeRedemptionSheetRequest,
+                  properties: .empty,
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Transaction Queue Received
+
+    func testTrackingAppleTransactionQueueReceived() async throws {
+        self.tracker.trackAppleTransactionQueueReceived(
+            productId: "test.product",
+            paymentDiscountId: "discount_123",
+            transactionState: "purchased",
+            errorMessage: "error message"
+        )
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .appleTransactionQueueReceived,
+                  properties: DiagnosticsEvent.Properties(
+                    errorMessage: "error message",
+                    skErrorDescription: "purchased",
+                    productId: "test.product",
+                    promotionalOfferId: "discount_123"
+                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Transaction Update Received
+
+    func testTrackingAppleTransactionUpdateReceived() async throws {
+        self.tracker.trackAppleTransactionUpdateReceived(transactionId: 12326654321,
+                                                         environment: "production",
+                                                         storefront: "storefront_id",
+                                                         productId: "product_id",
+                                                         purchaseDate: Date(timeIntervalSince1970: 100_000_000_000),
+                                                         expirationDate: Date(timeIntervalSince1970: 101_000_000_000),
+                                                         price: 9.99,
+                                                         currency: "USD",
+                                                         reason: "purchase")
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .appleTransactionUpdateReceived,
+                  properties: DiagnosticsEvent.Properties(
+                    productId: "product_id",
+                    transactionId: 12326654321,
+                    environment: "production",
+                    storefront: "storefront_id",
+                    purchaseDate: Date(timeIntervalSince1970: 100_000_000_000),
+                    expirationDate: Date(timeIntervalSince1970: 101_000_000_000),
+                    price: 9.99,
+                    currency: "USD",
+                    reason: "purchase"
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)

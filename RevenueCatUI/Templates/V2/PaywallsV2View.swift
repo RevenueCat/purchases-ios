@@ -272,7 +272,8 @@ private struct LoadedPaywallsV2View: View {
             .frame(maxHeight: .infinity, alignment: .topLeading)
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
-                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle,
+                alignment: .top
             )
             .edgesIgnoringSafeArea(.bottom)
         }

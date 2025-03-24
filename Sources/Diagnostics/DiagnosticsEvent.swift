@@ -47,19 +47,33 @@ struct DiagnosticsEvent: Codable, Equatable {
         case maxDiagnosticsSyncRetriesReached = "max_diagnostics_sync_retries_reached"
         case getOfferingsStarted = "get_offerings_started"
         case getOfferingsResult = "get_offerings_result"
+        case getProductsStarted = "get_products_started"
+        case getProductsResult = "get_products_result"
+        case getCustomerInfoStarted = "get_customer_info_started"
+        case getCustomerInfoResult = "get_customer_info_result"
+        case purchaseStarted = "purchase_started"
+        case purchaseResult = "purchase_result"
+        case syncPurchasesStarted = "sync_purchases_started"
+        case syncPurchasesResult = "sync_purchases_result"
+        case restorePurchasesStarted = "restore_purchases_started"
+        case restorePurchasesResult = "restore_purchases_result"
+        case applePresentCodeRedemptionSheetRequest = "apple_present_code_redemption_sheet_request"
+        case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
+        case appleTransactionQueueReceived = "apple_transaction_queue_received"
+        case appleTransactionUpdateReceived = "apple_transaction_update_received"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
-        case verified
-        case unverified
-        case userCancelled = "user_cancelled"
-        case pending
+        case verified = "VERIFIED"
+        case unverified = "UNVERIFIED"
+        case userCancelled = "USER_CANCELLED"
+        case pending = "PENDING"
     }
 
     enum OfflineEntitlementsModeErrorReason: String, Codable, Equatable {
-        case oneTimePurchaseFound = "one_time_purchase_found"
-        case noEntitlementMappingAvailable = "no_entitlement_mapping_available"
-        case unknown
+        case oneTimePurchaseFound = "ONE_TIME_PURCHASE_FOUND"
+        case noEntitlementMappingAvailable = "NO_ENTITLEMENT_MAPPING_AVAILABLE"
+        case unknown = "UNKNOWN"
     }
 
     struct Properties: Codable, Equatable {
@@ -78,11 +92,26 @@ struct DiagnosticsEvent: Codable, Equatable {
         let requestedProductIds: Set<String>?
         let notFoundProductIds: Set<String>?
         let productId: String?
+        let productType: String?
         let promotionalOfferId: String?
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
         let cacheStatus: CacheStatus?
+        let cacheFetchPolicy: String?
+        let hadUnsyncedPurchasesBefore: Bool?
         let isRetry: Bool?
+        let eligibilityUnknownCount: Int?
+        let eligibilityIneligibleCount: Int?
+        let eligibilityEligibleCount: Int?
+        let eligibilityNoIntroOfferCount: Int?
+        let transactionId: UInt64?
+        let environment: String?
+        let storefront: String?
+        let purchaseDate: Int?
+        let expirationDate: Int?
+        let price: Float?
+        let currency: String?
+        let reason: String?
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
@@ -99,11 +128,26 @@ struct DiagnosticsEvent: Codable, Equatable {
              requestedProductIds: Set<String>? = nil,
              notFoundProductIds: Set<String>? = nil,
              productId: String? = nil,
+             productType: StoreProduct.ProductType? = nil,
              promotionalOfferId: String? = nil,
              winBackOfferApplied: Bool? = nil,
              purchaseResult: PurchaseResult? = nil,
              cacheStatus: CacheStatus? = nil,
-             isRetry: Bool? = nil) {
+             cacheFetchPolicy: CacheFetchPolicy? = nil,
+             hadUnsyncedPurchasesBefore: Bool? = nil,
+             isRetry: Bool? = nil,
+             eligibilityUnknownCount: Int? = nil,
+             eligibilityIneligibleCount: Int? = nil,
+             eligibilityEligibleCount: Int? = nil,
+             eligibilityNoIntroOfferCount: Int? = nil,
+             transactionId: UInt64? = nil,
+             environment: String? = nil,
+             storefront: String? = nil,
+             purchaseDate: Date? = nil,
+             expirationDate: Date? = nil,
+             price: Float? = nil,
+             currency: String? = nil,
+             reason: String? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
@@ -119,13 +163,52 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.requestedProductIds = requestedProductIds
             self.notFoundProductIds = notFoundProductIds
             self.productId = productId
+            self.productType = productType?.diagnosticsName
             self.promotionalOfferId = promotionalOfferId
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
             self.cacheStatus = cacheStatus
+            self.cacheFetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
+            self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
             self.isRetry = isRetry
+            self.eligibilityUnknownCount = eligibilityUnknownCount
+            self.eligibilityIneligibleCount = eligibilityIneligibleCount
+            self.eligibilityEligibleCount = eligibilityEligibleCount
+            self.eligibilityNoIntroOfferCount = eligibilityNoIntroOfferCount
+            self.transactionId = transactionId
+            self.environment = environment
+            self.storefront = storefront
+            self.purchaseDate = purchaseDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.expirationDate = expirationDate.map { Int($0.timeIntervalSince1970 * 1000) }
+            self.price = price
+            self.currency = currency
+            self.reason = reason
         }
 
         static let empty = Properties()
+    }
+}
+
+fileprivate extension CacheFetchPolicy {
+
+    var diagnosticsName: String {
+        switch self {
+        case .fromCacheOnly: return "FROM_CACHE_ONLY"
+        case .fetchCurrent: return "FETCH_CURRENT"
+        case .notStaleCachedOrFetched: return "NOT_STALE_CACHED_OR_FETCHED"
+        case .cachedOrFetched: return "CACHED_OR_FETCHED"
+        }
+    }
+}
+
+fileprivate extension StoreProduct.ProductType {
+
+    var diagnosticsName: String {
+        switch self {
+        case .consumable: return "CONSUMABLE"
+        case .nonConsumable: return "NON_CONSUMABLE"
+        case .nonRenewableSubscription: return "NON_RENEWABLE_SUBSCRIPTION"
+        case .autoRenewableSubscription: return "AUTO_RENEWABLE_SUBSCRIPTION"
+        }
     }
 }
