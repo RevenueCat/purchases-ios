@@ -72,7 +72,7 @@ struct CarouselComponentView: View {
                 }
                 // Style the carousel
                 .size(style.size)
-                .padding(style.padding)
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
                 .shape(border: style.border,
                        shape: style.shape,
                        background: style.backgroundStyle,
