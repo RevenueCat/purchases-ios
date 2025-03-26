@@ -522,7 +522,25 @@ class DiagnosticsTrackerTests: TestCase {
                     expirationDate: Date(timeIntervalSince1970: 101_000_000_000),
                     price: 9.99,
                     currency: "USD",
-                    reason: "purchase"
+                    reason: "purchase"                  ),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - Purchase Intent Received
+
+    func testTrackingApplePurchaseIntentReceived() async {
+        self.tracker.trackPurchaseIntentReceived(productId: "product_id",
+                                                 offerId: "offer_id",
+                                                 offerType: "offer_type")
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(name: .restorePurchasesResult,
+                  properties: DiagnosticsEvent.Properties(
+                    productId: "product_id",
+                    offerId: "offer_id",
+                    offerType: "offer_type"
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
