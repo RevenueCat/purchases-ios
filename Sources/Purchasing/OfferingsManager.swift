@@ -56,33 +56,36 @@ class OfferingsManager {
         let startTime = self.dateProvider.now()
 
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
-
-            let completionFromNetworkWithTracking: @MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void =
-            { [weak self] result in
-                self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                      startTime: startTime,
-                                                      cacheStatus: .notFound,
-                                                      error: result.error,
-                                                      requestedProductIds: result.value?.requestedProductIds,
-                                                      notFoundProductIds: result.value?.notFoundProductIds)
-                completion?(result.map(\.offerings))
-            }
 
             guard !fetchCurrent && !self.systemInfo.dangerousSettings.uiPreviewMode else {
                 self.fetchFromNetwork(appUserID: appUserID,
-                                      fetchPolicy: fetchPolicy,
-                                      completion: completionFromNetworkWithTracking)
+                                      fetchPolicy: fetchPolicy) { [weak self] result in
+                    self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                          startTime: startTime,
+                                                          cacheStatus: .notChecked,
+                                                          error: result.error,
+                                                          requestedProductIds: result.value?.requestedProductIds,
+                                                          notFoundProductIds: result.value?.notFoundProductIds)
+                    completion?(result.map(\.offerings))
+                }
                 return
             }
 
             guard let memoryCachedOfferings = self.cachedOfferings else {
                 self.fetchFromNetwork(appUserID: appUserID,
-                                      fetchPolicy: fetchPolicy,
-                                      completion: completionFromNetworkWithTracking)
+                                      fetchPolicy: fetchPolicy) { [weak self] result in
+                    self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
+                                                          startTime: startTime,
+                                                          cacheStatus: .notFound,
+                                                          error: result.error,
+                                                          requestedProductIds: result.value?.requestedProductIds,
+                                                          notFoundProductIds: result.value?.notFoundProductIds)
+                    completion?(result.map(\.offerings))
+                }
                 return
             }
 
+            let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
             self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
                                                  startTime: startTime,
