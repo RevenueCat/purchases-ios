@@ -59,13 +59,14 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
+    let actionWrapper: CustomerCenterActionWrapper
+
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
@@ -73,7 +74,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     init(
         screen: CustomerCenterConfigData.Screen,
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
@@ -83,13 +84,19 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = ManageSubscriptionPurchases()
             self.refundRequestStatus = refundRequestStatus
-            self.customerCenterActionHandler = customerCenterActionHandler
+            self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
             self.state = .success
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
+        // Convert the path to an appropriate action using the extension
+        if let action = path.asAction() {
+            // Send the action through the action wrapper
+            self.actionWrapper.handleAction(.buttonTapped(action: action))
+        }
+
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
@@ -178,20 +185,22 @@ private extension ManageSubscriptionsViewModel {
         case .missingPurchase:
             self.showRestoreAlert = true
         case .refundRequest:
+            guard let purchaseInformation = self.purchaseInformation else { return }
+            let productId = purchaseInformation.productIdentifier
             do {
-                guard let purchaseInformation = self.purchaseInformation else { return }
-                let productId = purchaseInformation.productIdentifier
-                self.customerCenterActionHandler?(.refundRequestStarted(productId))
+                self.actionWrapper.handleAction(.refundRequestStarted(productId))
+
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.customerCenterActionHandler?(.refundRequestCompleted(status))
+                self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
             } catch {
                 self.refundRequestStatus = .error
-                self.customerCenterActionHandler?(.refundRequestCompleted(.error))
+                self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
             }
         case .changePlans, .cancel:
             do {
-                self.customerCenterActionHandler?(.showingManageSubscriptions)
+                self.actionWrapper.handleAction(.showingManageSubscriptions)
+
                 try await purchasesProvider.showManageSubscriptions()
             } catch {
                 self.state = .error(error)

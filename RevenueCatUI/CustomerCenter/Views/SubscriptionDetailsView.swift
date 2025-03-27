@@ -135,17 +135,21 @@ struct SubscriptionDetailsHeader: View {
                     .font(.headline)
             }
 
-            let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization)
-
-            Text(explanation)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.leading)
+            if let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization) {
+                Text(explanation)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+            }
         }
     }
 
     private func getSubscriptionExplanation(from purchaseInformation: PurchaseInformation,
-                                            localization: CustomerCenterConfigData.Localization) -> String {
+                                            localization: CustomerCenterConfigData.Localization) -> String? {
+        guard purchaseInformation.expirationOrRenewal != nil else {
+            return nil
+        }
+
         switch purchaseInformation.explanation {
         case .promotional:
             return localization[.youHavePromo]

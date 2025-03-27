@@ -48,6 +48,7 @@
 		1E2F910B2CC8FE5600BDB016 /* ContactSupportUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F910A2CC8FE5600BDB016 /* ContactSupportUtilities.swift */; };
 		1E2F911B2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */; };
 		1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */; };
+		1E42CC6C2D7F1A0500E0EE8D /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */; };
 		1E473B662AC42D34008B07F9 /* StoreMessagesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */; };
 		1E473B682AC43254008B07F9 /* StoreMessageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B672AC43254008B07F9 /* StoreMessageType.swift */; };
 		1E568B512ACC6A8300D3C12F /* StoreMessageTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */; };
@@ -316,6 +317,9 @@
 		354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */; };
 		3551E39D2C4A6A1400D27C25 /* TintedProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
+		355FDB5C2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5B2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift */; };
+		355FDB5D2D783FC400D20E65 /* CustomerCenterActionWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */; };
+		355FDB5F2D783FDD00D20E65 /* CustomerCenterView+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */; };
 		35617C762D5A3BC500612B7A /* FeedbackSurveyViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35617C752D5A3BC000612B7A /* FeedbackSurveyViewModelTests.swift */; };
 		35617C782D5A460400612B7A /* MockLoadPromotionalOfferUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35617C772D5A45F900612B7A /* MockLoadPromotionalOfferUseCase.swift */; };
 		356523A82CF7719C00B6E3EA /* CustomerCenterPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356523A72CF7719B00B6E3EA /* CustomerCenterPresentationMode.swift */; };
@@ -324,6 +328,7 @@
 		356979E02CCFDAA100EE6A9E /* CustomerInfoFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356979DF2CCFDA9C00EE6A9E /* CustomerInfoFixtures.swift */; };
 		356E2DE82CD3CF930055AABB /* StoredEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356E2DE72CD3CF8F0055AABB /* StoredEventTests.swift */; };
 		357349012C3BEB5C000EEB86 /* CustomerCenterConfigDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357348FF2C3BEB0A000EEB86 /* CustomerCenterConfigDataTests.swift */; };
+		357C43AF2D80510A00B96769 /* CustomerCenterManagementOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C43AE2D80510400B96769 /* CustomerCenterManagementOption.swift */; };
 		357CEC702C5940CE00A80837 /* ColorFromAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357CEC6F2C5940CE00A80837 /* ColorFromAppearance.swift */; };
 		3592E8862C2ED51700D7F91D /* CustomerCenterConfigCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3592E8852C2ED51700D7F91D /* CustomerCenterConfigCallback.swift */; };
 		3592E88A2C2ED54A00D7F91D /* CustomerCenterConfigData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3592E8882C2ED54A00D7F91D /* CustomerCenterConfigData.swift */; };
@@ -661,6 +666,7 @@
 		5774F9BE2805E71100997128 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 5774F9BD2805E71100997128 /* Fixtures */; };
 		5774F9C12805EA3000997128 /* BaseHTTPResponseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */; };
 		5774F9C22805EA6900997128 /* CustomerInfoDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */; };
+		577782B52D9182A200F97EB4 /* CustomerCenterActionWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 577782B42D91829D00F97EB4 /* CustomerCenterActionWrapperTests.swift */; };
 		578C5F2C28DB82DD00A56F02 /* PurchasesDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */; };
 		578D79742936A36B0042E434 /* LoggerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578D79732936A36B0042E434 /* LoggerType.swift */; };
 		578DAA482948EEAD001700FD /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA472948EEAD001700FD /* Clock.swift */; };
@@ -711,7 +717,6 @@
 		57BB070E28D27A2B007F5DF0 /* CachingProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */; };
 		57BB071628D282A4007F5DF0 /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB071528D282A4007F5DF0 /* CachingProductsManagerTests.swift */; };
 		57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */; };
-		57BD53E62D4A411C00C53487 /* CustomerCenterAnswerSubmittedEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD53E52D4A411A00C53487 /* CustomerCenterAnswerSubmittedEventTests.swift */; };
 		57BF87592967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BF87582967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift */; };
 		57C0BB6929F840BD00827807 /* FrameworkDisambiguation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C0BB6829F840BD00827807 /* FrameworkDisambiguation.swift */; };
 		57C2931528BFEF4F0054EDFC /* PurchasesError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C2931428BFEF4F0054EDFC /* PurchasesError.swift */; };
@@ -805,6 +810,7 @@
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		75425E0F2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */; };
+		756AE8352D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */; };
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
@@ -1341,6 +1347,7 @@
 		1E2F910A2CC8FE5600BDB016 /* ContactSupportUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilities.swift; sourceTree = "<group>"; };
 		1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilitiesTests.swift; sourceTree = "<group>"; };
 		1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRedemptionStrings.swift; sourceTree = "<group>"; };
+		1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStatus.swift; sourceTree = "<group>"; };
 		1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelper.swift; sourceTree = "<group>"; };
 		1E473B672AC43254008B07F9 /* StoreMessageType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessageType.swift; sourceTree = "<group>"; };
 		1E473B692AC46908008B07F9 /* MockStoreMessagesHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreMessagesHelper.swift; sourceTree = "<group>"; };
@@ -1656,6 +1663,9 @@
 		354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReservedSubscriberAttributes.swift; sourceTree = "<group>"; };
 		3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedProgressView.swift; sourceTree = "<group>"; };
 		35549322269E298B005F9AE9 /* OfferingsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsFactory.swift; sourceTree = "<group>"; };
+		355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionWrapper.swift; sourceTree = "<group>"; };
+		355FDB5B2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionViewModifier.swift; sourceTree = "<group>"; };
+		355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterView+Actions.swift"; sourceTree = "<group>"; };
 		35617C752D5A3BC000612B7A /* FeedbackSurveyViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyViewModelTests.swift; sourceTree = "<group>"; };
 		35617C772D5A45F900612B7A /* MockLoadPromotionalOfferUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLoadPromotionalOfferUseCase.swift; sourceTree = "<group>"; };
 		356523A72CF7719B00B6E3EA /* CustomerCenterPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPresentationMode.swift; sourceTree = "<group>"; };
@@ -1664,6 +1674,7 @@
 		356979DF2CCFDA9C00EE6A9E /* CustomerInfoFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoFixtures.swift; sourceTree = "<group>"; };
 		356E2DE72CD3CF8F0055AABB /* StoredEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredEventTests.swift; sourceTree = "<group>"; };
 		357348FF2C3BEB0A000EEB86 /* CustomerCenterConfigDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataTests.swift; sourceTree = "<group>"; };
+		357C43AE2D80510400B96769 /* CustomerCenterManagementOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterManagementOption.swift; sourceTree = "<group>"; };
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
 		357CEC6F2C5940CE00A80837 /* ColorFromAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorFromAppearance.swift; sourceTree = "<group>"; };
 		3592E8852C2ED51700D7F91D /* CustomerCenterConfigCallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigCallback.swift; sourceTree = "<group>"; };
@@ -2001,6 +2012,7 @@
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
 		5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHTTPResponseTest.swift; sourceTree = "<group>"; };
+		577782B42D91829D00F97EB4 /* CustomerCenterActionWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionWrapperTests.swift; sourceTree = "<group>"; };
 		578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnostics.swift; sourceTree = "<group>"; };
 		578D79732936A36B0042E434 /* LoggerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerType.swift; sourceTree = "<group>"; };
 		578D79932936B0810042E434 /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
@@ -2051,7 +2063,6 @@
 		57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingProductsManager.swift; sourceTree = "<group>"; };
 		57BB071528D282A4007F5DF0 /* CachingProductsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingProductsManagerTests.swift; sourceTree = "<group>"; };
 		57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreKitError+Extensions.swift"; sourceTree = "<group>"; };
-		57BD53E52D4A411A00C53487 /* CustomerCenterAnswerSubmittedEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterAnswerSubmittedEventTests.swift; sourceTree = "<group>"; };
 		57BF87582967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockCachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		57C0BB6829F840BD00827807 /* FrameworkDisambiguation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkDisambiguation.swift; sourceTree = "<group>"; };
 		57C2931428BFEF4F0054EDFC /* PurchasesError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesError.swift; sourceTree = "<group>"; };
@@ -2115,6 +2126,7 @@
 		57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentsDataTests.swift; sourceTree = "<group>"; };
+		756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnosticsTrackingTests.swift; sourceTree = "<group>"; };
 		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		75D9DE022D79FC0E0068554F /* testEncoding.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testEncoding.1.json; sourceTree = "<group>"; };
@@ -3750,6 +3762,9 @@
 		353756562C382C2800A1B8D6 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				357C43AE2D80510400B96769 /* CustomerCenterManagementOption.swift */,
+				355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */,
+				355FDB5B2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift */,
 				77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */,
 				3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */,
 				353756532C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift */,
@@ -3813,6 +3828,7 @@
 				3537565A2C382C2800A1B8D6 /* ViewModels */,
 				353756602C382C2800A1B8D6 /* Views */,
 				353756632C382C2800A1B8D6 /* URLUtilities.swift */,
+				355FDB5E2D783FDD00D20E65 /* CustomerCenterView+Actions.swift */,
 				7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */,
 				1E5F8F6D2C4515430041EECD /* View+PresentCustomerCenter.swift */,
 				3511088E2C47F6DA0048C4D8 /* CustomerInfo+CurrentEntitlement.swift */,
@@ -3915,6 +3931,7 @@
 		3544DA6B2C2C848E00704E9D /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
+				577782B42D91829D00F97EB4 /* CustomerCenterActionWrapperTests.swift */,
 				FD6186522D1393E2007843DA /* Mocks */,
 				35A99C822CCB95950074AB41 /* SubscriptionInformationFixtures.swift */,
 				3544DA692C2C848E00704E9D /* CustomerCenterViewModelTests.swift */,
@@ -3943,7 +3960,6 @@
 			children = (
 				57D62F172D4A73F6000235DC /* CustomerCenterEventCreationDataDefault.swift */,
 				57D62F152D4A656E000235DC /* CustomerCenterEventTests.swift */,
-				57BD53E52D4A411A00C53487 /* CustomerCenterAnswerSubmittedEventTests.swift */,
 				356523AB2CF890EA00B6E3EA /* CustomerCenterEventsRequestTests.swift */,
 			);
 			path = Events;
@@ -4463,6 +4479,7 @@
 				2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */,
 				4F0CE2BC2A215CE600561895 /* TransactionPosterTests.swift */,
 				FDAC7B5A2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift */,
+				756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -5227,6 +5244,7 @@
 			children = (
 				B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */,
 				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
+				1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -6116,6 +6134,7 @@
 				2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */,
 				5723FBBE28EDE1360003BA16 /* InternalAPI.swift in Sources */,
 				A55D5D66282ECCC100FA7623 /* PostAdServicesTokenOperation.swift in Sources */,
+				1E42CC6C2D7F1A0500E0EE8D /* CacheStatus.swift in Sources */,
 				B3B5FBB4269CED4B00104A0C /* BackendErrorCode.swift in Sources */,
 				FDC892FE2CD157F1000AEB9F /* WinBackOffer.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
@@ -6504,7 +6523,6 @@
 				57488B8B29CB756A0000EE7E /* ProductEntitlementMappingTests.swift in Sources */,
 				57ACB12428174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */,
 				357349012C3BEB5C000EEB86 /* CustomerCenterConfigDataTests.swift in Sources */,
-				57BD53E62D4A411C00C53487 /* CustomerCenterAnswerSubmittedEventTests.swift in Sources */,
 				FDAC7B5B2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift in Sources */,
 				351B51B926D450E800BD2BD7 /* TransactionsFactoryTests.swift in Sources */,
 				FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */,
@@ -6514,6 +6532,7 @@
 				35F8B8FA26E02AE1003C3363 /* MockTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				35F38B482C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift in Sources */,
 				35D83300262FAD8000E60AC5 /* ETagManagerTests.swift in Sources */,
+				756AE8352D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift in Sources */,
 				57DDA7B329CBEFB30098B89D /* MockPurchasedProductsFetcher.swift in Sources */,
 				5796A39027D6BCD100653165 /* BackendGetIntroEligibilityTests.swift in Sources */,
 				351B514126D4498F00BD2BD7 /* MockBackend.swift in Sources */,
@@ -6853,6 +6872,8 @@
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
 				887A60C32C1D037000E1A461 /* FooterView.swift in Sources */,
 				2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */,
+				355FDB5C2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift in Sources */,
+				355FDB5D2D783FC400D20E65 /* CustomerCenterActionWrapper.swift in Sources */,
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
 				2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */,
 				356979E02CCFDAA100EE6A9E /* CustomerInfoFixtures.swift in Sources */,
@@ -6902,6 +6923,7 @@
 				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
 				3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */,
 				0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */,
+				355FDB5F2D783FDD00D20E65 /* CustomerCenterView+Actions.swift in Sources */,
 				030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */,
 				0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */,
 				0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */,
@@ -6981,6 +7003,7 @@
 				574D1C712D3E75F9005840CD /* PurchaseHistoryView.swift in Sources */,
 				574D1C722D3E75F9005840CD /* PurchaseLinkView.swift in Sources */,
 				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,
+				357C43AF2D80510A00B96769 /* CustomerCenterManagementOption.swift in Sources */,
 				2C91068A2CE22D3500189565 /* FlexVStack.swift in Sources */,
 				571197642D3AE403000BC39E /* CustomerCenterNavigationOptions.swift in Sources */,
 				4D3BA5B22D47AB4400668AFC /* TimelineComponentView.swift in Sources */,
@@ -7068,6 +7091,7 @@
 				887A63422C1D177800E1A461 /* ImageLoaderTests.swift in Sources */,
 				887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */,
 				030890842D2B77E70069677B /* VariableHandlerV2Tests.swift in Sources */,
+				577782B52D9182A200F97EB4 /* CustomerCenterActionWrapperTests.swift in Sources */,
 				FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */,
 				03C06FC52D4553C000600693 /* PresentedPartialsTests.swift in Sources */,
 				887A63442C1D177800E1A461 /* PaywallFooterTests.swift in Sources */,

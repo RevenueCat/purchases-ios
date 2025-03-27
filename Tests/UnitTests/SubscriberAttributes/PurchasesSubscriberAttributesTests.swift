@@ -147,7 +147,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                          systemInfo: systemInfo,
                                                          backend: mockBackend,
                                                          offeringsFactory: MockOfferingsFactory(),
-                                                         productsManager: mockProductsManager)
+                                                         productsManager: mockProductsManager,
+                                                         diagnosticsTracker: nil)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                   customerInfoManager: customerInfoManager,
                                                                   currentUserProvider: mockIdentityManager)
@@ -194,6 +195,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: nil,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
@@ -204,7 +206,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             backend: mockBackend,
             currentUserProvider: mockIdentityManager,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: mockProductsManager
+            productsManager: mockProductsManager,
+            diagnosticsTracker: nil
         )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
@@ -232,7 +235,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               trialOrIntroPriceEligibilityChecker: .create(
                                 with: trialOrIntroductoryPriceEligibilityChecker
                               ),
-                              storeMessagesHelper: self.mockStoreMessagesHelper)
+                              storeMessagesHelper: self.mockStoreMessagesHelper,
+                              diagnosticsTracker: nil)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

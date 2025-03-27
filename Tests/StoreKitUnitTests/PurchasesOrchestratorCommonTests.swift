@@ -24,7 +24,9 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
 
     func testPurchasingTestProductFails() async throws {
         let error = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(product: Self.testProduct, package: nil) { _, _, error, _ in
+            self.orchestrator.purchase(product: Self.testProduct,
+                                       package: nil,
+                                       trackDiagnostics: false) { _, _, error, _ in
                 continuation.resume(returning: error)
             }
         }
@@ -42,7 +44,8 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
             self.orchestrator.purchase(
                 product: Self.testProduct,
                 package: nil,
-                promotionalOffer: offer
+                promotionalOffer: offer,
+                trackDiagnostics: false
             ) { _, _, error, _ in
                 continuation.resume(returning: error)
             }
@@ -245,3 +248,311 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class PurchasesOrchestratorTrackingTests: BasePurchasesOrchestratorTests {
+
+    private func getMockDiagnosticsTracker() throws -> MockDiagnosticsTracker {
+        return try XCTUnwrap(self.mockDiagnosticsTracker as? MockDiagnosticsTracker)
+    }
+
+    // MARK: - Purchase Product events
+
+    func testTracksPurchaseSK1ProductSuccessWhenEnabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: true) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = mockDiagnosticsTracker.trackedPurchasesStartedParams.value[0]
+        expect(startedParams.productId) == storeProduct.productIdentifier
+        expect(startedParams.productType) == storeProduct.productType
+
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = mockDiagnosticsTracker.trackedPurchasesResultParams.value[0]
+        expect(resultParams.productId) == storeProduct.productIdentifier
+        expect(resultParams.productType) == storeProduct.productType
+        expect(resultParams.verificationResult) == mockCustomerInfo.entitlements.verification
+        expect(resultParams.errorMessage) == nil
+        expect(resultParams.errorCode) == nil
+    }
+
+    func testTracksPurchaseSK1ProductFailureWhenEnabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey,
+                                 originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                 message: nil),
+                           400)
+        )
+        self.backend.stubbedPostReceiptResult = .failure(stubbedError)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: true) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesStartedParams.value.first)
+        expect(startedParams.productId) == storeProduct.productIdentifier
+        expect(startedParams.productType) == storeProduct.productType
+
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesResultParams.value.first)
+        expect(resultParams.productId) == storeProduct.productIdentifier
+        expect(resultParams.productType) == storeProduct.productType
+        expect(resultParams.verificationResult).to(beNil())
+        expect(resultParams.errorMessage) == stubbedError.asPurchasesError.localizedDescription
+        expect(resultParams.errorCode) == stubbedError.asPublicError.code
+    }
+
+    func testDoesNotTrackPurchaseSK1ProductSuccessWhenDisabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: false) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
+    }
+
+    func testDoesNotTrackPurchaseSK1ProductFailureWhenDisabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey,
+                                 originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                 message: nil),
+                           400)
+        )
+        self.backend.stubbedPostReceiptResult = .failure(stubbedError)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: false) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
+    }
+
+    func testTracksPurchaseSK2ProductSuccessWhenEnabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: true) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = mockDiagnosticsTracker.trackedPurchasesStartedParams.value[0]
+        expect(startedParams.productId) == storeProduct.productIdentifier
+        expect(startedParams.productType) == storeProduct.productType
+
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = mockDiagnosticsTracker.trackedPurchasesResultParams.value[0]
+        expect(resultParams.productId) == storeProduct.productIdentifier
+        expect(resultParams.productType) == storeProduct.productType
+        expect(resultParams.verificationResult) == mockCustomerInfo.entitlements.verification
+        expect(resultParams.errorMessage) == nil
+        expect(resultParams.errorCode) == nil
+    }
+
+    func testTracksPurchaseSK2ProductFailureWhenEnabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey,
+                                 originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                 message: nil),
+                           400)
+        )
+        self.backend.stubbedPostReceiptResult = .failure(stubbedError)
+
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: true) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(haveCount(1))
+        let startedParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesStartedParams.value.first)
+        expect(startedParams.productId) == storeProduct.productIdentifier
+        expect(startedParams.productType) == storeProduct.productType
+
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(haveCount(1))
+        let resultParams = try XCTUnwrap(mockDiagnosticsTracker.trackedPurchasesResultParams.value.first)
+        expect(resultParams.productId) == storeProduct.productIdentifier
+        expect(resultParams.productType) == storeProduct.productType
+        expect(resultParams.verificationResult).to(beNil())
+        expect(resultParams.errorMessage) == stubbedError.asPurchasesError.localizedDescription
+        expect(resultParams.errorCode) == stubbedError.asPublicError.code
+    }
+
+    func testDoesNotTrackPurchaseSK2ProductSuccessWhenDisabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.operationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: false) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
+    }
+
+    func testDoesNotTrackPurchaseSK2ProductFailureWhenDisabledDiagnostics() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let stubbedError: BackendError = .networkError(
+            .errorResponse(.init(code: .invalidAPIKey,
+                                 originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                 message: nil),
+                           400)
+        )
+        self.backend.stubbedPostReceiptResult = .failure(stubbedError)
+
+        let product = try await self.fetchSk2Product()
+        let storeProduct = StoreProduct(sk2Product: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: storeProduct,
+                                       package: nil,
+                                       trackDiagnostics: false) { _, _, _, _ in
+                continuation.resume()
+            }
+        }
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchasesStartedParams.value).to(beEmpty())
+        expect(mockDiagnosticsTracker.trackedPurchasesResultParams.value).to(beEmpty())
+    }
+
+}
+
+#if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+
+// MARK: - Purchase Intent Received events
+
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+final class MockStoreKit2PurchaseIntent: StoreKit2PurchaseIntentType {
+
+    let product: StoreKit.Product
+    let offer: StoreKit.Product.SubscriptionOffer? = nil
+    let id: StoreKit.Product.ID
+
+    init(product: StoreKit.Product, id: StoreKit.Product.ID) {
+        self.product = product
+        self.id = id
+    }
+
+    static func == (lhs: MockStoreKit2PurchaseIntent, rhs: MockStoreKit2PurchaseIntent) -> Bool {
+        lhs.product == rhs.product && lhs.id == rhs.id
+    }
+
+}
+
+@available(iOS 16.4, macOS 14.4, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension PurchasesOrchestratorTrackingTests {
+
+    func testTracksPurchaseIntentReceived() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let sk2Product = try await self.fetchSk2Product()
+        let storePurchaseIntent = StorePurchaseIntent(purchaseIntent: MockStoreKit2PurchaseIntent(product: sk2Product,
+                                                                                                  id: sk2Product.id))
+        await self.orchestrator.storeKit2PurchaseIntentListener(MockStoreKit2PurchaseIntentListener(),
+                                                                purchaseIntent: storePurchaseIntent)
+
+        let mockDiagnosticsTracker = try getMockDiagnosticsTracker()
+
+        expect(mockDiagnosticsTracker.trackedPurchaseIntentReceivedParams.value.count) == 1
+        let params = mockDiagnosticsTracker.trackedPurchaseIntentReceivedParams.value[0]
+        expect(params.productId) == sk2Product.id
+        expect(params.offerId) == nil
+        expect(params.offerType) == nil
+    }
+
+}
+
+#endif

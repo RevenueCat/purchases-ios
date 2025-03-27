@@ -363,6 +363,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
             offlineCreator: .init(
                 purchasedProductsFetcher: self.fetcher,
                 productEntitlementMappingFetcher: MappingFetcher(productEntitlementMapping: mapping),
+                tracker: nil,
                 creator: { self.factory.create(products: $0, mapping: $1, userID: $2) }
             ),
             userID: self.userID,
