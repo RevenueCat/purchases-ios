@@ -117,7 +117,7 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding)
+        .padding(style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)

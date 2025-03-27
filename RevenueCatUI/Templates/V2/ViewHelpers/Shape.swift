@@ -74,12 +74,17 @@ struct ShapeModifier: ViewModifier {
             if let shape = self.shape.toInsettableShape() {
                 content
                     .backgroundStyle(background)
-                // We want to clip only in case there is a non-Rectangle shape
-                // or if there's a border, otherwise we let the background color
-                // extend behind the safe areas
-                    .applyIf(!shape.isRectangle()) { view in
-                        view.clipShape(shape)
+                    // We want to clip only in case there is a non-Rectangle shape
+                    // or if there's a border
+                    .applyIf(!shape.isRectangle() || border != nil) { view in
+                        view
+                            .clipShape(
+                                // Adding inset to clip contents within the border
+                                // Mainly to handle transparent borders not showing content
+                                shape.inset(by: border?.width ?? 0 / 2)
+                            )
                     }
+                    // Place border on top of content
                     .applyIfLet(border) { view, border in
                         view.clipShape(shape).overlay {
                             shape.strokeBorder(border.color, lineWidth: border.width)
@@ -441,7 +446,7 @@ struct CornerBorder_Previews: PreviewProvider {
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 )
-            )),
+            ), .fill),
             nil
         ]
 

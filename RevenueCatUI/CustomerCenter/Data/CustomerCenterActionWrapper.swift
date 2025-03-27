@@ -29,7 +29,7 @@ internal enum CustomerCenterInternalAction {
     case feedbackSurveyCompleted(String)
 
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
-    case buttonTapped(buttonId: String)
+    case buttonTapped(action: CustomerCenterActionable)
 
     /// Converts this internal action to the corresponding legacy action if one exists
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
@@ -68,7 +68,7 @@ final class CustomerCenterActionWrapper {
     var setRefundRequestStarted: (String) -> Void = { _ in }
     var setRefundRequestCompleted: (String, RefundRequestStatus) -> Void = { _, _ in }
     var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
-    var setButtonTapped: (String) -> Void = { _ in }
+    var setManagementOptionSelected: (CustomerCenterActionable) -> Void = { _ in }
 
     // The handler for legacy actions
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
@@ -106,8 +106,44 @@ final class CustomerCenterActionWrapper {
             setRefundRequestCompleted(productId, status)
         case .feedbackSurveyCompleted(let optionId):
             setFeedbackSurveyCompleted(optionId)
-        case .buttonTapped(let buttonId):
-            setButtonTapped(buttonId)
+        case .buttonTapped(let action):
+            setManagementOptionSelected(action)
         }
     }
+}
+
+// MARK: - Help Path to Management Option Conversion
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterConfigData.HelpPath {
+
+    /// Converts this HelpPath to an appropriate CustomerCenterActionable
+    /// - Returns: A CustomerCenterActionable representing this path
+    func asAction() -> CustomerCenterActionable? {
+        switch self.type {
+        case .missingPurchase:
+            return CustomerCenterManagementOption.MissingPurchase()
+
+        case .refundRequest:
+            return CustomerCenterManagementOption.RefundRequest()
+
+        case .changePlans:
+            return CustomerCenterManagementOption.ChangePlans()
+
+        case .cancel:
+            return CustomerCenterManagementOption.Cancel()
+
+        case .customUrl:
+            if let url = self.url {
+                return CustomerCenterManagementOption.CustomUrl(url: url)
+            }
+
+        default:
+            break
+        }
+        return nil
+    }
+
 }

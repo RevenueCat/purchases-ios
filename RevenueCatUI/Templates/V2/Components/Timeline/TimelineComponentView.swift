@@ -63,7 +63,17 @@ struct TimelineComponentView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: style.itemSpacing ?? 0) {
             ForEach(viewModel.items, id: \.component) { item in
-                timelineRow(item: item, style: style)
+                item.styles(
+                    state: self.componentViewState,
+                    condition: self.screenCondition,
+                    isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                        package: self.packageContext.package
+                    )
+                ) { itemStyle in
+                    if itemStyle.visible {
+                        timelineRow(itemStyle: itemStyle, style: style)
+                    }
+                }
             }
         }
         .onPreferenceChange(MaxIconWidthPreferenceKey.self) { width in
@@ -75,42 +85,56 @@ struct TimelineComponentView: View {
         .backgroundPreferenceValue(ItemBoundsKey.self) { bounds in
             GeometryReader { proxy in
                 ForEach(Array(viewModel.items.enumerated()), id: \.offset) { index, item in
-                    let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
-                    // swiftlint:disable identifier_name
-                    if let from = bounds[item.id], let next, let to = bounds[next.id] {
-                        // Connect two items from center to center respecting margins
-                        if let connector = item.component.connector {
-                            let color = connector.color.asDisplayable(uiConfigProvider: viewModel.uiConfigProvider)
-                            Rectangle()
-                                .fillColorScheme(color, colorScheme: colorScheme)
-                                .frame(
-                                    width: connector.width,
-                                    height: proxy[to][.center].y - proxy[from][.center].y -
-                                    (item.component.connector?.margin.bottom ?? 0) -
-                                    (item.component.connector?.margin.top ?? 0)
-                                )
-                                .offset(
-                                    x: proxy[from][.bottom].x - connector.width / 2,
-                                    y: proxy[from][.center].y + (item.component.connector?.margin.top ?? 0)
-                                )
-                        }
-                    } else if let from = bounds[item.id] {
-                        // The last connector goes from the center of the last icon to the bottom of component
-                        // (including `itemSpacing` padding and respecting margins)
-                        if let connector = item.component.connector {
-                            let color = connector.color.asDisplayable(uiConfigProvider: viewModel.uiConfigProvider)
-                            Rectangle()
-                                .fillColorScheme(color, colorScheme: colorScheme)
-                                .frame(
-                                    width: connector.width,
-                                    height: proxy.size.height - proxy[from][.center].y -
-                                    (item.component.connector?.margin.bottom ?? 0) -
-                                    (item.component.connector?.margin.top ?? 0)
-                                )
-                                .offset(
-                                    x: proxy[from][.bottom].x - connector.width / 2,
-                                    y: proxy[from][.center].y + (item.component.connector?.margin.top ?? 0)
-                                )
+                    item.styles(
+                        state: self.componentViewState,
+                        condition: self.screenCondition,
+                        isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                            package: self.packageContext.package
+                        )
+                    ) { itemStyle in
+                        if itemStyle.visible {
+                            let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
+                            // swiftlint:disable identifier_name
+                            if let from = bounds[itemStyle.id], let next, let to = bounds[next.id] {
+                                // Connect two items from center to center respecting margins
+                                if let connector = itemStyle.connector {
+                                    let color = connector.color.asDisplayable(
+                                        uiConfigProvider: viewModel.uiConfigProvider
+                                    )
+                                    Rectangle()
+                                        .fillColorScheme(color, colorScheme: colorScheme)
+                                        .frame(
+                                            width: connector.width,
+                                            height: proxy[to][.center].y - proxy[from][.center].y -
+                                            (connector.margin.bottom ?? 0) -
+                                            (connector.margin.top ?? 0)
+                                        )
+                                        .offset(
+                                            x: proxy[from][.bottom].x - connector.width / 2,
+                                            y: proxy[from][.center].y + (connector.margin.top ?? 0)
+                                        )
+                                }
+                            } else if let from = bounds[itemStyle.id] {
+                                // The last connector goes from the center of the last icon to the bottom of component
+                                // (including `itemSpacing` padding and respecting margins)
+                                if let connector = itemStyle.connector {
+                                    let color = connector.color.asDisplayable(
+                                        uiConfigProvider: viewModel.uiConfigProvider
+                                    )
+                                    Rectangle()
+                                        .fillColorScheme(color, colorScheme: colorScheme)
+                                        .frame(
+                                            width: connector.width,
+                                            height: proxy.size.height - proxy[from][.center].y -
+                                            (connector.margin.bottom ?? 0) -
+                                            (connector.margin.top ?? 0)
+                                        )
+                                        .offset(
+                                            x: proxy[from][.bottom].x - connector.width / 2,
+                                            y: proxy[from][.center].y + (connector.margin.top ?? 0)
+                                        )
+                                }
+                            }
                         }
                     }
                 }
@@ -123,14 +147,14 @@ struct TimelineComponentView: View {
 
     @ViewBuilder
     private func timelineRow(
-        item: TimelineItemViewModel,
+        itemStyle: TimelineItemStyle,
         style: TimelineComponentStyle
     ) -> some View {
         HStack(alignment: .centerIcon, spacing: style.columnGutter ?? 0) {
             VStack(spacing: 0) {
-                IconComponentView(viewModel: item.icon)
+                IconComponentView(viewModel: itemStyle.icon)
                     // Store the bounds of the icon so we can later use them to position the connectors
-                    .anchorPreference(key: ItemBoundsKey.self, value: .bounds, transform: { [item.id: $0 ]})
+                    .anchorPreference(key: ItemBoundsKey.self, value: .bounds, transform: { [itemStyle.id: $0 ]})
                     .alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
                     .background(GeometryReader { geometry in
                         Color.clear.preference(
@@ -141,11 +165,11 @@ struct TimelineComponentView: View {
             }
             .frame(width: maxIconWidth > 0 ? maxIconWidth : nil)
             VStack(alignment: .leading, spacing: style.textSpacing ?? 0) {
-                TextComponentView(viewModel: item.title)
+                TextComponentView(viewModel: itemStyle.title)
                     .applyIf(style.iconAlignment == .title) { view in
                         view.alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
                     }
-                if let description = item.description {
+                if let description = itemStyle.description {
                     TextComponentView(viewModel: description)
                 }
             }
@@ -252,7 +276,8 @@ struct ContentView_Previews: PreviewProvider {
                 width: 8,
                 color: .init(light: .hex("#576CDB66")),
                 margin: .init(top: 14, bottom: 14, leading: 0, trailing: 0)
-            )
+            ),
+            overrides: nil
         ),
         PaywallComponent.TimelineComponent.Item(
             title: .init(
@@ -274,7 +299,8 @@ struct ContentView_Previews: PreviewProvider {
                 width: 8,
                 color: .init(light: .hex("#576CDB66")),
                 margin: .init(top: 14, bottom: 14, leading: 0, trailing: 0)
-            )
+            ),
+            overrides: nil
         ),
         PaywallComponent.TimelineComponent.Item(
             title: .init(
@@ -301,7 +327,8 @@ struct ContentView_Previews: PreviewProvider {
                     ])
                 ),
                 margin: .init(top: 23, bottom: 0, leading: 0, trailing: 0)
-            )
+            ),
+            overrides: nil
         )
     ]
 
@@ -356,7 +383,7 @@ fileprivate extension TimelineComponentViewModel {
                     component: descriptionComponent
                 )
             }
-            return TimelineItemViewModel(
+            return try TimelineItemViewModel(
                 component: item,
                 title: try TextComponentViewModel(
                     localizationProvider: localizationProvider,
