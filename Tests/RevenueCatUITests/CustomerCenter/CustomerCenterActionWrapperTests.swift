@@ -15,6 +15,10 @@
 import SwiftUI
 import XCTest
 
+#if !os(watchOS) && !os(macOS)
+
+import UIKit
+
 @MainActor
 private final class WindowHolder {
     var window: UIWindow?
@@ -225,4 +229,35 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
         await fulfillment(of: [expectation], timeout: 1.0)
     }
+
+    func testPromotionalOfferSuccess() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "refundRequestCompleted")
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterPromotionalOfferSuccess {
+                    expectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        await MainActor.run {
+            actionWrapper.handleAction(.promotionalOfferSuccess)
+        }
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
 }
+
+#endif

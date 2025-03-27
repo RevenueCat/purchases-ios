@@ -52,65 +52,7 @@ extension CustomerCenterView {
     public typealias ManagementOptionSelectedHandler =
     @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
 
-    // MARK: - Preference Keys
-
-    struct RestoreStartedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<Void>?
-        static func reduce(value: inout UniqueWrapper<Void>?, nextValue: () -> UniqueWrapper<Void>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct RestoreFailedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<NSError>?
-        static func reduce(value: inout UniqueWrapper<NSError>?, nextValue: () -> UniqueWrapper<NSError>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct RestoreCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<CustomerInfo>?
-        static func reduce(value: inout UniqueWrapper<CustomerInfo>?, nextValue: () -> UniqueWrapper<CustomerInfo>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct ShowingManageSubscriptionsPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<Void>?
-        static func reduce(value: inout UniqueWrapper<Void>?, nextValue: () -> UniqueWrapper<Void>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct RefundRequestStartedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<String>?
-        static func reduce(value: inout UniqueWrapper<String>?, nextValue: () -> UniqueWrapper<String>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct RefundRequestCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<(String, RefundRequestStatus)>?
-        static func reduce(value: inout UniqueWrapper<(String, RefundRequestStatus)>?,
-                           nextValue: () -> UniqueWrapper<(String, RefundRequestStatus)>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct FeedbackSurveyCompletedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<String>?
-        static func reduce(value: inout UniqueWrapper<String>?, nextValue: () -> UniqueWrapper<String>?) {
-            value = nextValue() ?? value
-        }
-    }
-
-    struct ManagementOptionSelectedPreferenceKey: PreferenceKey {
-        static var defaultValue: UniqueWrapper<CustomerCenterActionable>?
-        static func reduce(value: inout UniqueWrapper<CustomerCenterActionable>?,
-                           nextValue: () -> UniqueWrapper<CustomerCenterActionable>?) {
-            value = nextValue() ?? value
-        }
-    }
+    typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
 
     // MARK: - View Modifiers
 
@@ -213,6 +155,19 @@ extension CustomerCenterView {
                 .onPreferenceChange(ManagementOptionSelectedPreferenceKey.self) { wrapper in
                     if let wrapper = wrapper {
                         handler(wrapper.value)
+                    }
+                }
+        }
+    }
+
+    struct OnPromotionalOfferSuccess: ViewModifier {
+        let handler: PromotionalOfferSuccessHandler
+
+        func body(content: Content) -> some View {
+            content
+                .onPreferenceChange(PromotionalOfferSuccessPreferenceKey.self) { wrappedStarted in
+                    if wrappedStarted != nil {
+                        self.handler()
                     }
                 }
         }
@@ -384,6 +339,12 @@ extension View {
         _ handler: @escaping CustomerCenterView.ManagementOptionSelectedHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnManagementOptionModifier(handler: handler))
+    }
+
+    func onCustomerCenterPromotionalOfferSuccess(
+        _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
     }
 }
 

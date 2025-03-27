@@ -35,4 +35,5 @@ public enum CustomerCenterManagementOption {
 
     /// Represents a change plans action
     public struct ChangePlans: CustomerCenterActionable {}
+
 }

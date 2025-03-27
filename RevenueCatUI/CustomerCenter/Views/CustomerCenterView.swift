@@ -150,6 +150,11 @@ private extension CustomerCenterView {
             }
         }
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
+        .onCustomerCenterPromotionalOfferSuccess {
+            Task {
+                await viewModel.loadScreen()
+            }
+        }
     }
 
     @ViewBuilder

@@ -45,6 +45,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
+    @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
 
     func body(content: Content) -> some View {
         content
@@ -81,6 +82,10 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                 actionWrapper.setManagementOptionSelected = { action in
                     managementOptionSelected = UniqueWrapper(value: action)
                 }
+
+                actionWrapper.setPromotionalOfferSuccess = {
+                    promotionalOfferSuccess = UniqueWrapper(value: ())
+                }
             }
             // Apply preferences based on state
             .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
@@ -99,6 +104,8 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: feedbackSurveyCompleted)
             .preference(key: CustomerCenterView.ManagementOptionSelectedPreferenceKey.self,
                         value: managementOptionSelected)
+            .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
+                        value: promotionalOfferSuccess)
     }
 }
 

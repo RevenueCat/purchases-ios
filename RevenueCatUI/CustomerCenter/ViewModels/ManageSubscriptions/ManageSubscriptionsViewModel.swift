@@ -99,12 +99,14 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
-            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
-                                                         path: path) { [weak self] in
-                Task {
-                    await self?.onPathSelected(path: path)
+            self.feedbackSurveyData = FeedbackSurveyData(
+                configuration: feedbackSurvey,
+                path: path) { [weak self] in
+                    Task {
+                        await self?.onPathSelected(path: path)
+                    }
                 }
-            }
+
         case let .promotionalOffer(promotionalOffer):
             if promotionalOffer.eligible {
                 self.loadingPath = path
@@ -158,6 +160,13 @@ extension ManageSubscriptionsViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
     func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        switch userAction {
+        case .successfullyRedeemedPromotionalOffer:
+            self.actionWrapper.handleAction(.promotionalOfferSuccess)
+        case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
+            break
+        }
+
         // Clear the promotional offer data to dismiss the sheet
         self.promotionalOfferData = nil
 
