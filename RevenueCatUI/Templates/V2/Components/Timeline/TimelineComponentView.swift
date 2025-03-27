@@ -41,6 +41,8 @@ struct TimelineComponentView: View {
         self.viewModel = viewModel
     }
 
+    @State private var maxIconWidth: CGFloat = 0
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
@@ -73,6 +75,9 @@ struct TimelineComponentView: View {
                     }
                 }
             }
+        }
+        .onPreferenceChange(MaxIconWidthPreferenceKey.self) { width in
+            self.maxIconWidth = width
         }
         // Add `itemSpacing` padding to the bottom of the timeline so the last connector can extend
         // a little beyond the description text of the last item.
@@ -151,8 +156,14 @@ struct TimelineComponentView: View {
                     // Store the bounds of the icon so we can later use them to position the connectors
                     .anchorPreference(key: ItemBoundsKey.self, value: .bounds, transform: { [itemStyle.id: $0 ]})
                     .alignmentGuide(.centerIcon) { dim in dim[VerticalAlignment.center] }
+                    .background(GeometryReader { geometry in
+                        Color.clear.preference(
+                            key: MaxIconWidthPreferenceKey.self,
+                            value: geometry.size.width
+                        )
+                    })
             }
-
+            .frame(width: maxIconWidth > 0 ? maxIconWidth : nil)
             VStack(alignment: .leading, spacing: style.textSpacing ?? 0) {
                 TextComponentView(viewModel: itemStyle.title)
                     .applyIf(style.iconAlignment == .title) { view in
@@ -187,6 +198,14 @@ private struct ItemBoundsKey: PreferenceKey {
     }
 }
 
+private struct MaxIconWidthPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 private extension CGRect {
     subscript(unitPoint: UnitPoint) -> CGPoint {
         CGPoint(x: minX + width * unitPoint.x, y: minY + height * unitPoint.y)
@@ -207,7 +226,11 @@ struct ContentView_Previews: PreviewProvider {
         )
     }
 
-    static func iconComponent(name: String, color: String) -> PaywallComponent.IconComponent {
+    static func iconComponent(
+        name: String,
+        color: String,
+        size: PaywallComponent.Size = .init(width: .fixed(32), height: .fixed(32))
+    ) -> PaywallComponent.IconComponent {
         return .init(
             baseUrl: "https://icons.pawwalls.com/icons",
             iconName: name,
@@ -217,7 +240,7 @@ struct ContentView_Previews: PreviewProvider {
                 heic: "\(name).heic",
                 webp: "\(name).webp"
             ),
-            size: .init(width: .fixed(32), height: .fixed(32)),
+            size: size,
             padding: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
             margin: .zero,
             color: PaywallComponent.ColorScheme(
@@ -294,7 +317,7 @@ struct ContentView_Previews: PreviewProvider {
                 size: .init(width: .fit, height: .fit),
                 horizontalAlignment: .leading
             ),
-            icon: iconComponent(name: "star", color: "#11D483"),
+            icon: iconComponent(name: "star", color: "#11D483", size: .init(width: .fixed(50), height: .fixed(50))),
             connector: .init(
                 width: 8,
                 color: .init(
@@ -303,7 +326,7 @@ struct ContentView_Previews: PreviewProvider {
                         .init(color: "#FFFFFF", percent: 70)
                     ])
                 ),
-                margin: .init(top: 14, bottom: 0, leading: 0, trailing: 0)
+                margin: .init(top: 23, bottom: 0, leading: 0, trailing: 0)
             ),
             overrides: nil
         )
