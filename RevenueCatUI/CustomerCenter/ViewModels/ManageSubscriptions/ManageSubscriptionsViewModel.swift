@@ -108,15 +108,18 @@ final class ManageSubscriptionsViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer):
-            self.loadingPath = path
-            let result = await loadPromotionalOfferUseCase.execute(
-                promoOfferDetails: promotionalOffer)
-            switch result {
-            case .success(let promotionalOfferData):
-                self.promotionalOfferData = promotionalOfferData
-            case .failure:
+            if promotionalOffer.eligible {
+                self.loadingPath = path
+                let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+                switch result {
+                case .success(let promotionalOfferData):
+                    self.promotionalOfferData = promotionalOfferData
+                case .failure:
+                    await self.onPathSelected(path: path)
+                    self.loadingPath = nil
+                }
+            } else {
                 await self.onPathSelected(path: path)
-                self.loadingPath = nil
             }
 
         default:
@@ -197,7 +200,6 @@ private extension ManageSubscriptionsViewModel {
                 self.actionWrapper.handleAction(.refundRequestStarted(productId))
 
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
-                self.refundRequestStatus = status
                 self.refundRequestStatus = status
                 self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
             } catch {
