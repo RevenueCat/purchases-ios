@@ -187,4 +187,18 @@ enum CustomerCenterConfigTestData {
         customerInfoRequestedDate: Date()
     )
 
+    static let consumable: PurchaseInformation = .init(
+        title: "Basic",
+        durationTitle: nil,
+        explanation: .lifetime,
+        price: .paid("$49.99"),
+        expirationOrRenewal: nil,
+        productIdentifier: "product_id",
+        store: .appStore,
+        isTrial: false,
+        isLifetime: true,
+        latestPurchaseDate: Date(),
+        customerInfoRequestedDate: Date()
+    )
+
 }

@@ -190,6 +190,16 @@ class DeviceCache {
         self.offeringsCachedObject.clearCacheTimestamp()
     }
 
+    func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
+        if self.offeringsCachedObject.cachedInstance == nil {
+            return .notFound
+        } else if self.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
+            return .stale
+        } else {
+            return .valid
+        }
+    }
+
     // MARK: - subscriber attributes
 
     func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {

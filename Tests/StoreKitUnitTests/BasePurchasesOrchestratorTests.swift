@@ -46,6 +46,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     private var paywallEventsManager: PaywallEventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
+    var mockDiagnosticsTracker: DiagnosticsTrackerType!
 
     static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
     static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
@@ -83,8 +84,10 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             self.paywallEventsManager = MockPaywallEventsManager()
+            self.mockDiagnosticsTracker = MockDiagnosticsTracker()
         } else {
             self.paywallEventsManager = nil
+            self.mockDiagnosticsTracker = nil
         }
 
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
@@ -92,7 +95,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
                                                          offeringsFactory: OfferingsFactory(),
-                                                         productsManager: self.productsManager)
+                                                         productsManager: self.productsManager,
+                                                         diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()
 
         self.customerInfoManager = MockCustomerInfoManager(
@@ -198,6 +202,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             manageSubscriptionsHelper: self.mockManageSubsHelper,
             beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
             storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: self.mockDiagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)

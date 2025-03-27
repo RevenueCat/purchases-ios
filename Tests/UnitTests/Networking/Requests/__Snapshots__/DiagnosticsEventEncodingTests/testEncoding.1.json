@@ -14,7 +14,7 @@
     ],
     "product_id" : "test_productId",
     "promotional_offer_id" : "promotionalOfferId",
-    "purchase_result" : "user_cancelled",
+    "purchase_result" : "USER_CANCELLED",
     "requested_product_ids" : [
       "test_product_id1"
     ],

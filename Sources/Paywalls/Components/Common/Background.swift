@@ -19,7 +19,7 @@ public extension PaywallComponent {
     enum Background: Codable, Sendable, Hashable {
 
         case color(ColorScheme)
-        case image(ThemeImageUrls)
+        case image(ThemeImageUrls, FitMode)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -28,10 +28,10 @@ public extension PaywallComponent {
             case .color(let colorScheme):
                 try container.encode(BackgroundType.color.rawValue, forKey: .type)
                 try container.encode(colorScheme, forKey: .value)
-            case .image(let imageInfo):
+            case .image(let imageInfo, let fitMode):
                 try container.encode(BackgroundType.image.rawValue, forKey: .type)
                 try container.encode(imageInfo, forKey: .value)
-
+                try container.encode(fitMode, forKey: .fitMode)
             }
         }
 
@@ -45,7 +45,8 @@ public extension PaywallComponent {
                 self = .color(value)
             case .image:
                 let value = try container.decode(ThemeImageUrls.self, forKey: .value)
-                self = .image(value)
+                let fitMode = try container.decode(FitMode.self, forKey: .fitMode)
+                self = .image(value, fitMode)
             }
         }
 
@@ -54,6 +55,7 @@ public extension PaywallComponent {
 
             case type
             case value
+            case fitMode
 
         }
 
