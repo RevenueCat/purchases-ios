@@ -18,7 +18,6 @@ import XCTest
 #if !os(watchOS) && !os(macOS)
 
 @MainActor
-@available(iOS 15.0, *)
 private final class WindowHolder {
     var window: UIWindow?
 }
