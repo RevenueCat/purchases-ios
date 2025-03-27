@@ -16,6 +16,7 @@ import SwiftUI
 import XCTest
 
 @MainActor
+@available(iOS 15.0, *)
 private final class WindowHolder {
     var window: UIWindow?
 }
