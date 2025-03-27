@@ -15,6 +15,8 @@
 import SwiftUI
 import XCTest
 
+#if !os(watchOS) && !os(macOS)
+
 @MainActor
 @available(iOS 15.0, *)
 private final class WindowHolder {
@@ -227,3 +229,5 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 }
+
+#endif
