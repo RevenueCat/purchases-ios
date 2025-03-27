@@ -41,13 +41,13 @@ struct RestorePurchasesAlert: ViewModifier {
 
     init(isPresented: Binding<Bool>) {
         self._isPresented = isPresented
-        self.alertType = .restorePurchases
+        self._alertType = State(initialValue: .restorePurchases)
     }
 
     // For previews
     fileprivate init(isPresented: Binding<Bool>, alertType: AlertType) {
         self._isPresented = isPresented
-        self.alertType = alertType
+        self._alertType = State(initialValue: alertType)
     }
 
     private var supportURL: URL? {
