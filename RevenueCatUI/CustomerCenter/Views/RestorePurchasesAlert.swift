@@ -276,16 +276,14 @@ extension View {
 @available(watchOS, unavailable)
 struct RestorePurchasesAlert_Previews: PreviewProvider {
     static var previews: some View {
-        Group {
-            PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
-                .previewDisplayName("Restore Purchases")
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
+            .previewDisplayName("Restore Purchases")
 
-            PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
-                .previewDisplayName("Purchases Recovered")
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
+            .previewDisplayName("Purchases Recovered")
 
-            PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesNotFound)
-                .previewDisplayName("Purchases Not Found")
-        }
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesNotFound)
+            .previewDisplayName("Purchases Not Found")
     }
 }
 
