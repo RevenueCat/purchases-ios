@@ -296,10 +296,12 @@ private struct PreviewContainer: View {
     let alertType: RestorePurchasesAlert.AlertType
 
     var body: some View {
-        Color.clear
-            .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
-            .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+        Button("Restore Purchases") {
+            isPresented = true
+        }
+        .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
+        .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
+        .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
     }
 }
 #endif
