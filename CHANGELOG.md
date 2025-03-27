@@ -1,3 +1,10 @@
+## 5.20.2-vc-beta.1
+### 🔄 Other Changes
+
+Warning: the virtual currency features are currently in beta and may change without notice.
+
+- Virtual currency balances via Will Taylor
+
 ## 5.20.1
 ## RevenueCatUI SDK
 ### Paywallv2
