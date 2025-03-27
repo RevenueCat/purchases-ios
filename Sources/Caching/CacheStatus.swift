@@ -15,4 +15,5 @@ enum CacheStatus: String, Codable {
     case stale = "STALE"
     case notFound = "NOT_FOUND"
     case valid = "VALID"
+    case notChecked = "NOT_CHECKED"
 }

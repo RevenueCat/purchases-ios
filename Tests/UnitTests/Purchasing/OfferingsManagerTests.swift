@@ -654,6 +654,35 @@ extension OfferingsManagerTests {
         expect(params.responseTime) >= 0
     }
 
+    func testOfferingsTracksOfferingsResultEventCorrectlyWhenFetchCurrent() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        // given
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+
+        // when
+        _ = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchCurrent: true) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(mockDiagnosticsTracker.trackedOfferingsStartedCount.value) == 1
+        expect(mockDiagnosticsTracker.trackedOfferingsResultParams.value.count) == 1
+        let params = try XCTUnwrap(mockDiagnosticsTracker.trackedOfferingsResultParams.value.first)
+        expect(params.requestedProductIds) == ["monthly_freetrial"]
+        expect(params.notFoundProductIds) == []
+        expect(params.errorMessage) == nil
+        expect(params.errorCode) == nil
+        expect(params.verificationResult) == nil
+        expect(params.cacheStatus) == .notChecked
+        expect(params.responseTime) >= 0
+    }
+
     func testOfferingsDoesNotTrackEventsIfDiagnosticsTrackingDisabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
