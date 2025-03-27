@@ -42,7 +42,7 @@ struct RestorePurchasesAlert: ViewModifier {
 
     init(isPresented: Binding<Bool>) {
         self._isPresented = isPresented
-        self._alertType = State(initialValue: .restorePurchases)
+        self.alertType = .loading
     }
 
     // For previews
@@ -61,7 +61,7 @@ struct RestorePurchasesAlert: ViewModifier {
     }
 
     enum AlertType: Identifiable {
-        case purchasesRecovered, purchasesNotFound, restorePurchases
+        case loading, purchasesRecovered, purchasesNotFound
         var id: Self { self }
     }
 
@@ -78,9 +78,10 @@ struct RestorePurchasesAlert: ViewModifier {
             )
     }
 
-    // swiftlint:disable:next function_body_length
     private func alertActions() -> [AlertOrConfirmationDialog.AlertAction] {
         switch alertType {
+        case .loading:
+            return []
         case .purchasesRecovered:
             return [
                 AlertOrConfirmationDialog.AlertAction(
@@ -123,42 +124,25 @@ struct RestorePurchasesAlert: ViewModifier {
             )
 
             return actions
-
-        case .restorePurchases:
-            return [
-                AlertOrConfirmationDialog.AlertAction(
-                    title: localization[.checkPastPurchases],
-                    role: nil,
-                    action: {
-                        Task {
-                            let alertType = await customerCenterViewModel.performRestore()
-                            setAlertType(alertType)
-                        }
-                    }
-                ),
-                AlertOrConfirmationDialog.AlertAction(
-                    title: localization[.cancel],
-                    role: .cancel,
-                    action: dismissAlert
-                )
-            ]
         }
     }
 
     // MARK: - Strings
     private func alertTitle() -> String {
         switch self.alertType {
+        case .loading:
+            return localization[.restoring]
         case .purchasesRecovered:
             return localization[.purchasesRecovered]
         case .purchasesNotFound:
             return ""
-        case .restorePurchases:
-            return localization[.restorePurchases]
         }
     }
 
-    private func alertMessage() -> String {
+    private func alertMessage() -> String? {
         switch self.alertType {
+        case .loading:
+            return nil
         case .purchasesRecovered:
             return localization[.purchasesRecoveredExplanation]
         case .purchasesNotFound:
@@ -167,13 +151,11 @@ struct RestorePurchasesAlert: ViewModifier {
                 message += "\n\n" + localization[.updateWarningDescription]
             }
             return message
-        case .restorePurchases:
-            return localization[.goingToCheckPurchases]
         }
     }
 
     private func dismissAlert() {
-        self.alertType = .restorePurchases
+        self.alertType = .loading
         self.isPresented = false
     }
 }
@@ -192,7 +174,7 @@ private struct AlertOrConfirmationDialog: ViewModifier {
     @Binding var isPresented: Bool
     let alertType: RestorePurchasesAlert.AlertType
     let title: String
-    let message: String
+    let message: String?
     let actions: [AlertAction]
 
     struct AlertAction: Identifiable {
@@ -204,22 +186,44 @@ private struct AlertOrConfirmationDialog: ViewModifier {
 
     func body(content: Content) -> some View {
         if actions.count < 3 {
-            content.alert(
-                title,
-                isPresented: $isPresented,
-                actions: {
-                    ForEach(actions) { action in
-                        Button(role: action.role) {
-                            action.action()
-                        } label: {
-                            Text(action.title)
+            if alertType == .loading {
+                content
+                    .overlay {
+                        ZStack {
+                            Color.black.opacity(0.3)
+                                .ignoresSafeArea()
+
+                            VStack(spacing: 16) {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                Text(title)
+                                    .font(.headline)
+                            }
+                            .padding(24)
+                            .background(Color(.systemBackground))
+                            .cornerRadius(12)
                         }
                     }
-                },
-                message: {
-                    Text(message)
-                }
-            )
+            } else {
+                content.alert(
+                    title,
+                    isPresented: $isPresented,
+                    actions: {
+                        ForEach(actions) { action in
+                            Button(role: action.role) {
+                                action.action()
+                            } label: {
+                                Text(action.title)
+                            }
+                        }
+                    },
+                    message: {
+                        if let message {
+                            Text(message)
+                        }
+                    }
+                )
+            }
         } else {
             content.confirmationDialog(
                 title,
@@ -234,7 +238,9 @@ private struct AlertOrConfirmationDialog: ViewModifier {
                     }
                 },
                 message: {
-                    Text(message)
+                    if let message {
+                        Text(message)
+                    }
                 }
             )
         }
@@ -277,8 +283,8 @@ extension View {
 @available(watchOS, unavailable)
 struct RestorePurchasesAlert_Previews: PreviewProvider {
     static var previews: some View {
-        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
-            .previewDisplayName("Restore Purchases")
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.loading)
+            .previewDisplayName("Restoring Purchases")
             .emergeRenderingMode(.window)
 
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
