@@ -15,8 +15,8 @@
 
 import Foundation
 import RevenueCat
-import SwiftUI
 import RevenueCatUI
+import SwiftUI
 
 #if os(iOS)
 
@@ -301,6 +301,11 @@ private struct PreviewContainer: View {
             .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
             .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .onAppear {
+                DispatchQueue.main.async {
+                    self.isPresented = true
+                }
+            }
     }
 }
 #endif
