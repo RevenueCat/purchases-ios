@@ -97,6 +97,15 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DiagnosticsSynchronizer: DiagnosticsTrackerDelegate {
+
+    func onEventTracked() async throws {
+        try await self.syncDiagnosticsIfFileBigEnough()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsSynchronizer {
 
     static let maxSyncRetries = 3
@@ -120,6 +129,13 @@ private extension DiagnosticsSynchronizer {
     func getCurrentSyncRetries() -> Int {
         return self.userDefaults.read {
             $0.integer(forKey: CacheKeys.numberOfRetries.rawValue)
+        }
+    }
+
+    func syncDiagnosticsIfFileBigEnough() async throws {
+        if await self.handler.isDiagnosticsFileBigEnoughToSync() {
+            Logger.verbose(Strings.diagnostics.event_sync_with_empty_store)
+            try await self.syncDiagnosticsIfNeeded()
         }
     }
 
