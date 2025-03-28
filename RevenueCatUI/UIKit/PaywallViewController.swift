@@ -128,7 +128,8 @@ public class PaywallViewController: UIViewController {
             mode: Self.mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            purchaseHandler: handler
+            purchaseHandler: handler,
+            preferredLocale: nil
         )
 
         super.init(nibName: nil, bundle: nil)
