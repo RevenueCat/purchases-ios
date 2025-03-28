@@ -17,6 +17,10 @@ import Foundation
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
+
+    func setDelegate(_ delegate: (any RevenueCat.DiagnosticsTrackerDelegate)?) { }
+    
+
     let trackedEvents: Atomic<[DiagnosticsEvent]> = .init([])
     let trackedCustomerInfo: Atomic<[CustomerInfo]> = .init([])
 

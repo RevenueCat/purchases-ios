@@ -493,7 +493,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                           handler: diagnosticsFileHandler,
                                                                           tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
-                        diagnosticsTracker?.delegate = diagnosticsSynchronizer
+                        diagnosticsTracker?.setDelegate(diagnosticsSynchronizer)
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
