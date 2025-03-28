@@ -30,6 +30,9 @@ protocol DiagnosticsFileHandlerType: Sendable {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func isDiagnosticsFileTooBig() async -> Bool
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func isDiagnosticsFileBigEnoughToSync() async -> Bool
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -100,7 +103,17 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
     }
 
+    func isDiagnosticsFileBigEnoughToSync() async -> Bool {
+        do {
+            return try await self.fileHandler.fileSizeInKB() > Self.minFileSizeEnoughToSyncInKb
+        } catch {
+            Logger.error(Strings.diagnostics.failed_check_diagnostics_size(error: error))
+            return true
+        }
+    }
+
     private static let maxFileSizeInKb: Double = 500
+    private static let minFileSizeEnoughToSyncInKb: Double = 200
 }
 
 // MARK: - Private

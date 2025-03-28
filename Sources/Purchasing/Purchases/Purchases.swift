@@ -323,7 +323,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             return DiagnosticsFileHandler()
         }()
 
-        let diagnosticsTracker: DiagnosticsTrackerType? = {
+        var diagnosticsTracker: DiagnosticsTrackerType? = {
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return DiagnosticsTracker(diagnosticsFileHandler: handler)
             } else {
@@ -493,6 +493,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                           handler: diagnosticsFileHandler,
                                                                           tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
+                        diagnosticsTracker?.delegate = diagnosticsSynchronizer
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
