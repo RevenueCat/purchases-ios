@@ -91,6 +91,10 @@ public struct CustomerCenterView: View {
             self.navigationOptions = navigationOptions
     }
 
+    @_spi(Internal) public init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
+        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider))
+    }
+
     fileprivate init(
         viewModel: CustomerCenterViewModel,
         mode: CustomerCenterPresentationMode =  .default,

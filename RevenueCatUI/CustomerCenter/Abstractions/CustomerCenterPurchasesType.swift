@@ -18,7 +18,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-protocol CustomerCenterPurchasesType: Sendable {
+@_spi(Internal) public protocol CustomerCenterPurchasesType: Sendable {
 
     var isSandbox: Bool { get }
 
