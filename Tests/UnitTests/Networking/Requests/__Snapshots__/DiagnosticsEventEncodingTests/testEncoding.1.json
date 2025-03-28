@@ -8,6 +8,7 @@
     "error_code" : 1,
     "error_message" : "OK",
     "etag_hit" : false,
+    "fetch_policy" : "CACHED_OR_FETCHED",
     "is_retry" : true,
     "not_found_product_ids" : [
       "test_product_id2"

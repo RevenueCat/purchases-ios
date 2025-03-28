@@ -100,7 +100,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
         let cacheStatus: CacheStatus?
-        let cacheFetchPolicy: String?
+        let fetchPolicy: String?
         let hadUnsyncedPurchasesBefore: Bool?
         let isRetry: Bool?
         let eligibilityUnknownCount: Int?
@@ -175,7 +175,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
             self.cacheStatus = cacheStatus
-            self.cacheFetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
+            self.fetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
             self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
             self.isRetry = isRetry
             self.eligibilityUnknownCount = eligibilityUnknownCount
