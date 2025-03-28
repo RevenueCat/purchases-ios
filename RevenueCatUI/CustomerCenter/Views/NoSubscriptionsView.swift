@@ -37,6 +37,8 @@ struct NoSubscriptionsView: View {
 
     @State
     private var showRestoreAlert: Bool = false
+    @State
+    private var showRestoreAlertType: RestorePurchasesAlertViewModel.AlertType = .loading
 
     init(configuration: CustomerCenterConfigData) {
         self.configuration = configuration
@@ -60,7 +62,8 @@ struct NoSubscriptionsView: View {
                 Button(localization[.restorePurchases]) {
                     showRestoreAlert = true
                 }
-                .restorePurchasesAlert(isPresented: $showRestoreAlert)
+                .restorePurchasesAlert(isPresented: $showRestoreAlert,
+                                       alertType: $showRestoreAlertType)
             }
 
         }

@@ -26,16 +26,17 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct RestorePurchasesAlert: ViewModifier {
 
-    @Binding
-    var isPresented: Bool
     @Environment(\.openURL)
     var openURL
+
+    @Binding
+    private var isPresented: Bool
+    @Binding
+    private var alertType: RestorePurchasesAlertViewModel.AlertType
 
     @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
     @StateObject private var viewModel: RestorePurchasesAlertViewModel
 
-    @State
-    private var alertType: RestorePurchasesAlertViewModel.AlertType
     @Environment(\.localization)
     private var localization
     @Environment(\.supportInformation)
@@ -46,35 +47,17 @@ struct RestorePurchasesAlert: ViewModifier {
 
     init(
         isPresented: Binding<Bool>,
+        alertType: Binding<RestorePurchasesAlertViewModel.AlertType>,
         onRestoreSuccess: (() -> Void)? = nil,
         onDismiss: (() -> Void)? = nil,
         viewModel: RestorePurchasesAlertViewModel? = nil
     ) {
         self._isPresented = isPresented
-        self.alertType = .loading
+        self._alertType = alertType
         self.onRestoreSuccess = onRestoreSuccess
         self.onDismiss = onDismiss
         self._viewModel = StateObject(wrappedValue: viewModel ?? RestorePurchasesAlertViewModel(
-            actionWrapper: CustomerCenterActionWrapper(),
-            state: .constant(.notLoaded)
-        ))
-    }
-
-    // For previews
-    fileprivate init(
-        isPresented: Binding<Bool>,
-        alertType: RestorePurchasesAlertViewModel.AlertType,
-        onRestoreSuccess: (() -> Void)? = nil,
-        onDismiss: (() -> Void)? = nil,
-        viewModel: RestorePurchasesAlertViewModel? = nil
-    ) {
-        self._isPresented = isPresented
-        self.alertType = alertType
-        self.onRestoreSuccess = onRestoreSuccess
-        self.onDismiss = onDismiss
-        self._viewModel = StateObject(wrappedValue: viewModel ?? RestorePurchasesAlertViewModel(
-            actionWrapper: CustomerCenterActionWrapper(),
-            state: .constant(.notLoaded)
+            actionWrapper: CustomerCenterActionWrapper()
         ))
     }
 
@@ -301,12 +284,14 @@ extension View {
 
     func restorePurchasesAlert(
         isPresented: Binding<Bool>,
+        alertType: Binding<RestorePurchasesAlertViewModel.AlertType>,
         onRestoreSuccess: (() -> Void)? = nil,
         onDismiss: (() -> Void)? = nil,
         viewModel: RestorePurchasesAlertViewModel? = nil
     ) -> some View {
         self.modifier(RestorePurchasesAlert(
             isPresented: isPresented,
+            alertType: alertType,
             onRestoreSuccess: onRestoreSuccess,
             onDismiss: onDismiss,
             viewModel: viewModel
@@ -325,10 +310,7 @@ private class MockRestorePurchasesAlertViewModel: RestorePurchasesAlertViewModel
 
     init(mockResult: AlertType) {
         self.mockResult = mockResult
-        super.init(
-            actionWrapper: CustomerCenterActionWrapper(),
-            state: .constant(.notLoaded)
-        )
+        super.init(actionWrapper: CustomerCenterActionWrapper())
     }
 
     override func performRestore() async -> AlertType {
@@ -345,15 +327,12 @@ struct RestorePurchasesAlert_Previews: PreviewProvider {
         Group {
             PreviewContainer(alertType: .loading, mockResult: .loading)
                 .previewDisplayName("Loading Forever")
-                .emergeRenderingMode(.window)
 
             PreviewContainer(alertType: .purchasesRecovered)
                 .previewDisplayName("Purchases Recovered")
-                .emergeRenderingMode(.window)
-            
+
             PreviewContainer(alertType: .purchasesNotFound)
                 .previewDisplayName("Purchases Not Found")
-                .emergeRenderingMode(.window)
         }
     }
 }
@@ -363,8 +342,10 @@ struct RestorePurchasesAlert_Previews: PreviewProvider {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private struct PreviewContainer: View {
+
     @State private var isPresented = true
-    let alertType: RestorePurchasesAlertViewModel.AlertType
+    @State var alertType: RestorePurchasesAlertViewModel.AlertType
+
     var mockResult: RestorePurchasesAlertViewModel.AlertType?
 
     var body: some View {
@@ -372,18 +353,13 @@ private struct PreviewContainer: View {
             .modifier(
                 RestorePurchasesAlert(
                     isPresented: $isPresented,
-                    alertType: alertType,
+                    alertType: $alertType,
                     viewModel: mockResult.map { MockRestorePurchasesAlertViewModel(mockResult: $0) }
                 )
             )
-            .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-            .onAppear {
-                DispatchQueue.main.async {
-                    self.isPresented = true
-                }
-            }
     }
+
 }
 #endif
 
