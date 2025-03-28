@@ -148,7 +148,8 @@ struct ManageSubscriptionsView: View {
             }
         }
         .dismissCircleButtonToolbarIfNeeded()
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert,
+                               alertType: self.$viewModel.restoreAlertType)
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
