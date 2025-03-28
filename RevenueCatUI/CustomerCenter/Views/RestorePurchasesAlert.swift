@@ -16,6 +16,7 @@
 import Foundation
 import RevenueCat
 import SwiftUI
+import RevenueCatUI
 
 #if os(iOS)
 
@@ -296,7 +297,7 @@ private struct PreviewContainer: View {
     let alertType: RestorePurchasesAlert.AlertType
 
     var body: some View {
-        EmptyView()
+        Color.white
             .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
             .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
