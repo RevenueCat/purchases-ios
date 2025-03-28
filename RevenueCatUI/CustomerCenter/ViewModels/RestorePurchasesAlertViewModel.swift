@@ -23,7 +23,6 @@ import SwiftUI
 
     private let purchasesProvider: CustomerCenterPurchasesType
     private let actionWrapper: CustomerCenterActionWrapper
-    @Published var state: CustomerCenterViewState
 
     enum AlertType: Identifiable {
         case loading, purchasesRecovered, purchasesNotFound
@@ -32,12 +31,10 @@ import SwiftUI
 
     init(
         purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
-        actionWrapper: CustomerCenterActionWrapper,
-        state: Binding<CustomerCenterViewState>
+        actionWrapper: CustomerCenterActionWrapper
     ) {
         self.purchasesProvider = purchasesProvider
         self.actionWrapper = actionWrapper
-        self.state = state.wrappedValue
     }
 
     func performRestore() async -> AlertType {
@@ -48,8 +45,6 @@ import SwiftUI
             self.actionWrapper.handleAction(.restoreCompleted(customerInfo))
 
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-
-            self.state = .notLoaded
 
             return hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
