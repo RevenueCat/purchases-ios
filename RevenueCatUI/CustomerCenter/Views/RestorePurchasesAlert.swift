@@ -15,6 +15,7 @@
 
 import Foundation
 import RevenueCat
+import RevenueCatUI
 import SwiftUI
 
 #if os(iOS)
@@ -50,7 +51,7 @@ struct RestorePurchasesAlert: ViewModifier {
         viewModel: RestorePurchasesAlertViewModel? = nil
     ) {
         self._isPresented = isPresented
-        self.alertType = .loading
+        self._alertType = State(initialValue: .loading)
         self.onRestoreSuccess = onRestoreSuccess
         self.onDismiss = onDismiss
         self._viewModel = StateObject(wrappedValue: viewModel ?? RestorePurchasesAlertViewModel(
@@ -68,7 +69,7 @@ struct RestorePurchasesAlert: ViewModifier {
         viewModel: RestorePurchasesAlertViewModel? = nil
     ) {
         self._isPresented = isPresented
-        self.alertType = alertType
+        self._alertType = State(initialValue: alertType)
         self.onRestoreSuccess = onRestoreSuccess
         self.onDismiss = onDismiss
         self._viewModel = StateObject(wrappedValue: viewModel ?? RestorePurchasesAlertViewModel(
@@ -372,7 +373,6 @@ private struct PreviewContainer: View {
                     viewModel: mockResult.map { MockRestorePurchasesAlertViewModel(mockResult: $0) }
                 )
             )
-            .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
     }
 }
