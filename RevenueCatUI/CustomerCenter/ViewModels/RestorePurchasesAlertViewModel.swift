@@ -21,6 +21,9 @@ import SwiftUI
 @available(watchOS, unavailable)
 @MainActor class RestorePurchasesAlertViewModel: ObservableObject {
 
+    @Published
+    var alertType: RestorePurchasesAlertViewModel.AlertType = .loading
+
     private let purchasesProvider: CustomerCenterPurchasesType
     private let actionWrapper: CustomerCenterActionWrapper
 
@@ -37,7 +40,7 @@ import SwiftUI
         self.actionWrapper = actionWrapper
     }
 
-    func performRestore() async -> AlertType {
+    func performRestore() async {
         self.actionWrapper.handleAction(.restoreStarted)
 
         do {
@@ -45,11 +48,14 @@ import SwiftUI
             self.actionWrapper.handleAction(.restoreCompleted(customerInfo))
 
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-
-            return hasPurchases ? .purchasesRecovered : .purchasesNotFound
+            self.alertType = hasPurchases ? .purchasesRecovered : .purchasesNotFound
         } catch {
             self.actionWrapper.handleAction(.restoreFailed(error))
-            return .purchasesNotFound
+            self.alertType = .purchasesNotFound
         }
+    }
+
+    func dismiss() {
+        self.alertType = .loading
     }
 }
