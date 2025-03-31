@@ -50,19 +50,20 @@ struct GradientView: View {
         // Calculates the angle between the rectangle's diagonal and its width
         let angleBetweenDiagonalAndWidth = acos(rect.width / diagonal)
 
-        // Convert the angle to radians and negate to make clockwise
-        // Subtract 3π/2 (270 degrees) to follow CSS's angle convention.
-        let angleInRadians = -angle.radians - (3 * .pi / 2)
-        let normalizedAngle = angleInRadians.truncatingRemainder(dividingBy: .pi * 2)
+        // Handle extreme angles
+        // Multiply by -1 to make it clockwise and subtract 270 degrees to follow CSS's angle convention.
+        let degrees = (-1*(angle.degrees - 270).truncatingRemainder(dividingBy: 360) + 360)
+            .truncatingRemainder(dividingBy: 360)
+        // Convert the angle to radians.
+        let angleInRadians = Double.pi * degrees / 180.0
 
         // Calculate the angle between the diagonal and the gradient line
         let angleBetweenDiagonalAndGradientLine: CGFloat
-        if (normalizedAngle > .pi / 2 && normalizedAngle < .pi) ||
-           (normalizedAngle > 3 * .pi / 2 && normalizedAngle < 2 * .pi) {
-            angleBetweenDiagonalAndGradientLine = CGFloat.pi - angleInRadians - angleBetweenDiagonalAndWidth
-        } else {
-            angleBetweenDiagonalAndGradientLine = angleInRadians - angleBetweenDiagonalAndWidth
-        }
+        if (angle.degrees > 90 && angle.degrees < 180) || (angle.degrees > 270 && angle.degrees < 360) {
+            angleBetweenDiagonalAndGradientLine = .pi - angle.radians - angleBetweenDiagonalAndWidth
+         } else {
+             angleBetweenDiagonalAndGradientLine = angle.radians - angleBetweenDiagonalAndWidth
+         }
 
         // Get half the length of the gradient line, and calculate the vertical and horizontal offsets from the center
         let halfGradientLine = abs(cos(angleBetweenDiagonalAndGradientLine) * diagonal) / 2
