@@ -88,7 +88,7 @@ struct RestorePurchasesAlert: View {
         case .purchasesRecovered:
             return [
                 AlertOrConfirmationDialog.AlertAction(
-                    title: localization[.dismiss],
+                    title: localization[.done],
                     role: .cancel,
                     action: dismissAlert
                 )
@@ -110,7 +110,7 @@ struct RestorePurchasesAlert: View {
             if let url = supportURL {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
-                        title: localization[.contactSupport],
+                        title: localization[.purchasesNotRecoveredContactSupport],
                         role: nil,
                         action: { Task { openURL(url) } }
                     )
@@ -135,9 +135,9 @@ struct RestorePurchasesAlert: View {
         case .loading:
             return localization[.purchasesRestoring]
         case .purchasesRecovered:
-            return localization[.purchasesRecovered]
+            return localization[.purchasesRecoveredTitle]
         case .purchasesNotFound:
-            return ""
+            return localization[.purchasesNotRecoveredTitle]
         }
     }
 
@@ -148,7 +148,7 @@ struct RestorePurchasesAlert: View {
         case .purchasesRecovered:
             return localization[.purchasesRecoveredExplanation]
         case .purchasesNotFound:
-            var message = localization[.purchasesNotRecovered]
+            var message = localization[.purchasesNotRecoveredExplanation]
             if customerCenterViewModel.shouldShowAppUpdateWarnings {
                 message += "\n\n" + localization[.updateWarningDescription]
             }
