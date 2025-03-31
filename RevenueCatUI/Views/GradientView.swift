@@ -52,17 +52,17 @@ struct GradientView: View {
 
         // Handle extreme angles
         // Multiply by -1 to make it clockwise and subtract 270 degrees to follow CSS's angle convention.
-        let degrees = (-1*(angle.degrees - 270).truncatingRemainder(dividingBy: 360) + 360)
+        let degrees = ((-angle.degrees - 270).truncatingRemainder(dividingBy: 360) + 360)
             .truncatingRemainder(dividingBy: 360)
         // Convert the angle to radians.
         let angleInRadians = Double.pi * degrees / 180.0
 
         // Calculate the angle between the diagonal and the gradient line
         let angleBetweenDiagonalAndGradientLine: CGFloat
-        if (angle.degrees > 90 && angle.degrees < 180) || (angle.degrees > 270 && angle.degrees < 360) {
-            angleBetweenDiagonalAndGradientLine = .pi - angle.radians - angleBetweenDiagonalAndWidth
+        if (degrees > 90 && degrees < 180) || (degrees > 270 && degrees < 360) {
+            angleBetweenDiagonalAndGradientLine = .pi - angleInRadians - angleBetweenDiagonalAndWidth
          } else {
-             angleBetweenDiagonalAndGradientLine = angle.radians - angleBetweenDiagonalAndWidth
+             angleBetweenDiagonalAndGradientLine = angleInRadians - angleBetweenDiagonalAndWidth
          }
 
         // Get half the length of the gradient line, and calculate the vertical and horizontal offsets from the center
