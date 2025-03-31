@@ -60,7 +60,7 @@ extension DiagnosticsStrings: LogMessage {
             return "Diagnostics event flush: posting \(count) events."
 
         case .syncing_events_due_to_enough_file_size_reached:
-            return "Syncing events since enough file size reached"
+            return "Syncing diagnostics events since enough file size reached"
 
         case let .error_fetching_events(error):
             return "Failed to read lines from file: \(error.localizedDescription)"

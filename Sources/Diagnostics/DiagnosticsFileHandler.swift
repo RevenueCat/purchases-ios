@@ -32,13 +32,10 @@ protocol DiagnosticsFileHandlerType: Sendable {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func isDiagnosticsFileTooBig() async -> Bool
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func isDiagnosticsFileBigEnoughToSync() async -> Bool
-
 }
 
 protocol DiagnosticsFileHandlerDelegate: AnyObject, Sendable {
-    func onEventTracked() async
+    func onFileSizeIncreasedBeyondAutomaticSyncLimit() async
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -72,7 +69,10 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
 
         await self.fileHandler.append(line: jsonString)
-        await self.delegate?.onEventTracked()
+
+        if await self.isDiagnosticsFileBigEnoughToSync() {
+            await self.delegate?.onFileSizeIncreasedBeyondAutomaticSyncLimit()
+        }
     }
 
     func getEntries() async -> [DiagnosticsEvent?] {
@@ -116,15 +116,6 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
     }
 
-    func isDiagnosticsFileBigEnoughToSync() async -> Bool {
-        do {
-            return try await self.fileHandler.fileSizeInKB() > Self.minFileSizeEnoughToSyncInKb
-        } catch {
-            Logger.error(Strings.diagnostics.failed_check_diagnostics_size(error: error))
-            return true
-        }
-    }
-
     private static let maxFileSizeInKb: Double = 500
     private static let minFileSizeEnoughToSyncInKb: Double = 200
 }
@@ -151,6 +142,15 @@ private extension DiagnosticsFileHandler {
             )[0]
         }
 
+    }
+
+    private func isDiagnosticsFileBigEnoughToSync() async -> Bool {
+        do {
+            return try await self.fileHandler.fileSizeInKB() > Self.minFileSizeEnoughToSyncInKb
+        } catch {
+            Logger.error(Strings.diagnostics.failed_check_diagnostics_size(error: error))
+            return true
+        }
     }
 
     private func decodeDiagnosticsEvent(from line: String) -> DiagnosticsEvent? {

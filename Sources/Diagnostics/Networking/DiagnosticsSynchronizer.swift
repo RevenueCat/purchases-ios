@@ -99,8 +99,13 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DiagnosticsSynchronizer: DiagnosticsFileHandlerDelegate {
 
-    func onEventTracked() async {
-        await self.syncDiagnosticsIfFileBigEnough()
+    func onFileSizeIncreasedBeyondAutomaticSyncLimit() async {
+        Logger.verbose(Strings.diagnostics.syncing_events_due_to_enough_file_size_reached)
+        do {
+            try await self.syncDiagnosticsIfNeeded()
+        } catch {
+            Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
+        }
     }
 
 }
@@ -129,17 +134,6 @@ private extension DiagnosticsSynchronizer {
     func getCurrentSyncRetries() -> Int {
         return self.userDefaults.read {
             $0.integer(forKey: CacheKeys.numberOfRetries.rawValue)
-        }
-    }
-
-    func syncDiagnosticsIfFileBigEnough() async {
-        if await self.handler.isDiagnosticsFileBigEnoughToSync() {
-            Logger.verbose(Strings.diagnostics.event_sync_with_empty_store)
-            do {
-                try await self.syncDiagnosticsIfNeeded()
-            } catch {
-                Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
-            }
         }
     }
 
