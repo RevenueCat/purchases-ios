@@ -195,6 +195,7 @@ private struct AlertOrConfirmationDialog: ViewModifier {
         let action: () -> Void
     }
 
+    // swiftlint:disable:next function_body_length
     func body(content: Content) -> some View {
         if actions.count < 3 {
             if alertType == .loading && isPresented {
