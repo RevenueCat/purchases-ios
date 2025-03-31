@@ -165,6 +165,9 @@ protocol DiagnosticsTrackerType: Sendable {
                                              price: Float?,
                                              currency: String?,
                                              reason: String?)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackAppleAppTransactionError(errorMessage: String)
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -487,6 +490,13 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             skErrorDescription: transactionState,
                             productId: productId,
                             promotionalOfferId: paymentDiscountId
+                        ))
+    }
+
+    func trackAppleAppTransactionError(errorMessage: String) {
+        self.trackEvent(name: .appleAppTransactionError,
+                        properties: DiagnosticsEvent.Properties(
+                            errorMessage: errorMessage
                         ))
     }
 
