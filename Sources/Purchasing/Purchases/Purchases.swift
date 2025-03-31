@@ -323,7 +323,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             return DiagnosticsFileHandler()
         }()
 
-        var diagnosticsTracker: DiagnosticsTrackerType? = {
+        let diagnosticsTracker: DiagnosticsTrackerType? = {
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return DiagnosticsTracker(diagnosticsFileHandler: handler)
             } else {
