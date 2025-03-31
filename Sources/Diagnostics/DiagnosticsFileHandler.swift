@@ -15,6 +15,8 @@ import Foundation
 
 protocol DiagnosticsFileHandlerType: Sendable {
 
+    func updateDelegate(_ delegate: DiagnosticsFileHandlerDelegate?) async
+
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func getEntries() async -> [DiagnosticsEvent?]
 
@@ -35,8 +37,14 @@ protocol DiagnosticsFileHandlerType: Sendable {
 
 }
 
+protocol DiagnosticsFileHandlerDelegate: AnyObject, Sendable {
+    func onEventTracked() async
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
+
+    private weak var delegate: DiagnosticsFileHandlerDelegate?
 
     private let fileHandler: FileHandler
 
@@ -53,6 +61,10 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         self.fileHandler = fileHandler
     }
 
+    func updateDelegate(_ delegate: DiagnosticsFileHandlerDelegate?) async {
+        self.delegate = delegate
+    }
+
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async {
         guard let jsonString = try? diagnosticsEvent.encodedJSON else {
             Logger.error("Failed to serialize diagnostics event to JSON")
@@ -60,6 +72,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
 
         await self.fileHandler.append(line: jsonString)
+        await self.delegate?.onEventTracked()
     }
 
     func getEntries() async -> [DiagnosticsEvent?] {

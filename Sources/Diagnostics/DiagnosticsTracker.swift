@@ -13,16 +13,10 @@
 
 import Foundation
 
-protocol DiagnosticsTrackerDelegate: AnyObject, Sendable {
-    func onEventTracked() async throws
-}
-
 // swiftlint:disable function_parameter_count
 // swiftlint:disable file_length
 // swiftlint:disable type_body_length
 protocol DiagnosticsTrackerType: Sendable {
-
-    var delegate: DiagnosticsTrackerDelegate? { get set }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent)
@@ -174,14 +168,12 @@ protocol DiagnosticsTrackerType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-final class DiagnosticsTracker: DiagnosticsTrackerType, @unchecked Sendable {
+final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
     private let appSessionID: UUID
-
-    weak var delegate: DiagnosticsTrackerDelegate? = nil
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
          diagnosticsDispatcher: OperationDispatcher = .default,
@@ -197,7 +189,6 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, @unchecked Sendable {
         self.diagnosticsDispatcher.dispatchOnWorkerThread {
             await self.clearDiagnosticsFileIfTooBig()
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
-            try? await self.delegate?.onEventTracked()
         }
     }
 
