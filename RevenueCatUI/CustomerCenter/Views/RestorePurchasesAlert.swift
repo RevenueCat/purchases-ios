@@ -137,7 +137,7 @@ struct RestorePurchasesAlert: ViewModifier {
     private func alertTitle() -> String {
         switch self.viewModel.alertType {
         case .loading:
-            return localization[.restoring]
+            return localization[.purchasesRestoring]
         case .purchasesRecovered:
             return localization[.purchasesRecovered]
         case .purchasesNotFound:
