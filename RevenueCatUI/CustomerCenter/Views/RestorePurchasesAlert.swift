@@ -162,7 +162,6 @@ struct RestorePurchasesAlert: ViewModifier {
     }
 
     private func dismissAlert() {
-        self.viewModel.dismiss()
         self.isPresented = false
     }
 }
