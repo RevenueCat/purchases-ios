@@ -135,9 +135,9 @@ struct RestorePurchasesAlert: View {
         case .loading:
             return localization[.purchasesRestoring]
         case .purchasesRecovered:
-            return localization[.purchasesRecoveredTitle]
+            return localization[.purchasesRecovered]
         case .purchasesNotFound:
-            return localization[.purchasesNotRecoveredTitle]
+            return localization[.purchasesNotFound]
         }
     }
 
