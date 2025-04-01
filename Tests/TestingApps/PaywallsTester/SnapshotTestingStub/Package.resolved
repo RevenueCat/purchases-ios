@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "accessibilitysnapshot",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EmergeTools/AccessibilitySnapshot.git",
+      "state" : {
+        "revision" : "54046d8fa44b9fa9f0e2229526f6ed89cb5e0ec2",
+        "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "flyingfox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swhitty/FlyingFox.git",
+      "state" : {
+        "revision" : "f7829d4aca8cbfecb410a1cce872b1b045224aa1",
+        "version" : "0.16.0"
+      }
+    },
+    {
+      "identity" : "simpledebugger",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EmergeTools/SimpleDebugger.git",
+      "state" : {
+        "revision" : "f065263eb5db95874b690408d136b573c939db9e",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "snapshotpreviews",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EmergeTools/SnapshotPreviews.git",
+      "state" : {
+        "revision" : "d2e18d1d8d8737f424babaeeeda88a63f9325b70",
+        "version" : "0.10.22"
+      }
+    }
+  ],
+  "version" : 2
+}
