@@ -89,7 +89,7 @@ public struct CustomerCenterConfigData: Equatable {
             case goingToCheckPurchases = "going_to_check_purchases"
             case checkPastPurchases = "check_past_purchases"
             case purchasesRecovered = "purchases_recovered"
-            case restoring = "restoring"
+            case purchasesRestoring = "purchases_restoring"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
             case purchasesNotRecovered = "purchases_not_recovered"
             case manageSubscription = "manage_subscription"
@@ -159,7 +159,7 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Check past purchases"
                 case .purchasesRecovered:
                     return "Purchases recovered!"
-                case .restoring:
+                case .purchasesRestoring:
                     return "Restoring..."
                 case .purchasesRecoveredExplanation:
                     return "We applied the previously purchased items to your account. Sorry for the inconvenience."
