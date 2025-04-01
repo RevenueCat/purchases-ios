@@ -493,10 +493,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                           handler: diagnosticsFileHandler,
                                                                           tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
-                        if let diagnosticsFileHandler = diagnosticsFileHandler as? DiagnosticsFileHandler {
-                            Task {
-                                await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
-                            }
+                        Task {
+                            await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
                         }
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
