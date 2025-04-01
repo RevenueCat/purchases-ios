@@ -279,15 +279,12 @@ struct RestorePurchasesAlert_Previews: PreviewProvider {
     static var previews: some View {
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
             .previewDisplayName("Restore Purchases")
-            .emergeRenderingMode(.window)
 
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
             .previewDisplayName("Purchases Recovered")
-            .emergeRenderingMode(.window)
 
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesNotFound)
             .previewDisplayName("Purchases Not Found")
-            .emergeRenderingMode(.window)
     }
 }
 
@@ -304,6 +301,7 @@ private struct PreviewContainer: View {
             .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
             .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .emergeRenderingMode(.window)
             .onAppear {
                 DispatchQueue.main.async {
                     self.isPresented = true
