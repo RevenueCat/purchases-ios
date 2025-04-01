@@ -313,9 +313,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
 
-        let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
-        let transactionFetcher = StoreKit2TransactionFetcher()
-
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
                   dangerousSettings?.uiPreviewMode != true,
@@ -333,6 +330,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
             return nil
         }()
+
+        let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable(
+            diagnosticsTracker: diagnosticsTracker
+        )
+        let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
             apiKey: apiKey,
