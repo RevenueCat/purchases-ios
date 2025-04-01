@@ -24,7 +24,7 @@ public typealias SK2Product = StoreKit.Product
 
 // It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
 /// Type that provides access to all of `StoreKit`'s product type's properties.
-@objc(RCStoreProduct) public final class StoreProduct: NSObject, StoreProductType {
+@objc(RCStoreProduct) public final class StoreProduct: NSObject {
 
     let product: StoreProductType
 
@@ -42,7 +42,7 @@ public typealias SK2Product = StoreKit.Product
 
     /// Creates an instance from any `StoreProductType`.
     /// If `product` is already a wrapped `StoreProduct` then this returns it instead.
-    static func from(product: StoreProductType) -> StoreProduct {
+    @_spi(Internal) public static func from(product: StoreProductType) -> StoreProduct {
         return product as? StoreProduct
             ?? StoreProduct(product)
     }
@@ -94,8 +94,10 @@ public typealias SK2Product = StoreKit.Product
     // switflint:enable missing_docs
 }
 
+@_spi(Internal) extension StoreProduct: StoreProductType { }
+
 /// Type that provides access to all of `StoreKit`'s product type's properties.
-internal protocol StoreProductType: Sendable {
+@_spi(Internal) public protocol StoreProductType: Sendable {
 
     /// The category of this product, whether a subscription or a one-time purchase.
 
