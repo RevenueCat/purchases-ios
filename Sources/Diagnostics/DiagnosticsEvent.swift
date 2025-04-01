@@ -62,6 +62,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
         case appleTransactionQueueReceived = "apple_transaction_queue_received"
         case appleTransactionUpdateReceived = "apple_transaction_update_received"
+        case appleAppTransactionError = "apple_app_transaction_error"
     }
 
     enum PurchaseResult: String, Codable, Equatable {

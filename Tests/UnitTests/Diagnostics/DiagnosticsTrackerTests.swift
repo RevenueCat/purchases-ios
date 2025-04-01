@@ -528,6 +528,24 @@ class DiagnosticsTrackerTests: TestCase {
         ])
     }
 
+    // MARK: - App Transaction Error
+
+    func testTrackingAppleAppTransactionError() async throws {
+        self.tracker.trackAppleAppTransactionError(errorMessage: "error message")
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(
+                name: .appleAppTransactionError,
+                properties: DiagnosticsEvent.Properties(
+                    errorMessage: "error message"
+                ),
+                timestamp: Self.eventTimestamp1,
+                appSessionId: SystemInfo.appSessionID
+            )
+        ])
+    }
+
     // MARK: - Purchase Intent Received
 
     func testTrackingApplePurchaseIntentReceived() async {
