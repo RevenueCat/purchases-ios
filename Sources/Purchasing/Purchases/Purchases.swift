@@ -487,7 +487,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let notificationCenter: NotificationCenter = .default
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                var diagnosticsSynchronizer: DiagnosticsSynchronizer?
+                let diagnosticsSynchronizer: DiagnosticsSynchronizer?
                 if diagnosticsEnabled {
                     if let diagnosticsFileHandler = diagnosticsFileHandler {
                         let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
@@ -495,9 +495,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                           handler: diagnosticsFileHandler,
                                                                           tracker: diagnosticsTracker,
                                                                           userDefaults: synchronizedUserDefaults)
+                        Task {
+                            await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
+                        }
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                        diagnosticsSynchronizer = nil
                     }
+                } else {
+                    diagnosticsSynchronizer = nil
                 }
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
                     deviceCache: deviceCache,

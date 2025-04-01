@@ -16,6 +16,14 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
+private actor MockDiagnosticsFileHandlerDelegate: DiagnosticsFileHandlerDelegate {
+    private(set) var onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount = 0
+
+    func onFileSizeIncreasedBeyondAutomaticSyncLimit() async {
+        onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount += 1
+    }
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DiagnosticsFileHandlerTests: TestCase {
 
@@ -153,6 +161,59 @@ class DiagnosticsFileHandlerTests: TestCase {
 
         let result = await self.handler.isDiagnosticsFileTooBig()
         expect(result).to(beTrue())
+    }
+
+    func testFileHandlerDelegateSizeToAutomaticSyncIsCalledIfFileBigEnough() async throws {
+        let delegate = MockDiagnosticsFileHandlerDelegate()
+
+        await self.handler.updateDelegate(delegate)
+
+        for iterator in 0...8000 {
+            let line = """
+            {
+              "properties": {"verification_result": "FAILED"},
+              "timestamp": "2024-04-04T12:55:59Z",
+              "name": "http_request_performed",
+              "version": \(iterator)
+            }
+            """.trimmingWhitespacesAndNewLines
+            await self.fileHandler.append(line: line)
+        }
+
+        let data = try await self.fileHandler.readFile()
+        expect(data.compactMap { $0 }).toNot(beEmpty())
+
+        var count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 0
+
+        let event = Self.sampleEvent()
+
+        await self.handler.appendEvent(diagnosticsEvent: event)
+
+        count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 1
+
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+
+        count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 3
+    }
+
+    func testFileHandlerDelegateSizeToAutomaticSyncIsNotCalledIfFileNotBigEnough() async throws {
+        let delegate = MockDiagnosticsFileHandlerDelegate()
+
+        await self.handler.updateDelegate(delegate)
+
+        let event = Self.sampleEvent()
+
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+        await self.handler.appendEvent(diagnosticsEvent: event)
+
+        let count = await delegate.onFileSizeIncreasedBeyondAutomaticSyncLimitCallCount
+        expect(count) == 0
     }
 
     // MARK: - Invalid entries
