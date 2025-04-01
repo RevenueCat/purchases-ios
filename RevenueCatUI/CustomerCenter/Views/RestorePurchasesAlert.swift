@@ -279,12 +279,15 @@ struct RestorePurchasesAlert_Previews: PreviewProvider {
     static var previews: some View {
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
             .previewDisplayName("Restore Purchases")
+            .emergeRenderingMode(.window)
 
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
             .previewDisplayName("Purchases Recovered")
+            .emergeRenderingMode(.window)
 
         PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesNotFound)
             .previewDisplayName("Purchases Not Found")
+            .emergeRenderingMode(.window)
     }
 }
 
