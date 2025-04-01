@@ -41,10 +41,13 @@ import SwiftUI
     }
 
     func performRestore() async {
+        self.alertType = .loading
         self.actionWrapper.handleAction(.restoreStarted)
 
         do {
-            let customerInfo = try await purchasesProvider.restorePurchases()
+            // In case the restore finishes instantly, we make sure it lasts at least 0.5 seconds
+            let (customerInfo, _) = try await (purchasesProvider.restorePurchases(),
+                                               Task.sleep(nanoseconds: 500_000_000))
             self.actionWrapper.handleAction(.restoreCompleted(customerInfo))
 
             let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
@@ -55,7 +58,4 @@ import SwiftUI
         }
     }
 
-    func dismiss() {
-        self.alertType = .loading
-    }
 }
