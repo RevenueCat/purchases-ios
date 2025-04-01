@@ -92,7 +92,7 @@ public struct CustomerCenterConfigData: Equatable {
             case purchasesRecovered = "purchases_recovered"
             case purchasesRestoring = "purchases_restoring"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
-            case purchasesNotFound = "common_purchases_not_found"
+            case purchasesNotFound = "purchases_not_found"
             case purchasesNotRecoveredExplanation = "purchases_not_recovered"
             case purchasesNotRecoveredContactSupport = "purchases_not_recovered_support"
             case manageSubscription = "manage_subscription"
