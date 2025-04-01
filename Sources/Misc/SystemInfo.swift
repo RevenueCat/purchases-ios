@@ -47,6 +47,11 @@ class SystemInfo {
         set { self._finishTransactions.value = newValue }
     }
 
+    var isAppBackgroundedState: Bool {
+        get { self._isAppBackgroundedState.value }
+        set { self._isAppBackgroundedState.value = newValue }
+    }
+
     var bundle: Bundle { return self._bundle.value }
 
     var observerMode: Bool { return !self.finishTransactions }
@@ -54,6 +59,7 @@ class SystemInfo {
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
+    private let _isAppBackgroundedState: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
 
     private static let _forceUniversalAppStore: Atomic<Bool> = false
@@ -160,6 +166,7 @@ class SystemInfo {
          storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
+         isAppBackgrounded: Bool = true,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
@@ -167,6 +174,7 @@ class SystemInfo {
         self._bundle = .init(bundle)
 
         self._finishTransactions = .init(finishTransactions)
+        self._isAppBackgroundedState = .init(isAppBackgrounded)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
@@ -175,6 +183,10 @@ class SystemInfo {
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
+
+        self.isApplicationBackgrounded { isAppBackgrounded in
+            self.isAppBackgroundedState = isAppBackgrounded
+        }
     }
 
     var supportsOfflineEntitlements: Bool {

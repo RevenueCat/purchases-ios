@@ -64,6 +64,7 @@
 		1ED4CA532CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */; };
 		1ED4CA552CC157A20021AB8F /* RedeemWebPurchaseAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */; };
 		1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */; };
+		1EF46BC62D9C1FA7005C94A6 /* PurchasesSystemInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF46BC52D9C1FA7005C94A6 /* PurchasesSystemInfoTests.swift */; };
 		1EFA950D2CDB6B6500CA5951 /* BackendPostRedeemWebPurchaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA950C2CDB6B6500CA5951 /* BackendPostRedeemWebPurchaseTests.swift */; };
 		1EFA95102CDB7FAA00CA5951 /* WebPurchaseRedemptionHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA950F2CDB7FAA00CA5951 /* WebPurchaseRedemptionHelperTests.swift */; };
 		1EFA95122CDBA58F00CA5951 /* MockRedeemWebPurchaseAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFA95112CDBA58F00CA5951 /* MockRedeemWebPurchaseAPI.swift */; };
@@ -1363,6 +1364,7 @@
 		1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionHelper.swift; sourceTree = "<group>"; };
 		1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchaseAPI.swift; sourceTree = "<group>"; };
 		1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+		1EF46BC52D9C1FA7005C94A6 /* PurchasesSystemInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesSystemInfoTests.swift; sourceTree = "<group>"; };
 		1EFA950C2CDB6B6500CA5951 /* BackendPostRedeemWebPurchaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostRedeemWebPurchaseTests.swift; sourceTree = "<group>"; };
 		1EFA950F2CDB7FAA00CA5951 /* WebPurchaseRedemptionHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionHelperTests.swift; sourceTree = "<group>"; };
 		1EFA95112CDBA58F00CA5951 /* MockRedeemWebPurchaseAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRedeemWebPurchaseAPI.swift; sourceTree = "<group>"; };
@@ -3736,6 +3738,7 @@
 				4F8DDB682AAA9189000188F2 /* OperationDispatcherTests.swift */,
 				4FEF41AC2B4F301800CD699F /* MacAppStoreDetectorTests.swift */,
 				2C7F0AD42B8EEF0B00381179 /* RateLimiterTests.swift */,
+				1EF46BC52D9C1FA7005C94A6 /* PurchasesSystemInfoTests.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -6681,6 +6684,7 @@
 				4F2F2F142A3CEAB500652B24 /* FileHandlerTests.swift in Sources */,
 				4F1E84012A6062C1000AF177 /* ImageSnapshot.swift in Sources */,
 				57FDAAC028493C13009A48F1 /* MockSandboxEnvironmentDetector.swift in Sources */,
+				1EF46BC62D9C1FA7005C94A6 /* PurchasesSystemInfoTests.swift in Sources */,
 				5766AAD1283E981700FA6091 /* PurchasesPurchasingTests.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
 				5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */,
