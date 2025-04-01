@@ -14,7 +14,7 @@
 import Foundation
 
 /// A mapping between products and entitlements.
-struct ProductEntitlementMapping {
+@_spi(Internal) public struct ProductEntitlementMapping {
 
     var entitlementsByProduct: [String: Set<String>]
 
@@ -23,7 +23,7 @@ struct ProductEntitlementMapping {
 extension ProductEntitlementMapping {
 
     /// - Returns: entitlement identifiers associated to the given product identifier
-    func entitlements(for productIdentifier: String) -> Set<String> {
+    @_spi(Internal) public func entitlements(for productIdentifier: String) -> Set<String> {
         return self.entitlementsByProduct[productIdentifier] ?? []
     }
 
@@ -31,7 +31,7 @@ extension ProductEntitlementMapping {
 
 extension ProductEntitlementMapping {
 
-    static let empty: Self = .init(entitlementsByProduct: [:])
+    @_spi(Internal) public static let empty: Self = .init(entitlementsByProduct: [:])
 
 }
 
