@@ -83,7 +83,6 @@ struct RestorePurchasesAlert: ViewModifier {
                     await viewModel.performRestore()
                 }
             }
-            .animation(.easeInOut(duration: 0.3), value: self.viewModel.alertType)
     }
 
     private func alertActions() -> [AlertOrConfirmationDialog.AlertAction] {
