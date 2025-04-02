@@ -46,7 +46,6 @@
         "DisabledSignatureVerificationIntegrationTests",
         "DynamicModeSignatureVerificationIntegrationTests",
         "EnforcedSignatureVerificationIntegrationTests",
-	"EventsManagerIntegrationTests",
         "InformationalSignatureVerificationIntegrationTests",
         "OfflineStoreKit1IntegrationTests",
         "OfflineStoreKit2IntegrationTests",

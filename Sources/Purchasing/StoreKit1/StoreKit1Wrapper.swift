@@ -66,15 +66,18 @@ class StoreKit1Wrapper: NSObject {
     private let operationDispatcher: OperationDispatcher
     private let observerMode: Bool
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let diagnosticsTracker: DiagnosticsTrackerType?
 
     init(paymentQueue: SKPaymentQueue = .default(),
          operationDispatcher: OperationDispatcher = .default,
          observerMode: Bool,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default) {
+         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         diagnosticsTracker: DiagnosticsTrackerType?) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
         self.observerMode = observerMode
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
+        self.diagnosticsTracker = diagnosticsTracker
 
         super.init()
 
@@ -186,6 +189,8 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
             ))
         }
 
+        self.trackTransactionQueueReceivedIfNeeded(transactions)
+
         self.operationDispatcher.dispatchOnWorkerThread {
             for transaction in transactions {
                 Logger.debug(Strings.purchase.paymentqueue_updated_transaction(self, transaction))
@@ -246,6 +251,21 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
     /// Receiving this many or more will produce a warning.
     private static let highTransactionCountThreshold: Int = 100
 
+    private func trackTransactionQueueReceivedIfNeeded(_ transactions: [SKPaymentTransaction]) {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+              let diagnosticsTracker = self.diagnosticsTracker else { return }
+
+        transactions.forEach { transaction in
+            diagnosticsTracker.trackAppleTransactionQueueReceived(
+                productId: transaction.payment.productIdentifier,
+                paymentDiscountId: transaction.payment.paymentDiscount?.identifier,
+                transactionState: transaction.transactionState.diagnosticsName,
+                storefront: self.currentStorefront?.countryCode,
+                errorMessage: transaction.error?.localizedDescription
+            )
+        }
+    }
+
 }
 
 extension StoreKit1Wrapper: SKPaymentQueueDelegate {
@@ -262,3 +282,23 @@ extension StoreKit1Wrapper: SKPaymentQueueDelegate {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension StoreKit1Wrapper: @unchecked Sendable {}
+
+fileprivate extension SKPaymentTransactionState {
+
+    var diagnosticsName: String {
+        switch self {
+        case .purchasing:
+            return "PURCHASING"
+        case .purchased:
+            return "PURCHASED"
+        case .failed:
+            return "FAILED"
+        case .restored:
+            return "RESTORED"
+        case .deferred:
+            return "DEFERRED"
+        @unknown default:
+            return "UNKNOWN (RAW VALUE: \(self.rawValue))"
+        }
+    }
+}

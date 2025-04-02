@@ -25,7 +25,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         try await super.setUp()
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        self.fetcher = .init()
+        self.fetcher = .init(diagnosticsTracker: nil)
     }
 
     // MARK: - unfinishedVerifiedTransactions

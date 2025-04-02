@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: 4ee857918d749a48393c3eaef2d78eb4f6b873e9
+  revision: 9a29f638e834a61c2f522df6247d484ad478bba0
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       nokogiri
@@ -38,17 +38,18 @@ GEM
       json (>= 1.5.1)
     artifactory (3.0.17)
     atomos (0.1.3)
-    aws-eventstream (1.3.0)
-    aws-partitions (1.1041.0)
-    aws-sdk-core (3.216.0)
+    aws-eventstream (1.3.2)
+    aws-partitions (1.1072.0)
+    aws-sdk-core (3.220.2)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
+      base64
       jmespath (~> 1, >= 1.6.1)
-    aws-sdk-kms (1.97.0)
+    aws-sdk-kms (1.99.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.178.0)
+    aws-sdk-s3 (1.182.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -123,7 +124,7 @@ GEM
       pstore (~> 0.1)
       terminal-table (>= 1, < 4)
     declarative (0.0.20)
-    digest-crc (0.6.5)
+    digest-crc (0.7.0)
       rake (>= 12.0.0, < 14.0.0)
     domain_name (0.6.20240107)
     dotenv (2.8.1)
@@ -212,6 +213,7 @@ GEM
       sysrandom (~> 1.0)
     ffi (1.17.1)
     ffi (1.17.1-arm64-darwin)
+    ffi (1.17.1-x86_64-darwin)
     fourflusher (2.3.1)
     fuzzy_match (2.0.4)
     gh_inspector (1.1.3)
@@ -234,12 +236,12 @@ GEM
       google-apis-core (>= 0.11.0, < 2.a)
     google-apis-storage_v1 (0.31.0)
       google-apis-core (>= 0.11.0, < 2.a)
-    google-cloud-core (1.7.1)
+    google-cloud-core (1.8.0)
       google-cloud-env (>= 1.0, < 3.a)
       google-cloud-errors (~> 1.0)
     google-cloud-env (1.6.0)
       faraday (>= 0.17.3, < 3.0)
-    google-cloud-errors (1.4.0)
+    google-cloud-errors (1.5.0)
     google-cloud-storage (1.47.0)
       addressable (~> 2.8)
       digest-crc (~> 0.4)
@@ -258,36 +260,42 @@ GEM
     http-accept (1.7.0)
     http-cookie (1.0.8)
       domain_name (~> 0.5)
-    httpclient (2.8.3)
+    httpclient (2.9.0)
+      mutex_m
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     jmespath (1.6.2)
-    json (2.9.1)
+    json (2.10.2)
     jwt (2.10.1)
       base64
     kramdown (2.5.1)
       rexml (>= 3.3.9)
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
-    logger (1.6.5)
-    mime-types (3.6.0)
+    logger (1.6.6)
+    mime-types (3.6.1)
       logger
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2025.0107)
+    mime-types-data (3.2025.0318)
     mini_magick (4.13.2)
     mini_mime (1.1.5)
     mini_portile2 (2.8.8)
-    minitest (5.25.4)
+    minitest (5.25.5)
     molinillo (0.8.0)
     multi_json (1.15.0)
     multipart-post (2.4.1)
+    mutex_m (0.3.0)
     nanaimo (0.4.0)
     nap (1.1.0)
     naturally (2.2.1)
     netrc (0.11.0)
     nkf (0.2.0)
-    nokogiri (1.16.7)
+    nokogiri (1.18.5)
       mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    nokogiri (1.18.5-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.18.5-x86_64-darwin)
       racc (~> 1.4)
     octokit (9.2.0)
       faraday (>= 1, < 3)
@@ -296,7 +304,7 @@ GEM
     optparse (0.6.0)
     os (1.1.4)
     plist (3.7.2)
-    pstore (0.1.4)
+    pstore (0.2.0)
     public_suffix (4.0.7)
     racc (1.8.1)
     rake (13.2.1)
@@ -311,7 +319,7 @@ GEM
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     retriable (3.1.2)
-    rexml (3.4.0)
+    rexml (3.4.1)
     rouge (2.0.7)
     ruby-macho (2.5.1)
     ruby2_keywords (0.0.5)
@@ -358,8 +366,9 @@ GEM
       xcpretty (~> 0.2, >= 0.0.7)
 
 PLATFORMS
-  arm64-darwin-24
+  arm64-darwin
   ruby
+  x86_64-darwin
 
 DEPENDENCIES
   cocoapods (= 1.16.2)
@@ -369,8 +378,8 @@ DEPENDENCIES
   fastlane-plugin-create_xcframework!
   fastlane-plugin-emerge
   fastlane-plugin-revenuecat_internal!
-  nokogiri (= 1.16.7)
+  nokogiri
   rest-client (= 2.1.0)
 
 BUNDLED WITH
-   2.6.2
+   2.6.6
