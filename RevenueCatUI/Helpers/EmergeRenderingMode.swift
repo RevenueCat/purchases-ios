@@ -1,9 +1,10 @@
 import Foundation
 import SwiftUI
 
+#if DEBUG
 // Extracted from Emerge SnapshotPreferences since importing that library
 // requires iOS 15 as deployment target
-public enum EmergeRenderingMode: Int {
+enum EmergeRenderingMode: Int {
     /// Renders using `CALayer.render(in:)`.
     case coreAnimation
 
@@ -80,7 +81,8 @@ extension View {
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     @available(tvOS, unavailable)
-    public func emergeRenderingMode(_ renderingMode: EmergeRenderingMode?) -> some View {
+    func emergeRenderingMode(_ renderingMode: EmergeRenderingMode?) -> some View {
         preference(key: RenderingModePreferenceKey.self, value: renderingMode?.rawValue)
     }
 }
+#endif
