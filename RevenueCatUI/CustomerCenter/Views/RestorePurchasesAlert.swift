@@ -34,8 +34,10 @@ struct RestorePurchasesAlert: ViewModifier {
 
     @State
     private var alertType: AlertType
+
     @Environment(\.localization)
     private var localization
+
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
 
@@ -48,15 +50,6 @@ struct RestorePurchasesAlert: ViewModifier {
     fileprivate init(isPresented: Binding<Bool>, alertType: AlertType) {
         self._isPresented = isPresented
         self._alertType = State(initialValue: alertType)
-    }
-
-    private var supportURL: URL? {
-        guard let supportInformation = self.supportInformation else { return nil }
-        let subject = self.localization[.defaultSubject]
-        let body = supportInformation.calculateBody(self.localization)
-        return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
-                                                    subject: subject,
-                                                    body: body)
     }
 
     enum AlertType: Identifiable {
@@ -103,7 +96,7 @@ struct RestorePurchasesAlert: ViewModifier {
                 )
             }
 
-            if let url = supportURL {
+            if let url = supportInformation?.supportURL(localization: localization) {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
                         title: localization[.contactSupport],
