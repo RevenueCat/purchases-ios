@@ -346,7 +346,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
                                                                     eligibilityNoIntroOfferCount: noIntroOfferCount,
                                                                     errorMessage: errorMessage,
                                                                     errorCode: errorCode,
-
+                                                                    storefront: self.systemInfo.storefront?.countryCode,
                                                                     responseTime: responseTime)
     }
 

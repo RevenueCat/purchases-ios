@@ -260,6 +260,7 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
                 productId: transaction.payment.productIdentifier,
                 paymentDiscountId: transaction.payment.paymentDiscount?.identifier,
                 transactionState: transaction.transactionState.diagnosticsName,
+                storefront: self.currentStorefront?.countryCode,
                 errorMessage: transaction.error?.localizedDescription
             )
         }
