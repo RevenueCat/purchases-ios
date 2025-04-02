@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 2/4/25.
 
+import Foundation
 import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
