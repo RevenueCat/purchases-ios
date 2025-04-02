@@ -23,11 +23,8 @@ import Foundation
 @objc(RCVirtualCurrencyInfo)
 public final class VirtualCurrencyInfo: NSObject {
 
-    /// The current balance of the virtual currency.
-    ///
-    /// This property represents the amount of virtual currency currently available.
-    /// The balance is represented as an integer value.
-    @objc public let balance: Int64
+    /// The customer's current balance of the virtual currency.
+    @objc public let balance: Int
 
     init(with virtualCurrencyInfo: CustomerInfoResponse.VirtualCurrencyInfo) {
         self.balance = virtualCurrencyInfo.balance
