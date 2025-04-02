@@ -90,7 +90,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
+    func determineFlow(for path: CustomerCenterConfigData.HelpPath, activeProductId: String?) async {
         // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
             // Send the action through the action wrapper
@@ -117,6 +117,9 @@ final class ManageSubscriptionsViewModel: ObservableObject {
                     self.loadingPath = nil
                 }
             } else {
+                Logger.debug(Strings.promo_offer_not_eligible_for_product(
+                    promotionalOffer.iosOfferId, activeProductId ?? ""
+                ))
                 await self.onPathSelected(path: path)
             }
 
