@@ -166,7 +166,7 @@ class SystemInfo {
          storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
-         isAppBackgrounded: Bool? = nil,
+         isAppBackgrounded: Bool = true,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
@@ -174,7 +174,7 @@ class SystemInfo {
         self._bundle = .init(bundle)
 
         self._finishTransactions = .init(finishTransactions)
-        self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
+        self._isAppBackgroundedState = .init(isAppBackgrounded)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
@@ -184,10 +184,8 @@ class SystemInfo {
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 
-        if isAppBackgrounded == nil {
-            self.isApplicationBackgrounded { isAppBackgrounded in
-                self.isAppBackgroundedState = isAppBackgrounded
-            }
+        self.isApplicationBackgrounded { isAppBackgrounded in
+            self.isAppBackgroundedState = isAppBackgrounded
         }
     }
 

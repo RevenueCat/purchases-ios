@@ -36,7 +36,6 @@ class MockSystemInfo: SystemInfo {
                   storeKitVersion: storeKitVersion,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
-                  isAppBackgrounded: false,
                   clock: clock)
     }
 
