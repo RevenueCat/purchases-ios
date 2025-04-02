@@ -69,6 +69,7 @@ extension HTTPRequest {
         case postSubscriberAttributes(appUserID: String)
         case postAdServicesToken(appUserID: String)
         case health
+        case appHealth(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case postRedeemWebPurchase
@@ -107,7 +108,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
-                .getCustomerCenterConfig:
+                .getCustomerCenterConfig,
+                .appHealth:
             return true
 
         case .health:
@@ -128,7 +130,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
-                .getCustomerCenterConfig:
+                .getCustomerCenterConfig,
+                .appHealth:
             return true
         case .health:
             return false
@@ -150,7 +153,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
-                .getCustomerCenterConfig:
+                .getCustomerCenterConfig,
+                .appHealth:
             return false
         }
     }
@@ -170,7 +174,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
-                .getCustomerCenterConfig:
+                .getCustomerCenterConfig,
+                .appHealth:
             return false
         }
     }
@@ -185,6 +190,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .getIntroEligibility(appUserID):
             return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
+            
+        case let .appHealth(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/health"
 
         case .logIn:
             return "subscribers/identify"
@@ -259,6 +267,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postRedeemWebPurchase:
             return "post_redeem_web_purchase"
+            
+        case .appHealth:
+            return "get_app_health"
 
         }
     }
