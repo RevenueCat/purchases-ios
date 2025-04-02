@@ -40,6 +40,11 @@ class MockSystemInfo: SystemInfo {
                   clock: clock)
     }
 
+    override var isAppBackgroundedState: Bool {
+        get { stubbedIsApplicationBackgrounded ?? super.isAppBackgroundedState }
+        set { super.isAppBackgroundedState = newValue }
+    }
+
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
         completion(stubbedIsApplicationBackgrounded ?? false)
     }
