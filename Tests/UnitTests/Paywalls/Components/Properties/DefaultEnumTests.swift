@@ -337,8 +337,6 @@ class DefaultEnumTests: TestCase {
         expect(thing.prop).to(equal(.top))
     }
 
-    
-
     func testVerticalAlignment() throws {
         let json = """
         {
