@@ -1118,6 +1118,7 @@ private extension PurchasesOrchestrator {
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
                                                     storeKitErrorDescription: storeKitErrorDescription,
+                                                    storefront: self.systemInfo.storefront?.countryCode,
                                                     productId: productId,
                                                     promotionalOfferId: promotionalOfferId,
                                                     winBackOfferApplied: winBackOfferApplied,
