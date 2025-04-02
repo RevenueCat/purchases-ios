@@ -23,6 +23,9 @@ protocol CustomerCenterPurchasesType: Sendable {
     var isSandbox: Bool { get }
 
     @Sendable
+    func customerInfo() async throws -> CustomerInfo
+
+    @Sendable
     func customerInfo(
         fetchPolicy: CacheFetchPolicy
     ) async throws -> CustomerInfo
@@ -44,4 +47,11 @@ protocol CustomerCenterPurchasesType: Sendable {
 
     func restorePurchases() async throws -> CustomerInfo
 
+    // MARK: - Subscription Management
+
+    @Sendable
+    func showManageSubscriptions() async throws
+
+    @Sendable
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
 }

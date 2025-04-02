@@ -24,6 +24,10 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return Purchases.shared.isSandbox
     }
 
+    func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        try await Purchases.shared.customerInfo()
+    }
+
     func customerInfo(
         fetchPolicy: CacheFetchPolicy
     ) async throws -> RevenueCat.CustomerInfo {
@@ -60,6 +64,14 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
     func restorePurchases() async throws -> CustomerInfo {
         try await Purchases.shared.restorePurchases()
+    }
+
+    func showManageSubscriptions() async throws {
+        try await Purchases.shared.showManageSubscriptions()
+    }
+
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
+        try await Purchases.shared.beginRefundRequest(forProduct: productID)
     }
 
 }
