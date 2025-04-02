@@ -56,12 +56,11 @@ struct ImageComponentView: View {
                 }
                 .size(style.size)
                 .clipped()
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
                 .shape(border: style.border,
                        shape: style.shape)
                 .shadow(shadow: style.shadow,
                         shape: style.shape?.toInsettableShape())
-                .padding(style.padding)
-                // WIP: Add border still
                 .padding(style.margin)
             }
         }

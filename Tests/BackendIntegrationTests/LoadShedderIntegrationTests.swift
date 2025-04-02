@@ -67,8 +67,10 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let result = try await self.purchases.productEntitlementMapping()
-        expect(result.entitlementsByProduct).to(haveCount(1))
+        expect(result.entitlementsByProduct).to(haveCount(3))
         expect(result.entitlementsByProduct["com.revenuecat.loadShedder.monthly"]) == ["premium"]
+        expect(result.entitlementsByProduct["consumable.10_coins"]) == []
+        expect(result.entitlementsByProduct["lifetime"]) == ["premium"]
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
