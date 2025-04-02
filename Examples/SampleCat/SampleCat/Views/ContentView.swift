@@ -5,7 +5,7 @@ struct ContentView: View {
         TabView {
             OfferingsView()
                 .tabItem {
-                    Image(systemName: "house.fill")
+                    Image(systemName: "dollarsign")
                     Text("Offerings")
                 }
         }
