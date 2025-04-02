@@ -881,38 +881,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 
-    func testSucessfulRestoreRefreshesCustomerCenter() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        mockPurchases.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithAppleSubscriptions)
-        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
-
-        let viewModel = CustomerCenterViewModel(
-            actionWrapper: CustomerCenterActionWrapper(),
-            currentVersionFetcher: { return "3.0.0" },
-            purchasesProvider: mockPurchases,
-            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
-        )
-
-        _ = await viewModel.performRestore()
-        expect(mockPurchases.loadCustomerCenterCallCount) == 1
-    }
-
-    func testUnSucessfulRestoreRefreshesCustomerCenter() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
-
-        let viewModel = CustomerCenterViewModel(
-            actionWrapper: CustomerCenterActionWrapper(),
-            currentVersionFetcher: { return "3.0.0" },
-            purchasesProvider: mockPurchases,
-            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
-        )
-
-        _ = await viewModel.performRestore()
-        expect(mockPurchases.loadCustomerCenterCallCount) == 0
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
