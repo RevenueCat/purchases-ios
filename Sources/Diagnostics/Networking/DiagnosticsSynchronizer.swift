@@ -97,6 +97,20 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DiagnosticsSynchronizer: DiagnosticsFileHandlerDelegate {
+
+    func onFileSizeIncreasedBeyondAutomaticSyncLimit() async {
+        Logger.verbose(Strings.diagnostics.syncing_events_due_to_enough_file_size_reached)
+        do {
+            try await self.syncDiagnosticsIfNeeded()
+        } catch {
+            Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsSynchronizer {
 
     static let maxSyncRetries = 3
