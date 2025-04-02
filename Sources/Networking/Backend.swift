@@ -151,7 +151,7 @@ class Backend {
 }
 
 extension Backend {
-    func appHealthAPI(appUserID: String) async throws -> AppHealthResponse {
+    func checkAppHealth(appUserID: String) async throws -> AppHealthResponse {
         return try await Async.call { (completion: @escaping (Result<AppHealthResponse, BackendError>) -> Void) in
             self.appHealthAPI.getAppHealth(appUserID: appUserID) { result in
                 switch result {

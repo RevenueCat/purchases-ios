@@ -805,7 +805,7 @@ public extension Purchases {
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }
-
+    
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
         fetchCurrent: Bool = false,
@@ -821,6 +821,11 @@ public extension Purchases {
     func offerings() async throws -> Offerings {
         return try await self.offerings(fetchPolicy: .default)
     }
+    
+    func checkAppHealth() async throws {
+        _ = try await backend.checkAppHealth(appUserID: appUserID)
+    }
+
 
     var cachedOfferings: Offerings? {
         return self.offeringsManager.cachedOfferings

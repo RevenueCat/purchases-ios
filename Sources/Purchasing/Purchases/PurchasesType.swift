@@ -215,6 +215,8 @@ public protocol PurchasesType: AnyObject {
      * This allows initializing state to ensure that UI can be loaded from the very first frame.
      */
     var cachedOfferings: Offerings? { get }
+    
+    func checkAppHealth() async throws
 
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
