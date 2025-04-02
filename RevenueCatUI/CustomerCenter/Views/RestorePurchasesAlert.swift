@@ -326,6 +326,7 @@ private struct PreviewContainer: View {
             )
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
             .environmentObject(viewModelApple)
+            .emergeRenderingMode(.window)
     }
 
 }
