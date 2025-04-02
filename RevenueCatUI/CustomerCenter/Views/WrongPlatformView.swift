@@ -102,16 +102,18 @@ struct WrongPlatformView: View {
                     }
                 }
             } else if RuntimeUtils.isSimulator {
-                AsyncButton {
-                    // do nothing
-                } label: {
-                    Text(localization[.contactSupport])
+                AsyncButton { } label: {
+                    VStack(alignment: .leading) {
+                        Text(localization[.contactSupport])
+                            .frame(alignment: .leading)
+
+                        Text("Not available on simulator")
+                            .frame(alignment: .leading)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .disabled(true)
-
-                Text("Contact support not available on simulator")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
         }
