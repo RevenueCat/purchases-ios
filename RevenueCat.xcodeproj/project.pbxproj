@@ -23,6 +23,7 @@
 		0354AA4C2D4029C300F9E330 /* TabControlToggleComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA412D4029C300F9E330 /* TabControlToggleComponentView.swift */; };
 		0354AA4D2D4029C300F9E330 /* TabControlComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3F2D4029C300F9E330 /* TabControlComponentView.swift */; };
 		0368728B2DA45C1900506BBB /* PurchaseButtonInPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */; };
+		0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
 		03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D2F2D240C3E009BCA61 /* UIConfig.swift */; };
@@ -1328,6 +1329,7 @@
 		0354AA432D4029C300F9E330 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };
 		0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentViewModel.swift; sourceTree = "<group>"; };
 		0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonInPackage.swift; sourceTree = "<group>"; };
+		036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEnumTests.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
 		03A98D2F2D240C3E009BCA61 /* UIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfig.swift; sourceTree = "<group>"; };
@@ -2661,6 +2663,7 @@
 		03F446222D2FE0B90046129A /* Properties */ = {
 			isa = PBXGroup;
 			children = (
+				036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */,
 				03F446232D2FE0C10046129A /* ShapePropertyTests.swift */,
 				03F446542D303E350046129A /* PaddingPropertyTests.swift */,
 				03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */,
@@ -6484,6 +6487,7 @@
 				35272E2226D0048D00F22C3B /* HTTPClientTests.swift in Sources */,
 				2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
 				5766AA5A283D4CAB00FA6091 /* IgnoreHashableTests.swift in Sources */,
+				0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */,
 				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,

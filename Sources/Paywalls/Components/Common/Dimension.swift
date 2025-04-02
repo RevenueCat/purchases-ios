@@ -59,7 +59,7 @@ public extension PaywallComponent {
                     self = .zlayer(alignment)
                 }
             } catch {
-                self = .vertical(.center, .start)
+                self = .vertical(.leading, .start)
             }
         }
 
