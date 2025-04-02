@@ -6,6 +6,67 @@ import XCTest
 
 class DefaultEnumTests: TestCase {
 
+    func testButtonComponentAction() throws {
+        let json = """
+        {
+            "prop": {
+                "type": "notvalidvalue"
+            }
+        }
+        """
+
+        struct Thing: Decodable {
+            let prop: PaywallComponent.ButtonComponent.Action
+        }
+
+        let thing = try JSONDecoder.default.decode(
+            Thing.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(thing.prop).to(equal(.unknown))
+    }
+
+    func testButtonComponentDestination() throws {
+        let json = """
+        {
+            "prop": {
+                "destination": "notvalidvalue"
+            }
+        }
+        """
+
+        struct Thing: Decodable {
+            let prop: PaywallComponent.ButtonComponent.Destination
+        }
+
+        let thing = try JSONDecoder.default.decode(
+            Thing.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(thing.prop).to(equal(.unknown))
+    }
+
+    func testButtonComponentURLMethod() throws {
+        let json = """
+        {
+            "prop": "notvalidvalue",
+        }
+        """
+
+        struct Thing: Decodable {
+            let prop: PaywallComponent.ButtonComponent.URLMethod
+        }
+
+        let thing = try JSONDecoder.default.decode(
+            Thing.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(thing.prop).to(equal(.unknown))
+    }
+
     func testBadgeStyle() throws {
         let json = """
         {
