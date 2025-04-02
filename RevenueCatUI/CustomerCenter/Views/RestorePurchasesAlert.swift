@@ -15,7 +15,6 @@
 
 import Foundation
 import RevenueCat
-import RevenueCatUI
 import SwiftUI
 
 #if os(iOS)
@@ -45,9 +44,8 @@ struct RestorePurchasesAlert: ViewModifier {
         actionWrapper: CustomerCenterActionWrapper
     ) {
         self.init(isPresented: isPresented,
-                  viewModel: RestorePurchasesAlertViewModel(
-                    actionWrapper: actionWrapper
-                  ))
+                  viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+        )
     }
 
     fileprivate init(

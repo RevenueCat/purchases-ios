@@ -38,8 +38,6 @@ struct NoSubscriptionsView: View {
 
     @State
     private var showRestoreAlert: Bool = false
-    @State
-    private var showRestoreAlertType: RestorePurchasesAlertViewModel.AlertType = .loading
 
     init(configuration: CustomerCenterConfigData,
          actionWrapper: CustomerCenterActionWrapper) {
