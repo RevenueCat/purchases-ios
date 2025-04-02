@@ -1,21 +1,19 @@
-## RevenueCat SDK
-### 🐞 Bugfixes
-* Carousel fixes (#4869) via Josh Holtz (@joshdholtz)
-### Customer Center
-#### 🐞 Bugfixes
-* fix: Hide subscription detail if consumable (#4906) via Facundo Menzella (@facumenzella)
-
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fixing fit mode on background property (#4905) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### ✨ New Features
+* feat: Reload customer center onCustomerCenterPromotionalOfferSuccess (#4917) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* fix: Allow two lines for feedback survey title (#4950) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* chore: Test if Package.swift is valid on CI for older tooling (#4697) via Facundo Menzella (@facumenzella)
-* [Diagnostics]: add `NOT_CHECKED` value to `cache_status` parameter of `get_offerings_result` event (#4919) via Antonio Pallares (@ajpallares)
-* chore: Test action wrapper for customer center (#4916) via Facundo Menzella (@facumenzella)
-* [Diagnostics] add `apple_purchase_intent_received` event (#4895) via Antonio Pallares (@ajpallares)
-* Fix nokogiri CVEs  (#4914) via Cesar de la Vega (@vegaro)
-* Fix build issues and tests in older versions of Xcode (#4909) via Antonio Pallares (@ajpallares)
-* [Diagnostics] add `apple_transaction_update_received` event (#4904) via Antonio Pallares (@ajpallares)
-* fix build issue in iOS 15 (#4908) via Antonio Pallares (@ajpallares)
-* [Diagnostics] add `purchase_started` and `purchase_result` events (#4886) via Antonio Pallares (@ajpallares)
+* Add previews for `RestorePurchasesAlert` (#4922) via Cesar de la Vega (@vegaro)
+* [Diagnostics] Add `storefront` property to more events (#4948) via Toni Rico (@tonidero)
+* Improve Korean translation (#4946) via Jaewoong Eum (@skydoves)
+* [Diagnostics] Sync diagnostics if file reaches lower size limit (#4929) via Toni Rico (@tonidero)
+* Add diagnostics event when AppTransaction fails to be fetched (#4936) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix gradients in angles around 135º (#4934) via Mark Villacampa (@MarkVillacampa)
+* Fix load shedder integration tests after project changes (#4932) via Toni Rico (@tonidero)
+* [Diagnostics] Fix cache fetch policy key not matching specs (#4924) via Toni Rico (@tonidero)
+* [Paywall] Center-align all Timeline component  icons by calculating and setting their max width (#4890) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Add support for TimelineItem overrides (#4875) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Extend the padding by border.width amount in components that support both (#4915) via Mark Villacampa (@MarkVillacampa)
