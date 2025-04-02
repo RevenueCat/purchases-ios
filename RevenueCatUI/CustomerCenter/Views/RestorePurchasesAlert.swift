@@ -15,7 +15,6 @@
 
 import Foundation
 import RevenueCat
-import RevenueCatUI
 import SwiftUI
 
 #if os(iOS)
