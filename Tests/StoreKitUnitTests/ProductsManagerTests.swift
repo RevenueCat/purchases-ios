@@ -122,9 +122,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             finishTransactions: true,
             storeKitVersion: storeKitVersion
         )
-        if let storefront {
-            systemInfo.stubbedStorefront = storefront
-        }
+        systemInfo.stubbedStorefront = storefront
         return ProductsManager(
             diagnosticsTracker: diagnosticsTracker,
             systemInfo: systemInfo,
