@@ -16,7 +16,7 @@ import Foundation
 /// A mapping between products and entitlements.
 @_spi(Internal) public struct ProductEntitlementMapping {
 
-    var entitlementsByProduct: [String: Set<String>]
+    @_spi(Internal) public var entitlementsByProduct: [String: Set<String>]
 
 }
 
