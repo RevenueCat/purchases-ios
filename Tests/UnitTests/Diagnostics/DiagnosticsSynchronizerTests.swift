@@ -293,6 +293,18 @@ class DiagnosticsSynchronizerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
+    func testOnFileSizeIncreasedBeyondAutomaticSyncLimitSyncsEvents() async throws {
+        let event1 = await self.storeEvent()
+        let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)
+
+        await self.synchronizer.onFileSizeIncreasedBeyondAutomaticSyncLimit()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == true
+        expect(self.api.invokedPostDiagnosticsEventsParameters) == [[ event1, event2 ]]
+
+        await self.verifyEmptyStore()
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

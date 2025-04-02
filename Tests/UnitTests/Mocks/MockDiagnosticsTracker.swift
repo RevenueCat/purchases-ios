@@ -429,4 +429,12 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
+    let trackedAppleAppTransactionErrorReceivedParams: Atomic<[String]> = .init([])
+
+    func trackAppleAppTransactionError(errorMessage: String) {
+        self.trackedAppleAppTransactionErrorReceivedParams.modify {
+            $0.append(errorMessage)
+        }
+    }
+
 }
