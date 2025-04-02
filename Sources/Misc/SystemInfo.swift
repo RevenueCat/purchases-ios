@@ -195,25 +195,17 @@ class SystemInfo {
         !self.observerMode && !self.dangerousSettings.customEntitlementComputation
     }
 
-    /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
-    /// - Seealso: `isApplicationBackgrounded`
+    /// Asynchronous API to check if app is backgrounded at a specific moment.
     func isApplicationBackgrounded(completion: @escaping @Sendable (Bool) -> Void) {
         self.operationDispatcher.dispatchOnMainActor {
-            completion(self.isApplicationBackgrounded)
+            var isApplicationBackgrounded: Bool = false
+            #if os(iOS) || os(tvOS) || VISION_OS
+            isApplicationBackgrounded = self.isApplicationBackgroundedIOSAndTVOS
+            #elseif os(watchOS)
+            isApplicationBackgrounded = self.isApplicationBackgroundedWatchOS
+            #endif
+            completion(isApplicationBackgrounded)
         }
-    }
-
-    /// Synchronous API for callers in `@MainActor`.
-    /// - Seealso: `isApplicationBackgrounded(completion:)`
-    @MainActor
-    var isApplicationBackgrounded: Bool {
-    #if os(iOS) || os(tvOS) || VISION_OS
-        return self.isApplicationBackgroundedIOSAndTVOS
-    #elseif os(macOS)
-        return false
-    #elseif os(watchOS)
-        return self.isApplicationBackgroundedWatchOS
-    #endif
     }
 
     #if targetEnvironment(simulator)
