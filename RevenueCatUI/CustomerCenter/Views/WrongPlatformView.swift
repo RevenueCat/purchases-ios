@@ -92,6 +92,7 @@ struct WrongPlatformView: View {
                     }
                 }
             }
+
             if let url = supportURL {
                 Section {
                     AsyncButton {
@@ -100,7 +101,19 @@ struct WrongPlatformView: View {
                         Text(localization[.contactSupport])
                     }
                 }
+            } else if RuntimeUtils.isSimulator {
+                AsyncButton {
+                    // do nothing
+                } label: {
+                    Text(localization[.contactSupport])
+                }
+                .disabled(true)
+
+                Text("Contact support not available on simulator")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+
         }
         .dismissCircleButtonToolbarIfNeeded()
         .applyIfLet(screen, apply: { view, screen in
