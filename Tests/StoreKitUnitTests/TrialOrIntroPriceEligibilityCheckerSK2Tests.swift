@@ -266,6 +266,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let product2 = try await self.fetchSk2StoreProduct("com.revenuecat.annual_39.99.2_week_intro")
         let product3 = try await self.fetchSk2StoreProduct("lifetime")
         self.mockProductsManager.stubbedSk2StoreProductsResult = .success([product1, product2, product3])
+        self.mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
 
         await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
@@ -286,6 +287,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(params.eligibilityNoIntroOfferCount) == 1
         expect(params.errorMessage).to(beNil())
         expect(params.errorCode).to(beNil())
+        expect(params.storefront) == "USA"
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
@@ -318,6 +320,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(params.eligibilityNoIntroOfferCount) == 0
         expect(params.errorMessage).to(beNil())
         expect(params.errorCode).to(beNil())
+        expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
@@ -350,6 +353,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(params.eligibilityNoIntroOfferCount) == 0
         expect(params.errorMessage) == purchasesError.localizedDescription
         expect(params.errorCode) == purchasesError.errorCode
+        expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 }
