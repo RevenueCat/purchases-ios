@@ -17,6 +17,8 @@ import SwiftUI
     /* Checks if a subscription is active for a given entitlement */
     var subscriptionActive: Bool = false
     
+    var isFetchingOfferings: Bool = false
+    
     init() {
         // Configure the SDK with the API Key
         Purchases.configure(withAPIKey: Constants.apiKey)
@@ -26,7 +28,16 @@ import SwiftUI
                 await MainActor.run { customerInfo = newCustomerInfo }
             }
         }
-        Task { offerings = try? await Purchases.shared.offerings() }
+    }
+    
+    func fetchOfferings() async {
+        isFetchingOfferings = true
+        do {
+            offerings = try await Purchases.shared.offerings()
+        } catch let error {
+            print(error)
+        }
+        isFetchingOfferings = false
     }
     
     /*
