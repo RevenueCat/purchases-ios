@@ -302,9 +302,7 @@ private struct PreviewContainer: View {
             .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
             .emergeRenderingMode(.window)
             .onAppear {
-                DispatchQueue.main.async {
-                    self.isPresented = true
-                }
+                self.isPresented = true
             }
     }
 }
