@@ -157,15 +157,19 @@ public extension PaywallComponent {
         }
 
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(ShapeType.self, forKey: .type)
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(ShapeType.self, forKey: .type)
 
-            switch type {
-            case .rectangle:
-                let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
-                self = .rectangle(value)
-            case .pill:
-                self = .pill
+                switch type {
+                case .rectangle:
+                    let value: CornerRadiuses? = try container.decodeIfPresent(CornerRadiuses.self, forKey: .corners)
+                    self = .rectangle(value)
+                case .pill:
+                    self = .pill
+                }
+            } catch {
+                self = .rectangle(nil)
             }
         }
 
