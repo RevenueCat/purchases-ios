@@ -937,6 +937,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                diagnosticsTracker: diagnosticsTracker)
 
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+        systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
         let mockTransaction = try await self.simulateAnyPurchase()
         mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
 
@@ -965,6 +966,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(params.promotionalOfferId).to(beNil())
         expect(params.winBackOfferApplied) == false
         expect(params.purchaseResult) == .verified
+        expect(params.storefront) == "USA"
 
         expect(self.mockDateProvider.invokedNowCount) == 2
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
