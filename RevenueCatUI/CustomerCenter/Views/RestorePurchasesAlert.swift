@@ -110,7 +110,7 @@ struct RestorePurchasesAlert: View {
             if let url = supportURL {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
-                        title: localization[.purchasesNotRecoveredContactSupport],
+                        title: localization[.contactSupport],
                         role: nil,
                         action: { Task { openURL(url) } }
                     )

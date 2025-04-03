@@ -94,7 +94,6 @@ public struct CustomerCenterConfigData: Equatable {
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
             case purchasesNotFound = "purchases_not_found"
             case purchasesNotRecoveredExplanation = "purchases_not_recovered"
-            case purchasesNotRecoveredContactSupport = "purchases_not_recovered_support"
             case manageSubscription = "manage_subscription"
             case youHavePromo = "you_have_promo"
             case youHaveLifetime = "you_have_lifetime"
@@ -171,8 +170,6 @@ public struct CustomerCenterConfigData: Equatable {
                 case .purchasesNotRecoveredExplanation:
                     return "We could not find any purchases with your account. " +
                     "If you think this is an error, please contact support."
-                case .purchasesNotRecoveredContactSupport:
-                    return "Contact Support..."
                 case .cancel:
                     return "Cancel"
                 case .billingCycle:
