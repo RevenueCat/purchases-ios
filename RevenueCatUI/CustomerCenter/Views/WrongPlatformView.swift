@@ -26,11 +26,16 @@ import SwiftUI
 struct WrongPlatformView: View {
 
     @State
-    private var store: Store?
-    @State
     private var managementURL: URL?
+
     @State
     private var purchaseInformation: PurchaseInformation
+
+    @State
+    private var showSimulatorAlert: Bool = false
+
+    @State
+    private var store: Store?
 
     @EnvironmentObject
     private var customerCenterViewModel: CustomerCenterViewModel
@@ -84,29 +89,17 @@ struct WrongPlatformView: View {
                 }
             }
 
-            if let url = supportInformation?.supportURL(localization: localization) {
-                Section {
-                    AsyncButton {
+            Section {
+                AsyncButton {
+                    if let url = supportInformation?.supportURL(localization: localization) {
                         openURL(url)
-                    } label: {
-                        Text(localization[.contactSupport])
+                    } else if RuntimeUtils.isSimulator {
+                        self.showSimulatorAlert = true
                     }
+                } label: {
+                    Text(localization[.contactSupport])
                 }
-            } else if RuntimeUtils.isSimulator {
-                AsyncButton { } label: {
-                    VStack(alignment: .leading) {
-                        Text(localization[.contactSupport])
-                            .frame(alignment: .leading)
-
-                        Text("Not available on simulator")
-                            .frame(alignment: .leading)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .disabled(true)
             }
-
         }
         .dismissCircleButtonToolbarIfNeeded()
         .applyIfLet(screen, apply: { view, screen in
@@ -119,7 +112,17 @@ struct WrongPlatformView: View {
                 }
             }
         }
+        .alert(isPresented: $showSimulatorAlert, content: {
+            return Alert(
+                title: Text("Can't open URL"),
+                message: Text("There's no email app in the simulator"),
+                dismissButton: .default(Text("Ok")))
+        })
     }
+
+}
+
+private struct NoEmailAppError: LocalizedError {
 
 }
 
