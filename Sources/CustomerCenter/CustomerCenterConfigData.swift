@@ -220,8 +220,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "You have an active subscription from the Amazon Appstore. " +
                     "You can manage your subscription in the Amazon Appstore app."
                 case .webSubscriptionManage:
-                    return "You have an active subscription that was created on the web." +
-                    " You can manage your subscription by visiting your account."
+                    return "You have an active subscription that was purchased on the web."
+                    + " You can manage your subscription using the button below."
                 case .manageSubscription:
                     return "Manage your subscription"
                 case .youHavePromo:
