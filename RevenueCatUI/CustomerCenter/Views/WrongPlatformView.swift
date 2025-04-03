@@ -108,7 +108,7 @@ struct WrongPlatformView: View {
         })
         .task {
             if store == nil {
-                if let customerInfo = try? await Purchases.shared.customerInfo() {
+                if let customerInfo = try? await self.customerCenterViewModel.purchasesProvider.customerInfo() {
                     self.managementURL = customerInfo.managementURL
                 }
             }
