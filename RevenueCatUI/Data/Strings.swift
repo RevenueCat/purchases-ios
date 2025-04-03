@@ -223,8 +223,8 @@ extension Strings: CustomStringConvertible {
 
         case let .promo_offer_not_eligible_for_product(promoOfferId, productId):
             return """
-                User not eligible for \(promoOfferId). Check eligibility configuration in the dashboard,
-                and make sure the user has an active/expired subscription for that product \(productId)"
+                User not eligible for promo with id '\(promoOfferId)'. Check eligibility configuration in the dashboard,
+                and make sure the user has an active/expired subscription for the product with id '\(productId)'."
             """
         }
     }
