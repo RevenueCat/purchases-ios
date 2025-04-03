@@ -77,7 +77,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
-        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
+        purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths

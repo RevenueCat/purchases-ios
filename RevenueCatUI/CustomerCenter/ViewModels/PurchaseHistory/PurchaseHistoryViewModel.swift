@@ -51,7 +51,7 @@ final class PurchaseHistoryViewModel: ObservableObject {
         activeSubscriptions: [PurchaseInfo] = [],
         inactiveSubscriptions: [PurchaseInfo] = [],
         nonSubscriptions: [PurchaseInfo] = [],
-        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()
+        purchasesProvider: CustomerCenterPurchasesType
     ) {
         self.selectedPurchase = selectedPurchase
         self.customerInfo = customerInfo

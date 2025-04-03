@@ -138,7 +138,7 @@ struct PurchaseHistoryView: View {
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         CompatibilityNavigationStack {
-            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel(purchasesProvider: CustomerCenterPurchases()))
         }
     }
 }
