@@ -804,6 +804,7 @@
 		57F2C60C29784C11009EE527 /* SwiftVersionCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57F2C60B29784C11009EE527 /* SwiftVersionCheck.swift */; };
 		57F3C10529B7B22E0004FD7E /* CustomerInfo+ActiveDates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57F3C10429B7B22E0004FD7E /* CustomerInfo+ActiveDates.swift */; };
 		57F3C10C29B7EAE90004FD7E /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
+		57F7DAAB2D9E906200855622 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57F7DAAA2D9E906100855622 /* RuntimeUtils.swift */; };
 		57FD7B1528DA4037009CA4E4 /* PurchasesType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */; };
 		57FDAA962846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAA952846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift */; };
 		57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAA992846C2BD009A48F1 /* PurchasesDelegateTests.swift */; };
@@ -2125,6 +2126,7 @@
 		57EFDC6A27BC1F370057EC39 /* ProductType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductType.swift; sourceTree = "<group>"; };
 		57F2C60B29784C11009EE527 /* SwiftVersionCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftVersionCheck.swift; sourceTree = "<group>"; };
 		57F3C10429B7B22E0004FD7E /* CustomerInfo+ActiveDates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerInfo+ActiveDates.swift"; sourceTree = "<group>"; };
+		57F7DAAA2D9E906100855622 /* RuntimeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeUtils.swift; sourceTree = "<group>"; };
 		57FD7B1428DA4037009CA4E4 /* PurchasesType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesType.swift; sourceTree = "<group>"; };
 		57FDAA952846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesTransactionHandlingTests.swift; sourceTree = "<group>"; };
 		57FDAA992846C2BD009A48F1 /* PurchasesDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegateTests.swift; sourceTree = "<group>"; };
@@ -4762,6 +4764,7 @@
 		887A5FE72C1D037000E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				57F7DAAA2D9E906100855622 /* RuntimeUtils.swift */,
 				358DECA22D9BEF85003B1CC0 /* EmergeRenderingMode.swift */,
 				353FDC102CA447270055F328 /* StoreProduct+Extensions.swift */,
 				353FDC0E2CA446F50055F328 /* StoreProductDiscount+Extensions.swift */,
@@ -6894,6 +6897,7 @@
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
 				2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */,
 				356979E02CCFDAA100EE6A9E /* CustomerInfoFixtures.swift in Sources */,
+				57F7DAAB2D9E906200855622 /* RuntimeUtils.swift in Sources */,
 				3511088F2C47F6DA0048C4D8 /* CustomerInfo+CurrentEntitlement.swift in Sources */,
 				887A60752C1D037000E1A461 /* TemplateViewConfiguration.swift in Sources */,
 				03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */,

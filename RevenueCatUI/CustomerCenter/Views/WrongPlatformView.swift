@@ -92,7 +92,7 @@ struct WrongPlatformView: View {
             if let url = supportInformation?.supportURL(localization: localization) {
                 Section {
                     AsyncButton {
-                        if URLUtilities.canOpenURL(url) {
+                        if URLUtilities.canOpenURL(url), !RuntimeUtils.isSimulator {
                             openURL(url)
                         } else {
                             self.showSimulatorAlert = true
