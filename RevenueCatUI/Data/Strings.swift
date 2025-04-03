@@ -70,6 +70,7 @@ enum Strings {
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
+    case promo_offer_not_eligible_for_product(String, String)
 
 }
 
@@ -220,6 +221,11 @@ extension Strings: CustomStringConvertible {
         case .could_not_find_product_loading_without_product_information(let product):
             return "Could not find product with id \(product). Loading without product information."
 
+        case let .promo_offer_not_eligible_for_product(promoOfferId, productId):
+            return """
+                User not eligible for promo with id '\(promoOfferId)'. Check eligibility configuration in the dashboard,
+                and make sure the user has an active/expired subscription for the product with id '\(productId)'."
+            """
         }
     }
 
