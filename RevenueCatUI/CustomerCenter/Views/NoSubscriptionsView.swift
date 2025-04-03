@@ -63,12 +63,16 @@ struct NoSubscriptionsView: View {
                 Button(localization[.restorePurchases]) {
                     showRestoreAlert = true
                 }
-                .restorePurchasesAlert(isPresented: $showRestoreAlert,
-                                       actionWrapper: actionWrapper)
             }
 
         }
         .dismissCircleButtonToolbarIfNeeded()
+        .overlay {
+            RestorePurchasesAlert(
+                isPresented: $showRestoreAlert,
+                actionWrapper: actionWrapper
+            )
+        }
     }
 
 }

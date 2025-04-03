@@ -23,7 +23,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct RestorePurchasesAlert: ViewModifier {
+struct RestorePurchasesAlert: View {
 
     @Environment(\.openURL)
     var openURL
@@ -43,8 +43,9 @@ struct RestorePurchasesAlert: ViewModifier {
         isPresented: Binding<Bool>,
         actionWrapper: CustomerCenterActionWrapper
     ) {
-        self.init(isPresented: isPresented,
-                  viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+        self.init(
+            isPresented: isPresented,
+            viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
         )
     }
 
@@ -65,22 +66,19 @@ struct RestorePurchasesAlert: ViewModifier {
                                                     body: body)
     }
 
-    func body(content: Content) -> some View {
-        content
-            .modifier(
-                AlertOrConfirmationDialog(
-                    isPresented: $isPresented,
-                    alertType: self.viewModel.alertType,
-                    title: alertTitle(),
-                    message: alertMessage(),
-                    actions: alertActions()
-                )
-            )
-            .task(id: isPresented) {
-                if isPresented {
-                    await viewModel.performRestore()
-                }
+    var body: some View {
+        AlertOrConfirmationDialog(
+            isPresented: $isPresented,
+            alertType: self.viewModel.alertType,
+            title: alertTitle(),
+            message: alertMessage(),
+            actions: alertActions()
+        )
+        .task(id: isPresented) {
+            if isPresented {
+                await viewModel.performRestore()
             }
+        }
     }
 
     private func alertActions() -> [AlertOrConfirmationDialog.AlertAction] {
@@ -167,13 +165,7 @@ struct RestorePurchasesAlert: ViewModifier {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-
-/// This modifier is used to show either an Alert or ConfirmationDialog depending on the number of actions to avoid
-/// SwiftUI logging the following warning about confirmation dialogs requiring actionable choices:
-/// "A confirmation dialog was created without any actions. Confirmation dialogs should always provide
-/// users with an actionable choice. Consider using an alert if there is no action that can be taken
-/// in response to your presentation."
-private struct AlertOrConfirmationDialog: ViewModifier {
+private struct AlertOrConfirmationDialog: View {
 
     @Binding var isPresented: Bool
     let alertType: RestorePurchasesAlertViewModel.AlertType
@@ -188,82 +180,70 @@ private struct AlertOrConfirmationDialog: ViewModifier {
         let action: () -> Void
     }
 
-    // swiftlint:disable:next function_body_length
-    func body(content: Content) -> some View {
-        if actions.count < 3 {
-            if alertType == .loading && isPresented {
-                content
-                    .overlay {
-                        ZStack {
-                            Color.black.opacity(0.3)
+    var body: some View {
+        ZStack {
+            if isPresented {
+                Color.black
+                    .opacity(alertType == .loading ? 0.15 : 0)
+                    .animation(.easeInOut, value: alertType)
+                    .ignoresSafeArea()
 
-                            VStack(spacing: 16) {
-                                ProgressView()
-                                    .scaleEffect(1.5)
-                                Text(title)
-                                    .font(.headline)
-                            }
-                            .padding(24)
-                            .background(Color(.systemBackground))
-                            .cornerRadius(12)
-                        }
-                    }.ignoresSafeArea()
-            } else {
-                content.alert(
-                    title,
-                    isPresented: $isPresented,
-                    actions: {
-                        ForEach(actions) { action in
-                            Button(role: action.role) {
-                                action.action()
-                            } label: {
-                                Text(action.title)
-                            }
-                        }
-                    },
-                    message: {
-                        if let message {
-                            Text(message)
-                        }
+                if alertType == .loading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text(title)
+                            .font(.headline)
                     }
-                )
-            }
-        } else {
-            content.confirmationDialog(
-                title,
-                isPresented: $isPresented,
-                actions: {
-                    ForEach(actions) { action in
-                        Button(role: action.role) {
-                            action.action()
-                        } label: {
-                            Text(action.title)
-                        }
-                    }
-                },
-                message: {
-                    if let message {
-                        Text(message)
+                    .padding(24)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                } else {
+                    if actions.count < 3 {
+                        Color.clear
+                            .alert(
+                                title,
+                                isPresented: $isPresented,
+                                actions: {
+                                    ForEach(actions) { action in
+                                        Button(role: action.role) {
+                                            action.action()
+                                        } label: {
+                                            Text(action.title)
+                                        }
+                                    }
+                                },
+                                message: {
+                                    if let message {
+                                        Text(message)
+                                    }
+                                }
+                            )
+                    } else {
+                        Color.clear
+                            .confirmationDialog(
+                                title,
+                                isPresented: $isPresented,
+                                actions: {
+                                    ForEach(actions) { action in
+                                        Button(role: action.role) {
+                                            action.action()
+                                        } label: {
+                                            Text(action.title)
+                                        }
+                                    }
+                                },
+                                message: {
+                                    if let message {
+                                        Text(message)
+                                    }
+                                }
+                            )
                     }
                 }
-            )
+            }
         }
     }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension View {
-
-    func restorePurchasesAlert(
-        isPresented: Binding<Bool>,
-        actionWrapper: CustomerCenterActionWrapper
-    ) -> some View {
-        self.modifier(RestorePurchasesAlert(isPresented: isPresented, actionWrapper: actionWrapper))
-    }
-
 }
 
 #if DEBUG
@@ -312,21 +292,18 @@ private struct PreviewContainer: View {
     @State private var isPresented = true
 
     var body: some View {
-
         let purchaseInformationApple =
         CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
         let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
                                                      configuration: CustomerCenterConfigTestData.customerCenterData)
-        Color.clear
-            .modifier(
-                RestorePurchasesAlert(
-                    isPresented: $isPresented,
-                    viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType)
-                )
-            )
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-            .environmentObject(viewModelApple)
-            .emergeRenderingMode(.window)
+
+        RestorePurchasesAlert(
+            isPresented: $isPresented,
+            viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType)
+        )
+        .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+        .environmentObject(viewModelApple)
+        .emergeRenderingMode(.window)
     }
 
 }
