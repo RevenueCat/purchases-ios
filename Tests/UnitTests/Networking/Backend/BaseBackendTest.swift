@@ -60,6 +60,7 @@ class BaseBackendTests: TestCase {
             storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
+            isAppBackgrounded: false,
             preferredLocalesProvider: localesProvider
         )
         self.httpClient = self.createClient()
