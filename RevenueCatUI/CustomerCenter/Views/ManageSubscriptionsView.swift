@@ -44,11 +44,13 @@ struct ManageSubscriptionsView: View {
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
+         purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation)
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: purchasesProvider)
         self.init(viewModel: viewModel)
     }
 
@@ -64,6 +66,7 @@ struct ManageSubscriptionsView: View {
             ) { feedbackSurveyData in
                 FeedbackSurveyView(
                     feedbackSurveyData: feedbackSurveyData,
+                    purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper,
                     isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                 .environment(\.appearance, appearance)
@@ -84,6 +87,7 @@ struct ManageSubscriptionsView: View {
                     promotionalOffer: promotionalOfferData.promotionalOffer,
                     product: promotionalOfferData.product,
                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    purchasesProvider: self.viewModel.purchasesProvider,
                     onDismissPromotionalOfferView: { userAction in
                         Task(priority: .userInitiated) {
                             await self.viewModel.handleDismissPromotionalOfferView(userAction)

@@ -70,7 +70,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
-    private var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     init(
         screen: CustomerCenterConfigData.Screen,
@@ -85,7 +85,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
-            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.state = .success
         }
 

@@ -44,11 +44,13 @@ struct FeedbackSurveyView: View {
 
     init(
         feedbackSurveyData: FeedbackSurveyData,
+        purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper,
         isPresented: Binding<Bool>
     ) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
             feedbackSurveyData: feedbackSurveyData,
+            purchasesProvider: purchasesProvider,
             actionWrapper: actionWrapper
         ))
         self._isPresented = isPresented
@@ -77,6 +79,7 @@ struct FeedbackSurveyView: View {
                         promotionalOffer: promotionalOfferData.promotionalOffer,
                         product: promotionalOfferData.product,
                         promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                        purchasesProvider: self.viewModel.purchasesProvider,
                         onDismissPromotionalOfferView: { userAction in
                             Task(priority: .userInitiated) {
                                 await viewModel.handleDismissPromotionalOfferView(
