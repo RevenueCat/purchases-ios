@@ -25,7 +25,7 @@ import XCTest
 @available(watchOS, unavailable)
 @MainActor
 final class RestorePurchasesAlertViewModelTests: TestCase {
-    
+
     func testSucessfulRestoreRefreshesCustomerCenter() async {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithAppleSubscriptions)
@@ -34,11 +34,11 @@ final class RestorePurchasesAlertViewModelTests: TestCase {
             purchasesProvider: mockPurchases,
             actionWrapper: CustomerCenterActionWrapper()
         )
-        
+
         await viewModel.performRestore()
         expect(mockPurchases.loadCustomerCenterCallCount) == 1
     }
-    
+
     func testUnSucessfulRestoreRefreshesCustomerCenter() async {
         let mockPurchases = MockCustomerCenterPurchases()
 
@@ -46,11 +46,11 @@ final class RestorePurchasesAlertViewModelTests: TestCase {
             purchasesProvider: mockPurchases,
             actionWrapper: CustomerCenterActionWrapper()
         )
-        
+
         await viewModel.performRestore()
         expect(mockPurchases.loadCustomerCenterCallCount) == 0
     }
-    
+
 }
 
 #endif
