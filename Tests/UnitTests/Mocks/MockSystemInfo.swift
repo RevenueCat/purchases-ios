@@ -36,7 +36,13 @@ class MockSystemInfo: SystemInfo {
                   storeKitVersion: storeKitVersion,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
+                  isAppBackgrounded: false,
                   clock: clock)
+    }
+
+    override var isAppBackgroundedState: Bool {
+        get { stubbedIsApplicationBackgrounded ?? super.isAppBackgroundedState }
+        set { super.isAppBackgroundedState = newValue }
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

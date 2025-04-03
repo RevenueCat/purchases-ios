@@ -335,6 +335,23 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(header.value) == "true"
     }
 
+    func testAlwaysPassesIsBackgroundedHeader() {
+        let headerPresent: Atomic<Bool> = false
+
+        stub(condition: hasHeaderNamed("X-Is-Backgrounded")) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
     func testRequestWithStorefrontSendsHeader() {
         let headerName = "X-Storefront"
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
