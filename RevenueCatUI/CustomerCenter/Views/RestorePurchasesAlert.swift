@@ -33,16 +33,28 @@ struct RestorePurchasesAlert: ViewModifier {
     @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
 
     @State
-    private var alertType: AlertType = .restorePurchases
+    private var alertType: AlertType
     @Environment(\.localization)
     private var localization
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
 
+    init(isPresented: Binding<Bool>) {
+        self._isPresented = isPresented
+        self._alertType = State(initialValue: .restorePurchases)
+    }
+
+    // For previews
+    fileprivate init(isPresented: Binding<Bool>, alertType: AlertType) {
+        self._isPresented = isPresented
+        self._alertType = State(initialValue: alertType)
+    }
+
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
         let subject = self.localization[.defaultSubject]
-        let body = supportInformation.calculateBody(self.localization)
+        let body = supportInformation.calculateBody(self.localization,
+                                                    purchasesProvider: customerCenterViewModel.purchasesProvider)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
                                                     body: body)
@@ -256,4 +268,43 @@ extension View {
 
 }
 
+#endif
+
+#if DEBUG
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct RestorePurchasesAlert_Previews: PreviewProvider {
+    static var previews: some View {
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
+            .previewDisplayName("Restore Purchases")
+
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
+            .previewDisplayName("Purchases Recovered")
+
+        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesNotFound)
+            .previewDisplayName("Purchases Not Found")
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct PreviewContainer: View {
+    @State private var isPresented = true
+    let alertType: RestorePurchasesAlert.AlertType
+
+    var body: some View {
+        Color.clear
+            .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
+            .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
+            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .emergeRenderingMode(.window)
+            .onAppear {
+                self.isPresented = true
+            }
+    }
+}
 #endif

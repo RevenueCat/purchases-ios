@@ -154,6 +154,11 @@ private extension CustomerCenterView {
             }
         }
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
+        .onCustomerCenterPromotionalOfferSuccess {
+            Task {
+                await viewModel.loadScreen()
+            }
+        }
     }
 
     @ViewBuilder
@@ -191,6 +196,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(screen: screen,
                                             purchaseInformation: purchaseInformation,
+                                            purchasesProvider: self.viewModel.purchasesProvider,
                                             actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
@@ -203,6 +209,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: nil,
+                                        purchasesProvider: self.viewModel.purchasesProvider,
                                         actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button

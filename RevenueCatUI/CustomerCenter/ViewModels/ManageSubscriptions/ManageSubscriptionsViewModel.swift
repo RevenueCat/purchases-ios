@@ -70,22 +70,23 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
-    private var purchasesProvider: ManageSubscriptionsPurchaseType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
-        purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
-            self.purchasesProvider = ManageSubscriptionPurchases()
+            self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
-            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
+            ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.state = .success
         }
 
@@ -99,12 +100,14 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
-            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
-                                                         path: path) { [weak self] in
-                Task {
-                    await self?.onPathSelected(path: path)
+            self.feedbackSurveyData = FeedbackSurveyData(
+                configuration: feedbackSurvey,
+                path: path) { [weak self] in
+                    Task {
+                        await self?.onPathSelected(path: path)
+                    }
                 }
-            }
+
         case let .promotionalOffer(promotionalOffer):
             if promotionalOffer.eligible {
                 self.loadingPath = path
@@ -158,6 +161,13 @@ extension ManageSubscriptionsViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
     func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        switch userAction {
+        case .successfullyRedeemedPromotionalOffer:
+            self.actionWrapper.handleAction(.promotionalOfferSuccess)
+        case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
+            break
+        }
+
         // Clear the promotional offer data to dismiss the sheet
         self.promotionalOfferData = nil
 
@@ -226,31 +236,6 @@ private extension ManageSubscriptionsViewModel {
         }
     }
 #endif
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType {
-
-    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
-        try await Purchases.shared.beginRefundRequest(forProduct: productID)
-    }
-
-    func showManageSubscriptions() async throws {
-        try await Purchases.shared.showManageSubscriptions()
-    }
-
-    func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        try await Purchases.shared.customerInfo()
-    }
-
-    func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
-        await Purchases.shared.products(productIdentifiers)
-    }
 
 }
 

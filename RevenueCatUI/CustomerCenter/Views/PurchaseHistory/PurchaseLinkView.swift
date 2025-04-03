@@ -27,6 +27,7 @@ struct PurchaseLinkView: View {
 
     @State var productName: String?
     let purchaseInfo: PurchaseInfo
+    let purchasesProvider: CustomerCenterPurchasesType
 
     var body: some View {
         HStack(spacing: 8) {
@@ -56,7 +57,7 @@ struct PurchaseLinkView: View {
         .onAppear {
             Task {
                 guard
-                    let product = await Purchases.shared.products([purchaseInfo.productIdentifier]).first
+                    let product = await purchasesProvider.products([purchaseInfo.productIdentifier]).first
                 else {
                     return
                 }

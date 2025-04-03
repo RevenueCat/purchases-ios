@@ -21,6 +21,12 @@ import RevenueCat
 @_spi(Internal) public protocol CustomerCenterPurchasesType: Sendable {
 
     var isSandbox: Bool { get }
+    var appUserID: String { get }
+    var isConfigured: Bool { get }
+    var storeFrontCountryCode: String? { get }
+
+    @Sendable
+    func customerInfo() async throws -> CustomerInfo
 
     @Sendable
     func customerInfo(
@@ -44,4 +50,15 @@ import RevenueCat
 
     func restorePurchases() async throws -> CustomerInfo
 
+    // MARK: - Subscription Management
+
+    #if os(iOS) || os(macOS) || os(visionOS)
+    @Sendable
+    func showManageSubscriptions() async throws
+    #endif
+
+    #if os(iOS) || os(visionOS)
+    @Sendable
+    func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
+    #endif
 }
