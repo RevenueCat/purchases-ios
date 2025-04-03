@@ -41,6 +41,8 @@ final class PurchaseHistoryViewModel: ObservableObject {
     var inactiveSubscriptions: [PurchaseInfo] = []
     var nonSubscriptions: [PurchaseInfo] = []
 
+    let purchasesProvider: CustomerCenterPurchasesType
+
     init(
         selectedPurchase: PurchaseInfo? = nil,
         customerInfo: CustomerInfo? = nil,
@@ -48,7 +50,8 @@ final class PurchaseHistoryViewModel: ObservableObject {
         isLoading: Bool = true,
         activeSubscriptions: [PurchaseInfo] = [],
         inactiveSubscriptions: [PurchaseInfo] = [],
-        nonSubscriptions: [PurchaseInfo] = []
+        nonSubscriptions: [PurchaseInfo] = [],
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()
     ) {
         self.selectedPurchase = selectedPurchase
         self.customerInfo = customerInfo
@@ -57,6 +60,7 @@ final class PurchaseHistoryViewModel: ObservableObject {
         self.activeSubscriptions = activeSubscriptions
         self.inactiveSubscriptions = inactiveSubscriptions
         self.nonSubscriptions = nonSubscriptions
+        self.purchasesProvider = purchasesProvider
     }
 
     func didAppear() async {
@@ -68,7 +72,7 @@ final class PurchaseHistoryViewModel: ObservableObject {
 private extension PurchaseHistoryViewModel {
     func fetchCustomerInfo() async {
         do {
-            let customerInfo = try await Purchases.shared.customerInfo()
+            let customerInfo = try await self.purchasesProvider.customerInfo()
             await MainActor.run {
                 self.customerInfo = customerInfo
             }

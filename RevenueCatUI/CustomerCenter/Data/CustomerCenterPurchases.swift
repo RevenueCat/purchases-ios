@@ -24,6 +24,19 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return Purchases.shared.isSandbox
     }
 
+    var appUserID: String {
+        return Purchases.shared.appUserID
+    }
+
+
+    var isConfigured: Bool {
+        return Purchases.isConfigured
+    }
+
+    var storeFrontCountryCode: String? {
+        return Purchases.shared.storeFrontCountryCode
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         try await Purchases.shared.customerInfo()
     }

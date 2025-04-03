@@ -42,7 +42,8 @@ struct PurchaseHistoryView: View {
                             Button {
                                 viewModel.selectedPurchase = activeSubscription
                             } label: {
-                                PurchaseLinkView(purchaseInfo: activeSubscription)
+                                PurchaseLinkView(purchaseInfo: activeSubscription,
+                                                 purchasesProvider: viewModel.purchasesProvider)
                             }
                         }
                     }
@@ -56,7 +57,8 @@ struct PurchaseHistoryView: View {
                             Button {
                                 viewModel.selectedPurchase = inactiveSubscription
                             } label: {
-                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                                PurchaseLinkView(purchaseInfo: inactiveSubscription,
+                                                 purchasesProvider: viewModel.purchasesProvider)
                             }
                         }
                     }
@@ -71,7 +73,8 @@ struct PurchaseHistoryView: View {
                             Button {
                                 viewModel.selectedPurchase = inactiveSubscription
                             } label: {
-                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                                PurchaseLinkView(purchaseInfo: inactiveSubscription,
+                                                 purchasesProvider: viewModel.purchasesProvider)
                             }
                         }
                     }
@@ -109,7 +112,8 @@ struct PurchaseHistoryView: View {
             usesNavigationStack: navigationOptions.usesNavigationStack
         ) {
             PurchaseDetailView(
-                viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
+                viewModel: PurchaseDetailViewModel(purchaseInfo: $0,
+                                                   purchasesProvider: self.viewModel.purchasesProvider))
             .environment(\.localization, localization)
         }
         .navigationTitle(localization[.purchaseHistory])

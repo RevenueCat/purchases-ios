@@ -44,7 +44,7 @@ struct FeedbackSurveyView: View {
 
     init(
         feedbackSurveyData: FeedbackSurveyData,
-        purchasesProvider: CustomerCenterPurchasesType,
+        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
         actionWrapper: CustomerCenterActionWrapper,
         isPresented: Binding<Bool>
     ) {

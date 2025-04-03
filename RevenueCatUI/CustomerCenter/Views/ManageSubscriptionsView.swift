@@ -77,7 +77,9 @@ struct ManageSubscriptionsView: View {
                 isPresented: $viewModel.showPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
-                PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                PurchaseHistoryView(viewModel:
+                                        PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
                     .environment(\.appearance, appearance)
                     .environment(\.localization, localization)
                     .environment(\.navigationOptions, navigationOptions)

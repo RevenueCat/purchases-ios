@@ -21,6 +21,9 @@ import RevenueCat
 protocol CustomerCenterPurchasesType: Sendable {
 
     var isSandbox: Bool { get }
+    var appUserID: String { get }
+    var isConfigured: Bool { get }
+    var storeFrontCountryCode: String? { get }
 
     @Sendable
     func customerInfo() async throws -> CustomerInfo
