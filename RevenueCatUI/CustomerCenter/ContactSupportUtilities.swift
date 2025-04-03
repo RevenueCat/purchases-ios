@@ -54,7 +54,8 @@ extension CustomerCenterConfigData.Support {
         deviceModel = UIDevice.current.model
         #endif
         let userID = Purchases.isConfigured ? purchasesProvider.appUserID : unknown
-        let storeFrontCountryCode = purchasesProvider.isConfigured ? purchasesProvider.storeFrontCountryCode ?? unknown : unknown
+        let storeFrontCountryCode = purchasesProvider.isConfigured ?
+        purchasesProvider.storeFrontCountryCode ?? unknown : unknown
 
         return [
             ("RC User ID", userID),

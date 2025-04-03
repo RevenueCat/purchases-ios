@@ -28,7 +28,6 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return Purchases.shared.appUserID
     }
 
-
     var isConfigured: Bool {
         return Purchases.isConfigured
     }

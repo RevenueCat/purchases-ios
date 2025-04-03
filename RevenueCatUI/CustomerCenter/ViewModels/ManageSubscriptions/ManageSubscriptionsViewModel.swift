@@ -85,7 +85,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
-            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
+            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
+            ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.state = .success
         }
 
