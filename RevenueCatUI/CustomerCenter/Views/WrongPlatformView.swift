@@ -92,10 +92,10 @@ struct WrongPlatformView: View {
             if let url = supportInformation?.supportURL(localization: localization) {
                 Section {
                     AsyncButton {
-                        if RuntimeUtils.isSimulator {
-                            self.showSimulatorAlert = true
-                        } else {
+                        if URLUtilities.canOpenURL(url) {
                             openURL(url)
+                        } else {
+                            self.showSimulatorAlert = true
                         }
                     } label: {
                         Text(localization[.contactSupport])

@@ -96,7 +96,7 @@ struct RestorePurchasesAlert: ViewModifier {
                 )
             }
 
-            if let url = supportInformation?.supportURL(localization: localization) {
+            if let url = supportInformation?.supportURL(localization: localization), URLUtilities.canOpenURL(url) {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
                         title: localization[.contactSupport],
