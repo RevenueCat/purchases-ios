@@ -88,7 +88,7 @@ struct RestorePurchasesAlert: View {
         case .purchasesRecovered:
             return [
                 AlertOrConfirmationDialog.AlertAction(
-                    title: localization[.dismiss],
+                    title: localization[.done],
                     role: .cancel,
                     action: dismissAlert
                 )
@@ -137,7 +137,7 @@ struct RestorePurchasesAlert: View {
         case .purchasesRecovered:
             return localization[.purchasesRecovered]
         case .purchasesNotFound:
-            return ""
+            return localization[.purchasesNotFound]
         }
     }
 
@@ -148,7 +148,7 @@ struct RestorePurchasesAlert: View {
         case .purchasesRecovered:
             return localization[.purchasesRecoveredExplanation]
         case .purchasesNotFound:
-            var message = localization[.purchasesNotRecovered]
+            var message = localization[.purchasesNotRecoveredExplanation]
             if customerCenterViewModel.shouldShowAppUpdateWarnings {
                 message += "\n\n" + localization[.updateWarningDescription]
             }
