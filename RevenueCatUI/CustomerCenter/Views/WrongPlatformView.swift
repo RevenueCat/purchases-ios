@@ -89,13 +89,14 @@ struct WrongPlatformView: View {
                 }
             }
 
-            if let url = supportInformation?.supportURL(localization: localization) {
+            if let url = supportInformation?.supportURL(localization: localization),
+               URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                 Section {
                     AsyncButton {
-                        if URLUtilities.canOpenURL(url), !RuntimeUtils.isSimulator {
-                            openURL(url)
-                        } else {
+                        if RuntimeUtils.isSimulator {
                             self.showSimulatorAlert = true
+                        } else {
+                            openURL(url)
                         }
                     } label: {
                         Text(localization[.contactSupport])
