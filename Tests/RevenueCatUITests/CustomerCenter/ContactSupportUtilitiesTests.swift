@@ -16,6 +16,10 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 class ContactSupportUtilitiesTest: TestCase {
 
     private let support: CustomerCenterConfigData.Support = .init(

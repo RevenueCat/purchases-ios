@@ -17,15 +17,20 @@ import RevenueCat
 import UIKit
 #endif
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension CustomerCenterConfigData.Support {
 
     func calculateBody(_ localization: CustomerCenterConfigData.Localization,
-                       dataToInclude: [(String, String)]? = nil) -> String {
+                       dataToInclude: [(String, String)]? = nil,
+                       purchasesProvider: CustomerCenterPurchasesType) -> String {
         let infoToInclude: [(String, String)]
         if let dataToInclude {
             infoToInclude = dataToInclude
         } else {
-            infoToInclude = Self.defaultData(localization)
+            infoToInclude = Self.defaultData(localization, purchasesProvider: purchasesProvider)
         }
         let defaultBody =
             """
@@ -39,7 +44,8 @@ extension CustomerCenterConfigData.Support {
         return defaultBody
     }
 
-    private static func defaultData(_ localization: CustomerCenterConfigData.Localization) -> [(String, String)] {
+    private static func defaultData(_ localization: CustomerCenterConfigData.Localization,
+                                    purchasesProvider: CustomerCenterPurchasesType) -> [(String, String)] {
         let unknown = localization[.unknown]
         var osVersion = unknown
         var deviceModel = unknown
@@ -47,8 +53,9 @@ extension CustomerCenterConfigData.Support {
         osVersion = UIDevice.current.systemVersion
         deviceModel = UIDevice.current.model
         #endif
-        let userID = Purchases.isConfigured ? Purchases.shared.appUserID : unknown
-        let storeFrontCountryCode = Purchases.isConfigured ? Purchases.shared.storeFrontCountryCode ?? unknown : unknown
+        let userID = Purchases.isConfigured ? purchasesProvider.appUserID : unknown
+        let storeFrontCountryCode = purchasesProvider.isConfigured ?
+        purchasesProvider.storeFrontCountryCode ?? unknown : unknown
 
         return [
             ("RC User ID", userID),

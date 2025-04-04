@@ -54,6 +54,13 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         self.loadCustomerCenterResult = .success(customerCenterConfigData)
     }
 
+    func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoError {
+            throw customerInfoError
+        }
+        return customerInfo
+    }
+
     var customerInfoFetchPolicy: CacheFetchPolicy?
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.CustomerInfo {
         customerInfoFetchPolicy = fetchPolicy
@@ -106,5 +113,18 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func restorePurchases() async throws -> CustomerInfo {
         restorePurchasesCallCount += 1
         return try restorePurchasesResult.get()
+    }
+
+    func showManageSubscriptions() async throws {
+        if let showManageSubscriptionsError {
+            throw showManageSubscriptionsError
+        }
+    }
+
+    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
+        if beginRefundShouldFail {
+            return .error
+        }
+        return .success
     }
 }
