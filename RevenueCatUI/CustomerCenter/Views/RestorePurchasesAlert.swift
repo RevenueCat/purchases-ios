@@ -157,10 +157,8 @@ struct RestorePurchasesAlert: View {
     }
 
     private func dismissAlert() {
+        self.customerCenterViewModel.onDismissRestorePurchasesAlert()
         self.isPresented = false
-        Task {
-            await self.customerCenterViewModel.loadScreen()
-        }
     }
 }
 

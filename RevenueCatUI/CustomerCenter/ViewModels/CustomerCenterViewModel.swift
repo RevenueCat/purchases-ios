@@ -120,6 +120,12 @@ import RevenueCat
         }
     }
 
+    func onDismissRestorePurchasesAlert() {
+        Task {
+            await loadScreen()
+        }
+    }
+
     func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
         guard impressionData == nil else {
             return
