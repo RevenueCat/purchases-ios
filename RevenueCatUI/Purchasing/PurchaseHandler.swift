@@ -272,7 +272,7 @@ extension PurchaseHandler {
             let customerInfo = try await self.purchases.restorePurchases()
 
             return (info: customerInfo,
-                    success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
+                    success: true)
         } catch {
             self.restoreError = error
             throw error
