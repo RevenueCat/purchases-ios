@@ -78,6 +78,9 @@ import RevenueCat
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
 
+    /// Used to make testing easier
+    internal var currentTask: Task<Void, Never>?
+
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
@@ -121,7 +124,7 @@ import RevenueCat
     }
 
     func onDismissRestorePurchasesAlert() {
-        Task {
+        currentTask = Task {
             await loadScreen()
         }
     }

@@ -881,6 +881,44 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 
+    func testOnDismissRestorePurchasesAlertReloadsScreen() async {
+        let mockPurchases = MockCustomerCenterPurchases(customerInfo: CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions)
+        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            currentVersionFetcher: { return "3.0.0" },
+            purchasesProvider: mockPurchases,
+            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
+        )
+
+        // Initial state
+        expect(viewModel.state) == .notLoaded
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+
+        mockPurchases.customerInfo = CustomerInfoFixtures.customerInfoWithLifetimeAppSubscrition
+
+        // Dismiss alert and verify screen reloads
+        viewModel.onDismissRestorePurchasesAlert()
+
+        // Wait for the task to complete
+        await viewModel.currentTask?.value
+        expect(viewModel.state) == .success
+
+        // Wait for state to change to success
+        expect(viewModel.purchaseInformation).toNot(beNil())
+        expect(viewModel.purchaseInformation?.expirationOrRenewal?.label).to(equal(.expires))
+        expect(viewModel.purchaseInformation?.expirationOrRenewal?.date).to(equal(.never))
+
+        // Verify screen was reloaded
+        expect(viewModel.configuration).toNot(beNil())
+        expect(mockPurchases.loadCustomerCenterCallCount) == 2
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
