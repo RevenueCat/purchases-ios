@@ -1514,8 +1514,6 @@
 		2DD5008D2C519EB4009C19B7 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PaywallsTester.xcodeproj; sourceTree = "<group>"; };
 		2DD500902C519EB4009C19B7 /* PaywallsTester.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = PaywallsTester.xcworkspace; sourceTree = "<group>"; };
-		2DD500912C519EB4009C19B7 /* Postprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Postprocessor.sh; sourceTree = "<group>"; };
-		2DD500922C519EB4009C19B7 /* Preprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Preprocessor.sh; sourceTree = "<group>"; };
 		2DD500B42C519EB4009C19B7 /* ConfiguredPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfiguredPurchases.swift; sourceTree = "<group>"; };
 		2DD500B52C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2DD500B62C519EB4009C19B7 /* Core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
@@ -3277,8 +3275,6 @@
 				4D4CADED2D09B06C004E85B7 /* SnapshotTestingStub */,
 				2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */,
 				2DD500902C519EB4009C19B7 /* PaywallsTester.xcworkspace */,
-				2DD500912C519EB4009C19B7 /* Postprocessor.sh */,
-				2DD500922C519EB4009C19B7 /* Preprocessor.sh */,
 			);
 			path = PaywallsTester;
 			sourceTree = "<group>";
