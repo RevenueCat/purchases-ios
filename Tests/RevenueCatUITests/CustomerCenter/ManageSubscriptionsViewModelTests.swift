@@ -294,7 +294,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             let viewModel = ManageSubscriptionsViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
                 actionWrapper: CustomerCenterActionWrapper(),
-                purchasesProvider: MockManageSubscriptionsPurchases(
+                purchasesProvider: MockCustomerCenterPurchases(
                     customerInfo: customerInfo,
                     products: products
                 ),
@@ -396,7 +396,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
                                                      actionWrapper: CustomerCenterActionWrapper(),
-                                                     purchasesProvider: MockManageSubscriptionsPurchases(
+                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
@@ -433,64 +433,6 @@ final class ManageSubscriptionsViewModelTests: TestCase {
                 loadPromotionalOfferUseCase.mockedPromotionalOffer?.discount.offerIdentifier
             ) == expectedOfferIdentifierInProduct
         }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
-
-    let customerInfo: CustomerInfo
-    let customerInfoError: Error?
-    // StoreProducts keyed by productIdentifier.
-    let products: [String: RevenueCat.StoreProduct]
-    let showManageSubscriptionsError: Error?
-    let beginRefundShouldFail: Bool
-
-    init(
-        customerInfo: CustomerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
-        customerInfoError: Error? = nil,
-        products: [RevenueCat.StoreProduct] =
-        [PurchaseInformationFixtures.product(id: "com.revenuecat.product",
-                                             title: "title",
-                                             duration: .month,
-                                             price: 2.99)],
-        showManageSubscriptionsError: Error? = nil,
-        beginRefundShouldFail: Bool = false
-    ) {
-        self.customerInfo = customerInfo
-        self.customerInfoError = customerInfoError
-        self.products = Dictionary(uniqueKeysWithValues: products.map({ product in
-            (product.productIdentifier, product)
-        }))
-        self.showManageSubscriptionsError = showManageSubscriptionsError
-        self.beginRefundShouldFail = beginRefundShouldFail
-    }
-
-    func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        if let customerInfoError {
-            throw customerInfoError
-        }
-        return customerInfo
-    }
-
-    func products(_ productIdentifiers: [String]) async -> [RevenueCat.StoreProduct] {
-        return productIdentifiers.compactMap { productIdentifier in
-            products[productIdentifier]
-        }
-    }
-
-    func showManageSubscriptions() async throws {
-        if let showManageSubscriptionsError {
-            throw showManageSubscriptionsError
-        }
-    }
-
-    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
-        if beginRefundShouldFail {
-            return .error
-        }
-        return .success
     }
 
 }

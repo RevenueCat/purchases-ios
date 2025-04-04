@@ -91,6 +91,13 @@ public struct CustomerCenterView: View {
             self.navigationOptions = navigationOptions
     }
 
+    @_spi(Internal) public init(
+        uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
+        navigationOptions: CustomerCenterNavigationOptions) {
+        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
+                  navigationOptions: navigationOptions)
+    }
+
     fileprivate init(
         viewModel: CustomerCenterViewModel,
         mode: CustomerCenterPresentationMode =  .default,
@@ -192,6 +199,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(screen: screen,
                                             purchaseInformation: purchaseInformation,
+                                            purchasesProvider: self.viewModel.purchasesProvider,
                                             actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
@@ -204,6 +212,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: nil,
+                                        purchasesProvider: self.viewModel.purchasesProvider,
                                         actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button

@@ -40,8 +40,9 @@ final class PurchaseDetailViewModel: ObservableObject {
         }
     }
 
-    init(purchaseInfo: PurchaseInfo) {
+    init(purchaseInfo: PurchaseInfo, purchasesProvider: CustomerCenterPurchasesType) {
         self.purchaseInfo = purchaseInfo
+        self.purchasesProvider = purchasesProvider
     }
 
     func didAppear() async {
@@ -51,6 +52,7 @@ final class PurchaseDetailViewModel: ObservableObject {
     // MARK: - Private
 
     private let purchaseInfo: PurchaseInfo
+    private let purchasesProvider: CustomerCenterPurchasesType
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -61,7 +63,7 @@ private extension PurchaseDetailViewModel {
 
     func fetchProduct() async {
         guard
-            let product = await Purchases.shared.products([purchaseInfo.productIdentifier]).first
+            let product = await self.purchasesProvider.products([purchaseInfo.productIdentifier]).first
         else {
             return
         }

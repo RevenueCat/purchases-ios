@@ -40,12 +40,12 @@ class PromotionalOfferViewModel: ObservableObject {
 
     init(
         promotionalOfferData: PromotionalOfferData?,
-        purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
+        purchasesProvider: CustomerCenterPurchasesType,
         onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)? = nil
     ) {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase()
+        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
         self.onPromotionalOfferPurchaseFlowComplete = onPromotionalOfferPurchaseFlowComplete
     }
 

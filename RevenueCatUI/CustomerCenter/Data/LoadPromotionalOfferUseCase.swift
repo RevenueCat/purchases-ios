@@ -33,7 +33,7 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
     private let purchasesProvider: CustomerCenterPurchasesType
 
-    init(purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()) {
+    init(purchasesProvider: CustomerCenterPurchasesType) {
         self.purchasesProvider = purchasesProvider
     }
 

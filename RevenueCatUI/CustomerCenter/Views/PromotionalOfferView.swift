@@ -44,6 +44,7 @@ struct PromotionalOfferView: View {
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
+         purchasesProvider: CustomerCenterPurchasesType,
          onDismissPromotionalOfferView: @escaping (PromotionalOfferViewAction) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: PromotionalOfferViewModel(
@@ -51,7 +52,8 @@ struct PromotionalOfferView: View {
                 promotionalOffer: promotionalOffer,
                 product: product,
                 promoOfferDetails: promoOfferDetails
-            )
+            ),
+            purchasesProvider: purchasesProvider
         ))
         self.onDismissPromotionalOfferView = onDismissPromotionalOfferView
     }

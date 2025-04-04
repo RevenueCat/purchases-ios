@@ -33,15 +33,16 @@ class FeedbackSurveyViewModel: ObservableObject {
     @Published
     var promotionalOfferData: PromotionalOfferData?
 
-    private var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let actionWrapper: CustomerCenterActionWrapper
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
+                     purchasesProvider: CustomerCenterPurchasesType,
                      actionWrapper: CustomerCenterActionWrapper) {
         self.init(feedbackSurveyData: feedbackSurveyData,
-                  purchasesProvider: CustomerCenterPurchases(),
-                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(),
+                  purchasesProvider: purchasesProvider,
+                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider),
                   actionWrapper: actionWrapper)
     }
 

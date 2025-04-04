@@ -55,7 +55,8 @@ struct WrongPlatformView: View {
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
         let subject = self.localization[.defaultSubject]
-        let body = supportInformation.calculateBody(self.localization)
+        let body = supportInformation.calculateBody(self.localization,
+                                                    purchasesProvider: customerCenterViewModel.purchasesProvider)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
                                                     body: body)
@@ -108,7 +109,7 @@ struct WrongPlatformView: View {
         })
         .task {
             if store == nil {
-                if let customerInfo = try? await Purchases.shared.customerInfo() {
+                if let customerInfo = try? await self.customerCenterViewModel.purchasesProvider.customerInfo() {
                     self.managementURL = customerInfo.managementURL
                 }
             }

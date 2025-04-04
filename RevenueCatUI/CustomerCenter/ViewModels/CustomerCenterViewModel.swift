@@ -22,7 +22,8 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor class CustomerCenterViewModel: ObservableObject {
+@MainActor
+@_spi(Internal) public class CustomerCenterViewModel: ObservableObject {
 
     private static let defaultAppIsLatestVersion = true
 
@@ -97,6 +98,11 @@ import RevenueCat
         self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
+    }
+
+    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+                  purchasesProvider: uiPreviewPurchaseProvider)
     }
 
     #if DEBUG
