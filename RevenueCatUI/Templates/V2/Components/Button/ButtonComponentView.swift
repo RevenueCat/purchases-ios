@@ -55,30 +55,34 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        AsyncButton {
-            try await performAction()
-        } label: {
-            StackComponentView(
-                viewModel: self.viewModel.stackViewModel,
-                onDismiss: self.onDismiss,
-                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
-            )
+        if self.viewModel.hasUnknownAction {
+            EmptyView()
+        } else {
+            AsyncButton {
+                try await performAction()
+            } label: {
+                StackComponentView(
+                    viewModel: self.viewModel.stackViewModel,
+                    onDismiss: self.onDismiss,
+                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                )
+            }
+            .applyIf(self.shouldBeDisabled, apply: { view in
+                view
+                    .disabled(true)
+                    .opacity(0.35)
+            })
+            #if canImport(SafariServices) && canImport(UIKit)
+            .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+                SafariView(url: self.inAppBrowserURL!)
+            }
+            #if os(iOS)
+            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
+                self.showCustomerCenter = false
+            })
+            #endif
+            #endif
         }
-        .applyIf(self.shouldBeDisabled, apply: { view in
-            view
-                .disabled(true)
-                .opacity(0.35)
-        })
-        #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
-        }
-        #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-            self.showCustomerCenter = false
-        })
-        #endif
-        #endif
     }
 
     private func performAction() async throws {
@@ -89,6 +93,8 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .unknown:
+            break
         }
     }
 
@@ -114,6 +120,8 @@ struct ButtonComponentView: View {
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
             navigateToUrl(url: url, method: method)
+        case .unknown:
+            break
         }
     }
 
@@ -130,6 +138,8 @@ struct ButtonComponentView: View {
         case .externalBrowser,
                 .deepLink:
             openURL(url)
+        case .unknown:
+            break
         }
     }
 

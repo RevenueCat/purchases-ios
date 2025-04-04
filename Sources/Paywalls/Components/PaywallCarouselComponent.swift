@@ -35,6 +35,12 @@ public extension PaywallComponent {
             public enum Position: String, Codable, Sendable, Hashable, Equatable {
                 case top
                 case bottom
+
+                public init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    let rawValue = try container.decode(String.self)
+                    self = Position(rawValue: rawValue) ?? .bottom
+                }
             }
 
             public let position: Position

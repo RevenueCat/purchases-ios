@@ -18,9 +18,15 @@ public extension PaywallComponent {
 
     final class StackComponent: PaywallComponentBase {
 
-        public enum Overflow: PaywallComponentBase {
+        public enum Overflow: String, PaywallComponentBase {
             case `default`
             case scroll
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try? container.decode(String.self)
+                self = Overflow(rawValue: rawValue ?? "") ?? .default
+            }
         }
 
         let type: ComponentType
