@@ -23,31 +23,38 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct RestorePurchasesAlert: ViewModifier {
+struct RestorePurchasesAlert: View {
 
-    @Binding
-    var isPresented: Bool
     @Environment(\.openURL)
     var openURL
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+    @Binding
+    private var isPresented: Bool
 
-    @State
-    private var alertType: AlertType
+    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+    @StateObject private var viewModel: RestorePurchasesAlertViewModel
+
     @Environment(\.localization)
     private var localization
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
 
-    init(isPresented: Binding<Bool>) {
-        self._isPresented = isPresented
-        self._alertType = State(initialValue: .restorePurchases)
+    init(
+        isPresented: Binding<Bool>,
+        actionWrapper: CustomerCenterActionWrapper
+    ) {
+        self.init(
+            isPresented: isPresented,
+            viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+        )
     }
 
-    // For previews
-    fileprivate init(isPresented: Binding<Bool>, alertType: AlertType) {
+    fileprivate init(
+        isPresented: Binding<Bool>,
+        viewModel: RestorePurchasesAlertViewModel
+    ) {
         self._isPresented = isPresented
-        self._alertType = State(initialValue: alertType)
+        self._viewModel = StateObject(wrappedValue: viewModel)
     }
 
     private var supportURL: URL? {
@@ -59,27 +66,25 @@ struct RestorePurchasesAlert: ViewModifier {
                                                     body: body)
     }
 
-    enum AlertType: Identifiable {
-        case purchasesRecovered, purchasesNotFound, restorePurchases
-        var id: Self { self }
+    var body: some View {
+        AlertOrConfirmationDialog(
+            isPresented: $isPresented,
+            alertType: self.viewModel.alertType,
+            title: alertTitle(),
+            message: alertMessage(),
+            actions: alertActions()
+        )
+        .task(id: isPresented) {
+            if isPresented {
+                await viewModel.performRestore()
+            }
+        }
     }
 
-    func body(content: Content) -> some View {
-        content
-            .modifier(
-                AlertOrConfirmationDialog(
-                    isPresented: $isPresented,
-                    alertType: alertType,
-                    title: alertTitle(),
-                    message: alertMessage(),
-                    actions: alertActions()
-                )
-            )
-    }
-
-    // swiftlint:disable:next function_body_length
     private func alertActions() -> [AlertOrConfirmationDialog.AlertAction] {
-        switch alertType {
+        switch self.viewModel.alertType {
+        case .loading:
+            return []
         case .purchasesRecovered:
             return [
                 AlertOrConfirmationDialog.AlertAction(
@@ -88,7 +93,6 @@ struct RestorePurchasesAlert: ViewModifier {
                     action: dismissAlert
                 )
             ]
-
         case .purchasesNotFound:
             var actions: [AlertOrConfirmationDialog.AlertAction] = []
 
@@ -122,42 +126,25 @@ struct RestorePurchasesAlert: ViewModifier {
             )
 
             return actions
-
-        case .restorePurchases:
-            return [
-                AlertOrConfirmationDialog.AlertAction(
-                    title: localization[.checkPastPurchases],
-                    role: nil,
-                    action: {
-                        Task {
-                            let alertType = await customerCenterViewModel.performRestore()
-                            setAlertType(alertType)
-                        }
-                    }
-                ),
-                AlertOrConfirmationDialog.AlertAction(
-                    title: localization[.cancel],
-                    role: .cancel,
-                    action: dismissAlert
-                )
-            ]
         }
     }
 
     // MARK: - Strings
     private func alertTitle() -> String {
-        switch self.alertType {
+        switch self.viewModel.alertType {
+        case .loading:
+            return localization[.purchasesRestoring]
         case .purchasesRecovered:
             return localization[.purchasesRecovered]
         case .purchasesNotFound:
             return ""
-        case .restorePurchases:
-            return localization[.restorePurchases]
         }
     }
 
-    private func alertMessage() -> String {
-        switch self.alertType {
+    private func alertMessage() -> String? {
+        switch self.viewModel.alertType {
+        case .loading:
+            return nil
         case .purchasesRecovered:
             return localization[.purchasesRecoveredExplanation]
         case .purchasesNotFound:
@@ -166,13 +153,11 @@ struct RestorePurchasesAlert: ViewModifier {
                 message += "\n\n" + localization[.updateWarningDescription]
             }
             return message
-        case .restorePurchases:
-            return localization[.goingToCheckPurchases]
         }
     }
 
     private func dismissAlert() {
-        self.alertType = .restorePurchases
+        self.customerCenterViewModel.onDismissRestorePurchasesAlert()
         self.isPresented = false
     }
 }
@@ -181,17 +166,12 @@ struct RestorePurchasesAlert: ViewModifier {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+private struct AlertOrConfirmationDialog: View {
 
-/// This modifier is used to show either an Alert or ConfirmationDialog depending on the number of actions to avoid
-/// SwiftUI logging the following warning about confirmation dialogs requiring actionable choices:
-/// "A confirmation dialog was created without any actions. Confirmation dialogs should always provide
-/// users with an actionable choice. Consider using an alert if there is no action that can be taken
-/// in response to your presentation."
-private struct AlertOrConfirmationDialog: ViewModifier {
     @Binding var isPresented: Bool
-    let alertType: RestorePurchasesAlert.AlertType
+    let alertType: RestorePurchasesAlertViewModel.AlertType
     let title: String
-    let message: String
+    let message: String?
     let actions: [AlertAction]
 
     struct AlertAction: Identifiable {
@@ -201,70 +181,70 @@ private struct AlertOrConfirmationDialog: ViewModifier {
         let action: () -> Void
     }
 
-    func body(content: Content) -> some View {
-        if actions.count < 3 {
-            content.alert(
-                title,
-                isPresented: $isPresented,
-                actions: {
-                    ForEach(actions) { action in
-                        Button(role: action.role) {
-                            action.action()
-                        } label: {
-                            Text(action.title)
-                        }
+    var body: some View {
+        ZStack {
+            if isPresented {
+                Color.black
+                    .opacity(alertType == .loading ? 0.15 : 0)
+                    .animation(.easeInOut, value: alertType)
+                    .ignoresSafeArea()
+
+                if alertType == .loading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text(title)
+                            .font(.headline)
                     }
-                },
-                message: {
-                    Text(message)
-                }
-            )
-        } else {
-            content.confirmationDialog(
-                title,
-                isPresented: $isPresented,
-                actions: {
-                    ForEach(actions) { action in
-                        Button(role: action.role) {
-                            action.action()
-                        } label: {
-                            Text(action.title)
-                        }
+                    .padding(24)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                } else {
+                    if actions.count < 3 {
+                        Color.clear
+                            .alert(
+                                title,
+                                isPresented: $isPresented,
+                                actions: {
+                                    ForEach(actions) { action in
+                                        Button(role: action.role) {
+                                            action.action()
+                                        } label: {
+                                            Text(action.title)
+                                        }
+                                    }
+                                },
+                                message: {
+                                    if let message {
+                                        Text(message)
+                                    }
+                                }
+                            )
+                    } else {
+                        Color.clear
+                            .confirmationDialog(
+                                title,
+                                isPresented: $isPresented,
+                                actions: {
+                                    ForEach(actions) { action in
+                                        Button(role: action.role) {
+                                            action.action()
+                                        } label: {
+                                            Text(action.title)
+                                        }
+                                    }
+                                },
+                                message: {
+                                    if let message {
+                                        Text(message)
+                                    }
+                                }
+                            )
                     }
-                },
-                message: {
-                    Text(message)
                 }
-            )
+            }
         }
     }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension RestorePurchasesAlert {
-
-    func setAlertType(_ newType: AlertType) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.alertType = newType
-            self.isPresented = true
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension View {
-
-    func restorePurchasesAlert(isPresented: Binding<Bool>) -> some View {
-        self.modifier(RestorePurchasesAlert(isPresented: isPresented))
-    }
-
 }
 
 #if DEBUG
@@ -272,16 +252,34 @@ extension View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+private class MockRestorePurchasesAlertViewModel: RestorePurchasesAlertViewModel {
+
+    init(alertType: AlertType) {
+        super.init(actionWrapper: CustomerCenterActionWrapper())
+        self.alertType = alertType
+    }
+
+    override func performRestore() async {
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct RestorePurchasesAlert_Previews: PreviewProvider {
     static var previews: some View {
-        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.restorePurchases)
-            .previewDisplayName("Restore Purchases")
+        Group {
+            PreviewContainer(alertType: .loading)
+                .previewDisplayName("Loading Forever")
 
-        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesRecovered)
-            .previewDisplayName("Purchases Recovered")
+            PreviewContainer(alertType: .purchasesRecovered)
+                .previewDisplayName("Purchases Recovered")
 
-        PreviewContainer(alertType: RestorePurchasesAlert.AlertType.purchasesNotFound)
-            .previewDisplayName("Purchases Not Found")
+            PreviewContainer(alertType: .purchasesNotFound)
+                .previewDisplayName("Purchases Not Found")
+        }
     }
 }
 
@@ -290,19 +288,25 @@ struct RestorePurchasesAlert_Previews: PreviewProvider {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private struct PreviewContainer: View {
+
+    let alertType: RestorePurchasesAlertViewModel.AlertType
     @State private var isPresented = true
-    let alertType: RestorePurchasesAlert.AlertType
 
     var body: some View {
-        Color.clear
-            .modifier(RestorePurchasesAlert(isPresented: $isPresented, alertType: alertType))
-            .environmentObject(CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper()))
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-            .emergeRenderingMode(.window)
-            .onAppear {
-                self.isPresented = true
-            }
+        let purchaseInformationApple =
+        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
+                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+
+        RestorePurchasesAlert(
+            isPresented: $isPresented,
+            viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType)
+        )
+        .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+        .environmentObject(viewModelApple)
+        .emergeRenderingMode(.window)
     }
+
 }
 #endif
 

@@ -78,6 +78,9 @@ import RevenueCat
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
 
+    /// Used to make testing easier
+    internal var currentTask: Task<Void, Never>?
+
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
@@ -120,22 +123,9 @@ import RevenueCat
         }
     }
 
-    func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.actionWrapper.handleAction(.restoreStarted)
-
-        do {
-            let customerInfo = try await purchasesProvider.restorePurchases()
-            self.actionWrapper.handleAction(.restoreCompleted(customerInfo))
-
-            let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-
-            self.state = .notLoaded
-            await self.loadScreen()
-
-            return hasPurchases ? .purchasesRecovered : .purchasesNotFound
-        } catch {
-            self.actionWrapper.handleAction(.restoreFailed(error))
-            return .purchasesNotFound
+    func onDismissRestorePurchasesAlert() {
+        currentTask = Task {
+            await loadScreen()
         }
     }
 
