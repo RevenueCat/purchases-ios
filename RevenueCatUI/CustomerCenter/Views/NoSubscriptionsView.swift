@@ -25,6 +25,7 @@ import SwiftUI
 struct NoSubscriptionsView: View {
 
     let configuration: CustomerCenterConfigData
+    let actionWrapper: CustomerCenterActionWrapper
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
@@ -38,8 +39,10 @@ struct NoSubscriptionsView: View {
     @State
     private var showRestoreAlert: Bool = false
 
-    init(configuration: CustomerCenterConfigData) {
+    init(configuration: CustomerCenterConfigData,
+         actionWrapper: CustomerCenterActionWrapper) {
         self.configuration = configuration
+        self.actionWrapper = actionWrapper
     }
 
     var body: some View {
@@ -60,11 +63,16 @@ struct NoSubscriptionsView: View {
                 Button(localization[.restorePurchases]) {
                     showRestoreAlert = true
                 }
-                .restorePurchasesAlert(isPresented: $showRestoreAlert)
             }
 
         }
         .dismissCircleButtonToolbarIfNeeded()
+        .overlay {
+            RestorePurchasesAlert(
+                isPresented: $showRestoreAlert,
+                actionWrapper: actionWrapper
+            )
+        }
     }
 
 }
@@ -78,7 +86,8 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData)
+        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
+                            actionWrapper: CustomerCenterActionWrapper())
     }
 
 }
