@@ -882,7 +882,8 @@ final class CustomerCenterViewModelTests: TestCase {
     }
 
     func testOnDismissRestorePurchasesAlertReloadsScreen() async {
-        let mockPurchases = MockCustomerCenterPurchases(customerInfo: CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions)
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
+        let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
         mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
 
