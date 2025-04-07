@@ -5,8 +5,17 @@ struct ContentView: View {
         TabView {
             OfferingsView()
                 .tabItem {
-                    Image(systemName: "dollarsign")
-                    Text("Offerings")
+                    Label("Offerings", systemImage: "dollarsign")
+                }
+            
+            PackagesView()
+                .tabItem {
+                    Label("Packages", systemImage: "shippingbox.fill")
+                }
+            
+            EntitlementsView()
+                .tabItem {
+                    Label("Entitlements", systemImage: "medal.fill")
                 }
         }
     }

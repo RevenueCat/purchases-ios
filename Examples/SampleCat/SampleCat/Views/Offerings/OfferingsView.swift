@@ -79,7 +79,6 @@ struct OfferingsView: View {
             .onAppear(perform: loadData)
             .refreshable(action: loadData)
             .navigationTitle("Offerings")
-            .navigationBarTitleDisplayMode(.large)
         }
     }
     
