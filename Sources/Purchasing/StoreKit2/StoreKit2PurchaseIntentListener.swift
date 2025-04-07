@@ -157,7 +157,16 @@ struct StorePurchaseIntent: Sendable, Equatable {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-protocol StoreKit2PurchaseIntentType: Equatable, Identifiable, Sendable {
+protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
+
+    // WARNING: **DO NOT** make this type conform to Identifiable!!!
+    // While StoreKit.PurchaseIntent conforms to Identifiable in iOS 18+,
+    // the conformance is not available in earlier versions of iOS, and this will
+    // cause a runtime crash when trying to typecast a StoreKit.PurchaseIntent
+    // to a StoreKit2PurchaseIntentType in iOS 16.4..<18.0.
+    //
+    // See https://github.com/RevenueCat/purchases-ios/pull/4964
+    // and https://github.com/RevenueCat/purchases-ios/issues/4963 for more details.
 
     var product: StoreKit.Product { get }
 
