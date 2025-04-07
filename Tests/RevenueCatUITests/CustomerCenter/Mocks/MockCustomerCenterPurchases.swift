@@ -21,6 +21,10 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurchasesType {
 
+    let appUserID: String = "$RC_MOCK_APP_USER_ID"
+    let isConfigured: Bool = true
+    let storeFrontCountryCode: String? = "ESP"
+
     var customerInfo: CustomerInfo
     let customerInfoError: Error?
     // StoreProducts keyed by productIdentifier.

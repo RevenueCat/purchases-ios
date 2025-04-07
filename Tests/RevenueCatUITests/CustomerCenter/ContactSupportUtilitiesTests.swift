@@ -30,7 +30,7 @@ class ContactSupportUtilitiesTest: TestCase {
     private let localization: CustomerCenterConfigData.Localization = .init(locale: "en_US", localizedStrings: [:])
 
     func testSupportEmailBodyWithDefaultDataIsCorrect() {
-        let body = support.calculateBody(localization)
+        let body = support.calculateBody(localization, purchasesProvider: CustomerCenterPurchases())
         let initialBody = """
         Please describe your issue or question.
 
@@ -48,7 +48,7 @@ class ContactSupportUtilitiesTest: TestCase {
 
     func testSupportEmailBodyWithGivenDataIsCorrect() {
         let givenData = [("test1", "test2"), ("test3", "test4")]
-        let body = support.calculateBody(localization, dataToInclude: givenData)
+        let body = support.calculateBody(localization, dataToInclude: givenData, purchasesProvider: CustomerCenterPurchases())
         let expectedBody = """
         Please describe your issue or question.
 
