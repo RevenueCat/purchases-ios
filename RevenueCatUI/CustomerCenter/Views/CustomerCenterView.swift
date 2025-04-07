@@ -207,7 +207,8 @@ private extension CustomerCenterView {
                                         actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button
-                NoSubscriptionsView(configuration: configuration)
+                NoSubscriptionsView(configuration: configuration,
+                                    actionWrapper: self.viewModel.actionWrapper)
             }
         }
     }
