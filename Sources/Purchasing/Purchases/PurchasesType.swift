@@ -216,7 +216,7 @@ public protocol PurchasesType: AnyObject {
      */
     var cachedOfferings: Offerings? { get }
     
-    func checkAppHealth() async throws
+    func checkAppHealth() async throws -> HealthCheck
 
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
