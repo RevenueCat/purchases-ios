@@ -159,6 +159,12 @@ struct StorePurchaseIntent: Sendable, Equatable {
 @available(visionOS, unavailable)
 protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
 
+    // WARNING: **DO NOT** make this type conform to Identifiable!!!
+    // While StoreKit.PurchaseIntent conforms to Identifiable in iOS 18+,
+    // the conformance is not available in earlier versions of iOS, and this will
+    // cause a runtime crash when trying to typecast a StoreKit.PurchaseIntent
+    // to a StoreKit2PurchaseIntentType in iOS 16.4..<18.0.
+
     var product: StoreKit.Product { get }
 
     #if compiler(>=6.0)
