@@ -157,7 +157,7 @@ struct StorePurchaseIntent: Sendable, Equatable {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-protocol StoreKit2PurchaseIntentType: Equatable, Identifiable, Sendable {
+protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
 
     var product: StoreKit.Product { get }
 
