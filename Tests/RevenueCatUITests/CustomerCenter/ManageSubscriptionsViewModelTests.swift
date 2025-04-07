@@ -460,7 +460,7 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
     let price: Decimal
     let localizedPriceString: String
     let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: SubscriptionPeriod
+    let subscriptionPeriod: RevenueCat.SubscriptionPeriod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
 

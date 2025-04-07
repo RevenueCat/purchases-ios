@@ -21,7 +21,7 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurchasesType {
 
-    let customerInfo: CustomerInfo
+    var customerInfo: CustomerInfo
     let customerInfoError: Error?
     // StoreProducts keyed by productIdentifier.
     let products: [String: RevenueCat.StoreProduct]

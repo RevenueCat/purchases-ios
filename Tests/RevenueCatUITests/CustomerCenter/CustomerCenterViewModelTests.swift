@@ -881,9 +881,9 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 
-    func testSucessfulRestoreRefreshesCustomerCenter() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        mockPurchases.restorePurchasesResult = .success(CustomerInfoFixtures.customerInfoWithAppleSubscriptions)
+    func testOnDismissRestorePurchasesAlertReloadsScreen() async {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
+        let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
         mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
 
@@ -894,25 +894,32 @@ final class CustomerCenterViewModelTests: TestCase {
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
         )
 
-        _ = await viewModel.performRestore()
-        expect(mockPurchases.loadCustomerCenterCallCount) == 1
+        // Initial state
+        expect(viewModel.state) == .notLoaded
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+
+        mockPurchases.customerInfo = CustomerInfoFixtures.customerInfoWithLifetimeAppSubscrition
+
+        // Dismiss alert and verify screen reloads
+        viewModel.onDismissRestorePurchasesAlert()
+
+        // Wait for the task to complete
+        await viewModel.currentTask?.value
+        expect(viewModel.state) == .success
+
+        // Wait for state to change to success
+        expect(viewModel.purchaseInformation).toNot(beNil())
+        expect(viewModel.purchaseInformation?.expirationOrRenewal?.label).to(equal(.expires))
+        expect(viewModel.purchaseInformation?.expirationOrRenewal?.date).to(equal(.never))
+
+        // Verify screen was reloaded
+        expect(viewModel.configuration).toNot(beNil())
+        expect(mockPurchases.loadCustomerCenterCallCount) == 2
     }
 
-    func testUnSucessfulRestoreRefreshesCustomerCenter() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
-
-        let viewModel = CustomerCenterViewModel(
-            actionWrapper: CustomerCenterActionWrapper(),
-            currentVersionFetcher: { return "3.0.0" },
-            purchasesProvider: mockPurchases,
-            customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
-        )
-
-        _ = await viewModel.performRestore()
-        expect(mockPurchases.loadCustomerCenterCallCount) == 0
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
