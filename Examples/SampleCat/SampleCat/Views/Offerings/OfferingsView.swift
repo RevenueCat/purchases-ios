@@ -1,69 +1,6 @@
 import SwiftUI
 import RevenueCat
 
-extension AppHealthResponse.AppHealthOffering.AppHealthStatus {
-    var color: Color {
-        switch self {
-        case .ok: .green
-        case .couldNotCheck, .unknown: .gray
-        case .notFound: .red
-        case .needsAction, .actionInProgress: .yellow
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .ok: "checkmark.circle.fill"
-        case .couldNotCheck, .unknown: "questionmark.circle.fill"
-        case .notFound: "xmark.circle.fill"
-        case .actionInProgress, .needsAction: "exclamationmark.triangle.fill"
-        }
-    }
-}
-
-struct OfferingViewModel: Identifiable, Equatable {
-    var id: String { identifier }
-    let identifier: String
-    let packages: [PackageViewModel]
-}
-
-struct PackageViewModel: Identifiable, Equatable {
-    var id: String { identifier }
-    let identifier: String
-    let productIdentifier: String
-    let title: String
-    let price: String?
-    let status: AppHealthResponse.AppHealthOffering.AppHealthStatus
-    let statusHelperText: String
-    
-    init(
-        identifier: String,
-        productIdentifier: String,
-        title: String,
-        price: String?,
-        status: AppHealthResponse.AppHealthOffering.AppHealthStatus,
-        statusHelperText: String
-    ) {
-        self.identifier = identifier
-        self.productIdentifier = productIdentifier
-        self.title = title
-        self.price = price
-        self.status = status
-        self.statusHelperText = Self.generateStatusText(from: statusHelperText, andStatus: status)
-    }
-    
-    private static func generateStatusText(from helperText: String, andStatus status: AppHealthResponse.AppHealthOffering.AppHealthStatus) -> String {
-        switch status {
-        case .ok: "Ready for production purchases."
-        case .couldNotCheck: helperText
-        case .notFound: "Product not found in App Store Connect."
-        case .actionInProgress: "Product found with state: '\(helperText)'."
-        case .needsAction: "Product found with state: \(helperText)."
-        case .unknown: helperText
-        }
-    }
-}
-
 struct OfferingsView: View {
     @Environment(UserViewModel.self) private var userViewModel
     @State private var selectedOffering: OfferingViewModel?
