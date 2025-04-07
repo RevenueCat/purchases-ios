@@ -42,7 +42,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     func testInitialState() {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                     actionWrapper: CustomerCenterActionWrapper())
+                                     actionWrapper: CustomerCenterActionWrapper(),
+                                     purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
@@ -57,7 +58,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase)
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
@@ -69,7 +71,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase)
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -95,7 +98,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase)
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -112,7 +116,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase)
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -130,7 +135,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase)
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -156,7 +162,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: purchase)
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -165,7 +172,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     func testStateChangeToError() {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                     actionWrapper: CustomerCenterActionWrapper())
+                                     actionWrapper: CustomerCenterActionWrapper(),
+                                     purchasesProvider: MockCustomerCenterPurchases())
 
         viewModel.state = CustomerCenterViewState.error(error)
 
