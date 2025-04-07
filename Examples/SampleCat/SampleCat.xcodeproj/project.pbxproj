@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5342D98A2D8030150082128A /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5342D9892D8030150082128A /* RevenueCat */; };
-		5342D98C2D8030150082128A /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 5342D98B2D8030150082128A /* RevenueCatUI */; };
+		53DA4F9E2D9D8DA500D0CB3A /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53DA4F9D2D9D8DA500D0CB3A /* RevenueCat */; };
+		53DA4FA02D9D8DA500D0CB3A /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53DA4F9F2D9D8DA500D0CB3A /* RevenueCatUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,8 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5342D98C2D8030150082128A /* RevenueCatUI in Frameworks */,
-				5342D98A2D8030150082128A /* RevenueCat in Frameworks */,
+				53DA4FA02D9D8DA500D0CB3A /* RevenueCatUI in Frameworks */,
+				53DA4F9E2D9D8DA500D0CB3A /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,8 +72,8 @@
 			);
 			name = SampleCat;
 			packageProductDependencies = (
-				5342D9892D8030150082128A /* RevenueCat */,
-				5342D98B2D8030150082128A /* RevenueCatUI */,
+				53DA4F9D2D9D8DA500D0CB3A /* RevenueCat */,
+				53DA4F9F2D9D8DA500D0CB3A /* RevenueCatUI */,
 			);
 			productName = SampleCat;
 			productReference = 5342D9652D802CD70082128A /* SampleCat.app */;
@@ -104,7 +104,7 @@
 			mainGroup = 5342D95C2D802CD60082128A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				53DA4F9C2D9D8DA500D0CB3A /* XCLocalSwiftPackageReference "../../../purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5342D9662D802CD70082128A /* Products */;
@@ -276,7 +276,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SampleCat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.appdiggershq.fosi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -304,7 +304,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SampleCat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.appdiggershq.fosi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -335,26 +335,20 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		53DA4F9C2D9D8DA500D0CB3A /* XCLocalSwiftPackageReference "../../../purchases-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../purchases-ios";
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5342D9892D8030150082128A /* RevenueCat */ = {
+		53DA4F9D2D9D8DA500D0CB3A /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
 		};
-		5342D98B2D8030150082128A /* RevenueCatUI */ = {
+		53DA4F9F2D9D8DA500D0CB3A /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5342D9882D8030150082128A /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
