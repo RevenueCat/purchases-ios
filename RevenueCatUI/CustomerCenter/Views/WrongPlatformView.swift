@@ -89,7 +89,10 @@ struct WrongPlatformView: View {
                 }
             }
 
-            if let url = supportInformation?.supportURL(localization: localization),
+            if let url = supportInformation?.supportURL(
+                localization: localization,
+                purchasesProvider: customerCenterViewModel.purchasesProvider
+            ),
                URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                 Section {
                     AsyncButton {
@@ -110,7 +113,7 @@ struct WrongPlatformView: View {
         })
         .task {
             if store == nil {
-                if let customerInfo = try? await Purchases.shared.customerInfo() {
+                if let customerInfo = try? await self.customerCenterViewModel.purchasesProvider.customerInfo() {
                     self.managementURL = customerInfo.managementURL
                 }
             }

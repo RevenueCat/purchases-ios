@@ -61,7 +61,8 @@ struct RestorePurchasesAlert: View {
     private var supportURL: URL? {
         guard let supportInformation = self.supportInformation else { return nil }
         let subject = self.localization[.defaultSubject]
-        let body = supportInformation.calculateBody(self.localization)
+        let body = supportInformation.calculateBody(self.localization,
+                                                    purchasesProvider: customerCenterViewModel.purchasesProvider)
         return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
                                                     subject: subject,
                                                     body: body)
@@ -108,7 +109,10 @@ struct RestorePurchasesAlert: View {
                 )
             }
 
-            if let url = supportInformation?.supportURL(localization: localization), URLUtilities.canOpenURL(url) {
+            if let url = supportInformation?.supportURL(
+                localization: localization,
+                purchasesProvider: customerCenterViewModel.purchasesProvider
+            ), URLUtilities.canOpenURL(url) {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
                         title: localization[.contactSupport],
