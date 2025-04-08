@@ -22,9 +22,10 @@ extension CustomerCenterConfigData.Support {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func supportURL(localization: CustomerCenterConfigData.Localization) -> URL? {
+    func supportURL(localization: CustomerCenterConfigData.Localization,
+                    purchasesProvider: CustomerCenterPurchasesType) -> URL? {
         let subject = localization[.defaultSubject]
-        let body = calculateBody(localization)
+        let body = calculateBody(localization, purchasesProvider: purchasesProvider)
 
         return URLUtilities.createMailURLIfPossible(
             email: email,

@@ -21,6 +21,10 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurchasesType {
 
+    let appUserID: String = "$RC_MOCK_APP_USER_ID"
+    let isConfigured: Bool = true
+    let storeFrontCountryCode: String? = "ESP"
+
     var customerInfo: CustomerInfo
     let customerInfoError: Error?
     // StoreProducts keyed by productIdentifier.
@@ -52,6 +56,13 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         self.showManageSubscriptionsError = showManageSubscriptionsError
         self.beginRefundShouldFail = beginRefundShouldFail
         self.loadCustomerCenterResult = .success(customerCenterConfigData)
+    }
+
+    func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoError {
+            throw customerInfoError
+        }
+        return customerInfo
     }
 
     var customerInfoFetchPolicy: CacheFetchPolicy?
@@ -106,5 +117,18 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func restorePurchases() async throws -> CustomerInfo {
         restorePurchasesCallCount += 1
         return try restorePurchasesResult.get()
+    }
+
+    func showManageSubscriptions() async throws {
+        if let showManageSubscriptionsError {
+            throw showManageSubscriptionsError
+        }
+    }
+
+    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
+        if beginRefundShouldFail {
+            return .error
+        }
+        return .success
     }
 }
