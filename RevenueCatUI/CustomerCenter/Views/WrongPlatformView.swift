@@ -89,7 +89,10 @@ struct WrongPlatformView: View {
                 }
             }
 
-            if let url = supportInformation?.supportURL(localization: localization),
+            if let url = supportInformation?.supportURL(
+                localization: localization,
+                purchasesProvider: customerCenterViewModel.purchasesProvider
+            ),
                URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                 Section {
                     AsyncButton {
