@@ -13,7 +13,7 @@
 
 import Foundation
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @available(iOS 16.4, macOS 14.4, *)
 @available(tvOS, unavailable)

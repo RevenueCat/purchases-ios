@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 3/23/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class MockProductEntitlementMappingFetcher: ProductEntitlementMappingFetcher {
 

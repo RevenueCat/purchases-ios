@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 3/17/23.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
