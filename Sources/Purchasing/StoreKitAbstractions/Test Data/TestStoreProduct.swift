@@ -99,6 +99,8 @@ public struct TestStoreProduct {
 
 }
 
+// swiftlint:disable missing_docs
+
 // Ensure consistency with the internal type
 @_spi(Internal) extension TestStoreProduct: StoreProductType {
 
@@ -115,6 +117,7 @@ public struct TestStoreProduct {
     }
 
 }
+// swiftlint:enable missing_docs
 
 extension TestStoreProduct {
 
