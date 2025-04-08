@@ -179,9 +179,9 @@ extension Backend {
 extension Backend {
 
     /// - Throws: `NetworkError`
-    func healthReportRequest() async throws {
+    func healthReportRequest(appUserID: String) async throws {
         try await Async.call { completion in
-            self.internalAPI.healthReportRequest() { error in
+            self.internalAPI.healthReportRequest(appUserID: appUserID) { error in
                 completion(.init(error))
             }
         }

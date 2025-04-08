@@ -21,31 +21,27 @@ final class HealthReportOperation: CacheableNetworkOperation {
         let completion: InternalAPI.ResponseHandler
 
     }
-
-    struct Configuration: NetworkConfiguration {
-
-        let httpClient: HTTPClient
-
-    }
-
+    
+    private let configuration: AppUserConfiguration
     private let callbackCache: CallbackCache<Callback>
 
     static func createFactory(
-        httpClient: HTTPClient,
+        configuration: UserSpecificConfiguration,
         callbackCache: CallbackCache<Callback>
     ) -> CacheableNetworkOperationFactory<HealthReportOperation> {
-        return .init({ .init(httpClient: httpClient,
+        return .init({ .init(configuration: configuration,
                              callbackCache: callbackCache,
                              cacheKey: $0) },
                      individualizedCacheKeyPart: "")
     }
 
-    private init(httpClient: HTTPClient,
+    private init(configuration: UserSpecificConfiguration,
                  callbackCache: CallbackCache<Callback>,
                  cacheKey: String) {
+        self.configuration = configuration
         self.callbackCache = callbackCache
 
-        super.init(configuration: Configuration(httpClient: httpClient), cacheKey: cacheKey)
+        super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {

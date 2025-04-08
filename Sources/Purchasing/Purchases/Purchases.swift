@@ -1776,7 +1776,7 @@ extension Purchases: InternalPurchasesType {
     
     internal func healthReportRequest() async throws {
         do {
-            try await self.backend.healthReportRequest()
+            try await self.backend.healthReportRequest(appUserID: self.appUserID)
         } catch {
             
         }
