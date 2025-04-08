@@ -91,6 +91,22 @@ extension PurchasesDiagnostics {
 
 }
 
+extension PurchasesDiagnostics {
+    enum HealthCheckError: Swift.Error {
+        
+    }
+    
+    public func healthCheck() async throws {
+        do {
+            
+        } catch let error as BackendError {
+            
+        } catch let error {
+            
+        }
+    }
+}
+
 // MARK: - Private
 
 private extension PurchasesDiagnostics {
