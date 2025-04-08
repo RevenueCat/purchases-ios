@@ -42,7 +42,7 @@ public typealias SK2Product = StoreKit.Product
 
     /// Creates an instance from any `StoreProductType`.
     /// If `product` is already a wrapped `StoreProduct` then this returns it instead.
-    @_spi(Internal) public static func from(product: StoreProductType) -> StoreProduct {
+    static func from(product: StoreProductType) -> StoreProduct {
         return product as? StoreProduct
             ?? StoreProduct(product)
     }
