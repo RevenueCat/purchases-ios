@@ -88,7 +88,7 @@ extension PackageType: Codable {
 
 extension PackageType {
 
-    var description: String? {
+    @_spi(Internal) public var description: String? {
         switch self {
         case .unknown: return nil
         case .custom: return nil
