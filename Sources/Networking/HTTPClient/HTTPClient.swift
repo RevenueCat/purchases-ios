@@ -245,6 +245,7 @@ internal extension HTTPClient {
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
+        var currentHostIndex: Int = 0
 
         /// Whether the request has been retried.
         var retried: Bool {
@@ -281,11 +282,25 @@ internal extension HTTPClient {
         var method: HTTPRequest.Method { self.httpRequest.method }
         var path: String { self.httpRequest.path.relativePath }
 
+        func getCurrentRequestURL(proxyURL: URL?) -> URL? {
+            return self.httpRequest.path.url(hostURLIndex: self.currentHostIndex, proxyURL: proxyURL)
+        }
+
         func retriedRequest() -> Self {
             var copy = self
             copy.retryCount += 1
+            copy.currentHostIndex = 0 // TODO: Do we want this or should we keep the current host?
             copy.headers[RequestHeader.retryCount.rawValue] = "\(copy.retryCount)"
+            return copy
+        }
 
+        func requestWithNextHost() -> Self? {
+            var copy = self
+            copy.currentHostIndex += 1
+            guard self.httpRequest.path.url(hostURLIndex: self.currentHostIndex) != nil else {
+                // No more hosts available
+                return nil
+            }
             return copy
         }
 
@@ -293,8 +308,9 @@ internal extension HTTPClient {
             """
             <\(type(of: self)): httpMethod=\(self.method.httpMethod)
             path=\(self.path)
-            headers=\(self.headers.description )
+            headers=\(self.headers.description)
             retried=\(self.retried)
+            currentHostIndex=\(self.currentHostIndex)
             >
             """
         }
@@ -474,7 +490,23 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                requestRetryScheduled = self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
+                // TODO: Should we skip fallback host if isLoadShedder == true
+                // Try next host if we got a server error
+                if let statusCode = httpURLResponse?.statusCode, HTTPStatusCode(rawValue: statusCode).isServerError,
+                   let nextRequest = request.requestWithNextHost() {
+                    Logger.debug(Strings.network.retrying_request_with_next_host(
+                        httpMethod: nextRequest.method.httpMethod,
+                        path: nextRequest.path,
+                        nextHost: nextRequest.currentHostIndex
+                    ))
+                    self.state.modify {
+                        $0.queuedRequests.insert(nextRequest, at: 0)
+                    }
+                    requestRetryScheduled = true
+                } else {
+                    requestRetryScheduled = self.retryRequestIfNeeded(request: request,
+                                                                      httpURLResponse: httpURLResponse)
+                }
             }
 
             if !requestRetryScheduled {
@@ -540,7 +572,7 @@ private extension HTTPClient {
     }
 
     func convert(request: Request) -> URLRequest? {
-        guard let requestURL = request.httpRequest.path.url(proxyURL: SystemInfo.proxyURL) else {
+        guard let requestURL = request.getCurrentRequestURL(proxyURL: SystemInfo.proxyURL) else {
             return nil
         }
         var urlRequest = URLRequest(url: requestURL)

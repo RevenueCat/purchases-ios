@@ -15,8 +15,8 @@ import Foundation
 
 protocol HTTPRequestPath {
 
-    /// The base URL for requests to this path.
-    static var serverHostURL: URL { get }
+    /// The base URLs for requests to this path, in order of preference.
+    static var serverHostURLs: [URL] { get }
 
     /// Whether requests to this path are authenticated.
     var authenticated: Bool { get }
@@ -45,12 +45,11 @@ extension HTTPRequestPath {
         return "/v1/\(self.pathComponent)"
     }
 
-    var url: URL? { return self.url(proxyURL: nil) }
+    var url: URL? { return self.url(hostURLIndex: 0, proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil) -> URL? {
-        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURL)
+    func url(hostURLIndex: Int, proxyURL: URL? = nil) -> URL? {
+        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURLs[safe: hostURLIndex])
     }
-
 }
 
 // MARK: - Main paths
@@ -91,8 +90,14 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+    static let serverHostURLs = [
+        "https://api.revenuecat.com",
+        "https://api2.revenuecat.com", // TODO: Add real values
+        "https://api3.revenuecat.com"
+    ].map {
+        // swiftlint:disable:next force_unwrapping
+        URL(string: $0)!
+    }
 
     var authenticated: Bool {
         switch self {
