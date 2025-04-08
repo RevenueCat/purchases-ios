@@ -43,10 +43,8 @@ class InternalAPI {
     func healthReportRequest(appUserID: String, completion: @escaping ResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-        let factory = HealthReportOperation.createFactory(
-            configuration: config,
-            callbackCache: self.healthReportCallbackCache
-        )
+        let factory = HealthReportOperation.createFactory(configuration: config,
+                                                          callbackCache: self.healthReportCallbackCache)
         let callback = HealthReportOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthReportCallbackCache.add(callback)
         
