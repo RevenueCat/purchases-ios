@@ -1462,7 +1462,6 @@
 		2DD5003F2C519EB4009C19B7 /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
 		2DD500412C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2DD500422C519EB4009C19B7 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
-		2DD500442C519EB4009C19B7 /* SamplePaywalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywalls.swift; sourceTree = "<group>"; };
 		2DD500462C519EB4009C19B7 /* ApplicationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationData.swift; sourceTree = "<group>"; };
 		2DD500472C519EB4009C19B7 /* ApplicationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationManager.swift; sourceTree = "<group>"; };
 		2DD500482C519EB4009C19B7 /* AuthenticationActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationActor.swift; sourceTree = "<group>"; };
@@ -3102,7 +3101,6 @@
 			children = (
 				2DD500412C519EB4009C19B7 /* Constants.swift */,
 				2DD500422C519EB4009C19B7 /* Configuration.swift */,
-				2DD500442C519EB4009C19B7 /* SamplePaywalls.swift */,
 			);
 			path = Config;
 			sourceTree = "<group>";

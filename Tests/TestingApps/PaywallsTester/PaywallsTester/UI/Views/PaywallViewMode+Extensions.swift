@@ -11,7 +11,11 @@ import RevenueCat
 enum PaywallTesterViewMode {
     case fullScreen
     case sheet
+
+    @available(watchOS, unavailable)
     case footer
+
+    @available(watchOS, unavailable)
     case condensedFooter
 }
 
@@ -36,8 +40,10 @@ internal extension PaywallTesterViewMode {
         switch self {
         case .fullScreen: return .fullScreen
         case .sheet: return .fullScreen
+        #if !os(watchOS)
         case .footer: return .footer
         case .condensedFooter: return .condensedFooter
+        #endif
         }
     }
 
@@ -45,8 +51,10 @@ internal extension PaywallTesterViewMode {
         switch self {
         case .fullScreen: return "iphone"
         case .sheet: return "iphone"
+        #if !os(watchOS)
         case .footer: return "lanyardcard"
         case .condensedFooter: return "ruler"
+        #endif
         }
     }
 
@@ -56,10 +64,12 @@ internal extension PaywallTesterViewMode {
             return "Fullscreen"
         case .sheet:
             return "Sheet"
+        #if !os(watchOS)
         case .footer:
             return "Footer"
         case .condensedFooter:
             return "Condensed Footer"
+        #endif
         }
     }
 
