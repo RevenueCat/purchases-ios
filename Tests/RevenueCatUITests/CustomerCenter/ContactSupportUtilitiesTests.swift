@@ -48,7 +48,9 @@ class ContactSupportUtilitiesTest: TestCase {
 
     func testSupportEmailBodyWithGivenDataIsCorrect() {
         let givenData = [("test1", "test2"), ("test3", "test4")]
-        let body = support.calculateBody(localization, dataToInclude: givenData, purchasesProvider: CustomerCenterPurchases())
+        let body = support.calculateBody(localization,
+                                         dataToInclude: givenData,
+                                         purchasesProvider: CustomerCenterPurchases())
         let expectedBody = """
         Please describe your issue or question.
 
