@@ -90,7 +90,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.20.3"
+        return "5.22.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
