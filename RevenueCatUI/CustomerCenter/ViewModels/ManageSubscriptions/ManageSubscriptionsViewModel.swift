@@ -36,6 +36,9 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
 
     @Published
+    var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
+
+    @Published
     var showPurchases: Bool = false
 
     @Published
@@ -88,6 +91,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.state = .success
+            self.restoreAlertType = .loading
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)

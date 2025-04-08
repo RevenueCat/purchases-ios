@@ -75,6 +75,7 @@ public struct CustomerCenterConfigData: Equatable {
             case defaultBody = "default_body"
             case defaultSubject = "default_subject"
             case dismiss = "dismiss"
+            case done = "done"
             case unknown = "unknown"
             case updateWarningTitle = "update_warning_title"
             case updateWarningDescription = "update_warning_description"
@@ -89,8 +90,10 @@ public struct CustomerCenterConfigData: Equatable {
             case goingToCheckPurchases = "going_to_check_purchases"
             case checkPastPurchases = "check_past_purchases"
             case purchasesRecovered = "purchases_recovered"
+            case purchasesRestoring = "purchases_restoring"
             case purchasesRecoveredExplanation = "purchases_recovered_explanation"
-            case purchasesNotRecovered = "purchases_not_recovered"
+            case purchasesNotFound = "purchases_not_found"
+            case purchasesNotRecoveredExplanation = "purchases_not_recovered"
             case manageSubscription = "manage_subscription"
             case youHavePromo = "you_have_promo"
             case youHaveLifetime = "you_have_lifetime"
@@ -157,12 +160,16 @@ public struct CustomerCenterConfigData: Equatable {
                 case .checkPastPurchases:
                     return "Check past purchases"
                 case .purchasesRecovered:
-                    return "Purchases recovered!"
+                    return "Purchases restored"
+                case .purchasesRestoring:
+                    return "Restoring..."
                 case .purchasesRecoveredExplanation:
-                    return "We applied the previously purchased items to your account. Sorry for the inconvenience."
-                case .purchasesNotRecovered:
-                    return "We couldn't find any additional purchases under this account. " +
-                    "Contact support for assistance if you think this is an error."
+                    return "We restored your past purchases and applied them to your account."
+                case .purchasesNotFound:
+                    return "No past purchases"
+                case .purchasesNotRecoveredExplanation:
+                    return "We could not find any purchases with your account. " +
+                    "If you think this is an error, please contact support."
                 case .cancel:
                     return "Cancel"
                 case .billingCycle:
@@ -197,6 +204,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Support Request"
                 case .dismiss:
                     return "Dismiss"
+                case .done:
+                    return "Done"
                 case .unknown:
                     return "Unknown"
                 case .updateWarningTitle:

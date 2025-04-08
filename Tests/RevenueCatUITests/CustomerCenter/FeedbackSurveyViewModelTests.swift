@@ -38,6 +38,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         )
 
         let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: data,
+                                                purchasesProvider: MockCustomerCenterPurchases(),
                                                 actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.feedbackSurveyData).to(equal(data))
