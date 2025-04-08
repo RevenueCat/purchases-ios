@@ -821,11 +821,6 @@ public extension Purchases {
     func offerings() async throws -> Offerings {
         return try await self.offerings(fetchPolicy: .default)
     }
-    
-    @objc func checkAppHealth() async throws -> HealthCheck {
-        let response = try await backend.checkAppHealth(appUserID: appUserID)
-        return HealthCheck(offerings: response.offerings)
-    }
 
 
     var cachedOfferings: Offerings? {
