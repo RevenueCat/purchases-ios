@@ -176,6 +176,20 @@ extension Backend {
 
 }
 
+extension Backend {
+
+    /// - Throws: `NetworkError`
+    func healthReportRequest() async throws {
+        try await Async.call { completion in
+            self.internalAPI.healthReportRequest() { error in
+                completion(.init(error))
+            }
+        }
+    }
+
+}
+
+
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension Backend: @unchecked Sendable {}

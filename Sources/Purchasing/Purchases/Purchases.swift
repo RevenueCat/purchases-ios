@@ -1773,6 +1773,14 @@ extension Purchases: InternalPurchasesType {
             throw NewErrorUtils.purchasesError(withUntypedError: error)
         }
     }
+    
+    internal func healthReportRequest() async throws {
+        do {
+            try await self.backend.healthReportRequest()
+        } catch {
+            
+        }
+    }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func productEntitlementMapping() async throws -> ProductEntitlementMapping {

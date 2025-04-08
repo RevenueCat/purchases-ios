@@ -1214,6 +1214,8 @@ internal protocol InternalPurchasesType: AnyObject {
     /// Performs an unauthenticated request to the API to verify connectivity.
     /// - Throws: `PublicError` if request failed.
     func healthRequest(signatureVerification: Bool) async throws
+    
+    func healthReportRequest() async throws
 
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
 

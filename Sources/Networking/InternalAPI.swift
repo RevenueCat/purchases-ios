@@ -19,10 +19,12 @@ class InternalAPI {
 
     private let backendConfig: BackendConfiguration
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
+    private let healthReportCallbackCache: CallbackCache<HealthReportOperation.Callback>
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.healthCallbackCache = .init()
+        self.healthReportCallbackCache = .init()
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
@@ -33,6 +35,19 @@ class InternalAPI {
         let callback = HealthOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthCallbackCache.add(callback)
 
+        self.backendConfig.addCacheableOperation(with: factory,
+                                                 delay: .none,
+                                                 cacheStatus: cacheStatus)
+    }
+    
+    func healthReportRequest(completion: @escaping ResponseHandler) {
+        let factory = HealthReportOperation.createFactory(
+            httpClient: self.backendConfig.httpClient,
+            callbackCache: self.healthReportCallbackCache
+        )
+        let callback = HealthReportOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.healthReportCallbackCache.add(callback)
+        
         self.backendConfig.addCacheableOperation(with: factory,
                                                  delay: .none,
                                                  cacheStatus: cacheStatus)

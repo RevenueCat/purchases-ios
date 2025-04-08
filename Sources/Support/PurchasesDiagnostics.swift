@@ -98,7 +98,7 @@ extension PurchasesDiagnostics {
     
     public func healthCheck() async throws {
         do {
-            
+            try await self.healthCheckRequest()
         } catch let error as BackendError {
             
         } catch let error {
@@ -135,6 +135,14 @@ private extension PurchasesDiagnostics {
     func offeringsRequest() async throws {
         do {
             _ = try await self.purchases.offerings(fetchPolicy: .failIfProductsAreMissing)
+        } catch {
+            throw Error.failedFetchingOfferings(error)
+        }
+    }
+    
+    func healthCheckRequest() async throws {
+        do {
+            _ = try await self.purchases.healthReportRequest()
         } catch {
             throw Error.failedFetchingOfferings(error)
         }
