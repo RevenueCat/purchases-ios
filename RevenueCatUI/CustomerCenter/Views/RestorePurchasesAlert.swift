@@ -36,6 +36,7 @@ struct RestorePurchasesAlert: View {
 
     @Environment(\.localization)
     private var localization
+
     @Environment(\.supportInformation)
     private var supportInformation: CustomerCenterConfigData.Support?
 
@@ -108,7 +109,7 @@ struct RestorePurchasesAlert: View {
                 )
             }
 
-            if let url = supportURL {
+            if let url = supportInformation?.supportURL(localization: localization), URLUtilities.canOpenURL(url) {
                 actions.append(
                     AlertOrConfirmationDialog.AlertAction(
                         title: localization[.contactSupport],
