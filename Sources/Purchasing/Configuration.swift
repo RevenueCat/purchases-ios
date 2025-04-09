@@ -11,6 +11,8 @@
 //
 //  Created by Joshua Liebowitz on 5/6/22.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /**
