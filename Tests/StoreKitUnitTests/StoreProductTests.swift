@@ -380,7 +380,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let type: StoreProduct.ProductType = .autoRenewableSubscription
         let description = "Description"
         let subscriptionGroup = "group"
-        let period: SubscriptionPeriod = .init(value: 1, unit: .month)
+        let period: RevenueCat.SubscriptionPeriod = .init(value: 1, unit: .month)
         let isFamilyShareable = Bool.random()
         let expectedLocale: Locale = .current
 
