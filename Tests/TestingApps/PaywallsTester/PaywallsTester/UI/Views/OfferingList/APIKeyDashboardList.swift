@@ -52,7 +52,9 @@ struct APIKeyDashboardList: View {
                         } label: {
                             Image(systemName: "arrow.clockwise")
                         }
+                        #if !os(watchOS)
                         .keyboardShortcut("r", modifiers: .shift)
+                        #endif
                     }
                 }
         }

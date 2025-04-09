@@ -105,6 +105,7 @@ struct SamplePaywallsList: View {
                 introEligibility: Self.introEligibility
             ))
         #endif
+        #if !os(watchOS)
         case .customerCenterSheet,
                 .customerCenterFullScreen,
                 .customerCenterNavigationView:
@@ -115,6 +116,10 @@ struct SamplePaywallsList: View {
             CustomerCenterUIKitView(
                 customerCenterActionHandler: self.handleCustomerCenterAction
             )
+        #else
+        default:
+            EmptyView()
+        #endif
         }
     }
 
@@ -324,9 +329,13 @@ private extension SamplePaywallsList {
         case componentPaywall(PaywallComponentsData)
         #endif
 
+        @available(watchOS, unavailable)
         case customerCenterSheet
+        @available(watchOS, unavailable)
         case customerCenterFullScreen
+        @available(watchOS, unavailable)
         case customerCenterNavigationView
+        @available(watchOS, unavailable)
         case uiKitCustomerCenter
     }
 
