@@ -110,12 +110,18 @@ internal struct DebugSummaryView: View {
     }
 
     private var diagnosticsSection: some View {
-        Section("Diagnostics") {
+        Section {
             LabeledContent("Status") {
                 HStack {
                     Text(self.model.diagnosticsStatus)
                     self.model.diagnosticsIcon
                 }
+            }
+        } header: {
+            Text("Diagnostics")
+        } footer: {
+            if let diagnosticsFooter = self.model.diagnosticsExplainer {
+                Text(diagnosticsFooter)
             }
         }
     }

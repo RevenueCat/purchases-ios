@@ -84,7 +84,14 @@ extension DebugViewModel {
         switch self.diagnosticsResult {
         case .loading: return "Loading..."
         case .loaded: return "Configuration OK"
-        case let .failed(error): return "Error: \(error.localizedDescription)"
+        case let .failed(error): return "Invalid Configuration"
+        }
+    }
+    
+    var diagnosticsExplainer: String? {
+        switch self.diagnosticsResult {
+        case let .failed(error): return error.localizedDescription
+        default: return nil
         }
     }
 
