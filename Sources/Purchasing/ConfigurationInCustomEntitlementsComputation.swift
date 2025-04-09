@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Configuration.swift
+//  ConfigurationInCustomEntitlementsComputation.swift
 //
-//  Created by Joshua Liebowitz on 5/6/22.
+//  Created by Toni Rico Diez on 9/4/25.
 
 import Foundation
 
