@@ -18,7 +18,6 @@ import SwiftUI
 // swiftlint:disable file_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
 
     enum ActionType {
@@ -88,7 +87,6 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    // @PublicForExternalTesting
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
                      performRestore: PerformRestore? = nil) {
@@ -112,7 +110,6 @@ final class PurchaseHandler: ObservableObject {
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
-    // @PublicForExternalTesting
     static func `default`(performPurchase: PerformPurchase? = nil,
                           performRestore: PerformRestore? = nil) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
@@ -121,7 +118,6 @@ final class PurchaseHandler: ObservableObject {
                                                            performRestore: performRestore)
     }
 
-    // @PublicForExternalTesting
     static func `default`(performPurchase: PerformPurchase? = nil,
                           performRestore: PerformRestore? = nil,
                           customerInfo: CustomerInfo,
