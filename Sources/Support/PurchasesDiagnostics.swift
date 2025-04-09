@@ -223,6 +223,27 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
         case let .failedMakingSignedRequest(error): return "Failed making signed request: \(error.localizedDescription)"
         case .invalidAPIKey: return "API key is not valid"
+        case .invalidSDKVersion: return "SDK Version is not supported"
+        case .noOfferings: return "No offerings configured"
+        case let .offeringConfiguration(payload):
+            guard let offendingOffering = payload.first(where: { $0.status == .failed }) else {
+                return "Default offering is not configured correctly"
+            }
+            
+            return offendingOffering.packages.isEmpty ? 
+                "Offering '\(offendingOffering.identifier)' has no packages" :
+                "Offering '\(offendingOffering.identifier)' uses \(offendingOffering.packages.filter({ $0.status != "ok" }).count) products that are not ready in App Store Connect."
+        case let .invalidBundleId(payload):
+            guard let payload else {
+                return "Bundle ID in your app does not match the Bundle ID in the RevenueCat dashboard"
+            }
+            return "Bundle ID in your app '\(payload.sdkBundleId)' does not match the RevenueCat app Bundle ID '\(payload.appBundleId)'"
+        case let .invalidProducts(products):
+            if products.isEmpty {
+                return "Your app has no products"
+            }
+            
+            return "You must have at least one product approved in App Store Connect."
         }
     }
 
@@ -232,7 +253,8 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         case let .failedConnectingToAPI(error): return error
         case let .failedFetchingOfferings(error): return error
         case let .failedMakingSignedRequest(error): return error
-        case .invalidAPIKey: return nil
+        case .invalidAPIKey, .offeringConfiguration, .invalidSDKVersion, .noOfferings, .invalidBundleId, .invalidProducts:
+            return nil
         }
     }
 
