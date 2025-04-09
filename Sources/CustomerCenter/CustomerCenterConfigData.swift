@@ -142,6 +142,7 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
+            case somethingWentWrong = "something_went_wrong"
 
             var defaultValue: String {
                 switch self {
@@ -327,6 +328,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Unknown Store"
                 case .debugHeaderTitle:
                     return "Debug"
+                case .somethingWentWrong:
+                    return "Something went wrong"
                 }
             }
         }
