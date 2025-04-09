@@ -72,7 +72,7 @@ public final class ConfigurationInCustomEntitlementsComputation: NSObject {
         self.diagnosticsEnabled = builder.diagnosticsEnabled
     }
 
-    /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
+    /// Factory method for the ``ConfigurationInCustomEntitlementsComputation/Builder`` object that is required to create a `ConfigurationInCustomEntitlementsComputation`
     @objc public static func builder(withAPIKey apiKey: String, appUserID: String) -> Builder {
         return Builder(withAPIKey: apiKey, appUserID: appUserID)
     }
