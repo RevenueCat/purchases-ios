@@ -10,15 +10,9 @@ import SwiftUI
 import RevenueCat
 import RevenueCatUI
 
-
-#if os(iOS)
 /// Allows us to display the CustomerCenterViewController in a SwiftUI app
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
 struct CustomerCenterUIKitView: UIViewControllerRepresentable {
-
+    
     let customerCenterActionHandler: (CustomerCenterAction) -> Void
 
     func makeUIViewController(context: Context) -> CustomerCenterViewController {
@@ -31,4 +25,3 @@ struct CustomerCenterUIKitView: UIViewControllerRepresentable {
         // No updates needed
     }
 }
-#endif

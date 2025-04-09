@@ -19,6 +19,17 @@ struct PaywallPresenter: View {
     var body: some View {
         switch self.mode {
         case .fullScreen, .sheet:
+
+            let handler = PurchaseHandler.default()
+
+            let configuration = PaywallViewConfiguration(
+                offering: offering,
+                fonts: DefaultPaywallFontProvider(),
+                displayCloseButton: displayCloseButton,
+                introEligibility: .producing(eligibility: introEligility),
+                purchaseHandler: handler
+            )
+
             PaywallView(offering: offering)
                 .onPurchaseStarted({ package in
                     print("Paywall Handler - onPurchaseStarted")
@@ -45,11 +56,18 @@ struct PaywallPresenter: View {
 #if !os(watchOS)
         case .footer:
             CustomPaywallContent()
-                .originalTemplatePaywallFooter(offering: self.offering)
+                .originalTemplatePaywallFooter(offering: self.offering,
+                               customerInfo: nil,
+                               introEligibility: .producing(eligibility: introEligility),
+                               purchaseHandler: .default())
 
         case .condensedFooter:
             CustomPaywallContent()
-                .originalTemplatePaywallFooter(offering: self.offering, condensed: true)
+                .originalTemplatePaywallFooter(offering: self.offering,
+                               customerInfo: nil,
+                               condensed: true,
+                               introEligibility: .producing(eligibility: introEligility),
+                                                            purchaseHandler: .default())
 #endif
         }
     }
