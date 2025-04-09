@@ -88,7 +88,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
             return .emptySuccessResponse()
@@ -2069,7 +2069,7 @@ extension HTTPClientTests {
     func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
             return .emptyTooManyRequestsResponse()
@@ -2098,7 +2098,7 @@ extension HTTPClientTests {
 
     func testCorrectDelaysAreSentToOperationDispatcherForRetries() throws {
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { _ in
             return .emptyTooManyRequestsResponse()
         }
@@ -2124,7 +2124,7 @@ extension HTTPClientTests {
     func testRetryMessagesAreLoggedWhenRetriesExhausted() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
             return .emptyTooManyRequestsResponse()
@@ -2149,7 +2149,7 @@ extension HTTPClientTests {
     }
 
     func testRetryMessagesAreNotLoggedWhenNoRetriesOccur() throws {
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { _ in
             return .emptySuccessResponse()
         }
@@ -2175,7 +2175,7 @@ extension HTTPClientTests {
     func testRetryCountHeaderIsAccurateWithNoRetries() throws {
         var retryCountHeaderValues: [String?] = []
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2193,7 +2193,7 @@ extension HTTPClientTests {
     }
 
     func testDoesNotRetryUnsupportedURLPaths() throws {
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         var requestCount = 0
         stub(condition: isHost(host)) { _ in
             requestCount += 1
@@ -2213,7 +2213,7 @@ extension HTTPClientTests {
         var retryCountHeaderValues: [String?] = []
         var retryCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2239,7 +2239,7 @@ extension HTTPClientTests {
     func testRetryCountHeaderIsAccurateWhenAllRetriesAreExhausted() throws {
         var retryCountHeaderValues: [String?] = []
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2259,7 +2259,7 @@ extension HTTPClientTests {
     func testSucceedsIfAlwaysGetsSuccessAfterOneRetry() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
 
