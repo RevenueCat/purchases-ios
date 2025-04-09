@@ -47,7 +47,6 @@ import RevenueCat
         return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
     }
 
-    // @PublicForExternalTesting
     @Published
     var state: CustomerCenterViewState {
         didSet {
