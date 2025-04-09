@@ -182,13 +182,18 @@ private func checkPurchaseParams() {
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
+    let promoOffer: PromotionalOffer! = nil
 
     do {
         let _: Offerings = try await purchases.offerings()
 
         let _: [StoreProduct] = await purchases.products([])
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
+                                                                                      promotionalOffer: promoOffer)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
+                                                                                      promotionalOffer: promoOffer)
         let params: PurchaseParams! = nil
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
 
@@ -220,6 +225,9 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 private func checkConfigure() -> Purchases! {
     let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
     Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
+    Purchases.configureInCustomEntitlementsComputationMode(apiKey: "",
+                                                           appUserID: "",
+                                                           storeKitVersion: StoreKitVersion.storeKit1)
     Purchases.configure(with: configuration)
 
     return nil

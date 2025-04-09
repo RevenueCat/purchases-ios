@@ -101,6 +101,26 @@ extension Purchases {
         }
     }
 
+    func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            purchase(product: product,
+                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }
+        }
+    }
+
+    func purchaseAsync(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await withUnsafeThrowingContinuation { continuation in
+            purchase(package: package,
+                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(with: Result(customerInfo, error)
+                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }
+        }
+    }
+
     func promotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
                                product: StoreProduct) async throws -> PromotionalOffer {
         return try await withUnsafeThrowingContinuation { continuation in
@@ -153,26 +173,6 @@ extension Purchases {
         return try await withUnsafeThrowingContinuation { continuation in
             syncPurchases { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
-        return try await withUnsafeThrowingContinuation { continuation in
-            purchase(product: product,
-                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
-                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
-            }
-        }
-    }
-
-    func purchaseAsync(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
-        return try await withUnsafeThrowingContinuation { continuation in
-            purchase(package: package,
-                     promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(with: Result(customerInfo, error)
-                                        .map { PurchaseResultData(transaction, $0, userCancelled) })
             }
         }
     }

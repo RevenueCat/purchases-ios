@@ -1061,22 +1061,6 @@ public extension Purchases {
         return try await purchaseAsync(params)
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
-    @objc func invalidateCustomerInfoCache() {
-        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
-    }
-
-    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        self.purchasesOrchestrator.syncPurchases { @Sendable in
-            completion?($0.value, $0.error?.asPublicError)
-        }
-    }
-
-    func syncPurchases() async throws -> CustomerInfo {
-        return try await syncPurchasesAsync()
-    }
-
     @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
                   promotionalOffer: PromotionalOffer,
@@ -1105,6 +1089,22 @@ public extension Purchases {
 
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    @objc func invalidateCustomerInfoCache() {
+        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+    }
+
+    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        self.purchasesOrchestrator.syncPurchases { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    func syncPurchases() async throws -> CustomerInfo {
+        return try await syncPurchasesAsync()
     }
 
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
@@ -1551,13 +1551,19 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
+     * - Parameter storeKitVersion: The storeKit version to use. Currently defaults to StoreKit 2.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
-    @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
-                                                                                appUserID: String) -> Purchases {
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:storeKitVersion:)
+    @discardableResult static func configureInCustomEntitlementsComputationMode(
+        apiKey: String,
+        appUserID: String,
+        storeKitVersion: StoreKitVersion = .default) -> Purchases {
         Self.configure(
-            with: .builder(withAPIKey: apiKey, appUserID: appUserID).build())
+            with: .builder(withAPIKey: apiKey, appUserID: appUserID)
+                .with(storeKitVersion: storeKitVersion)
+                .build())
     }
 
     #endif
