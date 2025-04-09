@@ -16,6 +16,7 @@ import Foundation
 class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
+    typealias HealthReportResponseHandler = (Result<HealthReport, BackendError>) -> Void
 
     private let backendConfig: BackendConfiguration
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
@@ -40,7 +41,7 @@ class InternalAPI {
                                                  cacheStatus: cacheStatus)
     }
     
-    func healthReportRequest(appUserID: String, completion: @escaping ResponseHandler) {
+    func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = HealthReportOperation.createFactory(configuration: config,

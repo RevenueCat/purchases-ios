@@ -16,19 +16,17 @@ import Foundation
 enum HealthCheckStatus: String {
     case passed
     case failed
+    case warning
     case unknown
 }
 
 enum HealthCheckType: String {
     case apiKey = "api_key"
     case sdkVersion = "sdk_version"
+    case bundleId = "bundle_id"
+    case products = "products"
     case offerings = "offerings"
     case offeringsProducts = "offerings_products"
-}
-
-enum OfferingHealthErrorType: String {
-    case noProducts = "no_products"
-    case productsIssues = "products_issues"
 }
 
 struct PackageHealthReport {
@@ -50,8 +48,26 @@ struct OfferingsCheckDetails {
     let offerings: [OfferingHealthReport]
 }
 
+struct BundleIdCheckDetails {
+    let sdkBundleId: String
+    let appBundleId: String
+}
+
 enum HealthCheckDetails {
     case offeringsProducts(OfferingsCheckDetails)
+    case bundleId(BundleIdCheckDetails)
+    case products(ProductsCheckDetails)
+}
+
+struct ProductsCheckDetails {
+    let products: [ProductHealthReport]
+}
+
+struct ProductHealthReport {
+    let identifier: String
+    let title: String?
+    let status: String
+    let description: String
 }
 
 struct HealthCheck {
@@ -73,6 +89,12 @@ struct HealthCheck {
         switch name {
         case .offeringsProducts:
             details = (try container.decodeIfPresent(OfferingsCheckDetails.self, forKey: .details)).map({ .offeringsProducts($0) })
+        case .bundleId:
+            details = (try container.decodeIfPresent(BundleIdCheckDetails.self, forKey: .details)).map({ .bundleId($0) })
+        
+        case .products:
+            details = (try container.decodeIfPresent(ProductsCheckDetails.self, forKey: .details)).map({ .products($0) })
+            
         default:
             details = nil
         }
@@ -91,6 +113,8 @@ extension HealthCheckDetails: Codable, Equatable {}
 extension HealthCheckType: Codable, Equatable {}
 extension HealthCheckStatus: Codable, Equatable {}
 extension OfferingsCheckDetails: Codable, Equatable {}
+extension BundleIdCheckDetails: Codable, Equatable {}
+extension ProductsCheckDetails: Codable, Equatable {}
+extension ProductHealthReport: Codable, Equatable {}
 extension OfferingHealthReport: Codable, Equatable {}
 extension PackageHealthReport: Codable, Equatable {}
-extension OfferingHealthErrorType: Codable, Equatable {}

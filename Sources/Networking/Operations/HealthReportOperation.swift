@@ -18,7 +18,7 @@ final class HealthReportOperation: CacheableNetworkOperation {
     struct Callback: CacheKeyProviding {
 
         let cacheKey: String
-        let completion: InternalAPI.ResponseHandler
+        let completion: InternalAPI.HealthReportResponseHandler
 
     }
     
@@ -61,7 +61,7 @@ final class HealthReportOperation: CacheableNetworkOperation {
             callback.completion(
                 response
                     .mapError(BackendError.networkError)
-                    .error
+                    .map { $0.body }
             )
         }
 
