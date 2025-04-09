@@ -35,6 +35,13 @@ public extension StoreKitVersion {
     /// Let RevenueCat use the most appropiate version of StoreKit
     static let `default` = Self.storeKit2
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    /// Let RevenueCat use the most appropiate version of StoreKit
+    static let defaultForCustomEntitlementComputation = Self.storeKit1
+
+    #endif
+
 }
 
 extension StoreKitVersion: CustomDebugStringConvertible {

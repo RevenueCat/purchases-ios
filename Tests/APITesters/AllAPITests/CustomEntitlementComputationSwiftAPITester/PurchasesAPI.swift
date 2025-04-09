@@ -33,6 +33,7 @@ func checkPurchasesAPI() {
 
     _ = Task<Void, Never> {
         await checkAsyncMethods(purchases: purch)
+        await checkPromoOffers(purchases: purch)
     }
 
     checkNonAsyncMethods(purch)
@@ -118,6 +119,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    let purchaseParams: PurchaseParams! = nil
+    purchases.purchase(purchaseParams) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     purchases.restorePurchases()
     purchases.restorePurchases { (_: CustomerInfo?, _: PublicError?) in }
@@ -136,6 +139,18 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.delegate?.purchases?(purchases, readyForPromotedProduct: storeProduct, purchase: purchaseBlock)
 }
 
+private func checkPromoOffers(purchases: Purchases) async {
+    let discount: StoreProductDiscount! = nil
+    let product: StoreProduct! = nil
+    purchases.getPromotionalOffer(forProductDiscount: discount,
+                                  product: product) { (_: PromotionalOffer?, _: Error?) in }
+
+    do {
+        let _: PromotionalOffer = try await purchases.promotionalOffer(forProductDiscount: discount, product: product)
+    } catch {}
+    let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: product)
+}
+
 private func checkIdentity(purchases: Purchases) {
     purchases.switchUser(to: "")
 }
@@ -152,6 +167,18 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     }
 }
 
+private func checkPurchaseParams() {
+    let pack: Package! = nil
+    let storeProduct: StoreProduct! = nil
+    let offer: PromotionalOffer! = nil
+
+    let packageParamsBuilder = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+    let _: PurchaseParams = packageParamsBuilder.build()
+
+    let productParamsBuilder = PurchaseParams.Builder(product: storeProduct).with(promotionalOffer: offer)
+    let _: PurchaseParams = productParamsBuilder.build()
+}
+
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
@@ -162,6 +189,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [StoreProduct] = await purchases.products([])
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
+        let params: PurchaseParams! = nil
+        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
@@ -189,7 +218,18 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 }
 
 private func checkConfigure() -> Purchases! {
+    let configuration = ConfigurationInCustomEntitlementsComputation.Builder(withAPIKey: "", appUserID: "").build()
     Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
+    Purchases.configureInCustomEntitlementsComputationMode(with: configuration)
 
     return nil
+}
+
+private func checkConfigurationAndBuilder(_ appUserID: String) {
+    let builder: ConfigurationInCustomEntitlementsComputation.Builder = .init(withAPIKey: "", appUserID: appUserID)
+        .with(showStoreMessagesAutomatically: true)
+        .with(storeKitVersion: StoreKitVersion.storeKit1)
+        .with(appUserID: appUserID)
+        .with(apiKey: "anotherAPIKey")
+    let _: ConfigurationInCustomEntitlementsComputation = builder.build()
 }

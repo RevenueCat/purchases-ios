@@ -1052,8 +1052,6 @@ public extension Purchases {
         return try await self.restorePurchasesAsync()
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, trackDiagnostics: true, completion: completion)
@@ -1062,6 +1060,8 @@ public extension Purchases {
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await purchaseAsync(params)
     }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @objc func invalidateCustomerInfoCache() {
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
@@ -1163,8 +1163,6 @@ public extension Purchases {
     }
 #endif
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
@@ -1183,8 +1181,6 @@ public extension Purchases {
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
-
-    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 
@@ -1330,6 +1326,8 @@ public extension Purchases {
 
 public extension Purchases {
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Configures an instance of the Purchases SDK with a specified ``Configuration``.
      *
@@ -1398,8 +1396,6 @@ public extension Purchases {
     @discardableResult static func configure(with builder: Configuration.Builder) -> Purchases {
         return Self.configure(with: builder.build())
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
      * Configures an instance of the Purchases SDK with a specified API key.
@@ -1560,11 +1556,50 @@ public extension Purchases {
     @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
-        Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                .build())
+        Self.configureInCustomEntitlementsComputationMode(
+            with: .builder(withAPIKey: apiKey, appUserID: appUserID).build())
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a specified ``ConfigurationInCustomEntitlementsComputation``.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter configuration: The ``Configuration`` object you wish to use to configure ``Purchases``
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     *
+     * - Important: See ``Configuration/Builder`` for more information about configurable properties.
+     *
+     * ### Example
+     *
+     * ```swift
+     *  Purchases.configureInCustomEntitlementComputationMode(
+     *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
+     *               .with(purchasesAreCompletedBy: .revenueCat)
+     *               .with(appUserID: "<app_user_id>")
+     *               .build()
+     *      )
+     * ```
+     *
+     */
+    @discardableResult static func configureInCustomEntitlementsComputationMode(
+        with configuration: ConfigurationInCustomEntitlementsComputation
+    ) -> Purchases {
+        configure(withAPIKey: configuration.apiKey,
+                  appUserID: configuration.appUserID,
+                  observerMode: configuration.observerMode,
+                  userDefaults: configuration.userDefaults,
+                  platformInfo: configuration.platformInfo,
+                  responseVerificationMode: configuration.responseVerificationMode,
+                  storeKitVersion: configuration.storeKitVersion,
+                  storeKitTimeout: configuration.storeKit1Timeout,
+                  networkTimeout: configuration.networkTimeout,
+                  dangerousSettings: configuration.dangerousSettings,
+                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                  diagnosticsEnabled: configuration.diagnosticsEnabled
+        )
     }
 
     #endif

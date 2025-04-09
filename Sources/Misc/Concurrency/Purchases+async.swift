@@ -91,8 +91,6 @@ extension Purchases {
         }
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     func purchaseAsync(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             purchase(params,
@@ -102,6 +100,54 @@ extension Purchases {
             })
         }
     }
+
+    func promotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
+                               product: StoreProduct) async throws -> PromotionalOffer {
+        return try await withUnsafeThrowingContinuation { continuation in
+            getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
+                continuation.resume(with: Result(offer, error))
+             }
+         }
+     }
+
+    func eligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
+        let discounts = product.discounts
+
+        return await withTaskGroup(of: Optional<PromotionalOffer>.self) { group in
+            for discount in discounts {
+                group.addTask {
+                    do {
+                        return try await self.promotionalOffer(
+                            forProductDiscount: discount,
+                            product: product
+                        )
+                    } catch RCErrorCode.ineligibleError {
+                        return nil
+                    } catch {
+                        Logger.error(
+                            Strings.eligibility.check_eligibility_failed(
+                                productIdentifier: product.productIdentifier,
+                                error: error
+                            )
+                        )
+                        return nil
+                    }
+                }
+            }
+
+            var result: [PromotionalOffer] = []
+
+            for await offer in group {
+                if let offer = offer {
+                    result.append(offer)
+                }
+            }
+
+            return result
+        }
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in
@@ -154,52 +200,6 @@ extension Purchases {
             checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
                 continuation.resume(returning: result)
             }
-        }
-    }
-
-    func promotionalOfferAsync(forProductDiscount discount: StoreProductDiscount,
-                               product: StoreProduct) async throws -> PromotionalOffer {
-        return try await withUnsafeThrowingContinuation { continuation in
-            getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
-                continuation.resume(with: Result(offer, error))
-             }
-         }
-     }
-
-    func eligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
-        let discounts = product.discounts
-
-        return await withTaskGroup(of: Optional<PromotionalOffer>.self) { group in
-            for discount in discounts {
-                group.addTask {
-                    do {
-                        return try await self.promotionalOffer(
-                            forProductDiscount: discount,
-                            product: product
-                        )
-                    } catch RCErrorCode.ineligibleError {
-                        return nil
-                    } catch {
-                        Logger.error(
-                            Strings.eligibility.check_eligibility_failed(
-                                productIdentifier: product.productIdentifier,
-                                error: error
-                            )
-                        )
-                        return nil
-                    }
-                }
-            }
-
-            var result: [PromotionalOffer] = []
-
-            for await offer in group {
-                if let offer = offer {
-                    result.append(offer)
-                }
-            }
-
-            return result
         }
     }
 
