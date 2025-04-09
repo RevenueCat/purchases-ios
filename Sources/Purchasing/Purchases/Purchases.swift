@@ -970,34 +970,6 @@ public extension Purchases {
         return try await purchaseAsync(package: package)
     }
 
-    @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
-        self.purchasesOrchestrator.restorePurchases { @Sendable in
-            completion?($0.value, $0.error?.asPublicError)
-        }
-    }
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func restorePurchases() async throws -> CustomerInfo {
-        return try await self.restorePurchasesAsync()
-    }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
-    @objc func invalidateCustomerInfoCache() {
-        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
-    }
-
-    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        self.purchasesOrchestrator.syncPurchases { @Sendable in
-            completion?($0.value, $0.error?.asPublicError)
-        }
-    }
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func syncPurchases() async throws -> CustomerInfo {
-        return try await syncPurchasesAsync()
-    }
-
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
@@ -1026,6 +998,34 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
+    }
+
+    @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
+        self.purchasesOrchestrator.restorePurchases { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func restorePurchases() async throws -> CustomerInfo {
+        return try await self.restorePurchasesAsync()
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    @objc func invalidateCustomerInfoCache() {
+        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+    }
+
+    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        self.purchasesOrchestrator.syncPurchases { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func syncPurchases() async throws -> CustomerInfo {
+        return try await syncPurchasesAsync()
     }
 
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
@@ -1084,8 +1084,6 @@ public extension Purchases {
     }
 #endif
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
@@ -1107,8 +1105,6 @@ public extension Purchases {
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
-
-    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 
@@ -1453,15 +1449,20 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
+     * - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it. Defaults to false.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:usesStoreKit2IfAvailable:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
-                                                                                appUserID: String) -> Purchases {
+                                                                                appUserID: String,
+                                                                                usesStoreKit2IfAvailable: Bool = false
+    ) -> Purchases {
         Self.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
                 .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+                .with(usesStoreKit2IfAvailable: usesStoreKit2IfAvailable)
                 .build())
     }
 
