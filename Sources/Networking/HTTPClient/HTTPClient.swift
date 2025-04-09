@@ -289,7 +289,6 @@ internal extension HTTPClient {
         func retriedRequest() -> Self {
             var copy = self
             copy.retryCount += 1
-            copy.currentHostIndex = 0 // TODO: Do we want this or should we keep the current host?
             copy.headers[RequestHeader.retryCount.rawValue] = "\(copy.retryCount)"
             return copy
         }
@@ -490,20 +489,9 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // TODO: Should we skip fallback host if isLoadShedder == true
-                // Try next host if we got a server error
-                if let statusCode = httpURLResponse?.statusCode, HTTPStatusCode(rawValue: statusCode).isServerError,
-                   let nextRequest = request.requestWithNextHost() {
-                    Logger.debug(Strings.network.retrying_request_with_next_host(
-                        httpMethod: nextRequest.method.httpMethod,
-                        path: nextRequest.path,
-                        nextHost: nextRequest.currentHostIndex
-                    ))
-                    self.state.modify {
-                        $0.queuedRequests.insert(nextRequest, at: 0)
-                    }
-                    requestRetryScheduled = true
-                } else {
+                requestRetryScheduled = self.retryRequestWithNextHostIfNeeded(request: request,
+                                                                              httpURLResponse: httpURLResponse)
+                if !requestRetryScheduled {
                     requestRetryScheduled = self.retryRequestIfNeeded(request: request,
                                                                       httpURLResponse: httpURLResponse)
                 }
@@ -654,6 +642,37 @@ private extension HTTPClient {
 
 // MARK: - Request Retry Logic
 extension HTTPClient {
+
+    /// Evaluates whether a request should be retried with the next host in the list.
+    ///
+    /// This function checks the HTTP response status code to determine if the request should be retried
+    /// with the next host in the list. If the retry conditions are met, it schedules the request immediately and
+    /// returns `true` to indicate that the request was retried.
+    ///
+    /// - Parameters:
+    ///   - request: The original `HTTPClient.Request` that may need to be retried.
+    ///   - httpURLResponse: An optional `HTTPURLResponse` that contains the status code of the response.
+    /// - Returns: A Boolean value indicating whether the request was retried.
+    internal func retryRequestWithNextHostIfNeeded(
+        request: HTTPClient.Request,
+        httpURLResponse: HTTPURLResponse?
+    ) -> Bool {
+
+        guard let statusCode = httpURLResponse?.statusCode, HTTPStatusCode(rawValue: statusCode).isServerError,
+              let nextRequest = request.requestWithNextHost() else {
+            return false
+        }
+
+        Logger.debug(Strings.network.retrying_request_with_next_host(
+            httpMethod: nextRequest.method.httpMethod,
+            path: nextRequest.path,
+            nextHost: nextRequest.currentHostIndex
+        ))
+        self.state.modify {
+            $0.queuedRequests.insert(nextRequest, at: 0)
+        }
+        return true
+    }
 
     /// Evaluates whether a request should be retried and schedules a retry if necessary.
     ///
