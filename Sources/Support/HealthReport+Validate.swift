@@ -1,7 +1,7 @@
 extension HealthReport {
     func validate() -> PurchasesDiagnostics.SDKHealthStatus {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
-            let warnings = self.checks.map { error(from: $0) }
+            let warnings = self.checks.filter { $0.status == .warning }.map { error(from: $0) }
             
             return .healthy(warnings: warnings)
         }

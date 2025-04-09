@@ -43,6 +43,39 @@ public final class PurchasesDiagnostics: NSObject {
 }
 
 extension PurchasesDiagnostics {
+    
+    public struct InvalidProductErrorPayload {
+        let identifier: String
+        let title: String?
+        let status: String
+        let description: String
+    }
+    
+    public struct InvalidBundleIdErrorPayload {
+        let appBundleId: String
+        let sdkBundleId: String
+    }
+    
+    public enum SDKHealthCheckStatus {
+        case passed
+        case failed
+        case warning
+    }
+
+    public struct OfferingConfigurationErrorPayload {
+        let identifier: String
+        let packages: [Package]
+        let status: SDKHealthCheckStatus
+        
+        public struct Package {
+            let identifier: String
+            let title: String?
+            let status: String
+            let description: String
+            let productIdentifier: String
+            let productTitle: String?
+        }
+    }
 
     /// An error that represents a failing step in ``PurchasesDiagnostics``
     public enum Error: Swift.Error {
@@ -58,6 +91,21 @@ extension PurchasesDiagnostics {
 
         /// Failure performing a signed request
         case failedMakingSignedRequest(Swift.Error)
+        
+        /// Version of the SDK is not supported
+        case invalidSDKVersion
+        
+        /// There are no offerings in project
+        case noOfferings
+        
+        /// Offerings are not configured correctly
+        case offeringConfiguration([OfferingConfigurationErrorPayload])
+        
+        /// App bundle ID does not match the one set in the dashboard
+        case invalidBundleId(InvalidBundleIdErrorPayload?)
+        
+        /// One or more products are not configured correctly
+        case invalidProducts([InvalidProductErrorPayload])
 
         /// Any other not identifier error. You can check the undelying error for details.
         case unknown(Swift.Error)
@@ -66,43 +114,30 @@ extension PurchasesDiagnostics {
 
 }
 
-// MARK: - Implementation
-
 extension PurchasesDiagnostics {
-
-    /// Perform tests to ensure SDK is configured correctly.
-    /// - `Throws`: ``PurchasesDiagnostics/Error`` if any step fails
-    @objc(testSDKHealthWithCompletion:)
-    public func testSDKHealth() async throws {
-        do {
-            try await self.unauthenticatedRequest()
-            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-            try await self.authenticatedRequest()
-            #endif
-            try await self.offeringsRequest()
-            try await self.signatureVerification()
-        } catch let error as Error {
-            throw error
-        } catch let error {
-            // Catch every other error to ensure that we only throw `Error`s from here.
-            throw Error.unknown(error)
-        }
-    }
-
-}
-
-extension PurchasesDiagnostics {
-    enum HealthCheckError: Swift.Error {
-        
+    public enum SDKHealthStatus {
+        case healthy(warnings: [PurchasesDiagnostics.Error])
+        case unhealthy(PurchasesDiagnostics.Error)
     }
     
-    public func healthCheck() async throws {
+    public func testSDKHealth() async throws {
+        switch await self.healthReport() {
+        case let .unhealthy(error): throw error
+        default: break
+        }
+    }
+    
+    public func healthReport() async -> SDKHealthStatus {
         do {
-            try await self.healthCheckRequest()
+            return try await self.purchases.healthReportRequest().validate()
         } catch let error as BackendError {
-            
-        } catch let error {
-            
+            if case .networkError(let networkError) = error,
+               case .errorResponse(let response, _, _) = networkError, response.code == .invalidAPIKey {
+                return .unhealthy(.invalidAPIKey)
+            }
+            return .unhealthy(.unknown(error))
+        } catch {
+            return .unhealthy(.unknown(error))
         }
     }
 }
@@ -135,14 +170,6 @@ private extension PurchasesDiagnostics {
     func offeringsRequest() async throws {
         do {
             _ = try await self.purchases.offerings(fetchPolicy: .failIfProductsAreMissing)
-        } catch {
-            throw Error.failedFetchingOfferings(error)
-        }
-    }
-    
-    func healthCheckRequest() async throws {
-        do {
-            _ = try await self.purchases.healthReportRequest()
         } catch {
             throw Error.failedFetchingOfferings(error)
         }
