@@ -8,7 +8,12 @@
 
 
 import RevenueCat
+#if DEBUG
+@testable import RevenueCatUI
+#else
 import RevenueCatUI
+#endif
+
 import SwiftUI
 
 struct SamplePaywallsList: View {
@@ -24,8 +29,8 @@ struct SamplePaywallsList: View {
 
     var body: some View {
         NavigationView {
-            self.list(with: Self.loader)
-                .navigationTitle("Example Paywalls")
+            self.list
+                .navigationTitle("Examples")
         }
         .sheet(item: self.$display) { display in
             self.view(for: display)
@@ -37,6 +42,7 @@ struct SamplePaywallsList: View {
     @ViewBuilder
     private func view(for display: Display) -> some View {
         switch display {
+        #if DEBUG
         case let .template(template, mode):
             switch mode {
             case .fullScreen, .sheet:
@@ -90,15 +96,7 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 )
             )
-        case .customerCenterSheet,
-                .customerCenterFullScreen,
-                .customerCenterNavigationView:
-            // handled by view modifier
-            EmptyView()
-        case .uiKitCustomerCenter:
-            CustomerCenterUIKitView(
-                customerCenterActionHandler: self.handleCustomerCenterAction
-            )
+
         case .componentPaywall(let data):
             PaywallView(configuration: .init(
                 offering: Self.loader.offering(with: data),
@@ -106,13 +104,23 @@ struct SamplePaywallsList: View {
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
             ))
-        }
+        #endif
+        case .customerCenterSheet,
+                .customerCenterFullScreen,
+                .customerCenterNavigationView:
+            // handled by view modifier
+            EmptyView()
 
+        case .uiKitCustomerCenter:
+            CustomerCenterUIKitView(
+                customerCenterActionHandler: self.handleCustomerCenterAction
+            )
+        }
     }
 
-    private func list(with loader: SamplePaywallLoader) -> some View {
+    private var list: some View {
         List {
-
+            #if DEBUG
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
                     ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
@@ -161,6 +169,7 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
             }
+            #endif
 
             #if os(iOS)
             Section("Customer Center") {
@@ -244,6 +253,7 @@ struct SamplePaywallsList: View {
     private static let displayCloseButton = true
     #endif
 
+    #if DEBUG
     private static let loader: SamplePaywallLoader = .init()
     private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
         return Dictionary(
@@ -257,7 +267,7 @@ struct SamplePaywallsList: View {
                 }
         )
     }
-
+    #endif
 }
 
 private struct TemplateLabel: View {
@@ -304,19 +314,20 @@ extension SamplePaywallsList {
 private extension SamplePaywallsList {
 
     enum Display {
-
+        #if DEBUG
         case template(PaywallTemplate, PaywallTesterViewMode)
         case customFont(PaywallTemplate)
         @available(watchOS, unavailable)
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
+        case componentPaywall(PaywallComponentsData)
+        #endif
+
         case customerCenterSheet
         case customerCenterFullScreen
         case customerCenterNavigationView
         case uiKitCustomerCenter
-        case componentPaywall(PaywallComponentsData)
-
     }
 
 }
@@ -325,6 +336,7 @@ extension SamplePaywallsList.Display: Identifiable {
 
     public var id: String {
         switch self {
+        #if DEBUG
         case let .template(template, mode):
             return "template-\(template.rawValue)-\(mode)"
 
@@ -340,6 +352,10 @@ extension SamplePaywallsList.Display: Identifiable {
         case .unrecognizedPaywall:
             return "unrecognized"
 
+        case .componentPaywall:
+            return "component-paywall"
+
+        #endif
         case .customerCenterSheet:
             return "customer-center-sheet"
 
@@ -349,9 +365,6 @@ extension SamplePaywallsList.Display: Identifiable {
         case .customerCenterNavigationView:
             return "customer-center-navigationview"
 
-        case .componentPaywall:
-            return "component-paywall"
-
         case .uiKitCustomerCenter:
             return "customer-center-uikit"
         }
@@ -359,6 +372,7 @@ extension SamplePaywallsList.Display: Identifiable {
 
 }
 
+#if DEBUG
 extension PaywallTemplate {
 
     var name: String {
@@ -379,7 +393,7 @@ extension PaywallTemplate {
     }
 
 }
-
+#endif
 
 struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
