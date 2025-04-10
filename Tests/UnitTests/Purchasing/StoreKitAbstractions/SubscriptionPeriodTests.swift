@@ -155,8 +155,8 @@ class SubscriptionPeriodTests: TestCase {
                 numberOfUnits: expectation.inputValue,
                 unit: expectation.inputUnit
             )
-            let normalizedPeriod = RevenueCat.SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1SubscriptionPeriod)
-            let expected = RevenueCat.SubscriptionPeriod(
+            let normalizedPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1SubscriptionPeriod)
+            let expected = SubscriptionPeriod(
                 value: expectation.expectedValue,
                 unit: expectation.expectedUnit
             )

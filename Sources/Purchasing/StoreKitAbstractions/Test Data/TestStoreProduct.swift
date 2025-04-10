@@ -102,13 +102,13 @@ public struct TestStoreProduct {
 // Ensure consistency with the internal type
 extension TestStoreProduct: StoreProductType {
 
-    var productCategory: StoreProduct.ProductCategory { return self.productType.productCategory }
+    internal var productCategory: StoreProduct.ProductCategory { return self.productType.productCategory }
 
-    var currencyCode: String? {
+    internal var currencyCode: String? {
         return self.locale.rc_currencyCode
     }
 
-    var priceFormatter: NumberFormatter? {
+    internal var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {
             self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: $0, locale: self.locale)
         }

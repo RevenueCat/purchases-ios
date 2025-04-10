@@ -95,7 +95,7 @@ public typealias SK2Product = StoreKit.Product
 }
 
 /// Type that provides access to all of `StoreKit`'s product type's properties.
-protocol StoreProductType: Sendable {
+internal protocol StoreProductType: Sendable {
 
     /// The category of this product, whether a subscription or a one-time purchase.
 
