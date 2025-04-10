@@ -80,24 +80,6 @@ extension Purchases {
         }
     }
 
-    func restorePurchasesAsync() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.restorePurchases { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
-    func syncPurchasesAsync() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
     func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
@@ -118,28 +100,10 @@ extension Purchases {
         }
     }
 
-    func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
+    func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
+            self.restorePurchases { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
-    -> IntroEligibilityStatus {
-        return await withCheckedContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(product: product) { status in
-                continuation.resume(returning: status)
-            }
-        }
-    }
-
-    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
-    -> [String: IntroEligibility] {
-        return await withCheckedContinuation { continuation in
-            checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
-                continuation.resume(returning: result)
             }
         }
     }
@@ -149,9 +113,9 @@ extension Purchases {
         return try await withCheckedThrowingContinuation { continuation in
             getPromotionalOffer(forProductDiscount: discount, product: product) { offer, error in
                 continuation.resume(with: Result(offer, error))
-             }
-         }
-     }
+            }
+        }
+    }
 
     func eligiblePromotionalOffersAsync(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         let discounts = product.discounts
@@ -187,6 +151,42 @@ extension Purchases {
             }
 
             return result
+        }
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    func syncPurchasesAsync() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            syncPurchases { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
+    func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
+    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
+    -> IntroEligibilityStatus {
+        return await withCheckedContinuation { continuation in
+            checkTrialOrIntroDiscountEligibility(product: product) { status in
+                continuation.resume(returning: status)
+            }
+        }
+    }
+
+    func checkTrialOrIntroductoryDiscountEligibilityAsync(_ productIdentifiers: [String]) async
+    -> [String: IntroEligibility] {
+        return await withCheckedContinuation { continuation in
+            checkTrialOrIntroDiscountEligibility(productIdentifiers: productIdentifiers) { result in
+                continuation.resume(returning: result)
+            }
         }
     }
 
