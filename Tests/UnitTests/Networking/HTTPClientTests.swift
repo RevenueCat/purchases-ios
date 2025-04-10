@@ -2428,6 +2428,9 @@ extension HTTPClientTests {
 
     func testRetriesWithNextHostOnServerError() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
+        let hostCount = type(of: request.path).serverHostURLs.count
+        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+
         let serverErrorResponse = HTTPStubsResponse(
             data: Data(),
             statusCode: HTTPStatusCode.internalServerError,
@@ -2459,6 +2462,44 @@ extension HTTPClientTests {
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
         expect(result?.error).to(beNil())
+    }
+
+    func testReturnsLastErrorWhenRetriedWithNextHost() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let hostCount = type(of: request.path).serverHostURLs.count
+        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+
+        let serverErrorResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.internalServerError,
+            headers: nil
+        )
+
+        let host1 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        stub(condition: isHost(host1)) { _ in
+            return serverErrorResponse
+        }
+
+        let host2 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs[1].host)
+        stub(condition: isHost(host2)) { _ in
+            return .emptyTooManyRequestsResponse()
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beFailure())
+        expect(result?.error) == .errorResponse(
+            .init(code: .unknownError,
+                  originalCode: 0,
+                  message: nil),
+            .tooManyRequests
+        )
+        expect(result?.error?.isServerDown) == false
     }
 
     func testRetriesWithNextHostImmediately() throws {
@@ -2517,24 +2558,6 @@ extension HTTPClientTests {
         expect(didRetry).to(beTrue())
         expect(request.retryCount) == 0
     }
-
-//    func testQueuesRequestAtFrontOnHostRetry() throws {
-//        let request = buildEmptyRequest(isRetryable: true)
-//        let httpURLResponse = HTTPURLResponse(
-//            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
-//            statusCode: HTTPStatusCode.internalServerError.rawValue,
-//            httpVersion: nil,
-//            headerFields: nil
-//        )
-//
-//        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
-//            request: request,
-//            httpURLResponse: httpURLResponse
-//        )
-//
-//        expect(didRetry).to(beTrue())
-//        expect(self.client.state.value.queuedRequests.first?.currentHostIndex) == 1
-//    }
 
     func testDoesNotRetryWithNextHostForNonServerError() throws {
         let request = buildEmptyRequest(isRetryable: true)
