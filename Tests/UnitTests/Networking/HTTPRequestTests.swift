@@ -206,7 +206,7 @@ class HTTPRequestTests: TestCase {
 
     func testURLWithProxy() {
         let path: HTTPRequest.Path = .health
-        expect(path.url(hostURLIndex: 0, 
+        expect(path.url(hostURLIndex: 0,
                         proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
     }
 

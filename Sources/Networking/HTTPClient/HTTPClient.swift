@@ -449,18 +449,16 @@ private extension HTTPClient {
                 requestStartTime: Date) {
         RCTestAssertNotMainThread()
 
-        let response = self.parse(
-            urlResponse: urlResponse,
-            request: request,
-            urlRequest: urlRequest,
-            data: data,
-            error: networkError,
-            requestStartTime: requestStartTime
-        )
+        let response = self.parse(urlResponse: urlResponse,
+                                  request: request,
+                                  urlRequest: urlRequest,
+                                  data: data,
+                                  error: networkError,
+                                  requestStartTime: requestStartTime)
 
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
-            var requestRetryScheduled = false
+            var retryScheduled = false
 
             switch response {
             case let .success(response):
@@ -479,31 +477,28 @@ private extension HTTPClient {
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
 
-                Logger.debug(Strings.network.api_request_failed(
-                    request.httpRequest,
-                    httpCode: httpURLResponse?.httpStatusCode,
-                    error: error,
-                    metadata: httpURLResponse?.metadata)
-                )
+                Logger.debug(Strings.network.api_request_failed(request.httpRequest,
+                                                                httpCode: httpURLResponse?.httpStatusCode,
+                                                                error: error,
+                                                                metadata: httpURLResponse?.metadata))
 
                 if httpURLResponse?.isLoadShedder == true {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                requestRetryScheduled = self.retryRequestWithNextHostIfNeeded(request: request,
-                                                                              httpURLResponse: httpURLResponse)
-                if !requestRetryScheduled {
-                    requestRetryScheduled = self.retryRequestIfNeeded(request: request,
-                                                                      httpURLResponse: httpURLResponse)
+                retryScheduled = self.retryRequestWithNextHostIfNeeded(request: request,
+                                                                       httpURLResponse: httpURLResponse)
+                if !retryScheduled {
+                    retryScheduled = self.retryRequestIfNeeded(request: request,
+                                                               httpURLResponse: httpURLResponse)
                 }
             }
 
-            if !requestRetryScheduled {
+            if !retryScheduled {
                 request.completionHandler?(response)
             }
         } else {
-            Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod,
-                                                          path: request.path))
+            Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
 
             self.state.modify {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
