@@ -50,7 +50,7 @@ struct TextComponentView: View {
             )
         ) { style in
             if style.visible {
-                Text(.init(style.text))
+                Text(verbatim: style.text)
                     .font(style.font)
                     .fontWeight(style.fontWeight)
                     .fixedSize(horizontal: false, vertical: true)
