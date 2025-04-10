@@ -26,7 +26,7 @@ extension HealthReport {
                 PurchasesDiagnostics.InvalidProductErrorPayload(
                     identifier: productCheck.identifier,
                     title: productCheck.title,
-                    status: productCheck.status,
+                    status: .init(rawValue: productCheck.status) ?? .unknown,
                     description: productCheck.description
                 )
             }
@@ -53,7 +53,7 @@ extension HealthReport {
                         .init(
                             identifier: packageCheck.identifier,
                             title: packageCheck.title,
-                            status: packageCheck.status,
+                            status: .init(rawValue: packageCheck.status) ?? .unknown,
                             description: packageCheck.description,
                             productIdentifier: packageCheck.productIdentifier,
                             productTitle: packageCheck.productTitle

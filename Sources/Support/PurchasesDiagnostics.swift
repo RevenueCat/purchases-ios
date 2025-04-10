@@ -44,10 +44,19 @@ public final class PurchasesDiagnostics: NSObject {
 
 extension PurchasesDiagnostics {
     
+    public enum ProductStatus: String {
+        case ok
+        case couldNotCheck = "could_not_check"
+        case notFound = "not_found"
+        case actionInProgress = "action_in_progress"
+        case needsAction = "needs_action"
+        case unknown
+    }
+    
     public struct InvalidProductErrorPayload {
         let identifier: String
         let title: String?
-        let status: String
+        let status: ProductStatus
         let description: String
     }
     
@@ -70,7 +79,7 @@ extension PurchasesDiagnostics {
         public struct Package {
             let identifier: String
             let title: String?
-            let status: String
+            let status: ProductStatus
             let description: String
             let productIdentifier: String
             let productTitle: String?
@@ -232,7 +241,7 @@ extension PurchasesDiagnostics.Error: CustomNSError {
             
             return offendingOffering.packages.isEmpty ? 
                 "Offering '\(offendingOffering.identifier)' has no packages" :
-                "Offering '\(offendingOffering.identifier)' uses \(offendingOffering.packages.filter({ $0.status != "ok" }).count) products that are not ready in App Store Connect."
+            "Offering '\(offendingOffering.identifier)' uses \(offendingOffering.packages.filter({ $0.status != .ok }).count) products that are not ready in App Store Connect."
         case let .invalidBundleId(payload):
             guard let payload else {
                 return "Bundle ID in your app does not match the Bundle ID in the RevenueCat dashboard"
