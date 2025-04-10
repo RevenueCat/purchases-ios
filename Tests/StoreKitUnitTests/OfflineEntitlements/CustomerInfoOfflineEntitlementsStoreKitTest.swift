@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 // swiftlint:disable type_name
 

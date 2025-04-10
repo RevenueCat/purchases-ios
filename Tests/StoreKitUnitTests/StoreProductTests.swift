@@ -12,7 +12,7 @@
 //  Created by Andrés Boedo on 1/9/21.
 
 import Nimble
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 import StoreKitTest
 import XCTest
 

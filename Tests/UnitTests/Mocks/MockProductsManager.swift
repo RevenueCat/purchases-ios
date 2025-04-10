@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 import StoreKit
 
 class MockProductsManager: ProductsManager {

@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 class ProductEntitlementMappingTests: TestCase {
 

@@ -13,8 +13,6 @@
 
 import Foundation
 
-// swiftlint:disable missing_docs
-
 /// A mapping between products and entitlements.
 struct ProductEntitlementMapping {
 
