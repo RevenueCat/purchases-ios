@@ -16,16 +16,16 @@ import Foundation
 // swiftlint:disable missing_docs
 
 /// A mapping between products and entitlements.
-@_spi(Internal) public struct ProductEntitlementMapping {
+struct ProductEntitlementMapping {
 
-    @_spi(Internal) public var entitlementsByProduct: [String: Set<String>]
+    var entitlementsByProduct: [String: Set<String>]
 
 }
 
 extension ProductEntitlementMapping {
 
     /// - Returns: entitlement identifiers associated to the given product identifier
-    @_spi(Internal) public func entitlements(for productIdentifier: String) -> Set<String> {
+    func entitlements(for productIdentifier: String) -> Set<String> {
         return self.entitlementsByProduct[productIdentifier] ?? []
     }
 
@@ -33,7 +33,7 @@ extension ProductEntitlementMapping {
 
 extension ProductEntitlementMapping {
 
-    @_spi(Internal) public static let empty: Self = .init(entitlementsByProduct: [:])
+    static let empty: Self = .init(entitlementsByProduct: [:])
 
 }
 
