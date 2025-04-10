@@ -1449,20 +1449,15 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it. Defaults to false.
-     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:usesStoreKit2IfAvailable:)
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
-                                                                                appUserID: String,
-                                                                                usesStoreKit2IfAvailable: Bool = false
-    ) -> Purchases {
+                                                                                appUserID: String) -> Purchases {
         Self.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
                 .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                .with(usesStoreKit2IfAvailable: usesStoreKit2IfAvailable)
                 .build())
     }
 
