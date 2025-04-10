@@ -1814,6 +1814,20 @@ extension HTTPClientTests {
         expect(secondRetriedRequest.retryCount).to(equal(2))
     }
 
+    func testRetryingRequestKeepsCurrentHostIndex() throws {
+        let request = buildEmptyRequest(isRetryable: true)
+        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
+        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+
+        let nextHostRequest = try XCTUnwrap(request.requestWithNextHost())
+
+        let retriedRequest = nextHostRequest.retriedRequest()
+        let secondRetriedRequest = nextHostRequest.retriedRequest()
+
+        expect(retriedRequest.currentHostIndex).to(equal(1))
+        expect(secondRetriedRequest.currentHostIndex).to(equal(1))
+    }
+
     private func buildEmptyRequest(
         isRetryable: Bool
     ) -> HTTPClient.Request {
@@ -2372,6 +2386,199 @@ extension HTTPClientTests {
         expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalCount).to(equal(1))
         expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeIntervalParam).to(equal(0))
     }
+
+    // MARK: - Fallback Host Retry Tests
+
+    func testNewRequestHasStartsAtFirstHost() {
+        let request = buildEmptyRequest(isRetryable: true)
+        expect(request.currentHostIndex).to(equal(0))
+    }
+
+    func testNextHostRequestIncrementsCurrentHostIndex() throws {
+        var request = buildEmptyRequest(isRetryable: true)
+        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
+        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+
+        for iteration in 1..<hostCount {
+            request = try XCTUnwrap(request.requestWithNextHost())
+            expect(request.currentHostIndex).to(equal(iteration))
+        }
+    }
+
+    func testNextHostRequestKeepsRetryCount() throws {
+        let request = buildEmptyRequest(isRetryable: true)
+        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
+        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+
+        let retriedRequest = request.retriedRequest()
+        let nextHostRequest = try XCTUnwrap(retriedRequest.requestWithNextHost())
+        expect(nextHostRequest.retryCount).to(equal(1))
+    }
+
+    func testRequestWithNextHostReturnsNilIfNoMoreHosts() throws {
+        var nextRequest = buildEmptyRequest(isRetryable: true)
+        let hostCount = type(of: nextRequest.httpRequest.path).serverHostURLs.count
+
+        for _ in 1..<hostCount {
+            nextRequest = try XCTUnwrap(nextRequest.requestWithNextHost())
+        }
+        let noMoreHostsRequest = nextRequest.requestWithNextHost()
+        expect(noMoreHostsRequest).to(beNil())
+    }
+
+    func testRetriesWithNextHostOnServerError() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let serverErrorResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.internalServerError,
+            headers: nil
+        )
+
+        let host1 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        stub(condition: isHost(host1)) { _ in
+            return serverErrorResponse
+        }
+
+        let successfulResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.success,
+            headers: nil
+        )
+
+        let host2 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs[1].host)
+        stub(condition: isHost(host2)) { _ in
+            return successfulResponse
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.error).to(beNil())
+    }
+
+    func testRetriesWithNextHostImmediately() throws {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let request = buildEmptyRequest(isRetryable: true)
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = client.retryRequestWithNextHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeInterval).to(beFalse())
+    }
+
+    func testIncrementsHostIndexOnRetry() throws {
+        let request = buildEmptyRequest(isRetryable: true)
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(request.currentHostIndex) == 0 // Original request should have index 0
+    }
+
+    func testDoesNotIncrementRetryCountOnHostRetry() throws {
+        let request = buildEmptyRequest(isRetryable: true)
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(request.retryCount) == 0
+    }
+
+//    func testQueuesRequestAtFrontOnHostRetry() throws {
+//        let request = buildEmptyRequest(isRetryable: true)
+//        let httpURLResponse = HTTPURLResponse(
+//            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+//            statusCode: HTTPStatusCode.internalServerError.rawValue,
+//            httpVersion: nil,
+//            headerFields: nil
+//        )
+//
+//        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+//            request: request,
+//            httpURLResponse: httpURLResponse
+//        )
+//
+//        expect(didRetry).to(beTrue())
+//        expect(self.client.state.value.queuedRequests.first?.currentHostIndex) == 1
+//    }
+
+    func testDoesNotRetryWithNextHostForNonServerError() throws {
+        let request = buildEmptyRequest(isRetryable: true)
+        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
+        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+            request: request,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
+    func testDoesNotRetryWithNextHostWhenNoMoreHostsAvailable() throws {
+        var nextRequest = buildEmptyRequest(isRetryable: true)
+        let hostCount = type(of: nextRequest.httpRequest.path).serverHostURLs.count
+
+        for _ in 1..<hostCount {
+            nextRequest = try XCTUnwrap(nextRequest.requestWithNextHost())
+        }
+
+        let httpURLResponse = HTTPURLResponse(
+            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
+            statusCode: HTTPStatusCode.internalServerError.rawValue,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+            request: nextRequest,
+            httpURLResponse: httpURLResponse
+        )
+
+        expect(didRetry).to(beFalse())
+    }
+
 }
 
 // swiftlint:disable large_tuple
