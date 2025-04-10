@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 9/21/22.
 
 import Foundation
+import StoreKit
 
 /// `PurchasesDiagnostics` allows you to ensure that the SDK is set up correctly by diagnosing configuration errors.
 /// To run the test, simply call ``PurchasesDiagnostics/testSDKHealth()``.
@@ -115,6 +116,9 @@ extension PurchasesDiagnostics {
         
         /// One or more products are not configured correctly
         case invalidProducts([InvalidProductErrorPayload])
+        
+        /// The person is not authorized to make In-App Purchases
+        case notAuthorizedToMakePayments
 
         /// Any other not identifier error. You can check the undelying error for details.
         case unknown(Swift.Error)
@@ -136,8 +140,19 @@ extension PurchasesDiagnostics {
         }
     }
     
+    private var canMakePayments: Bool {
+        if #available(iOS 15.0, macOS 12.0, *) {
+            return AppStore.canMakePayments
+        } else {
+            return SKPaymentQueue.canMakePayments()
+        }
+    }
+    
     public func healthReport() async -> SDKHealthStatus {
         do {
+            if !canMakePayments {
+                return .unhealthy(.notAuthorizedToMakePayments)
+            }
             return try await self.purchases.healthReportRequest().validate()
         } catch let error as BackendError {
             if case .networkError(let networkError) = error,
@@ -227,6 +242,7 @@ extension PurchasesDiagnostics.Error: CustomNSError {
 
     var localizedDescription: String {
         switch self {
+        case .notAuthorizedToMakePayments: return "The person is not authorized to make payments on this device."
         case let .unknown(error): return "Unknown error: \(error.localizedDescription)"
         case let .failedConnectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
         case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
@@ -262,7 +278,7 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         case let .failedConnectingToAPI(error): return error
         case let .failedFetchingOfferings(error): return error
         case let .failedMakingSignedRequest(error): return error
-        case .invalidAPIKey, .offeringConfiguration, .invalidSDKVersion, .noOfferings, .invalidBundleId, .invalidProducts:
+        case .invalidAPIKey, .offeringConfiguration, .invalidSDKVersion, .noOfferings, .invalidBundleId, .invalidProducts, .notAuthorizedToMakePayments:
             return nil
         }
     }
