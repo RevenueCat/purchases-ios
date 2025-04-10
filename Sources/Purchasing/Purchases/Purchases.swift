@@ -1551,18 +1551,13 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter storeKitVersion: The storeKit version to use. Currently defaults to StoreKit 2.
-     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:storeKitVersion:)
-    @discardableResult static func configureInCustomEntitlementsComputationMode(
-        apiKey: String,
-        appUserID: String,
-        storeKitVersion: StoreKitVersion = .default) -> Purchases {
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
+    @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
+                                                                                appUserID: String) -> Purchases {
         Self.configure(
             with: .builder(withAPIKey: apiKey, appUserID: appUserID)
-                .with(storeKitVersion: storeKitVersion)
                 .build())
     }
 
