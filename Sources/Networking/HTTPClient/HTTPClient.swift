@@ -294,12 +294,13 @@ internal extension HTTPClient {
         }
 
         func requestWithNextHost() -> Self? {
-            var copy = self
-            copy.currentHostIndex += 1
-            guard self.httpRequest.path.url(hostURLIndex: self.currentHostIndex) != nil else {
+            let nextHostIndex = self.currentHostIndex + 1
+            guard self.httpRequest.path.url(hostURLIndex: nextHostIndex) != nil else {
                 // No more hosts available
                 return nil
             }
+            var copy = self
+            copy.currentHostIndex = nextHostIndex
             return copy
         }
 

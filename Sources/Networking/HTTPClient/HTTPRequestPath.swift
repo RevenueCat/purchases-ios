@@ -48,7 +48,10 @@ extension HTTPRequestPath {
     var url: URL? { return self.url(hostURLIndex: 0, proxyURL: nil) }
 
     func url(hostURLIndex: Int, proxyURL: URL? = nil) -> URL? {
-        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURLs[safe: hostURLIndex])
+        guard let baseURL = proxyURL ?? Self.serverHostURLs[safe: hostURLIndex] else {
+            return nil
+        }
+        return URL(string: self.relativePath, relativeTo: baseURL)
     }
 }
 
