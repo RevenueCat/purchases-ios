@@ -5,11 +5,11 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-
-
 import Foundation
 import RevenueCat
-import RevenueCatUI
+
+#if DEBUG
+@testable import RevenueCatUI
 
 import UIKit
 
@@ -687,6 +687,8 @@ private extension SamplePaywallLoader {
     static let tosURL = URL(string: "https://revenuecat.com/tos")!
 
 }
+
+#endif
 
 // This is provided by RevenueCatUI only for debug builds
 // But we want to be able to use it in release builds too.

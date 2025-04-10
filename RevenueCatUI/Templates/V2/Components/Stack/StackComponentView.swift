@@ -151,7 +151,6 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
-    // @PublicForExternalTesting
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         enabled: Bool = true
