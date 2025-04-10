@@ -21,7 +21,7 @@ final class HealthReportOperation: CacheableNetworkOperation {
         let completion: InternalAPI.HealthReportResponseHandler
 
     }
-    
+
     private let configuration: AppUserConfiguration
     private let callbackCache: CallbackCache<Callback>
 

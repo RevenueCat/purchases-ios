@@ -47,7 +47,7 @@ struct DebugSwiftUIRootView: View {
 
                     case let .paywall(paywall):
                         DebugPaywallJSONView(paywall: paywall)
-                        
+
                     case .statusDetails:
                         DebugStatusDetailsView(errors: model.errorsToExpandOn)
                     }
@@ -112,7 +112,7 @@ internal struct DebugSummaryView: View {
         .scrollContentBackground(.hidden)
         .navigationTitle("RevenueCat Debug")
     }
-    
+
     private var statusLabel: some View {
         LabeledContent("Status") {
             HStack {
@@ -438,7 +438,7 @@ private struct DebugPackageView: View {
 @available(iOS 16.0, macOS 13.0, *)
 private struct DebugStatusDetailsView: View {
     let errors: [PurchasesDiagnostics.Error]
-    
+
     var body: some View {
         List {
             ForEach(errors, id: \.errorCode) { error in
@@ -446,7 +446,7 @@ private struct DebugStatusDetailsView: View {
                 case let .invalidProducts(products):
                     Section("Product Validation Issues") {
                         ForEach(products, id: \.identifier) { product in
-                            if product.status != .ok {
+                            if product.status != .valid {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack(alignment: .center, spacing: 8) {
                                         product.status.icon.imageScale(.small)
@@ -467,9 +467,14 @@ private struct DebugStatusDetailsView: View {
                                     .foregroundColor(.yellow)
                                 Text("No offerings configured")
                             }
-                            Text("While offerings are not mandatory, they are the way to 'offer' products to your customers on your paywalls.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            Text(
+                                """
+                                While offerings are not mandatory, they are the way to 'offer' products \
+                                to your customers on your paywalls.
+                                """
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                         }
                     }
                 case let .offeringConfiguration(offerings):
@@ -481,9 +486,16 @@ private struct DebugStatusDetailsView: View {
                                         offering.status.icon.imageScale(.small)
                                         Text(offering.identifier)
                                     }
-                                    Text(offering.packages.isEmpty ? "Offerings must have at least one package" : "Products \(offering.packages.map { "'\($0.productIdentifier)'" }.formatted()) in the offering have issues, check the products list above for more details.")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                    Text(
+                                        offering.packages.isEmpty ?
+                                        "Offerings must have at least one package" :
+                                        """
+                                        Products \(offering.packages.map { "'\($0.productIdentifier)'" }.formatted()) \
+                                        in the offering have issues, check the products list above for more details.
+                                        """
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                                 }
                             }
                         }

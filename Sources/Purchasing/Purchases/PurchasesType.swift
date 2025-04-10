@@ -1212,7 +1212,7 @@ internal protocol InternalPurchasesType: AnyObject {
     /// Performs an unauthenticated request to the API to verify connectivity.
     /// - Throws: `PublicError` if request failed.
     func healthRequest(signatureVerification: Bool) async throws
-    
+
     /// Asks the server for an in-depth report of the SDK's configuration
     /// - Throws: A `BackendError` if the request fails for an invalid API key or for connectivity issues
     /// - Returns: A health report with all checks performed in the server and their status

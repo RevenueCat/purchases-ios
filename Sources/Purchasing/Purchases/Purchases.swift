@@ -805,7 +805,7 @@ public extension Purchases {
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }
-    
+
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
         fetchCurrent: Bool = false,
@@ -821,7 +821,6 @@ public extension Purchases {
     func offerings() async throws -> Offerings {
         return try await self.offerings(fetchPolicy: .default)
     }
-
 
     var cachedOfferings: Offerings? {
         return self.offeringsManager.cachedOfferings
@@ -1768,7 +1767,7 @@ extension Purchases: InternalPurchasesType {
             throw NewErrorUtils.purchasesError(withUntypedError: error)
         }
     }
-    
+
     internal func healthReportRequest() async throws -> HealthReport {
         try await self.backend.healthReportRequest(appUserID: self.appUserID)
     }

@@ -4,7 +4,7 @@ import SwiftUI
 extension PurchasesDiagnostics.ProductStatus {
     var icon: some View {
         switch self {
-        case .ok:
+        case .valid:
             Image(systemName: "checkmark.circle.fill")
                 .foregroundColor(.green)
         case .couldNotCheck, .unknown:

@@ -88,13 +88,16 @@ struct HealthCheck {
 
         switch name {
         case .offeringsProducts:
-            details = (try container.decodeIfPresent(OfferingsCheckDetails.self, forKey: .details)).map({ .offeringsProducts($0) })
+            details = (try container.decodeIfPresent(OfferingsCheckDetails.self, forKey: .details))
+                .map({ .offeringsProducts($0) })
         case .bundleId:
-            details = (try container.decodeIfPresent(BundleIdCheckDetails.self, forKey: .details)).map({ .bundleId($0) })
-        
+            details = (try container.decodeIfPresent(BundleIdCheckDetails.self, forKey: .details))
+                .map({ .bundleId($0) })
+
         case .products:
-            details = (try container.decodeIfPresent(ProductsCheckDetails.self, forKey: .details)).map({ .products($0) })
-            
+            details = (try container.decodeIfPresent(ProductsCheckDetails.self, forKey: .details))
+                .map({ .products($0) })
+
         default:
             details = nil
         }

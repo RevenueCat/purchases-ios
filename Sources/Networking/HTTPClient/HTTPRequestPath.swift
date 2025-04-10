@@ -190,7 +190,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .getIntroEligibility(appUserID):
             return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
-            
+
         case let .appHealthReport(appUserID):
             return "subscribers/\(Self.escape(appUserID))/health_report"
 
@@ -267,7 +267,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postRedeemWebPurchase:
             return "post_redeem_web_purchase"
-            
+
         case .appHealthReport:
             return "get_app_health_report"
 

@@ -90,13 +90,17 @@ extension DebugViewModel {
             }
         }
     }
-    
+
     var diagnosticsExplainer: String? {
         switch self.diagnosticsResult {
         case let .loaded(healthStatus):
             switch healthStatus {
             case .healthy(warnings: let warnings):
-                return warnings.count > 0 ? "The dashboard configuration is valid, however we encountered some potential issues during validation. Feel free to ignore them if your configuration works as expected." : nil
+                return warnings.count > 0 ? """
+                The dashboard configuration is valid, however we encountered some potential issues \
+                during validation. Feel free to ignore them if your configuration works as expected.
+                """
+                : nil
             case .unhealthy(let error): return error.localizedDescription
             }
         default: return nil
@@ -113,7 +117,7 @@ extension DebugViewModel {
             healthStatus.icon
         }
     }
-    
+
     var errorsToExpandOn: [PurchasesDiagnostics.Error] {
         switch self.diagnosticsResult {
         case .loading: return []
