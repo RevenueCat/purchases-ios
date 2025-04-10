@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, macOS 13.0, *)
 extension PurchasesDiagnostics.SDKHealthStatus {
     var icon: some View {
         switch self {
