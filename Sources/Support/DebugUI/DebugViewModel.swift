@@ -85,7 +85,7 @@ extension DebugViewModel {
         case .loading: return "Loading..."
         case let .loaded(healthStatus):
             switch healthStatus {
-            case let .healthy: return "Configuration OK"
+            case .healthy: return "Configuration OK"
             case .unhealthy: return "Invalid Configuration"
             }
         }
