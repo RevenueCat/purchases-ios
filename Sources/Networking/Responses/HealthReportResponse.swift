@@ -29,10 +29,19 @@ enum HealthCheckType: String {
     case offeringsProducts = "offerings_products"
 }
 
+enum ProductStatus: String {
+    case valid = "ok"
+    case couldNotCheck = "could_not_check"
+    case notFound = "not_found"
+    case actionInProgress = "action_in_progress"
+    case needsAction = "needs_action"
+    case unknown
+}
+
 struct PackageHealthReport {
     let identifier: String
     let title: String?
-    let status: String
+    let status: ProductStatus
     let description: String
     let productIdentifier: String
     let productTitle: String?
@@ -66,7 +75,7 @@ struct ProductsCheckDetails {
 struct ProductHealthReport {
     let identifier: String
     let title: String?
-    let status: String
+    let status: ProductStatus
     let description: String
 }
 
@@ -118,6 +127,7 @@ extension HealthCheckStatus: Codable, Equatable {}
 extension OfferingsCheckDetails: Codable, Equatable {}
 extension BundleIdCheckDetails: Codable, Equatable {}
 extension ProductsCheckDetails: Codable, Equatable {}
+extension ProductStatus: Codable, Equatable {}
 extension ProductHealthReport: Codable, Equatable {}
 extension OfferingHealthReport: Codable, Equatable {}
 extension PackageHealthReport: Codable, Equatable {}

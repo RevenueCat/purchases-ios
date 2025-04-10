@@ -46,17 +46,17 @@ public final class PurchasesDiagnostics: NSObject {
 extension PurchasesDiagnostics {
 
     /// Enum representing the status of a product in the store
-    public enum ProductStatus: String {
+    public enum ProductStatus {
         /// Product is configured correctly in App Store Connect
-        case valid = "ok"
+        case valid
         /// There was a problem checking the product state in App Store Connect
-        case couldNotCheck = "could_not_check"
+        case couldNotCheck
         /// The product does not exist in App Store Connect
-        case notFound = "not_found"
+        case notFound
         /// The product is in a state that requires action from Apple or the Developer before being ready for production
-        case actionInProgress = "action_in_progress"
+        case actionInProgress
         /// The product is in a state that requires action from the developer before being ready for production
-        case needsAction = "needs_action"
+        case needsAction
         /// The product state could not be determined
         case unknown
     }

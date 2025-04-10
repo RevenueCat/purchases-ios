@@ -32,10 +32,10 @@ extension HealthReport {
         }
 
         let productPayloads = payload.products.map { productCheck in
-            PurchasesDiagnostics.InvalidProductErrorPayload(
+            return PurchasesDiagnostics.InvalidProductErrorPayload(
                 identifier: productCheck.identifier,
                 title: productCheck.title,
-                status: .init(rawValue: productCheck.status) ?? .unknown,
+                status: status(from: productCheck.status),
                 description: productCheck.description
             )
         }
@@ -74,10 +74,21 @@ extension HealthReport {
         .init(
             identifier: packageReport.identifier,
             title: packageReport.title,
-            status: .init(rawValue: packageReport.status) ?? .unknown,
+            status: status(from: packageReport.status),
             description: packageReport.description,
             productIdentifier: packageReport.productIdentifier,
             productTitle: packageReport.productTitle
         )
+    }
+
+    private func status(from productCheckStatus: ProductStatus) -> PurchasesDiagnostics.ProductStatus {
+        switch productCheckStatus {
+        case .valid: .valid
+        case .couldNotCheck: .couldNotCheck
+        case .notFound: .notFound
+        case .actionInProgress: .actionInProgress
+        case .needsAction: .needsAction
+        case .unknown: .unknown
+        }
     }
 }
