@@ -1,3 +1,16 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  HealthReport+Validate.swift
+//
+//  Created by Pol Piella on 4/10/25.
+
 extension HealthReport {
     func validate() -> PurchasesDiagnostics.SDKHealthStatus {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
