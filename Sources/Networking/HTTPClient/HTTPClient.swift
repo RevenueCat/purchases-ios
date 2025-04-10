@@ -506,6 +506,7 @@ private extension HTTPClient {
         }
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
+                                               host: urlRequest.url?.host,
                                                requestStartTime: requestStartTime,
                                                result: response)
 
@@ -598,6 +599,7 @@ private extension HTTPClient {
     }
 
     private func trackHttpRequestPerformedIfNeeded(request: Request,
+                                                   host: String?,
                                                    requestStartTime: Date,
                                                    result: Result<VerifiedHTTPResponse<Data>, NetworkError>?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
@@ -609,6 +611,7 @@ private extension HTTPClient {
                 let httpStatusCode = response.httpStatusCode.rawValue
                 let verificationResult = response.verificationResult
                 diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
+                                                             host: host,
                                                              responseTime: responseTime,
                                                              wasSuccessful: true,
                                                              responseCode: httpStatusCode,
@@ -624,6 +627,7 @@ private extension HTTPClient {
                     backendErrorCode = errorResponse.code.rawValue
                 }
                 diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
+                                                             host: host,
                                                              responseTime: responseTime,
                                                              wasSuccessful: false,
                                                              responseCode: responseCode,
