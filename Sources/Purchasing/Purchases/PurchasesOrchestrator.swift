@@ -391,7 +391,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func purchase(params: PurchaseParams, trackDiagnostics: Bool, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
@@ -402,15 +401,26 @@ final class PurchasesOrchestrator {
             fatalError("Missing product in PurchaseParams")
         }
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        let winBackOffer = params.winBackOffer
+        let metadata = params.metadata
+
+        #else
+
+        let winBackOffer: WinBackOffer? = nil
+        let metadata: [String: String]? = nil
+
+        #endif
+
         purchase(product: product,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
-                 winBackOffer: params.winBackOffer,
-                 metadata: params.metadata,
+                 winBackOffer: winBackOffer,
+                 metadata: metadata,
                  trackDiagnostics: trackDiagnostics,
                  completion: completion)
     }
-    #endif
 
     func purchase(product: StoreProduct,
                   package: Package?,
