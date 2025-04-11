@@ -1213,9 +1213,9 @@ internal protocol InternalPurchasesType: AnyObject {
     /// - Throws: `PublicError` if request failed.
     func healthRequest(signatureVerification: Bool) async throws
 
-    /// Asks the server for an in-depth report of the SDK's configuration
-    /// - Throws: A `BackendError` if the request fails for an invalid API key or for connectivity issues
-    /// - Returns: A health report with all checks performed in the server and their status
+    /// Requests an in-depth report of the SDK's configuration from the server.
+    /// - Throws: A `BackendError` if the request fails due to an invalid API key or connectivity issues.
+    /// - Returns: A health report containing all checks performed on the server and their status.
     func healthReportRequest() async throws -> HealthReport
 
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
