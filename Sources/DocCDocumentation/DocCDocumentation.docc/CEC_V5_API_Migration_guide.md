@@ -18,15 +18,14 @@ Here's some of the benefits you get with StoreKit 2:
 - Future proofing: StoreKit 1 APIs are being progressively deprecated by Apple, and new features are being added to StoreKit 2.
 - Faster processing time: More efficient and performant implementation of receipts validation. We have found that receipts validation can be ~200ms faster comparing to SK1 implementation for p95 of the requests.
 
-The SDK will automatically use StoreKit 1 in the following versions where StoreKit 2 is not supported: on macOS 12 or earlier, iOS 15 or earlier, iPadOS 15 or earlier, tvOS 15 or earlier, or watchOS 8 or earlier.
+The SDK will automatically use StoreKit 1 in the following platforms where StoreKit 2 is not supported: on macOS 12 or earlier, iOS 15 or earlier, iPadOS 15 or earlier, tvOS 15 or earlier, or watchOS 8 or earlier.
 
 If you want to control the rollout of StoreKit 2, you can use the following configuration API. We recommend defaulting to `.storeKit1`, and using a remotely configured variable to control which percentage of your users receives `.storeKit2`.
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
   .with(storeKitVersion: .storeKit1)
-  .build()
-```
+  .build())
 
 ## Deployment Target
 
