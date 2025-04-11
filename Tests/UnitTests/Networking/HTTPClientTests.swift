@@ -2399,8 +2399,8 @@ extension HTTPClientTests {
     // MARK: - Fallback Host Retry Tests
 
     func testNewRequestStartsWithMainPath() {
-        let request = buildEmptyRequest(isRetryable: true)
-        expect(request.fallbackPathIndex).to(equal(0))
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
+        expect(request.fallbackPathIndex).to(beNil())
     }
 
     func testNextFallbackPathRequestIncrementsFallbackPathIndex() throws {
