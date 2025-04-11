@@ -165,12 +165,7 @@ extension Backend {
     /// - Returns: A report will all validation checks along with their status
     func healthReportRequest(appUserID: String) async throws -> HealthReport {
         try await Async.call { (completion: @escaping (Result<HealthReport, BackendError>) -> Void) in
-            self.internalAPI.healthReportRequest(appUserID: appUserID) { result in
-                switch result {
-                case let .success(response): completion(.success(response))
-                case .failure(let error): completion(.failure(error))
-                }
-            }
+            self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
         }
     }
 
