@@ -97,7 +97,7 @@ extension DebugViewModel {
             switch healthReport.status {
             case .healthy(warnings: let warnings):
                 return warnings.count > 0 ? """
-                The dashboard configuration is valid, however we encountered some potential issues \
+                Your RevenueCat configuration is valid, however we encountered some potential issues \
                 during validation. Feel free to ignore them if your configuration works as expected.
                 """
                 : nil
