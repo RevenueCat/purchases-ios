@@ -22,7 +22,6 @@ enum HealthCheckStatus: String {
 
 enum HealthCheckType: String {
     case apiKey = "api_key"
-    case sdkVersion = "sdk_version"
     case bundleId = "bundle_id"
     case products = "products"
     case offerings = "offerings"

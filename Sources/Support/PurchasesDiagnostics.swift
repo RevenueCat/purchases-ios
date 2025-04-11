@@ -117,9 +117,6 @@ extension PurchasesDiagnostics {
         /// Failure performing a signed request
         case failedMakingSignedRequest(Swift.Error)
 
-        /// Version of the SDK is not supported
-        case invalidSDKVersion
-
         /// There are no offerings in project
         case noOfferings
 
@@ -274,7 +271,6 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
         case let .failedMakingSignedRequest(error): return "Failed making signed request: \(error.localizedDescription)"
         case .invalidAPIKey: return "API key is not valid"
-        case .invalidSDKVersion: return "SDK Version is not supported"
         case .noOfferings: return "No offerings configured"
         case let .offeringConfiguration(payload):
             guard let offendingOffering = payload.first(where: { $0.status == .failed }) else {
@@ -314,7 +310,6 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         case let .failedMakingSignedRequest(error): return error
         case .invalidAPIKey,
                 .offeringConfiguration,
-                .invalidSDKVersion,
                 .noOfferings,
                 .invalidBundleId,
                 .invalidProducts,

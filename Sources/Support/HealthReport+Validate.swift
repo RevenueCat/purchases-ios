@@ -24,7 +24,6 @@ extension HealthReport {
     func error(from check: HealthCheck) -> PurchasesDiagnostics.Error {
         switch check.name {
         case .apiKey: return .invalidAPIKey
-        case .sdkVersion: return .invalidSDKVersion
         case .bundleId: return createBundleIdError(from: check)
         case .products: return createProductsError(from: check)
         case .offerings: return .noOfferings
