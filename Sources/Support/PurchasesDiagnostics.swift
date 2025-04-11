@@ -151,7 +151,10 @@ extension PurchasesDiagnostics {
         case unhealthy(PurchasesDiagnostics.Error)
     }
 
-    /// Throw an error if the SDK is not configured correctly
+    /// Performs a full SDK configuration health check and throws an error if the configuration is not valid.
+    /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
+    /// It should not be invoked in production builds.
+    /// - Throws: The specific configuration issue that needs to be solved.
     public func testSDKHealth() async throws {
         switch await self.healthReport() {
         case let .unhealthy(error): throw error
@@ -167,8 +170,10 @@ extension PurchasesDiagnostics {
         }
     }
 
-    /// Check whether the SDK is configured correctly
-    /// - Returns: The result of the SDK configuration health check
+    /// Performs a full SDK configuration health check and returns its status.
+    /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
+    /// It should not be invoked in production builds.
+    /// - Returns: The result of the SDK configuration health check.
     public func healthReport() async -> SDKHealthStatus {
         do {
             if !canMakePayments {
