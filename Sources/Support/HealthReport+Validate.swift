@@ -12,13 +12,21 @@
 //  Created by Pol Piella on 4/10/25.
 
 extension HealthReport {
-    func validate() -> PurchasesDiagnostics.SDKHealthStatus {
+    func validate() -> PurchasesDiagnostics.SDKHealthReport {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
             let warnings = self.checks.filter { $0.status == .warning }.map { error(from: $0) }
-            return .healthy(warnings: warnings)
+            return .init(
+                status: .healthy(warnings: warnings),
+                projectId: self.projectId,
+                appId: self.appId
+            )
         }
 
-        return .unhealthy(error(from: firstFailedCheck))
+        return .init(
+            status: .unhealthy(error(from: firstFailedCheck)),
+            projectId: self.projectId,
+            appId: self.appId
+        )
     }
 
     func error(from check: HealthCheck) -> PurchasesDiagnostics.Error {

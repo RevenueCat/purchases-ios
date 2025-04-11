@@ -63,16 +63,22 @@ extension PurchasesDiagnostics {
 
     /// Additional information behind a configuration issue for a Product
     public struct InvalidProductErrorPayload {
-        let identifier: String
-        let title: String?
-        let status: ProductStatus
-        let description: String
+        /// Product identifier that must match the product in App Store Connect
+        public let identifier: String
+        /// Title of the product as it appears on the RevenueCat website
+        public let title: String?
+        /// Status of the RevenueCat product derived from the App Store Connect product
+        public let status: ProductStatus
+        /// Explainer of the product status
+        public let description: String
     }
 
     /// Additional information behind a configuration issue for the app's Bundle Id
     public struct InvalidBundleIdErrorPayload {
-        let appBundleId: String
-        let sdkBundleId: String
+        /// Bundle ID for the RevenueCat app
+        public let appBundleId: String
+        /// Bundle ID detected from the app at runtime by the RevenueCat SDK
+        public let sdkBundleId: String
     }
 
     /// Health status for a specific validation check in the SDK's Health Report
@@ -87,19 +93,28 @@ extension PurchasesDiagnostics {
 
     /// Additional information behind a configuration issue for a specific offering
     public struct OfferingConfigurationErrorPayload {
-        let identifier: String
-        let packages: [OfferingConfigurationErrorPayloadPackage]
-        let status: SDKHealthCheckStatus
+        /// Offering identifier as set up in the RevenueCat website
+        public let identifier: String
+        /// Extra information for each of the packages in the offering
+        public let packages: [OfferingConfigurationErrorPayloadPackage]
+        /// Status of the offering health check
+        public let status: SDKHealthCheckStatus
     }
 
-    /// Additional information behind a configuration issue for an offering's package
+    /// Additional information about a specific package in an offering that has a configuration issue.
     public struct OfferingConfigurationErrorPayloadPackage {
-        let identifier: String
-        let title: String?
-        let status: ProductStatus
-        let description: String
-        let productIdentifier: String
-        let productTitle: String?
+        /// The identifier of the package as configured in the RevenueCat website.
+        public let identifier: String
+        /// The display name of the package, if available.
+        public let title: String?
+        /// The current configuration status of the underlying product in App Store Connect.
+        public let status: ProductStatus
+        /// A human-readable explanation of the product's configuration status.
+        public let description: String
+        /// The product identifier associated with this package.
+        public let productIdentifier: String
+        /// The reference name of the product from App Store Connect, if available.
+        public let productTitle: String?
     }
 
     /// An error that represents a failing step in ``PurchasesDiagnostics``
@@ -140,6 +155,23 @@ extension PurchasesDiagnostics {
 }
 
 extension PurchasesDiagnostics {
+    /// A report that encapsulates the result of the SDK configuration health check.
+    /// Use this to programmatically inspect the SDK's health status after calling `healthReport()`.
+    public struct SDKHealthReport {
+        /// The overall status of the SDK's health.
+        public let status: SDKHealthStatus
+        /// The RevenueCat project identifier associated with the current SDK configuration, if available.
+        public let projectId: String?
+        /// The RevenueCat app identifier associated with the current SDK configuration, if available.
+        public let appId: String?
+
+        init(status: SDKHealthStatus, projectId: String? = nil, appId: String? = nil) {
+            self.status = status
+            self.projectId = projectId
+            self.appId = appId
+        }
+    }
+
     /// Status of the SDK Health report
     public enum SDKHealthStatus {
         /// SDK configuration is valid but might have some non-blocking issues
@@ -153,7 +185,7 @@ extension PurchasesDiagnostics {
     /// It should not be invoked in production builds.
     /// - Throws: The specific configuration issue that needs to be solved.
     public func testSDKHealth() async throws {
-        switch await self.healthReport() {
+        switch await self.healthReport().status {
         case let .unhealthy(error): throw error
         default: break
         }
@@ -171,20 +203,20 @@ extension PurchasesDiagnostics {
     /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
     /// It should not be invoked in production builds.
     /// - Returns: The result of the SDK configuration health check.
-    public func healthReport() async -> SDKHealthStatus {
+    public func healthReport() async -> SDKHealthReport {
         do {
             if !canMakePayments {
-                return .unhealthy(.notAuthorizedToMakePayments)
+                return .init(status: .unhealthy(.notAuthorizedToMakePayments))
             }
             return try await self.purchases.healthReportRequest().validate()
         } catch let error as BackendError {
             if case .networkError(let networkError) = error,
                case .errorResponse(let response, _, _) = networkError, response.code == .invalidAPIKey {
-                return .unhealthy(.invalidAPIKey)
+                return .init(status: .unhealthy(.invalidAPIKey))
             }
-            return .unhealthy(.unknown(error))
+            return .init(status: .unhealthy(.unknown(error)))
         } catch {
-            return .unhealthy(.unknown(error))
+            return .init(status: .unhealthy(.unknown(error)))
         }
     }
 }

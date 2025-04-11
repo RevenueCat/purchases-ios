@@ -98,6 +98,8 @@ internal struct DebugSummaryView: View {
         List {
             self.diagnosticsSection
 
+            self.openAppButton
+
             self.configurationSection
 
             #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -139,6 +141,18 @@ internal struct DebugSummaryView: View {
                 Text(diagnosticsFooter)
             }
         }
+    }
+
+    private var openAppButton: some View {
+        Group {
+            if let url = model.diagnosticsActionURL,
+                let title = model.diagnosticsActionTitle {
+                Link(destination: url) {
+                    Label(title, systemImage: "arrow.up.forward")
+                }
+            }
+        }
+
     }
 
     private var configurationSection: some View {

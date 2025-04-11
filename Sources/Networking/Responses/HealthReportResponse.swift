@@ -114,6 +114,8 @@ struct HealthCheck {
 
 struct HealthReport {
     let status: HealthCheckStatus
+    let projectId: String?
+    let appId: String?
     let checks: [HealthCheck]
 }
 
