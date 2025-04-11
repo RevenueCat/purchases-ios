@@ -15,8 +15,13 @@ import Foundation
 
 protocol HTTPRequestPath {
 
-    /// The base URLs for requests to this path, in order of preference.
-    static var serverHostURLs: [URL] { get }
+    /// The base URL for requests to this path.
+    static var serverHostURL: URL { get }
+
+    /// The fallback paths to use when the main server is down.
+    ///
+    /// The structure of the response must be the same as that of the main path.
+    var fallbackPaths: [HTTPRequestPath] { get }
 
     /// Whether requests to this path are authenticated.
     var authenticated: Bool { get }
@@ -30,28 +35,23 @@ protocol HTTPRequestPath {
     /// Whether endpoint requires a nonce for signature verification.
     var needsNonceForSigning: Bool { get }
 
-    /// The path component for this endpoint.
-    var pathComponent: String { get }
-
     /// The name of the endpoint.
     var name: String { get }
 
+    /// The full relative path for this endpoint.
+    var relativePath: String { get }
 }
 
 extension HTTPRequestPath {
 
-    /// The full relative path for this endpoint.
-    var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+    var fallbackPaths: [HTTPRequestPath] {
+        return []
     }
 
-    var url: URL? { return self.url(hostURLIndex: 0, proxyURL: nil) }
+    var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(hostURLIndex: Int, proxyURL: URL? = nil) -> URL? {
-        guard let baseURL = proxyURL ?? Self.serverHostURLs[safe: hostURLIndex] else {
-            return nil
-        }
-        return URL(string: self.relativePath, relativeTo: baseURL)
+    func url(proxyURL: URL? = nil) -> URL? {
+        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURL)
     }
 }
 
@@ -93,13 +93,18 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    static let serverHostURLs = [
-        "https://api.revenuecat.com",
-        "https://api2.revenuecat.com", // TODO: Add real values
-        "https://api3.revenuecat.com"
-    ].map {
-        // swiftlint:disable:next force_unwrapping
-        URL(string: $0)!
+    // swiftlint:disable:next force_unwrapping
+    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+
+    var fallbackPaths: [HTTPRequestPath] {
+        switch self {
+        case .getOfferings:
+            return [HTTPRequest.FallbackPath.getOfferings]
+        case .getProductEntitlementMapping:
+            return [HTTPRequest.FallbackPath.getProductEntitlementMapping]
+        default:
+            return []
+        }
     }
 
     var authenticated: Bool {
@@ -181,6 +186,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig:
             return false
         }
+    }
+
+    var relativePath: String {
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {
@@ -273,5 +282,51 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
+    }
+}
+
+extension HTTPRequest {
+
+    enum FallbackPath: HTTPRequestPath {
+
+        case getOfferings
+        case getProductEntitlementMapping
+
+        // swiftlint:disable:next force_unwrapping
+        static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
+
+        var authenticated: Bool {
+            return true
+        }
+
+        var shouldSendEtag: Bool {
+            return true
+        }
+
+        var supportsSignatureVerification: Bool {
+            return false
+        }
+
+        var needsNonceForSigning: Bool {
+            return false
+        }
+
+        var relativePath: String {
+            switch self {
+            case .getOfferings:
+                return "/offerings"
+            case .getProductEntitlementMapping:
+                return "/product-entitlement-mapping"
+            }
+        }
+
+        var name: String {
+            switch self {
+            case .getOfferings:
+                return "fallback_get_offerings"
+            case .getProductEntitlementMapping:
+                return "fallback_get_product_entitlement_mapping"
+            }
+        }
     }
 }
