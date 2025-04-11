@@ -226,8 +226,7 @@ private func checkConfigure() -> Purchases! {
     let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
     Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
     Purchases.configureInCustomEntitlementsComputationMode(apiKey: "",
-                                                           appUserID: "",
-                                                           storeKitVersion: StoreKitVersion.storeKit1)
+                                                           appUserID: "")
     Purchases.configure(with: configuration)
 
     return nil
