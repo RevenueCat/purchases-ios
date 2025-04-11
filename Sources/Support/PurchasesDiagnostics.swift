@@ -27,9 +27,9 @@ import StoreKit
 /// }
 /// ```
 @objc(RCPurchasesDiagnostics)
-public final class PurchasesDiagnostics: NSObject {
+public final class PurchasesDiagnostics: NSObject, Sendable {
 
-    typealias SDK = PurchasesType & InternalPurchasesType
+    typealias SDK = PurchasesType & InternalPurchasesType & Sendable
 
     private let purchases: SDK
 
@@ -157,7 +157,7 @@ extension PurchasesDiagnostics {
 extension PurchasesDiagnostics {
     /// A report that encapsulates the result of the SDK configuration health check.
     /// Use this to programmatically inspect the SDK's health status after calling `healthReport()`.
-    public struct SDKHealthReport {
+    public struct SDKHealthReport: Sendable {
         /// The overall status of the SDK's health.
         public let status: SDKHealthStatus
         /// The RevenueCat project identifier associated with the current SDK configuration, if available.
@@ -173,7 +173,7 @@ extension PurchasesDiagnostics {
     }
 
     /// Status of the SDK Health report
-    public enum SDKHealthStatus {
+    public enum SDKHealthStatus: Sendable {
         /// SDK configuration is valid but might have some non-blocking issues
         case healthy(warnings: [PurchasesDiagnostics.Error])
         /// SDK configuration is not valid and has issues that must be resolved
