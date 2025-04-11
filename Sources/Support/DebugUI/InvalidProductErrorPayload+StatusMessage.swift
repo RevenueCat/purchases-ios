@@ -28,7 +28,9 @@ extension PurchasesDiagnostics.InvalidProductErrorPayload {
         case .actionInProgress:
             return """
                 Some process is ongoing and needs to be completed before using this product in production purchases, \
-                controlled either by the developer or by Apple (state: \(self.description))
+                by Apple (state: \(self.description)). \
+                You can still make test purchases with the RevenueCat SDK, but you will need to \
+                wait for the state to change before you can make production purchases.
                 """
         case .needsAction:
             return """
