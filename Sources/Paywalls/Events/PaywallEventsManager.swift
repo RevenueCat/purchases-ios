@@ -65,7 +65,9 @@ actor PaywallEventsManager: PaywallEventsManagerType {
             return 0
         }
         self.flushInProgress = true
-        defer { self.flushInProgress = false }
+        defer {
+            self.flushInProgress = false
+        }
 
         let events = await self.store.fetch(count)
 
