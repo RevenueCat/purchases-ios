@@ -16,7 +16,7 @@ import Foundation
 extension HTTPRequest.PaywallPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
-    static let serverHostURLs = [URL(string: "https://api-paywalls.revenuecat.com")!]
+    static let serverHostURL = URL(string: "https://api-paywalls.revenuecat.com")!
 
     var authenticated: Bool {
         switch self {
@@ -46,10 +46,10 @@ extension HTTPRequest.PaywallPath: HTTPRequestPath {
         }
     }
 
-    var pathComponent: String {
+    var relativePath: String {
         switch self {
         case .postEvents:
-            return "events"
+            return "/v1/events"
         }
     }
 

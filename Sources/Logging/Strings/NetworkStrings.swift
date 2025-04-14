@@ -43,7 +43,7 @@ enum NetworkStrings {
     case starting_next_request(request: String)
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
-    case retrying_request_with_next_host(httpMethod: String, path: String, nextHost: Int)
+    case retrying_request_with_fallback_path(httpMethod: String, path: String)
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
@@ -120,8 +120,8 @@ extension NetworkStrings: LogMessage {
         case let .retrying_request(httpMethod, path):
             return "Retrying request \(httpMethod) \(path)"
 
-        case let .retrying_request_with_next_host(httpMethod, path, nextHost):
-            return "Retrying request \(httpMethod) \(path) with next fallback host: \(nextHost)"
+        case let .retrying_request_with_fallback_path(httpMethod, path):
+            return "Retrying request using fallback host: \(httpMethod) \(path)"
 
         case let .failing_url_resolved_to_host(url, resolvedHost):
             return "Failing url '\(url)' resolved to host '\(resolvedHost)'"

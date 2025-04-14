@@ -88,7 +88,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
             return .emptySuccessResponse()
@@ -1880,27 +1880,36 @@ extension HTTPClientTests {
         expect(secondRetriedRequest.retryCount).to(equal(2))
     }
 
-    func testRetryingRequestKeepsCurrentHostIndex() throws {
-        let request = buildEmptyRequest(isRetryable: true)
-        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+    func testRetryingRequestKeepsFallbackPathIndex() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
+        let nextFallbackPathRequest = try XCTUnwrap(request.requestWithNextFallbackPath())
 
-        let nextHostRequest = try XCTUnwrap(request.requestWithNextHost())
+        let retriedRequest = nextFallbackPathRequest.retriedRequest()
+        let secondRetriedRequest = nextFallbackPathRequest.retriedRequest()
 
-        let retriedRequest = nextHostRequest.retriedRequest()
-        let secondRetriedRequest = nextHostRequest.retriedRequest()
-
-        expect(retriedRequest.currentHostIndex).to(equal(1))
-        expect(secondRetriedRequest.currentHostIndex).to(equal(1))
+        expect(retriedRequest.fallbackPathIndex).to(equal(0))
+        expect(secondRetriedRequest.fallbackPathIndex).to(equal(0))
     }
 
     private func buildEmptyRequest(
-        isRetryable: Bool
+        isRetryable: Bool,
+        hasFallbackPaths: Bool = false
     ) -> HTTPClient.Request {
         let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
 
+        let path: HTTPRequest.Path
+        if hasFallbackPaths {
+            path = .getOfferings(appUserID: "abc123")
+            expect(path.fallbackPaths).toNot(
+                beEmpty(),
+                description: "This test requires a path that has at least 1 fallback path"
+            )
+        } else {
+            path = .getCustomerInfo(appUserID: "abc123")
+        }
+
         let request: HTTPClient.Request = .init(
-            httpRequest: .init(method: .get, path: .getCustomerInfo(appUserID: "abc123"), isRetryable: isRetryable),
+            httpRequest: .init(method: .get, path: path, isRetryable: isRetryable),
             authHeaders: .init(),
             defaultHeaders: .init(),
             verificationMode: .default,
@@ -2149,7 +2158,7 @@ extension HTTPClientTests {
     func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
             return .emptyTooManyRequestsResponse()
@@ -2178,7 +2187,7 @@ extension HTTPClientTests {
 
     func testCorrectDelaysAreSentToOperationDispatcherForRetries() throws {
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             return .emptyTooManyRequestsResponse()
         }
@@ -2204,7 +2213,7 @@ extension HTTPClientTests {
     func testRetryMessagesAreLoggedWhenRetriesExhausted() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
             return .emptyTooManyRequestsResponse()
@@ -2229,7 +2238,7 @@ extension HTTPClientTests {
     }
 
     func testRetryMessagesAreNotLoggedWhenNoRetriesOccur() throws {
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             return .emptySuccessResponse()
         }
@@ -2255,7 +2264,7 @@ extension HTTPClientTests {
     func testRetryCountHeaderIsAccurateWithNoRetries() throws {
         var retryCountHeaderValues: [String?] = []
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2273,7 +2282,7 @@ extension HTTPClientTests {
     }
 
     func testDoesNotRetryUnsupportedURLPaths() throws {
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         var requestCount = 0
         stub(condition: isHost(host)) { _ in
             requestCount += 1
@@ -2293,7 +2302,7 @@ extension HTTPClientTests {
         var retryCountHeaderValues: [String?] = []
         var retryCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2319,7 +2328,7 @@ extension HTTPClientTests {
     func testRetryCountHeaderIsAccurateWhenAllRetriesAreExhausted() throws {
         var retryCountHeaderValues: [String?] = []
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2339,7 +2348,7 @@ extension HTTPClientTests {
     func testSucceedsIfAlwaysGetsSuccessAfterOneRetry() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
 
@@ -2455,47 +2464,44 @@ extension HTTPClientTests {
 
     // MARK: - Fallback Host Retry Tests
 
-    func testNewRequestHasStartsAtFirstHost() {
-        let request = buildEmptyRequest(isRetryable: true)
-        expect(request.currentHostIndex).to(equal(0))
+    func testNewRequestStartsWithMainPath() {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
+        expect(request.fallbackPathIndex).to(beNil())
     }
 
-    func testNextHostRequestIncrementsCurrentHostIndex() throws {
-        var request = buildEmptyRequest(isRetryable: true)
-        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+    func testNextFallbackPathRequestIncrementsFallbackPathIndex() throws {
+        var request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
 
-        for iteration in 1..<hostCount {
-            request = try XCTUnwrap(request.requestWithNextHost())
-            expect(request.currentHostIndex).to(equal(iteration))
+        let fallbacksCount = request.httpRequest.path.fallbackPaths.count
+        for iteration in 0..<fallbacksCount {
+            request = try XCTUnwrap(request.requestWithNextFallbackPath())
+            expect(request.fallbackPathIndex).to(equal(iteration))
         }
     }
 
-    func testNextHostRequestKeepsRetryCount() throws {
-        let request = buildEmptyRequest(isRetryable: true)
-        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+    func testNextFallbackPathRequestKeepsRetryCount() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
 
         let retriedRequest = request.retriedRequest()
-        let nextHostRequest = try XCTUnwrap(retriedRequest.requestWithNextHost())
-        expect(nextHostRequest.retryCount).to(equal(1))
+        let nextFallbackPathRequest = try XCTUnwrap(retriedRequest.requestWithNextFallbackPath())
+        expect(nextFallbackPathRequest.retryCount).to(equal(1))
     }
 
-    func testRequestWithNextHostReturnsNilIfNoMoreHosts() throws {
-        var nextRequest = buildEmptyRequest(isRetryable: true)
-        let hostCount = type(of: nextRequest.httpRequest.path).serverHostURLs.count
+    func testRequestWithNextFallbackPathReturnsNilIfNoMoreHosts() throws {
+        var nextRequest = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
 
-        for _ in 1..<hostCount {
-            nextRequest = try XCTUnwrap(nextRequest.requestWithNextHost())
+        let fallbacksCount = nextRequest.httpRequest.path.fallbackPaths.count
+        for _ in 0..<fallbacksCount {
+            nextRequest = try XCTUnwrap(nextRequest.requestWithNextFallbackPath())
         }
-        let noMoreHostsRequest = nextRequest.requestWithNextHost()
+        let noMoreHostsRequest = nextRequest.requestWithNextFallbackPath()
         expect(noMoreHostsRequest).to(beNil())
     }
 
-    func testRetriesWithNextHostOnServerError() throws {
-        let request = HTTPRequest(method: .get, path: .mockPath)
-        let hostCount = type(of: request.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+    func testRetriesWithNextFallbackPathOnServerError() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let mainPath = request.path
+        let fallbackPath = try XCTUnwrap(mainPath.fallbackPaths.first, "This test requires at least 1 fallback path")
 
         let serverErrorResponse = HTTPStubsResponse(
             data: Data(),
@@ -2503,7 +2509,7 @@ extension HTTPClientTests {
             headers: nil
         )
 
-        let host1 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
         stub(condition: isHost(host1)) { _ in
             return serverErrorResponse
         }
@@ -2514,7 +2520,7 @@ extension HTTPClientTests {
             headers: nil
         )
 
-        let host2 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs[1].host)
+        let host2 = try XCTUnwrap(type(of: fallbackPath).serverHostURL.host)
         stub(condition: isHost(host2)) { _ in
             return successfulResponse
         }
@@ -2530,10 +2536,10 @@ extension HTTPClientTests {
         expect(result?.error).to(beNil())
     }
 
-    func testReturnsLastErrorWhenRetriedWithNextHost() throws {
-        let request = HTTPRequest(method: .get, path: .mockPath)
-        let hostCount = type(of: request.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+    func testReturnsLastErrorWhenRetriedWithNextFallbackPath() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let mainPath = request.path
+        let fallbackPath = try XCTUnwrap(mainPath.fallbackPaths.first, "This test requires at least 1 fallback path")
 
         let serverErrorResponse = HTTPStubsResponse(
             data: Data(),
@@ -2541,12 +2547,12 @@ extension HTTPClientTests {
             headers: nil
         )
 
-        let host1 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
         stub(condition: isHost(host1)) { _ in
             return serverErrorResponse
         }
 
-        let host2 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs[1].host)
+        let host2 = try XCTUnwrap(type(of: fallbackPath).serverHostURL.host)
         stub(condition: isHost(host2)) { _ in
             return .emptyTooManyRequestsResponse()
         }
@@ -2568,11 +2574,11 @@ extension HTTPClientTests {
         expect(result?.error?.isServerDown) == false
     }
 
-    func testRetriesWithNextHostImmediately() throws {
+    func testRetriesWithNextFallbackPathImmediately() throws {
         let mockOperationDispatcher = MockOperationDispatcher()
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
-        let request = buildEmptyRequest(isRetryable: true)
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
         let httpURLResponse = HTTPURLResponse(
             url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
             statusCode: HTTPStatusCode.internalServerError.rawValue,
@@ -2580,7 +2586,7 @@ extension HTTPClientTests {
             headerFields: nil
         )
 
-        let didRetry = client.retryRequestWithNextHostIfNeeded(
+        let didRetry = client.retryRequestWithNextFallbackPathIfNeeded(
             request: request,
             httpURLResponse: httpURLResponse
         )
@@ -2590,7 +2596,7 @@ extension HTTPClientTests {
     }
 
     func testIncrementsHostIndexOnRetry() throws {
-        let request = buildEmptyRequest(isRetryable: true)
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
         let httpURLResponse = HTTPURLResponse(
             url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
             statusCode: HTTPStatusCode.internalServerError.rawValue,
@@ -2598,17 +2604,17 @@ extension HTTPClientTests {
             headerFields: nil
         )
 
-        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+        let didRetry = self.client.retryRequestWithNextFallbackPathIfNeeded(
             request: request,
             httpURLResponse: httpURLResponse
         )
 
         expect(didRetry).to(beTrue())
-        expect(request.currentHostIndex) == 0 // Original request should have index 0
+        expect(request.fallbackPathIndex).to(beNil()) // Original request should not use a fallback path
     }
 
     func testDoesNotIncrementRetryCountOnHostRetry() throws {
-        let request = buildEmptyRequest(isRetryable: true)
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
         let httpURLResponse = HTTPURLResponse(
             url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
             statusCode: HTTPStatusCode.internalServerError.rawValue,
@@ -2616,7 +2622,7 @@ extension HTTPClientTests {
             headerFields: nil
         )
 
-        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+        let didRetry = self.client.retryRequestWithNextFallbackPathIfNeeded(
             request: request,
             httpURLResponse: httpURLResponse
         )
@@ -2625,10 +2631,8 @@ extension HTTPClientTests {
         expect(request.retryCount) == 0
     }
 
-    func testDoesNotRetryWithNextHostForNonServerError() throws {
-        let request = buildEmptyRequest(isRetryable: true)
-        let hostCount = type(of: request.httpRequest.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+    func testDoesNotRetryWithNextFallbackPathForNonServerError() throws {
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
 
         let httpURLResponse = HTTPURLResponse(
             url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
@@ -2637,7 +2641,7 @@ extension HTTPClientTests {
             headerFields: nil
         )
 
-        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+        let didRetry = self.client.retryRequestWithNextFallbackPathIfNeeded(
             request: request,
             httpURLResponse: httpURLResponse
         )
@@ -2645,12 +2649,12 @@ extension HTTPClientTests {
         expect(didRetry).to(beFalse())
     }
 
-    func testDoesNotRetryWithNextHostWhenNoMoreHostsAvailable() throws {
-        var nextRequest = buildEmptyRequest(isRetryable: true)
-        let hostCount = type(of: nextRequest.httpRequest.path).serverHostURLs.count
+    func testDoesNotRetryWithNextFallbackPathWhenNoMorePathsAvailable() throws {
+        var nextRequest = buildEmptyRequest(isRetryable: true, hasFallbackPaths: true)
+        let fallbacksCount = nextRequest.httpRequest.path.fallbackPaths.count
 
-        for _ in 1..<hostCount {
-            nextRequest = try XCTUnwrap(nextRequest.requestWithNextHost())
+        for _ in 0..<fallbacksCount {
+            nextRequest = try XCTUnwrap(nextRequest.requestWithNextFallbackPath())
         }
 
         let httpURLResponse = HTTPURLResponse(
@@ -2660,7 +2664,7 @@ extension HTTPClientTests {
             headerFields: nil
         )
 
-        let didRetry = self.client.retryRequestWithNextHostIfNeeded(
+        let didRetry = self.client.retryRequestWithNextFallbackPathIfNeeded(
             request: nextRequest,
             httpURLResponse: httpURLResponse
         )
@@ -2779,6 +2783,7 @@ extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
+    static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
     static let receiptPath: Self = .postReceiptData
 
 }
