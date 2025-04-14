@@ -180,6 +180,7 @@ extension PurchasesDiagnostics {
         case unhealthy(PurchasesDiagnostics.Error)
     }
 
+    #if DEBUG
     /// Performs a full SDK configuration health check and throws an error if the configuration is not valid.
     /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
     /// It should not be invoked in production builds.
@@ -219,6 +220,7 @@ extension PurchasesDiagnostics {
             return .init(status: .unhealthy(.unknown(error)))
         }
     }
+    #endif
 }
 
 // MARK: - Private
