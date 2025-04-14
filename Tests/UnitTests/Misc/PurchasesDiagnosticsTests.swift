@@ -146,4 +146,12 @@ class PurchasesDiagnosticsTests: TestCase {
         let expected = "Offering 'test_offering' has no packages"
         expect(error.localizedDescription) == expected
     }
+
+    func testGenericOfferingConfigurationError() {
+        let error = PurchasesDiagnostics.Error.offeringConfiguration([])
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Default offering is not configured correctly"
+        expect(error.localizedDescription) == expected
+    }
 }
