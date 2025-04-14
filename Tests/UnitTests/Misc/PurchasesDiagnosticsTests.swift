@@ -156,10 +156,18 @@ class PurchasesDiagnosticsTests: TestCase {
     }
 
     func testBundleIdError() {
-        let error = PurchasesDiagnostics.Error.invalidBundleId(.init(appBundleId: "app_bundle_id", sdkBundleId: "sdk_bundle_id"))
+        let error = PurchasesDiagnostics.Error.invalidBundleId(
+            .init(
+                appBundleId: "app_bundle_id",
+                sdkBundleId: "sdk_bundle_id"
+            )
+        )
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Bundle ID in your app 'sdk_bundle_id' does not match the RevenueCat app Bundle ID 'app_bundle_id'"
+        let expected = """
+        Bundle ID in your app 'sdk_bundle_id' does not match \
+        the RevenueCat app Bundle ID 'app_bundle_id'
+        """
         expect(error.localizedDescription) == expected
     }
 
