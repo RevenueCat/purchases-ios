@@ -232,7 +232,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testDoesntRetryUnsupportedURLPaths() async throws {
         // Ensure that the each time POST /receipt is called, we mock a 429 error
         var stubbedRequestCount = 0
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/subscribers/identify")) { _ in
             stubbedRequestCount += 1
             return Self.emptyTooManyRequestsResponse()
