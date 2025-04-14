@@ -79,6 +79,8 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
+        // TODO: this could be the cause of the impression event being cleared
+        // TODO: this gets reset when PaywallView is rerendered and would overwrite event data
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(
@@ -456,6 +458,8 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    private var fallbackReason: PaywallEvent.Data.FallbackReason?
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -467,7 +471,8 @@ struct LoadedOfferingPaywallView: View {
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler,
         locale: Locale,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        fallbackReason: PaywallEvent.Data.FallbackReason? = nil
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -482,6 +487,7 @@ struct LoadedOfferingPaywallView: View {
         self._purchaseHandler = .init(initialValue: purchaseHandler)
         self.locale = locale
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.fallbackReason = fallbackReason
     }
 
     var body: some View {
@@ -521,7 +527,12 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
+            .onAppear {
+                self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData(),
+                    fallbackReason: self.fallbackReason
+                )
+            }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if purchased {

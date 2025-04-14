@@ -1926,6 +1926,7 @@ private extension Purchases {
         }
         #endif
 
+        // TODO: JOSH
         self.purchasesOrchestrator.postPaywallEventsIfNeeded(delayed: true)
 
         #endif
@@ -1935,6 +1936,7 @@ private extension Purchases {
         self.systemInfo.isAppBackgroundedState = true
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // TODO: JOSH
         self.purchasesOrchestrator.postPaywallEventsIfNeeded()
         #endif
     }
