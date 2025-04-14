@@ -106,4 +106,29 @@ class PurchasesDiagnosticsTests: TestCase {
         expect(error.localizedDescription) == "No offerings configured"
     }
 
+    func testOfferingConfigurationError() {
+        let error = PurchasesDiagnostics.Error.offeringConfiguration(
+            [
+                .init(
+                    identifier: "test_offering",
+                    packages: [
+                        .init(
+                            identifier: "failing_package",
+                            title: "Failing Package",
+                            status: .notFound,
+                            description: "Could not find package",
+                            productIdentifier: "failing_product_identifier",
+                            productTitle: "Failing Product Title"
+                        )
+                    ],
+                    status: .failed
+                )
+            ]
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Offering 'test_offering' uses 1 products that are not ready in App Store Connect."
+        expect(error.localizedDescription) == expected
+    }
+
 }
