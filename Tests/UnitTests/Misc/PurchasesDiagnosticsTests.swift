@@ -127,7 +127,7 @@ class PurchasesDiagnosticsTests: TestCase {
         )
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Offering 'test_offering' uses 1 products that are not ready in App Store Connect."
+        let expected = "Offering 'test_offering' uses 1 products that are not ready in App Store Connect"
         expect(error.localizedDescription) == expected
     }
 
@@ -152,6 +152,40 @@ class PurchasesDiagnosticsTests: TestCase {
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
         let expected = "Default offering is not configured correctly"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testBundleIdError() {
+        let error = PurchasesDiagnostics.Error.invalidBundleId(.init(appBundleId: "app_bundle_id", sdkBundleId: "sdk_bundle_id"))
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Bundle ID in your app 'sdk_bundle_id' does not match the RevenueCat app Bundle ID 'app_bundle_id'"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testGenericBundleIdError() {
+        let error = PurchasesDiagnostics.Error.invalidBundleId(nil)
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Bundle ID in your app does not match the Bundle ID in the RevenueCat Website"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testNoProductsError() {
+        let error = PurchasesDiagnostics.Error.invalidProducts([])
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Your app has no products"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testAtLeastOneValidProductError() {
+        let error = PurchasesDiagnostics.Error.invalidProducts([
+            .init(identifier: "", title: nil, status: .notFound, description: "")
+        ])
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "You must have at least one product approved in App Store Connect"
         expect(error.localizedDescription) == expected
     }
 }
