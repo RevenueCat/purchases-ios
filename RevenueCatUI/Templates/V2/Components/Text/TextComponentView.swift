@@ -74,7 +74,9 @@ private struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
 
     var markdownText: AttributedString? {
-        return try? AttributedString(markdown: self.text)
+        return try? AttributedString(
+            markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
+        )
     }
 
     var body: some View {
@@ -127,7 +129,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string("Hello, world **bold** _italic_ `code` [RevenueCat](https://revenuecat.com)")
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
@@ -148,7 +150,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string("Hello, world **bold _italic `code [RevenueCat](https://revenuecat.com")
+                        "id_1": .string("Hello, world\n**bold\n_italic\n`code \n[RevenueCat](https://revenuecat.com")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
