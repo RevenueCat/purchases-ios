@@ -43,75 +43,16 @@ class PurchasesDiagnosticsTests: TestCase {
     }
 
     func testFailingHealthRequest() async throws {
-        let error = ErrorUtils.offlineConnectionError().asPublicError
-        self.purchases.mockedHealthRequestResponse = .failure(error)
-
-        do {
-            try await self.diagnostics.testSDKHealth()
-            fail("Expected error")
-        } catch let PurchasesDiagnostics.Error.failedConnectingToAPI(underlyingError) {
-            expect(underlyingError).to(matchError(error))
-        } catch {
-            fail("Unexpected error: \(error)")
-        }
-    }
-
-    func testFailingAuthenticatedRequest() async throws {
-        let error = ErrorUtils
-            .backendError(withBackendCode: .invalidAPIKey,
-                          originalBackendErrorCode: BackendErrorCode.invalidAPIKey.rawValue,
-                          backendMessage: "Invalid API key")
-            .asPublicError
-        self.purchases.mockedCustomerInfoResponse = .failure(error)
-
+        self.purchases.mockedHealthReportRequestResponse = .success(
+            HealthReport(status: .failed, projectId: nil, appId: nil, checks: [
+                HealthCheck(name: HealthCheckType.apiKey, status: HealthCheckStatus.failed)
+            ])
+        )
         do {
             try await self.diagnostics.testSDKHealth()
             fail("Expected error")
         } catch PurchasesDiagnostics.Error.invalidAPIKey {
-            // Expected error
-        } catch {
-            fail("Unexpected error: \(error)")
-        }
-    }
-
-    func testFailingOfferingsRequest() async throws {
-        let error = OfferingsManager.Error.missingProducts(identifiers: ["a"]).asPublicError
-        self.purchases.mockedOfferingsResponse = .failure(error)
-
-        do {
-            try await self.diagnostics.testSDKHealth()
-            fail("Expected error")
-        } catch let PurchasesDiagnostics.Error.failedFetchingOfferings(offeringsError) {
-            expect(offeringsError).to(matchError(error))
-            expect(self.purchases.invokedGetOfferingsParameters) == .failIfProductsAreMissing
-        } catch {
-            fail("Unexpected error: \(error)")
-        }
-    }
-
-    func testDoesNotCheckSignatureVerificationIfDisabled() async throws {
-        self.purchases.mockedResponseVerificationMode = .disabled
-
-        self.purchases.mockedHealthRequestWithSignatureVerificationResponse = .failure(
-            ErrorUtils.signatureVerificationFailedError(path: HTTPRequest.Path.health.relativePath,
-                                                        code: .success).asPublicError
-        )
-
-        try await self.diagnostics.testSDKHealth()
-    }
-
-    func testFailingSignatureVerification() async throws {
-        self.purchases.mockedResponseVerificationMode = Signing.verificationMode(with: .informational)
-
-        let expectedError = ErrorUtils.signatureVerificationFailedError(path: HTTPRequest.Path.health.relativePath,
-                                                                        code: .success)
-        self.purchases.mockedHealthRequestWithSignatureVerificationResponse = .failure(expectedError.asPublicError)
-
-        do {
-            try await self.diagnostics.testSDKHealth()
-            fail("Expected error")
-        } catch let PurchasesDiagnostics.Error.failedMakingSignedRequest(error) {
-            expect(error).to(matchError(expectedError))
+            /* Test succeeds */
         } catch {
             fail("Unexpected error: \(error)")
         }
@@ -156,6 +97,13 @@ class PurchasesDiagnosticsTests: TestCase {
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
         expect(error.localizedDescription) == "Failed fetching offerings: \(underlyingError.localizedDescription)"
+    }
+
+    func testNoOfferings() {
+        let error = PurchasesDiagnostics.Error.noOfferings
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        expect(error.localizedDescription) == "No offerings configured"
     }
 
 }

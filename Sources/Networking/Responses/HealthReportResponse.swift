@@ -89,6 +89,12 @@ struct HealthCheck {
         case details
     }
 
+    init(name: HealthCheckType, status: HealthCheckStatus, details: HealthCheckDetails? = nil) {
+        self.name = name
+        self.status = status
+        self.details = details
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(HealthCheckType.self, forKey: .name)
