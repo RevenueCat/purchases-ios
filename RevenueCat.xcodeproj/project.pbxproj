@@ -543,7 +543,6 @@
 		537B4B2E2DA9662700CEFF4C /* HealthReportResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */; };
 		537B4B302DA9742500CEFF4C /* HealthReportOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */; };
 		537B4B322DA9743800CEFF4C /* HealthReport+Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B312DA9743800CEFF4C /* HealthReport+Validate.swift */; };
-		537B4B372DA9744B00CEFF4C /* InvalidProductErrorPayload+StatusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B332DA9744B00CEFF4C /* InvalidProductErrorPayload+StatusMessage.swift */; };
 		537B4B382DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */; };
 		537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */; };
 		537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */; };
@@ -1906,7 +1905,6 @@
 		537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportResponse.swift; sourceTree = "<group>"; };
 		537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportOperation.swift; sourceTree = "<group>"; };
 		537B4B312DA9743800CEFF4C /* HealthReport+Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HealthReport+Validate.swift"; sourceTree = "<group>"; };
-		537B4B332DA9744B00CEFF4C /* InvalidProductErrorPayload+StatusMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InvalidProductErrorPayload+StatusMessage.swift"; sourceTree = "<group>"; };
 		537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductStatus+Icon.swift"; sourceTree = "<group>"; };
 		537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthCheckStatus+Icon.swift"; sourceTree = "<group>"; };
 		537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthStatus+Icon.swift"; sourceTree = "<group>"; };
@@ -4262,7 +4260,6 @@
 				4F6BEDDF2A26B65900CD9322 /* DebugViewSheetPresentation.swift */,
 				4F6BEDE12A26B69500CD9322 /* DebugContentViews.swift */,
 				4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */,
-				537B4B332DA9744B00CEFF4C /* InvalidProductErrorPayload+StatusMessage.swift */,
 				537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */,
 				537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */,
 				537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */,
@@ -6271,7 +6268,6 @@
 				2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */,
 				B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */,
 				4F8452682A5756CC00084550 /* HTTPRequestBody+Signing.swift in Sources */,
-				537B4B372DA9744B00CEFF4C /* InvalidProductErrorPayload+StatusMessage.swift in Sources */,
 				537B4B382DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift in Sources */,
 				537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */,
 				537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */,
