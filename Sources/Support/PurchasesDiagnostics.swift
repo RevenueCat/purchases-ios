@@ -297,7 +297,7 @@ extension PurchasesDiagnostics.Error: CustomNSError {
 
     var localizedDescription: String {
         switch self {
-        case .notAuthorizedToMakePayments: return "The person is not authorized to make payments on this device."
+        case .notAuthorizedToMakePayments: return "The person is not authorized to make payments on this device"
         case let .unknown(error): return "Unknown error: \(error.localizedDescription)"
         case let .failedConnectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
         case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
@@ -314,13 +314,13 @@ extension PurchasesDiagnostics.Error: CustomNSError {
             let noPackages = "Offering '\(offeringIdentifier)' has no packages"
             let packagesNotReady = """
             Offering '\(offeringIdentifier)' uses \(offendingPackageCount) products \
-            that are not ready in App Store Connect.
+            that are not ready in App Store Connect
             """
 
             return offendingOffering.packages.isEmpty ? noPackages : packagesNotReady
         case let .invalidBundleId(payload):
             guard let payload else {
-                return "Bundle ID in your app does not match the Bundle ID in the RevenueCat dashboard"
+                return "Bundle ID in your app does not match the Bundle ID in the RevenueCat Website"
             }
             let sdkBundleId = payload.sdkBundleId
             let appBundleId = payload.appBundleId
@@ -330,7 +330,7 @@ extension PurchasesDiagnostics.Error: CustomNSError {
                 return "Your app has no products"
             }
 
-            return "You must have at least one product approved in App Store Connect."
+            return "You must have at least one product approved in App Store Connect"
         }
     }
 
