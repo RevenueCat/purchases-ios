@@ -164,9 +164,9 @@ extension PurchasesDiagnostics {
         public let projectId: String?
         /// The RevenueCat app identifier associated with the current SDK configuration, if available.
         public let appId: String?
-
+        /// The report for each of your app's products set up in the RevenueCat website
         public let products: [ProductDiagnosticsPayload]
-
+        /// The report for each of your app's offerings set up in the RevenueCat website
         public let offerings: [OfferingDiagnosticsPayload]
 
         init(

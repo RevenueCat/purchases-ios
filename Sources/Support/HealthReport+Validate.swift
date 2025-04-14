@@ -22,14 +22,7 @@ extension HealthReport {
                     return []
                 }
 
-                let productPayloads = payload.products.map { productCheck in
-                    return PurchasesDiagnostics.ProductDiagnosticsPayload(
-                        identifier: productCheck.identifier,
-                        title: productCheck.title,
-                        status: status(from: productCheck.status),
-                        description: productCheck.description
-                    )
-                }
+                let productPayloads = payload.products.map(createProductPayload(from:))
 
                 return productPayloads
             }()
@@ -45,7 +38,7 @@ extension HealthReport {
                     let status = self.convertOfferingStatus(offeringCheck.status)
                     return PurchasesDiagnostics.OfferingDiagnosticsPayload(
                         identifier: offeringCheck.identifier,
-                        packages: offeringCheck.packages.map { self.createPackagePayload(from: $0) },
+                        packages: offeringCheck.packages.map(createPackagePayload(from:)),
                         status: status
                     )
                 }
@@ -91,16 +84,7 @@ extension HealthReport {
             return .invalidProducts([])
         }
 
-        let productPayloads = payload.products.map { productCheck in
-            return PurchasesDiagnostics.ProductDiagnosticsPayload(
-                identifier: productCheck.identifier,
-                title: productCheck.title,
-                status: status(from: productCheck.status),
-                description: productCheck.description
-            )
-        }
-
-        return .invalidProducts(productPayloads)
+        return .invalidProducts(payload.products.map(createProductPayload))
     }
 
     private func createOfferingsError(from check: HealthCheck) -> PurchasesDiagnostics.Error {
@@ -129,16 +113,70 @@ extension HealthReport {
         }
     }
 
+    private func createProductPayload(
+        from productReport: ProductHealthReport
+    ) -> PurchasesDiagnostics.ProductDiagnosticsPayload {
+        .init(
+            identifier: productReport.identifier,
+            title: productReport.title,
+            status: status(from: productReport.status),
+            description: description(
+                from: productReport.status,
+                identifier: productReport.identifier,
+                description: productReport.description
+            )
+        )
+    }
+
     private func createPackagePayload(from packageReport: PackageHealthReport)
         -> PurchasesDiagnostics.OfferingPackageDiagnosticsPayload {
         .init(
             identifier: packageReport.identifier,
             title: packageReport.title,
             status: status(from: packageReport.status),
-            description: packageReport.description,
+            description: description(
+                from: packageReport.status,
+                identifier: packageReport.productIdentifier,
+                description: packageReport.description
+            ),
             productIdentifier: packageReport.productIdentifier,
             productTitle: packageReport.productTitle
         )
+    }
+
+    private func description(
+        from status: ProductStatus,
+        identifier: String,
+        description: String
+    ) -> String {
+        switch status {
+        case .valid:
+            return "Available for production purchases."
+        case .couldNotCheck:
+            return description
+        case .notFound:
+            return """
+                Product not found in App Store Connect. You need to create a product with identifier: \
+                '\(identifier)' in App Store Connect to use it for production purchases.
+                """
+        case .actionInProgress:
+            return """
+                Some process is ongoing and needs to be completed before using this product in production purchases, \
+                by Apple (state: \(description)). \
+                You can still make test purchases with the RevenueCat SDK, but you will need to \
+                wait for the state to change before you can make production purchases.
+                """
+        case .needsAction:
+            return """
+                This product's status (\(description)) requires you to take action in App Store Connect \
+                before using it in production purchases.
+                """
+        case .unknown:
+            return """
+                We could not check the status of your product using the App Store Connect API. \
+                Please check the app's credentials in the dashboard and try again.
+                """
+        }
     }
 
     private func status(from productCheckStatus: ProductStatus) -> PurchasesDiagnostics.ProductStatus {

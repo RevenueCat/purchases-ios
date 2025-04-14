@@ -466,7 +466,7 @@ private struct DebugStatusDetailsView: View {
                                         product.status.icon.imageScale(.small)
                                         Text(product.identifier)
                                     }
-                                    Text(product.statusMessage)
+                                    Text(product.description)
                                         .foregroundStyle(.secondary)
                                         .font(.caption)
                                 }
