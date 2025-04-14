@@ -48,14 +48,14 @@ struct ProductsView: View {
                 }
 
             self.products = reportProducts.map {
-                    ProductViewModel(
-                        id: $0.identifier,
-                        title: $0.title,
-                        icon: $0.status.icon,
-                        description: $0.description,
-                        storeProduct: storeProducts[$0.identifier]
-                    )
-                }
+                ProductViewModel(
+                    id: $0.identifier,
+                    title: $0.title,
+                    icon: $0.status.icon,
+                    description: $0.description,
+                    storeProduct: storeProducts[$0.identifier]
+                )
+            }
         }
         .navigationTitle("Products")
     }

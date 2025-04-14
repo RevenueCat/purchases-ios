@@ -52,7 +52,13 @@ struct OfferingsView: View {
     }
     
     private func checkAppHealth() async throws {
-        let healthCheck = await PurchasesDiagnostics.default.healthReport()
+        let report = await PurchasesDiagnostics.default.healthReport()
+        self.offerings = report.offerings.map { offering in
+            OfferingViewModel(
+                identifier: offering.identifier,
+                status: offering.status
+            )
+        }
         self.selectedOffering = offerings.first
     }
 }
