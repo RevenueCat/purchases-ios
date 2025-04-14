@@ -75,6 +75,8 @@ private struct NonLocalizedMarkdownText: View {
 
     var markdownText: AttributedString? {
         return try? AttributedString(
+            // AttributedString allegedly uses CommonMark hard line breaks
+            // which is two or more spaces before line break
             markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
         )
     }
