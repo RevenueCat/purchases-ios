@@ -30,50 +30,6 @@ struct OfferingsView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                 }
-                
-                List {
-                    if let selectedOffering {
-                        ForEach(selectedOffering.packages) { package in
-                            Section {
-                                VStack(alignment: .leading, spacing: 20) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text(package.title)
-                                            .font(.headline)
-                                        Text(package.productIdentifier)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                        if let price = package.price {
-                                            Text(price)
-                                                .fontWeight(.semibold)
-                                        }
-                                    }
-                                    
-                                    HStack(alignment: .center, spacing: 8) {
-                                        Image(systemName: package.status.icon)
-                                        Text(package.statusHelperText)
-                                    }
-                                    .foregroundStyle(package.status.color)
-                                    .font(.caption)
-                                }
-                            } header: {
-                                Text(package.identifier)
-                                    .fontWeight(.semibold)
-                                    .font(.caption)
-                            }
-                        }
-                    }
-                }
-                .listStyle(.insetGrouped)
-                .blur(radius: isLoading ? 5 : 0)
-                .overlay {
-                    if isLoading {
-                        VStack {
-                            Spinner()
-                            Text("Loading...")
-                                .font(.headline)
-                        }
-                    }
-                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear(perform: loadData)
@@ -96,24 +52,7 @@ struct OfferingsView: View {
     }
     
     private func checkAppHealth() async throws {
-        let healthCheck = try await Purchases.shared.checkAppHealth()
-        self.offerings = healthCheck.offerings.map { backendOffering in
-            let sdkOffering = userViewModel.offerings?[backendOffering.identifier]
-            return OfferingViewModel(
-                identifier: backendOffering.identifier,
-                packages: backendOffering.products.map { backendProduct in
-                    let sdkPackage = sdkOffering?.package(identifier: backendProduct.packageIdentifier)
-                    return PackageViewModel(
-                        identifier: sdkPackage?.identifier ?? backendProduct.packageIdentifier,
-                        productIdentifier: backendProduct.status.productIdentifier,
-                        title: sdkPackage?.storeProduct.localizedTitle ?? backendProduct.status.productTitle ?? "",
-                        price: sdkPackage?.storeProduct.localizedPriceString,
-                        status: backendProduct.status.status,
-                        statusHelperText: backendProduct.status.helperText
-                    )
-                }
-            )
-        }
+        let healthCheck = await PurchasesDiagnostics.default.healthReport()
         self.selectedOffering = offerings.first
     }
 }

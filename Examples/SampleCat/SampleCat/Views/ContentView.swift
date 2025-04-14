@@ -8,9 +8,9 @@ struct ContentView: View {
                     Label("Offerings", systemImage: "dollarsign")
                 }
             
-            PackagesView()
+            ProductsView()
                 .tabItem {
-                    Label("Packages", systemImage: "shippingbox.fill")
+                    Label("Products", systemImage: "shippingbox.fill")
                 }
             
             EntitlementsView()

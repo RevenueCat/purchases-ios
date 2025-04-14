@@ -9,5 +9,4 @@ import SwiftUI
 struct OfferingViewModel: Identifiable, Equatable {
     var id: String { identifier }
     let identifier: String
-    let packages: [PackageViewModel]
 }

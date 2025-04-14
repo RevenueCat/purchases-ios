@@ -7,17 +7,17 @@
 
 import SwiftUI
 
-struct PackagesView: View {
+struct ProductsView: View {
     @Environment(UserViewModel.self) private var userViewModel
 
     var body: some View {
         NavigationStack {
-            Text("Packages")
+            Text("Products")
         }
-        .navigationTitle("Packages")
+        .navigationTitle("Products")
     }
 }
 
 #Preview {
-    PackagesView()
+    ProductsView()
 }
