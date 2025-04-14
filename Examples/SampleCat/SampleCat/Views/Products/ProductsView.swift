@@ -18,9 +18,16 @@ struct ProductsView: View {
             ScrollView(.vertical) {
                 VStack {
                     ForEach(products) { product in
-                        HStack(alignment: .firstTextBaseline) {
-                            Image(systemName: product.icon)
-                            Text(product.id)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(alignment: .firstTextBaseline) {
+                                Image(systemName: product.icon)
+                                Text(product.id)
+                                    .font(.headline)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                            Text(product.description)
+                                .font(.caption)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -33,12 +40,20 @@ struct ProductsView: View {
         }
         .task {
             let report = await PurchasesDiagnostics.default.healthReport()
-            self.products = report.products
-                .map {
+            let reportProducts = report.products
+            let identifiers = reportProducts.map(\.identifier)
+            let storeProducts = await Purchases.shared.products(identifiers)
+                .reduce(into: [String: StoreProduct]()) { partialResult, storeProduct in
+                    partialResult[storeProduct.productIdentifier] = storeProduct
+                }
+
+            self.products = reportProducts.map {
                     ProductViewModel(
                         id: $0.identifier,
                         title: $0.title,
-                        icon: $0.status.icon
+                        icon: $0.status.icon,
+                        description: $0.description,
+                        storeProduct: storeProducts[$0.identifier]
                     )
                 }
         }
