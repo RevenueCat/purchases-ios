@@ -82,7 +82,7 @@ extension PurchasesDiagnostics {
     }
 
     /// Health status for a specific validation check in the SDK's Health Report
-    public enum SDKHealthCheckStatus {
+    public enum SDKHealthCheckStatus: Sendable {
         /// SDK Health Check is valid
         case passed
         /// SDK Health Check is not valid
@@ -92,17 +92,17 @@ extension PurchasesDiagnostics {
     }
 
     /// Additional information behind a configuration issue for a specific offering
-    public struct OfferingConfigurationErrorPayload {
+    public struct OfferingDiagnosticsPayload: Sendable {
         /// Offering identifier as set up in the RevenueCat website
         public let identifier: String
         /// Extra information for each of the packages in the offering
-        public let packages: [OfferingConfigurationErrorPayloadPackage]
+        public let packages: [OfferingPackageDiagnosticsPayload]
         /// Status of the offering health check
         public let status: SDKHealthCheckStatus
     }
 
     /// Additional information about a specific package in an offering that has a configuration issue.
-    public struct OfferingConfigurationErrorPayloadPackage {
+    public struct OfferingPackageDiagnosticsPayload: Sendable {
         /// The identifier of the package as configured in the RevenueCat website.
         public let identifier: String
         /// The display name of the package, if available.
@@ -136,7 +136,7 @@ extension PurchasesDiagnostics {
         case noOfferings
 
         /// Offerings are not configured correctly
-        case offeringConfiguration([OfferingConfigurationErrorPayload])
+        case offeringConfiguration([OfferingDiagnosticsPayload])
 
         /// App bundle ID does not match the one set in the dashboard
         case invalidBundleId(InvalidBundleIdErrorPayload?)
@@ -165,20 +165,29 @@ extension PurchasesDiagnostics {
         /// The RevenueCat app identifier associated with the current SDK configuration, if available.
         public let appId: String?
 
-        init(status: SDKHealthStatus, projectId: String? = nil, appId: String? = nil) {
+        public let products: [ProductDiagnosticsPayload]
+
+        public let offerings: [OfferingDiagnosticsPayload]
+
+        init(
+            status: SDKHealthStatus,
+            projectId: String? = nil,
+            appId: String? = nil,
+            products: [ProductDiagnosticsPayload] = [],
+            offerings: [OfferingDiagnosticsPayload] = []
+        ) {
             self.status = status
             self.projectId = projectId
             self.appId = appId
+            self.products = products
+            self.offerings = offerings
         }
     }
 
     /// Status of the SDK Health report
     public enum SDKHealthStatus: Sendable {
         /// SDK configuration is valid but might have some non-blocking issues
-        case healthy(
-            revenueCatProducts: [ProductDiagnosticsPayload],
-            warnings: [PurchasesDiagnostics.Error]
-        )
+        case healthy(warnings: [PurchasesDiagnostics.Error])
         /// SDK configuration is not valid and has issues that must be resolved
         case unhealthy(PurchasesDiagnostics.Error)
     }

@@ -95,7 +95,7 @@ extension DebugViewModel {
         switch self.diagnosticsResult {
         case let .loaded(healthReport):
             switch healthReport.status {
-            case let .healthy(_, warnings):
+            case let .healthy(warnings):
                 return warnings.count > 0 ? """
                 Your RevenueCat configuration is valid, however we encountered some potential issues \
                 during validation. Feel free to ignore them if your configuration works as expected.
@@ -166,7 +166,7 @@ extension DebugViewModel {
         case .loading: return []
         case let .loaded(healthReport):
             switch healthReport.status {
-            case let .healthy(_, warnings): return warnings
+            case let .healthy(warnings): return warnings
             case let .unhealthy(error):
                 switch error {
                 case .invalidProducts, .offeringConfiguration: return [error]

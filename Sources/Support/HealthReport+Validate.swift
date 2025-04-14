@@ -34,10 +34,31 @@ extension HealthReport {
                 return productPayloads
             }()
 
+            let offerings: [PurchasesDiagnostics.OfferingDiagnosticsPayload] = {
+                guard case let .offeringsProducts(payload) = self
+                    .checks
+                    .first(where: { $0.name == .products })?.details else {
+                    return []
+                }
+
+                let offeringPayloads = payload.offerings.map { offeringCheck in
+                    let status = self.convertOfferingStatus(offeringCheck.status)
+                    return PurchasesDiagnostics.OfferingDiagnosticsPayload(
+                        identifier: offeringCheck.identifier,
+                        packages: offeringCheck.packages.map { self.createPackagePayload(from: $0) },
+                        status: status
+                    )
+                }
+
+                return offeringPayloads
+            }()
+
             return .init(
-                status: .healthy(revenueCatProducts: products, warnings: warnings),
+                status: .healthy(warnings: warnings),
                 projectId: self.projectId,
-                appId: self.appId
+                appId: self.appId,
+                products: products,
+                offerings: offerings
             )
         }
 
@@ -89,7 +110,7 @@ extension HealthReport {
 
         let offeringPayloads = payload.offerings.map { offeringCheck in
             let status = self.convertOfferingStatus(offeringCheck.status)
-            return PurchasesDiagnostics.OfferingConfigurationErrorPayload(
+            return PurchasesDiagnostics.OfferingDiagnosticsPayload(
                 identifier: offeringCheck.identifier,
                 packages: offeringCheck.packages.map { self.createPackagePayload(from: $0) },
                 status: status
@@ -109,7 +130,7 @@ extension HealthReport {
     }
 
     private func createPackagePayload(from packageReport: PackageHealthReport)
-        -> PurchasesDiagnostics.OfferingConfigurationErrorPayloadPackage {
+        -> PurchasesDiagnostics.OfferingPackageDiagnosticsPayload {
         .init(
             identifier: packageReport.identifier,
             title: packageReport.title,
