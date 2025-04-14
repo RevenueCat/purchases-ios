@@ -74,11 +74,15 @@ private struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
 
     var markdownText: AttributedString? {
+        #if swift(>=5.7)
         return try? AttributedString(
             // AttributedString allegedly uses CommonMark hard line breaks
             // which is two or more spaces before line break
             markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
         )
+        #else
+        return nil
+        #endif
     }
 
     var body: some View {
