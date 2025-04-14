@@ -316,7 +316,7 @@ extension HTTPRequest {
             case .getOfferings:
                 return "/offerings"
             case .getProductEntitlementMapping:
-                return "/product-entitlement-mapping"
+                return "/product_entitlement_mapping"
             }
         }
 
