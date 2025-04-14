@@ -141,6 +141,27 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown")
 
+        // Markdown - Invalid
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world **bold _italic `code [RevenueCat](https://revenuecat.com")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown - Invalid")
+
         // Custom Font
         VStack {
             TextComponentView(
