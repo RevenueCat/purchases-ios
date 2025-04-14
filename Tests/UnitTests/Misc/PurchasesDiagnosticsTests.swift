@@ -131,4 +131,19 @@ class PurchasesDiagnosticsTests: TestCase {
         expect(error.localizedDescription) == expected
     }
 
+    func testOfferingConfigurationWithNoPackages() {
+        let error = PurchasesDiagnostics.Error.offeringConfiguration(
+            [
+                .init(
+                    identifier: "test_offering",
+                    packages: [],
+                    status: .failed
+                )
+            ]
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Offering 'test_offering' has no packages"
+        expect(error.localizedDescription) == expected
+    }
 }
