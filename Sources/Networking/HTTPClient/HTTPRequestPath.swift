@@ -18,10 +18,10 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
-    /// The fallback paths to use when the main server is down.
+    /// The fallback hosts to use when the main server is down.
     ///
-    /// The structure of the response must be the same as that of the main path.
-    var fallbackPaths: [HTTPRequestPath] { get }
+    /// Not all endpoints have a fallback host, but some do.
+    var fallbackHosts: [URL] { get }
 
     /// Whether requests to this path are authenticated.
     var authenticated: Bool { get }
@@ -44,14 +44,25 @@ protocol HTTPRequestPath {
 
 extension HTTPRequestPath {
 
-    var fallbackPaths: [HTTPRequestPath] {
+    var fallbackHosts: [URL] {
         return []
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil) -> URL? {
-        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURL)
+    func url(proxyURL: URL? = nil, fallbackHostIndex: Int? = nil) -> URL? {
+        let baseURL: URL
+        if let proxyURL {
+            baseURL = proxyURL
+        } else if let fallbackHostIndex {
+            guard let fallbackHost = self.fallbackHosts[safe: fallbackHostIndex] else {
+                return nil
+            }
+            baseURL = fallbackHost
+        } else {
+            baseURL = Self.serverHostURL
+        }
+        return URL(string: self.relativePath, relativeTo: baseURL)
     }
 }
 
@@ -96,12 +107,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
-    var fallbackPaths: [HTTPRequestPath] {
+    var fallbackHosts: [URL] {
         switch self {
-        case .getOfferings:
-            return [HTTPRequest.FallbackPath.getOfferings]
-        case .getProductEntitlementMapping:
-            return [HTTPRequest.FallbackPath.getProductEntitlementMapping]
+        case .getOfferings, .getProductEntitlementMapping:
+            // swiftlint:disable:next force_unwrapping
+            return [URL(string: "https://api-production.8-lives-cat.io")!]
         default:
             return []
         }
@@ -282,51 +292,5 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
-    }
-}
-
-extension HTTPRequest {
-
-    enum FallbackPath: HTTPRequestPath {
-
-        case getOfferings
-        case getProductEntitlementMapping
-
-        // swiftlint:disable:next force_unwrapping
-        static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
-
-        var authenticated: Bool {
-            return true
-        }
-
-        var shouldSendEtag: Bool {
-            return true
-        }
-
-        var supportsSignatureVerification: Bool {
-            return false
-        }
-
-        var needsNonceForSigning: Bool {
-            return false
-        }
-
-        var relativePath: String {
-            switch self {
-            case .getOfferings:
-                return "/offerings"
-            case .getProductEntitlementMapping:
-                return "/product_entitlement_mapping"
-            }
-        }
-
-        var name: String {
-            switch self {
-            case .getOfferings:
-                return "fallback_get_offerings"
-            case .getProductEntitlementMapping:
-                return "fallback_get_product_entitlement_mapping"
-            }
-        }
     }
 }
