@@ -15,8 +15,27 @@ extension HealthReport {
     func validate() -> PurchasesDiagnostics.SDKHealthReport {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
             let warnings = self.checks.filter { $0.status == .warning }.map { error(from: $0) }
+            let products: [PurchasesDiagnostics.ProductDiagnosticsPayload] = {
+                guard case let .products(payload) = self
+                    .checks
+                    .first(where: { $0.name == .products })?.details else {
+                    return []
+                }
+
+                let productPayloads = payload.products.map { productCheck in
+                    return PurchasesDiagnostics.ProductDiagnosticsPayload(
+                        identifier: productCheck.identifier,
+                        title: productCheck.title,
+                        status: status(from: productCheck.status),
+                        description: productCheck.description
+                    )
+                }
+
+                return productPayloads
+            }()
+
             return .init(
-                status: .healthy(warnings: warnings),
+                status: .healthy(revenueCatProducts: products, warnings: warnings),
                 projectId: self.projectId,
                 appId: self.appId
             )
@@ -52,7 +71,7 @@ extension HealthReport {
         }
 
         let productPayloads = payload.products.map { productCheck in
-            return PurchasesDiagnostics.InvalidProductErrorPayload(
+            return PurchasesDiagnostics.ProductDiagnosticsPayload(
                 identifier: productCheck.identifier,
                 title: productCheck.title,
                 status: status(from: productCheck.status),

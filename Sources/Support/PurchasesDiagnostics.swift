@@ -46,7 +46,7 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
 extension PurchasesDiagnostics {
 
     /// Enum representing the status of a product in the store
-    public enum ProductStatus {
+    public enum ProductStatus: Sendable {
         /// Product is configured correctly in App Store Connect
         case valid
         /// There was a problem checking the product state in App Store Connect
@@ -62,7 +62,7 @@ extension PurchasesDiagnostics {
     }
 
     /// Additional information behind a configuration issue for a Product
-    public struct InvalidProductErrorPayload {
+    public struct ProductDiagnosticsPayload: Sendable {
         /// Product identifier that must match the product in App Store Connect
         public let identifier: String
         /// Title of the product as it appears on the RevenueCat website
@@ -142,7 +142,7 @@ extension PurchasesDiagnostics {
         case invalidBundleId(InvalidBundleIdErrorPayload?)
 
         /// One or more products are not configured correctly
-        case invalidProducts([InvalidProductErrorPayload])
+        case invalidProducts([ProductDiagnosticsPayload])
 
         /// The person is not authorized to make In-App Purchases
         case notAuthorizedToMakePayments
@@ -175,7 +175,10 @@ extension PurchasesDiagnostics {
     /// Status of the SDK Health report
     public enum SDKHealthStatus: Sendable {
         /// SDK configuration is valid but might have some non-blocking issues
-        case healthy(warnings: [PurchasesDiagnostics.Error])
+        case healthy(
+            revenueCatProducts: [ProductDiagnosticsPayload],
+            warnings: [PurchasesDiagnostics.Error]
+        )
         /// SDK configuration is not valid and has issues that must be resolved
         case unhealthy(PurchasesDiagnostics.Error)
     }

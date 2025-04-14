@@ -13,7 +13,7 @@
 
 import Foundation
 
-extension PurchasesDiagnostics.InvalidProductErrorPayload {
+extension PurchasesDiagnostics.ProductDiagnosticsPayload {
     var statusMessage: String {
         switch self.status {
         case .valid:
