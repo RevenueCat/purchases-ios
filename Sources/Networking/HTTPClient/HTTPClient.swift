@@ -245,7 +245,7 @@ internal extension HTTPClient {
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
-        private(set) var fallbackPathIndex: Int?
+        private(set) var fallbackHostIndex: Int?
 
         /// Whether the request has been retried.
         var retried: Bool {
@@ -280,10 +280,10 @@ internal extension HTTPClient {
         }
 
         var method: HTTPRequest.Method { self.httpRequest.method }
-        var path: String { (self.getCurrentPath() ?? self.httpRequest.path).relativePath }
+        var path: String { self.httpRequest.path.relativePath }
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
-            return self.getCurrentPath()?.url(proxyURL: proxyURL)
+            return self.httpRequest.path.url(proxyURL: proxyURL, fallbackHostIndex: self.fallbackHostIndex)
         }
 
         func retriedRequest() -> Self {
@@ -293,11 +293,15 @@ internal extension HTTPClient {
             return copy
         }
 
-        func requestWithNextFallbackPath() -> Self? {
+        func requestWithNextFallbackHost(proxyURL: URL?) -> Self? {
+            guard proxyURL == nil else {
+                // Don't fallback to next host if proxyURL is set
+                return nil
+            }
             var copy = self
-            copy.fallbackPathIndex = self.fallbackPathIndex?.advanced(by: 1) ?? 0
-            guard copy.getCurrentPath() != nil else {
-                // No more fallback paths available
+            copy.fallbackHostIndex = self.fallbackHostIndex?.advanced(by: 1) ?? 0
+            guard copy.getCurrentRequestURL(proxyURL: nil) != nil else {
+                // No more fallback hosts available
                 return nil
             }
             return copy
@@ -311,14 +315,6 @@ internal extension HTTPClient {
             retried=\(self.retried)
             >
             """
-        }
-
-        private func getCurrentPath() -> HTTPRequestPath? {
-            if let fallbackPathIndex = self.fallbackPathIndex {
-                return self.httpRequest.path.fallbackPaths[safe: fallbackPathIndex]
-            } else {
-                return self.httpRequest.path
-            }
         }
     }
 }
@@ -492,7 +488,7 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                retryScheduled = self.retryRequestWithNextFallbackPathIfNeeded(request: request,
+                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
                                                                                httpURLResponse: httpURLResponse)
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
@@ -649,23 +645,23 @@ private extension HTTPClient {
 // MARK: - Request Retry Logic
 extension HTTPClient {
 
-    /// Evaluates whether a request should be retried with the next path in the list of fallback paths.
+    /// Evaluates whether a request should be retried with the next host in the list of fallback hosts.
     ///
     /// This function checks the HTTP response status code to determine if the request should be retried
-    /// with the next fallback path. If the retry conditions are met, it schedules the request immediately and
+    /// with the next fallback hosts. If the retry conditions are met, it schedules the request immediately and
     /// returns `true` to indicate that the request was retried.
     ///
     /// - Parameters:
     ///   - request: The original `HTTPClient.Request` that may need to be retried.
     ///   - httpURLResponse: An optional `HTTPURLResponse` that contains the status code of the response.
     /// - Returns: A Boolean value indicating whether the request was retried.
-    internal func retryRequestWithNextFallbackPathIfNeeded(
+    internal func retryRequestWithNextFallbackHostIfNeeded(
         request: HTTPClient.Request,
         httpURLResponse: HTTPURLResponse?
     ) -> Bool {
 
         guard let statusCode = httpURLResponse?.statusCode, HTTPStatusCode(rawValue: statusCode).isServerError,
-              let nextRequest = request.requestWithNextFallbackPath() else {
+              let nextRequest = request.requestWithNextFallbackHost(proxyURL: SystemInfo.proxyURL) else {
             return false
         }
 
