@@ -33,7 +33,7 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
     private let purchasesProvider: CustomerCenterPurchasesType
 
-    init(purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases()) {
+    init(purchasesProvider: CustomerCenterPurchasesType) {
         self.purchasesProvider = purchasesProvider
     }
 
@@ -43,7 +43,11 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .default)
 
-            let subscribedProduct = try await getActiveSubscription(customerInfo)
+            guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
+                return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
+            }
+
+            let subscribedProduct = try await getActiveSubscription(activeTransaction.productIdentifier)
             let discount = try findDiscount(for: subscribedProduct,
                                             productIdentifier: subscribedProduct.productIdentifier,
                                             promoOfferDetails: promoOfferDetails)
@@ -71,9 +75,8 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 @available(watchOS, unavailable)
 private extension LoadPromotionalOfferUseCase {
 
-    private func getActiveSubscription(_ customerInfo: CustomerInfo) async throws -> StoreProduct {
-        guard let productIdentifier = customerInfo.earliestExpiringAppStoreEntitlement()?.productIdentifier,
-              let subscribedProduct = await self.purchasesProvider.products([productIdentifier]).first else {
+    private func getActiveSubscription(_ productId: String) async throws -> StoreProduct {
+        guard let subscribedProduct = await self.purchasesProvider.products([productId]).first else {
             Logger.warning(Strings.could_not_offer_for_any_active_subscriptions)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }

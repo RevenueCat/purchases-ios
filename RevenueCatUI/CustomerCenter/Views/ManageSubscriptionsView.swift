@@ -44,11 +44,13 @@ struct ManageSubscriptionsView: View {
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
+         purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation)
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: purchasesProvider)
         self.init(viewModel: viewModel)
     }
 
@@ -64,6 +66,7 @@ struct ManageSubscriptionsView: View {
             ) { feedbackSurveyData in
                 FeedbackSurveyView(
                     feedbackSurveyData: feedbackSurveyData,
+                    purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper,
                     isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                 .environment(\.appearance, appearance)
@@ -74,7 +77,9 @@ struct ManageSubscriptionsView: View {
                 isPresented: $viewModel.showPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
-                PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                PurchaseHistoryView(viewModel:
+                                        PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
                     .environment(\.appearance, appearance)
                     .environment(\.localization, localization)
                     .environment(\.navigationOptions, navigationOptions)
@@ -84,6 +89,7 @@ struct ManageSubscriptionsView: View {
                     promotionalOffer: promotionalOfferData.promotionalOffer,
                     product: promotionalOfferData.product,
                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    purchasesProvider: self.viewModel.purchasesProvider,
                     onDismissPromotionalOfferView: { userAction in
                         Task(priority: .userInitiated) {
                             await self.viewModel.handleDismissPromotionalOfferView(userAction)
@@ -148,7 +154,12 @@ struct ManageSubscriptionsView: View {
             }
         }
         .dismissCircleButtonToolbarIfNeeded()
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .overlay {
+            RestorePurchasesAlert(
+                isPresented: self.$viewModel.showRestoreAlert,
+                actionWrapper: self.viewModel.actionWrapper
+            )
+        }
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
@@ -172,7 +183,8 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-                    refundRequestStatus: .success)
+                    refundRequestStatus: .success,
+                    purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -184,7 +196,8 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -196,7 +209,8 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
+                    purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -208,7 +222,8 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable)
+                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)

@@ -1058,8 +1058,6 @@ public extension Purchases {
         return try await self.restorePurchasesAsync()
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, trackDiagnostics: true, completion: completion)
@@ -1067,20 +1065,6 @@ public extension Purchases {
 
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await purchaseAsync(params)
-    }
-
-    @objc func invalidateCustomerInfoCache() {
-        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
-    }
-
-    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        self.purchasesOrchestrator.syncPurchases { @Sendable in
-            completion?($0.value, $0.error?.asPublicError)
-        }
-    }
-
-    func syncPurchases() async throws -> CustomerInfo {
-        return try await syncPurchasesAsync()
     }
 
     @objc(purchaseProduct:withPromotionalOffer:completion:)
@@ -1111,6 +1095,22 @@ public extension Purchases {
 
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    @objc func invalidateCustomerInfoCache() {
+        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+    }
+
+    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        self.purchasesOrchestrator.syncPurchases { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    func syncPurchases() async throws -> CustomerInfo {
+        return try await syncPurchasesAsync()
     }
 
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
@@ -1169,8 +1169,6 @@ public extension Purchases {
     }
 #endif
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
@@ -1189,8 +1187,6 @@ public extension Purchases {
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
-
-    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 
@@ -1377,6 +1373,8 @@ public extension Purchases {
         )
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Configures an instance of the Purchases SDK with a specified ``Configuration/Builder``.
      *
@@ -1404,8 +1402,6 @@ public extension Purchases {
     @discardableResult static func configure(with builder: Configuration.Builder) -> Purchases {
         return Self.configure(with: builder.build())
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
      * Configures an instance of the Purchases SDK with a specified API key.
@@ -1567,9 +1563,7 @@ public extension Purchases {
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
         Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+            with: .builder(withAPIKey: apiKey, appUserID: appUserID)
                 .build())
     }
 
@@ -1907,6 +1901,8 @@ private extension Purchases {
     @objc func applicationWillEnterForeground() {
         Logger.debug(Strings.configure.application_foregrounded)
 
+        self.systemInfo.isAppBackgroundedState = false
+
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
@@ -1927,6 +1923,7 @@ private extension Purchases {
     }
 
     @objc func applicationDidEnterBackground() {
+        self.systemInfo.isAppBackgroundedState = true
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.purchasesOrchestrator.postPaywallEventsIfNeeded()

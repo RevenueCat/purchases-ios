@@ -114,6 +114,21 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     }
 
 }
+extension StoreProductDiscount {
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public func promotionalOffer(withSignedDataIdentifier identifier: String,
+                                                 keyIdentifier: String,
+                                                 nonce: UUID,
+                                                 signature: String,
+                                                 timestamp: Int) -> PromotionalOffer {
+        let signedData = PromotionalOffer.SignedData(identifier: identifier,
+                                                     keyIdentifier: keyIdentifier,
+                                                     nonce: nonce,
+                                                     signature: signature,
+                                                     timestamp: timestamp)
+        return PromotionalOffer(discount: self, signedData: signedData)
+    }
+}
 
 extension StoreProductDiscount: Sendable {}
 extension StoreProductDiscount.PaymentMode: Sendable {}

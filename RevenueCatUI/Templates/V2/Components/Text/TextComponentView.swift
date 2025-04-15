@@ -50,9 +50,7 @@ struct TextComponentView: View {
             )
         ) { style in
             if style.visible {
-                Text(.init(style.text))
-                    .font(style.font)
-                    .fontWeight(style.fontWeight)
+                NonLocalizedMarkdownText(text: style.text, font: style.font, fontWeight: style.fontWeight)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
@@ -65,6 +63,37 @@ struct TextComponentView: View {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+/// Parses markdown using AttributedString and does not use bundle assets for localization
+private struct NonLocalizedMarkdownText: View {
+
+    let text: String
+    let font: Font
+    let fontWeight: Font.Weight
+
+    var markdownText: AttributedString? {
+        return try? AttributedString(
+            // AttributedString allegedly uses CommonMark hard line breaks
+            // which is two or more spaces before line break
+            markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
+        )
+    }
+
+    var body: some View {
+        Group {
+            if let markdownText = self.markdownText {
+                Text(markdownText)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+            } else {
+                Text(verbatim: self.text)
+                    .font(self.font)
+                    .fontWeight(self.fontWeight)
+            }
+        }
+    }
 }
 
 #if DEBUG
@@ -94,6 +123,49 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default")
+
+        // Markdown
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        // swiftlint:disable:next line_length
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown")
+
+        // Markdown - Invalid
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world\n**bold\n_italic\n`code \n[RevenueCat](https://revenuecat.com")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Markdown - Invalid")
 
         // Custom Font
         VStack {

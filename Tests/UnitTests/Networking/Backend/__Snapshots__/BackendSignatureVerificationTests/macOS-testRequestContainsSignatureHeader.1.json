@@ -5,6 +5,7 @@
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
     "X-Headers-Hash" : "X-Is-Sandbox:sha256:fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa",
+    "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
     "X-Is-Sandbox" : "false",
     "X-Nonce" : "MTIzNDU2Nzg5MGFi",
