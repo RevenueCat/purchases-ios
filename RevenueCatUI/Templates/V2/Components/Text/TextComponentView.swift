@@ -74,7 +74,7 @@ private struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
 
     var markdownText: AttributedString? {
-        #if swift(>=5.8)
+        #if swift(>=5.7)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return try? AttributedString(
                 // AttributedString allegedly uses CommonMark hard line breaks
@@ -90,7 +90,7 @@ private struct NonLocalizedMarkdownText: View {
     }
 
     var body: some View {
-        #if swift(>=5.8)
+        #if swift(>=5.7)
         Group {
             if let markdownText = self.markdownText {
                 Text(markdownText)
@@ -112,8 +112,9 @@ private struct NonLocalizedMarkdownText: View {
 
 #if DEBUG
 
+// Using iOS 16 since are using more than 10 previews
 // swiftlint:disable type_body_length
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 struct TextComponentView_Previews: PreviewProvider {
 
     static var previews: some View {
