@@ -10,6 +10,10 @@ struct OfferingsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
+                ConceptIntroductionView(imageName: "visual-offerings",
+                                        title: "Offerings",
+                                        description: "Offerings are the products you can “offer” to customers on your paywall.")
+                    .padding(.vertical, 64)
                 ScrollView(.horizontal) {
                     HStack(spacing: 12) {
                         ForEach(offerings) { offering in
