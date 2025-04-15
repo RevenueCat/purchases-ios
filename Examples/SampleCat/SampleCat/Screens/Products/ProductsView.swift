@@ -65,8 +65,8 @@ struct ProductsView: View {
         self.products = reportProducts.map {
             ProductViewModel(
                 id: $0.identifier,
+                status: $0.status,
                 title: $0.title,
-                icon: $0.status.icon,
                 description: $0.description,
                 storeProduct: storeProducts[$0.identifier]
             )

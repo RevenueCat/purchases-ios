@@ -17,14 +17,16 @@ struct ProductCell: View {
                 Text(product.title ?? "")
                 Spacer()
                 Image(systemName: product.icon)
+                    .foregroundStyle(product.color)
             }
             .font(.headline)
             .symbolRenderingMode(.hierarchical)
-
+            Text(product.id)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             Text(product.description)
                 .font(.caption)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(scheme == .dark ? Color.black : Color.white)
         .clipShape(.rect(cornerRadius: 12))
