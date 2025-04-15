@@ -14,11 +14,13 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable missing_docs
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-protocol CustomerCenterPurchasesType: Sendable {
+@_spi(Internal) public protocol CustomerCenterPurchasesType: Sendable {
 
     var isSandbox: Bool { get }
     var appUserID: String { get }

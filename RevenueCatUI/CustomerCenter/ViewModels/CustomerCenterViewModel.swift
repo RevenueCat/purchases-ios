@@ -98,6 +98,11 @@ import RevenueCat
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
 
+    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+                  purchasesProvider: uiPreviewPurchaseProvider)
+    }
+
     #if DEBUG
 
     convenience init(
