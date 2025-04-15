@@ -90,6 +90,7 @@ private struct NonLocalizedMarkdownText: View {
     }
 
     var body: some View {
+        #if swift(>=5.7)
         Group {
             if let markdownText = self.markdownText {
                 Text(markdownText)
@@ -101,6 +102,11 @@ private struct NonLocalizedMarkdownText: View {
                     .fontWeight(self.fontWeight)
             }
         }
+        #else
+        Text(verbatim: self.text)
+            .font(self.font)
+            .fontWeight(self.fontWeight)
+        #endif
     }
 }
 
