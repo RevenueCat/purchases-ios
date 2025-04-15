@@ -168,7 +168,7 @@ private extension CustomerCenterViewModel {
             return
         }
 
-        guard let activeTransaction = findActiveTransaction(customerInfo: customerInfo) else {
+        guard let activeTransaction = customerInfo.findActiveTransaction() else {
             Logger.warning(Strings.could_not_find_subscription_information)
             self.purchaseInformation = nil
             throw CustomerCenterError.couldNotFindSubscriptionInformation
