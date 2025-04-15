@@ -163,6 +163,11 @@ private extension CustomerCenterView {
                 await viewModel.loadScreen()
             }
         }
+        .onSubscriptionCancelled { _ in
+            Task {
+                await viewModel.loadScreen()
+            }
+        }
     }
 
     @ViewBuilder

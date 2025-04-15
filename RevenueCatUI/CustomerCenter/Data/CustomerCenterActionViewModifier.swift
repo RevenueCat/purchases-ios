@@ -46,46 +46,12 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
+    @State private var subscriptionCancelled: UniqueWrapper<String>?
 
     func body(content: Content) -> some View {
         content
             .onAppear {
-                // Set up direct binding to the state variables
-                actionWrapper.setRestoreStarted = {
-                    restoreStarted = UniqueWrapper(value: ())
-                }
-
-                actionWrapper.setRestoreFailed = { error in
-                    restoreFailed = UniqueWrapper(value: error as NSError)
-                }
-
-                actionWrapper.setRestoreCompleted = { info in
-                    restoreCompleted = UniqueWrapper(value: info)
-                }
-
-                actionWrapper.setShowingManageSubscriptions = {
-                    showingManageSubscriptions = UniqueWrapper(value: ())
-                }
-
-                actionWrapper.setRefundRequestStarted = { productId in
-                    refundRequestStarted = UniqueWrapper(value: productId)
-                }
-
-                actionWrapper.setRefundRequestCompleted = { productId, status in
-                    refundRequestCompleted = UniqueWrapper(value: (productId, status))
-                }
-
-                actionWrapper.setFeedbackSurveyCompleted = { reason in
-                    feedbackSurveyCompleted = UniqueWrapper(value: reason)
-                }
-
-                actionWrapper.setManagementOptionSelected = { action in
-                    managementOptionSelected = UniqueWrapper(value: action)
-                }
-
-                actionWrapper.setPromotionalOfferSuccess = {
-                    promotionalOfferSuccess = UniqueWrapper(value: ())
-                }
+                setUpActionWrappers()
             }
             // Apply preferences based on state
             .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
@@ -106,6 +72,51 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: managementOptionSelected)
             .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
                         value: promotionalOfferSuccess)
+            .preference(key: CustomerCenterView.SubscriptionCancelledPreferenceKey.self,
+                        value: subscriptionCancelled)
+    }
+
+    // Set up direct binding to the state variables
+    private func setUpActionWrappers() {
+        actionWrapper.setRestoreStarted = {
+            restoreStarted = UniqueWrapper(value: ())
+        }
+
+        actionWrapper.setRestoreFailed = { error in
+            restoreFailed = UniqueWrapper(value: error as NSError)
+        }
+
+        actionWrapper.setRestoreCompleted = { info in
+            restoreCompleted = UniqueWrapper(value: info)
+        }
+
+        actionWrapper.setShowingManageSubscriptions = {
+            showingManageSubscriptions = UniqueWrapper(value: ())
+        }
+
+        actionWrapper.setRefundRequestStarted = { productId in
+            refundRequestStarted = UniqueWrapper(value: productId)
+        }
+
+        actionWrapper.setRefundRequestCompleted = { productId, status in
+            refundRequestCompleted = UniqueWrapper(value: (productId, status))
+        }
+
+        actionWrapper.setFeedbackSurveyCompleted = { reason in
+            feedbackSurveyCompleted = UniqueWrapper(value: reason)
+        }
+
+        actionWrapper.setManagementOptionSelected = { action in
+            managementOptionSelected = UniqueWrapper(value: action)
+        }
+
+        actionWrapper.setPromotionalOfferSuccess = {
+            promotionalOfferSuccess = UniqueWrapper(value: ())
+        }
+
+        actionWrapper.setSubscriptionCancelled = { productIdentifier in
+            subscriptionCancelled = UniqueWrapper(value: productIdentifier)
+        }
     }
 }
 

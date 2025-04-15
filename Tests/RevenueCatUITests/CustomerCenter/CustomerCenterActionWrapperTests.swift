@@ -230,7 +230,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
     func testPromotionalOfferSuccess() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "refundRequestCompleted")
+        let expectation = XCTestExpectation(description: "promotionalOfferSuccess")
 
         let windowHolder = await WindowHolder()
 
@@ -252,6 +252,35 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
         await MainActor.run {
             actionWrapper.handleAction(.promotionalOfferSuccess)
+        }
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    func testOnSubscriptionCancelled() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "subscriptionCancelled")
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onSubscriptionCancelled { _ in
+                    expectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        await MainActor.run {
+            actionWrapper.handleAction(.subscriptionCancelled("subscription"))
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
