@@ -144,7 +144,13 @@ platform :ios do
     if branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
       pr_number = $1
     end
-    emerge(repo_name: "RevenueCat/purchases-ios", pr_number: pr_number)
+
+    UI.message("TESTING Branch name: #{branch_name}")
+    UI.message("TESTING PR number: #{pr_number}")
+
+    emerge_args = {repo_name: "RevenueCat/purchases-ios"}
+    emerge_args[:pr_number] = pr_number if pr_number
+    emerge(emerge_args)
   end
 
   desc "Runs all the iOS tests"
