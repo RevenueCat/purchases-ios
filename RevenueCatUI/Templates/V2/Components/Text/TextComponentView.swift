@@ -74,7 +74,7 @@ private struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
 
     var markdownText: AttributedString? {
-        #if swift(>=5.7)
+        #if swift(>=5.8)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return try? AttributedString(
                 // AttributedString allegedly uses CommonMark hard line breaks
@@ -90,7 +90,7 @@ private struct NonLocalizedMarkdownText: View {
     }
 
     var body: some View {
-        #if swift(>=5.7)
+        #if swift(>=5.8)
         Group {
             if let markdownText = self.markdownText {
                 Text(markdownText)
