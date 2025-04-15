@@ -27,6 +27,14 @@ public protocol PurchasesType: AnyObject {
     var appUserID: String { get }
 
     /**
+     * The storefront country code currently used by the Apple account. This is always provided by StoreKit 1.
+     * #### Related articles
+     * - ``Purchases/getStorefront(completion:)``
+     * - ``Purchases/getStorefront()``
+     */
+    var storeFrontCountryCode: String? { get }
+
+    /**
      * The ``appUserID`` used by ``Purchases``.
      * If not passed on initialization this will be generated and cached by ``Purchases``.
      */
@@ -48,6 +56,28 @@ public protocol PurchasesType: AnyObject {
     var delegate: PurchasesDelegate? { get set }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    /**
+     * Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
+     * and if not possible, fallback to StoreKit 1. It will be null if we can't obtain Apple's storefront.
+     *
+     * The `completion` block will be called with the latest Apple account storefront
+     *
+     * #### Related Articles
+     * - ``Purchases/storeFrontCountryCode``
+     * - ``Purchases/getStorefront()``
+     */
+    func getStorefront(completion: @escaping GetStorefrontBlock)
+
+    /**
+     * Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
+     * and if not possible, fallback to StoreKit 1. It will be null if we can't obtain Apple's storefront.
+     *
+     * #### Related Articles
+     * - ``Purchases/storeFrontCountryCode``
+     * - ``Purchases/getStorefront(completion:)``
+     */
+    func getStorefront() async -> Storefront?
 
     /**
      * This function will log in the current user with an ``appUserID``.

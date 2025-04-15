@@ -41,6 +41,11 @@ public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction
                                                                 Bool) -> Void
 
 /**
+ Completion block for ``Purchases/getStorefrontCountryCode(``
+ */
+public typealias GetStorefrontBlock = @MainActor @Sendable (Storefront?) -> Void
+
+/**
  Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``
  */
 public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
@@ -928,6 +933,19 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings? {
         return try await syncAttributesAndOfferingsIfNeededAsync()
+    }
+
+    @objc func getStorefront(completion: @escaping GetStorefrontBlock) {
+        Task {
+            let storefront = await Storefront.currentStorefront
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(storefront)
+            }
+        }
+    }
+
+    func getStorefront() async -> Storefront? {
+        return await getStorefrontAsync()
     }
 
 }
