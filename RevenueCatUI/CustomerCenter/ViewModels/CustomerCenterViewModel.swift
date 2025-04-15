@@ -22,8 +22,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor
-@_spi(Internal) public class CustomerCenterViewModel: ObservableObject {
+@MainActor class CustomerCenterViewModel: ObservableObject {
 
     private static let defaultAppIsLatestVersion = true
 
@@ -48,7 +47,6 @@ import RevenueCat
         return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
     }
 
-    // @PublicForExternalTesting
     @Published
     var state: CustomerCenterViewState {
         didSet {

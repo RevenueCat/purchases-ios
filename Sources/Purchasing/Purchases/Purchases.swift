@@ -1052,8 +1052,6 @@ public extension Purchases {
         return try await self.restorePurchasesAsync()
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc(purchaseWithParams:completion:)
     func purchase(_ params: PurchaseParams, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(params: params, trackDiagnostics: true, completion: completion)
@@ -1061,20 +1059,6 @@ public extension Purchases {
 
     func purchase(_ params: PurchaseParams) async throws -> PurchaseResultData {
         return try await purchaseAsync(params)
-    }
-
-    @objc func invalidateCustomerInfoCache() {
-        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
-    }
-
-    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        self.purchasesOrchestrator.syncPurchases { @Sendable in
-            completion?($0.value, $0.error?.asPublicError)
-        }
-    }
-
-    func syncPurchases() async throws -> CustomerInfo {
-        return try await syncPurchasesAsync()
     }
 
     @objc(purchaseProduct:withPromotionalOffer:completion:)
@@ -1105,6 +1089,22 @@ public extension Purchases {
 
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    @objc func invalidateCustomerInfoCache() {
+        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+    }
+
+    @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        self.purchasesOrchestrator.syncPurchases { @Sendable in
+            completion?($0.value, $0.error?.asPublicError)
+        }
+    }
+
+    func syncPurchases() async throws -> CustomerInfo {
+        return try await syncPurchasesAsync()
     }
 
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
@@ -1163,8 +1163,6 @@ public extension Purchases {
     }
 #endif
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
@@ -1183,8 +1181,6 @@ public extension Purchases {
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
-
-    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 
@@ -1371,6 +1367,8 @@ public extension Purchases {
         )
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Configures an instance of the Purchases SDK with a specified ``Configuration/Builder``.
      *
@@ -1398,8 +1396,6 @@ public extension Purchases {
     @discardableResult static func configure(with builder: Configuration.Builder) -> Purchases {
         return Self.configure(with: builder.build())
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
      * Configures an instance of the Purchases SDK with a specified API key.
@@ -1561,9 +1557,7 @@ public extension Purchases {
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
         Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+            with: .builder(withAPIKey: apiKey, appUserID: appUserID)
                 .build())
     }
 
@@ -1769,7 +1763,7 @@ extension Purchases: InternalPurchasesType {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    @_spi(Internal) public func productEntitlementMapping() async throws -> ProductEntitlementMapping {
+    func productEntitlementMapping() async throws -> ProductEntitlementMapping {
         let response = try await Async.call { completion in
             self.backend.offlineEntitlements.getProductEntitlementMapping(isAppBackgrounded: false) { result in
                 completion(result.mapError(\.asPublicError))

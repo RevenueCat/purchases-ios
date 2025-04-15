@@ -91,6 +91,7 @@ public struct CustomerCenterView: View {
             self.navigationOptions = navigationOptions
     }
 
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
         navigationOptions: CustomerCenterNavigationOptions) {

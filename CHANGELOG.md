@@ -1,3 +1,16 @@
+## 5.21.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Make Paywalls v2 Text use verbatim (#4975) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* New APIs to CustomEntitlementsComputationMode SDK (#4972) via Toni Rico (@tonidero)
+* Updates the changelog for hotfix 4.43.5. (#4980) via JayShortway (@JayShortway)
+* Fixes unit tests compilation on Xcode 16.3/iOS 18.4 (#4977) via Antonio Pallares (@ajpallares)
+* Remove preprocessor script for PaywallsTester (#4969) via Antonio Pallares (@ajpallares)
+* [Customer center] unify and propagate Purchases provider (#4957) via Antonio Pallares (@ajpallares)
+
 ## 5.21.0
 ## RevenueCat SDK
 ### 🐞 Bugfixes
@@ -1014,6 +1027,10 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.43.5
+### Other Changes
+* v4: Add promotional offer APIs to CustomEntitlementComputation V4 SDK (#4973) via Toni Rico (@tonidero)
 
 ## 4.43.4
 ### Bugfixes
