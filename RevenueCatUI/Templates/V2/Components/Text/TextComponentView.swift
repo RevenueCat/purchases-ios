@@ -75,11 +75,15 @@ private struct NonLocalizedMarkdownText: View {
 
     var markdownText: AttributedString? {
         #if swift(>=5.7)
-        return try? AttributedString(
-            // AttributedString allegedly uses CommonMark hard line breaks
-            // which is two or more spaces before line break
-            markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
-        )
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return try? AttributedString(
+                // AttributedString allegedly uses CommonMark hard line breaks
+                // which is two or more spaces before line break
+                markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
+            )
+        } else {
+            return nil
+        }
         #else
         return nil
         #endif
