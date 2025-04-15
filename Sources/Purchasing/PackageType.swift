@@ -88,6 +88,7 @@ extension PackageType: Codable {
 
 extension PackageType {
 
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public var description: String? {
         switch self {
         case .unknown: return nil
