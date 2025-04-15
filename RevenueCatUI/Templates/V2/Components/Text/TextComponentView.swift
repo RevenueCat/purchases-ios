@@ -98,8 +98,8 @@ private struct NonLocalizedMarkdownText: View {
                     .font(self.font)
                     .fontWeight(self.fontWeight)
             } else {
-                // Otherwise use verbatim to prevent using localized bundle strings
-                Text(verbatim: self.text)
+                // Display text as is because markdown is priority
+                Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
             }
