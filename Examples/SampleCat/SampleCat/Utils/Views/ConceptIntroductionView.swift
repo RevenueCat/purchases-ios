@@ -28,6 +28,7 @@ struct ConceptIntroductionView: View {
             .padding(.horizontal, 24)
             .multilineTextAlignment(.center)
         }
+        .padding(.vertical, 32)
     }
 }
 

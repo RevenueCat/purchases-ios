@@ -9,36 +9,34 @@ struct OfferingsView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 12) {
+            ScrollView {
                 ConceptIntroductionView(imageName: "visual-offerings",
                                         title: "Offerings",
                                         description: "Offerings are the products you can “offer” to customers on your paywall.")
-                    .padding(.vertical, 64)
-                ScrollView(.horizontal) {
-                    HStack(spacing: 12) {
-                        ForEach(offerings) { offering in
-                            Button(action: { selectedOffering = offering }) {
-                                Text(offering.identifier)
-                                    .textCase(.uppercase)
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .padding(.vertical, 12)
-                                    .padding(.horizontal, 16)
-                                    .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
-                                    .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
-                                    .clipShape(Capsule())
-                            }
-                            .buttonStyle(.plain)
-                        }
+                    
+                ForEach(offerings) { offering in
+                    Button(action: { selectedOffering = offering }) {
+                        Text(offering.identifier)
+                            .textCase(.uppercase)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
+                            .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
+                            .clipShape(Capsule())
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .buttonStyle(.plain)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .scrollContentBackground(.hidden)
+            .background {
+                ContentBackgroundView(color: Color("RC-green"))
+            }
             .onAppear(perform: loadData)
             .refreshable(action: loadData)
             .navigationTitle("Offerings")
+            .toolbar(removing: .title)
         }
     }
     

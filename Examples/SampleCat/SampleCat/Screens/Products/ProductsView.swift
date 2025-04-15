@@ -16,8 +16,9 @@ struct ProductsView: View {
     var body: some View {
         NavigationStack {
             ScrollView(.vertical) {
-                ConceptIntroductionView(imageName: "visual-products", title: "Products", description: "Products are the individual in-app purchases and subscriptions that you have set up on the App Store.")
-                    .padding(.vertical, 64)
+                ConceptIntroductionView(imageName: "visual-products",
+                                        title: "Products",
+                                        description: "Products are the individual in-app purchases and subscriptions that you have set up on the App Store.")
                 VStack {
                     ForEach(products) { product in
                         VStack(alignment: .leading, spacing: 4) {
@@ -39,9 +40,14 @@ struct ProductsView: View {
                 }
                 .padding()
             }
+            .scrollContentBackground(.hidden)
+            .background {
+                ContentBackgroundView(color: .accent)
+            }
+            .navigationTitle("Products")
+            .toolbar(removing: .title)
         }
         .task(getProductViewModels)
-        .navigationTitle("Products")
     }
 
     private func getProductViewModels() async {
@@ -69,3 +75,5 @@ struct ProductsView: View {
 #Preview {
     ProductsView()
 }
+
+
