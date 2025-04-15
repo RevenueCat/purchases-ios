@@ -1,0 +1,9 @@
+appId: com.revenuecat.maestro.ios
+
+---
+- launchApp
+- runFlow: "open_customer_center.yaml"
+- tapOn: "Cancel Subscription"
+- tapOn: "Too expensive"
+- tapOn:
+    id: "promo-offer-primary-button"

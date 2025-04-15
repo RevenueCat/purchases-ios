@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "3BDCB1D3-9201-4CD3-896B-334276F444CE",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:rc-maestro.xcodeproj",
+        "identifier" : "577A823C2DAD139D004D274A",
+        "name" : "rc_maestroUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

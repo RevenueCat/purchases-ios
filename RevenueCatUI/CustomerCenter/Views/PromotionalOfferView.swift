@@ -227,6 +227,7 @@ struct PromoOfferButtonView: View {
                 }
             }
             .buttonStyle(ProminentButtonStyle())
+            .accessibilityIdentifier("promo-offer-primary-button")
             .padding(.horizontal)
             .disabled(isLoading)
             .opacity(isLoading ? 0.5 : 1)
