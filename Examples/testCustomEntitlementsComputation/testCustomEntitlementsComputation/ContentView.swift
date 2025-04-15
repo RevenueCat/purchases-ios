@@ -76,6 +76,19 @@ struct ContentView: View {
             .cornerRadius(20)
             .padding()
 
+            Button("Purchase offering with promo offer") {
+                Task<Void, Never> {
+                    await purchaseOfferingWithPromoOffer()
+                }
+            }
+            .font(.system(size: 20))
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.blue)
+            .cornerRadius(20)
+            .padding()
+
             .task {
                 Purchases.configureInCustomEntitlementsComputationMode(apiKey: Constants.apiKey,
                                                                        appUserID: appUserID)
@@ -153,6 +166,48 @@ struct ContentView: View {
 
         do {
             let (transaction, customerInfo, _) = try await Purchases.shared.purchase(package: package)
+            print(
+                """
+                Purchase finished:
+                Transaction: \(transaction.debugDescription)
+                CustomerInfo: \(customerInfo.debugDescription)
+                """
+            )
+        } catch ErrorCode.receiptAlreadyInUseError {
+            print("The receipt is already in use by another subscriber. " +
+                  "Log in with the previous account or contact support to get your purchases transferred to " +
+                  "regain access")
+        } catch ErrorCode.paymentPendingError {
+            print("The purchase is pending and may be completed at a later time." +
+                  "This can happen when awaiting parental approval or going through extra authentication flows " +
+                  "for credit cards in some countries.")
+        } catch ErrorCode.purchaseCancelledError {
+            print("Purchase was cancelled by the user.")
+        } catch {
+            print("FAILED TO PURCHASE: \(error.localizedDescription)")
+        }
+
+    }
+
+    func purchaseOfferingWithPromoOffer() async {
+        guard let offerings = self.offerings,
+              let offering = offerings.current,
+              let package = offering.availablePackages.first else {
+            print("no offerings, can't make a purchase")
+            return
+        }
+
+        let promoOffers = await Purchases.shared.eligiblePromotionalOffers(forProduct: package.storeProduct)
+        guard let promoOffer = promoOffers.first else {
+            print("Current offering first package with product ID: \(package.storeProduct.productIdentifier) does not have promo offers")
+            return
+        }
+
+        do {
+            let purchaseParams = PurchaseParams.Builder(package: package)
+                .with(promotionalOffer: promoOffer)
+                .build()
+            let (transaction, customerInfo, _) = try await Purchases.shared.purchase(purchaseParams)
             print(
                 """
                 Purchase finished:

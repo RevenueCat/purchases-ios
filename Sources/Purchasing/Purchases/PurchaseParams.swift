@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
  * This class follows the builder pattern.
@@ -34,24 +32,39 @@ import Foundation
     let package: Package?
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     let winBackOffer: WinBackOffer?
     let metadata: [String: String]?
 
+    #endif
+
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
-        self.metadata = builder.metadata
         self.product = builder.product
         self.package = builder.package
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
         self.winBackOffer = builder.winBackOffer
+        self.metadata = builder.metadata
+
+        #endif
     }
 
     /// The Builder for ```PurchaseParams```.
     @objc(RCPurchaseParamsBuilder) public class Builder: NSObject {
         private(set) var promotionalOffer: PromotionalOffer?
-        private(set) var metadata: [String: String]?
         private(set) var package: Package?
         private(set) var product: StoreProduct?
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
         private(set) var winBackOffer: WinBackOffer?
+        private(set) var metadata: [String: String]?
+
+        #endif
 
         /**
          * Create a new builder with a ``Package``.
@@ -83,6 +96,8 @@ import Foundation
             return self
         }
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
         #if ENABLE_TRANSACTION_METADATA
         /**
          * Set `metadata`.
@@ -109,11 +124,11 @@ import Foundation
             return self
         }
 
+        #endif
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> PurchaseParams {
             return PurchaseParams(with: self)
         }
     }
 }
-
-#endif
