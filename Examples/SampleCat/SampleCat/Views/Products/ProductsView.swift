@@ -38,26 +38,28 @@ struct ProductsView: View {
                 .padding()
             }
         }
-        .task {
-            let report = await PurchasesDiagnostics.default.healthReport()
-            let reportProducts = report.products
-            let identifiers = reportProducts.map(\.identifier)
-            let storeProducts = await Purchases.shared.products(identifiers)
-                .reduce(into: [String: StoreProduct]()) { partialResult, storeProduct in
-                    partialResult[storeProduct.productIdentifier] = storeProduct
-                }
-
-            self.products = reportProducts.map {
-                ProductViewModel(
-                    id: $0.identifier,
-                    title: $0.title,
-                    icon: $0.status.icon,
-                    description: $0.description,
-                    storeProduct: storeProducts[$0.identifier]
-                )
-            }
-        }
+        .task(getProductViewModels)
         .navigationTitle("Products")
+    }
+
+    private func getProductViewModels() async {
+        let report = await PurchasesDiagnostics.default.healthReport()
+        let reportProducts = report.products
+        let identifiers = reportProducts.map(\.identifier)
+        let storeProducts = await Purchases.shared.products(identifiers)
+            .reduce(into: [String: StoreProduct]()) { partialResult, storeProduct in
+                partialResult[storeProduct.productIdentifier] = storeProduct
+            }
+
+        self.products = reportProducts.map {
+            ProductViewModel(
+                id: $0.identifier,
+                title: $0.title,
+                icon: $0.status.icon,
+                description: $0.description,
+                storeProduct: storeProducts[$0.identifier]
+            )
+        }
     }
 }
 
