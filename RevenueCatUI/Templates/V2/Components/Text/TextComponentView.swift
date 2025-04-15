@@ -93,17 +93,20 @@ private struct NonLocalizedMarkdownText: View {
         #if swift(>=5.7)
         Group {
             if let markdownText = self.markdownText {
+                // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
             } else {
+                // Otherwise use verbatim to prevent using localized bundle strings
                 Text(verbatim: self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
             }
         }
         #else
-        Text(verbatim: self.text)
+        // Display text as is because markdown is priority
+        Text(self.text)
             .font(self.font)
             .fontWeight(self.fontWeight)
         #endif
@@ -112,7 +115,7 @@ private struct NonLocalizedMarkdownText: View {
 
 #if DEBUG
 
-// Needed for Xcode 14
+// Needed for Xcode 14 since there are more than 10 previews
 #if swift(>=5.9)
 
 // swiftlint:disable type_body_length
