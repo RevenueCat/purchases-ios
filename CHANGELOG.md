@@ -1,3 +1,129 @@
+## 5.21.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Make Paywalls v2 Text use verbatim (#4975) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* New APIs to CustomEntitlementsComputationMode SDK (#4972) via Toni Rico (@tonidero)
+* Updates the changelog for hotfix 4.43.5. (#4980) via JayShortway (@JayShortway)
+* Fixes unit tests compilation on Xcode 16.3/iOS 18.4 (#4977) via Antonio Pallares (@ajpallares)
+* Remove preprocessor script for PaywallsTester (#4969) via Antonio Pallares (@ajpallares)
+* [Customer center] unify and propagate Purchases provider (#4957) via Antonio Pallares (@ajpallares)
+
+## 5.21.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Remove Identifiable conformance from StoreKit2PurchaseIntentListenerType (#4964) via Will Taylor (@fire-at-will)
+* Fix `CustomerCenterViewController` view (#4960) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* feat: Don't hide contact support on simulator (#4951) via Facundo Menzella (@facumenzella)
+* feat: Change default copy for web_subscription_manage (#4921) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Update strings for restore purchases alerts (#4933) via Cesar de la Vega (@vegaro)
+* Replace initial alert dialog with a progress view when restoring in Customer Center (#4930) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* feat: Add log for promo offer eligibility (#4949) via Facundo Menzella (@facumenzella)
+
+## 5.20.3
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Allow two lines for feedback survey title (#4950) via Facundo Menzella (@facumenzella)
+* feat: Reload customer center onCustomerCenterPromotionalOfferSuccess (#4917) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Only preview `RestorePurchasesAlert` on iOS (#4958) via Cesar de la Vega (@vegaro)
+* Add `X-Is-Backgrounded` header (#4938) via Toni Rico (@tonidero)
+* Add previews for `RestorePurchasesAlert` (#4922) via Cesar de la Vega (@vegaro)
+* [Diagnostics] Add `storefront` property to more events (#4948) via Toni Rico (@tonidero)
+* Improve Korean translation (#4946) via Jaewoong Eum (@skydoves)
+* [Diagnostics] Sync diagnostics if file reaches lower size limit (#4929) via Toni Rico (@tonidero)
+* Add diagnostics event when AppTransaction fails to be fetched (#4936) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix gradients in angles around 135º (#4934) via Mark Villacampa (@MarkVillacampa)
+* Fix load shedder integration tests after project changes (#4932) via Toni Rico (@tonidero)
+* [Diagnostics] Fix cache fetch policy key not matching specs (#4924) via Toni Rico (@tonidero)
+* [Paywall] Center-align all Timeline component  icons by calculating and setting their max width (#4890) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Add support for TimelineItem overrides (#4875) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Extend the padding by border.width amount in components that support both (#4915) via Mark Villacampa (@MarkVillacampa)
+
+## 5.20.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Carousel fixes (#4869) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Hide subscription detail if consumable (#4906) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fixing fit mode on background property (#4905) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* chore: Test if Package.swift is valid on CI for older tooling (#4697) via Facundo Menzella (@facumenzella)
+* [Diagnostics]: add `NOT_CHECKED` value to `cache_status` parameter of `get_offerings_result` event (#4919) via Antonio Pallares (@ajpallares)
+* chore: Test action wrapper for customer center (#4916) via Facundo Menzella (@facumenzella)
+* [Diagnostics] add `apple_purchase_intent_received` event (#4895) via Antonio Pallares (@ajpallares)
+* Fix nokogiri CVEs  (#4914) via Cesar de la Vega (@vegaro)
+* Fix build issues and tests in older versions of Xcode (#4909) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `apple_transaction_update_received` event (#4904) via Antonio Pallares (@ajpallares)
+* fix build issue in iOS 15 (#4908) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `purchase_started` and `purchase_result` events (#4886) via Antonio Pallares (@ajpallares)
+
+## 5.20.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* [Paywalls V2] Fixes badges not being overriden (#4900) via JayShortway (@JayShortway)
+
+### 🔄 Other Changes
+* Skip `TrialOrIntroPriceEligibilityCheckerSK2Tests` in iOS 15 (#4902) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `apple_trial_or_intro_eligibility_request` event (#4894) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `apple_transaction_queue_received` event (#4898) via Antonio Pallares (@ajpallares)
+
+## 5.20.0
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix for Chinese locale scripts that aren't supported in iOS 15 (#4889) via Josh Holtz (@joshdholtz)
+* Fallback to using variations of language code, script, and region for unknown `Locale` (ex: `zh_CN` will look for `zh_Hans`) (#4870) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### ✨ New Features
+* Add `onCustomerCenterManagementOptionSelected` modifier (#4872) via Cesar de la Vega (@vegaro)
+* feat: Refresh customer center and purchases after restore (#4880) via Facundo Menzella (@facumenzella)
+* Deprecates `CustomerCenterActionHandler` in favor of modifiers (#4844) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Fix unit tests: make `presentCodeRedemptionSheet()` test only run on iOS (#4897) via Antonio Pallares (@ajpallares)
+* Fix possible memory leaks with diagnostics completion blocks (#4892) via Toni Rico (@tonidero)
+* [Diagnostics] add `apple_present_code_redemption_sheet_request` event (#4893) via Antonio Pallares (@ajpallares)
+* [Diagnostics] Add sync and restore purchases events (#4887) via Toni Rico (@tonidero)
+* [Diagnostics] Add sync purchases tracking (part 1) (#4885) via Toni Rico (@tonidero)
+* [Diagnostics] add `get_customer_info_started` and `get_customer_info_result` events (#4881) via Antonio Pallares (@ajpallares)
+* [Diagnostics] Add products start/result events (#4884) via Toni Rico (@tonidero)
+* feat: Use pod_push_with_error_handling instead of pod_push for pushing Pods (#4878) via Facundo Menzella (@facumenzella)
+* Update fastlane plugin (#4879) via Toni Rico (@tonidero)
+* [Diagnostics] Add offerings start and result events (#4866) via Toni Rico (@tonidero)
+* [Diagnostics] fix diagnostics sync retry logic (#4868) via Antonio Pallares (@ajpallares)
+* Fix iOS 14 + 15 unit tests after root error issues (#4873) via Toni Rico (@tonidero)
+* [Diagnostics] add `error_entering_offline_entitlements_mode` event (#4867) via Antonio Pallares (@ajpallares)
+* Fix crash in SwiftUI previews (#4871) via Antonio Pallares (@ajpallares)
+* chore: Remove unused key from customer center event (#4837) via Facundo Menzella (@facumenzella)
+* chore: `EventsManagerIntegrationTests` working as expected (#4862) via Facundo Menzella (@facumenzella)
+* [Diagnostics] add `entered_offline_entitlements_mode` event (#4865) via Antonio Pallares (@ajpallares)
+* Add root error info to public error (#4680) via Toni Rico (@tonidero)
+* [Diagnostics] add `clearing_diagnostics_after_failed_sync` event (#4863) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `max_diagnostics_sync_retries_reached` event (#4861) via Antonio Pallares (@ajpallares)
+* Update `customerInfo` from an `AsyncStream` instead of the `PurchasesDelegate` in the SwiftUI sample app (#4860) via Pol Piella Abadia (@polpielladev)
+* Remove resetting `appSessionId` for customer center + add `appSessionId` and `eventId` to diagnostics events (#4855) via Toni Rico (@tonidero)
+* fix: diagnostics parameter key name (#4859) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add missing parameter to `http_request_performed` event (#4857) via Antonio Pallares (@ajpallares)
+* Create `DiagnosticsEvent.Properties` for type safe diagnostics (#4843) via Antonio Pallares (@ajpallares)
+* Have snapshot tests use same encoding as SDK (#4856) via Antonio Pallares (@ajpallares)
+
 ## 5.19.0
 ## RevenueCat SDK
 ### ✨ New Features
@@ -901,6 +1027,10 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.43.5
+### Other Changes
+* v4: Add promotional offer APIs to CustomEntitlementComputation V4 SDK (#4973) via Toni Rico (@tonidero)
 
 ## 4.43.4
 ### Bugfixes

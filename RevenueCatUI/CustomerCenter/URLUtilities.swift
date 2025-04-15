@@ -44,7 +44,7 @@ enum URLUtilities {
 
         components.queryItems = queryItems
 
-        guard let url = components.url, Self.canOpenURL(url) else {
+        guard let url = components.url else {
             return nil
         }
 

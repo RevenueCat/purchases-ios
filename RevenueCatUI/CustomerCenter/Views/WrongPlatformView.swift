@@ -26,11 +26,16 @@ import SwiftUI
 struct WrongPlatformView: View {
 
     @State
-    private var store: Store?
-    @State
     private var managementURL: URL?
+
     @State
     private var purchaseInformation: PurchaseInformation
+
+    @State
+    private var showSimulatorAlert: Bool = false
+
+    @State
+    private var store: Store?
 
     @EnvironmentObject
     private var customerCenterViewModel: CustomerCenterViewModel
@@ -51,15 +56,6 @@ struct WrongPlatformView: View {
 
     @Environment(\.openURL)
     private var openURL
-
-    private var supportURL: URL? {
-        guard let supportInformation = self.supportInformation else { return nil }
-        let subject = self.localization[.defaultSubject]
-        let body = supportInformation.calculateBody(self.localization)
-        return URLUtilities.createMailURLIfPossible(email: supportInformation.email,
-                                                    subject: subject,
-                                                    body: body)
-    }
 
     init(screen: CustomerCenterConfigData.Screen? = nil,
          purchaseInformation: PurchaseInformation) {
@@ -92,10 +88,19 @@ struct WrongPlatformView: View {
                     }
                 }
             }
-            if let url = supportURL {
+
+            if let url = supportInformation?.supportURL(
+                localization: localization,
+                purchasesProvider: customerCenterViewModel.purchasesProvider
+            ),
+               URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                 Section {
                     AsyncButton {
-                        openURL(url)
+                        if RuntimeUtils.isSimulator {
+                            self.showSimulatorAlert = true
+                        } else {
+                            openURL(url)
+                        }
                     } label: {
                         Text(localization[.contactSupport])
                     }
@@ -108,11 +113,17 @@ struct WrongPlatformView: View {
         })
         .task {
             if store == nil {
-                if let customerInfo = try? await Purchases.shared.customerInfo() {
+                if let customerInfo = try? await self.customerCenterViewModel.purchasesProvider.customerInfo() {
                     self.managementURL = customerInfo.managementURL
                 }
             }
         }
+        .alert(isPresented: $showSimulatorAlert, content: {
+            return Alert(
+                title: Text("Can't open URL"),
+                message: Text("There's no email app in the simulator"),
+                dismissButton: .default(Text("Ok")))
+        })
     }
 
 }

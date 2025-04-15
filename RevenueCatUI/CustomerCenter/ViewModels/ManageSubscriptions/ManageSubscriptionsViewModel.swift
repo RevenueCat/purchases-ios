@@ -36,6 +36,9 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
 
     @Published
+    var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
+
+    @Published
     var showPurchases: Bool = false
 
     @Published
@@ -59,45 +62,56 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
+    let actionWrapper: CustomerCenterActionWrapper
+
     @Published
     private(set) var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
-    private var purchasesProvider: ManageSubscriptionsPurchaseType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     init(
         screen: CustomerCenterConfigData.Screen,
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
-        purchasesProvider: ManageSubscriptionsPurchaseType = ManageSubscriptionPurchases(),
+        purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
-            self.purchasesProvider = ManageSubscriptionPurchases()
+            self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
-            self.customerCenterActionHandler = customerCenterActionHandler
-            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase ?? LoadPromotionalOfferUseCase()
+            self.actionWrapper = actionWrapper
+            self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
+            ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.state = .success
+            self.restoreAlertType = .loading
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
+    func determineFlow(for path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
+        // Convert the path to an appropriate action using the extension
+        if let action = path.asAction() {
+            // Send the action through the action wrapper
+            self.actionWrapper.handleAction(.buttonTapped(action: action))
+        }
+
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
-            self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey,
-                                                         path: path) { [weak self] in
-                Task {
-                    await self?.onPathSelected(path: path)
+            self.feedbackSurveyData = FeedbackSurveyData(
+                configuration: feedbackSurvey,
+                path: path) { [weak self] in
+                    Task {
+                        await self?.onPathSelected(path: path)
+                    }
                 }
-            }
+
         case let .promotionalOffer(promotionalOffer):
             if promotionalOffer.eligible {
                 self.loadingPath = path
@@ -110,6 +124,9 @@ final class ManageSubscriptionsViewModel: ObservableObject {
                     self.loadingPath = nil
                 }
             } else {
+                Logger.debug(Strings.promo_offer_not_eligible_for_product(
+                    promotionalOffer.iosOfferId, activeProductId ?? ""
+                ))
                 await self.onPathSelected(path: path)
             }
 
@@ -151,6 +168,13 @@ extension ManageSubscriptionsViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
     func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
+        switch userAction {
+        case .successfullyRedeemedPromotionalOffer:
+            self.actionWrapper.handleAction(.promotionalOfferSuccess)
+        case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
+            break
+        }
+
         // Clear the promotional offer data to dismiss the sheet
         self.promotionalOfferData = nil
 
@@ -178,20 +202,22 @@ private extension ManageSubscriptionsViewModel {
         case .missingPurchase:
             self.showRestoreAlert = true
         case .refundRequest:
+            guard let purchaseInformation = self.purchaseInformation else { return }
+            let productId = purchaseInformation.productIdentifier
             do {
-                guard let purchaseInformation = self.purchaseInformation else { return }
-                let productId = purchaseInformation.productIdentifier
-                self.customerCenterActionHandler?(.refundRequestStarted(productId))
+                self.actionWrapper.handleAction(.refundRequestStarted(productId))
+
                 let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
                 self.refundRequestStatus = status
-                self.customerCenterActionHandler?(.refundRequestCompleted(status))
+                self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
             } catch {
                 self.refundRequestStatus = .error
-                self.customerCenterActionHandler?(.refundRequestCompleted(.error))
+                self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
             }
         case .changePlans, .cancel:
             do {
-                self.customerCenterActionHandler?(.showingManageSubscriptions)
+                self.actionWrapper.handleAction(.showingManageSubscriptions)
+
                 try await purchasesProvider.showManageSubscriptions()
             } catch {
                 self.state = .error(error)
@@ -217,31 +243,6 @@ private extension ManageSubscriptionsViewModel {
         }
     }
 #endif
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType {
-
-    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
-        try await Purchases.shared.beginRefundRequest(forProduct: productID)
-    }
-
-    func showManageSubscriptions() async throws {
-        try await Purchases.shared.showManageSubscriptions()
-    }
-
-    func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        try await Purchases.shared.customerInfo()
-    }
-
-    func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
-        await Purchases.shared.products(productIdentifiers)
-    }
 
 }
 

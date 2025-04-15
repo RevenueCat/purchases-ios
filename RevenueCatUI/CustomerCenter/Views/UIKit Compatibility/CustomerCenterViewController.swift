@@ -33,23 +33,73 @@ import SwiftUI
 @available(watchOS, unavailable)
 public class CustomerCenterViewController: UIHostingController<CustomerCenterView> {
 
+    // MARK: - Initialization
+
     /// Create a view controller to handle common customer support tasks
     /// - Parameters:
     ///   - customerCenterActionHandler: An optional `CustomerCenterActionHandler` to handle actions
     ///   from the Customer Center.
+    @available(*, deprecated, message: "Use the initializer with individual action handlers instead")
     public init(
-        customerCenterActionHandler: CustomerCenterActionHandler? = nil
+        customerCenterActionHandler: CustomerCenterActionHandler?
     ) {
-        let view = CustomerCenterView(
-            customerCenterActionHandler: customerCenterActionHandler
-        )
+        // Initialize with a basic view first
+        let view = CustomerCenterView(customerCenterActionHandler: customerCenterActionHandler)
         super.init(rootView: view)
     }
 
-    @available(*, unavailable, message: "Use init(customerCenterActionHandler:mode:) instead.")
+    /// Create a view controller to handle common customer support tasks with individual action handlers
+    /// - Parameters:
+    ///   - restoreStarted: Handler called when a restore operation starts.
+    ///   - restoreCompleted: Handler called when a restore operation completes successfully.
+    ///   - restoreFailed: Handler called when a restore operation fails.
+    ///   - showingManageSubscriptions: Handler called when the user navigates to manage subscriptions.
+    ///   - refundRequestStarted: Handler called when a refund request starts.
+    ///   - refundRequestCompleted: Handler called when a refund request completes.
+    ///   - feedbackSurveyCompleted: Handler called when a feedback survey is completed.
+    public init(
+        restoreStarted: CustomerCenterView.RestoreStartedHandler? = nil,
+        restoreCompleted: CustomerCenterView.RestoreCompletedHandler? = nil,
+        restoreFailed: CustomerCenterView.RestoreFailedHandler? = nil,
+        showingManageSubscriptions: CustomerCenterView.ShowingManageSubscriptionsHandler? = nil,
+        refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
+        refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
+        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil
+    ) {
+        // Initialize with a basic view first
+
+        let actionWrapper = CustomerCenterActionWrapper()
+        if let restoreStarted {
+            actionWrapper.setRestoreStarted = restoreStarted
+        }
+        if let restoreCompleted {
+            actionWrapper.setRestoreCompleted = restoreCompleted
+        }
+        if let restoreFailed {
+            actionWrapper.setRestoreFailed = restoreFailed
+        }
+        if let showingManageSubscriptions {
+            actionWrapper.setShowingManageSubscriptions = showingManageSubscriptions
+        }
+        if let refundRequestStarted {
+            actionWrapper.setRefundRequestStarted = refundRequestStarted
+        }
+        if let refundRequestCompleted {
+            actionWrapper.setRefundRequestCompleted = refundRequestCompleted
+        }
+        if let feedbackSurveyCompleted {
+            actionWrapper.setFeedbackSurveyCompleted = feedbackSurveyCompleted
+        }
+
+        let view = CustomerCenterView(actionWrapper: actionWrapper, mode: .default, navigationOptions: .default)
+        super.init(rootView: view)
+    }
+
+    @available(*, unavailable, message: "Use init with handlers instead.")
     required dynamic init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
 }
 
 #endif

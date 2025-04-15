@@ -29,7 +29,11 @@ class BasePurchasedProductsFetcherTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: .random())
-        self.fetcher = PurchasedProductsFetcher(sandboxDetector: self.sandboxDetector)
+
+        self.fetcher = PurchasedProductsFetcher(
+            storeKit2TransactionFetcher: StoreKit2TransactionFetcher(diagnosticsTracker: nil),
+            sandboxDetector: self.sandboxDetector
+        )
     }
 
 }

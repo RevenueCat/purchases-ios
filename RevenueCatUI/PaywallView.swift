@@ -140,7 +140,6 @@ public struct PaywallView: View {
         )
     }
 
-    // @PublicForExternalTesting
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {

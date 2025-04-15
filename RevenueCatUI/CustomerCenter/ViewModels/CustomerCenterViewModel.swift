@@ -47,7 +47,6 @@ import RevenueCat
         return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
     }
 
-    // @PublicForExternalTesting
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -74,13 +73,18 @@ import RevenueCat
     }
 
     private let currentVersionFetcher: CurrentVersionFetcher
-    internal let customerCenterActionHandler: CustomerCenterActionHandler?
+
+    /// The action wrapper that handles both the deprecated handler and the new preference system
+    internal let actionWrapper: CustomerCenterActionWrapper
+
+    /// Used to make testing easier
+    internal var currentTask: Task<Void, Never>?
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
     init(
-        customerCenterActionHandler: CustomerCenterActionHandler?,
+        actionWrapper: CustomerCenterActionWrapper,
         currentVersionFetcher: @escaping CurrentVersionFetcher = {
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         },
@@ -89,9 +93,14 @@ import RevenueCat
     ) {
         self.state = .notLoaded
         self.currentVersionFetcher = currentVersionFetcher
-        self.customerCenterActionHandler = customerCenterActionHandler
+        self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
+    }
+
+    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+                  purchasesProvider: uiPreviewPurchaseProvider)
     }
 
     #if DEBUG
@@ -100,7 +109,7 @@ import RevenueCat
         purchaseInformation: PurchaseInformation,
         configuration: CustomerCenterConfigData
     ) {
-        self.init(customerCenterActionHandler: nil)
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
         self.purchaseInformation = purchaseInformation
         self.configuration = configuration
         self.state = .success
@@ -118,16 +127,9 @@ import RevenueCat
         }
     }
 
-    func performRestore() async -> RestorePurchasesAlert.AlertType {
-        self.customerCenterActionHandler?(.restoreStarted)
-        do {
-            let customerInfo = try await purchasesProvider.restorePurchases()
-            self.customerCenterActionHandler?(.restoreCompleted(customerInfo))
-            let hasPurchases = !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-            return hasPurchases ? .purchasesRecovered : .purchasesNotFound
-        } catch {
-            self.customerCenterActionHandler?(.restoreFailed(error))
-            return .purchasesNotFound
+    func onDismissRestorePurchasesAlert() {
+        currentTask = Task {
+            await loadScreen()
         }
     }
 

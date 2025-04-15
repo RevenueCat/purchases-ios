@@ -83,6 +83,123 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    func testPublicErrorsContainRootError() throws {
+        let underlyingError = ErrorUtils.offlineConnectionError().asPublicError
+
+        func throwing() throws {
+            throw ErrorUtils.customerInfoError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            expect(error).to(matchError(ErrorCode.customerInfoError))
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 35
+            expect(rootErrorInfo!["domain"] as? String) == "RevenueCat.ErrorCode"
+            expect(rootErrorInfo!["localizedDescription"] as? String)
+                == "Error performing request because the internet connection appears to be offline."
+            expect(rootErrorInfo?.keys.count) == 3
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testPublicErrorsRootErrorContainsSKErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let underlyingError = SKError(SKError.Code.paymentInvalid, userInfo: [:])
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 3
+            expect(rootErrorInfo!["domain"] as? String) == "SKErrorDomain"
+            expect(rootErrorInfo!["localizedDescription"] as? String)
+                == "The operation couldn’t be completed. (SKErrorDomain error 3.)"
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["skErrorCode"] as? Int) == 3
+            expect(storeKitError!["description"] as? String) == "payment_invalid"
+            expect(storeKitError?.keys.count) == 2
+
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testPublicErrorsRootErrorContainsStoreKitErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let underlyingError = StoreKitError.systemError(NSError(domain: "StoreKitSystemError", code: 1234))
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 1
+            expect(rootErrorInfo!["domain"] as? String) == "StoreKit.StoreKitError"
+            expect(rootErrorInfo!["localizedDescription"] as? String)
+                == "The operation couldn’t be completed. (StoreKitSystemError error 1234.)"
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["description"] as? String)
+                == "system_error_Error Domain=StoreKitSystemError Code=1234 \"(null)\""
+            expect(storeKitError!["systemErrorDescription"] as? String)
+                == "The operation couldn’t be completed. (StoreKitSystemError error 1234.)"
+            expect(storeKitError?.keys.count) == 2
+
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func testPublicErrorsRootErrorContainsStoreKitProductPurchaseErrorInfo() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let underlyingError = StoreKit.Product.PurchaseError.productUnavailable
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 1
+            expect(rootErrorInfo!["domain"] as? String) == "StoreKit.Product.PurchaseError"
+            // swiftlint:disable:next force_cast
+            let description = rootErrorInfo!["localizedDescription"] as! String
+            // In iOS 15, localizedDescription does not return "Item Unavailable",
+            // and returns "ERROR_UNAVAILABLE_DESC" instead.
+            let validDescriptions = Set(["Item Unavailable", "ERROR_UNAVAILABLE_DESC"])
+            expect(validDescriptions.contains(description)) == true
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["description"] as? String)
+                == "product_unavailable"
+            expect(storeKitError?.keys.count) == 1
+        }
+    }
+
     func testPurchasesErrorWithUntypedErrorCode() throws {
         let error: ErrorCode = .apiEndpointBlockedError
 
@@ -92,10 +209,10 @@ class ErrorUtilsTests: TestCase {
     func testPurchasesErrorWithUntypedPublicError() throws {
         let error: PublicError = ErrorUtils.configurationError().asPublicError
         let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
-        let userInfo = try XCTUnwrap(purchasesError.userInfo as? [String: String])
+        let userInfoDescription = purchasesError.userInfo.description
 
         expect(error).to(matchError(purchasesError))
-        expect(userInfo) == error.userInfo as? [String: String]
+        expect(userInfoDescription) == error.userInfo.description
     }
 
     func testPurchasesErrorWithUntypedPurchasesError() throws {

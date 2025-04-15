@@ -42,22 +42,20 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
-    private let customerCenterActionHandler: CustomerCenterActionHandler?
-
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
-         customerCenterActionHandler: CustomerCenterActionHandler?) {
+         purchasesProvider: CustomerCenterPurchasesType,
+         actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
-            customerCenterActionHandler: customerCenterActionHandler,
-            purchaseInformation: purchaseInformation)
-        self.init(viewModel: viewModel, customerCenterActionHandler: customerCenterActionHandler)
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: purchasesProvider)
+        self.init(viewModel: viewModel)
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel,
-                     customerCenterActionHandler: CustomerCenterActionHandler?) {
+    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
-        self.customerCenterActionHandler = customerCenterActionHandler
     }
 
     var body: some View {
@@ -68,7 +66,8 @@ struct ManageSubscriptionsView: View {
             ) { feedbackSurveyData in
                 FeedbackSurveyView(
                     feedbackSurveyData: feedbackSurveyData,
-                    customerCenterActionHandler: self.customerCenterActionHandler,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper,
                     isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
@@ -78,7 +77,9 @@ struct ManageSubscriptionsView: View {
                 isPresented: $viewModel.showPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
-                PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+                PurchaseHistoryView(viewModel:
+                                        PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
                     .environment(\.appearance, appearance)
                     .environment(\.localization, localization)
                     .environment(\.navigationOptions, navigationOptions)
@@ -88,6 +89,7 @@ struct ManageSubscriptionsView: View {
                     promotionalOffer: promotionalOfferData.promotionalOffer,
                     product: promotionalOfferData.product,
                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    purchasesProvider: self.viewModel.purchasesProvider,
                     onDismissPromotionalOfferView: { userAction in
                         Task(priority: .userInitiated) {
                             await self.viewModel.handleDismissPromotionalOfferView(userAction)
@@ -152,7 +154,12 @@ struct ManageSubscriptionsView: View {
             }
         }
         .dismissCircleButtonToolbarIfNeeded()
-        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .overlay {
+            RestorePurchasesAlert(
+                isPresented: self.$viewModel.showRestoreAlert,
+                actionWrapper: self.viewModel.actionWrapper
+            )
+        }
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
@@ -162,11 +169,11 @@ struct ManageSubscriptionsView: View {
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ManageSubscriptionsView_Previews: PreviewProvider {
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
@@ -174,11 +181,11 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    customerCenterActionHandler: nil,
+                    actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-                    refundRequestStatus: .success)
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing,
-                                        customerCenterActionHandler: nil)
+                    refundRequestStatus: .success,
+                    purchasesProvider: CustomerCenterPurchases())
+                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -188,10 +195,10 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    customerCenterActionHandler: nil,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring)
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-                                        customerCenterActionHandler: nil)
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchasesProvider: CustomerCenterPurchases())
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -201,19 +208,32 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    customerCenterActionHandler: nil,
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree)
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring,
-                                        customerCenterActionHandler: nil)
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
+                    purchasesProvider: CustomerCenterPurchases())
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Free subscription - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchasesProvider: CustomerCenterPurchases())
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Consumable - \(colorScheme)")
         }
     }
 
-}
+ }
 
 #endif
 

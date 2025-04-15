@@ -50,7 +50,9 @@ private struct ManageSubscriptionButton: View {
 
     var body: some View {
         AsyncButton(action: {
-            await self.viewModel.determineFlow(for: path)
+            await self.viewModel.determineFlow(
+                for: path,
+                activeProductId: viewModel.purchaseInformation?.productIdentifier)
         }, label: {
             if self.viewModel.loadingPath?.id == path.id {
                 TintedProgressView()

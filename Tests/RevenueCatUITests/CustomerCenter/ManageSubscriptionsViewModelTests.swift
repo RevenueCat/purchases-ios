@@ -40,8 +40,10 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                                     customerCenterActionHandler: nil)
+        let viewModel =
+        ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
+                                     actionWrapper: CustomerCenterActionWrapper(),
+                                     purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
@@ -55,8 +57,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
-            customerCenterActionHandler: nil,
-            purchaseInformation: purchase)
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
@@ -67,8 +70,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
-            customerCenterActionHandler: nil,
-            purchaseInformation: purchase)
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -93,8 +97,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
-            customerCenterActionHandler: nil,
-            purchaseInformation: purchase)
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -110,8 +115,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
-            customerCenterActionHandler: nil,
-            purchaseInformation: purchase)
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -128,8 +134,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
-            customerCenterActionHandler: nil,
-            purchaseInformation: purchase)
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -154,16 +161,19 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
-            customerCenterActionHandler: nil,
-            purchaseInformation: purchase)
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
     }
 
     func testStateChangeToError() {
-        let viewModel = ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                                     customerCenterActionHandler: nil)
+        let viewModel =
+        ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
+                                     actionWrapper: CustomerCenterActionWrapper(),
+                                     purchasesProvider: MockCustomerCenterPurchases())
 
         viewModel.state = CustomerCenterViewState.error(error)
 
@@ -291,8 +301,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
             let viewModel = ManageSubscriptionsViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
-                customerCenterActionHandler: nil,
-                purchasesProvider: MockManageSubscriptionsPurchases(
+                actionWrapper: CustomerCenterActionWrapper(),
+                purchasesProvider: MockCustomerCenterPurchases(
                     customerInfo: customerInfo,
                     products: products
                 ),
@@ -393,8 +403,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     customerCenterActionHandler: nil,
-                                                     purchasesProvider: MockManageSubscriptionsPurchases(
+                                                     actionWrapper: CustomerCenterActionWrapper(),
+                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
@@ -436,64 +446,6 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
-
-    let customerInfo: CustomerInfo
-    let customerInfoError: Error?
-    // StoreProducts keyed by productIdentifier.
-    let products: [String: RevenueCat.StoreProduct]
-    let showManageSubscriptionsError: Error?
-    let beginRefundShouldFail: Bool
-
-    init(
-        customerInfo: CustomerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
-        customerInfoError: Error? = nil,
-        products: [RevenueCat.StoreProduct] =
-        [PurchaseInformationFixtures.product(id: "com.revenuecat.product",
-                                             title: "title",
-                                             duration: .month,
-                                             price: 2.99)],
-        showManageSubscriptionsError: Error? = nil,
-        beginRefundShouldFail: Bool = false
-    ) {
-        self.customerInfo = customerInfo
-        self.customerInfoError = customerInfoError
-        self.products = Dictionary(uniqueKeysWithValues: products.map({ product in
-            (product.productIdentifier, product)
-        }))
-        self.showManageSubscriptionsError = showManageSubscriptionsError
-        self.beginRefundShouldFail = beginRefundShouldFail
-    }
-
-    func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        if let customerInfoError {
-            throw customerInfoError
-        }
-        return customerInfo
-    }
-
-    func products(_ productIdentifiers: [String]) async -> [RevenueCat.StoreProduct] {
-        return productIdentifiers.compactMap { productIdentifier in
-            products[productIdentifier]
-        }
-    }
-
-    func showManageSubscriptions() async throws {
-        if let showManageSubscriptionsError {
-            throw showManageSubscriptionsError
-        }
-    }
-
-    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
-        if beginRefundShouldFail {
-            return .error
-        }
-        return .success
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ManageSubscriptionsViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
@@ -516,7 +468,7 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
     let price: Decimal
     let localizedPriceString: String
     let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: SubscriptionPeriod
+    let subscriptionPeriod: RevenueCat.SubscriptionPeriod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
 

@@ -18,6 +18,15 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     private var paymentQueue: MockPaymentQueue!
     private var sandboxEnvironmentDetector: MockSandboxEnvironmentDetector!
 
+    var diagnosticsTracker: DiagnosticsTrackerType?
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockDiagnosticsTracker: MockDiagnosticsTracker {
+        get throws {
+            return try XCTUnwrap(self.diagnosticsTracker as? MockDiagnosticsTracker)
+        }
+    }
+
     private var wrapper: StoreKit1Wrapper!
 
     override func setUp() {
@@ -27,10 +36,17 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
         self.paymentQueue = .init()
         self.sandboxEnvironmentDetector = .init(isSandbox: true)
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
+
         self.wrapper = StoreKit1Wrapper(paymentQueue: self.paymentQueue,
                                         operationDispatcher: self.operationDispatcher,
                                         observerMode: false,
-                                        sandboxEnvironmentDetector: self.sandboxEnvironmentDetector)
+                                        sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+                                        diagnosticsTracker: self.diagnosticsTracker)
         self.wrapper.delegate = self
     }
 
@@ -329,6 +345,81 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 #endif
 
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension StoreKit1WrapperTests {
+
+    func testDoesNotTrackDiagnosticsWhenTransactionsUpdatedAreEmpty() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        wrapper?.paymentQueue(paymentQueue, updatedTransactions: [])
+
+        let mockDiagnosticsTracker = try XCTUnwrap(self.mockDiagnosticsTracker)
+        expect(mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value).to(beEmpty())
+    }
+
+    func testTracksDiagnosticsWhenTransactionsAreUpdated() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let product0 = MockSK1Product(mockProductIdentifier: "product_id_0",
+                                      mockSubscriptionGroupIdentifier: "group_0")
+        let payment0 = SKPayment(product: product0)
+        wrapper?.add(payment0)
+
+        let transaction0 = MockTransaction()
+        transaction0.mockState = .purchasing
+        transaction0.mockPayment = payment0
+
+        let product1 = MockSK1Product(mockProductIdentifier: "product_id_1",
+                                      mockSubscriptionGroupIdentifier: "group_1")
+        let payment1 = SKPayment(product: product1)
+        wrapper?.add(payment1)
+
+        let transaction1 = MockTransaction()
+        transaction1.mockState = .restored
+        transaction1.mockPayment = payment1
+
+        let product2 = MockSK1Product(mockProductIdentifier: "product_id_2",
+                                      mockSubscriptionGroupIdentifier: "group_2")
+        let payment2 = SKPayment(product: product2)
+        wrapper?.add(payment2)
+
+        let transaction2 = MockTransaction()
+        transaction2.mockState = .failed
+        transaction2.mockPayment = payment2
+
+        let error2 = NSError(domain: SKErrorDomain, code: SKError.paymentNotAllowed.rawValue)
+        transaction2.mockError = error2
+
+        paymentQueue.stubbedStorefront = MockSK1Storefront(countryCode: "USA")
+
+        wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction0, transaction1, transaction2])
+
+        let mockDiagnosticsTracker = try XCTUnwrap(self.mockDiagnosticsTracker)
+        expect(mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value.count) == 3
+
+        let params0 = mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value[0]
+        expect(params0.productId) == "product_id_0"
+        expect(params0.paymentDiscountId) == nil
+        expect(params0.transactionState) == "PURCHASING"
+        expect(params0.errorMessage) == nil
+        expect(params0.storefront) == "USA"
+
+        let params1 = mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value[1]
+        expect(params1.productId) == "product_id_1"
+        expect(params1.paymentDiscountId) == nil
+        expect(params1.transactionState) == "RESTORED"
+        expect(params1.errorMessage) == nil
+        expect(params1.storefront) == "USA"
+
+        let params2 = mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value[2]
+        expect(params2.productId) == "product_id_2"
+        expect(params2.paymentDiscountId) == nil
+        expect(params2.transactionState) == "FAILED"
+        expect(params2.errorMessage) == error2.localizedDescription
+        expect(params2.storefront) == "USA"
+    }
 }
 
 private extension StoreKit1WrapperTests {
