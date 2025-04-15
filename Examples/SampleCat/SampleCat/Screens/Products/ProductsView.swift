@@ -12,33 +12,30 @@ struct ProductsView: View {
     @Environment(UserViewModel.self) private var userViewModel
 
     @State private var products: [ProductViewModel] = []
-
+    @State private var isLoading = false
+    @State private var presentedProduct: ProductViewModel?
     var body: some View {
         NavigationStack {
             ScrollView(.vertical) {
                 ConceptIntroductionView(imageName: "visual-products",
                                         title: "Products",
-                                        description: "Products are the individual in-app purchases and subscriptions that you have set up on the App Store.")
+                                        description: "Products are the individual in-app purchases and subscriptions you set up on the App Store.")
                 VStack {
                     ForEach(products) { product in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(alignment: .firstTextBaseline) {
-                                Image(systemName: product.icon)
-                                Text(product.id)
-                                    .font(.headline)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                            Text(product.description)
-                                .font(.caption)
+                        Button {
+                            presentedProduct = product
+                        } label: {
+                            ProductCell(product: product)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .background(.quinary)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding()
+                .overlay {
+                    if isLoading {
+                        Spinner()
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background {
@@ -46,11 +43,17 @@ struct ProductsView: View {
             }
             .navigationTitle("Products")
             .toolbar(removing: .title)
+            .toolbarBackground(.hidden, for: .tabBar)
+            .sheet(item: $presentedProduct, content: { product in
+                Text(product.title ?? product.id)
+            })
         }
         .task(getProductViewModels)
     }
 
     private func getProductViewModels() async {
+        defer { isLoading = false }
+        isLoading = true
         let report = await PurchasesDiagnostics.default.healthReport()
         let reportProducts = report.products
         let identifiers = reportProducts.map(\.identifier)
@@ -68,7 +71,6 @@ struct ProductsView: View {
                 storeProduct: storeProducts[$0.identifier]
             )
         }
-        print(report.status)
     }
 }
 
