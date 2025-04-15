@@ -112,7 +112,7 @@ private struct NonLocalizedMarkdownText: View {
 
 #if DEBUG
 
-#if swift(>=5.8)
+#if swift(>=5.9)
 
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
