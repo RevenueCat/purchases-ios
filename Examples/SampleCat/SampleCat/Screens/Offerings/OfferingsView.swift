@@ -8,36 +8,32 @@ struct OfferingsView: View {
     @State private var isLoading = false
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                ConceptIntroductionView(imageName: "visual-offerings",
-                                        title: "Offerings",
-                                        description: "Offerings are the products you can “offer” to customers on your paywall.")
-                    
-                ForEach(offerings) { offering in
-                    Button(action: { selectedOffering = offering }) {
-                        Text(offering.identifier)
-                            .textCase(.uppercase)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
-                            .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
-                            .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
-                            .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
+        ScrollView {
+            ConceptIntroductionView(imageName: "visual-offerings",
+                                    title: "Offerings",
+                                    description: "Offerings are the products you can “offer” to customers on your paywall.")
+                
+            ForEach(offerings) { offering in
+                Button(action: { selectedOffering = offering }) {
+                    Text(offering.identifier)
+                        .textCase(.uppercase)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
+                        .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
+                        .clipShape(Capsule())
                 }
+                .buttonStyle(.plain)
             }
-            .scrollContentBackground(.hidden)
-            .background {
-                ContentBackgroundView(color: Color("RC-green"))
-            }
-            .onAppear(perform: loadData)
-            .refreshable(action: loadData)
-            .navigationTitle("Offerings")
-            .toolbar(removing: .title)
         }
+        .scrollContentBackground(.hidden)
+        .background {
+            ContentBackgroundView(color: Color("RC-green"))
+        }
+        .onAppear(perform: loadData)
+        .refreshable(action: loadData)
     }
     
     private func loadData() {

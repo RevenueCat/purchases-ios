@@ -15,39 +15,34 @@ struct ProductsView: View {
     @State private var isLoading = false
     @State private var presentedProduct: ProductViewModel?
     var body: some View {
-        NavigationStack {
-            ScrollView(.vertical) {
-                ConceptIntroductionView(imageName: "visual-products",
-                                        title: "Products",
-                                        description: "Products are the individual in-app purchases and subscriptions you set up on the App Store.")
-                VStack {
-                    ForEach(products) { product in
-                        Button {
-                            presentedProduct = product
-                        } label: {
-                            ProductCell(product: product)
-                        }
-                        .buttonStyle(.plain)
+        ScrollView {
+            ConceptIntroductionView(imageName: "visual-products",
+                                    title: "Products",
+                                    description: "Products are the individual in-app purchases and subscriptions you set up on the App Store.")
+            VStack {
+                ForEach(products) { product in
+                    Button {
+                        presentedProduct = product
+                    } label: {
+                        ProductCell(product: product)
                     }
-                }
-                .padding()
-                .overlay {
-                    if isLoading {
-                        Spinner()
-                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background {
-                ContentBackgroundView(color: .accent)
+            .padding()
+            .overlay {
+                if isLoading {
+                    Spinner()
+                }
             }
-            .navigationTitle("Products")
-            .toolbar(removing: .title)
-            .toolbarBackground(.hidden, for: .tabBar)
-            .sheet(item: $presentedProduct, content: { product in
-                Text(product.title ?? product.id)
-            })
         }
+        .scrollContentBackground(.hidden)
+        .background {
+            ContentBackgroundView(color: .accent)
+        }
+        .sheet(item: $presentedProduct, content: { product in
+            Text(product.title ?? product.id)
+        })
         .task(getProductViewModels)
     }
 
