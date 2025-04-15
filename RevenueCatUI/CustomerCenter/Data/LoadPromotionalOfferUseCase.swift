@@ -43,7 +43,7 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .default)
 
-            guard let activeTransaction = customerInfo.findActiveTransaction() else {
+            guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
                 return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
             }
 

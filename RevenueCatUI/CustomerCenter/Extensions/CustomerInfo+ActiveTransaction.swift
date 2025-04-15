@@ -15,7 +15,20 @@ import RevenueCat
 
 extension CustomerInfo {
 
-    func findActiveTransaction() -> Transaction? {
+    /// Returns the earliest expiring `Transaction`.
+    ///
+    /// The logic prioritizes active App Store subscriptions first, followed by:
+    /// 1. Active App Store subscriptions
+    /// 2. Non-subscription App Store transactions
+    /// 3. Active subscriptions from other stores
+    /// 4. Non-subscription transactions from other stores
+    ///
+    /// Within each group, transactions are sorted by their expiration date in ascending order.
+    ///
+    /// - Note: This is a **temporary** implementation and should eventually be replaced by
+    ///         backend-side logic for consistency and accuracy.
+    ///
+    func earliestExpiringTransaction() -> Transaction? {
         let activeSubscriptions = subscriptionsByProductIdentifier.values
             .filter(\.isActive)
             .sorted(by: {
