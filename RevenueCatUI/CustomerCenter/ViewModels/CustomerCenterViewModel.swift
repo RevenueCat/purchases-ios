@@ -15,6 +15,7 @@
 
 import Foundation
 import RevenueCat
+import StoreKit
 
 #if os(iOS)
 
@@ -39,6 +40,9 @@ import RevenueCat
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
+    @Published
+    var manageSubscriptionsSheet = false
+
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
@@ -55,6 +59,7 @@ import RevenueCat
             }
         }
     }
+
     @Published
     var configuration: CustomerCenterConfigData? {
         didSet {
@@ -117,8 +122,16 @@ import RevenueCat
 
     #endif
 
-    func loadScreen() async {
+    func resetScreen() {
+
+    }
+
+    func loadScreen(shouldSync: Bool = false) async {
         do {
+            if shouldSync {
+                try await self.purchasesProvider.syncPurchases()
+            }
+
             try await self.loadPurchaseInformation()
             try await self.loadCustomerCenterConfig()
             self.state = .success
@@ -147,7 +160,6 @@ import RevenueCat
         let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -252,7 +264,6 @@ private extension CustomerCenterViewModel {
             customerInfoRequestedDate: customerInfo.requestDate
         )
     }
-
 }
 
 fileprivate extension String {

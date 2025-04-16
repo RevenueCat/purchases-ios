@@ -52,6 +52,8 @@ import RevenueCat
 
     func restorePurchases() async throws -> CustomerInfo
 
+    func syncPurchases() async throws
+
     // MARK: - Subscription Management
 
     #if os(iOS) || os(macOS) || os(visionOS)

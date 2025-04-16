@@ -157,15 +157,22 @@ private extension CustomerCenterView {
                 }
             }
         }
+        .manageSubscriptionsSheet(isPresented: $viewModel.manageSubscriptionsSheet)
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
+        .onCustomerCenterFeedbackSurveyCompleted({ _ in
+            self.viewModel.resetScreen()
+        })
+        .onSubscriptionCancelled { @MainActor _ in
+            viewModel.manageSubscriptionsSheet = true
+        }
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
-                await viewModel.loadScreen()
+                await viewModel.loadScreen(shouldSync: true)
             }
         }
-        .onSubscriptionCancelled { _ in
+        .onChangeOf(viewModel.manageSubscriptionsSheet) { _ in
             Task {
-                await viewModel.loadScreen()
+                await viewModel.loadScreen(shouldSync: true)
             }
         }
     }
@@ -203,10 +210,11 @@ private extension CustomerCenterView {
                         }
                     )
                 } else {
-                    ManageSubscriptionsView(screen: screen,
-                                            purchaseInformation: purchaseInformation,
-                                            purchasesProvider: self.viewModel.purchasesProvider,
-                                            actionWrapper: self.viewModel.actionWrapper)
+                    ManageSubscriptionsView(
+                        screen: screen,
+                        purchaseInformation: purchaseInformation,
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
