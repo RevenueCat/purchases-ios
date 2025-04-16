@@ -236,9 +236,9 @@ private extension OfferingsManager {
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
-                let subjectToSimIssue = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
+                let isSubjectToSimIssue = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
                 completion(.failure(Self.createErrorForEmptyResult(result.error,
-                                                                   isSubjectToSimIssue: subjectToSimIssue)))
+                                                                   isSubjectToSimIssue: isSubjectToSimIssue)))
                 return
             }
 
