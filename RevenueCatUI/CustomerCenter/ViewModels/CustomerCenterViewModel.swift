@@ -124,11 +124,11 @@ import StoreKit
 
     func loadScreen(shouldSync: Bool = false) async {
         do {
-            if shouldSync {
-                try await self.purchasesProvider.syncPurchases()
-            }
+            let customerInfo = shouldSync ?
+            try await self.purchasesProvider.syncPurchases() :
+            try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
-            try await self.loadPurchaseInformation()
+            try await self.loadPurchaseInformation(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
             self.state = .success
         } catch {
@@ -164,9 +164,7 @@ import StoreKit
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchaseInformation() async throws {
-        let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
-
+    func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
         !customerInfo.nonSubscriptions.isEmpty
 
