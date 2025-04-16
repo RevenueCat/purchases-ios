@@ -137,11 +137,16 @@ platform :ios do
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
+
+    pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
-    # Try to parse the PR number from the merge queue branch name. If we're not on a merge 
-    # queue branch, Emerge can figure it out automatically.
     pr_number = nil
-    if branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
+    # Try to parse the PR number from the pr_url variable first
+    if pr_url && pr_url.include?("/")
+      pr_number = pr_url.split("/").last
+    # Try to parse the PR number from the merge queue branch name. In this case,
+    # there's no CIRCLE_PULL_REQUEST environment variable.
+    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
       pr_number = $1
     end
 
